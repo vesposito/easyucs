@@ -1,0 +1,81 @@
+{
+   "id": "ucs_central_config_domain_group_root#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS ucs central config domain_groups section (domaingroup-root)",
+   "description": "EasyUCS ucs central config domain_groups section (domaingroup-root) JSON schema",
+   "type": "object",
+   "properties": {
+      "name": {
+         "description": "Root Domain Group Name",
+         "type": "string",
+         "default": "root",
+         "enum": [
+            "root"
+         ]
+      },
+      "descr": {
+         "description": "Description of Root Domain Group",
+         "type": "string",
+         "default": "",
+         "pattern": "^[ !#$%&\\(\\)\\*\\+,\\-\\./:;\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{0,256}$"
+      },
+      "domain_groups": {
+         "description": "EasyUCS config/domain_groups/domain_groups section",
+         "type": "array",
+         "items": {
+            "description": "EasyUCS config/domain_groups/domain_groups element",
+            "type": "object",
+            "$ref": "./domain_groups.json"
+         },
+         "minItems": 1
+      },
+      "appliance_vlans":{
+         "description":"EasyUCS config/domain_groups/appliance_vlans section",
+         "type":"array",
+         "items":{
+            "description":"EasyUCS config/domain_groups/appliance_vlans element",
+            "type":"object",
+            "$ref":"domain_groups/appliance_vlans.json"
+         },
+         "minItems":1
+      },
+      "vlan_groups":{
+         "description":"EasyUCS config/domain_groups/vlan_groups section",
+         "type":"array",
+         "items":{
+            "description":"EasyUCS config/domain_groups/vlan_groups element",
+            "type":"object",
+            "$ref":"domain_groups/vlan_groups.json"
+         },
+         "minItems":1
+      },
+      "vlans":{
+         "description":"EasyUCS config/domain_groups/vlans section",
+         "type":"array",
+         "items":{
+            "description":"EasyUCS config/domain_groups/vlans element",
+            "type":"object",
+            "$ref":"domain_groups/vlans.json"
+         },
+         "minItems":1
+      },
+      "ip_pools": {
+         "description": "EasyUCS config/orgs/ip_pools section",
+         "type": "array",
+         "items": {
+            "description:": "EasyUCS config/orgs/ip_pools element",
+            "type": "object",
+            "$ref": "orgs/ip_pools.json"
+         },
+         "minItems": 1
+      }
+   },
+   "required": [
+      "name"
+   ],
+   "additionalProperties": false,
+   "$comment": "Below is for supporting any additional commented property starting with a #",
+   "patternProperties": {
+      "^#": {}
+   }
+}

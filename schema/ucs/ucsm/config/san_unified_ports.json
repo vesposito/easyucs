@@ -1,0 +1,50 @@
+{
+   "id":"ucs_system_config_san_unified_ports#",
+   "$schema":"http://json-schema.org/draft-07/schema#",
+   "title":"EasyUCS ucs system config san_unified_ports section",
+   "description":"EasyUCS ucs system config san_unified_ports section JSON schema",
+   "type":"object",
+   "properties":{
+      "fabric":{
+         "description":"Fabric ID of SAN Unified Port range (\"A\" or \"B\")",
+         "type":"string",
+         "enum":[
+            "a",
+            "A",
+            "b",
+            "B"
+         ]
+      },
+      "slot_id":{
+         "description":"Slot ID of SAN Unified Port",
+         "type":"string",
+         "pattern":"^[1-5]$"
+      },
+      "port_id_start":{
+         "description":"Port ID of first SAN Unified Port",
+         "type":"string",
+         "pattern":"^[1-9]$|^[1-4][0-9]$|^5[0-4]$"
+      },
+      "port_id_end":{
+         "description":"Port ID of last SAN Unified Port",
+         "type":"string",
+         "pattern":"^[1-9]$|^[1-4][0-9]$|^5[0-4]$"
+      },
+      "admin_state":{
+         "description":"Admin State of SAN Unified Port range",
+         "type":"string",
+         "default":"enabled",
+         "enum":[
+            "disabled",
+            "enabled"
+         ]
+      }
+   },
+   "additionalProperties":false,
+   "required":[
+      "fabric",
+      "slot_id",
+      "port_id_start",
+      "port_id_end"
+   ]
+}

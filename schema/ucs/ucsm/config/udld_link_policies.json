@@ -1,0 +1,39 @@
+{
+   "id":"ucs_system_config_udld_link_policies#",
+   "$schema":"http://json-schema.org/draft-07/schema#",
+   "title":"EasyUCS ucs system config udld_link_policies section",
+   "description":"EasyUCS ucs system config udld_link_policies section JSON schema",
+   "type":"object",
+   "properties":{
+      "name":{
+         "description":"UDLD Link Policy Name",
+         "type":"string",
+         "default":"",
+         "pattern":"^[\\-\\.:_a-zA-Z0-9]{1,16}$"
+      },
+      "admin_state":{
+         "description":"UDLD Link Policy Admin State",
+         "type":"string",
+         "default":"disabled",
+         "enum":[
+            "disabled",
+            "enabled"
+         ]
+      },
+      "mode":{
+         "description":"UDLD Link Policy Mode",
+         "type":"string",
+         "default":"normal",
+         "enum":[
+            "aggressive",
+            "normal"
+         ]
+      }
+   },
+   "additionalProperties":false,
+   "required":[
+      "name",
+      "admin_state",
+      "mode"
+   ]
+}

@@ -1,0 +1,143 @@
+{
+   "easyucs":{
+      "metadata":[
+         {
+            "file_type": "config",
+            "device_type": "ucsm",
+            "category":"custom",
+            "subcategory":"samples",
+            "name":"UCS Manager storage-related sections configuration sample",
+            "easyucs_version":"0.9.0",
+            "revision": "1.0"
+         }
+      ]
+   },
+   "config":{
+      "orgs":[
+         {
+            "name":"root",
+            "disk_group_policies":[
+               {
+                  "name":"DGP1",
+                  "descr":"descr",
+                  "raid_level":"mirror",
+                  "strip_size":"8KB",
+                  "access_policy":"read-only",
+                  "read_policy":"read-ahead",
+                  "write_cache_policy":"always-write-back",
+                  "io_policy":"direct",
+                  "drive_cache":"enable",
+                  "security":"yes",
+                  "manual_disk_group_configuration":[
+                     {
+                        "slot_number":"1",
+                        "role":"glob-hot-spare",
+                        "span_id":"2"
+                     },
+                     {
+                        "slot_number":"2",
+                        "role":"ded-hot-spare",
+                        "span_id":"3"
+                     },
+                     {
+                        "slot_number":"3",
+                        "role":"normal"
+                     },
+                     {
+                        "slot_number":"4"
+                     },
+                     {
+                        "slot_number":"5",
+                        "role":"normal"
+                     }
+                  ]
+               },
+               {
+                  "name":"DGP",
+                  "descr":"descr",
+                  "raid_level":"raid",
+                  "strip_size":"16KB",
+                  "access_policy":"read-write",
+                  "read_policy":"platform-default",
+                  "write_cache_policy":"write-back-good-bbu",
+                  "io_policy":"cached",
+                  "drive_cache":"disable",
+                  "security":"no",
+                  "number_of_drives":"12",
+                  "drive_type":"HDD",
+                  "number_of_dedicated_hot_spares":"20",
+                  "number_of_global_hot_spares":"10",
+                  "min_drive_size":"1024",
+                  "use_remaining_disks":"yes",
+                  "use_jbod_disks":"yes"
+               }
+            ],
+            "storage_profiles":[
+               {
+                  "name":"stpr",
+                  "descr":"descr",
+                  "security_policy": [
+                     {
+                        "key": "KEYKEYKEYKEYKEYKEYKEYKEYKEYKEYKE",
+                        "type": "local_policy"
+                     }
+                  ],
+                  "local_luns":[
+                     {
+                        "name":"claim",
+                        "size":"unspecified",
+                        "fractional_size":"0",
+                        "auto_deploy":"no-auto-deploy",
+                        "expand_to_available":"no"
+                     },
+                     {
+                        "name":"lun-name",
+                        "size":"1024",
+                        "fractional_size":"8",
+                        "auto_deploy":"auto-deploy",
+                        "expand_to_available":"yes",
+                        "disk_group_policy":"DGP"
+                     }
+                  ],
+                  "controller_definitions":[
+                     {
+                        "name":"controller",
+                        "protected_configuration":"yes",
+                        "raid_level":"raid-mirrored"
+                     }
+                  ]
+               },
+               {
+                  "name":"stpr2",
+                  "descr":"descr",
+                  "security_policy":[
+                     {
+                        "type": "remote_policy",
+                        "primary_ip_address":"1.1.1.1",
+                        "secondary_ip_address":"2.2.2.2",
+                        "port":"8888",
+                        "kmip_server_public_certificate":"Certif",
+                        "username":"user",
+                        "password":"password"
+                     }
+                  ],
+                  "lun_sets": [
+                     {
+                        "name": "lun_set1",
+                        "access_policy": "read-write",
+                        "disk_slot_range": "1",
+                        "drive_cache": "no-change",
+                        "io_policy": "direct",
+                        "raid_level": "stripe",
+                        "read_policy": "read-ahead",
+                        "security": "yes",
+                        "strip_size": "16KB",
+                        "write_cache_policy": "write-through"
+                     }
+                  ]
+               }
+            ]
+         }
+      ]
+   }
+}

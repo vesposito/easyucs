@@ -1,0 +1,30 @@
+{
+  "rear_file_name":"UCSX-MLOM-001.png",
+  "rear_file_name_half":"UCSX-MLOM-001_half.png",
+  "rear_file_size":[593,75],
+  "rear_file_size_half":[389,75],
+  "rear_ports": {
+    "x/2": {
+      "port_coord": [282, 13],
+      "port_type": "qsfp",
+      "port_size": [82, 49]
+    },
+    "x/1": {
+      "port_coord": [405, 13],
+      "port_type": "qsfp",
+      "port_size": [82, 49]
+    }
+  },
+  "rear_ports_half": {
+    "x/2": {
+      "port_coord": [121, 13],
+      "port_type": "qsfp",
+      "port_size": [82, 49]
+    },
+    "x/1": {
+      "port_coord": [244, 13],
+      "port_type": "qsfp",
+      "port_size": [82, 49]
+    }
+  }
+}

@@ -1,0 +1,692 @@
+{
+   "id":"ucs_system_config_service_profiles#",
+   "$schema":"http://json-schema.org/draft-07/schema#",
+   "title":"EasyUCS ucs system config service_profiles section",
+   "description":"EasyUCS ucs system config service_profiles section JSON schema",
+   "type":"object",
+   "properties":{
+      "service_profile_template":{
+         "description":"Service Profile - Service Profile Template",
+         "type":"string",
+         "pattern":"^[\\-\\.:_a-zA-Z0-9]{2,32}$"
+      },
+      "suffix_start_number":{
+         "description":"Service Profile - Suffix Start Number",
+         "type":"string"
+      },
+      "number_of_instances":{
+         "description":"Service Profile - Number Of Instances",
+         "type":"string"
+      },
+      "descr":{
+         "description":"Service Profile - Descr",
+         "type":"string",
+         "pattern":"^[ !#$%&\\(\\)\\*\\+,\\-\\./:;\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{0,256}$"
+      },
+      "name":{
+         "description":"Service Profile - Name",
+         "type":"string",
+         "pattern":"^[\\-\\.:_a-zA-Z0-9]{2,32}$"
+      },
+      "type":{
+         "description":"Service Profile - Type",
+         "type":"string",
+         "enum":[
+            "initial-template",
+            "instance",
+            "updating-template"
+         ]
+      },
+      "user_label":{
+         "description":"Service Profile - User Label",
+         "type":"string",
+         "pattern":"^[ !#$%&\\(\\)\\*\\+,\\-\\./:;\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{0,32}$"
+      },
+      "asset_tag":{
+         "description":"Service Profile - Asset Tag",
+         "type":"string",
+         "pattern":"^[ !#$%&\\(\\)\\*\\+,\\-\\./:;\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{0,32}$"
+      },
+      "uuid_pool":{
+         "description":"Service Profile - UUID Pool",
+         "type":"string"
+      },
+      "uuid":{
+         "description":"Service Profile - UUID",
+         "type":"string",
+         "pattern": "^(([0-9a-fA-F]){8}\\-([0-9a-fA-F]){4}\\-([0-9a-fA-F]){4}\\-([0-9a-fA-F]){4}\\-([0-9a-fA-F]){12})$|^hardware-default$|^derived$"
+      },
+      "storage_profile":{
+         "description":"Service Profile - Storage Profile",
+         "type":"string",
+         "pattern":"^[\\-\\.:_a-zA-Z0-9]{1,16}$"
+      },
+      "local_disk_configuration_policy":{
+         "description":"Service Profile - Local Disk Conf Policy",
+         "type":"string",
+         "pattern":"^[\\-\\.:_a-zA-Z0-9]{1,16}$"
+      },
+      "dynamic_vnic_connection_policy":{
+         "description":"Service Profile - Dynamic Vnic Connection Policy",
+         "type":"string",
+         "default":"",
+         "pattern":"^[\\-\\.:_a-zA-Z0-9]{1,16}$"
+      },
+      "lan_connectivity_policy":{
+         "description":"Service Profile - Lan Connectivity Policy",
+         "type":"string",
+         "pattern":"^[\\-\\.:_a-zA-Z0-9]{1,16}$"
+      },
+      "iscsi_initiator_name":{
+         "description":"Service Profile - Iscsi Initiator Name",
+         "type":"string"
+      },
+      "san_connectivity_policy":{
+         "description":"Service Profile - San Connectivity Policy",
+         "type":"string",
+         "pattern":"^[\\-\\.:_a-zA-Z0-9]{1,16}$"
+      },
+      "wwnn_pool":{
+         "description":"Service Profile - WWNN Pool",
+         "type":"string"
+      },
+      "wwnn":{
+         "description":"Service Profile - WWNN",
+         "type":"string",
+         "default":"",
+         "pattern":"^(([A-Fa-f0-9][A-Fa-f0-9]:){7}[A-Fa-f0-9][A-Fa-f0-9])$|^0$|^pool-derived$|^vnic-derived$"
+      },
+      "placement_policy":{
+         "description":"Service Profile - Placement Policy",
+         "type":"string",
+         "pattern":"^[\\-\\.:_a-zA-Z0-9]{0,16}$"
+      },
+      "vmedia_policy":{
+         "description":"Service Profile - Vmedia Policy",
+         "type":"string",
+         "pattern":"^[\\-\\.:_a-zA-Z0-9]{1,16}$"
+      },
+      "boot_policy":{
+         "description":"Service Profile - Boot Policy",
+         "type":"string",
+         "pattern":"^[\\-\\.:_a-zA-Z0-9]{0,16}$"
+      },
+      "maintenance_policy":{
+         "description":"Service Profile - Maintenance Policy",
+         "type":"string",
+         "pattern":"^[\\-\\.:_a-zA-Z0-9]{0,16}$"
+      },
+      "server_pool":{
+         "description":"Service Profile - Server Pool",
+         "type":"string",
+         "default":"",
+         "pattern":"^[\\-\\.:_a-zA-Z0-9]{0,32}$"
+      },
+      "server_power_state":{
+         "description":"Service Profile - Server Power State",
+         "type":"string",
+         "default":"up",
+         "enum":[
+            "down",
+            "up",
+            "soft-shut-down-only"
+         ]
+      },
+      "server_pool_qualification":{
+         "description":"Service Profile - Server Pool Qualification",
+         "type":"string",
+         "pattern":"^[\\-\\.:_a-zA-Z0-9]{0,16}$"
+      },
+      "restrict_migration":{
+         "description":"Service Profile - Restrict Migration",
+         "type":"string",
+         "default":"false",
+         "enum":[
+            "false",
+            "no",
+            "true",
+            "yes"
+         ]
+      },
+      "host_firmware_package":{
+         "description":"Service Profile - Host Firmware Package",
+         "type":"string",
+         "pattern":"^[\\-\\.:_a-zA-Z0-9]{0,16}$"
+      },
+      "bios_policy":{
+         "description":"Service Profile - Bios Policy",
+         "type":"string",
+         "pattern":"^[\\-\\.:_a-zA-Z0-9]{0,16}$"
+      },
+      "ipmi_access_profile":{
+         "description":"Service Profile - Ipmi Access Profile",
+         "type":"string",
+         "pattern":"^[\\-\\.:_a-zA-Z0-9]{0,16}$"
+      },
+      "serial_over_lan_policy":{
+         "description":"Service Profile - Serial Over Lan Policy",
+         "type":"string",
+         "pattern":"^[\\-\\.:_a-zA-Z0-9]{0,16}$"
+      },
+      "outband_ipv4_pool":{
+         "description":"Service Profile - Outband Ipv4 Pool",
+         "type":"string"
+      },
+      "inband_ipv6_pool":{
+         "description":"Service Profile - Inband Ipv6 Pool",
+         "type":"string"
+      },
+      "inband_ipv4_pool":{
+         "description":"Service Profile - Inband Ipv4 Pool",
+         "type":"string"
+      },
+      "threshold_policy":{
+         "description":"Service Profile - Threshold Policy",
+         "type":"string",
+         "pattern":"^[\\-\\.:_a-zA-Z0-9]{0,16}$"
+      },
+      "power_control_policy":{
+         "description":"Service Profile - Power Control Policy",
+         "type":"string",
+         "pattern":"^[\\-\\.:_a-zA-Z0-9]{0,16}$"
+      },
+      "scrub_policy":{
+         "description":"Service Profile - Scrub Policy",
+         "type":"string",
+         "pattern":"^[\\-\\.:_a-zA-Z0-9]{0,16}$"
+      },
+      "kvm_management_policy":{
+         "description":"Service Profile - Kvm Management Policy",
+         "type":"string",
+         "pattern":"^[\\-\\.:_a-zA-Z0-9]{0,16}$"
+      },
+      "graphics_card_policy":{
+         "description":"Service Profile - Graphics Card Policy",
+         "type":"string",
+         "pattern":"^[\\-\\.:_a-zA-Z0-9]{0,16}$"
+      },
+      "power_sync_policy":{
+         "description":"Service Profile - Power Sync Policy",
+         "type":"string",
+         "default":"",
+         "pattern":"^[\\-\\.:_a-zA-Z0-9]{0,16}$"
+      },
+      "vnics":{
+         "description":"Service Profile - vNICs",
+         "type":"array",
+         "items":{
+            "description":"Service Profile - vNIC",
+            "type":"object",
+            "properties":{
+               "vlans":{
+                  "description":"Service Profile - vNIC - VLANs",
+                  "type":"array",
+                  "items":{
+                     "type":"string",
+                     "pattern":"^[\\-\\.:_a-zA-Z0-9]{1,32}$"
+                  },
+                  "minItems":1
+               },
+               "template":{
+                  "description":"Service Profile - vNIC - Template",
+                  "type":"string",
+                  "pattern":"^[\\-\\.:_a-zA-Z0-9]{0,16}$"
+               },
+               "adapter_policy":{
+                  "description":"Service Profile - vNIC - Adapter Policy",
+                  "type":"string",
+                  "pattern":"^[\\-\\.:_a-zA-Z0-9]{0,16}$"
+               },
+               "name":{
+                  "description":"Service Profile - vNIC - Name",
+                  "type":"string",
+                  "pattern":"^[\\-\\.:_a-zA-Z0-9]{1,16}$"
+               },
+               "cdn_source":{
+                  "description":"Service Profile - vNIC - CDN Source",
+                  "type":"string",
+                  "default":"vnic-name",
+                  "enum":[
+                     "user-defined",
+                     "vnic-name"
+                  ]
+               },
+               "cdn_name":{
+                  "description":"Service Profile - vNIC - CDN Name",
+                  "type":"string",
+                  "pattern":"^[\\-\\.:_a-zA-Z0-9]{0,16}$"
+               },
+               "vlan_native":{
+                  "description":"Service Profile - vNIC - VLAN Native",
+                  "type":"string",
+                  "pattern":"^[\\-\\.:_a-zA-Z0-9]{1,32}$"
+               },
+               "order":{
+                  "description":"Service Profile - vNIC - Order",
+                  "type":"string",
+                  "pattern":"^[0-9]$|^[1-9][0-9]$|^1[0-9][0-9]$|^2[0-4][0-9]$|^25[0-6]$"
+               },
+               "fabric":{
+                  "description":"Service Profile - vNIC - Fabric",
+                  "type":"string",
+                  "default":"A",
+                  "enum":[
+                     "A",
+                     "A-B",
+                     "B",
+                     "B-A"
+                  ]
+               },
+               "mac_address_pool":{
+                  "description":"Service Profile - vNIC - MAC Address Pool",
+                  "type":"string"
+               },
+               "mac_address":{
+                  "description":"Service Profile - vNIC - MAC Address",
+                  "type":"string",
+                  "pattern":"^(([0-9a-fA-F][0-9a-fA-F]:){5}([0-9a-fA-F][0-9a-fA-F]))$|^hardware-default$"
+               },
+               "mtu":{
+                  "description":"Service Profile - vNIC - MTU",
+                  "type":"string",
+                  "default":"1500",
+                  "pattern":"^1[5-9][0-9][0-9]$|^[2-8][0-9][0-9][0-9]$|^9000$"
+               },
+               "qos_policy":{
+                  "description":"Service Profile - vNIC - QoS Policy",
+                  "type":"string",
+                  "pattern":"^[\\-\\.:_a-zA-Z0-9]{0,16}$"
+               },
+               "network_control_policy":{
+                  "description":"Service Profile - vNIC - Network Control Policy",
+                  "type":"string",
+                  "pattern":"^[\\-\\.:_a-zA-Z0-9]{0,16}$"
+               },
+               "dynamic_vnic":{
+                  "description":"Service Profile - vNIC - Dynamic vNIC",
+                  "type":"string",
+                  "pattern":"^[\\-\\.:_a-zA-Z0-9]{1,16}$"
+               },
+               "usnic":{
+                  "description":"Service Profile - vNIC - UsNIC",
+                  "type":"string",
+                  "pattern":"^[\\-\\.:_a-zA-Z0-9]{0,16}$"
+               },
+               "vmq":{
+                  "description":"Service Profile - vNIC - VMQ",
+                  "type":"string",
+                  "pattern":"^[\\-\\.:_a-zA-Z0-9]{0,16}$"
+               },
+               "pin_group":{
+                  "description":"Service Profile - vNIC - Pin Group",
+                  "type":"string",
+                  "pattern":"^[\\-\\.:_a-zA-Z0-9]{0,16}$"
+               },
+               "stats_threshold_policy":{
+                  "description":"Service Profile - vNIC - Stats Threshold Policy",
+                  "type":"string",
+                  "default":"default",
+                  "pattern":"^[\\-\\.:_a-zA-Z0-9]{0,16}$"
+               },
+               "vlan_groups":{
+                  "description":"Service Profile - vNIC - VLAN Groups",
+                  "type":"array",
+                  "items":{
+                     "type":"string",
+                     "pattern":"^[\\-\\.:_a-zA-Z0-9]{1,32}$"
+                  },
+                  "minItems":1
+               }
+            },
+            "additionalProperties":false,
+            "required":[
+               "name"
+            ]
+         },
+         "minItems":1
+      },
+      "iscsi_vnics":{
+         "description":"Service Profile - iSCSI vNICs",
+         "type":"array",
+         "items":{
+            "description":"Service Profile - iSCSI vNIC",
+            "type":"object",
+            "properties":{
+               "name":{
+                  "description":"Service Profile - iSCSI vNIC - Name",
+                  "type":"string",
+                  "pattern":"^[\\-\\.:_a-zA-Z0-9]{1,16}$"
+               },
+               "vlan":{
+                  "description":"Service Profile - iSCSI vNIC - VLAN",
+                  "type":"string",
+                  "pattern":"^[\\-\\.:_a-zA-Z0-9]{1,32}$"
+               },
+               "mac_address_pool":{
+                  "description":"Service Profile - iSCSI vNIC - MAC Address Pool",
+                  "type":"string"
+               },
+               "mac_address":{
+                  "description":"Service Profile - iSCSI vNIC - MAC Address",
+                  "type":"string",
+                  "pattern":"^(([0-9a-fA-F][0-9a-fA-F]:){5}([0-9a-fA-F][0-9a-fA-F]))$|^hardware-default$"
+               },
+               "adapter_policy":{
+                  "description":"Service Profile - iSCSI vNIC - Adapter Policy",
+                  "type":"string",
+                  "pattern":"^[\\-\\.:_a-zA-Z0-9]{0,16}$"
+               }
+            },
+            "additionalProperties":false,
+            "required":[
+               "name"
+            ]
+         },
+         "minItems":1
+      },
+      "vhbas":{
+         "description":"Service Profile - vHBAs",
+         "type":"array",
+         "items":{
+            "description":"Service Profile - vHBA",
+            "type":"object",
+            "properties":{
+               "adapter_policy":{
+                  "description":"Service Profile - vHBA - Adapter Policy",
+                  "type":"string",
+                  "pattern":"^[\\-\\.:_a-zA-Z0-9]{0,16}$"
+               },
+               "template":{
+                  "description":"Service Profile - vHBA - Template",
+                  "type":"string",
+                  "pattern":"^[\\-\\.:_a-zA-Z0-9]{0,16}$"
+               },
+               "fabric":{
+                  "description":"Service Profile - vHBA - Fabric",
+                  "type":"string",
+                  "default":"A",
+                  "enum":[
+                     "A",
+                     "A-B",
+                     "B",
+                     "B-A"
+                  ]
+               },
+               "name":{
+                  "description":"Service Profile - vHBA - Name",
+                  "type":"string",
+                  "pattern":"^[\\-\\.:_a-zA-Z0-9]{1,16}$"
+               },
+               "order":{
+                  "description":"Service Profile - vHBA - Order",
+                  "type":"string",
+                  "pattern":"^[0-9]$|^[1-9][0-9]$|^1[0-9][0-9]$|^2[0-4][0-9]$|^25[0-6]$"
+               },
+               "wwpn_pool":{
+                  "description":"Service Profile - vHBA - WWPN Pool",
+                  "type":"string"
+               },
+               "wwpn":{
+                  "description":"Service Profile - vHBA - WWPN",
+                  "type":"string",
+                  "pattern":"^(([A-Fa-f0-9][A-Fa-f0-9]:){7}[A-Fa-f0-9][A-Fa-f0-9])$|^derived$"
+               },
+               "pin_group":{
+                  "description":"Service Profile - vHBA - Pin Group",
+                  "type":"string",
+                  "pattern":"^[\\-\\.:_a-zA-Z0-9]{0,16}$"
+               },
+               "max_data_field_size":{
+                  "description":"Service Profile - vHBA - Max Data Field Size",
+                  "type":"string",
+                  "default":"2048",
+                  "pattern":"^25[6-9]$|^2[6-9][0-9]$|^[3-9][0-9][0-9]$|^1[0-9][0-9][0-9]$|^20[0-9][0-9]$|^210[0-9]$|^211[0-2]$"
+               },
+               "qos_policy":{
+                  "description":"Service Profile - vHBA - Qos Policy",
+                  "type":"string",
+                  "pattern":"^[\\-\\.:_a-zA-Z0-9]{0,16}$"
+               },
+               "vsan":{
+                  "description":"Service Profile - vHBA - Vsan",
+                  "type":"string",
+                  "pattern":"^[\\-\\.:_a-zA-Z0-9]{0,32}$"
+               },
+               "stats_threshold_policy":{
+                  "description":"Service Profile - vHBA - Stats Threshold Policy",
+                  "type":"string",
+                  "default":"default",
+                  "pattern":"^[\\-\\.:_a-zA-Z0-9]{0,16}$"
+               },
+               "persistent_binding":{
+                  "description":"Service Profile - vHBA - Persistent Binding",
+                  "type":"string",
+                  "default":"disabled",
+                  "enum":[
+                     "disabled",
+                     "enabled"
+                  ]
+               }
+            },
+            "additionalProperties":false,
+            "required":[
+               "name"
+            ]
+         },
+         "minItems":1
+      },
+      "vhba_initiator_groups":{
+         "description":"Service Profile - vHBA Initiator Groups",
+         "type":"array",
+         "items":{
+            "description":"Service Profile - vHBA Initiator Group",
+            "type":"object",
+            "properties":{
+               "storage_connection_policy":{
+                  "description":"Service Profile - vHBA Initiator Group - Storage Connection Policy",
+                  "type":"string",
+                  "pattern":"^[\\-\\.:_a-zA-Z0-9]{0,16}$"
+               },
+               "initiators":{
+                  "description":"Service Profile - vHBA Initiator Group - Initiators",
+                  "type":"array",
+                  "items":{
+                     "type":"string",
+                     "pattern":"^[\\-\\.:_a-zA-Z0-9]{1,16}$"
+                  }
+               },
+               "name":{
+                  "description":"Service Profile - vHBA Initiator Group - Name",
+                  "type":"string",
+                  "pattern":"^[\\-\\.:_a-zA-Z0-9]{1,16}$"
+               },
+               "descr":{
+                  "description":"Service Profile - vHBA Initiator Group - Descr",
+                  "type":"string",
+                  "default":"",
+                  "pattern":"^[ !#$%&\\(\\)\\*\\+,\\-\\./:;\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{0,256}$"
+               }
+            },
+            "additionalProperties":false,
+            "required":[
+               "name"
+            ]
+         },
+         "minItems":1
+      },
+      "placement":{
+         "description":"Service Profile - Placement",
+         "type":"array",
+         "items":{
+            "description":"Service Profile - Placement",
+            "type":"object",
+            "properties":{
+               "vcon":{
+                  "description":"Service Profile - Placement - vCON",
+                  "type":"string",
+                  "enum": ["1", "2", "3", "4", "any"]
+               },
+               "vnic":{
+                  "description":"Service Profile - Placement - vNIC",
+                  "type":"string",
+                  "pattern":"^[\\-\\.:_a-zA-Z0-9]{1,32}$"
+               },
+               "vhba":{
+                  "description":"Service Profile - Placement - vHBA",
+                  "type":"string",
+                  "pattern":"^[\\-\\.:_a-zA-Z0-9]{1,32}$"
+               },
+               "order":{
+                  "description":"Service Profile - Placement - Order",
+                  "type":"string",
+                  "pattern":"^[0-9]$|^[1-9][0-9]$|^1[0-9][0-9]$|^2[0-4][0-9]$|^25[0-6]$"
+               }
+            },
+            "additionalProperties":false,
+            "required":[
+               "vcon"
+            ]
+         },
+         "minItems":1
+      },
+      "servers":{
+         "description":"Service Profile - Servers",
+         "type":"array",
+         "items":{
+            "description":"Service Profile - Server",
+            "type":"object",
+            "properties":{
+               "chassis_id":{
+                  "description":"Service Profile - Server - Chassis ID",
+                  "type":"string"
+               },
+               "rack_id":{
+                  "description":"Service Profile - Server - Rack ID",
+                  "type":"string"
+               },
+               "blade":{
+                  "description":"Service Profile - Server - Blade",
+                  "type":"string"
+               }
+            },
+            "additionalProperties":false
+         },
+         "minItems":1
+      },
+      "iscsi_boot_parameters":{
+         "description":"Service Profile - iSCSI Boot Parameters",
+         "type":"array",
+         "items":{
+            "description":"Service Profile - iSCSI Boot Parameters",
+            "type":"object",
+            "oneOf": [
+               {
+                  "properties":{
+                     "iscsi_vnic_name":{
+                        "description":"Service Profile - iSCSI Boot Parameter - iSCSI vNIC Name",
+                        "type":"string",
+                        "pattern": "^[\\-\\.:_a-zA-Z0-9]{1,16}$"
+                     },
+                     "authentication_profile":{
+                        "description":"Service Profile - iSCSI Boot Parameter - Authentication Profile",
+                        "type":"string"
+                     },
+                     "iqn_pool":{
+                        "description":"Service Profile - iSCSI Boot Parameter - IQN Pool",
+                        "type":"string"
+                     },
+                     "iqn":{
+                        "description":"Service Profile - iSCSI Boot Parameter - IQN",
+                        "type":"string",
+                        "pattern": "^[0-9a-zA-Z\\.:-]{0,223}$"
+                     },
+                     "initiator_ip_address_policy":{
+                        "description":"Service Profile - iSCSI Boot Parameter - Initiator IP Address Policy",
+                        "type":"string"
+                     },
+                     "iscsi_static_targets": {
+                        "type":"array",
+                        "items": {
+                           "description": "Service Profile - iSCSI Boot Parameters - iSCSI Static Targets",
+                           "type": "object",
+                           "properties": {
+                              "name":{
+                                 "description":"Service Profile - iSCSI Boot Parameter - iSCSI Static Target - Name",
+                                 "type":"string",
+                                 "pattern": "^[0-9a-zA-Z\\.:-]{0,223}$"
+                              },
+                              "port":{
+                                 "description":"Service Profile - iSCSI Boot Parameter - iSCSI Static Target - Port",
+                                 "type":"string",
+                                 "default": "3260",
+                                 "pattern": "^[1-9]$|^[1-9][0-9]$|^[1-9][0-9][0-9]$|^[1-9][0-9][0-9][0-9]$|^[1-5][0-9][0-9][0-9][0-9]$|^6[0-4][0-9][0-9][0-9]$|^65[0-4][0-9][0-9]$|^655[0-2][0-9]$|^6553[0-5]$"
+                              },
+                              "authentication_profile":{
+                                 "description":"Service Profile - iSCSI Boot Parameter - iSCSI Static Target - Authentication Profile",
+                                 "type":"string"
+                              },
+                              "ip_address":{
+                                 "description":"Service Profile - iSCSI Boot Parameter - iSCSI Static Target - IP Address",
+                                 "type":"string",
+                                 "default": "0.0.0.0",
+                                 "format": "ipv4"
+                              },
+                              "priority":{
+                                 "description":"Service Profile - iSCSI Boot Parameter - iSCSI Static Target - Priority",
+                                 "type":"string",
+                                 "default": "1",
+                                 "enum": [
+                                    "1",
+                                    "2"
+                                 ]
+                              },
+                              "lun_id":{
+                                 "description":"Service Profile - iSCSI Boot Parameter - iSCSI Static Target - LUN ID",
+                                 "type":"string",
+                                 "default": "0",
+                                 "pattern": "^[0-9]$|^[1-9][0-9]$|^[1-9][0-9][0-9]$|^[1-9][0-9][0-9][0-9]$|^[1-5][0-9][0-9][0-9][0-9]$|^6[0-4][0-9][0-9][0-9]$|^65[0-4][0-9][0-9]$|^655[0-2][0-9]$|^6553[0-5]$"
+                              }
+                           },
+                           "additionalProperties":false,
+                           "required":[
+                              "priority",
+                              "name",
+                              "ip_address"
+                           ]
+                        },
+                        "minItems":1
+                     }
+                  },
+                  "additionalProperties":false
+               },
+               {
+                  "properties":{
+                     "iscsi_vnic_name":{
+                        "description":"Service Profile - iSCSI Boot Parameter - iSCSI vNIC Name",
+                        "type":"string",
+                        "pattern": "^[\\-\\.:_a-zA-Z0-9]{1,16}$"
+                     },
+                     "dhcp_vendor_id":{
+                        "description":"Service Profile - iSCSI Boot Parameter - DHCP Vendor ID",
+                        "type":"string"
+                     }
+                  },
+                  "additionalProperties":false,
+                  "required": [
+                     "dhcp_vendor_id"
+                  ]
+               }
+            ],
+            "required":[
+               "iscsi_vnic_name"
+            ]
+         },
+         "minItems":1
+      }
+   },
+   "additionalProperties":false,
+   "required":[
+      "name",
+      "type"
+   ]
+}

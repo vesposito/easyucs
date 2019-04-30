@@ -1,0 +1,88 @@
+{
+   "id":"ucs_system_config_unified_uplink_ports#",
+   "$schema":"http://json-schema.org/draft-07/schema#",
+   "title":"EasyUCS ucs system config unified_uplink_ports section",
+   "description":"EasyUCS ucs system config unified_uplink_ports section JSON schema",
+   "type":"object",
+   "properties":{
+      "fabric":{
+         "description":"Fabric ID of Unified Uplink Port (\"A\" or \"B\")",
+         "type":"string",
+         "enum":[
+            "a",
+            "A",
+            "b",
+            "B"
+         ]
+      },
+      "slot_id":{
+         "description":"Slot ID of Unified Uplink Port",
+         "type":"string",
+         "pattern":"^[1-5]$"
+      },
+      "port_id":{
+         "description":"Port ID of Unified Uplink Port",
+         "type":"string",
+         "pattern":"^[1-9]$|^[1-4][0-9]$|^5[0-4]$"
+      },
+      "aggr_id":{
+         "description":"Aggregate ID of Unified Uplink Port (for Breakout Ports)",
+         "type":"string",
+         "pattern":"^[1-4]$"
+      },
+      "user_label":{
+         "description":"User Label of Unified Uplink Port",
+         "type":"string",
+         "default":"",
+         "pattern":"^[ !#$%&\\(\\)\\*\\+,\\-\\./:;\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{0,32}$"
+      },
+      "flow_control_policy":{
+         "description":"Flow Control Policy assigned to Unified Uplink Port",
+         "type":"string",
+         "pattern":"^[\\-\\.:_a-zA-Z0-9]{0,16}$"
+      },
+      "link_profile":{
+         "description":"Link Profile assigned to Unified Uplink Port",
+         "type":"string",
+         "pattern":"^[\\-\\.:_a-zA-Z0-9]{0,16}$"
+      },
+      "admin_speed":{
+         "description":"Admin Speed of Unified Uplink Port",
+         "type":"string",
+         "default": "auto",
+         "enum":[
+            "1gbps",
+            "10gbps",
+            "25gbps",
+            "40gbps",
+            "100gbps",
+            "auto"
+         ]
+      },
+      "admin_state":{
+         "description":"Admin State of Unified Uplink Port",
+         "type":"string",
+         "default":"enabled",
+         "enum":[
+            "disabled",
+            "enabled"
+         ]
+      },
+      "fec": {
+         "description": "FEC value of Unified Uplink Port",
+         "type": "string",
+         "default": "auto",
+         "enum": [
+            "auto",
+            "cl74",
+            "cl91"
+         ]
+      }
+   },
+   "additionalProperties":false,
+   "required":[
+      "fabric",
+      "slot_id",
+      "port_id"
+   ]
+}

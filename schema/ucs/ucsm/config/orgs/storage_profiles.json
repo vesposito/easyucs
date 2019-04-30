@@ -1,0 +1,325 @@
+{
+   "id":"ucs_system_config_storage_profiles#",
+   "$schema":"http://json-schema.org/draft-07/schema#",
+   "title":"EasyUCS ucs system config storage_profiles section",
+   "description":"EasyUCS ucs system config storage_profiles section JSON schema",
+   "type":"object",
+   "properties":{
+      "name":{
+         "description":"Storage Profile - Name",
+         "type":"string"
+      },
+      "descr":{
+         "description":"Storage Profile - Description",
+         "type":"string"
+      },
+      "security_policy":{
+         "description":"Storage Profile - Security Policy",
+         "type":"array",
+         "items":{
+            "description":"Storage Profile - Security Policy",
+            "type":"object",
+            "properties":{
+               "type":{
+                  "description":"Storage Profile - Security Policy - Type",
+                  "type":"string",
+                  "enum":[
+                     "remote_policy",
+                     "local_policy"
+                  ]
+               },
+               "primary_ip_address":{
+                  "description":"Storage Profile - Security Policy - Primary IP Address",
+                  "type":"string",
+                  "pattern":"^[A-Za-z]([A-Za-z0-9_.-]*[A-Za-z0-9])?([A-Za-z]([A-Za-z0-9._-]*[A-Za-z0-9])?)*$|^([1-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\\.([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\\.([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\\.([1-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])$|^([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}$|^([0-9a-fA-F]{1,4}:){1,7}:$|^([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}$|^([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}$|^([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}$|^([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}$|^([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}$|^[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})$|^:((:[0-9a-fA-F]{1,4}){1,7}|:)$"
+               },
+               "secondary_ip_address":{
+                  "description":"Storage Profile - Security Policy - Secondary IP Address",
+                  "type":"string",
+                  "pattern":"^[A-Za-z]([A-Za-z0-9_.-]*[A-Za-z0-9])?([A-Za-z]([A-Za-z0-9._-]*[A-Za-z0-9])?)*$|^([1-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\\.([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\\.([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\\.([1-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])$|^([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}$|^([0-9a-fA-F]{1,4}:){1,7}:$|^([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}$|^([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}$|^([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}$|^([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}$|^([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}$|^[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})$|^:((:[0-9a-fA-F]{1,4}){1,7}|:)$"
+               },
+               "port":{
+                  "description":"Storage Profile - Security Policy - Port",
+                  "type":"string",
+                  "default":"5696",
+                  "pattern":"^102[4-9]$|^10[3-9][0-9]$|^[1-9][1-9][0-9][0-9]$|^[1-5][0-9][0-9][0-9][0-9]$|^6[0-4][0-9][0-9][0-9]$|^65[0-4][0-9][0-9]$|^655[0-2][0-9]$|^6553[0-5]$"
+               },
+               "kmip_server_public_certificate":{
+                  "description":"Storage Profile - Security Policy - KMIP Server Public Certificate",
+                  "type":"string"
+               },
+               "deployed_key":{
+                  "description":"Storage Profile - Security Policy - Deployed Key",
+                  "type":"string"
+               },
+               "username":{
+                  "description":"Storage Profile - Security Policy - Username",
+                  "type":"string",
+                  "pattern":"^[a-zA-Z][a-zA-Z0-9_.-]{0,31}$"
+               },
+               "password":{
+                  "description":"Storage Profile - Security Policy - Password",
+                  "type":"string",
+                  "pattern":"^[!\"\"#%&'\\(\\)\\*\\+,\\-\\./:;<>@\\[\\\\\\]\\^_`\\{\\|\\}~a-zA-Z0-9]{0,127}$"
+               },
+               "key":{
+                  "description":"Storage Profile - Security Policy - Key",
+                  "type":"string",
+                  "pattern":"^[!\"\"#%&'\\(\\)\\*\\+,\\-\\./:;<>@\\[\\\\\\]\\^_`\\{\\|\\}~a-zA-Z0-9]{0,127}$"
+               }
+            },
+            "additionalProperties":false,
+            "required":[
+               "type"
+            ],
+            "if":{
+               "properties":{
+                  "type":{
+                     "enum":[
+                        "local_policy"
+                     ]
+                  }
+               }
+            },
+            "then":{
+               "required":[
+                  "key"
+               ]
+            },
+            "else":{
+               "required":[
+                  "primary_ip_address"
+               ]
+            }
+         },
+         "minItems":1,
+         "maxItems":1
+      },
+      "local_luns":{
+         "description":"Storage Profile - Local LUNs",
+         "type":"array",
+         "items":{
+            "description":"Storage Profile - Local LUN",
+            "type":"object",
+            "properties":{
+               "name":{
+                  "description":"Storage Profile - Local LUN - Name",
+                  "type":"string",
+                  "pattern":"^[\\-\\.:_a-zA-Z0-9]{1,10}$"
+               },
+               "size":{
+                  "description":"Storage Profile - Local LUN - Size",
+                  "type":"string",
+                  "default":"1",
+                  "pattern":"^unspecified$|^[0-9]$|^[1-9][0-9]$|^[1-9][0-9][0-9]$|^[1-9][0-9][0-9][0-9]$|^[1-9][0-9][0-9][0-9][0-9]$|^1[0-9][0-9][0-9][0-9][0-9]$|^2[0-3][0-9][0-9][0-9][0-9]$|^24[0-4][0-9][0-9][0-9]$|^245[0-6][0-9][0-9]$|^2457[0-5][0-9]$|^245760$"
+               },
+               "fractional_size":{
+                  "description":"Storage Profile - Local LUN - Fractional Size",
+                  "type":"string",
+                  "default":"0",
+                  "pattern":"^[0-9]$|^[1-9][0-9]$|^[1-9][0-9][0-9]$|^10[0-1][0-9]$|^102[0-3]$"
+               },
+               "auto_deploy":{
+                  "description":"Storage Profile - Local LUN - Auto Deploy",
+                  "type":"string",
+                  "default":"auto-deploy",
+                  "enum":[
+                     "auto-deploy",
+                     "no-auto-deploy"
+                  ]
+               },
+               "expand_to_available":{
+                  "description":"Storage Profile - Local LUN - Expand to Available",
+                  "type":"string",
+                  "default":"no",
+                  "enum":[
+                     "false",
+                     "no",
+                     "true",
+                     "yes"
+                  ]
+               },
+               "disk_group_policy":{
+                  "description":"Storage Profile - Local LUN - Disk Group Policy",
+                  "type":"string",
+                  "pattern":"^[\\-\\.:_a-zA-Z0-9]{0,16}$"
+               }
+            },
+            "additionalProperties":false,
+            "required":[
+               "name"
+            ]
+         },
+         "minItems":1
+      },
+      "lun_sets":{
+         "description":"Storage Profile - LUN Sets",
+         "type":"array",
+         "items":{
+            "description":"Storage Profile - LUN Set",
+            "type":"object",
+            "properties":{
+               "name":{
+                  "description":"Storage Profile - LUN Set - Name",
+                  "type":"string",
+                  "pattern":"^[\\-\\.:_a-zA-Z0-9]{1,10}$"
+               },
+               "raid_level":{
+                  "description":"Storage Profile - LUN Set - Raid Level",
+                  "type":"string",
+                  "default":"stripe",
+                  "enum":[
+                     "jbod",
+                     "simple",
+                     "stripe"
+                  ]
+               },
+               "disk_slot_range":{
+                  "description":"Storage Profile - LUN Set - Disk Slot Range",
+                  "type":"string"
+               },
+               "strip_size":{
+                  "description":"Storage Profile - LUN Set - Strip Size",
+                  "type":"string",
+                  "default":"platform-default",
+                  "enum":[
+                     "1024KB",
+                     "128KB",
+                     "16KB",
+                     "256KB",
+                     "32KB",
+                     "512KB",
+                     "64KB",
+                     "8KB",
+                     "platform-default"
+                  ]
+               },
+               "access_policy":{
+                  "description":"Storage Profile - LUN Set - Access Policy",
+                  "type":"string",
+                  "default":"platform-default",
+                  "enum":["blocked", "platform-default", "read-only", "read-write"]
+               },
+               "read_policy":{
+                  "description":"Storage Profile - LUN Set - Read Policy",
+                  "type":"string",
+                  "default":"platform-default",
+                  "enum":[
+                     "normal",
+                     "platform-default",
+                     "read-ahead"
+                  ]
+               },
+               "write_cache_policy":{
+                  "description":"Storage Profile - LUN Set - Write Cache Policy",
+                  "type":"string",
+                  "default":"platform-default",
+                  "enum":[
+                     "always-write-back",
+                     "platform-default",
+                     "write-back-good-bbu",
+                     "write-through"
+                  ]
+               },
+               "io_policy":{
+                  "description":"Storage Profile - LUN Set - IO Policy",
+                  "type":"string",
+                  "default":"platform-default",
+                  "enum":[
+                     "cached",
+                     "direct",
+                     "platform-default"
+                  ]
+               },
+               "drive_cache":{
+                  "description":"Storage Profile - LUN Set - Drive Cache",
+                  "type":"string",
+                  "default":"platform-default",
+                  "enum":[
+                     "disable",
+                     "enable",
+                     "no-change",
+                     "platform-default"
+                  ]
+               },
+               "security":{
+                  "description":"Storage Profile - LUN Set - Security",
+                  "type":"string",
+                  "default":"no",
+                  "enum":[
+                     "false",
+                     "no",
+                     "true",
+                     "yes"
+                  ]
+               }
+            },
+            "additionalProperties":false,
+            "required":[
+               "name",
+               "disk_slot_range"
+            ]
+         },
+         "minItems":1
+      },
+      "controller_definitions":{
+         "description":"Storage Profile - Controller Definitions",
+         "type":"array",
+         "items":{
+            "description":"Storage Profile - Controller Definition",
+            "type":"object",
+            "properties":{
+               "name":{
+                  "description":"Storage Profile - Controller Definition - Name",
+                  "type":"string",
+                  "pattern":"^[\\-\\.:_a-zA-Z0-9]{1,16}$"
+               },
+               "raid_level":{
+                  "description":"Storage Profile - Controller Definition - Raid Level",
+                  "type":"string",
+                  "default":"any-configuration",
+                  "enum":[
+                     "any-configuration",
+                     "best-effort-mirrored",
+                     "best-effort-mirrored-striped",
+                     "best-effort-striped",
+                     "best-effort-striped-dual-parity",
+                     "best-effort-striped-parity",
+                     "dual-disk",
+                     "no-local-storage",
+                     "no-raid",
+                     "raid-mirrored",
+                     "raid-mirrored-striped",
+                     "raid-striped",
+                     "raid-striped-dual-parity",
+                     "raid-striped-dual-parity-striped",
+                     "raid-striped-parity",
+                     "raid-striped-parity-striped",
+                     "single-disk"
+                  ]
+               },
+               "protected_configuration":{
+                  "description":"Storage Profile - Controller Definition - Protected Configuration",
+                  "type":"string",
+                  "default":"yes",
+                  "enum":[
+                     "false",
+                     "no",
+                     "true",
+                     "yes"
+                  ]
+               }
+            },
+            "additionalProperties":false,
+            "required":[
+               "name"
+            ]
+         },
+         "minItems":1
+      }
+   },
+   "required":[
+      "name"
+   ],
+   "additionalProperties":false
+}

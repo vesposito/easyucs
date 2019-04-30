@@ -1,0 +1,58 @@
+{
+   "id":"ucs_system_config_system#",
+   "$schema":"http://json-schema.org/draft-07/schema#",
+   "title":"EasyUCS ucs system config system section",
+   "description":"EasyUCS ucs system config system section JSON schema",
+   "type":"object",
+   "properties":{
+      "name":{
+         "description":"UCS system name",
+         "type":"string"
+      },
+      "virtual_ip":{
+         "description":"UCS system virtual IPv4 address",
+         "type":"string",
+         "format":"ipv4"
+      },
+      "virtual_ipv6":{
+         "description":"UCS system virtual IPv6 address",
+         "type":"string",
+         "format":"ipv6"
+      },
+      "domain_name":{
+         "description":"UCS system domain name",
+         "type":"string"
+      },
+      "owner":{
+         "description":"UCS system owner",
+         "type":"string",
+         "default":""
+      },
+      "site":{
+         "description":"UCS system site",
+         "type":"string",
+         "default":""
+      },
+      "descr":{
+         "description":"UCS system description",
+         "type":"string",
+         "default":""
+      }
+   },
+   "required":[
+      "name"
+   ],
+   "anyOf":[
+      {
+         "required":[
+            "virtual_ip"
+         ]
+      },
+      {
+         "required":[
+            "virtual_ipv6"
+         ]
+      }
+   ],
+   "additionalProperties":false
+}

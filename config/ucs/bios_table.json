@@ -1,0 +1,4612 @@
+{
+   "usb_idle_power_optimizing": {
+      "param_name": "USB Idle Power Optimizing",
+      "target_name": "USBIdlePowerOptimize",
+      "feature_group": "USB System Idle Power Optimizing Setting",
+      "available_in_legacy_mode": true,
+      "values": [
+         "Lower-Idle-Power",
+         "High-Performance",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "lower-idle-power",
+         "high-performance",
+         "platform-default"
+      ]
+   },
+   "trusted_execution_technology": {
+      "param_name": "Trusted Execution Technology(TXT)",
+      "target_name": "TXTSupport",
+      "feature_group": "Intel Trusted Execution Technology",
+      "available_in_legacy_mode": true,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "integrated_graphics_aperture_size": {
+      "param_name": "Integrated Graphics Aperture Size",
+      "target_name": "IGDAperture",
+      "feature_group": "Integrated Graphics Aperture Size",
+      "available_in_legacy_mode": true,
+      "values": [
+         "4096MB",
+         "2048MB",
+         "1024MB",
+         "128MB",
+         "256MB",
+         "512MB",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "4096mb",
+         "2048mb",
+         "1024mb",
+         "128mb",
+         "256mb",
+         "512mb",
+         "platform-default"
+      ]
+   },
+   "intel_virtualization_technology": {
+      "param_name": "Intel Virtualization Technology",
+      "target_name": "IntelVT",
+      "feature_group": "Intel Virtualization Technology",
+      "available_in_legacy_mode": true,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "os_boot_watchdog_timer_timeout": {
+      "param_name": "OS Boot Watchdog Timer Timeout",
+      "target_name": "OSBootWatchdogTimerTimeout",
+      "feature_group": "OS Boot Watchdog Timer Timeout",
+      "available_in_legacy_mode": true,
+      "values": [
+         "15-minutes",
+         "10-minutes",
+         "20-minutes",
+         "5-minutes",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "15-minutes",
+         "10-minutes",
+         "20-minutes",
+         "5-minutes",
+         "platform-default"
+      ]
+   },
+   "power_technology": {
+      "param_name": "Power Technology",
+      "target_name": "CPUPowerManagement",
+      "feature_group": "Processor Energy Configuration",
+      "available_in_legacy_mode": true,
+      "values": [
+         "Energy-Efficient",
+         "Performance",
+         "Disabled",
+         "Custom",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "energy-efficient",
+         "performance",
+         "disabled",
+         "custom",
+         "platform-default"
+      ]
+   },
+   "energy_performance": {
+      "param_name": "Energy Performance",
+      "target_name": "CpuEngPerfBias",
+      "feature_group": "Processor Energy Configuration",
+      "available_in_legacy_mode": true,
+      "values": [
+         "Balanced-Performance",
+         "Energy-Efficient",
+         "Balanced-Energy",
+         "Balanced-Power",
+         "Performance",
+         "Power",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "balanced-performance",
+         "energy-efficient",
+         "balanced-energy",
+         "balanced-power",
+         "performance",
+         "power",
+         "platform-default"
+      ]
+   },
+   "memory_ras_configuration": {
+      "param_name": "Memory RAS configuration",
+      "target_name": "SelectMemoryRAS",
+      "feature_group": "SelectMemory RAS configuration",
+      "available_in_legacy_mode": true,
+      "values": [
+         "Maximum-Performance",
+         "Mirror-Mode-1LM",
+         "Mirroring",
+         "Lockstep",
+         "Sparing",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "maximum-performance",
+         "mirror-mode-1lm",
+         "mirroring",
+         "lockstep",
+         "sparing",
+         "platform-default"
+      ]
+   },
+   "cdn_control": {
+      "param_name": "CDN Control",
+      "target_name": "cdnEnable",
+      "feature_group": "Consistent Device Name Control",
+      "available_in_legacy_mode": true,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "os_boot_watchdog_timer_policy": {
+      "param_name": "OS Boot Watchdog Timer Policy",
+      "target_name": "OSBootWatchdogTimerPolicy",
+      "feature_group": "OS Boot Watchdog Timer Policy",
+      "available_in_legacy_mode": true,
+      "values": [
+         "Power-Off",
+         "Reset",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "power-off",
+         "reset",
+         "platform-default"
+      ]
+   },
+   "cpu_hardware_power_management": {
+      "param_name": "CPU Hardware Power Management",
+      "target_name": "CpuHWPM",
+      "feature_group": "CPU Hardware Power Management",
+      "available_in_legacy_mode": true,
+      "values": [
+         "Native-Mode-with-no-Legacy",
+         "HWPM-Native-Mode",
+         "HWPM-OOB-Mode",
+         "Disabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "native-mode-with-no-legacy",
+         "hwpm-native-mode",
+         "hwpm-oob-mode",
+         "disabled",
+         "platform-default"
+      ]
+   },
+   "enhanced_intel_speedstep_tech": {
+      "param_name": "Enhanced Intel SpeedStep Tech",
+      "target_name": "EnhancedIntelSpeedStep",
+      "feature_group": "Enhanced Intel SpeedStep Tech",
+      "available_in_legacy_mode": true,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "pcie_10g_lom_2_link": {
+      "param_name": "PCIe 10G LOM 2 Link",
+      "target_name": "PcieLOM2Link",
+      "feature_group": "PCI LOM Ports Configuration",
+      "available_in_legacy_mode": true,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "usb_front_panel_access_lock": {
+      "param_name": "USB Front Panel Access Lock",
+      "target_name": "USBFrontPanelLock",
+      "feature_group": "USB Front Panel Access Lock",
+      "available_in_legacy_mode": true,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "sas_raid_module": {
+      "param_name": "SAS RAID module",
+      "target_name": "ConfigSASRaidModule",
+      "feature_group": "Intel entry SAS RAID module",
+      "available_in_legacy_mode": true,
+      "values": [
+         "Intel-ESRTII",
+         "IT-IR-RAID",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "intel-esrtii",
+         "it-ir-raid",
+         "platform-default"
+      ]
+   },
+   "sas_raid": {
+      "param_name": "SAS RAID",
+      "target_name": "IntelSASRaidConfig",
+      "feature_group": "Intel entry SAS RAID module",
+      "available_in_legacy_mode": true,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "redirection_after_bios_post": {
+      "param_name": "Redirection After BIOS POST",
+      "target_name": "RedirectionAfterPOST",
+      "feature_group": "Redirection After BIOS POST",
+      "available_in_legacy_mode": true,
+      "values": [
+         "Always-Enable",
+         "Bootloader",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "always-enable",
+         "bootloader",
+         "platform-default"
+      ]
+   },
+   "memory_mapped_io_above_4gb": {
+      "param_name": "Memory mapped IO above 4GB",
+      "target_name": "MemoryMappedIOAbove4GB",
+      "feature_group": "Memory mapped IO above 4GB",
+      "available_in_legacy_mode": true,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "qpi_link_frequency_select": {
+      "param_name": "QPI Link Frequency Select",
+      "target_name": "QPILinkFrequency",
+      "feature_group": "QPI Link Frequency Select",
+      "available_in_legacy_mode": true,
+      "values": [
+         "8.0-GT-s",
+         "9.6-GT-s",
+         "6.4-GT-s",
+         "7.2-GT-s",
+         "Auto",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "8.0-gt-s",
+         "9.6-gt-s",
+         "6.4-gt-s",
+         "7.2-gt-s",
+         "auto",
+         "platform-default"
+      ]
+   },
+   "intel_hyperthreading_tech": {
+      "param_name": "Intel HyperThreading Tech",
+      "target_name": "IntelHyperThread",
+      "feature_group": "Intel HyperThreading Tech",
+      "available_in_legacy_mode": true,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "max_variable_mtrr_setting": {
+      "param_name": "Max Variable MTRR Setting",
+      "target_name": "ProcessorMtrr",
+      "feature_group": "Max Variable MTRR Setting",
+      "available_in_legacy_mode": true,
+      "values": [
+         "Auto-Max",
+         "8",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "auto-max",
+         "8",
+         "platform-default"
+      ]
+   },
+   "energy_performance_tuning": {
+      "param_name": "Energy Performance Tuning",
+      "target_name": "PwrPerfTuning",
+      "feature_group": "Energy Performance Tuning",
+      "available_in_legacy_mode": true,
+      "values": [
+         "BIOS",
+         "OS",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "bios",
+         "os",
+         "platform-default"
+      ]
+   },
+   "adjacent_cache_line_prefetcher": {
+      "param_name": "Adjacent Cache Line Prefetcher",
+      "target_name": "AdjacentCacheLinePrefetch",
+      "feature_group": "Processor Prefetch Config",
+      "available_in_legacy_mode": true,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "dcu_streamer_prefetch": {
+      "param_name": "DCU Streamer Prefetch",
+      "target_name": "DcuStreamerPrefetch",
+      "feature_group": "Processor Prefetch Config",
+      "available_in_legacy_mode": true,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "hardware_prefetcher": {
+      "param_name": "Hardware Prefetcher",
+      "target_name": "HardwarePrefetch",
+      "feature_group": "Processor Prefetch Config",
+      "available_in_legacy_mode": true,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "dcu_ip_prefetcher": {
+      "param_name": "DCU IP Prefetcher",
+      "target_name": "DcuIpPrefetch",
+      "feature_group": "Processor Prefetch Config",
+      "available_in_legacy_mode": true,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "pcie_slot_mlom_optionrom": {
+      "param_name": "PCIe Slot MLOM OptionROM",
+      "target_name": "PcieSlotMLOMOptionROM",
+      "feature_group": "PCI Slot OptionROM Enable",
+      "available_in_legacy_mode": true,
+      "values": [
+         "Legacy-Only",
+         "UEFI-Only",
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "legacy-only",
+         "uefi-only",
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "pcie_slot_sas_optionrom": {
+      "param_name": "PCIe Slot SAS OptionROM",
+      "target_name": "PcieSlotSASOptionROM",
+      "feature_group": "PCI Slot OptionROM Enable",
+      "available_in_legacy_mode": true,
+      "values": [
+         "Legacy-Only",
+         "UEFI-Only",
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "legacy-only",
+         "uefi-only",
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "pcie_slot_hba_optionrom": {
+      "param_name": "PCIe Slot HBA OptionROM",
+      "target_name": "PcieSlotHBAOptionROM",
+      "feature_group": "PCI Slot OptionROM Enable",
+      "available_in_legacy_mode": true,
+      "values": [
+         "Legacy-Only",
+         "UEFI-Only",
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "legacy-only",
+         "uefi-only",
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "slot_10_state": {
+      "param_name": "Slot 10 state",
+      "target_name": "PcieSlot10OptionROM",
+      "feature_group": "PCI Slot OptionROM Enable",
+      "available_in_legacy_mode": true,
+      "values": [
+         "Legacy-Only",
+         "UEFI-Only",
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "legacy-only",
+         "uefi-only",
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "pcie_slot_n2_optionrom": {
+      "param_name": "PCIe Slot N2 OptionROM",
+      "target_name": "PcieSlotN2OptionROM",
+      "feature_group": "PCI Slot OptionROM Enable",
+      "available_in_legacy_mode": true,
+      "values": [
+         "Legacy-Only",
+         "UEFI-Only",
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "legacy-only",
+         "uefi-only",
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "pcie_slot_n1_optionrom": {
+      "param_name": "PCIe Slot N1 OptionROM",
+      "target_name": "PcieSlotN1OptionROM",
+      "feature_group": "PCI Slot OptionROM Enable",
+      "available_in_legacy_mode": true,
+      "values": [
+         "Legacy-Only",
+         "UEFI-Only",
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "legacy-only",
+         "uefi-only",
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "slot_5_state": {
+      "param_name": "Slot 5 state",
+      "target_name": "PcieSlot5OptionROM",
+      "feature_group": "PCI Slot OptionROM Enable",
+      "available_in_legacy_mode": true,
+      "values": [
+         "Legacy-Only",
+         "UEFI-Only",
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "legacy-only",
+         "uefi-only",
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "slot_4_state": {
+      "param_name": "Slot 4 state",
+      "target_name": "PcieSlot4OptionROM",
+      "feature_group": "PCI Slot OptionROM Enable",
+      "available_in_legacy_mode": true,
+      "values": [
+         "Legacy-Only",
+         "UEFI-Only",
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "legacy-only",
+         "uefi-only",
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "slot_7_state": {
+      "param_name": "Slot 7 state",
+      "target_name": "PcieSlot7OptionROM",
+      "feature_group": "PCI Slot OptionROM Enable",
+      "available_in_legacy_mode": true,
+      "values": [
+         "Legacy-Only",
+         "UEFI-Only",
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "legacy-only",
+         "uefi-only",
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "slot_6_state": {
+      "param_name": "Slot 6 state",
+      "target_name": "PcieSlot6OptionROM",
+      "feature_group": "PCI Slot OptionROM Enable",
+      "available_in_legacy_mode": true,
+      "values": [
+         "Legacy-Only",
+         "UEFI-Only",
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "legacy-only",
+         "uefi-only",
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "slot_1_state": {
+      "param_name": "Slot 1 state",
+      "target_name": "PcieSlot1OptionROM",
+      "feature_group": "PCI Slot OptionROM Enable",
+      "available_in_legacy_mode": true,
+      "values": [
+         "Legacy-Only",
+         "UEFI-Only",
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "legacy-only",
+         "uefi-only",
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "slot_3_state": {
+      "param_name": "Slot 3 state",
+      "target_name": "PcieSlot3OptionROM",
+      "feature_group": "PCI Slot OptionROM Enable",
+      "available_in_legacy_mode": true,
+      "values": [
+         "Legacy-Only",
+         "UEFI-Only",
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "legacy-only",
+         "uefi-only",
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "slot_2_state": {
+      "param_name": "Slot 2 state",
+      "target_name": "PcieSlot2OptionROM",
+      "feature_group": "PCI Slot OptionROM Enable",
+      "available_in_legacy_mode": true,
+      "values": [
+         "Legacy-Only",
+         "UEFI-Only",
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "legacy-only",
+         "uefi-only",
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "slot_9_state": {
+      "param_name": "Slot 9 state",
+      "target_name": "PcieSlot9OptionROM",
+      "feature_group": "PCI Slot OptionROM Enable",
+      "available_in_legacy_mode": true,
+      "values": [
+         "Legacy-Only",
+         "UEFI-Only",
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "legacy-only",
+         "uefi-only",
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "slot_8_state": {
+      "param_name": "Slot 8 state",
+      "target_name": "PcieSlot8OptionROM",
+      "feature_group": "PCI Slot OptionROM Enable",
+      "available_in_legacy_mode": true,
+      "values": [
+         "Legacy-Only",
+         "UEFI-Only",
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "legacy-only",
+         "uefi-only",
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "uefi_os_use_legacy_video": {
+      "param_name": "UEFI OS use legacy video",
+      "target_name": "EFIOSUseLegacyVideo",
+      "feature_group": "UEFI OS use legacy video",
+      "available_in_legacy_mode": true,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "channel_interleaving": {
+      "param_name": "Channel Interleaving",
+      "target_name": "ChannelInterLeave",
+      "feature_group": "Interleave Configuration",
+      "available_in_legacy_mode": true,
+      "values": [
+         "1-Way",
+         "3-Way",
+         "2-Way",
+         "4-Way",
+         "Auto",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "1-way",
+         "3-way",
+         "2-way",
+         "4-way",
+         "auto",
+         "platform-default"
+      ]
+   },
+   "memory_interleaving": {
+      "param_name": "Memory Interleaving",
+      "target_name": "MemoryInterLeave",
+      "feature_group": "Interleave Configuration",
+      "available_in_legacy_mode": true,
+      "values": [
+         "8-Way-Interleaving-Inter-Socket",
+         "NUMA---1-Way-Node-Interleave",
+         "4-Way-Node-Interleave",
+         "2-Way-Node-Interleave",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "8-way-interleaving-inter-socket",
+         "numa---1-way-node-interleave",
+         "4-way-node-interleave",
+         "2-way-node-interleave",
+         "platform-default"
+      ]
+   },
+   "rank_interleaving": {
+      "param_name": "Rank Interleaving",
+      "target_name": "RankInterLeave",
+      "feature_group": "Interleave Configuration",
+      "available_in_legacy_mode": true,
+      "values": [
+         "1-Way",
+         "2-Way",
+         "4-Way",
+         "8-Way",
+         "Auto",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "1-way",
+         "2-way",
+         "4-way",
+         "8-way",
+         "auto",
+         "platform-default"
+      ]
+   },
+   "frequency_floor_override": {
+      "param_name": "Frequency Floor Override",
+      "target_name": "CpuFreqFloor",
+      "feature_group": "Frequency Floor Override",
+      "available_in_legacy_mode": true,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "intel_vtd_coherency_support": {
+      "param_name": "Intel VTD coherency support",
+      "target_name": "CoherencySupport",
+      "feature_group": "Intel VT for directed IO",
+      "available_in_legacy_mode": true,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "intel_vtd_interrupt_remapping": {
+      "param_name": "Intel VTD interrupt Remapping",
+      "target_name": "InterruptRemap",
+      "feature_group": "Intel VT for directed IO",
+      "available_in_legacy_mode": true,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "intel_vtd_pass_through_dma_support": {
+      "param_name": "Intel VTD pass through DMA support",
+      "target_name": "PassThroughDMA",
+      "feature_group": "Intel VT for directed IO",
+      "available_in_legacy_mode": true,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "intel_vt_for_directed_io": {
+      "param_name": "Intel VT for directed IO",
+      "target_name": "IntelVTD",
+      "feature_group": "Intel VT for directed IO",
+      "available_in_legacy_mode": true,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "intel_vtd_ats_support": {
+      "param_name": "Intel VTD ATS support",
+      "target_name": "ATS",
+      "feature_group": "Intel VT for directed IO",
+      "available_in_legacy_mode": true,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "maximum_memory_below_4gb": {
+      "param_name": "Maximum memory below 4GB",
+      "target_name": "MaxMemoryBelow4GB",
+      "feature_group": "Maximum memory below 4GB",
+      "available_in_legacy_mode": true,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "resume_on_ac_power_loss": {
+      "param_name": "Resume on AC power loss",
+      "target_name": "ResumeOnACPowerLoss",
+      "feature_group": "Resume on AC power loss",
+      "available_in_legacy_mode": true,
+      "values": [
+         "Last-State",
+         "Stay-Off",
+         "Reset",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "last-state",
+         "stay-off",
+         "reset",
+         "platform-default"
+      ]
+   },
+   "trusted_platform_module": {
+      "param_name": "Trusted Platform Module(TPM)",
+      "target_name": "TPMControl",
+      "feature_group": "Trusted Platform Module",
+      "available_in_legacy_mode": true,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "out_of_band_management": {
+      "param_name": "Out of Band Management",
+      "target_name": "comSpcrEnable",
+      "feature_group": "Out of Band Management",
+      "available_in_legacy_mode": true,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "os_boot_watchdog_timer": {
+      "param_name": "OS Boot Watchdog Timer",
+      "target_name": "OSBootWatchdogTimer",
+      "feature_group": "OS Boot Watchdog Timer",
+      "available_in_legacy_mode": true,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "workload_configuration": {
+      "param_name": "Workload Configuration",
+      "target_name": "WorkLdConfig",
+      "feature_group": "Workload Configuration",
+      "available_in_legacy_mode": true,
+      "values": [
+         "IO-Sensitive",
+         "Balanced",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "io-sensitive",
+         "balanced",
+         "platform-default"
+      ]
+   },
+   "ddr3_voltage_selection": {
+      "param_name": "DDR3 Voltage Selection",
+      "target_name": "Ddr3VoltageSelection",
+      "feature_group": "DDR3 Voltage Selection",
+      "available_in_legacy_mode": true,
+      "values": [
+         "DDR3-1350mv",
+         "DDR3-1500mv",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "ddr3-1350mv",
+         "ddr3-1500mv",
+         "platform-default"
+      ]
+   },
+   "usb_port_sd_card": {
+      "param_name": "USB Port SD Card",
+      "target_name": "UsbPortSdCard",
+      "feature_group": "USB port configuration",
+      "available_in_legacy_mode": true,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "usb_port_vmedia": {
+      "param_name": "USB Port VMedia",
+      "target_name": "UsbPortVMedia",
+      "feature_group": "USB port configuration",
+      "available_in_legacy_mode": true,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "usb_port_front": {
+      "param_name": "USB Port Front",
+      "target_name": "UsbPortFront",
+      "feature_group": "USB port configuration",
+      "available_in_legacy_mode": true,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "usb_port_rear": {
+      "param_name": "USB Port Rear",
+      "target_name": "UsbPortRear",
+      "feature_group": "USB port configuration",
+      "available_in_legacy_mode": true,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "port_60_64_emulation": {
+      "param_name": "Port 60/64 Emulation",
+      "target_name": "UsbEmul6064",
+      "feature_group": "USB port configuration",
+      "available_in_legacy_mode": true,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "usb_port_internal": {
+      "param_name": "USB Port Internal",
+      "target_name": "UsbPortInt",
+      "feature_group": "USB port configuration",
+      "available_in_legacy_mode": true,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "usb_port_kvm": {
+      "param_name": "USB Port KVM",
+      "target_name": "UsbPortKVM",
+      "feature_group": "USB port configuration",
+      "available_in_legacy_mode": true,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "intel_turbo_boost_tech": {
+      "param_name": "Intel Turbo Boost Tech",
+      "target_name": "IntelTurboBoostTech",
+      "feature_group": "Intel Turbo Boost Tech",
+      "available_in_legacy_mode": true,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "package_c_state_limit": {
+      "param_name": "Package C State Limit",
+      "target_name": "PackageCstateLimit",
+      "feature_group": "Package C State Limit",
+      "available_in_legacy_mode": true,
+      "values": [
+         "C6-Non-Retention",
+         "C6-Retention",
+         "C0-C1-State",
+         "No-Limit",
+         "Auto",
+         "C7s",
+         "C7",
+         "C6",
+         "C3",
+         "C2",
+         "C1",
+         "C0",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "c6-non-retention",
+         "c6-retention",
+         "c0-c1-state",
+         "no-limit",
+         "auto",
+         "c7s",
+         "c7",
+         "c6",
+         "c3",
+         "c2",
+         "c1",
+         "c0",
+         "platform-default"
+      ]
+   },
+   "dram_clock_throttling": {
+      "param_name": "DRAM Clock Throttling",
+      "target_name": "DRAMClockThrottling",
+      "feature_group": "DRAM Clock Throttling",
+      "available_in_legacy_mode": true,
+      "values": [
+         "Energy-Efficient",
+         "Performance",
+         "Balanced",
+         "Auto",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "energy-efficient",
+         "performance",
+         "balanced",
+         "auto",
+         "platform-default"
+      ]
+   },
+   "p_state_coordination": {
+      "param_name": "P STATE Coordination",
+      "target_name": "PsdCoordType",
+      "feature_group": "P STATE Coordination",
+      "available_in_legacy_mode": true,
+      "values": [
+         "SW-ANY",
+         "SW-ALL",
+         "HW-ALL",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "sw-any",
+         "sw-all",
+         "hw-all",
+         "platform-default"
+      ]
+   },
+   "core_multi_processing": {
+      "param_name": "Core Multi Processing",
+      "target_name": "CoreMultiProcessing",
+      "feature_group": "Core MultiProcessing",
+      "available_in_legacy_mode": true,
+      "values": [
+         "All",
+         "19",
+         "28",
+         "18",
+         "27",
+         "17",
+         "26",
+         "16",
+         "25",
+         "15",
+         "24",
+         "14",
+         "23",
+         "13",
+         "22",
+         "12",
+         "21",
+         "11",
+         "20",
+         "10",
+         "9",
+         "8",
+         "7",
+         "6",
+         "5",
+         "4",
+         "3",
+         "2",
+         "1",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "all",
+         "19",
+         "28",
+         "18",
+         "27",
+         "17",
+         "26",
+         "16",
+         "25",
+         "15",
+         "24",
+         "14",
+         "23",
+         "13",
+         "22",
+         "12",
+         "21",
+         "11",
+         "20",
+         "10",
+         "9",
+         "8",
+         "7",
+         "6",
+         "5",
+         "4",
+         "3",
+         "2",
+         "1",
+         "platform-default"
+      ]
+   },
+   "serial_port_a_enable": {
+      "param_name": "Serial port A enable",
+      "target_name": "Serial-PortA",
+      "feature_group": "Serial port A enable",
+      "available_in_legacy_mode": true,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "front_panel_lockout": {
+      "param_name": "Front panel lockout",
+      "target_name": "FrontPanelLock",
+      "feature_group": "Front panel lockout",
+      "available_in_legacy_mode": true,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "processor_c3_report": {
+      "param_name": "Processor C3 Report",
+      "target_name": "ProcessorC3Report",
+      "feature_group": "Processor C3 Report",
+      "available_in_legacy_mode": true,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "ACPI-C3",
+         "ACPI-C2",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "acpi-c3",
+         "acpi-c2",
+         "platform-default"
+      ]
+   },
+   "execute_disable_bit": {
+      "param_name": "Execute Disable Bit",
+      "target_name": "ExecuteDisable",
+      "feature_group": "Execute Disable Bit",
+      "available_in_legacy_mode": true,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "processor_c6_report": {
+      "param_name": "Processor C6 Report",
+      "target_name": "ProcessorC6Report",
+      "feature_group": "Processor C6 Report",
+      "available_in_legacy_mode": true,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "processor_c7_report": {
+      "param_name": "Processor C7 Report",
+      "target_name": "ProcessorC7Report",
+      "feature_group": "Processor C7 Report",
+      "available_in_legacy_mode": true,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "C7s",
+         "C7",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "c7s",
+         "c7",
+         "platform-default"
+      ]
+   },
+   "direct_cache_access": {
+      "param_name": "Direct Cache Access",
+      "target_name": "DirectCacheAccess",
+      "feature_group": "Direct Cache Access",
+      "available_in_legacy_mode": true,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "Auto",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "auto",
+         "platform-default"
+      ]
+   },
+   "integrated_graphics_control": {
+      "param_name": "Integrated Graphics Control",
+      "target_name": "IGDSupport",
+      "feature_group": "Integrated Graphics",
+      "available_in_legacy_mode": true,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "putty_keypad": {
+      "param_name": "Putty KeyPad",
+      "target_name": "PuttyFunctionKeyPad",
+      "feature_group": "Console redirection",
+      "available_in_legacy_mode": true,
+      "values": [
+         "XTERMR6",
+         "LINUX",
+         "VT100",
+         "VT400",
+         "ESCN",
+         "SCO",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "xtermr6",
+         "linux",
+         "vt100",
+         "vt400",
+         "escn",
+         "sco",
+         "platform-default"
+      ]
+   },
+   "legacy_os_redirection": {
+      "param_name": "Legacy OS redirection",
+      "target_name": "LegacyOSRedir",
+      "feature_group": "Console redirection",
+      "available_in_legacy_mode": true,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "80x25",
+         "80x24",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "80x25",
+         "80x24",
+         "platform-default"
+      ]
+   },
+   "console_redirection": {
+      "param_name": "Console redirection",
+      "target_name": "ConsoleRedir",
+      "feature_group": "Console redirection",
+      "available_in_legacy_mode": true,
+      "values": [
+         "Serial-Port-B",
+         "Serial-Port-A",
+         "Disabled",
+         "Enabled",
+         "COM-1",
+         "COM-0",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "serial-port-b",
+         "serial-port-a",
+         "disabled",
+         "enabled",
+         "com-1",
+         "com-0",
+         "platform-default"
+      ]
+   },
+   "terminal_type": {
+      "param_name": "Terminal type",
+      "target_name": "TerminalType",
+      "feature_group": "Console redirection",
+      "available_in_legacy_mode": true,
+      "values": [
+         "VT100-PLUS",
+         "PC-ANSI",
+         "VT-UTF8",
+         "VT100",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "vt100-plus",
+         "pc-ansi",
+         "vt-utf8",
+         "vt100",
+         "platform-default"
+      ]
+   },
+   "flow_control": {
+      "param_name": "Flow Control",
+      "target_name": "FlowCtrl",
+      "feature_group": "Console redirection",
+      "available_in_legacy_mode": true,
+      "values": [
+         "RTS-CTS",
+         "None",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "rts-cts",
+         "none",
+         "platform-default"
+      ]
+   },
+   "baud_rate": {
+      "param_name": "Baud rate",
+      "target_name": "BaudRate",
+      "feature_group": "Console redirection",
+      "available_in_legacy_mode": true,
+      "values": [
+         "115.2k",
+         "57.6k",
+         "19.2k",
+         "38.4k",
+         "9.6k",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "115.2k",
+         "57.6k",
+         "19.2k",
+         "38.4k",
+         "9.6k",
+         "platform-default"
+      ]
+   },
+   "pcie_slot_10_link_speed": {
+      "param_name": "PCIe Slot 10 Link Speed",
+      "target_name": "PcieSlot10LinkSpeed",
+      "feature_group": "PCI Slot Link Speed",
+      "available_in_legacy_mode": true,
+      "values": [
+         "Disabled",
+         "Auto",
+         "GEN3",
+         "GEN2",
+         "GEN1",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "auto",
+         "gen3",
+         "gen2",
+         "gen1",
+         "platform-default"
+      ]
+   },
+   "pcie_slot_2_link_speed": {
+      "param_name": "PCIe Slot 2 Link Speed",
+      "target_name": "PcieSlot2LinkSpeed",
+      "feature_group": "PCI Slot Link Speed",
+      "available_in_legacy_mode": true,
+      "values": [
+         "Disabled",
+         "Auto",
+         "GEN3",
+         "GEN2",
+         "GEN1",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "auto",
+         "gen3",
+         "gen2",
+         "gen1",
+         "platform-default"
+      ]
+   },
+   "pcie_slot_3_link_speed": {
+      "param_name": "PCIe Slot 3 Link Speed",
+      "target_name": "PcieSlot3LinkSpeed",
+      "feature_group": "PCI Slot Link Speed",
+      "available_in_legacy_mode": true,
+      "values": [
+         "Disabled",
+         "Auto",
+         "GEN3",
+         "GEN2",
+         "GEN1",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "auto",
+         "gen3",
+         "gen2",
+         "gen1",
+         "platform-default"
+      ]
+   },
+   "pcie_slot_1_link_speed": {
+      "param_name": "PCIe Slot 1 Link Speed",
+      "target_name": "PcieSlot1LinkSpeed",
+      "feature_group": "PCI Slot Link Speed",
+      "available_in_legacy_mode": true,
+      "values": [
+         "Disabled",
+         "Auto",
+         "GEN3",
+         "GEN2",
+         "GEN1",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "auto",
+         "gen3",
+         "gen2",
+         "gen1",
+         "platform-default"
+      ]
+   },
+   "pcie_slot_6_link_speed": {
+      "param_name": "PCIe Slot 6 Link Speed",
+      "target_name": "PcieSlot6LinkSpeed",
+      "feature_group": "PCI Slot Link Speed",
+      "available_in_legacy_mode": true,
+      "values": [
+         "Disabled",
+         "Auto",
+         "GEN3",
+         "GEN2",
+         "GEN1",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "auto",
+         "gen3",
+         "gen2",
+         "gen1",
+         "platform-default"
+      ]
+   },
+   "pcie_slot_7_link_speed": {
+      "param_name": "PCIe Slot 7 Link Speed",
+      "target_name": "PcieSlot7LinkSpeed",
+      "feature_group": "PCI Slot Link Speed",
+      "available_in_legacy_mode": true,
+      "values": [
+         "Disabled",
+         "Auto",
+         "GEN3",
+         "GEN2",
+         "GEN1",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "auto",
+         "gen3",
+         "gen2",
+         "gen1",
+         "platform-default"
+      ]
+   },
+   "pcie_slot_4_link_speed": {
+      "param_name": "PCIe Slot 4 Link Speed",
+      "target_name": "PcieSlot4LinkSpeed",
+      "feature_group": "PCI Slot Link Speed",
+      "available_in_legacy_mode": true,
+      "values": [
+         "Disabled",
+         "Auto",
+         "GEN3",
+         "GEN2",
+         "GEN1",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "auto",
+         "gen3",
+         "gen2",
+         "gen1",
+         "platform-default"
+      ]
+   },
+   "pcie_slot_5_link_speed": {
+      "param_name": "PCIe Slot 5 Link Speed",
+      "target_name": "PcieSlot5LinkSpeed",
+      "feature_group": "PCI Slot Link Speed",
+      "available_in_legacy_mode": true,
+      "values": [
+         "Disabled",
+         "Auto",
+         "GEN3",
+         "GEN2",
+         "GEN1",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "auto",
+         "gen3",
+         "gen2",
+         "gen1",
+         "platform-default"
+      ]
+   },
+   "pcie_slot_8_link_speed": {
+      "param_name": "PCIe Slot 8 Link Speed",
+      "target_name": "PcieSlot8LinkSpeed",
+      "feature_group": "PCI Slot Link Speed",
+      "available_in_legacy_mode": true,
+      "values": [
+         "Disabled",
+         "Auto",
+         "GEN3",
+         "GEN2",
+         "GEN1",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "auto",
+         "gen3",
+         "gen2",
+         "gen1",
+         "platform-default"
+      ]
+   },
+   "pcie_slot_9_link_speed": {
+      "param_name": "PCIe Slot 9 Link Speed",
+      "target_name": "PcieSlot9LinkSpeed",
+      "feature_group": "PCI Slot Link Speed",
+      "available_in_legacy_mode": true,
+      "values": [
+         "Disabled",
+         "Auto",
+         "GEN3",
+         "GEN2",
+         "GEN1",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "auto",
+         "gen3",
+         "gen2",
+         "gen1",
+         "platform-default"
+      ]
+   },
+   "assert_nmi_on_perr": {
+      "param_name": "Assert NMI on PERR",
+      "target_name": "AssertNMIOnPERR",
+      "feature_group": "Assert NMI on PERR",
+      "available_in_legacy_mode": true,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "assert_nmi_on_serr": {
+      "param_name": "Assert NMI on SERR",
+      "target_name": "AssertNMIOnSERR",
+      "feature_group": "Assert NMI on SERR",
+      "available_in_legacy_mode": true,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "ioeslot2_optionrom": {
+      "param_name": "IOESlot2 OptionROM",
+      "target_name": "IOESlot2OptionROM",
+      "feature_group": "IOESlot2 OptionROM",
+      "available_in_legacy_mode": true,
+      "values": [
+         "Legacy-Only",
+         "UEFI-Only",
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "legacy-only",
+         "uefi-only",
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "ioeslot1_optionrom": {
+      "param_name": "IOESlot1 OptionROM",
+      "target_name": "IOESlot1OptionROM",
+      "feature_group": "IOESlot1 OptionROM",
+      "available_in_legacy_mode": true,
+      "values": [
+         "Legacy-Only",
+         "UEFI-Only",
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "legacy-only",
+         "uefi-only",
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "ioenvme2_optionrom": {
+      "param_name": "IOENVMe2 OptionROM",
+      "target_name": "IOENVMe2OptionROM",
+      "feature_group": "IOENVMe2 OptionROM",
+      "available_in_legacy_mode": true,
+      "values": [
+         "Legacy-Only",
+         "UEFI-Only",
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "legacy-only",
+         "uefi-only",
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "ioenvme1_optionrom": {
+      "param_name": "IOENVMe1 OptionROM",
+      "target_name": "IOENVMe1OptionROM",
+      "feature_group": "IOENVMe1 OptionROM",
+      "available_in_legacy_mode": true,
+      "values": [
+         "Legacy-Only",
+         "UEFI-Only",
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "legacy-only",
+         "uefi-only",
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "ioemezz1_optionrom": {
+      "param_name": "IOEMezz1 OptionROM",
+      "target_name": "IOEMezz1OptionROM",
+      "feature_group": "IOEMezz1 OptionROM",
+      "available_in_legacy_mode": true,
+      "values": [
+         "Legacy-Only",
+         "UEFI-Only",
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "legacy-only",
+         "uefi-only",
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "boot_option_retry": {
+      "param_name": "Boot option retry",
+      "target_name": "BootOptionRetry",
+      "feature_group": "Boot option retry",
+      "available_in_legacy_mode": true,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "xhci_mode": {
+      "param_name": "xHCI Mode",
+      "target_name": "PchUsb30Mode",
+      "feature_group": "USB Configuration",
+      "available_in_legacy_mode": true,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "dram_refresh_rate": {
+      "param_name": "DRAM Refresh Rate",
+      "target_name": "DramRefreshRate",
+      "feature_group": "Dram Refresh Rate",
+      "available_in_legacy_mode": true,
+      "values": [
+         "Auto",
+         "4x",
+         "2x",
+         "3x",
+         "1x",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "auto",
+         "4x",
+         "2x",
+         "3x",
+         "1x",
+         "platform-default"
+      ]
+   },
+   "processor_c_state": {
+      "param_name": "Processor C State",
+      "target_name": "ProcessorCstate",
+      "feature_group": "Processor C State",
+      "available_in_legacy_mode": true,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "sbnvme1_optionrom": {
+      "param_name": "SBNVMe1 OptionROM",
+      "target_name": "SBNVMe1OptionROM",
+      "feature_group": "SBNVMe1 OptionROM",
+      "available_in_legacy_mode": true,
+      "values": [
+         "Legacy-Only",
+         "UEFI-Only",
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "legacy-only",
+         "uefi-only",
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "sbmezz1_optionrom": {
+      "param_name": "SBMezz1 OptionROM",
+      "target_name": "SBMezz1OptionROM",
+      "feature_group": "SBMezz1 OptionROM",
+      "available_in_legacy_mode": true,
+      "values": [
+         "Legacy-Only",
+         "UEFI-Only",
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "legacy-only",
+         "uefi-only",
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "onboard_graphics": {
+      "param_name": "Onboard Graphics",
+      "target_name": "OnboardGraphics",
+      "feature_group": "Onboard Graphics",
+      "available_in_legacy_mode": true,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "post_error_pause": {
+      "param_name": "POST error pause",
+      "target_name": "POSTErrorPause",
+      "feature_group": "POST error pause",
+      "available_in_legacy_mode": true,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "all_usb_devices": {
+      "param_name": "All USB Devices",
+      "target_name": "AllUsbDevices",
+      "feature_group": "All USB Devices",
+      "available_in_legacy_mode": true,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "make_device_non_bootable": {
+      "param_name": "Make Device Non Bootable",
+      "target_name": "MakeUSBDeviceNonBootable",
+      "feature_group": "USB Boot Config",
+      "available_in_legacy_mode": true,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "legacy_usb_support": {
+      "param_name": "Legacy USB Support",
+      "target_name": "UsbLegacySupport",
+      "feature_group": "USB Boot Config",
+      "available_in_legacy_mode": true,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "Auto",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "auto",
+         "platform-default"
+      ]
+   },
+   "onboard_scu_storage_support": {
+      "param_name": "Onboard SCU Storage Support",
+      "target_name": "DisableSCU",
+      "feature_group": "Onboard Storage",
+      "available_in_legacy_mode": true,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "cpu_performance": {
+      "param_name": "CPU Performance",
+      "target_name": "CPUPerformance",
+      "feature_group": "CPU Performance",
+      "available_in_legacy_mode": true,
+      "values": [
+         "High-Throughput",
+         "Enterprise",
+         "Custom",
+         "HPC",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "high-throughput",
+         "enterprise",
+         "custom",
+         "hpc",
+         "platform-default"
+      ]
+   },
+   "sioc2_optionrom": {
+      "param_name": "SIOC2 OptionROM",
+      "target_name": "SIOC2OptionROM",
+      "feature_group": "SIOC2 OptionROM",
+      "available_in_legacy_mode": true,
+      "values": [
+         "Legacy-Only",
+         "UEFI-Only",
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "legacy-only",
+         "uefi-only",
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "sioc1_optionrom": {
+      "param_name": "SIOC1 OptionROM",
+      "target_name": "SIOC1OptionROM",
+      "feature_group": "SIOC1 OptionROM",
+      "available_in_legacy_mode": true,
+      "values": [
+         "Legacy-Only",
+         "UEFI-Only",
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "legacy-only",
+         "uefi-only",
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "acpi10_support": {
+      "param_name": "ACPI10 Support",
+      "target_name": "ACPI10Support",
+      "feature_group": "ACPI10 Support",
+      "available_in_legacy_mode": true,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "lv_ddr_mode": {
+      "param_name": "LV DDR Mode",
+      "target_name": "LvDDRMode",
+      "feature_group": "LvDIMM Support",
+      "available_in_legacy_mode": true,
+      "values": [
+         "Power-Saving-Mode",
+         "Performance-Mode",
+         "Auto",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "power-saving-mode",
+         "performance-mode",
+         "auto",
+         "platform-default"
+      ]
+   },
+   "patrol_scrub": {
+      "param_name": "Patrol Scrub",
+      "target_name": "PatrolScrub",
+      "feature_group": "Scrub Policies",
+      "available_in_legacy_mode": true,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "demand_scrub": {
+      "param_name": "Demand Scrub",
+      "target_name": "DemandScrub",
+      "feature_group": "Scrub Policies",
+      "available_in_legacy_mode": true,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "qpi_snoop_mode": {
+      "param_name": "QPI Snoop Mode",
+      "target_name": "QpiSnoopMode",
+      "feature_group": "QPI Snoop Mode",
+      "available_in_legacy_mode": true,
+      "values": [
+         "Home-Directory-Snoop-with-OSB",
+         "Cluster-On-Die",
+         "Early-Snoop",
+         "Home-Snoop",
+         "Auto",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "home-directory-snoop-with-osb",
+         "cluster-on-die",
+         "early-snoop",
+         "home-snoop",
+         "auto",
+         "platform-default"
+      ]
+   },
+   "mirroring_mode": {
+      "param_name": "Mirroring Mode",
+      "target_name": "MirroringMode",
+      "feature_group": "Mirroring Mode",
+      "available_in_legacy_mode": true,
+      "values": [
+         "Intra-Socket",
+         "Inter-Socket",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "intra-socket",
+         "inter-socket",
+         "platform-default"
+      ]
+   },
+   "numa_optimized": {
+      "param_name": "NUMA optimized",
+      "target_name": "NUMAOptimize",
+      "feature_group": "NUMA optimized",
+      "available_in_legacy_mode": true,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "processor_cmci": {
+      "param_name": "Processor CMCI",
+      "target_name": "ProcessorCMCI",
+      "feature_group": "Processor CMCI",
+      "available_in_legacy_mode": true,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "local_x2_apic": {
+      "param_name": "Local X2 Apic",
+      "target_name": "LocalX2Apic",
+      "feature_group": "Local X2 Apic",
+      "available_in_legacy_mode": true,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "X2APIC",
+         "XAPIC",
+         "Auto",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "x2apic",
+         "xapic",
+         "auto",
+         "platform-default"
+      ]
+   },
+   "processor_c1e": {
+      "param_name": "Processor C1E",
+      "target_name": "ProcessorC1E",
+      "feature_group": "Processor C1E",
+      "available_in_legacy_mode": true,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "vga_priority": {
+      "param_name": "VGA Priority",
+      "target_name": "VgaPriority",
+      "feature_group": "VGA Priority",
+      "available_in_legacy_mode": true,
+      "values": [
+         "Onboard-VGA-Disabled",
+         "Offboard",
+         "Onboard",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "onboard-vga-disabled",
+         "offboard",
+         "onboard",
+         "platform-default"
+      ]
+   },
+   "aspm_support": {
+      "param_name": "ASPM Support",
+      "target_name": "AspmSupport",
+      "feature_group": "ASPM Support",
+      "available_in_legacy_mode": true,
+      "values": [
+         "Disabled",
+         "ForceL0",
+         "Auto",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "forcel0",
+         "auto",
+         "platform-default"
+      ]
+   },
+   "sparing_mode": {
+      "param_name": "Sparing Mode",
+      "target_name": "SparingMode",
+      "feature_group": "Sparing Mode",
+      "available_in_legacy_mode": true,
+      "values": [
+         "DIMM-Sparing",
+         "Rank-Sparing",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "dimm-sparing",
+         "rank-sparing",
+         "platform-default"
+      ]
+   },
+   "frb_2_timer": {
+      "param_name": "FRB-2 Timer",
+      "target_name": "FRB-2",
+      "feature_group": "FRB 2 Timer",
+      "available_in_legacy_mode": true,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "pciromclp": {
+      "param_name": "PCIROMCLP",
+      "target_name": "PCIROMCLP",
+      "feature_group": "PCI ROM CLP",
+      "available_in_legacy_mode": true,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "quiet_boot": {
+      "param_name": "Quiet Boot",
+      "target_name": "QuietBoot",
+      "feature_group": "Quiet Boot",
+      "available_in_legacy_mode": true,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "altitude": {
+      "param_name": "Altitude",
+      "target_name": "Altitude",
+      "feature_group": "Altitude",
+      "available_in_legacy_mode": true,
+      "values": [
+         "3000-M",
+         "1500-M",
+         "900-M",
+         "300-M",
+         "Auto",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "3000-m",
+         "1500-m",
+         "900-m",
+         "300-m",
+         "auto",
+         "platform-default"
+      ]
+   },
+   "processoreppprofile": {
+      "param_name": "ProcessorEppProfile",
+      "target_name": "EPPProfile",
+      "feature_group": "Processor Energy Configuration",
+      "available_in_legacy_mode": false,
+      "values": [
+         "Balanced-Performance",
+         "Balanced-Power",
+         "Performance",
+         "Power",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "balanced-performance",
+         "balanced-power",
+         "performance",
+         "power",
+         "platform-default"
+      ]
+   },
+   "enhanced_powercapping": {
+      "param_name": "Enhanced PowerCapping",
+      "target_name": "EnhancedPowerCapping",
+      "feature_group": "Enhanced PowerCapping Support",
+      "available_in_legacy_mode": false,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "xpt_prefetch": {
+      "param_name": "XPT Prefetch",
+      "target_name": "XPTPrefetch",
+      "feature_group": "Processor Prefetch Config",
+      "available_in_legacy_mode": false,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "upi_prefetch": {
+      "param_name": "UPI Prefetch",
+      "target_name": "KTIPrefetch",
+      "feature_group": "Processor Prefetch Config",
+      "available_in_legacy_mode": false,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "llc_prefetch": {
+      "param_name": "LLC Prefetch",
+      "target_name": "LLCPrefetch",
+      "feature_group": "Processor Prefetch Config",
+      "available_in_legacy_mode": false,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "pcie_slot_rear_nvme1_optionrom": {
+      "param_name": "PCIe Slot  Rear Nvme1 OptionRom",
+      "target_name": "PcieSlotRearNvme1OptionRom",
+      "feature_group": "PCI Slot OptionROM Enable",
+      "available_in_legacy_mode": false,
+      "values": [
+         "Legacy-Only",
+         "UEFI-Only",
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "legacy-only",
+         "uefi-only",
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "pcie_slot_rear_nvme3_optionrom": {
+      "param_name": "PCIe Slot  Rear Nvme3 OptionRom",
+      "target_name": "PcieSlotRearNvme3OptionRom",
+      "feature_group": "PCI Slot OptionROM Enable",
+      "available_in_legacy_mode": false,
+      "values": [
+         "Legacy-Only",
+         "UEFI-Only",
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "legacy-only",
+         "uefi-only",
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "pcie_slot_rear_nvme2_optionrom": {
+      "param_name": "PCIe Slot  Rear Nvme2 OptionRom",
+      "target_name": "PcieSlotRearNvme2OptionRom",
+      "feature_group": "PCI Slot OptionROM Enable",
+      "available_in_legacy_mode": false,
+      "values": [
+         "Legacy-Only",
+         "UEFI-Only",
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "legacy-only",
+         "uefi-only",
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "pcie_slot_rear_nvme5_optionrom": {
+      "param_name": "PCIe Slot  Rear Nvme5 OptionRom",
+      "target_name": "PcieSlotRearNvme5OptionRom",
+      "feature_group": "PCI Slot OptionROM Enable",
+      "available_in_legacy_mode": false,
+      "values": [
+         "Legacy-Only",
+         "UEFI-Only",
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "legacy-only",
+         "uefi-only",
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "pcie_slot_rear_nvme4_optionrom": {
+      "param_name": "PCIe Slot  Rear Nvme4 OptionRom",
+      "target_name": "PcieSlotRearNvme4OptionRom",
+      "feature_group": "PCI Slot OptionROM Enable",
+      "available_in_legacy_mode": false,
+      "values": [
+         "Legacy-Only",
+         "UEFI-Only",
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "legacy-only",
+         "uefi-only",
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "pcie_slot_rear_nvme7_optionrom": {
+      "param_name": "PCIe Slot  Rear Nvme7 OptionRom",
+      "target_name": "PcieSlotRearNvme7OptionRom",
+      "feature_group": "PCI Slot OptionROM Enable",
+      "available_in_legacy_mode": false,
+      "values": [
+         "Legacy-Only",
+         "UEFI-Only",
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "legacy-only",
+         "uefi-only",
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "pcie_slot_rear_nvme6_optionrom": {
+      "param_name": "PCIe Slot  Rear Nvme6 OptionRom",
+      "target_name": "PcieSlotRearNvme6OptionRom",
+      "feature_group": "PCI Slot OptionROM Enable",
+      "available_in_legacy_mode": false,
+      "values": [
+         "Legacy-Only",
+         "UEFI-Only",
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "legacy-only",
+         "uefi-only",
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "pcie_slot_rear_nvme8_optionrom": {
+      "param_name": "PCIe Slot  Rear Nvme8 OptionRom",
+      "target_name": "PcieSlotRearNvme8OptionRom",
+      "feature_group": "PCI Slot OptionROM Enable",
+      "available_in_legacy_mode": false,
+      "values": [
+         "Legacy-Only",
+         "UEFI-Only",
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "legacy-only",
+         "uefi-only",
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "pcie_slot_mraid_optionrom": {
+      "param_name": "PCIe Slot MRAID OptionROM",
+      "target_name": "PcieSlotMRAIDOptionROM",
+      "feature_group": "PCI Slot OptionROM Enable",
+      "available_in_legacy_mode": false,
+      "values": [
+         "Legacy-Only",
+         "UEFI-Only",
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "legacy-only",
+         "uefi-only",
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "pcie_slot_raid_optionrom": {
+      "param_name": "PCIe Slot RAID OptionROM",
+      "target_name": "PcieSlotRAIDOptionROM",
+      "feature_group": "PCI Slot OptionROM Enable",
+      "available_in_legacy_mode": false,
+      "values": [
+         "Legacy-Only",
+         "UEFI-Only",
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "legacy-only",
+         "uefi-only",
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "pcie_slot_n19_optionrom": {
+      "param_name": "PCIe Slot N19 OptionROM",
+      "target_name": "PcieSlotN19OptionROM",
+      "feature_group": "PCI Slot OptionROM Enable",
+      "available_in_legacy_mode": false,
+      "values": [
+         "Legacy-Only",
+         "UEFI-Only",
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "legacy-only",
+         "uefi-only",
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "pcie_slot_n18_optionrom": {
+      "param_name": "PCIe Slot N18 OptionROM",
+      "target_name": "PcieSlotN18OptionROM",
+      "feature_group": "PCI Slot OptionROM Enable",
+      "available_in_legacy_mode": false,
+      "values": [
+         "Legacy-Only",
+         "UEFI-Only",
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "legacy-only",
+         "uefi-only",
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "pcie_slot_n13_optionrom": {
+      "param_name": "PCIe Slot N13 OptionROM",
+      "target_name": "PcieSlotN13OptionROM",
+      "feature_group": "PCI Slot OptionROM Enable",
+      "available_in_legacy_mode": false,
+      "values": [
+         "Legacy-Only",
+         "UEFI-Only",
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "legacy-only",
+         "uefi-only",
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "pcie_slot_n20_optionrom": {
+      "param_name": "PCIe Slot N20 OptionROM",
+      "target_name": "PcieSlotN20OptionROM",
+      "feature_group": "PCI Slot OptionROM Enable",
+      "available_in_legacy_mode": false,
+      "values": [
+         "Legacy-Only",
+         "UEFI-Only",
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "legacy-only",
+         "uefi-only",
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "pcie_slot_n12_optionrom": {
+      "param_name": "PCIe Slot N12 OptionROM",
+      "target_name": "PcieSlotN12OptionROM",
+      "feature_group": "PCI Slot OptionROM Enable",
+      "available_in_legacy_mode": false,
+      "values": [
+         "Legacy-Only",
+         "UEFI-Only",
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "legacy-only",
+         "uefi-only",
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "pcie_slot_n21_optionrom": {
+      "param_name": "PCIe Slot N21 OptionROM",
+      "target_name": "PcieSlotN21OptionROM",
+      "feature_group": "PCI Slot OptionROM Enable",
+      "available_in_legacy_mode": false,
+      "values": [
+         "Legacy-Only",
+         "UEFI-Only",
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "legacy-only",
+         "uefi-only",
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "pcie_slot_n22_optionrom": {
+      "param_name": "PCIe Slot N22 OptionROM",
+      "target_name": "PcieSlotN22OptionROM",
+      "feature_group": "PCI Slot OptionROM Enable",
+      "available_in_legacy_mode": false,
+      "values": [
+         "Legacy-Only",
+         "UEFI-Only",
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "legacy-only",
+         "uefi-only",
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "pcie_slot_n11_optionrom": {
+      "param_name": "PCIe Slot N11 OptionROM",
+      "target_name": "PcieSlotN11OptionROM",
+      "feature_group": "PCI Slot OptionROM Enable",
+      "available_in_legacy_mode": false,
+      "values": [
+         "Legacy-Only",
+         "UEFI-Only",
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "legacy-only",
+         "uefi-only",
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "pcie_slot_n23_optionrom": {
+      "param_name": "PCIe Slot N23 OptionROM",
+      "target_name": "PcieSlotN23OptionROM",
+      "feature_group": "PCI Slot OptionROM Enable",
+      "available_in_legacy_mode": false,
+      "values": [
+         "Legacy-Only",
+         "UEFI-Only",
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "legacy-only",
+         "uefi-only",
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "pcie_slot_n10_optionrom": {
+      "param_name": "PCIe Slot N10 OptionROM",
+      "target_name": "PcieSlotN10OptionROM",
+      "feature_group": "PCI Slot OptionROM Enable",
+      "available_in_legacy_mode": false,
+      "values": [
+         "Legacy-Only",
+         "UEFI-Only",
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "legacy-only",
+         "uefi-only",
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "pcie_slot_n17_optionrom": {
+      "param_name": "PCIe Slot N17 OptionROM",
+      "target_name": "PcieSlotN17OptionROM",
+      "feature_group": "PCI Slot OptionROM Enable",
+      "available_in_legacy_mode": false,
+      "values": [
+         "Legacy-Only",
+         "UEFI-Only",
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "legacy-only",
+         "uefi-only",
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "pcie_slot_n24_optionrom": {
+      "param_name": "PCIe Slot N24 OptionROM",
+      "target_name": "PcieSlotN24OptionROM",
+      "feature_group": "PCI Slot OptionROM Enable",
+      "available_in_legacy_mode": false,
+      "values": [
+         "Legacy-Only",
+         "UEFI-Only",
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "legacy-only",
+         "uefi-only",
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "pcie_slot_n16_optionrom": {
+      "param_name": "PCIe Slot N16 OptionROM",
+      "target_name": "PcieSlotN16OptionROM",
+      "feature_group": "PCI Slot OptionROM Enable",
+      "available_in_legacy_mode": false,
+      "values": [
+         "Legacy-Only",
+         "UEFI-Only",
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "legacy-only",
+         "uefi-only",
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "pcie_slot_n15_optionrom": {
+      "param_name": "PCIe Slot N15 OptionROM",
+      "target_name": "PcieSlotN15OptionROM",
+      "feature_group": "PCI Slot OptionROM Enable",
+      "available_in_legacy_mode": false,
+      "values": [
+         "Legacy-Only",
+         "UEFI-Only",
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "legacy-only",
+         "uefi-only",
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "pcie_slot_n14_optionrom": {
+      "param_name": "PCIe Slot N14 OptionROM",
+      "target_name": "PcieSlotN14OptionROM",
+      "feature_group": "PCI Slot OptionROM Enable",
+      "available_in_legacy_mode": false,
+      "values": [
+         "Legacy-Only",
+         "UEFI-Only",
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "legacy-only",
+         "uefi-only",
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "pcie_slot_n8_optionrom": {
+      "param_name": "PCIe Slot N8 OptionROM",
+      "target_name": "PcieSlotN8OptionROM",
+      "feature_group": "PCI Slot OptionROM Enable",
+      "available_in_legacy_mode": false,
+      "values": [
+         "Legacy-Only",
+         "UEFI-Only",
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "legacy-only",
+         "uefi-only",
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "pcie_slot_n9_optionrom": {
+      "param_name": "PCIe Slot N9 OptionROM",
+      "target_name": "PcieSlotN9OptionROM",
+      "feature_group": "PCI Slot OptionROM Enable",
+      "available_in_legacy_mode": false,
+      "values": [
+         "Legacy-Only",
+         "UEFI-Only",
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "legacy-only",
+         "uefi-only",
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "slot_11_state": {
+      "param_name": "Slot 11 state",
+      "target_name": "PcieSlot11OptionROM",
+      "feature_group": "PCI Slot OptionROM Enable",
+      "available_in_legacy_mode": false,
+      "values": [
+         "Legacy-Only",
+         "UEFI-Only",
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "legacy-only",
+         "uefi-only",
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "slot_12_state": {
+      "param_name": "Slot 12 state",
+      "target_name": "PcieSlot12OptionROM",
+      "feature_group": "PCI Slot OptionROM Enable",
+      "available_in_legacy_mode": false,
+      "values": [
+         "Legacy-Only",
+         "UEFI-Only",
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "legacy-only",
+         "uefi-only",
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "pcie_slot_n3_optionrom": {
+      "param_name": "PCIe Slot N3 OptionROM",
+      "target_name": "PcieSlotN3OptionROM",
+      "feature_group": "PCI Slot OptionROM Enable",
+      "available_in_legacy_mode": false,
+      "values": [
+         "Legacy-Only",
+         "UEFI-Only",
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "legacy-only",
+         "uefi-only",
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "pcie_slot_n6_optionrom": {
+      "param_name": "PCIe Slot N6 OptionROM",
+      "target_name": "PcieSlotN6OptionROM",
+      "feature_group": "PCI Slot OptionROM Enable",
+      "available_in_legacy_mode": false,
+      "values": [
+         "Legacy-Only",
+         "UEFI-Only",
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "legacy-only",
+         "uefi-only",
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "pcie_slot_n7_optionrom": {
+      "param_name": "PCIe Slot N7 OptionROM",
+      "target_name": "PcieSlotN7OptionROM",
+      "feature_group": "PCI Slot OptionROM Enable",
+      "available_in_legacy_mode": false,
+      "values": [
+         "Legacy-Only",
+         "UEFI-Only",
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "legacy-only",
+         "uefi-only",
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "pcie_slot_n4_optionrom": {
+      "param_name": "PCIe Slot N4 OptionROM",
+      "target_name": "PcieSlotN4OptionROM",
+      "feature_group": "PCI Slot OptionROM Enable",
+      "available_in_legacy_mode": false,
+      "values": [
+         "Legacy-Only",
+         "UEFI-Only",
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "legacy-only",
+         "uefi-only",
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "pcie_slot_n5_optionrom": {
+      "param_name": "PCIe Slot N5 OptionROM",
+      "target_name": "PcieSlotN5OptionROM",
+      "feature_group": "PCI Slot OptionROM Enable",
+      "available_in_legacy_mode": false,
+      "values": [
+         "Legacy-Only",
+         "UEFI-Only",
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "legacy-only",
+         "uefi-only",
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "siocnvme1_optionrom": {
+      "param_name": "SIOCNvme1 OptionROM",
+      "target_name": "SIOCNvme1OptionROM",
+      "feature_group": "PCI Slot OptionROM Enable",
+      "available_in_legacy_mode": false,
+      "values": [
+         "Legacy-Only",
+         "UEFI-Only",
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "legacy-only",
+         "uefi-only",
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "siocnvme2_optionrom": {
+      "param_name": "SIOCNvme2 OptionROM",
+      "target_name": "SIOCNvme2OptionROM",
+      "feature_group": "PCI Slot OptionROM Enable",
+      "available_in_legacy_mode": false,
+      "values": [
+         "Legacy-Only",
+         "UEFI-Only",
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "legacy-only",
+         "uefi-only",
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "sbmezz2_optionrom": {
+      "param_name": "SBMezz2 OptionROM",
+      "target_name": "SBMezz2OptionROM",
+      "feature_group": "PCI Slot OptionROM Enable",
+      "available_in_legacy_mode": false,
+      "values": [
+         "Legacy-Only",
+         "UEFI-Only",
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "legacy-only",
+         "uefi-only",
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "sbnvme2_optionrom": {
+      "param_name": "SBNVMe2 OptionROM",
+      "target_name": "SBNVMe2OptionROM",
+      "feature_group": "PCI Slot OptionROM Enable",
+      "available_in_legacy_mode": false,
+      "values": [
+         "Legacy-Only",
+         "UEFI-Only",
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "legacy-only",
+         "uefi-only",
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "imc_inteleave": {
+      "param_name": "IMC Inteleave",
+      "target_name": "IMCInterleave",
+      "feature_group": "Interleave Configuration",
+      "available_in_legacy_mode": false,
+      "values": [
+         "1-way-Interleave",
+         "2-way-Interleave",
+         "Auto",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "1-way-interleave",
+         "2-way-interleave",
+         "auto",
+         "platform-default"
+      ]
+   },
+   "sub_numa_clustering": {
+      "param_name": "Sub NUMA Clustering",
+      "target_name": "SNC",
+      "feature_group": "Interleave Configuration",
+      "available_in_legacy_mode": false,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "energy_efficient_turbo": {
+      "param_name": "Energy Efficient Turbo",
+      "target_name": "EnergyEfficientTurbo",
+      "feature_group": "Intel Turbo Boost Tech",
+      "available_in_legacy_mode": false,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "lom_port_2_optionrom": {
+      "param_name": "LOM Port 2 OptionRom",
+      "target_name": "LomOpromControlPort1",
+      "feature_group": "Onboard LOM Option ROM",
+      "available_in_legacy_mode": false,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "lom_port_1_optionrom": {
+      "param_name": "LOM Port 1 OptionRom",
+      "target_name": "LomOpromControlPort0",
+      "feature_group": "Onboard LOM Option ROM",
+      "available_in_legacy_mode": false,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "all_onboard_lom": {
+      "param_name": "All Onboard LOM",
+      "target_name": "AllLomPortControl",
+      "feature_group": "Onboard LOM Option ROM",
+      "available_in_legacy_mode": false,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "sblom1_optionrom": {
+      "param_name": "SBLom1 OptionROM",
+      "target_name": "SBLom1OptionROM",
+      "feature_group": "Onboard LOM Option ROM",
+      "available_in_legacy_mode": false,
+      "values": [
+         "Legacy-Only",
+         "UEFI-Only",
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "legacy-only",
+         "uefi-only",
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "pcie_slot_12_link_speed": {
+      "param_name": "PCIe Slot 12 Link Speed",
+      "target_name": "PcieSlot12LinkSpeed",
+      "feature_group": "PCI Slot Link Speed",
+      "available_in_legacy_mode": false,
+      "values": [
+         "Disabled",
+         "Auto",
+         "GEN3",
+         "GEN2",
+         "GEN1",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "auto",
+         "gen3",
+         "gen2",
+         "gen1",
+         "platform-default"
+      ]
+   },
+   "pcie_slot_11_link_speed": {
+      "param_name": "PCIe Slot 11 Link Speed",
+      "target_name": "PcieSlot11LinkSpeed",
+      "feature_group": "PCI Slot Link Speed",
+      "available_in_legacy_mode": false,
+      "values": [
+         "Disabled",
+         "Auto",
+         "GEN3",
+         "GEN2",
+         "GEN1",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "auto",
+         "gen3",
+         "gen2",
+         "gen1",
+         "platform-default"
+      ]
+   },
+   "siocnvme2_linkspeed": {
+      "param_name": "SIOCNVMe2 LinkSpeed",
+      "target_name": "SIOCNVMe2LinkSpeed",
+      "feature_group": "PCI Slot Link Speed",
+      "available_in_legacy_mode": false,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "GEN3",
+         "GEN2",
+         "GEN1",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "gen3",
+         "gen2",
+         "gen1",
+         "platform-default"
+      ]
+   },
+   "siocnvme1_linkspeed": {
+      "param_name": "SIOCNVMe1 LinkSpeed",
+      "target_name": "SIOCNVMe1LinkSpeed",
+      "feature_group": "PCI Slot Link Speed",
+      "available_in_legacy_mode": false,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "GEN3",
+         "GEN2",
+         "GEN1",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "gen3",
+         "gen2",
+         "gen1",
+         "platform-default"
+      ]
+   },
+   "ioemezz1_linkspeed": {
+      "param_name": "IOEMezz1 LinkSpeed",
+      "target_name": "IOEMezz1LinkSpeed",
+      "feature_group": "PCI Slot Link Speed",
+      "available_in_legacy_mode": false,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "GEN3",
+         "GEN2",
+         "GEN1",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "gen3",
+         "gen2",
+         "gen1",
+         "platform-default"
+      ]
+   },
+   "ioenvme2_linkspeed": {
+      "param_name": "IOENVMe2 LinkSpeed",
+      "target_name": "IOENVMe2LinkSpeed",
+      "feature_group": "PCI Slot Link Speed",
+      "available_in_legacy_mode": false,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "GEN3",
+         "GEN2",
+         "GEN1",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "gen3",
+         "gen2",
+         "gen1",
+         "platform-default"
+      ]
+   },
+   "ioenvme1_linkspeed": {
+      "param_name": "IOENVMe1 LinkSpeed",
+      "target_name": "IOENVMe1LinkSpeed",
+      "feature_group": "PCI Slot Link Speed",
+      "available_in_legacy_mode": false,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "GEN3",
+         "GEN2",
+         "GEN1",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "gen3",
+         "gen2",
+         "gen1",
+         "platform-default"
+      ]
+   },
+   "ioeslot2_linkspeed": {
+      "param_name": "IOESlot2 LinkSpeed",
+      "target_name": "IOESlot2LinkSpeed",
+      "feature_group": "PCI Slot Link Speed",
+      "available_in_legacy_mode": false,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "GEN3",
+         "GEN2",
+         "GEN1",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "gen3",
+         "gen2",
+         "gen1",
+         "platform-default"
+      ]
+   },
+   "ioeslot1_linkspeed": {
+      "param_name": "IOESlot1 LinkSpeed",
+      "target_name": "IOESlot1LinkSpeed",
+      "feature_group": "PCI Slot Link Speed",
+      "available_in_legacy_mode": false,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "GEN3",
+         "GEN2",
+         "GEN1",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "gen3",
+         "gen2",
+         "gen1",
+         "platform-default"
+      ]
+   },
+   "sbmezz1_linkspeed": {
+      "param_name": "SBMezz1 LinkSpeed",
+      "target_name": "SBMezz1LinkSpeed",
+      "feature_group": "PCI Slot Link Speed",
+      "available_in_legacy_mode": false,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "GEN3",
+         "GEN2",
+         "GEN1",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "gen3",
+         "gen2",
+         "gen1",
+         "platform-default"
+      ]
+   },
+   "sbmezz2_linkspeed": {
+      "param_name": "SBMezz2 LinkSpeed",
+      "target_name": "SBMezz2LinkSpeed",
+      "feature_group": "PCI Slot Link Speed",
+      "available_in_legacy_mode": false,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "GEN3",
+         "GEN2",
+         "GEN1",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "gen3",
+         "gen2",
+         "gen1",
+         "platform-default"
+      ]
+   },
+   "sbnvme1_linkspeed": {
+      "param_name": "SBNVMe1 LinkSpeed",
+      "target_name": "SBNVMe1LinkSpeed",
+      "feature_group": "PCI Slot Link Speed",
+      "available_in_legacy_mode": false,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "GEN3",
+         "GEN2",
+         "GEN1",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "gen3",
+         "gen2",
+         "gen1",
+         "platform-default"
+      ]
+   },
+   "sbnvme2_linkspeed": {
+      "param_name": "SBNVMe2 LinkSpeed",
+      "target_name": "SBNVMe2LinkSpeed",
+      "feature_group": "PCI Slot Link Speed",
+      "available_in_legacy_mode": false,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "GEN3",
+         "GEN2",
+         "GEN1",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "gen3",
+         "gen2",
+         "gen1",
+         "platform-default"
+      ]
+   },
+   "sioc2_linkspeed": {
+      "param_name": "SIOC2 LinkSpeed",
+      "target_name": "SIOC2LinkSpeed",
+      "feature_group": "PCI Slot Link Speed",
+      "available_in_legacy_mode": false,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "GEN3",
+         "GEN2",
+         "GEN1",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "gen3",
+         "gen2",
+         "gen1",
+         "platform-default"
+      ]
+   },
+   "sioc1_linkspeed": {
+      "param_name": "SIOC1 LinkSpeed",
+      "target_name": "SIOC1LinkSpeed",
+      "feature_group": "PCI Slot Link Speed",
+      "available_in_legacy_mode": false,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "GEN3",
+         "GEN2",
+         "GEN1",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "gen3",
+         "gen2",
+         "gen1",
+         "platform-default"
+      ]
+   },
+   "front_nvme2_link_speed": {
+      "param_name": "Front NVME2 Link Speed",
+      "target_name": "PcieSlotFrontNvme2LinkSpeed",
+      "feature_group": "PCI Slot LINK Speed",
+      "available_in_legacy_mode": false,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "GEN3",
+         "GEN2",
+         "GEN1",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "gen3",
+         "gen2",
+         "gen1",
+         "platform-default"
+      ]
+   },
+   "front_nvme1_link_speed": {
+      "param_name": "Front NVME1 Link Speed",
+      "target_name": "PcieSlotFrontNvme1LinkSpeed",
+      "feature_group": "PCI Slot LINK Speed",
+      "available_in_legacy_mode": false,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "GEN3",
+         "GEN2",
+         "GEN1",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "gen3",
+         "gen2",
+         "gen1",
+         "platform-default"
+      ]
+   },
+   "rear_nvme2_link_speed": {
+      "param_name": "Rear NVME2 Link Speed",
+      "target_name": "PcieSlotRearNvme2LinkSpeed",
+      "feature_group": "PCI Slot LINK Speed",
+      "available_in_legacy_mode": false,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "GEN3",
+         "GEN2",
+         "GEN1",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "gen3",
+         "gen2",
+         "gen1",
+         "platform-default"
+      ]
+   },
+   "rear_nvme1_link_speed": {
+      "param_name": "Rear NVME1 Link Speed",
+      "target_name": "PcieSlotRearNvme1LinkSpeed",
+      "feature_group": "PCI Slot LINK Speed",
+      "available_in_legacy_mode": false,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "GEN3",
+         "GEN2",
+         "GEN1",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "gen3",
+         "gen2",
+         "gen1",
+         "platform-default"
+      ]
+   },
+   "mraid_link_speed": {
+      "param_name": "MRAID Link Speed",
+      "target_name": "PcieSlotMRAIDLinkSpeed",
+      "feature_group": "PCI Slot LINK Speed",
+      "available_in_legacy_mode": false,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "GEN3",
+         "GEN2",
+         "GEN1",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "gen3",
+         "gen2",
+         "gen1",
+         "platform-default"
+      ]
+   },
+   "mlom_link_speed": {
+      "param_name": "MLOM Link Speed",
+      "target_name": "PcieSlotMLOMLinkSpeed",
+      "feature_group": "PCI Slot LINK Speed",
+      "available_in_legacy_mode": false,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "GEN3",
+         "GEN2",
+         "GEN1",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "gen3",
+         "gen2",
+         "gen1",
+         "platform-default"
+      ]
+   },
+   "raid_link_speed": {
+      "param_name": "RAID Link Speed",
+      "target_name": "PcieSlotRAIDLinkSpeed",
+      "feature_group": "PCI Slot LINK Speed",
+      "available_in_legacy_mode": false,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "GEN3",
+         "GEN2",
+         "GEN1",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "gen3",
+         "gen2",
+         "gen1",
+         "platform-default"
+      ]
+   },
+   "hba_link_speed": {
+      "param_name": "HBA Link Speed",
+      "target_name": "PcieSlotHBALinkSpeed",
+      "feature_group": "PCI Slot LINK Speed",
+      "available_in_legacy_mode": false,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "GEN3",
+         "GEN2",
+         "GEN1",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "gen3",
+         "gen2",
+         "gen1",
+         "platform-default"
+      ]
+   },
+   "power_on_password": {
+      "param_name": "Power On Password",
+      "target_name": "PowerOnPassword",
+      "feature_group": "PCI Slot LINK Speed",
+      "available_in_legacy_mode": false,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "number_of_retries": {
+      "param_name": "Number of Retries",
+      "target_name": "BORNumRetry",
+      "feature_group": "Boot option retry",
+      "available_in_legacy_mode": false,
+      "values": [
+         "Infinite",
+         "13",
+         "5",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "infinite",
+         "13",
+         "5",
+         "platform-default"
+      ]
+   },
+   "cool_down_time_": {
+      "param_name": "Cool Down Time (sec)",
+      "target_name": "BORCoolDown",
+      "feature_group": "Boot option retry",
+      "available_in_legacy_mode": false,
+      "values": [
+         "45",
+         "15",
+         "90",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "45",
+         "15",
+         "90",
+         "platform-default"
+      ]
+   },
+   "autonomous_core_c_state": {
+      "param_name": "Autonomous Core C-state",
+      "target_name": "AutoCCState",
+      "feature_group": "Processor C State",
+      "available_in_legacy_mode": false,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "boot_performance_mode": {
+      "param_name": "Boot Performance Mode",
+      "target_name": "BootPerformanceMode",
+      "feature_group": "CPU Performance",
+      "available_in_legacy_mode": false,
+      "values": [
+         "Max-Performance",
+         "Set-by-Intel-NM",
+         "Max-Efficient",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "max-performance",
+         "set-by-intel-nm",
+         "max-efficient",
+         "platform-default"
+      ]
+   },
+   "p_sata_mode": {
+      "param_name": "P-SATA mode",
+      "target_name": "pSATA",
+      "feature_group": "PCH SATA Mode",
+      "available_in_legacy_mode": false,
+      "values": [
+         "LSI-SW-RAID",
+         "Disabled",
+         "AHCI",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "lsi-sw-raid",
+         "disabled",
+         "ahci",
+         "platform-default"
+      ]
+   },
+   "ipv6_pxe_support": {
+      "param_name": "IPV6 PXE Support",
+      "target_name": "IPV6PXE",
+      "feature_group": "PXE BOOT",
+      "available_in_legacy_mode": false,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "bme_dma_mitigation": {
+      "param_name": "BME DMA Mitigation",
+      "target_name": "BmeDmaMitigation",
+      "feature_group": "BME DMA Mitigation",
+      "available_in_legacy_mode": true,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "optionrom_launch_optimization": {
+      "param_name": "OptionROM Launch Optimization",
+      "target_name": "CiscoOpromLaunchOptimization",
+      "feature_group": "OptionROM Launch Optimization",
+      "available_in_legacy_mode": false,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "pcie_slot_gpu6_optionrom": {
+      "param_name": "PCIe Slot GPU6 OptionROM",
+      "target_name": "PcieSlotGPU6OptionROM",
+      "feature_group": "PCI Slot OptionROM Enable",
+      "available_in_legacy_mode": false,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "pcie_slot_gpu7_optionrom": {
+      "param_name": "PCIe Slot GPU7 OptionROM",
+      "target_name": "PcieSlotGPU7OptionROM",
+      "feature_group": "PCI Slot OptionROM Enable",
+      "available_in_legacy_mode": false,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "pcie_slot_gpu4_optionrom": {
+      "param_name": "PCIe Slot GPU4 OptionROM",
+      "target_name": "PcieSlotGPU4OptionROM",
+      "feature_group": "PCI Slot OptionROM Enable",
+      "available_in_legacy_mode": false,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "pcie_slot_gpu5_optionrom": {
+      "param_name": "PCIe Slot GPU5 OptionROM",
+      "target_name": "PcieSlotGPU5OptionROM",
+      "feature_group": "PCI Slot OptionROM Enable",
+      "available_in_legacy_mode": false,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "pcie_slot_gpu2_optionrom": {
+      "param_name": "PCIe Slot GPU2 OptionROM",
+      "target_name": "PcieSlotGPU2OptionROM",
+      "feature_group": "PCI Slot OptionROM Enable",
+      "available_in_legacy_mode": false,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "pcie_slot_gpu3_optionrom": {
+      "param_name": "PCIe Slot GPU3 OptionROM",
+      "target_name": "PcieSlotGPU3OptionROM",
+      "feature_group": "PCI Slot OptionROM Enable",
+      "available_in_legacy_mode": false,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "pcie_slot_gpu1_optionrom": {
+      "param_name": "PCIe Slot GPU1 OptionROM",
+      "target_name": "PcieSlotGPU1OptionROM",
+      "feature_group": "PCI Slot OptionROM Enable",
+      "available_in_legacy_mode": false,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "pcie_slot_gpu8_optionrom": {
+      "param_name": "PCIe Slot GPU8 OptionROM",
+      "target_name": "PcieSlotGPU8OptionROM",
+      "feature_group": "PCI Slot OptionROM Enable",
+      "available_in_legacy_mode": false,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "slot_14_state": {
+      "param_name": "Slot 14 state",
+      "target_name": "PcieSlot14OptionROM",
+      "feature_group": "PCI Slot OptionROM Enable",
+      "available_in_legacy_mode": false,
+      "values": [
+         "Legacy-Only",
+         "UEFI-Only",
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "legacy-only",
+         "uefi-only",
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "slot_13_state": {
+      "param_name": "Slot 13 state",
+      "target_name": "PcieSlot13OptionROM",
+      "feature_group": "PCI Slot OptionROM Enable",
+      "available_in_legacy_mode": false,
+      "values": [
+         "Legacy-Only",
+         "UEFI-Only",
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "legacy-only",
+         "uefi-only",
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "adaptive_memory_training": {
+      "param_name": "Adaptive Memory Training",
+      "target_name": "CiscoAdaptiveMemTraining",
+      "feature_group": "Adaptive Memory Training",
+      "available_in_legacy_mode": false,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "cdn_support_for_loms": {
+      "param_name": "CDN Support for LOMs",
+      "target_name": "CdnSupport",
+      "feature_group": "Onboard LOM Option ROM",
+      "available_in_legacy_mode": false,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "bios_techlog_level": {
+      "param_name": "BIOS Techlog Level",
+      "target_name": "CiscoDebugLevel",
+      "feature_group": "BIOS Techlog Level",
+      "available_in_legacy_mode": false,
+      "values": [
+         "Minimum",
+         "Maximum",
+         "Normal",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "minimum",
+         "maximum",
+         "normal",
+         "platform-default"
+      ]
+   },
+   "vmd_enable": {
+      "param_name": "VMD Enable",
+      "target_name": "VMDEnable",
+      "feature_group": "VMD Enablement",
+      "available_in_legacy_mode": false,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "chipselect_interleaving": {
+      "param_name": "Chipselect Interleaving",
+      "target_name": "CbsCmnMemMapBankInterleaveDdr4",
+      "feature_group": "Processor",
+      "available_in_legacy_mode": false,
+      "values": [
+         "Disabled",
+         "Auto",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "auto",
+         "platform-default"
+      ]
+   },
+   "bank_group_swap": {
+      "param_name": "Bank Group Swap",
+      "target_name": "CbsCmnMemCtrlBankGroupSwapDdr4",
+      "feature_group": "Processor",
+      "available_in_legacy_mode": false,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "Auto",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "auto",
+         "platform-default"
+      ]
+   },
+   "l2_stream_hw_prefetcher": {
+      "param_name": "L2 Stream HW Prefetcher",
+      "target_name": "CbsCmnCpuL2StreamHwPrefetcher",
+      "feature_group": "Processor",
+      "available_in_legacy_mode": false,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "Auto",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "auto",
+         "platform-default"
+      ]
+   },
+   "l1_stream_hw_prefetcher": {
+      "param_name": "L1 Stream HW Prefetcher",
+      "target_name": "CbsCmnCpuL1StreamHwPrefetcher",
+      "feature_group": "Processor",
+      "available_in_legacy_mode": false,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "Auto",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "auto",
+         "platform-default"
+      ]
+   },
+   "global_c_state_control": {
+      "param_name": "Global C-state Control",
+      "target_name": "CbsCmnCpuGlobalCstateCtrl",
+      "feature_group": "Processor",
+      "available_in_legacy_mode": false,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "Auto",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "auto",
+         "platform-default"
+      ]
+   },
+   "downcore_control": {
+      "param_name": "Downcore control",
+      "target_name": "CbsCmnCpuGenDowncoreCtrl",
+      "feature_group": "Processor",
+      "available_in_legacy_mode": false,
+      "values": [
+         "THREE--3---0-",
+         "FOUR--2---2-",
+         "FOUR--4---0-",
+         "SIX--3---3-",
+         "TWO--2---0-",
+         "TWO--1---1-",
+         "Auto",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "three--3---0-",
+         "four--2---2-",
+         "four--4---0-",
+         "six--3---3-",
+         "two--2---0-",
+         "two--1---1-",
+         "auto",
+         "platform-default"
+      ]
+   },
+   "determinism_slider": {
+      "param_name": "Determinism Slider",
+      "target_name": "CbsCmnDeterminismSlider",
+      "feature_group": "Processor",
+      "available_in_legacy_mode": false,
+      "values": [
+         "Performance",
+         "Power",
+         "Auto",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "performance",
+         "power",
+         "auto",
+         "platform-default"
+      ]
+   },
+   "amd_memory_interleaving_size": {
+      "param_name": "AMD Memory Interleaving Size",
+      "target_name": "CbsDfCmnMemIntlvSize",
+      "feature_group": "Processor",
+      "available_in_legacy_mode": false,
+      "values": [
+         "256-Bytes",
+         "512-Bytes",
+         "Auto",
+         "2-KB",
+         "1-KB",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "256-bytes",
+         "512-bytes",
+         "auto",
+         "2-kb",
+         "1-kb",
+         "platform-default"
+      ]
+   },
+   "amd_memory_interleaving": {
+      "param_name": "AMD Memory Interleaving",
+      "target_name": "CbsDfCmnMemIntlv",
+      "feature_group": "Processor",
+      "available_in_legacy_mode": false,
+      "values": [
+         "Channel",
+         "Socket",
+         "Auto",
+         "None",
+         "Die",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "channel",
+         "socket",
+         "auto",
+         "none",
+         "die",
+         "platform-default"
+      ]
+   },
+   "iommu": {
+      "param_name": "IOMMU",
+      "target_name": "CbsCmnGnbNbIOMMU",
+      "feature_group": "Processor",
+      "available_in_legacy_mode": false,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "Auto",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "auto",
+         "platform-default"
+      ]
+   },
+   "core_performance_boost": {
+      "param_name": "Core Performance Boost",
+      "target_name": "CbsCmnCpuCpb",
+      "feature_group": "Processor",
+      "available_in_legacy_mode": false,
+      "values": [
+         "Disabled",
+         "Auto",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "auto",
+         "platform-default"
+      ]
+   },
+   "svm_mode": {
+      "param_name": "SVM Mode",
+      "target_name": "SvmMode",
+      "feature_group": "Processor",
+      "available_in_legacy_mode": false,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "smt_mode": {
+      "param_name": "SMT Mode",
+      "target_name": "SmtMode",
+      "feature_group": "Processor",
+      "available_in_legacy_mode": false,
+      "values": [
+         "Auto",
+         "Off",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "auto",
+         "off",
+         "platform-default"
+      ]
+   },
+   "smee": {
+      "param_name": "SMEE",
+      "target_name": "SMEE",
+      "feature_group": "Processor",
+      "available_in_legacy_mode": false,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   }
+}

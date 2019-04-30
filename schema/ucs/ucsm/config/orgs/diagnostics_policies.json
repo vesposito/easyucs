@@ -1,0 +1,75 @@
+{
+   "id":"ucs_system_config_diagnostics_policies#",
+   "$schema":"http://json-schema.org/draft-07/schema#",
+   "title":"EasyUCS ucs system config orgs diagnostics_policies section",
+   "description":"EasyUCS ucs system config orgs diagnostics_policies section JSON schema",
+   "type":"object",
+   "properties":{
+      "name":{
+         "description":"Diagnostics Policy Name",
+         "type":"string",
+         "default":"",
+         "pattern":"^[\\-\\.:_a-zA-Z0-9]{1,16}$"
+      },
+      "descr":{
+         "description":"Description of Diagnostics Policy",
+         "type":"string",
+         "default":"",
+         "pattern":"^[ !#$%&\\(\\)\\*\\+,\\-\\./:;\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{0,256}$"
+      },
+      "memory_tests": {
+         "description": "Diagnostics Policy - Memory Tests",
+         "type": "array",
+         "items": {
+            "type": "object",
+            "properties": {
+               "order": {
+                  "description": "Diagnostics Policy - Memory Test - Order",
+                  "type": "string",
+                  "default": "1",
+                  "pattern": "^[1-9]$|^[1-5][0-9]$|^|6[0-4]$"
+               },
+               "cpu_filter": {
+                  "description": "Diagnostics Policy - Memory Test - CPU Filter",
+                  "type": "string",
+                  "default": "all-cpus",
+                  "enum": ["all-cpus", "p0-p1-cpus"]
+               },
+               "loop_count": {
+                  "description": "Diagnostics Policy - Memory Test - Loop Count",
+                  "type": "string",
+                  "default": "5",
+                  "pattern": "^[1-9]$|^[1-9][0-9]$|^[1-9][0-9][0-9]$|1000"
+               },
+               "memory_chunk_size": {
+                  "description": "Diagnostics Policy - Memory Test - Memory Chunck Size",
+                  "type": "string",
+                  "default": "5mb-chunk",
+                  "enum": ["5mb-chunk", "big-chunk"]
+               },
+               "memory_size": {
+                  "description": "Diagnostics Policy - Memory Test - Memory Size",
+                  "type": "string",
+                  "default": "all",
+                  "pattern": "^all$|^[0-9]$|^[1-9][0-9]$|^[1-9][0-9][0-9]$|^[1-3][0-9][0-9][0-9]$|^40[0-8][0-9]$|^409[0-6]$"
+               },
+               "pattern": {
+                  "description": "Diagnostics Policy - Memory Test - Pattern",
+                  "type": "string",
+                  "default": "prbs",
+                  "enum": ["butterfly", "killer", "prbs", "prbs-addr", "prbs-killer"]
+               }
+            },
+            "additionalProperties": false,
+            "required": [
+               "order"
+            ]
+         },
+         "minItems": 1
+      }
+   },
+   "additionalProperties":false,
+   "required":[
+      "name"
+   ]
+}

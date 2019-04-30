@@ -1,0 +1,46 @@
+{
+   "id":"ucs_system_config_chassis_firmware_packages#",
+   "$schema":"http://json-schema.org/draft-07/schema#",
+   "title":"EasyUCS ucs system config orgs chassis_firmware_packages section",
+   "description":"EasyUCS ucs system config orgs chassis_firmware_packages section JSON schema",
+   "type":"object",
+   "properties": {
+      "name": {
+         "description": "Chassis Firmware Package Name",
+         "type": "string",
+         "default": "",
+         "pattern": "^[\\-\\.:_a-zA-Z0-9]{1,16}$"
+      },
+      "descr": {
+         "description": "Description of Chassis Firmware Package",
+         "type": "string",
+         "default": "",
+         "pattern": "^[ !#$%&\\(\\)\\*\\+,\\-\\./:;\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{0,256}$"
+      },
+      "chassis_package": {
+         "description": "Chassis Firmware Package Blade Package",
+         "type": "string",
+         "default": ""
+      },
+      "service_pack": {
+         "description": "Chassis Firmware Package Service Pack",
+         "type": "string",
+         "default": ""
+      },
+      "excluded_components": {
+         "description": "Chassis Firmware Package Excluded Components",
+         "type": "array",
+         "items": {
+            "description": "Chassis Firmware Package Excluded Component Item",
+            "type": "string",
+            "enum": [
+               "chassis-board-controller", "cmc", "iocard", "local-disk", "sas-expander", "unspecified", "chassis-management-controller", "chassis-adaptor"
+            ]
+         }
+      }
+   },
+   "additionalProperties": false,
+   "required": [
+      "name"
+   ]
+}

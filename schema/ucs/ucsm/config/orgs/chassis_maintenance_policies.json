@@ -1,0 +1,25 @@
+{
+   "id": "ucs_system_config_chassis_maintenance_policies#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS ucs system config chassis_maintenance_policies section",
+   "description": "EasyUCS ucs system config chassis_maintenance_policies section JSON schema",
+   "type": "object",
+   "properties": {
+      "name": {
+         "description": "Chassis Maintenance Policy Name",
+         "type": "string",
+         "default": "",
+         "pattern": "^[\\-\\.:_a-zA-Z0-9]{1,16}$"
+      },
+      "descr": {
+         "description": "Description of Chassis Maintenance Policy",
+         "type": "string",
+         "default": "",
+         "pattern": "^[ !#$%&\\(\\)\\*\\+,\\-\\./:;\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{0,256}$"
+      }
+   },
+   "additionalProperties":false,
+   "required":[
+      "name"
+   ]
+}

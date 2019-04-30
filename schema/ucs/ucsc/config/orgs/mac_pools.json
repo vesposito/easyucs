@@ -1,0 +1,87 @@
+{
+   "id":"ucs_central_config_mac_pools#",
+   "$schema":"http://json-schema.org/draft-07/schema#",
+   "title":"EasyUCS ucs central config orgs mac_pools section",
+   "description":"EasyUCS ucs central config orgs mac_pools section JSON schema",
+   "type":"object",
+   "properties":{
+      "name":{
+         "description":"MAC Pool Name",
+         "type":"string",
+         "default":"",
+         "pattern":"^[\\-\\.:_a-zA-Z0-9]{1,32}$"
+      },
+      "descr":{
+         "description":"Description of MAC Pool",
+         "type":"string",
+         "default":"",
+         "pattern":"^[ !#$%&\\(\\)\\*\\+,\\-\\./:;\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{0,256}$"
+      },
+      "mac_blocks":{
+         "description":"Blocks of MAC Addresses in MAC Pool",
+         "type":"array",
+         "items":{
+            "type":"object",
+            "oneOf": [
+               {
+                  "properties":{
+                     "from":{
+                        "description":"First MAC Address of Block",
+                        "type":"string",
+                        "default":"00:25:B5:00:00:00",
+                        "pattern":"^(([0-9a-fA-F][0-9a-fA-F]:){5}([0-9a-fA-F][0-9a-fA-F]))$|^0$"
+                     },
+                     "to":{
+                        "description":"Last MAC Address of Block",
+                        "type":"string",
+                        "default":"00:25:B5:00:00:00",
+                        "pattern":"^(([0-9a-fA-F][0-9a-fA-F]:){5}([0-9a-fA-F][0-9a-fA-F]))$|^0$"
+                     },
+                     "id_range_access_control": {
+                        "description": "ID Range Access Control of MAC Address Block",
+                        "type": "string",
+                        "pattern": "^[\\-\\.:_a-zA-Z0-9]{0,16}$"
+                     }
+                  },
+                  "additionalProperties":false,
+                  "required": [
+                     "from",
+                     "to"
+                  ]
+               },
+               {
+                  "properties":{
+                     "from":{
+                        "description":"First MAC Address of Block",
+                        "type":"string",
+                        "default":"00:25:B5:00:00:00",
+                        "pattern":"^(([0-9a-fA-F][0-9a-fA-F]:){5}([0-9a-fA-F][0-9a-fA-F]))$|^0$"
+                     },
+                     "size":{
+                        "description":"Size of MAC Address Block",
+                        "type":"string",
+                        "default":"1",
+                        "pattern":"^[1-9]$|^[1-9][0-9]$|^[1-9][0-9][0-9]$|^1000$"
+                     },
+                     "id_range_access_control": {
+                        "description": "ID Range Access Control of MAC Address Block",
+                        "type": "string",
+                        "pattern": "^[\\-\\.:_a-zA-Z0-9]{0,16}$"
+                     }
+                  },
+                  "additionalProperties":false,
+                  "required": [
+                     "from",
+                     "size"
+                  ]
+               }
+            ]
+         },
+         "minItems":1
+      }
+   },
+   "additionalProperties":false,
+   "required":[
+      "name"
+   ]
+}

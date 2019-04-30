@@ -1,0 +1,621 @@
+{
+   "easyucs": {
+      "metadata": [
+         {
+            "file_type": "config",
+            "device_type": "ucsm",
+            "category": "cvd",
+            "subcategory": "FlexPod",
+            "name": "FlexPod Datacenter with Cisco ACI Multi-Pod with NetApp MetroCluster IP and VMware vSphere 6.7 (6332-16UP)",
+            "url": "https://www.cisco.com/c/en/us/td/docs/unified_computing/ucs/UCS_CVDs/flexpod_esxi67_n9k_aci_metrocluster.html",
+            "easyucs_version": "0.9.0",
+            "revision": "1.0"
+         }
+      ]
+   },
+   "config": {
+      "system": [
+         {
+            "name": "a02-6332",
+            "virtual_ip": "192.168.1.50",
+            "domain_name": "flexpod.cisco.com"
+         }
+      ],
+      "management_interfaces": [
+         {
+            "fabric": "A",
+            "ip": "192.168.1.48",
+            "netmask": "255.255.255.0",
+            "gateway": "192.168.1.254"
+         },
+         {
+            "fabric": "B",
+            "ip": "192.168.1.49",
+            "netmask": "255.255.255.0",
+            "gateway": "192.168.1.254"
+         }
+      ],
+      "dns": [
+         "10.1.156.250"
+      ],
+      "local_users": [
+         {
+            "id": "admin",
+            "password": "Fl3xP0d"
+         }
+      ],
+      "local_users_properties": [
+         {
+            "password_strength_check": "yes"
+         }
+      ],
+      "call_home": [
+         {
+            "admin_state": "off"
+         }
+      ],
+      "timezone_mgmt": [
+         {
+            "zone": "America/New_York (Eastern Time)",
+            "ntp": [
+               "192.168.156.1"
+            ]
+         }
+      ],
+      "port_auto_discovery_policy": [
+         {
+            "auto_configure_server_ports": "enabled"
+         }
+      ],
+      "global_policies": [
+         {
+            "chassis_discovery_policy": [
+               {
+                  "action_link": "2",
+                  "link_grouping_preference": "port-channel",
+                  "backplane_speed_preference": "40G"
+               }
+            ]
+         }
+      ],
+      "lan_uplink_ports": [
+         {
+            "fabric": "A",
+            "slot_id": "1",
+            "port_id": "27"
+         },
+         {
+            "fabric": "A",
+            "slot_id": "1",
+            "port_id": "28"
+         },
+         {
+            "fabric": "B",
+            "slot_id": "1",
+            "port_id": "27"
+         },
+         {
+            "fabric": "B",
+            "slot_id": "1",
+            "port_id": "28"
+         }
+      ],
+      "lan_port_channels": [
+         {
+            "fabric": "A",
+            "pc_id": "119",
+            "name": "Po119-ACI",
+            "interfaces": [
+               {
+                  "slot_id": "1",
+                  "port_id": "27"
+               },
+               {
+                  "slot_id": "1",
+                  "port_id": "28"
+               }
+            ]
+         },
+         {
+            "fabric": "B",
+            "pc_id": "120",
+            "name": "Po120-ACI",
+            "interfaces": [
+               {
+                  "slot_id": "1",
+                  "port_id": "27"
+               },
+               {
+                  "slot_id": "1",
+                  "port_id": "28"
+               }
+            ]
+         }
+      ],
+      "vlans": [
+         {
+            "name": "Native",
+            "id": "2"
+         },
+         {
+            "name": "IB-MGMT",
+            "id": "213"
+         },
+         {
+            "name": "NFS",
+            "id": "3150"
+         },
+         {
+            "name": "iSCSI-A",
+            "id": "3110"
+         },
+         {
+            "name": "iSCSI-B",
+            "id": "3120"
+         },
+         {
+            "name": "vMotion",
+            "id": "3000"
+         },
+         {
+            "prefix": "ACI-VMM-",
+            "id_to": "1150",
+            "id_from": "1101"
+         }
+      ],
+      "qos_system_class": [
+         {
+            "priority": "best-effort",
+            "mtu": "9216"
+         }
+      ],
+      "orgs": [
+         {
+            "name": "root",
+            "ip_pools": [
+               {
+                  "name": "ext-mgmt",
+                  "ip_blocks": [
+                     {
+                        "from": "192.168.156.113",
+                        "size": "16",
+                        "netmask": "255.255.255.0",
+                        "gateway": "192.168.156.254"
+                     }
+                  ]
+               }
+            ],
+            "iqn_suffix_pools": [
+               {
+                  "name": "IQN-Pool",
+                  "prefix": "iqn.2010-11.com.flexpod",
+                  "order": "sequential",
+                  "iqn_blocks": [
+                     {
+                        "suffix": "aa13-6332-host",
+                        "from": "1",
+                        "size": "16"
+                     }
+                  ]
+               }
+            ],
+            "host_firmware_packages": [
+               {
+                  "name": "default",
+                  "blade_package": "3.2(3d)B"
+               }
+            ],
+            "local_disk_config_policies": [
+               {
+                  "name": "SAN-Boot",
+                  "mode": "no-local-storage"
+               }
+            ],
+            "network_control_policies": [
+               {
+                  "name": "Enable-CDP-LLDP",
+                  "cdp_admin_state": "enabled",
+                  "lldp_transmit": "enabled",
+                  "lldp_receive": "enabled"
+               }
+            ],
+            "power_control_policies": [
+               {
+                  "name": "No-Power-Cap",
+                  "power_capping": "no-cap"
+               }
+            ],
+            "bios_policies": [
+               {
+                  "name": "Virtual-Host",
+                  "cdn_control": "enabled",
+                  "quiet_boot": "disabled",
+                  "dram_clock_throttling": "performance",
+                  "frequency_floor_override": "enabled",
+                  "processor_c_state": "disabled",
+                  "processor_c1e": "disabled",
+                  "processor_c3_report": "disabled",
+                  "processor_c7_report": "disabled",
+                  "energy_performance": "performance",
+                  "lv_ddr_mode": "performance-mode"
+               }
+            ],
+            "ethernet_adapter_policies": [
+               {
+                  "name": "VMware-HighTrf",
+                  "pooled": "disabled",
+                  "transmit_queues": "8",
+                  "transmit_queues_ring_size": "4096",
+                  "receive_queues": "8",
+                  "receive_queues_ring_size": "4096",
+                  "completion_queues": "16",
+                  "interrupts": "18",
+                  "receive_side_scaling": "enabled"
+               }
+            ],
+            "maintenance_policies": [
+               {
+                  "name": "default",
+                  "reboot_policy": "user-ack",
+                  "on_next_boot": "on"
+               }
+            ],
+            "orgs": [
+               {
+                  "name": "FPV-FlexPod",
+                  "ip_pools": [
+                     {
+                        "name": "iSCSI-IP-Pool-A",
+                        "order": "sequential",
+                        "ip_blocks": [
+                           {
+                              "from": "192.168.10.101",
+                              "size": "16",
+                              "netmask": "255.255.255.0"
+                           }
+                        ]
+                     },
+                     {
+                        "name": "iSCSI-IP-Pool-B",
+                        "order": "sequential",
+                        "ip_blocks": [
+                           {
+                              "from": "192.168.20.101",
+                              "size": "16",
+                              "netmask": "255.255.255.0"
+                           }
+                        ]
+                     }
+                  ],
+                  "mac_pools": [
+                     {
+                        "name": "MAC-Pool-A",
+                        "order": "sequential",
+                        "mac_blocks": [
+                           {
+                              "from": "00:25:B5:13:0A:00",
+                              "size": "64"
+                           }
+                        ]
+                     },
+                     {
+                        "name": "MAC-Pool-B",
+                        "order": "sequential",
+                        "mac_blocks": [
+                           {
+                              "from": "00:25:B5:13:0B:00",
+                              "size": "64"
+                           }
+                        ]
+                     }
+                  ],
+                  "uuid_pools": [
+                     {
+                        "name": "UUID-Pool",
+                        "order": "sequential",
+                        "prefix": "derived",
+                        "uuid_blocks": [
+                           {
+                              "from": "0000-130000000001",
+                              "size": "64"
+                           }
+                        ]
+                     }
+                  ],
+                  "server_pools": [
+                     {
+                        "name": "FPV-MGMT-Pool",
+                        "servers": [
+                           {
+                              "chassis_id": "1",
+                              "slot_id": "1"
+                           },
+                           {
+                              "chassis_id": "1",
+                              "slot_id": "2"
+                           }
+                        ]
+                     }
+                  ],
+                  "vnic_templates": [
+                     {
+                        "name": "Infra-A",
+                        "fabric": "A",
+                        "redundancy_type": "primary",
+                        "target": [
+                           "adapter"
+                        ],
+                        "template_type": "updating-template",
+                        "vlans": [
+                           "IB-MGMT",
+                           "Native",
+                           "NFS",
+                           "vMotion"
+                        ],
+                        "vlan_native": "Native",
+                        "cdn_source": "vnic-name",
+                        "mtu": "9000",
+                        "mac_pool": "MAC-Pool-A",
+                        "network_control_policy": "Enable-CDP-LLDP"
+                     },
+                     {
+                        "name": "Infra-B",
+                        "fabric": "B",
+                        "redundancy_type": "secondary",
+                        "peer_redundancy_template": "Infra-A",
+                        "mac_pool": "MAC-Pool-B"
+                     },
+                     {
+                        "name": "iSCSI-A",
+                        "fabric": "A",
+                        "redundancy_type": "none",
+                        "target": [
+                           "adapter"
+                        ],
+                        "template_type": "updating-template",
+                        "vlans": [
+                           "iSCSI-A"
+                        ],
+                        "vlan_native": "iSCSI-A",
+                        "cdn_source": "vnic-name",
+                        "mtu": "9000",
+                        "mac_pool": "MAC-Pool-A",
+                        "network_control_policy": "Enable-CDP-LLDP"
+                     },
+                     {
+                        "name": "iSCSI-B",
+                        "fabric": "B",
+                        "redundancy_type": "none",
+                        "target": [
+                           "adapter"
+                        ],
+                        "template_type": "updating-template",
+                        "vlans": [
+                           "iSCSI-B"
+                        ],
+                        "vlan_native": "iSCSI-B",
+                        "cdn_source": "vnic-name",
+                        "mtu": "9000",
+                        "mac_pool": "MAC-Pool-B",
+                        "network_control_policy": "Enable-CDP-LLDP"
+                     },
+                     {
+                        "name": "APIC-vDS-A",
+                        "fabric": "A",
+                        "redundancy_type": "primary",
+                        "target": [
+                           "adapter"
+                        ],
+                        "template_type": "updating-template",
+                        "vlans": [
+                           "ACI-VMM-1101",
+                           "ACI-VMM-1102",
+                           "ACI-VMM-1103",
+                           "ACI-VMM-1104",
+                           "ACI-VMM-1105",
+                           "ACI-VMM-1106",
+                           "ACI-VMM-1107",
+                           "ACI-VMM-1108",
+                           "ACI-VMM-1109",
+                           "ACI-VMM-1110",
+                           "ACI-VMM-1111",
+                           "ACI-VMM-1112",
+                           "ACI-VMM-1113",
+                           "ACI-VMM-1114",
+                           "ACI-VMM-1115",
+                           "ACI-VMM-1116",
+                           "ACI-VMM-1117",
+                           "ACI-VMM-1118",
+                           "ACI-VMM-1119",
+                           "ACI-VMM-1120",
+                           "ACI-VMM-1121",
+                           "ACI-VMM-1122",
+                           "ACI-VMM-1123",
+                           "ACI-VMM-1124",
+                           "ACI-VMM-1125",
+                           "ACI-VMM-1126",
+                           "ACI-VMM-1127",
+                           "ACI-VMM-1128",
+                           "ACI-VMM-1129",
+                           "ACI-VMM-1130",
+                           "ACI-VMM-1131",
+                           "ACI-VMM-1132",
+                           "ACI-VMM-1133",
+                           "ACI-VMM-1134",
+                           "ACI-VMM-1135",
+                           "ACI-VMM-1136",
+                           "ACI-VMM-1137",
+                           "ACI-VMM-1138",
+                           "ACI-VMM-1139",
+                           "ACI-VMM-1140",
+                           "ACI-VMM-1141",
+                           "ACI-VMM-1142",
+                           "ACI-VMM-1143",
+                           "ACI-VMM-1144",
+                           "ACI-VMM-1145",
+                           "ACI-VMM-1146",
+                           "ACI-VMM-1147",
+                           "ACI-VMM-1148",
+                           "ACI-VMM-1149",
+                           "ACI-VMM-1150"
+                        ],
+                        "cdn_source": "vnic-name",
+                        "mtu": "9000",
+                        "mac_pool": "MAC-Pool-A",
+                        "network_control_policy": "Enable-CDP-LLDP"
+                     },
+                     {
+                        "name": "APIC-vDS-B",
+                        "fabric": "B",
+                        "redundancy_type": "secondary",
+                        "peer_redundancy_template": "APIC-vDS-A",
+                        "mac_pool": "MAC-Pool-B"
+                     }
+                  ],
+                  "lan_connectivity_policies": [
+                     {
+                        "name": "iSCSI-Boot",
+                        "vnics": [
+                           {
+                              "name": "00-Infra-A",
+                              "template": "Infra-A",
+                              "adapter_policy": "VMWare"
+                           },
+                           {
+                              "name": "01-Infra-B",
+                              "template": "Infra-B",
+                              "adapter_policy": "VMWare"
+                           },
+                           {
+                              "name": "02-iSCSI-A",
+                              "template": "iSCSI-A",
+                              "adapter_policy": "VMWare"
+                           },
+                           {
+                              "name": "03-iSCSI-B",
+                              "template": "iSCSI-B",
+                              "adapter_policy": "VMWare"
+                           },
+                           {
+                              "name": "04-APIC-vDS-A",
+                              "template": "APIC-vDS-A",
+                              "adapter_policy": "VMware-HighTrf"
+                           },
+                           {
+                              "name": "05-APIC-vDS-B",
+                              "template": "APIC-vDS-B",
+                              "adapter_policy": "VMware-HighTrf"
+                           }
+                        ],
+                        "iscsi_vnics": [
+                           {
+                              "name": "iSCSI-Boot-A",
+                              "overlay_vnic": "02-iSCSI-A",
+                              "vlan": "iSCSI-A"
+                           },
+                           {
+                              "name": "iSCSI-Boot-B",
+                              "overlay_vnic": "03-iSCSI-B",
+                              "vlan": "iSCSI-B"
+                           }
+                        ]
+                     }
+                  ],
+                  "boot_policies": [
+                     {
+                        "name": "iSCSI-Boot",
+                        "reboot_on_boot_order_change": "no",
+                        "boot_order": [
+                           {
+                              "order": "1",
+                              "device_type": "remote_cd-dvd"
+                           },
+                           {
+                              "order": "2",
+                              "device_type": "iscsi",
+                              "iscsi_vnics": [
+                                 {
+                                    "name": "iSCSI-Boot-A",
+                                    "type": "primary"
+                                 },
+                                 {
+                                    "name": "iSCSI-Boot-B",
+                                    "type": "secondary"
+                                 }
+                              ]
+                           }
+                        ]
+                     }
+                  ],
+                  "service_profiles": [
+                     {
+                        "name": "iSCSI-Boot-A",
+                        "type": "updating-template",
+                        "uuid_pool": "UUID-Pool",
+                        "local_disk_configuration_policy": "SAN-Boot",
+                        "lan_connectivity_policy": "iSCSI-Boot",
+                        "iscsi_initiator_name": "IQN-Pool",
+                        "boot_policy": "iSCSI-Boot",
+                        "iscsi_boot_parameters": [
+                           {
+                              "iscsi_vnic_name": "iSCSI-Boot-A",
+                              "initiator_ip_address_policy": "iSCSI-IP-Pool-A",
+                              "iscsi_static_targets": [
+                                 {
+                                    "name": "iqn.1992-08.com.netapp",
+                                    "priority": "1",
+                                    "port": "3260",
+                                    "ip_address": "192.168.10.202",
+                                    "lun_id": "0"
+                                 },
+                                 {
+                                    "name": "iqn.1992-08.com.netapp",
+                                    "priority": "2",
+                                    "port": "3260",
+                                    "ip_address": "192.168.10.201",
+                                    "lun_id": "0"
+                                 }
+                              ]
+                           },
+                           {
+                              "iscsi_vnic_name": "iSCSI-Boot-B",
+                              "initiator_ip_address_policy": "iSCSI-IP-Pool-B",
+                              "iscsi_static_targets": [
+                                 {
+                                    "name": "iqn.1992-08.com.netapp",
+                                    "priority": "1",
+                                    "port": "3260",
+                                    "ip_address": "192.168.10.202",
+                                    "lun_id": "0"
+                                 },
+                                 {
+                                    "name": "iqn.1992-08.com.netapp",
+                                    "priority": "2",
+                                    "port": "3260",
+                                    "ip_address": "192.168.10.201",
+                                    "lun_id": "0"
+                                 }
+                              ]
+                           }
+                        ],
+                        "maintenance_policy": "default",
+                        "server_pool": "FPV-MGMT-Pool",
+                        "server_power_state": "down",
+                        "host_firmware_package": "default",
+                        "bios_policy": "Virtual-Host",
+                        "power_control_policy": "No-Power-Cap"
+                     },
+                     {
+                        "name": "fpv-esxi-0",
+                        "type": "instance",
+                        "service_profile_template": "iSCSI-Boot-A",
+                        "suffix_start_number": "1",
+                        "number_of_instances": "2"
+                     }
+                  ]
+               }
+            ]
+         }
+      ]
+   }
+}

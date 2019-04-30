@@ -1,0 +1,177 @@
+{
+   "id": "ucs_system_config_fibre_channel_adapter_policies#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS ucs system config orgs fibre_channel_adapter_policies section",
+   "description": "EasyUCS ucs system config orgs fibre_channel_adapter_policies section JSON schema",
+   "type": "object",
+   "properties": {
+      "name": {
+         "description": "Fibre Channel Adapter Policy Name",
+         "type": "string",
+         "default": "",
+         "pattern": "^[\\-\\.:_a-zA-Z0-9]{1,16}$"
+      },
+      "descr": {
+         "description": "Description of Fibre Channel Adapter Policy",
+         "type": "string",
+         "default": "",
+         "pattern": "^[ !#$%&\\(\\)\\*\\+,\\-\\./:;\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{0,256}$"
+      },
+      "pooled": {
+         "description": "Fibre Channel Adapter Policy - Pooled",
+         "type": "string",
+         "default": "disabled",
+         "enum": [
+            "enabled",
+            "disabled"
+         ]
+      },
+      "transmit_queues_ring_size": {
+         "description": "Fibre Channel Adapter Policy - Transmit Queues Ring Size",
+         "type": "string",
+         "default": "64",
+         "pattern": "^6[4-9]$|^[7-9][0-9]$|^1[0-1][0-9]$|^12[0-8]$"
+      },
+      "receive_queues_ring_size": {
+         "description": "Fibre Channel Adapter Policy - Receive Queues Ring Size",
+         "type": "string",
+         "default": "64",
+         "pattern": "^6[4-9]$|^[7-9][0-9]$|^[1-9][0-9][0-9]$|^1[0-9][0-9][0-9]$|^20[0-3][0-9]$|^204[0-8]$"
+      },
+      "io_queues": {
+         "description": "Fibre Channel Adapter Policy - I/O Queues",
+         "type": "string",
+         "default": "1",
+         "pattern": "^[1-9]$|^[1-5][0-9]$|^6[0-4]$"
+      },
+      "io_queues_ring_size": {
+         "description": "Fibre Channel Adapter Policy - I/O Queues Ring Size",
+         "type": "string",
+         "default": "512",
+         "pattern": "^6[4-9]$|^[7-9][0-9]$|^[1-4][0-9][0-9]$|^50[0-9]$|^51[0-2]$"
+      },
+      "fcp_error_recovery": {
+         "description": "Fibre Channel Adapter Policy - FCP Error Recovery",
+         "type": "string",
+         "default": "disabled",
+         "enum": [
+            "enabled",
+            "disabled"
+         ]
+      },
+      "flogi_retries": {
+         "description": "Fibre Channel Adapter Policy - Flogi Retries",
+         "type": "string",
+         "default": "8",
+         "pattern": "^infinite$|^[0-9]$|^[1-9][0-9]$|^[1-9][0-9][0-9]$|^[1-9][0-9][0-9][0-9]$|^[1-9][0-9][0-9][0-9][0-9]$|^[1-9][0-9][0-9][0-9][0-9][0-9]$|^[1-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[1-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[1-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-3][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^4[0-1][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^42[0-8][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^429[0-3][0-9][0-9][0-9][0-9][0-9][0-9]$|^4294[0-8][0-9][0-9][0-9][0-9][0-9]$|^42949[0-5][0-9][0-9][0-9][0-9]$|^429496[0-6][0-9][0-9][0-9]$|^4294967[0-1][0-9][0-9]$|^42949672[0-8][0-9]$|^429496729[0-5]$"
+      },
+      "flogi_timeout": {
+         "description": "Fibre Channel Adapter Policy - Flogi Timeout",
+         "type": "string",
+         "default": "4000",
+         "pattern": "^[1-9][0-9][0-9][0-9]$|^[1-9][0-9][0-9][0-9][0-9]$|^1[0-9][0-9][0-9][0-9][0-9]$|^2[0-4][0-9][0-9][0-9][0-9]$|^25[0-4][0-9][0-9][0-9]$|^255000$"
+      },
+      "plogi_retries": {
+         "description": "Fibre Channel Adapter Policy - Plogi Retries",
+         "type": "string",
+         "default": "8",
+         "pattern": "^[0-9]$|^[1-9][0-9]$|^1[0-9][0-9]$|^2[0-4][0-9]$|^25[0-5]$"
+      },
+      "plogi_timeout": {
+         "description": "Fibre Channel Adapter Policy - Plogi Timeout",
+         "type": "string",
+         "default": "20000",
+         "pattern": "^[1-9][0-9][0-9][0-9]$|^[1-9][0-9][0-9][0-9][0-9]$|^1[0-9][0-9][0-9][0-9][0-9]$|^2[0-4][0-9][0-9][0-9][0-9]$|^25[0-4][0-9][0-9][0-9]$|^255000$"
+      },
+      "port_down_timeout": {
+         "description": "Fibre Channel Adapter Policy - Port Down Timeout",
+         "type": "string",
+         "default": "30000",
+         "pattern": "^[0-9]$|^[1-9][0-9]$|^[1-9][0-9][0-9]$|^[1-9][0-9][0-9][0-9]$|^[1-9][0-9][0-9][0-9][0-9]$|^1[0-9][0-9][0-9][0-9][0-9]$|^2[0-3][0-9][0-9][0-9][0-9]$|^240000$"
+      },
+      "io_retry_timeout": {
+         "description": "Fibre Channel Adapter Policy - IO Retry Timeout",
+         "type": "string",
+         "default": "5",
+         "pattern": "^[1-9]$|^[1-5][0-9]$"
+      },
+      "port_down_io_retry": {
+         "description": "Fibre Channel Adapter Policy - Port down IO Retry",
+         "type": "string",
+         "default": "30",
+         "pattern": "^[0-9]$|^[1-9][0-9]$|^1[0-9][0-9]$|^2[0-4][0-9]$|^25[0-5]$"
+      },
+      "link_down_timeout": {
+         "description": "Fibre Channel Adapter Policy - Link Down Timeout",
+         "type": "string",
+         "default": "30000",
+         "pattern": "^[0-9]$|^[1-9][0-9]$|^[1-9][0-9][0-9]$|^[1-9][0-9][0-9][0-9]$|^[1-9][0-9][0-9][0-9][0-9]$|^1[0-9][0-9][0-9][0-9][0-9]$|^2[0-3][0-9][0-9][0-9][0-9]$|^240000$"
+      },
+      "io_throttle_count": {
+         "description": "Fibre Channel Adapter Policy - IO Throttle Count",
+         "type": "string",
+         "default": "256"
+      },
+      "max_luns_per_target": {
+         "description": "Fibre Channel Adapter Policy - Max LUNs per Target",
+         "type": "string",
+         "default": "256",
+         "pattern": "^[1-9]$|^[1-9][0-9]$|^[1-9][0-9][0-9]$|^10[0-1][0-9]$|^102[0-4]$"
+      },
+      "lun_queue_depth": {
+         "description": "Fibre Channel Adapter Policy - Port down IO Retry",
+         "type": "string",
+         "default": "20",
+         "pattern": "^[1-9]$|^[1-9][0-9]$|^1[0-9][0-9]$|^2[0-4][0-9]$|^25[0-4]$"
+      },
+      "interrupt_mode": {
+         "description": "Fibre Channel Adapter Policy - Interrupt Mode",
+         "type": "string",
+         "default": "msi-x",
+         "enum": [
+            "intx",
+            "msi",
+            "msi-x"
+         ]
+      },
+      "vhba_type": {
+         "description": "Fibre Channel Adapter Policy - vHBA Type",
+         "type": "string",
+         "default": "fc-initiator",
+         "enum": [
+            "fc-initiator",
+            "fc-nvme-initiator",
+            "fc-nvme-target",
+            "fc-target"
+         ]
+      }
+   },
+   "additionalProperties": false,
+   "required": [
+      "name"
+   ],
+   "$comment": "Below is for handling an exception with UCS Central policy global-default using an invalid value of 16 for io_throttle_count",
+   "if": {
+      "properties": {
+         "name": {
+            "enum": [
+               "global-default"
+            ]
+         }
+      }
+   },
+   "then": {
+      "properties": {
+         "io_throttle_count": {
+            "pattern": "^16$|^25[6-9]$|^2[6-9][0-9]$|^[3-9][0-9][0-9]$|^10[0-1][0-9]$|^102[0-4]$"
+         }
+      }
+   },
+   "else": {
+      "properties": {
+         "io_throttle_count": {
+            "pattern": "^25[6-9]$|^2[6-9][0-9]$|^[3-9][0-9][0-9]$|^10[0-1][0-9]$|^102[0-4]$"
+         }
+      }
+   }
+}

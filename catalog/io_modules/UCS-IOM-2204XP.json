@@ -1,0 +1,26 @@
+{
+  "rear_file_name":"UCS-IOM-2204XP.png",
+  "rear_file_size":[216,1200],
+  "rear_ports": {
+    "x/1": {
+      "port_coord": [58, 237],
+      "port_type": "sfp",
+      "port_size": [56, 86]
+    },
+    "x/2": {
+      "port_coord": [58, 325],
+      "port_type": "sfp",
+      "port_size": [56, 86]
+    },
+    "x/3": {
+      "port_coord": [58, 413],
+      "port_type": "sfp",
+      "port_size": [56, 86]
+    },
+    "x/4": {
+      "port_coord": [58, 500],
+      "port_type": "sfp",
+      "port_size": [56, 86]
+    }
+  }
+}

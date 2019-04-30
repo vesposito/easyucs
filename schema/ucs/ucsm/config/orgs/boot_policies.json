@@ -1,0 +1,380 @@
+{
+   "id": "ucs_system_config_boot_policies#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS ucs system config orgs boot_policies section",
+   "description": "EasyUCS ucs system config orgs boot_policies section JSON schema",
+   "type": "object",
+   "properties": {
+      "name": {
+         "description": "Boot Policy Name",
+         "type": "string",
+         "default": "",
+         "pattern": "^[\\-\\.:_a-zA-Z0-9]{1,16}$"
+      },
+      "descr": {
+         "description": "Description of Boot Policy",
+         "type": "string",
+         "default": "",
+         "pattern": "^[ !#$%&\\(\\)\\*\\+,\\-\\./:;\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{0,256}$"
+      },
+      "reboot_on_boot_order_change": {
+         "description": "Boot Policy - Reboot on Boot Order Change",
+         "type": "string",
+         "default": "no",
+         "enum": [
+            "false",
+            "no",
+            "true",
+            "yes"
+         ]
+      },
+      "enforce_vnic_name": {
+         "description": "Boot Policy - Enforce vNIC/vHBA/iSCSI Name",
+         "type": "string",
+         "default": "yes",
+         "enum": [
+            "false",
+            "no",
+            "true",
+            "yes"
+         ]
+      },
+      "boot_mode": {
+         "description": "Boot Policy - Boot Mode",
+         "type": "string",
+         "default": "legacy",
+         "enum": [
+            "legacy",
+            "uefi"
+         ]
+      },
+      "boot_security": {
+         "description": "Boot Policy - Boot Security (UEFI Secure Boot)",
+         "type": "string",
+         "default": "no",
+         "enum": [
+            "false",
+            "no",
+            "true",
+            "yes"
+         ]
+      },
+      "boot_order": {
+         "description": "Boot Policy - Boot Order",
+         "type": "array",
+         "items": {
+            "description": "Boot Policy - Device Member of Boot Order",
+            "type": "object",
+            "properties": {
+               "device_type": {
+                  "description": "Boot Policy - Device Type of Device Member of Boot Order",
+                  "type": "string",
+                  "enum": [
+                     "cd-dvd",
+                     "local_cd-dvd",
+                     "remote_cd-dvd",
+                     "floppy",
+                     "local_floppy",
+                     "remote_floppy",
+                     "remote_virtual_drive",
+                     "cimc_mounted_cd-dvd",
+                     "cimc_mounted_hdd",
+                     "local_disk",
+                     "local_lun",
+                     "local_jbod",
+                     "sd_card",
+                     "internal_usb",
+                     "external_usb",
+                     "embedded_local_lun",
+                     "embedded_local_disk",
+                     "nvme",
+                     "lan",
+                     "san",
+                     "iscsi",
+                     "efi_shell"
+                  ]
+               },
+               "order": {
+                  "description": "Boot Policy - Order of Device Member of Boot Order",
+                  "type": "string",
+                  "pattern": "^[1-9]$|^1[0-6]$"
+               },
+               "vnics": {
+                  "description": "Boot Policy - Boot Order - vNICs (LAN Boot)",
+                  "type": "array",
+                  "items": {
+                     "description": "Boot Policy - Boot Order - vNIC (LAN Boot)",
+                     "type": "object",
+                     "properties": {
+                        "name": {
+                           "description": "Boot Policy - Boot Order - vNIC Name (LAN Boot)",
+                           "type": "string",
+                           "pattern": "^[\\-\\.:_a-zA-Z0-9]{0,16}$"
+                        },
+                        "type": {
+                           "description": "Boot Policy - Boot Order - vNIC Type (LAN Boot)",
+                           "type": "string",
+                           "default": "primary",
+                           "enum": [
+                              "primary",
+                              "secondary"
+                           ]
+                        },
+                        "ip_address_type": {
+                           "description": "Boot Policy - Boot Order - vNIC IP Address Type (LAN Boot)",
+                           "type": "string",
+                           "default": "none",
+                           "enum": [
+                              "ipv4",
+                              "ipv6",
+                              "none"
+                           ]
+                        }
+                     },
+                     "additionalProperties": false
+                  },
+                  "minItems": 1,
+                  "maxItems": 2
+               },
+               "iscsi_vnics": {
+                  "description": "Boot Policy - Boot Order - vNICs (iSCSI Boot)",
+                  "type": "array",
+                  "items": {
+                     "description": "Boot Policy - Boot Order - vNIC (iSCSI Boot)",
+                     "type": "object",
+                     "properties": {
+                        "name": {
+                           "description": "Boot Policy - Boot Order - vNIC Name (iSCSI Boot)",
+                           "type": "string",
+                           "pattern": "^[\\-\\.:_a-zA-Z0-9]{0,16}$"
+                        },
+                        "type": {
+                           "description": "Boot Policy - Boot Order - vNIC Type (iSCSI Boot)",
+                           "type": "string",
+                           "default": "primary",
+                           "enum": [
+                              "primary",
+                              "secondary"
+                           ]
+                        },
+                        "boot_loader_name": {
+                           "description": "Boot Policy - Boot Order - UEFI Boot Parameters - Boot Loader Name (iSCSI Boot)",
+                           "type": "string"
+                        },
+                        "boot_loader_path": {
+                           "description": "Boot Policy - Boot Order - UEFI Boot Parameters - Boot Loader Path (iSCSI Boot)",
+                           "type": "string"
+                        },
+                        "boot_loader_description": {
+                           "description": "Boot Policy - Boot Order - UEFI Boot Parameters - Boot Loader Description (iSCSI Boot)",
+                           "type": "string"
+                        }
+                     },
+                     "additionalProperties": false,
+                     "required": [
+                        "type",
+                        "name"
+                     ]
+                  },
+                  "minItems": 1,
+                  "maxItems": 2
+               },
+               "vhbas": {
+                  "description": "Boot Policy - Boot Order - vHBAs (SAN Boot)",
+                  "type": "array",
+                  "items": {
+                     "description": "Boot Policy - Boot Order - vHBA (SAN Boot)",
+                     "type": "object",
+                     "properties": {
+                        "name": {
+                           "description": "Boot Policy - Boot Order - vHBA Name (SAN Boot)",
+                           "type": "string",
+                           "pattern": "^[\\-\\.:_a-zA-Z0-9]{0,16}$"
+                        },
+                        "type": {
+                           "description": "Boot Policy - Boot Order - vHBA Type (SAN Boot)",
+                           "type": "string",
+                           "default": "any",
+                           "enum": [
+                              "any",
+                              "primary",
+                              "secondary"
+                           ]
+                        },
+                        "targets": {
+                           "description": "Boot Policy - Boot Order - SAN Boot Targets (SAN Boot)",
+                           "type": "array",
+                           "items": {
+                              "description": "Boot Policy - Boot Order - SAN Boot Target (SAN Boot)",
+                              "type": "object",
+                              "properties": {
+                                 "lun": {
+                                    "description": "Boot Policy - Boot Order - SAN Boot Target LUN (SAN Boot)",
+                                    "type": "string",
+                                    "default": "0",
+                                    "pattern": "^[0-9]$|^[0-9][0-9]$|^[0-1][0-9][0-9]$|^2[0-4][0-9]$|^25[0-5]$"
+                                 },
+                                 "wwpn": {
+                                    "description": "Boot Policy - Boot Order - SAN Boot Target WWPN (SAN Boot)",
+                                    "type": "string",
+                                    "default": "00:00:00:00:00:00:00:00",
+                                    "pattern": "(([A-Fa-f0-9][A-Fa-f0-9]:){7}[A-Fa-f0-9][A-Fa-f0-9])$|^0$"
+                                 },
+                                 "type": {
+                                    "description": "Boot Policy - Boot Order - SAN Boot Target Type (SAN Boot)",
+                                    "type": "string",
+                                    "default": "primary",
+                                    "enum": [
+                                       "primary",
+                                       "secondary"
+                                    ]
+                                 }
+                              },
+                              "additionalProperties": false
+                           },
+                           "minItems": 1,
+                           "maxItems": 2
+                        }
+                     },
+                     "additionalProperties": false
+                  },
+                  "minItems": 1,
+                  "maxItems": 2
+               },
+               "embedded_local_disks": {
+                  "description": "Boot Policy - Boot Order - Embedded Local Disks",
+                  "type": "array",
+                  "items": {
+                     "description": "Boot Policy - Boot Order - Embedded Local Disk",
+                     "type": "object",
+                     "properties": {
+                        "type": {
+                           "description": "Boot Policy - Boot Order - Embedded Local Disk Type",
+                           "type": "string",
+                           "default": "any",
+                           "enum": [
+                              "any",
+                              "primary",
+                              "secondary"
+                           ]
+                        },
+                        "slot_number": {
+                           "description": "Boot Policy - Boot Order - Embedded Local Disk Slot Number",
+                           "type": "string",
+                           "default": "1",
+                           "pattern": "^[1-9]$|^[0-9][0-9]$|^[0-1][0-9][0-9]$|^20[0-5]$"
+                        },
+                        "boot_loader_name": {
+                           "description": "Boot Policy - Boot Order - UEFI Boot Parameters - Boot Loader Name (Embedded Local Disk)",
+                           "type": "string"
+                        },
+                        "boot_loader_path": {
+                           "description": "Boot Policy - Boot Order - UEFI Boot Parameters - Boot Loader Path (Embedded Local Disk)",
+                           "type": "string"
+                        },
+                        "boot_loader_description": {
+                           "description": "Boot Policy - Boot Order - UEFI Boot Parameters - Boot Loader Description (Embedded Local Disk)",
+                           "type": "string"
+                        }
+                     },
+                     "additionalProperties": false
+                  },
+                  "minItems": 1,
+                  "maxItems": 2
+               },
+               "local_luns": {
+                  "description": "Boot Policy - Boot Order - Local LUNs",
+                  "type": "array",
+                  "items": {
+                     "description": "Boot Policy - Boot Order - Local LUN",
+                     "type": "object",
+                     "properties": {
+                        "type": {
+                           "description": "Boot Policy - Boot Order - Local LUN Type",
+                           "type": "string",
+                           "default": "any",
+                           "enum": [
+                              "any",
+                              "primary",
+                              "secondary"
+                           ]
+                        },
+                        "name": {
+                           "description": "Boot Policy - Boot Order - Local LUN Name",
+                           "type": "string",
+                           "pattern": "^[\\-\\.:_a-zA-Z0-9]{0,10}$"
+                        },
+                        "boot_loader_name": {
+                           "description": "Boot Policy - Boot Order - UEFI Boot Parameters - Boot Loader Name (Local LUN)",
+                           "type": "string"
+                        },
+                        "boot_loader_path": {
+                           "description": "Boot Policy - Boot Order - UEFI Boot Parameters - Boot Loader Path (Local LUN)",
+                           "type": "string"
+                        },
+                        "boot_loader_description": {
+                           "description": "Boot Policy - Boot Order - UEFI Boot Parameters - Boot Loader Description (Local LUN)",
+                           "type": "string"
+                        }
+                     },
+                     "additionalProperties": false
+                  },
+                  "minItems": 1,
+                  "maxItems": 2
+               },
+               "local_jbods": {
+                  "description": "Boot Policy - Boot Order - Local JBODs",
+                  "type": "array",
+                  "items": {
+                     "description": "Boot Policy - Boot Order - Local JBOD",
+                     "type": "object",
+                     "properties": {
+                        "slot_number": {
+                           "description": "Boot Policy - Boot Order - Local JBOD Slot Number",
+                           "type": "string",
+                           "default": "1",
+                           "pattern": "^[1-9]$|^[0-9][0-9]$|^[0-1][0-9][0-9]$|^20[0-5]$"
+                        }
+                     },
+                     "additionalProperties": false
+                  },
+                  "minItems": 1,
+                  "maxItems": 1
+               },
+               "embedded_local_luns": {
+                  "description": "Boot Policy - Boot Order - Embedded Local LUNs",
+                  "type": "array",
+                  "items": {
+                     "description": "Boot Policy - Boot Order - Embedded Local LUN",
+                     "type": "object",
+                     "properties": {
+                        "boot_loader_name": {
+                           "description": "Boot Policy - Boot Order - UEFI Boot Parameters - Boot Loader Name (Embedded Local LUN)",
+                           "type": "string"
+                        },
+                        "boot_loader_path": {
+                           "description": "Boot Policy - Boot Order - UEFI Boot Parameters - Boot Loader Path (Embedded Local LUN)",
+                           "type": "string"
+                        },
+                        "boot_loader_description": {
+                           "description": "Boot Policy - Boot Order - UEFI Boot Parameters - Boot Loader Description (Embedded Local LUN)",
+                           "type": "string"
+                        }
+                     },
+                     "additionalProperties": false
+                  },
+                  "minItems": 1,
+                  "maxItems": 1
+               }
+            },
+            "additionalProperties": false
+         },
+         "minItems": 1,
+         "maxItems": 16
+      }
+   },
+   "additionalProperties": false,
+   "required": [
+      "name"
+   ]
+}

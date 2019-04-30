@@ -1,0 +1,42 @@
+{
+  "front_file_name":"UCSB-B420-M4.png",
+  "front_file_size":[2485,304],
+  "disks_slots":[
+    {
+      "id":1,
+      "format":"sff",
+      "orientation":"horizontal",
+      "coord":[46, 50],
+      "size":[459,103]
+    },
+    {
+      "id":2,
+      "format":"sff",
+      "orientation":"horizontal",
+      "coord":[720, 50],
+      "size":[459,103]
+    },
+	{
+      "id":3,
+      "format":"sff",
+      "orientation":"horizontal",
+      "coord":[1311, 50],
+      "size":[459,103]
+    },
+	{
+      "id":4,
+      "format":"sff",
+      "orientation":"horizontal",
+      "coord":[1985, 50],
+      "size":[459,103]
+    }
+  ],
+  "disks_models":[
+    {
+      "name":"N20-BBLKD",
+      "type":"blank",
+	  "format":"sff",
+      "description":"UCS 2.5 inch HDD blanking panel"
+    }
+  ]
+}

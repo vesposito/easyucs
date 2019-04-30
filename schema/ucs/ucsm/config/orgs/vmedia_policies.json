@@ -1,0 +1,152 @@
+{
+   "id": "ucs_system_config_vmedia_policies#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS ucs system config orgs vmedia_policies section",
+   "description": "EasyUCS ucs system config orgs vmedia_policies section JSON schema",
+   "type": "object",
+   "properties": {
+      "name": {
+         "description": "vMedia Policy Name",
+         "type": "string",
+         "default": "",
+         "pattern": "^[\\-\\.:_a-zA-Z0-9]{1,16}$"
+      },
+      "descr": {
+         "description": "Description of vMedia Policy",
+         "type": "string",
+         "default": "",
+         "pattern": "^[ !#$%&\\(\\)\\*\\+,\\-\\./:;\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{0,256}$"
+      },
+      "retry_on_mount_fail": {
+         "description": "vMedia Policy Retry on Mount Failure",
+         "type": "string",
+         "default": "yes",
+         "enum": [
+            "no",
+            "yes"
+         ]
+      },
+      "vmedia_mounts": {
+         "description": "vMedia Policy - vMedia Mounts",
+         "type": "array",
+         "items": {
+            "description": "vMedia Policy - vMedia Mount",
+            "type": "object",
+            "properties": {
+               "name": {
+                  "description": "vMedia Policy - vMedia Mount Name",
+                  "type": "string",
+                  "pattern": "^[\\-\\.:_a-zA-Z0-9]{1,16}$"
+               },
+               "descr": {
+                  "description": "vMedia Policy - vMedia Mount Description",
+                  "type": "string",
+                  "pattern": "^[ !#$%&\\(\\)\\*\\+,\\-\\./:;\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{0,256}$"
+               },
+               "device_type": {
+                  "description": "vMedia Policy - vMedia Mount Device Type",
+                  "type": "string",
+                  "enum": [
+                     "cdd",
+                     "hdd"
+                  ]
+               },
+               "protocol": {
+                  "description": "vMedia Policy - vMedia Mount Protocol",
+                  "type": "string",
+                  "enum": [
+                     "cifs",
+                     "http",
+                     "https",
+                     "nfs"
+                  ]
+               },
+               "authentication_protocol": {
+                  "description": "vMedia Policy - vMedia Mount Authentication Protocol (CIFS)",
+                  "type": "string",
+                  "default": "default",
+                  "enum": [
+                     "default",
+                     "none",
+                     "ntlm",
+                     "ntlmi",
+                     "ntlmssp",
+                     "ntlmsspi",
+                     "ntlmv2",
+                     "ntlmv2i"
+                  ]
+               },
+               "hostname": {
+                  "description": "vMedia Policy - vMedia Mount Hostname / IP Address",
+                  "type": "string",
+                  "pattern": "^[A-Za-z]([A-Za-z0-9_.-]*[A-Za-z0-9])?([A-Za-z]([A-Za-z0-9._-]*[A-Za-z0-9])?)*$|^([1-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\\.([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\\.([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\\.([1-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])$|^([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}$|^([0-9a-fA-F]{1,4}:){1,7}:$|^([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}$|^([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}$|^([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}$|^([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}$|^([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}$|^[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})$|^:((:[0-9a-fA-F]{1,4}){1,7}|:)$"
+               },
+               "image_name_variable": {
+                  "description": "vMedia Policy - vMedia Mount Image Name Variable",
+                  "type": "string",
+                  "enum": [
+                     "none",
+                     "service-profile-name"
+                  ]
+               },
+               "remote_file": {
+                  "description": "vMedia Policy - vMedia Mount Remote File",
+                  "type": "string"
+               },
+               "remote_path": {
+                  "description": "vMedia Policy - vMedia Mount Remote Path",
+                  "type": "string"
+               },
+               "username": {
+                  "description": "vMedia Policy - vMedia Mount Username",
+                  "type": "string"
+               },
+               "password": {
+                  "description": "vMedia Policy - vMedia Mount Password",
+                  "type": "string",
+                  "pattern": "^[!\"\"#%&'\\(\\)\\*\\+,\\-\\./:;<>@\\[\\\\\\]\\^_`\\{\\|\\}~a-zA-Z0-9]{0,128}$"
+               },
+               "remap_on_eject": {
+                  "description": "vMedia Policy - vMedia Mount Remap on Eject",
+                  "type": "string",
+                  "enum": [
+                     "false",
+                     "no",
+                     "true",
+                     "yes"
+                  ]
+               }
+            },
+            "additionalProperties": false,
+            "required": [
+               "name",
+               "hostname",
+               "remote_path"
+            ],
+            "if": {
+               "properties": {
+                  "image_name_variable": {
+                     "enum": [
+                        "none"
+                     ]
+                  }
+               },
+               "required": [
+                  "image_name_variable"
+               ]
+            },
+            "then": {
+               "required": [
+                  "remote_file"
+               ]
+            },
+            "else": {
+            }
+         }
+      }
+   },
+   "additionalProperties":false,
+   "required": [
+      "name"
+   ]
+}

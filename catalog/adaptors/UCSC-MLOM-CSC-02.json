@@ -1,0 +1,16 @@
+{
+  "rear_file_name":"UCSC-MLOM-CSC-02.png",
+  "rear_file_size":[523,94],
+  "rear_ports": {
+    "x/2": {
+      "port_coord": [172, 16],
+      "port_type": "sfp",
+      "port_size": [82, 55]
+    },
+    "x/1": {
+      "port_coord": [258, 16],
+      "port_type": "sfp",
+      "port_size": [82, 55]
+    }
+  }
+}

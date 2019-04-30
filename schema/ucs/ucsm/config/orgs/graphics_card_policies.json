@@ -1,0 +1,35 @@
+{
+   "id": "ucs_system_config_graphics_card_policies#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS ucs system config graphics_card_policies section",
+   "description": "EasyUCS ucs system config graphics_card_policies section JSON schema",
+   "type": "object",
+   "properties": {
+      "name": {
+         "description": "Graphics Card Policy Name",
+         "type": "string",
+         "default": "",
+         "pattern": "^[\\-\\.:_a-zA-Z0-9]{1,16}$"
+      },
+      "descr": {
+         "description": "Description of Graphics Card Policy",
+         "type": "string",
+         "default": "",
+         "pattern": "^[ !#$%&\\(\\)\\*\\+,\\-\\./:;\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{0,256}$"
+      },
+      "graphics_card_mode" : {
+         "description": "Graphics Card Mode of Graphics Card Policy",
+         "type": "string",
+         "default": "any-configuration",
+         "enum": [
+            "any-configuration",
+            "compute",
+            "graphics"
+         ]
+      }
+   },
+   "additionalProperties":false,
+   "required":[
+      "name"
+   ]
+}

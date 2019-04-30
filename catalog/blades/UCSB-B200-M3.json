@@ -1,0 +1,28 @@
+{
+  "front_file_name":"UCSB-B200-M3.png",
+  "front_file_size":[1217,304],
+  "disks_slots":[
+    {
+      "id":1,
+      "format":"sff",
+      "orientation":"horizontal",
+      "coord":[50, 30],
+      "size":[459,103]
+    },
+    {
+      "id":2,
+      "format":"sff",
+      "orientation":"horizontal",
+      "coord":[725, 30],
+      "size":[459,103]
+    }
+  ],
+  "disks_models":[
+    {
+      "name":"N20-BBLKD",
+      "type":"blank",
+	  "format":"sff",
+      "description":"UCS 2.5 inch HDD blanking panel"
+    }
+  ]
+}

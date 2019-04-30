@@ -1,0 +1,260 @@
+{
+   "id": "ucs_system_config_ethernet_adapter_policies#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS ucs system config orgs ethernet_adapter_policies section",
+   "description": "EasyUCS ucs system config orgs ethernet_adapter_policies section JSON schema",
+   "type": "object",
+   "properties": {
+      "name": {
+         "description": "Ethernet Adapter Policy Name",
+         "type": "string",
+         "default": "",
+         "pattern": "^[\\-\\.:_a-zA-Z0-9]{1,16}$"
+      },
+      "descr": {
+         "description": "Description of Ethernet Adapter Policy",
+         "type": "string",
+         "default": "",
+         "pattern": "^[ !#$%&\\(\\)\\*\\+,\\-\\./:;\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{0,256}$"
+      },
+      "pooled": {
+         "description": "Ethernet Adapter Policy - Pooled",
+         "type": "string",
+         "default": "disabled",
+         "enum": [
+            "enabled",
+            "disabled"
+         ]
+      },
+      "transmit_queues": {
+         "description": "Ethernet Adapter Policy - Transmit Queues",
+         "type": "string",
+         "default": "1",
+         "pattern": "^[1-9]$|^[1-9][0-9]$|^[1-9][0-9][0-9]$|^1000$"
+      },
+      "transmit_queues_ring_size": {
+         "description": "Ethernet Adapter Policy - Transmit Queues Ring Size",
+         "type": "string",
+         "default": "256",
+         "pattern": "^6[4-9]$|^[7-9][0-9]$|^[1-9][0-9][0-9]$|^[1-3][0-9][0-9][0-9]$|^40[0-8][0-9]$|^409[0-6]$"
+      },
+      "receive_queues": {
+         "description": "Ethernet Adapter Policy - Receive Queues",
+         "type": "string",
+         "default": "1",
+         "pattern": "^[1-9]$|^[1-9][0-9]$|^[1-9][0-9][0-9]$|^1000$"
+      },
+      "receive_queues_ring_size": {
+         "description": "Ethernet Adapter Policy - Receive Queues Ring Size",
+         "type": "string",
+         "default": "512",
+         "pattern": "^6[4-9]$|^[7-9][0-9]$|^[1-9][0-9][0-9]$|^[1-3][0-9][0-9][0-9]$|^40[0-8][0-9]$|^409[0-6]$"
+      },
+      "completion_queues": {
+         "description": "Ethernet Adapter Policy - Completion Queues",
+         "type": "string",
+         "default": "2",
+         "pattern": "^[1-9]$|^[1-9][0-9]$|^[1-9][0-9][0-9]$|^1[0-9][0-9][0-9]$|^2000$"
+      },
+      "interrupts": {
+         "description": "Ethernet Adapter Policy - Interrupts",
+         "type": "string",
+         "default": "4",
+         "pattern": "^[1-9]$|^[1-9][0-9]$|^[1-9][0-9][0-9]$|^10[0-1][0-9]$|^102[0-4]$"
+      },
+      "transmit_checksum_offload": {
+         "description": "Ethernet Adapter Policy - Transmit Checksum Offload",
+         "type": "string",
+         "default": "enabled",
+         "enum": [
+            "enabled",
+            "disabled"
+         ]
+      },
+      "receive_checksum_offload": {
+         "description": "Ethernet Adapter Policy - Receive Checksum Offload",
+         "type": "string",
+         "default": "enabled",
+         "enum": [
+            "enabled",
+            "disabled"
+         ]
+      },
+      "tcp_segmentation_offload": {
+         "description": "Ethernet Adapter Policy - TCP Segmentation Offload",
+         "type": "string",
+         "default": "enabled",
+         "enum": [
+            "enabled",
+            "disabled"
+         ]
+      },
+      "tcp_large_receive_offload": {
+         "description": "Ethernet Adapter Policy - TCP Large Receive Offload",
+         "type": "string",
+         "default": "enabled",
+         "enum": [
+            "enabled",
+            "disabled"
+         ]
+      },
+      "receive_side_scaling": {
+         "description": "Ethernet Adapter Policy - Receive Side Scaling",
+         "type": "string",
+         "default": "disabled",
+         "enum": [
+            "enabled",
+            "disabled"
+         ]
+      },
+      "accelerated_receive_flow_steering": {
+         "description": "Ethernet Adapter Policy - Accelerated Receive Flow Steering",
+         "type": "string",
+         "default": "disabled",
+         "enum": [
+            "enabled",
+            "disabled"
+         ]
+      },
+      "nvgre_offload": {
+         "description": "Ethernet Adapter Policy - Network Virtualization using Generic Routing Encapsulation Offload",
+         "type": "string",
+         "default": "disabled",
+         "enum": [
+            "enabled",
+            "disabled"
+         ]
+      },
+      "vxlan_offload": {
+         "description": "Ethernet Adapter Policy - Virtual Extensible LAN (VxLAN) Offload",
+         "type": "string",
+         "default": "disabled",
+         "enum": [
+            "enabled",
+            "disabled"
+         ]
+      },
+      "failback_timeout": {
+         "description": "Ethernet Adapter Policy - Failback Timeout",
+         "type": "string",
+         "default": "5",
+         "pattern": "^[0-9]$|^[1-9][0-9]$|^[1-5][0-9][0-9]$|^600$"
+      },
+      "interrupt_mode": {
+         "description": "Ethernet Adapter Policy - Interrupt Mode",
+         "type": "string",
+         "default": "msi-x",
+         "enum": [
+            "intx",
+            "msi",
+            "msi-x"
+         ]
+      },
+      "interrupt_coalescing_type": {
+         "description": "Ethernet Adapter Policy - Interrupt Coalescing Type",
+         "type": "string",
+         "default": "min",
+         "enum": [
+            "min",
+            "idle"
+         ]
+      },
+      "interrupt_timer": {
+         "description": "Ethernet Adapter Policy - Interrupt Timer",
+         "type": "string",
+         "default": "125",
+         "pattern": "^[0-9]$|^[1-9][0-9]$|^[1-9][0-9][0-9]$|^[1-9][0-9][0-9][0-9]$|^[1-5][0-9][0-9][0-9][0-9]$|^6[0-4][0-9][0-9][0-9]$|^65[0-4][0-9][0-9]$|^655[0-2][0-9]$|^6553[0-5]$"
+      },
+      "roce": {
+         "description": "Ethernet Adapter Policy - RoCE",
+         "type": "string",
+         "default": "disabled",
+         "enum": [
+            "enabled",
+            "disabled"
+         ]
+      },
+      "roce_properties": {
+         "description": "RoCE Properties in Ethernet Adapter Policy",
+         "type": "array",
+         "items": {
+            "type": "object",
+            "properties": {
+               "version_1": {
+                  "description": "Ethernet Adapter Policy - RoCE Properties - Version 1",
+                  "type": "string",
+                  "default": "disabled",
+                  "enum": [
+                     "enabled",
+                     "disabled"
+                  ]
+               },
+               "version_2": {
+                  "description": "Ethernet Adapter Policy - RoCE Properties - Version 2",
+                  "type": "string",
+                  "default": "disabled",
+                  "enum": [
+                     "enabled",
+                     "disabled"
+                  ]
+               },
+               "queue_pairs": {
+                  "description": "Ethernet Adapter Policy - RoCE Properties - Queue Pairs",
+                  "type": "string",
+                  "default": "256",
+                  "pattern": "^[1-9]$|^[1-9][0-9]$|^[1-9][0-9][0-9]$|^[1-7][0-9][0-9][0-9]$|^80[0-9][0-9]$|^81[0-8][0-9]$|^819[0-2]$"
+               },
+                "memory_regions": {
+                  "description": "Ethernet Adapter Policy - RoCE Properties - Memory Regions",
+                  "type": "string",
+                  "default": "131072",
+                  "pattern": "^[1-9]$|^[1-9][0-9]$|^[1-9][0-9][0-9]$|^[1-9][0-9][0-9][0-9]$|^[1-9][0-9][0-9][0-9][0-9]$|^[1-4][0-9][0-9][0-9][0-9][0-9]$|^5[0-1][0-9][0-9][0-9][0-9]$|^52[0-3][0-9][0-9][0-9]$|^524[0-1][0-9][0-9]$|^5242[0-7][0-9]$|^52428[0-8]$"
+               },
+               "resource_groups": {
+                  "description": "Ethernet Adapter Policy - RoCE Properties - Resource Groups",
+                  "type": "string",
+                  "default": "4",
+                  "pattern": "^[1-9]$|^[1-9][0-9]$|^1[0-1][0-9]$|^12[0-8]$"
+               },
+               "priority": {
+                  "description": "Ethernet Adapter Policy - RoCE Properties - Priority",
+                  "type": "string",
+                  "default": "platinum",
+                  "enum": [
+                     "best-effort",
+                     "bronze",
+                     "fc",
+                     "gold",
+                     "platinum",
+                     "silver"
+                  ]
+               }
+            },
+            "additionalProperties": false
+         },
+         "minItems": 1
+      },
+      "advance_filter": {
+         "description": "Ethernet Adapter Policy - Advance Filter",
+         "type": "string",
+         "default": "disabled",
+         "enum": [
+            "enabled",
+            "disabled"
+         ]
+      },
+      "interrupt_scaling": {
+         "description": "Ethernet Adapter Policy - Interrupt Scaling",
+         "type": "string",
+         "default": "disabled",
+         "enum": [
+            "enabled",
+            "disabled"
+         ]
+      }
+   },
+   "additionalProperties": false,
+   "required": [
+      "name"
+   ]
+}

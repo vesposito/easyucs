@@ -1,0 +1,85 @@
+{
+   "id":"ucs_system_config_san_storage_ports#",
+   "$schema":"http://json-schema.org/draft-07/schema#",
+   "title":"EasyUCS ucs system config san_storage_ports section",
+   "description":"EasyUCS ucs system config san_storage_ports section JSON schema",
+   "type":"object",
+   "properties":{
+      "fabric":{
+         "description":"Fabric ID of SAN Storage Port (\"A\" or \"B\")",
+         "type":"string",
+         "enum":[
+            "a",
+            "A",
+            "b",
+            "B"
+         ]
+      },
+      "slot_id":{
+         "description":"Slot ID of SAN Storage Port",
+         "type":"string",
+         "pattern":"^[1-5]$"
+      },
+      "port_id":{
+         "description":"Port ID of SAN Storage Port",
+         "type":"string",
+         "pattern":"^[1-9]$|^[1-4][0-9]$|^5[0-4]$"
+      },
+      "user_label":{
+         "description":"User Label of SAN Storage Port",
+         "type":"string",
+         "default":"",
+         "pattern":"^[ !#$%&\\(\\)\\*\\+,\\-\\./:;\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{0,32}$"
+      },
+      "vsan":{
+         "description":"Name of VSAN assigned to SAN Storage Port",
+         "type":"string",
+         "pattern":"^[\\-\\.:_a-zA-Z0-9]{0,16}$"
+      },
+      "vsan_fabric":{
+         "description":"Fabric ID of VSAN assigned to SAN Storage Port",
+         "type":"string",
+         "enum":[
+            "a",
+            "A",
+            "b",
+            "B",
+            "dual"
+         ]
+      },
+      "fill_pattern":{
+         "description":"Fill Pattern of SAN Storage Port",
+         "type":"string",
+         "enum":[
+            "arbff",
+            "idle"
+         ]
+      },
+      "admin_state":{
+         "description":"Admin State of SAN Storage Port",
+         "type":"string",
+         "default":"enabled",
+         "enum":[
+            "disabled",
+            "enabled"
+         ]
+      },
+      "admin_speed": {
+         "description": "Admin Speed of SAN Storage Port",
+         "type": "string",
+         "enum": [
+            "4gbps",
+            "8gbps",
+            "16gbps",
+            "32gbps",
+            "auto"
+         ]
+      }
+   },
+   "additionalProperties":false,
+   "required":[
+      "fabric",
+      "slot_id",
+      "port_id"
+   ]
+}

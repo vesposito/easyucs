@@ -1,0 +1,422 @@
+{
+   "easyucs":{
+      "metadata":[
+         {
+            "file_type": "config",
+            "device_type": "ucsm",
+            "category":"custom",
+            "subcategory":"samples",
+            "name":"UCS Manager policies-related sections configuration sample",
+            "easyucs_version":"0.9.0",
+            "revision": "1.0"
+         }
+      ]
+   },
+   "config":{
+	  "udld_link_policies":[
+         {
+            "name":"udld_pol",
+            "admin_state":"enabled",
+            "mode":"aggressive"
+         }
+      ],
+      "link_profiles":[
+         {
+            "name":"link_profile1",
+            "udld_link_policy":"udld_pol"
+         }
+      ],
+      "appliance_network_control_policies":[
+         {
+            "name":"appliance_ncp",
+            "cdp_admin_state":"enabled",
+            "mac_register_mode":"only-native-vlan",
+            "action_on_uplink_fail": "link-down",
+            "mac_security_forge":"allow"
+         }
+      ],
+      "orgs":[
+         {
+            "name":"root",
+            "graphics_card_policies":[
+               {
+                  "name":"Graph1",
+                  "descr":"1",
+                  "graphics_card_mode":"any-configuration"
+               },
+               {
+                  "name":"Graph2",
+                  "descr":"2",
+                  "graphics_card_mode":"compute"
+               },
+               {
+                  "name":"Graph3",
+                  "descr":"3",
+                  "graphics_card_mode":"graphics"
+               }
+            ],
+            "kvm_management_policies":[
+               {
+                  "name":"kvm_man1",
+                  "descr":"1",
+                  "vmedia_encryption":"enable"
+               },
+               {
+                  "name":"kvm_man2",
+                  "descr":"2",
+                  "vmedia_encryption":"disable"
+               }
+            ],
+            "memory_policy":[
+               {
+                  "blacklisting": "enabled"
+               }
+            ],
+            "iscsi_authentication_profiles":[
+               {
+                  "name":"profile1",
+                  "descr":"1",
+                  "user_id":"toto",
+                  "password":"123Password@"
+               }
+            ],
+            "ethernet_adapter_policies":[
+               {
+                  "name":"testETH",
+                  "transmit_queues":"2",
+                  "transmit_queues_ring_size":"257",
+                  "receive_queues":"2",
+                  "receive_queues_ring_size":"513",
+                  "completion_queues":"4",
+                  "interrupts":"5",
+                  "transmit_checksum_offload":"enabled",
+                  "receive_checksum_offload":"enabled",
+                  "tcp_segmentation_offload":"enabled",
+                  "tcp_large_receive_offload":"enabled",
+                  "receive_side_scaling":"enabled",
+                  "accelerated_receive_flow_steering":"enabled",
+                  "nvgre_offload":"enabled",
+                  "vxlan_offload":"enabled",
+                  "failback_timeout":"6",
+                  "interrupt_mode":"msi",
+                  "interrupt_coalescing_type":"min",
+                  "interrupt_timer":"125",
+                  "roce":"enabled",
+                  "roce_properties": [
+                     {
+                        "queue_pairs":"258",
+                        "memory_regions":"131074",
+                        "resource_groups":"32",
+                        "version_2": "enabled",
+                        "version_1": "disabled",
+                        "priority": "platinum"
+                     }
+                  ],
+                  "advance_filter":"enabled",
+                  "interrupt_scaling":"enabled"
+               },
+               {
+                  "name":"testETH2"
+               }
+            ],
+            "fibre_channel_adapter_policies":[
+               {
+                  "name":"testFC",
+                  "transmit_queues_ring_size":"65",
+                  "receive_queues_ring_size":"65",
+                  "io_queues":"2",
+                  "io_queues_ring_size":"501",
+                  "fcp_error_recovery":"enabled",
+                  "flogi_retries":"9",
+                  "flogi_timeout":"4001",
+                  "plogi_retries":"9",
+                  "plogi_timeout":"4001",
+                  "port_down_timeout":"123",
+                  "io_retry_timeout":"6",
+                  "port_down_io_retry":"33",
+                  "link_down_timeout":"1255",
+                  "io_throttle_count":"257",
+                  "max_luns_per_target":"258",
+                  "lun_queue_depth":"23",
+                  "interrupt_mode":"msi"
+               }
+            ],
+            "iscsi_adapter_policies":[
+               {
+                  "name":"testIS",
+                  "connection_timeout":"1",
+                  "lun_busy_retry_count":"2",
+                  "dhcp_timeout":"72",
+                  "enable_tcp_timestamp":"yes",
+                  "hba_mode":"yes",
+                  "boot_to_target":"yes"
+               },
+               {
+                  "name":"testIS2"
+               }
+            ],
+            "network_control_policies":[
+               {
+                  "name":"testPY1",
+                  "cdp_admin_state": "disabled",
+                  "lldp_receive":"disabled",
+                  "lldp_transmit":"disabled",
+                  "mac_register_mode":"only-native-vlan",
+                  "action_on_uplink_fail": "link-down",
+                  "mac_security_forge": "allow"
+               },
+               {
+                  "name":"testPY2",
+                  "cdp_admin_state": "enabled",
+                  "lldp_receive":"enabled",
+                  "lldp_transmit":"enabled",
+                  "mac_register_mode":"all-host-vlans",
+                  "action_on_uplink_fail": "warning",
+                  "mac_security_forge": "deny"
+               }
+            ],
+            "multicast_policies":[
+               {
+                  "name":"multi_poli",
+                  "igmp_snooping_state":"enabled",
+                  "igmp_snooping_querier_state":"enabled",
+                  "fi_a_querier_ip_address": "10.1.0.1",
+                  "fi_b_querier_ip_address": "10.2.0.1"
+               },
+               {
+                  "name": "test",
+                  "igmp_snooping_state": "enabled",
+                  "igmp_snooping_querier_state": "disabled"
+               }
+            ],
+            "lacp_policies":[
+               {
+                  "name":"lacp_pol",
+                  "suspend_individual":"true",
+                  "lacp_rate":"fast"
+               }
+            ],
+            "link_protocol_policy":[
+               {
+                  "message_interval":"17",
+                  "recovery_action":"reset"
+               }
+            ],
+            "flow_control_policies":[
+               {
+                  "name":"flow_ctrl",
+                  "priority":"auto",
+                  "receive":"on",
+                  "send":"on"
+               },
+               {
+                  "name":"flow_ctrl2",
+                  "priority":"on",
+                  "receive":"off",
+                  "send":"off"
+               }
+            ],
+            "vnic_vhba_placement_policies":[
+               {
+                  "name":"testPython",
+                  "virtual_slot_mapping_scheme":"linear-ordered",
+                  "virtual_host_interfaces": [
+                     {
+                        "virtual_slot": "1",
+                        "selection_preference": "assigned-only"
+                     },
+                     {
+                        "virtual_slot": "2",
+                        "selection_preference": "exclude-dynamic"
+                     },
+                     {
+                        "virtual_slot": "3",
+                        "selection_preference": "exclude-unassigned"
+                     },
+                     {
+                        "virtual_slot": "4",
+                        "selection_preference": "exclude-usnic"
+                     }
+                  ]
+               }
+            ],
+            "vmedia_policies":[
+               {
+                  "name":"testPython",
+                  "retry_on_mount_fail":"yes",
+                  "vmedia_mounts": [
+                     {
+                        "name":"test",
+                        "descr":"test",
+                        "device_type":"cdd",
+                        "protocol":"https",
+                        "hostname":"10.60.7.9",
+                        "image_name_variable": "none",
+                        "remote_file":"CentOS-7.0-1406-x86_64-DVD.iso",
+                        "remote_path":"/isos/linux/centos/",
+                        "username":"myname",
+                        "password":"password"
+                     }
+                  ]
+               }
+            ],
+            "serial_over_lan_policies":[
+               {
+                  "name":"test0",
+                  "speed":"57600",
+                  "serial_over_lan_state":"enable",
+                  "descr":"TEST"
+               },
+               {
+                  "name":"test1"
+               }
+            ],
+            "power_sync_policies":[
+               {
+                  "name":"test00",
+                  "sync_option":"default"
+               },
+               {
+                  "name":"test01",
+                  "sync_option":"always"
+               }
+            ],
+            "ipmi_access_profiles":[
+               {
+                  "name":"test0",
+                  "ipmi_over_lan":"enable",
+                  "users":[
+                     {
+                        "name":"us1",
+                        "password":"cisco",
+                        "role":"readonly"
+                     },
+                     {
+                        "name":"us2",
+                        "password":"cisco",
+                        "role":"admin"
+                     }
+                  ]
+               }
+            ],
+            "power_control_policies":[
+               {
+                  "name":"test0",
+                  "fan_speed_policy":"any",
+                  "power_capping":"4"
+               }
+            ],
+            "qos_policies":[
+               {
+                  "name":"testQOSPyth",
+                  "rate":"line-rate",
+                  "priority":"best-effort",
+                  "burst":"10240",
+                  "host_control":"full"
+               }
+            ],
+            "threshold_policies": [
+               {
+                  "descr": "descr",
+                  "name": "thres2",
+                  "threshold_classes": [
+                     {
+                        "threshold_definitions": [
+                           {
+                              "alarm_triggers_above": [
+                                 {
+                                    "down": "9",
+                                    "up": "10",
+                                    "severity": "critical"
+                                 },
+                                 {
+                                    "down": "9",
+                                    "up": "10",
+                                    "severity": "warning"
+                                 },
+                                 {
+                                    "down": "9",
+                                    "up": "10",
+                                    "severity": "minor"
+                                 },
+                                 {
+                                    "down": "9",
+                                    "up": "10",
+                                    "severity": "major"
+                                 }
+                              ],
+                              "alarm_triggers_below": [
+                                 {
+                                    "down": "0",
+                                    "up": "1",
+                                    "severity": "condition"
+                                 },
+                                 {
+                                    "down": "0",
+                                    "up": "1",
+                                    "severity": "warning"
+                                 },
+                                 {
+                                    "down": "0",
+                                    "up": "1",
+                                    "severity": "minor"
+                                 },
+                                 {
+                                    "down": "0",
+                                    "up": "1",
+                                    "severity": "info"
+                                 }
+                              ],
+                              "normal_value": "3",
+                              "property_type": "drive_life_used_percentage"
+                           },
+                           {
+                              "alarm_triggers_above": [
+                                 {
+                                    "down": "45",
+                                    "up": "100",
+                                    "severity": "critical"
+                                 }
+                              ],
+                              "normal_value": "30",
+                              "property_type": "life_left_in_days_max"
+                           }
+                        ],
+                        "stat_class": "nvme_stats",
+                        "group": "storage"
+                     }
+                  ]
+               }
+            ],
+            "diagnostics_policies": [
+               {
+                  "descr": "Descr",
+                  "memory_tests": [
+                     {
+                        "cpu_filter": "p0-p1-cpus",
+                        "loop_count": "6",
+                        "memory_chunk_size": "5mb-chunk",
+                        "memory_size": "50",
+                        "order": "1",
+                        "pattern": "killer"
+                     }
+                  ],
+                  "name": "DiagPol"
+               }
+            ],
+            "sas_expander_configuration_policies": [
+               {
+                  "descr": "Default Sas Expander Configuration Policy",
+                  "mixed_mode": "default",
+                  "name": "default"
+               },
+               {
+                  "descr": "Descr1",
+                  "mixed_mode": "enabled",
+                  "name": "SasExpConfPol1"
+               }
+            ]
+         }
+      ]
+   }
+}

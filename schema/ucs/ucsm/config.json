@@ -1,0 +1,515 @@
+{
+   "id":"ucs_ucsm_config#",
+   "$schema":"http://json-schema.org/draft-07/schema#",
+   "title":"EasyUCS ucsm config section",
+   "description":"EasyUCS ucsm config section JSON schema",
+   "type":"object",
+   "properties":{
+      "appliance_network_control_policies":{
+         "description":"EasyUCS config/appliance_network_control_policies section",
+         "type":"array",
+         "items":{
+            "description":"EasyUCS config/appliance_network_control_policies element",
+            "type":"object",
+            "$ref":"config/appliance_network_control_policies.json"
+         },
+         "minItems":1
+      },
+      "appliance_ports":{
+         "description":"EasyUCS config/appliance_ports section",
+         "type":"array",
+         "items":{
+            "description":"EasyUCS config/appliance_ports element",
+            "type":"object",
+            "$ref":"config/appliance_ports.json"
+         },
+         "minItems":1
+      },
+      "appliance_port_channels":{
+         "description":"EasyUCS config/appliance_port_channels section",
+         "type":"array",
+         "items":{
+            "description":"EasyUCS config/appliance_port_channels element",
+            "type":"object",
+            "$ref":"config/appliance_port_channels.json"
+         },
+         "minItems":1
+      },
+      "appliance_vlans":{
+         "description":"EasyUCS config/appliance_vlans section",
+         "type":"array",
+         "items":{
+            "description":"EasyUCS config/appliance_vlans element",
+            "type":"object",
+            "$ref":"config/appliance_vlans.json"
+         },
+         "minItems":1
+      },
+      "backup_export_policy":{
+         "description":"EasyUCS config/backup_export_policy section",
+         "type":"array",
+         "items":{
+            "description":"EasyUCS config/backup_export_policy element",
+            "type":"object",
+            "$ref":"config/backup_export_policy.json"
+         },
+         "minItems":1,
+         "maxItems":1
+      },
+      "breakout_ports":{
+         "description":"EasyUCS config/breakout_ports section",
+         "type":"array",
+         "items":{
+            "description":"EasyUCS config/breakout_ports element",
+            "type":"object",
+            "$ref":"config/breakout_ports.json"
+         },
+         "minItems":1
+      },
+      "call_home":{
+         "description":"EasyUCS config/call_home section",
+         "type":"array",
+         "items":{
+            "description":"EasyUCS config/call_home element",
+            "type":"object",
+            "$ref":"config/call_home.json"
+         },
+         "minItems":1,
+         "maxItems":1
+      },
+      "communication_services":{
+         "description":"EasyUCS config/communication_services section",
+         "type":"array",
+         "items":{
+            "description":"EasyUCS sys_communication_services element",
+            "type":"object",
+            "$ref":"config/communication_services.json"
+         },
+         "minItems":1,
+         "maxItems":1
+      },
+      "dns":{
+         "description":"EasyUCS config/dns section",
+         "type":"array",
+         "items":{
+            "description":"EasyUCS DNS server",
+            "type":"string"
+         },
+         "minItems":1
+      },
+      "fc_zone_profiles":{
+         "description":"EasyUCS config/fc_zone_profiles section",
+         "type":"array",
+         "items":{
+            "description":"EasyUCS config/fc_zone_profiles element",
+            "type":"object",
+            "$ref":"config/fc_zone_profiles.json"
+         },
+         "minItems":1
+      },
+      "fcoe_port_channels":{
+         "description":"EasyUCS config/fcoe_port_channels section",
+         "type":"array",
+         "items":{
+            "description":"EasyUCS config/fcoe_port_channels element",
+            "type":"object",
+            "$ref":"config/fcoe_port_channels.json"
+         },
+         "minItems":1
+      },
+      "fcoe_storage_ports":{
+         "description":"EasyUCS config/fcoe_storage_ports section",
+         "type":"array",
+         "items":{
+            "description":"EasyUCS config/fcoe_storage_ports element",
+            "type":"object",
+            "$ref":"config/fcoe_storage_ports.json"
+         },
+         "minItems":1
+      },
+      "fcoe_uplink_ports":{
+         "description":"EasyUCS config/fcoe_uplink_ports section",
+         "type":"array",
+         "items":{
+            "description":"EasyUCS config/fcoe_uplink_ports element",
+            "type":"object",
+            "$ref":"config/fcoe_uplink_ports.json"
+         },
+         "minItems":1
+      },
+      "global_policies":{
+         "description":"EasyUCS config/global_policies section",
+         "type":"array",
+         "items":{
+            "description":"EasyUCS config/global_policies element",
+            "type":"object",
+            "$ref":"config/global_policies.json"
+         },
+         "minItems":1,
+         "maxItems":1
+      },
+      "lan_pin_groups":{
+         "description":"EasyUCS config/lan_pin_groups section",
+         "type":"array",
+         "items":{
+            "description":"EasyUCS config/lan_pin_groups element",
+            "type":"object",
+            "$ref":"config/lan_pin_groups.json"
+         },
+         "minItems":1
+      },
+      "lan_port_channels":{
+         "description":"EasyUCS config/lan_port_channels section",
+         "type":"array",
+         "items":{
+            "description":"EasyUCS config/lan_port_channels element",
+            "type":"object",
+            "$ref":"config/lan_port_channels.json"
+         },
+         "minItems":1
+      },
+      "lan_uplink_ports":{
+         "description":"EasyUCS config/lan_uplink_ports section",
+         "type":"array",
+         "items":{
+            "description":"EasyUCS config/lan_uplink_ports element",
+            "type":"object",
+            "$ref":"config/lan_uplink_ports.json"
+         },
+         "minItems":1
+      },
+      "ldap":{
+         "description":"EasyUCS config/ldap section",
+         "type":"array",
+         "items":{
+            "description":"EasyUCS config/ldap element",
+            "type":"object",
+            "$ref":"config/ldap.json"
+         },
+         "minItems":1,
+         "maxItems":1
+      },
+      "link_profiles":{
+         "description":"EasyUCS config/link_profiles section",
+         "type":"array",
+         "items":{
+            "description":"EasyUCS config/link_profiles element",
+            "type":"object",
+            "$ref":"config/link_profiles.json"
+         },
+         "minItems":1
+      },
+      "local_users":{
+         "description":"EasyUCS config/local_users section",
+         "type":"array",
+         "items":{
+            "description":"EasyUCS config/local_users element",
+            "type":"object",
+            "$ref":"config/local_users.json"
+         },
+         "minItems":1
+      },
+      "local_users_properties":{
+         "description":"EasyUCS config/local_users_properties section",
+         "type":"array",
+         "items":{
+            "description":"EasyUCS config/local_users_properties element",
+            "type":"object",
+            "$ref":"config/local_users_properties.json"
+         },
+         "minItems":1,
+         "maxItems":1
+      },
+      "locales":{
+         "description":"EasyUCS config/locales section",
+         "type":"array",
+         "items":{
+            "description":"EasyUCS config/locales element",
+            "type":"object",
+            "$ref": "config/locales.json"
+         },
+         "minItems":1
+      },
+      "management_interfaces":{
+         "description":"EasyUCS config/management_interfaces section",
+         "type":"array",
+         "items":{
+            "description":"EasyUCS config/management_interfaces element",
+            "type":"object",
+            "$ref":"config/management_interfaces.json"
+         },
+         "minItems":1,
+         "maxItems":2
+      },
+      "port_auto_discovery_policy":{
+         "description":"EasyUCS config/port_auto_discovery_policy section",
+         "type":"array",
+         "items":{
+            "description":"EasyUCS config/port_auto_discovery_policy element",
+            "type":"object",
+            "$ref":"config/port_auto_discovery_policy.json"
+         },
+         "minItems":1,
+         "maxItems":1
+      },
+      "pre_login_banner":{
+         "description":"EasyUCS pre_login_banner section",
+         "type":"string",
+         "pattern": "^[\\t\\n\\x0b\\x0c\\r !\"\"#$%&'\\(\\)\\*\\+,\\-\\./:;<=>\\?@\\[\\\\\\]\\^_`\\{\\|\\}~a-zA-Z0-9]{0,3200}$"
+      },
+      "qos_system_class":{
+         "description":"EasyUCS config/qos_system_class section",
+         "type":"array",
+         "items":{
+            "description":"EasyUCS config/qos_system_class element",
+            "type":"object",
+            "$ref":"config/qos_system_class.json"
+         },
+         "minItems":1
+      },
+      "radius":{
+         "description":"EasyUCS config/radius section",
+         "type":"array",
+         "items":{
+            "description":"EasyUCS config/radius element",
+            "type":"object",
+            "$ref":"config/radius.json"
+         },
+         "minItems":1,
+         "maxItems":1
+      },
+      "roles":{
+         "description":"EasyUCS config/roles section",
+         "type":"array",
+         "items":{
+            "description":"EasyUCS config/roles element",
+            "type":"object",
+            "$ref":"config/roles.json"
+         },
+         "minItems":1
+      },
+      "san_pin_groups":{
+         "description":"EasyUCS config/san_pin_groups section",
+         "type":"array",
+         "items":{
+            "description":"EasyUCS config/san_pin_groups element",
+            "type":"object",
+            "$ref":"config/san_pin_groups.json"
+         },
+         "minItems":1
+      },
+      "san_port_channels":{
+         "description":"EasyUCS config/san_port_channels section",
+         "type":"array",
+         "items":{
+            "description":"EasyUCS config/san_port_channels element",
+            "type":"object",
+            "$ref":"config/san_port_channels.json"
+         },
+         "minItems":1
+      },
+      "san_storage_ports":{
+         "description":"EasyUCS config/san_storage_ports section",
+         "type":"array",
+         "items":{
+            "description":"EasyUCS config/san_storage_ports element",
+            "type":"object",
+            "$ref":"config/san_storage_ports.json"
+         },
+         "minItems":1
+      },
+      "san_uplink_ports":{
+         "description":"EasyUCS config/san_uplink_ports section",
+         "type":"array",
+         "items":{
+            "description":"EasyUCS config/san_uplink_ports element",
+            "type":"object",
+            "$ref":"config/san_uplink_ports.json"
+         },
+         "minItems":1
+      },
+      "san_unified_ports":{
+         "description":"EasyUCS config/san_unified_ports section",
+         "type":"array",
+         "items":{
+            "description":"EasyUCS config/san_unified_ports element",
+            "type":"object",
+            "$ref":"config/san_unified_ports.json"
+         },
+         "minItems":1
+      },
+      "sel_policy":{
+         "description":"EasyUCS config/sel_policy section",
+         "type":"array",
+         "items":{
+            "description":"EasyUCS config/sel_policy element",
+            "type":"object",
+            "$ref":"config/sel_policy.json"
+         },
+         "minItems":1,
+         "maxItems":1
+      },
+      "server_ports":{
+         "description":"EasyUCS config/server_ports section",
+         "type":"array",
+         "items":{
+            "description":"EasyUCS config/server_ports element",
+            "type":"object",
+            "$ref":"config/server_ports.json"
+         },
+         "minItems":1
+      },
+      "slow_drain_timers": {
+         "description": "EasyUCS config/slow_drain_timers section",
+         "type": "array",
+         "items": {
+            "description": "EasyUCS config/slow_drain_timers element",
+            "type": "object",
+            "$ref": "config/slow_drain_timers.json"
+         },
+         "minItems": 1,
+         "maxItems": 1
+      },
+      "storage_vsans":{
+         "description":"EasyUCS config/storage_vsans section",
+         "type":"array",
+         "items":{
+            "description":"EasyUCS config/storage_vsans element",
+            "type":"object",
+            "$ref":"config/storage_vsans.json"
+         },
+         "minItems":1
+      },
+      "switching_mode":{
+         "description":"EasyUCS config/switching_mode section",
+         "type":"array",
+         "items":{
+            "description":"EasyUCS config/switching_mode element",
+            "type":"object",
+            "$ref":"config/switching_mode.json"
+         },
+         "minItems":1,
+         "maxItems":1
+      },
+      "system":{
+         "description":"EasyUCS config/system section",
+         "type":"array",
+         "items":{
+            "description":"EasyUCS config/system element",
+            "type":"object",
+            "$ref":"config/system.json"
+         },
+         "minItems":1,
+         "maxItems":1
+      },
+      "tacacs":{
+         "description":"EasyUCS config/tacacs section",
+         "type":"array",
+         "items":{
+            "description":"EasyUCS config/tacacs element",
+            "type":"object",
+            "$ref":"config/tacacs.json"
+         },
+         "minItems":1,
+         "maxItems":1
+      },
+      "timezone_mgmt":{
+         "description":"EasyUCS config/timezone_mgmt section",
+         "type":"array",
+         "items":{
+            "description":"EasyUCS config/timezone_mgmt element",
+            "type":"object",
+            "$ref":"config/timezone_mgmt.json"
+         },
+         "minItems":1,
+         "maxItems":1
+      },
+      "ucs_central":{
+         "description":"EasyUCS config/ucs_central section",
+         "type":"array",
+         "items":{
+            "description":"EasyUCS config/ucs_central element",
+            "type":"object",
+            "$ref":"config/ucs_central.json"
+         },
+         "minItems":1,
+         "maxItems":1
+      },
+      "udld_link_policies":{
+         "description":"EasyUCS config/udld_link_policies section",
+         "type":"array",
+         "items":{
+            "description":"EasyUCS config/udld_link_policies element",
+            "type":"object",
+            "$ref":"config/udld_link_policies.json"
+         },
+         "minItems":1
+      },
+      "unified_storage_ports":{
+         "description":"EasyUCS config/unified_storage_ports section",
+         "type":"array",
+         "items":{
+            "description":"EasyUCS config/unified_storage_ports element",
+            "type":"object",
+            "$ref":"config/unified_storage_ports.json"
+         },
+         "minItems":1
+      },
+      "vlan_groups":{
+         "description":"EasyUCS config/vlan_groups section",
+         "type":"array",
+         "items":{
+            "description":"EasyUCS config/vlan_groups element",
+            "type":"object",
+            "$ref":"config/vlan_groups.json"
+         },
+         "minItems":1
+      },
+      "vlans":{
+         "description":"EasyUCS config/vlans section",
+         "type":"array",
+         "items":{
+            "description":"EasyUCS config/vlans element",
+            "type":"object",
+            "$ref":"config/vlans.json"
+         },
+         "minItems":1
+      },
+      "vsans":{
+         "description":"EasyUCS config/vsans section",
+         "type":"array",
+         "items":{
+            "description":"EasyUCS config/vsans element",
+            "type":"object",
+            "$ref":"config/vsans.json"
+         },
+         "minItems":1
+      },
+      "unified_uplink_ports":{
+         "description":"EasyUCS config/unified_uplink_ports section",
+         "type":"array",
+         "items":{
+            "description":"EasyUCS config/unified_uplink_ports element",
+            "type":"object",
+            "$ref":"config/unified_uplink_ports.json"
+         },
+         "minItems":1
+      },
+      "orgs":{
+         "description":"EasyUCS config/orgs section",
+         "type":"array",
+         "items":{
+            "description":"EasyUCS config/org_root element",
+            "type":"object",
+            "$ref":"config/org_root.json"
+         },
+         "minItems":1,
+         "maxItems":1
+      }
+   },
+   "additionalProperties":false,
+   "$comment": "Below is for supporting any additional commented property starting with a #",
+   "patternProperties": {
+      "^#": {}
+   }
+}

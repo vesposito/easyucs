@@ -1,0 +1,25 @@
+{
+   "id":"ucs_system_config_default_vnic_behavior#",
+   "$schema":"http://json-schema.org/draft-07/schema#",
+   "title":"EasyUCS ucs system config orgs default_vnic_behavior section",
+   "description":"EasyUCS ucs system config orgs default_vnic_behavior section JSON schema",
+   "type":"object",
+   "properties": {
+      "action":{
+         "description":"Action",
+         "type":"string",
+         "default":"hw-inherit",
+         "enum": [
+            "hw-inherit",
+            "none"
+         ]
+      },
+      "vnic_template":{
+         "description":"vNIC Template",
+         "type":"string",
+         "default":"",
+         "pattern": "^[\\-\\.:_a-zA-Z0-9]{0,16}$"
+      }
+   },
+   "additionalProperties":false
+}

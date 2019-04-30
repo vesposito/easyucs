@@ -1,0 +1,36 @@
+{
+   "id":"ucs_system_config_locales#",
+   "$schema":"http://json-schema.org/draft-07/schema#",
+   "title":"EasyUCS ucs system config locales section",
+   "description":"EasyUCS ucs system config locales section JSON schema",
+   "type":"object",
+   "properties":{
+      "name":{
+         "description":"Locale Name",
+         "type":"string",
+         "default": "",
+         "pattern": "^[\\-\\.:_a-zA-Z0-9]{1,16}$"
+      },
+      "descr": {
+         "description": "Description of the Locale",
+         "type": "string",
+         "default": "",
+         "pattern": "^[ !#$%&\\(\\)\\*\\+,\\-\\./:;\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{0,256}$"
+      },
+      "organizations": {
+         "description": "Organizations assigned to the Locale",
+         "type": "array",
+         "items": {
+            "type": "string",
+            "description": "Organization assigned to the Locale (full path)",
+            "default": "",
+            "pattern": "^[\\-\\./:_a-zA-Z0-9]{1,128}$"
+         },
+         "minItems": 1
+      }
+   },
+   "required":[
+      "name"
+   ],
+   "additionalProperties":false
+}

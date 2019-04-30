@@ -1,0 +1,100 @@
+{
+   "id":"ucs_system_config_tacacs#",
+   "$schema":"http://json-schema.org/draft-07/schema#",
+   "title":"EasyUCS ucs system config tacacs section",
+   "description":"EasyUCS ucs system config tacacs section JSON schema",
+   "type":"object",
+   "properties":{
+      "timeout":{
+         "description":"TACACS+ Timeout",
+         "type":"string",
+         "default":"5"
+      },
+      "providers":{
+         "description":"TACACS+ Providers List",
+         "type":"array",
+         "items":{
+            "type":"object",
+            "description":"TACACS+ Provider",
+            "properties":{
+               "hostname":{
+                  "description":"TACACS+ Provider Hostname/FQDN/IP Address",
+                  "type":"string"
+               },
+               "order":{
+                  "description":"TACACS+ Provider Order",
+                  "type":"string",
+                  "default":"lowest-available",
+                  "enum":[
+                     "0",
+                     "1",
+                     "2",
+                     "3",
+                     "4",
+                     "5",
+                     "6",
+                     "7",
+                     "8",
+                     "9",
+                     "10",
+                     "11",
+                     "12",
+                     "13",
+                     "14",
+                     "15",
+                     "16",
+                     "lowest-available"
+                  ]
+               },
+               "key":{
+                  "description":"TACACS+ Provider SSL Encryption Key",
+                  "type":"string"
+               },
+               "port":{
+                  "description":"TACACS+ Provider Port",
+                  "type":"string",
+                  "default":"49"
+               },
+               "timeout":{
+                  "description":"TACACS+ Provider Timeout",
+                  "type":"string",
+                  "default":"5"
+               }
+            },
+            "additionalProperties":false,
+            "required":[
+               "hostname"
+            ]
+         },
+         "minItems":1
+      },
+      "provider_groups":{
+         "description":"TACACS+ Provider Groups List",
+         "type":"array",
+         "items":{
+            "type":"object",
+            "description":"TACACS+ Provider Group",
+            "properties":{
+               "name":{
+                  "description":"TACACS+ Provider Group Name",
+                  "type":"string"
+               },
+               "included_providers":{
+                  "description":"TACACS+ Provider Group Included Providers",
+                  "type":"array",
+                  "items":{
+                     "description":"TACACS+ Provider Group Included Provider",
+                     "type":"string"
+                  }
+               }
+            },
+            "additionalProperties":false,
+            "required":[
+               "name"
+            ]
+         },
+         "minItems":1
+      }
+   },
+   "additionalProperties":false
+}

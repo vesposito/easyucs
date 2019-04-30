@@ -1,0 +1,24 @@
+{
+   "id":"ucs_system_config_timezone_mgmt#",
+   "$schema":"http://json-schema.org/draft-07/schema#",
+   "title":"EasyUCS ucs system config timezone_mgmt section",
+   "description":"EasyUCS ucs system config timezone_mgmt section JSON schema",
+   "type":"object",
+   "properties":{
+      "zone":{
+         "description":"Time Zone",
+         "type":"string",
+         "default":""
+      },
+      "ntp":{
+         "description":"NTP servers list",
+         "type":"array",
+         "items":{
+            "description":"NTP server",
+            "type":"string"
+         },
+         "minItems":1
+      }
+   },
+   "additionalProperties":false
+}

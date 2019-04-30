@@ -1,0 +1,10 @@
+{
+   "id": "ucs_system_inventory#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS system inventory section",
+   "description": "EasyUCS system inventory section JSON schema",
+   "type": "object",
+   "properties": {
+   },
+   "additionalProperties": true
+}

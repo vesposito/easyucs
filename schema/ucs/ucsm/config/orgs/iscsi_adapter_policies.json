@@ -1,0 +1,70 @@
+{
+   "id": "ucs_system_config_iscsi_adapter_policies#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS ucs system config orgs iscsi_adapter_policies section",
+   "description": "EasyUCS ucs system config orgs iscsi_adapter_policies section JSON schema",
+   "type": "object",
+   "properties": {
+      "name": {
+         "description": "iSCSI Adapter Policy Name",
+         "type": "string",
+         "default": "",
+         "pattern": "^[\\-\\.:_a-zA-Z0-9]{1,16}$"
+      },
+      "connection_timeout": {
+         "description": "iSCSI Adapter Policy - Connection Timeout",
+         "type": "string",
+         "default": "0",
+         "pattern": "^[0-9]$|^[1-9][0-9]$|^1[0-9][0-9]$|^2[0-4][0-9]$|^25[0-5]$"
+      },
+      "lun_busy_retry_count": {
+         "description": "iSCSI Adapter Policy - LUN Busy Retry Count",
+         "type": "string",
+         "default": "0",
+         "pattern": "^[0-9]$|^[1-5][0-9]$|^60$"
+      },
+      "dhcp_timeout": {
+         "description": "iSCSI Adapter Policy - DHCP Timeout",
+         "type": "string",
+         "default": "60",
+         "pattern": "^[6-9][0-9]$|^[1-2][0-9][0-9]$|^300$"
+      },
+      "enable_tcp_timestamp": {
+         "description": "iSCSI Adapter Policy - Enable TCP Timestamp",
+         "type": "string",
+         "default": "no",
+         "enum": [
+            "false",
+            "no",
+            "true",
+            "yes"
+         ]
+      },
+      "hba_mode": {
+         "description": "iSCSI Adapter Policy - HBA Mode",
+         "type": "string",
+         "default": "no",
+         "enum": [
+            "false",
+            "no",
+            "true",
+            "yes"
+         ]
+      },
+      "boot_to_target": {
+         "description": "iSCSI Adapter Policy - Boot To Target",
+         "type": "string",
+         "default": "no",
+         "enum": [
+            "false",
+            "no",
+            "true",
+            "yes"
+         ]
+      }
+   },
+   "additionalProperties": false,
+   "required": [
+      "name"
+   ]
+}

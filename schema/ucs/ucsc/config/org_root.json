@@ -1,0 +1,91 @@
+{
+   "id": "ucs_central_config_org_root#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS ucs central config orgs section (org-root)",
+   "description": "EasyUCS ucs central config orgs section (org-root) JSON schema",
+   "type": "object",
+   "properties": {
+      "name": {
+         "description": "Root Organization Name",
+         "type": "string",
+         "default": "root",
+         "enum": [
+            "root"
+         ]
+      },
+      "descr": {
+         "description": "Description of Root Organization",
+         "type": "string",
+         "default": "",
+         "pattern": "^[ !#$%&\\(\\)\\*\\+,\\-\\./:;\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{0,256}$"
+      },
+      "orgs": {
+         "description": "EasyUCS config/orgs/orgs section",
+         "type": "array",
+         "items": {
+            "description": "EasyUCS config/orgs/orgs element",
+            "type": "object",
+            "$ref": "./orgs.json"
+         },
+         "minItems": 1
+      },
+      "mac_pools": {
+         "description": "EasyUCS config/orgs/mac_pools section",
+         "type": "array",
+         "items": {
+            "description:": "EasyUCS config/orgs/mac_pools element",
+            "type": "object",
+            "$ref": "orgs/mac_pools.json"
+         },
+         "minItems": 1
+      },
+      "uuid_pools": {
+         "description": "EasyUCS config/orgs/uuid_pools section",
+         "type": "array",
+         "items": {
+            "description:": "EasyUCS config/orgs/uuid_pools element",
+            "type": "object",
+            "$ref": "orgs/uuid_pools.json"
+         },
+         "minItems": 1
+      },
+      "wwnn_pools": {
+         "description": "EasyUCS config/orgs/wwnn_pools section",
+         "type": "array",
+         "items": {
+            "description:": "EasyUCS config/orgs/wwnn_pools element",
+            "type": "object",
+            "$ref": "orgs/wwnn_pools.json"
+         },
+         "minItems": 1
+      },
+      "wwpn_pools": {
+         "description": "EasyUCS config/orgs/wwpn_pools section",
+         "type": "array",
+         "items": {
+            "description:": "EasyUCS config/orgs/wwpn_pools element",
+            "type": "object",
+            "$ref": "orgs/wwpn_pools.json"
+         },
+         "minItems": 1
+      },
+      "ip_pools": {
+         "description": "EasyUCS config/orgs/ip_pools section",
+         "type": "array",
+         "items": {
+            "description:": "EasyUCS config/orgs/ip_pools element",
+            "type": "object",
+            "$ref": "orgs/ip_pools.json"
+         },
+         "minItems": 1
+      }
+   },
+   "required": [
+      "name"
+   ],
+   "additionalProperties": false,
+   "$comment": "Below is for supporting any additional commented property starting with a #",
+   "patternProperties": {
+      "^#": {}
+   }
+}

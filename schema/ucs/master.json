@@ -1,0 +1,200 @@
+{
+   "id":"easyucs_master#",
+   "$schema":"http://json-schema.org/draft-07/schema#",
+   "title":"EasyUCS master schema",
+   "description":"EasyUCS master JSON schema",
+   "type":"object",
+   "properties":{
+      "easyucs":{
+         "description": "easyucs section",
+         "type":"object",
+         "$ref":"easyucs.json"
+      },
+      "config":{
+         "description":"config section",
+         "type":"object"
+      },
+      "device":{
+         "description":"device section",
+         "type":"object"
+      },
+      "inventory":{
+         "description":"inventory section",
+         "type":"object"
+      }
+   },
+   "additionalProperties":false,
+   "required": [
+      "easyucs"
+   ],
+   "dependencies": {
+      "config": {
+         "allOf": [
+            {
+               "not": {
+                  "required": [
+                     "device"
+                  ]
+               }
+            },
+            {
+               "not": {
+                  "required": [
+                     "inventory"
+                  ]
+               }
+            }
+         ]
+      },
+      "inventory": {
+         "allOf": [
+            {
+               "not": {
+                  "required": [
+                     "device"
+                  ]
+               }
+            },
+            {
+               "not": {
+                  "required": [
+                     "config"
+                  ]
+               }
+            }
+         ]
+      },
+      "device": {
+         "allOf": [
+            {
+               "not": {
+                  "required": [
+                     "config"
+                  ]
+               }
+            },
+            {
+               "not": {
+                  "required": [
+                     "inventory"
+                  ]
+               }
+            }
+         ]
+      }
+   },
+   "if": {
+      "type": "object",
+      "properties": {
+         "easyucs": {
+            "type": "object",
+            "properties": {
+               "metadata": {
+                  "type": "array",
+                  "items": {
+                     "type": "object",
+                     "properties": {
+                        "device_type": {
+                           "enum": [
+                              "ucsm"
+                           ]
+                        }
+                     }
+                  }
+               }
+            }
+         }
+      }
+   },
+   "then": {
+      "type": "object",
+      "properties": {
+         "config": {
+            "type": "object",
+            "$ref": "ucsm/config.json"
+         },
+         "inventory": {
+            "type": "object",
+            "$ref": "ucsm/inventory.json"
+         },
+         "device": {
+            "type": "object",
+            "$ref": "ucsm/device.json"
+         },
+         "easyucs": {
+            "type": "object",
+            "properties": {
+               "options": {
+                  "type": "array",
+                  "items": {
+                     "type": "object",
+                     "not": {
+                        "required": [
+                           "set_drives_to_status"
+                        ]
+                     }
+                  }
+               }
+            }
+         }
+      }
+   },
+   "else": {
+      "if": {
+         "type": "object",
+         "properties": {
+            "easyucs": {
+               "type": "object",
+               "properties": {
+                  "metadata": {
+                     "type": "array",
+                     "items": {
+                        "type": "object",
+                        "properties": {
+                           "device_type": {
+                              "enum": [
+                                 "cimc"
+                              ]
+                           }
+                        }
+                     }
+                  }
+               }
+            }
+         }
+      },
+      "then": {
+         "type": "object",
+         "properties": {
+            "config": {
+               "type": "object",
+               "$ref": "cimc/config.json"
+            },
+            "inventory": {
+               "type": "object",
+               "$ref": "cimc/inventory.json"
+            },
+            "device": {
+               "type": "object",
+               "$ref": "cimc/device.json"
+            },
+            "easyucs": {
+               "type": "object",
+               "properties": {
+                  "options": {
+                     "type": "array",
+                     "items": {
+                        "type": "object",
+                        "not": {
+                           "required": [
+                              "discover_server_ports_in_order"
+                           ]
+                        }
+                     }
+                  }
+               }
+            }
+         }
+      }
+   }
+}

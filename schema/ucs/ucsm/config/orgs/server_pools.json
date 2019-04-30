@@ -1,0 +1,73 @@
+{
+   "id": "ucs_system_config_server_pools#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS ucs system config orgs server_pools section",
+   "description": "EasyUCS ucs system config orgs server_pools section JSON schema",
+   "type": "object",
+   "properties": {
+      "name": {
+         "description": "Server Pool Name",
+         "type": "string",
+         "default": "",
+         "pattern": "^[\\-\\.:_a-zA-Z0-9]{1,32}$"
+      },
+      "descr": {
+         "description": "Description of Server Pool",
+         "type": "string",
+         "default": "",
+         "pattern": "^[ !#$%&\\(\\)\\*\\+,\\-\\./:;\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{0,256}$"
+      },
+      "servers": {
+         "description": "List of servers part of Server Pool",
+         "type": "array",
+         "items": {
+            "oneOf": [
+               {
+                  "description": "Server part of Server Pool",
+                  "type": "object",
+                  "properties": {
+                     "chassis_id": {
+                        "description": "Chassis ID of server part of Server Pool",
+                        "type": "string",
+                        "default": "",
+                        "pattern": "^[1-9]$|^[0-9][0-9]$|^[0-1][0-9][0-9]$|^2[0-4][0-9]$|^25[0-5]$"
+                     },
+                     "slot_id": {
+                        "description": "Slot ID of server part of Server Pool",
+                        "type": "string",
+                        "default": "",
+                        "pattern": "^[1-8]$"
+                     }
+                  },
+                  "additionalProperties": false,
+                  "required": [
+                     "chassis_id",
+                     "slot_id"
+                  ]
+               },
+               {
+                  "description": "Server part of Server Pool",
+                  "type": "object",
+                  "properties": {
+                     "rack_id": {
+                        "description": "Rack ID of server part of Server Pool",
+                        "type": "string",
+                        "default": "",
+                        "pattern": "^[1-9]$|^[0-9][0-9]$|^[0-1][0-9][0-9]$|^2[0-4][0-9]$|^25[0-5]$"
+                     }
+                  },
+                  "additionalProperties": false,
+                  "required": [
+                     "rack_id"
+                  ]
+               }
+            ]
+         },
+         "minItems": 1
+      }
+   },
+   "additionalProperties": false,
+   "required": [
+      "name"
+   ]
+}

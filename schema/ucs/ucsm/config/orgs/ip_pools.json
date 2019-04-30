@@ -1,0 +1,236 @@
+{
+   "id": "ucs_system_config_ip_pools#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS ucs system config orgs ip_pools section",
+   "description": "EasyUCS ucs system config orgs ip_pools section JSON schema",
+   "type": "object",
+   "properties": {
+      "name": {
+         "description": "IP Pool Name",
+         "type": "string",
+         "default": "",
+         "pattern": "^[\\-\\.:_a-zA-Z0-9]{1,32}$"
+      },
+      "descr": {
+         "description": "Description of IP Pool",
+         "type": "string",
+         "default": "",
+         "pattern": "^[ !#$%&\\(\\)\\*\\+,\\-\\./:;\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{0,256}$"
+      },
+      "order": {
+         "description": "Assignment Order of IP Pool",
+         "type": "string",
+         "default": "default",
+         "enum": [
+            "default",
+            "sequential"
+         ]
+      },
+      "ip_blocks": {
+         "description": "Blocks of IPv4 Addresses in IP Pool",
+         "type": "array",
+         "items": {
+            "type": "object",
+            "oneOf": [
+               {
+                  "properties": {
+                     "from": {
+                        "description": "First IPv4 Address of Block",
+                        "type": "string",
+                        "default": "0.0.0.0",
+                        "format": "ipv4"
+                     },
+                     "to": {
+                        "description": "Last IPv4 Address of Block",
+                        "type": "string",
+                        "default": "0.0.0.1",
+                        "format": "ipv4"
+                     },
+                     "netmask": {
+                        "description": "Subnet Mask of Block",
+                        "type": "string",
+                        "default": "255.255.255.0",
+                        "format": "ipv4"
+                     },
+                     "gateway": {
+                        "description": "Default IPv4 Gateway of Block",
+                        "type": "string",
+                        "default": "0.0.0.0",
+                        "format": "ipv4"
+                     },
+                     "primary_dns": {
+                        "description": "Primary IPv4 DNS of Block",
+                        "type": "string",
+                        "default": "0.0.0.0",
+                        "format": "ipv4"
+                     },
+                     "secondary_dns": {
+                        "description": "Secondary IPv4 DNS of Block",
+                        "type": "string",
+                        "default": "0.0.0.0",
+                        "format": "ipv4"
+                     }
+                  },
+                  "additionalProperties": false,
+                  "required": [
+                     "from",
+                     "to"
+                  ]
+               },
+               {
+                  "properties": {
+                     "from": {
+                        "description": "First IPv4 Address of Block",
+                        "type": "string",
+                        "default": "0.0.0.0",
+                        "format": "ipv4"
+                     },
+                     "size": {
+                        "description": "Size of IPv4 Address Block",
+                        "type": "string",
+                        "default": "1",
+                        "pattern": "^[1-9]$|^[1-9][0-9]$|^[1-9][0-9][0-9]$|^1000$"
+                     },
+                     "netmask": {
+                        "description": "Subnet Mask of Block",
+                        "type": "string",
+                        "default": "255.255.255.0",
+                        "format": "ipv4"
+                     },
+                     "gateway": {
+                        "description": "Default Gateway of Block",
+                        "type": "string",
+                        "default": "0.0.0.0",
+                        "format": "ipv4"
+                     },
+                     "primary_dns": {
+                        "description": "Primary DNS of Block",
+                        "type": "string",
+                        "default": "0.0.0.0",
+                        "format": "ipv4"
+                     },
+                     "secondary_dns": {
+                        "description": "Secondary DNS of Block",
+                        "type": "string",
+                        "default": "0.0.0.0",
+                        "format": "ipv4"
+                     }
+                  },
+                  "additionalProperties": false,
+                  "required": [
+                     "from",
+                     "size"
+                  ]
+               }
+            ]
+         },
+         "minItems": 1
+      },
+      "ipv6_blocks": {
+         "description": "Blocks of IPv6 Addresses in IP Pool",
+         "type": "array",
+         "items": {
+            "type": "object",
+            "oneOf": [
+               {
+                  "properties": {
+                     "from": {
+                        "description": "First IPv6 Address of Block",
+                        "type": "string",
+                        "default": "::",
+                        "format": "ipv6"
+                     },
+                     "to": {
+                        "description": "Last IPv6 Address of Block",
+                        "type": "string",
+                        "default": "::",
+                        "format": "ipv6"
+                     },
+                     "prefix": {
+                        "description": "IPv6 Prefix of Block",
+                        "type": "string",
+                        "default": "64",
+                        "pattern": "^[1-9]$|^[1-9][0-9]$|^1[0-1][0-9]$|^12[0-7]$"
+                     },
+                     "gateway": {
+                        "description": "Default IPv6 Gateway of Block",
+                        "type": "string",
+                        "default": "::",
+                        "format": "ipv6"
+                     },
+                     "primary_dns": {
+                        "description": "Primary IPv6 DNS of Block",
+                        "type": "string",
+                        "default": "::",
+                        "format": "ipv6"
+                     },
+                     "secondary_dns": {
+                        "description": "Secondary IPv6 DNS of Block",
+                        "type": "string",
+                        "default": "::",
+                        "format": "ipv6"
+                     }
+                  },
+                  "additionalProperties": false,
+                  "required": [
+                     "from",
+                     "to",
+                     "prefix"
+                  ]
+               },
+               {
+                  "properties": {
+                     "from": {
+                        "description": "First IPv6 Address of Block",
+                        "type": "string",
+                        "default": "::",
+                        "format": "ipv6"
+                     },
+                     "size": {
+                        "description": "Size of IPv6 Address Block",
+                        "type": "string",
+                        "default": "1",
+                        "pattern": "^[1-9]$|^[1-9][0-9]$|^[1-9][0-9][0-9]$|^1000$"
+                     },
+                     "prefix": {
+                        "description": "IPv6 Prefix of Block",
+                        "type": "string",
+                        "default": "64",
+                        "pattern": "^[1-9]$|^[1-9][0-9]$|^1[0-1][0-9]$|^12[0-7]$"
+                     },
+                     "gateway": {
+                        "description": "Default IPv6 Gateway of Block",
+                        "type": "string",
+                        "default": "::",
+                        "format": "ipv6"
+                     },
+                     "primary_dns": {
+                        "description": "Primary IPv6 DNS of Block",
+                        "type": "string",
+                        "default": "::",
+                        "format": "ipv6"
+                     },
+                     "secondary_dns": {
+                        "description": "Secondary IPv6 DNS of Block",
+                        "type": "string",
+                        "default": "::",
+                        "format": "ipv6"
+                     }
+                  },
+                  "additionalProperties": false,
+                  "required": [
+                     "from",
+                     "size",
+                     "prefix"
+                  ]
+               }
+            ]
+         },
+         "minItems": 1
+      }
+   },
+   "additionalProperties": false,
+   "required": [
+      "name"
+   ]
+}

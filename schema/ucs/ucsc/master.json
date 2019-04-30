@@ -1,0 +1,44 @@
+{
+   "id":"ucs_ucsc_master#",
+   "$schema":"http://json-schema.org/draft-07/schema#",
+   "title":"EasyUCS ucsc master schema",
+   "description":"EasyUCS ucsc master JSON schema",
+   "type":"object",
+   "properties":{
+      "easyucs":{
+         "description": "easyucs section",
+         "type":"object",
+         "$ref":"easyucs.json"
+      },
+      "config":{
+         "description":"config section",
+         "type":"object",
+         "$ref":"config.json"
+      },
+      "device":{
+         "description":"device section",
+         "type":"object",
+         "$ref":"device.json"
+      }
+   },
+   "additionalProperties":false,
+   "required": [
+      "easyucs"
+   ],
+   "dependencies": {
+      "config": {
+         "not": {
+            "required": [
+               "device"
+            ]
+         }
+      },
+      "device": {
+         "not": {
+            "required": [
+               "config"
+            ]
+         }
+      }
+   }
+}

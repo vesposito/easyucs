@@ -1,0 +1,295 @@
+{
+   "easyucs":{
+      "metadata":[
+         {
+            "file_type": "config",
+            "device_type": "ucsm",
+            "category":"custom",
+            "subcategory":"samples",
+            "name":"UCS Manager boot_policy section configuration sample",
+            "easyucs_version":"0.9.0",
+            "revision": "1.0"
+         }
+      ]
+   },
+   "config":{
+      "orgs":[
+         {
+            "name":"root",
+            "boot_policies":[
+               {
+                  "name":"pythonBP2",
+                  "descr": "test",
+                  "boot_order": [
+                     {
+                        "device_type": "cd-dvd",
+                        "order":"1"
+                     },
+                     {
+                        "device_type": "san",
+                        "order":"2",
+                        "vhbas":[
+                           {
+                              "type":"primary",
+                              "name":"py1",
+                              "targets":[
+                                 {
+                                    "lun":"0",
+                                    "type":"primary",
+                                    "wwpn":"50:0A:09:82:9D:AF:1E:6D"
+                                 },
+                                 {
+                                    "lun":"0",
+                                    "type":"secondary",
+                                    "wwpn":"50:0A:09:81:8D:AF:1E:6D"
+                                 }
+                              ]
+                           },
+                           {
+                              "type":"secondary",
+                              "name":"py2",
+                              "targets":[
+                                 {
+                                    "lun":"0",
+                                    "type":"primary",
+                                    "wwpn":"50:0A:09:81:9D:AF:1E:6D"
+                                 },
+                                 {
+                                    "lun":"0",
+                                    "type":"secondary",
+                                    "wwpn":"50:0A:09:82:8D:AF:1E:6D"
+                                 }
+                              ]
+                           }
+                        ]
+                     },
+                     {
+                        "device_type": "lan",
+                        "vnics": [
+                           {
+                              "type": "primary",
+                              "name": "eth0"
+                           },
+                           {
+                              "type": "secondary",
+                              "name": "eth1"
+                           }
+                        ],
+                        "order":"3"
+                     },
+                     {
+                        "device_type": "local_disk",
+                        "order":"4"
+                     }
+                  ]
+               },
+               {
+                  "name":"pythonBP3",
+                  "descr": "test",
+                  "boot_order": [
+                     {
+                        "device_type": "cd-dvd",
+                        "order":"1"
+                     },
+                     {
+                        "device_type": "san",
+                        "order":"2",
+                        "vhbas":[
+                           {
+                              "type":"primary",
+                              "name":"py1",
+                              "targets":[
+                                 {
+                                    "lun":"0",
+                                    "type":"primary",
+                                    "wwpn":"50:0A:09:82:9D:AF:1E:6D"
+                                 },
+                                 {
+                                    "lun":"0",
+                                    "type":"secondary",
+                                    "wwpn":"50:0A:09:81:8D:AF:1E:6D"
+                                 }
+                              ]
+                           },
+                           {
+                              "type":"secondary",
+                              "name":"py2",
+                              "targets":[
+                                 {
+                                    "lun":"0",
+                                    "type":"primary",
+                                    "wwpn":"50:0A:09:81:9D:AF:1E:6D"
+                                 },
+                                 {
+                                    "lun":"0",
+                                    "type":"secondary",
+                                    "wwpn":"50:0A:09:82:8D:AF:1E:6D"
+                                 }
+                              ]
+                           }
+                        ]
+                     },
+                     {
+                        "device_type": "lan",
+                        "vnics": [
+                           {
+                              "type": "primary",
+                              "name": "eth0"
+                           },
+                           {
+                              "type": "secondary",
+                              "name": "eth1"
+                           }
+                        ],
+                        "order":"3"
+                     },
+                     {
+                        "device_type": "local_disk",
+                        "order":"4"
+                     }
+                  ]
+               }
+            ],
+            "orgs":[
+               {
+                  "name":"org50",
+                  "boot_policies":[
+                     {
+                        "name":"pythonBP2",
+                        "descr": "test",
+                        "boot_order": [
+                           {
+                              "device_type": "cd-dvd",
+                              "order":"1"
+                           },
+                           {
+                              "device_type": "san",
+                              "order":"2",
+                              "vhbas":[
+                                 {
+                                    "type":"primary",
+                                    "name":"py1",
+                                    "targets":[
+                                       {
+                                          "lun":"0",
+                                          "type":"primary",
+                                          "wwpn":"50:0A:09:82:9D:AF:1E:6D"
+                                       },
+                                       {
+                                          "lun":"0",
+                                          "type":"secondary",
+                                          "wwpn":"50:0A:09:81:8D:AF:1E:6D"
+                                       }
+                                    ]
+                                 },
+                                 {
+                                    "type":"secondary",
+                                    "name":"py2",
+                                    "targets":[
+                                       {
+                                          "lun":"0",
+                                          "type":"primary",
+                                          "wwpn":"50:0A:09:81:9D:AF:1E:6D"
+                                       },
+                                       {
+                                          "lun":"0",
+                                          "type":"secondary",
+                                          "wwpn":"50:0A:09:82:8D:AF:1E:6D"
+                                       }
+                                    ]
+                                 }
+                              ]
+                           },
+                           {
+                              "device_type": "lan",
+                              "vnics": [
+                                 {
+                                    "type": "primary",
+                                    "name": "eth0"
+                                 },
+                                 {
+                                    "type": "secondary",
+                                    "name": "eth1"
+                                 }
+                              ],
+                              "order":"3"
+                           },
+                           {
+                              "device_type": "local_disk",
+                              "order":"4"
+                           }
+                        ]
+                     },
+                     {
+                        "name":"pythonBP3",
+                        "descr": "test",
+                        "boot_order": [
+                           {
+                              "device_type": "cd-dvd",
+                              "order":"1"
+                           },
+                           {
+                              "device_type": "san",
+                              "order":"2",
+                              "vhbas":[
+                                 {
+                                    "type":"primary",
+                                    "name":"py1",
+                                    "targets":[
+                                       {
+                                          "lun":"0",
+                                          "type":"primary",
+                                          "wwpn":"50:0A:09:82:9D:AF:1E:6D"
+                                       },
+                                       {
+                                          "lun":"0",
+                                          "type":"secondary",
+                                          "wwpn":"50:0A:09:81:8D:AF:1E:6D"
+                                       }
+                                    ]
+                                 },
+                                 {
+                                    "type":"secondary",
+                                    "name":"py2",
+                                    "targets":[
+                                       {
+                                          "lun":"0",
+                                          "type":"primary",
+                                          "wwpn":"50:0A:09:81:9D:AF:1E:6D"
+                                       },
+                                       {
+                                          "lun":"0",
+                                          "type":"secondary",
+                                          "wwpn":"50:0A:09:82:8D:AF:1E:6D"
+                                       }
+                                    ]
+                                 }
+                              ]
+                           },
+                           {
+                              "device_type": "lan",
+                              "vnics": [
+                                 {
+                                    "type": "primary",
+                                    "name": "eth0"
+                                 },
+                                 {
+                                    "type": "secondary",
+                                    "name": "eth1"
+                                 }
+                              ],
+                              "order":"3"
+                           },
+                           {
+                              "device_type": "local_disk",
+                              "order":"4"
+                           }
+                        ]
+                     }
+                  ]
+               }
+            ]
+         }
+      ]
+   }
+}

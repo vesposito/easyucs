@@ -1,0 +1,30 @@
+{
+   "id": "ucs_system_config_sas_expander_configuration_policies#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS ucs system config sas_expander_configuration_policies section",
+   "description": "EasyUCS ucs system config sas_expander_configuration_policies section JSON schema",
+   "type": "object",
+   "properties": {
+      "name": {
+         "description": "SAS Expander Configuration Policy Name",
+         "type": "string",
+         "pattern": "^[\\-\\.:_a-zA-Z0-9]{1,16}$"
+      },
+      "descr": {
+         "description": "Description of SAS Expander Configuration Policy",
+         "type": "string",
+         "default": "",
+         "pattern": "^[ !#$%&\\(\\)\\*\\+,\\-\\./:;\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{0,256}$"
+      },
+      "mixed_mode": {
+         "description": "SAS Expander Configuration Policy - Mixed Mode ",
+         "type": "string",
+         "default": "no-change",
+         "enum": ["default", "no-change" , "disabled", "enabled"]
+      }
+   },
+   "additionalProperties":false,
+   "required":[
+      "name"
+   ]
+}

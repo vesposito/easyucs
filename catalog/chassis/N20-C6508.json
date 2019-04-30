@@ -1,0 +1,208 @@
+{
+  "rear_file_name":"N20-C6508_rear.png",
+  "front_file_name":"N20-C6508_front.png",
+  "rear_file_size":[2862,1587],
+  "front_file_size":[2862,1587],
+  "io_modules_slots":[
+    {
+      "id":1,
+      "coord":[190,0]
+    },
+    {
+      "id":2,
+      "coord":[1462,0]
+    }
+  ],
+  "io_modules_models":[
+    {
+      "name":"N20-I6584",
+      "description":"UCS 2104XP Fabric Extender/4 external 10Gb ports"
+    },
+    {
+      "name":"UCS-IOM-2204XP",
+      "description":"UCS 2204XP I/O Module (4 External, 16 Internal 10Gb Ports)"
+    },
+    {
+      "name":"UCS-IOM-2208XP",
+      "description":"UCS 2208XP I/O Module (8 External, 32 Internal 10Gb Ports)"
+    },
+    {
+      "name":"UCS-IOM-2304",
+      "description":"UCS 2304XP I/O Module (4 External, 8 Internal 40Gb Ports)"
+    },
+    {
+      "name":"N20-CBLKI",
+      "type":"blank",
+      "description":"Fabric extender slot blanking panel for UCS 5108"
+    }
+  ],
+  "blades_slots":[
+    {
+      "id":1,
+      "coord":[185,21]
+    },
+    {
+      "id":2,
+      "coord":[1464,21]
+    },
+    {
+      "id":3,
+      "coord":[185,335]
+    },
+    {
+      "id":4,
+      "coord":[1464,335]
+    },
+    {
+      "id":5,
+      "coord":[185,650]
+    },
+    {
+      "id":6,
+      "coord":[1464,650]
+    },
+    {
+      "id":7,
+      "coord":[185,962]
+    },
+    {
+      "id":8,
+      "coord":[1464,962]
+    }
+  ],
+  "blades_models":[
+    {
+      "name":"B230-BASE-M2",
+      "description":"UCS B230 M2 Blade Server",
+      "width":"half"
+    },
+    {
+      "name":"B440-BASE-M2",
+      "description":"UCS B440 M2 Blade Server",
+      "width":"full"
+    },
+    {
+      "name":"N20-B6620-1",
+      "description":"UCS B200 M1 Blade Server",
+      "width":"half"
+    },
+    {
+      "name":"N20-B6620-2",
+      "description":"UCS B250 M1 Blade Server",
+      "width":"full"
+    },
+    {
+      "name":"N20-B6625-1",
+      "description":"UCS B200 M2 Blade Server",
+      "width":"half"
+    },
+    {
+      "name":"N20-B6730-1",
+      "description":"UCS B230 M1 Blade Server",
+      "width":"half"
+    },
+    {
+      "name":"N20-B6740-2",
+      "description":"UCS B440 M1 Blade Server",
+      "width":"full"
+    },
+    {
+      "name":"N20-B6625-2",
+      "description":"UCS B250 M2 Blade Server",
+      "width":"full"
+    },
+    {
+      "name":"UCSB-B22-M3",
+      "description":"UCS B22 M3 Blade Server",
+      "width":"half"
+    },
+    {
+      "name":"UCSB-B200-M3",
+      "description":"UCS B200 M3 Blade Server",
+      "width":"half"
+    },
+    {
+      "name":"UCSB-B200-M4",
+      "description":"UCS B200 M4 Blade Server",
+      "width":"half"
+    },
+    {
+      "name":"UCSB-B200-M5",
+      "description":"UCS B200 M5 Blade Server",
+      "width":"half"
+    },
+    {
+      "name":"UCSB-B420-M3",
+      "description":"UCS B420 M3 Blade Server",
+      "width":"full"
+    },
+    {
+      "name":"UCSB-B420-M4",
+      "description":"UCS B420 M4 Blade Server",
+      "width":"full"
+    },
+    {
+      "name":"UCSB-B480-M5",
+      "description":"UCS B480 M5 Blade Server",
+      "width":"full"
+    },
+    {
+      "name":"UCSB-EX-M4-1",
+      "description":"UCS Scalable M4 Blade Module with E7 v2 CPU",
+      "width":"full"
+    },
+    {
+      "name":"UCSB-EX-M4-2",
+      "description":"UCS Scalable B460 M4 Blade Module with E7 v3 CPU",
+      "width":"full"
+    },
+    {
+      "name":"UCSB-EX-M4-3",
+      "description":"UCS Scalable M4 Blade Module with E7 v4 CPU",
+      "width":"full"
+    },
+    {
+      "name":"N20-CBLKB1",
+      "type":"blank",
+      "description":"Blade slot blanking panel for UCS 5108/single slot",
+      "width":"half"
+    }
+  ],
+  "psus_slots":[
+    {
+      "id":1,
+      "coord":[200,1310]
+    },
+    {
+      "id":2,
+      "coord":[820,1310]
+    },
+    {
+      "id":3,
+      "coord":[1440,1310]
+    },
+    {
+      "id":4,
+      "coord":[2060,1310]
+    }
+  ],
+  "psus_models":[
+    {
+      "name":"N20-PAC5-2500W",
+      "description":"2500W 200-240VAC PSU for UCS 5108 Blade Server Chassis"
+    },
+    {
+      "name":"UCSB-PSU-2500ACPL",
+      "description":"Platinum AC PSU for N20-C6508 Blade Server Chassis"
+    },
+    {
+      "name":"UCSB-PSU-2500ACDV",
+      "description":"Platinum II AC Power Supply for UCS 5108 Chassis"
+    },
+    {
+      "name":"N20-CBLKP",
+      "type":"blank",
+      "description":"Power supply unit blanking panel for UCS 5108"
+    }
+  ]
+}

@@ -1,0 +1,239 @@
+{
+   "id":"ucs_system_config_backup_export_policy#",
+   "$schema":"http://json-schema.org/draft-07/schema#",
+   "title":"EasyUCS ucs system config backup_export_policy section",
+   "description":"EasyUCS ucs system config backup_export_policy section JSON schema",
+   "type":"object",
+   "properties":{
+      "full_state":{
+         "description":"Full State Backup Policy list",
+         "type":"array",
+         "items":{
+            "type":"object",
+            "description":"Full State Backup Policy",
+            "properties":{
+               "hostname":{
+                  "description":"Full State Backup Hostname",
+                  "type":"string",
+                  "pattern":"^$|^[a-zA-Z0-9][a-zA-Z0-9_.-]{0,63}$|^([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}$|^([0-9a-fA-F]{1,4}:){1,7}:$|^([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}$|^([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}$|^([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}$|^([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}$|^([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}$|^[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})$|^:((:[0-9a-fA-F]{1,4}){1,7}|:)$"
+               },
+               "protocol":{
+                  "description":"Full State Backup Protocol",
+                  "type":"string",
+                  "default":"none",
+                  "enum":[
+                     "ftp",
+                     "none",
+                     "scp",
+                     "sftp",
+                     "tftp",
+                     "http",
+                     "nfs-copy"
+                  ]
+               },
+               "user":{
+                  "description":"Full State Backup User",
+                  "type":"string"
+               },
+               "password":{
+                  "description":"Full State Backup Password",
+                  "type":"string"
+               },
+               "remote_file":{
+                  "description":"Full State Backup Remote File Name",
+                  "type":"string"
+               },
+               "admin_state":{
+                  "description":"Full State Backup Admin State",
+                  "type":"string",
+                  "default":"disable",
+                  "enum":[
+                     "disable",
+                     "enable"
+                  ]
+               },
+               "schedule":{
+                  "description":"Full State Backup Schedule",
+                  "type":"string",
+                  "default":"daily",
+                  "enum":[
+                     "1day",
+                     "1week",
+                     "2week",
+                     "daily",
+                     "weekly",
+                     "bi_weekly",
+                     "bi-weekly",
+                     "bi weekly"
+                  ]
+               },
+               "descr":{
+                  "description":"Full State Backup Description",
+                  "type":"string",
+                  "default":"Database Backup Policy",
+                  "pattern":"^[ !#$%&\\(\\)\\*\\+,\\-\\./:;\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{0,256}$"
+               }
+            },
+            "additionalProperties":false,
+            "if": {
+               "properties": {
+                  "admin_state": {
+                     "enum": [
+                        "enable"
+                     ]
+                  }
+               },
+               "required": [
+                  "admin_state"
+               ]
+            },
+            "then": {
+               "required": [
+                  "admin_state",
+                  "protocol",
+                  "hostname",
+                  "remote_file"
+               ]
+            },
+            "else": {
+               "required": [
+                  "admin_state"
+               ]
+            }
+         },
+         "minItems":1,
+         "maxItems":1
+      },
+      "all_configuration":{
+         "description":"All Configuration Backup Policy list",
+         "type":"array",
+         "items":{
+            "type":"object",
+            "description":"All Configuration Backup Policy",
+            "properties":{
+               "hostname":{
+                  "description":"All Configuration Backup Hostname",
+                  "type":"string",
+                  "pattern":"^$|^[a-zA-Z0-9][a-zA-Z0-9_.-]{0,63}$|^([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}$|^([0-9a-fA-F]{1,4}:){1,7}:$|^([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}$|^([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}$|^([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}$|^([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}$|^([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}$|^[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})$|^:((:[0-9a-fA-F]{1,4}){1,7}|:)$"
+               },
+               "protocol":{
+                  "description":"All Configuration Backup Protocol",
+                  "type":"string",
+                  "default":"none",
+                  "enum":[
+                     "ftp",
+                     "none",
+                     "scp",
+                     "sftp",
+                     "tftp",
+                     "http",
+                     "nfs-copy"
+                  ]
+               },
+               "user":{
+                  "description":"All Configuration Backup User",
+                  "type":"string"
+               },
+               "password":{
+                  "description":"All Configuration Backup Password",
+                  "type":"string"
+               },
+               "remote_file":{
+                  "description":"All Configuration Backup Remote File Name",
+                  "type":"string"
+               },
+               "admin_state":{
+                  "description":"All Configuration Backup Admin State",
+                  "type":"string",
+                  "default":"disable",
+                  "enum":[
+                     "disable",
+                     "enable"
+                  ]
+               },
+               "schedule":{
+                  "description":"All Configuration Backup Schedule",
+                  "type":"string",
+                  "default":"daily",
+                  "enum":[
+                     "1day",
+                     "1week",
+                     "2week",
+                     "daily",
+                     "weekly",
+                     "bi_weekly",
+                     "bi-weekly",
+                     "bi weekly"
+                  ]
+               },
+               "descr":{
+                  "description":"All Configuration Backup Description",
+                  "type":"string",
+                  "default":"Configuration Export Policy",
+                  "pattern":"^[ !#$%&\\(\\)\\*\\+,\\-\\./:;\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{0,256}$"
+               }
+            },
+            "additionalProperties":false,
+            "if": {
+               "properties": {
+                  "admin_state": {
+                     "enum": [
+                        "enable"
+                     ]
+                  }
+               },
+               "required": [
+                  "admin_state"
+               ]
+            },
+            "then": {
+               "required": [
+                  "admin_state",
+                  "protocol",
+                  "hostname",
+                  "remote_file"
+               ]
+            },
+            "else": {
+               "required": [
+                  "admin_state"
+               ]
+            }
+         },
+         "minItems":1,
+         "maxItems":1
+      },
+      "reminder":{
+         "description":"Backup/Export Config Reminder list",
+         "type":"array",
+         "items":{
+            "type":"object",
+            "description":"Backup/Export Config Reminder",
+            "properties":{
+               "admin_state":{
+                  "description":"Backup/Export Config Reminder Admin State",
+                  "type":"string",
+                  "default":"disable",
+                  "enum":[
+                     "disable",
+                     "enable"
+                  ]
+               },
+               "remind_me_after":{
+                  "description":"Backup/Export Config Remind Me After (days)",
+                  "type":"string",
+                  "default":"30",
+                  "pattern":"^[1-9]$|^[1-9][0-9]$|^[1-2][0-9][0-9]$|^3[0-5][0-9]$|^36[0-5]$"
+               }
+            },
+            "additionalProperties":false,
+            "required":[
+               "admin_state"
+            ]
+         },
+         "minItems":1,
+         "maxItems":1
+      }
+   },
+   "additionalProperties":false
+}

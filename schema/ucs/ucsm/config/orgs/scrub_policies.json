@@ -1,0 +1,52 @@
+{
+   "id":"ucs_system_config_scrub_policies#",
+   "$schema":"http://json-schema.org/draft-07/schema#",
+   "title":"EasyUCS ucs system config orgs scrub_policies section",
+   "description":"EasyUCS ucs system config orgs scrub_policies section JSON schema",
+   "type":"object",
+   "properties": {
+      "name":{
+         "description":"Scrub Policy Name",
+         "type":"string",
+         "default": "",
+         "pattern": "^[\\-\\.:_a-zA-Z0-9]{1,16}$"
+      },
+      "descr": {
+         "description": "Description of Scrub Policy",
+         "type": "string",
+         "default": "",
+         "pattern": "^[ !#$%&\\(\\)\\*\\+,\\-\\./:;\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{0,256}$"
+      },
+      "disk_scrub": {
+         "description": "Scrub Policy - Disk Scrub",
+         "type": "string",
+         "default": "no",
+         "enum": [
+            "no",
+            "yes"
+         ]
+      },
+      "flexflash_scrub": {
+         "description": "Scrub Policy - FlexFlash Scrub",
+         "type": "string",
+         "default": "no",
+         "enum": [
+            "no",
+            "yes"
+         ]
+      },
+      "bios_settings_scrub": {
+         "description": "Scrub Policy - BIOS Settings Scrub",
+         "type": "string",
+         "default": "no",
+         "enum": [
+            "no",
+            "yes"
+         ]
+      }
+   },
+   "additionalProperties":false,
+   "required": [
+      "name"
+   ]
+}

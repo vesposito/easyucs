@@ -1,0 +1,37 @@
+{
+  "rear_file_name":"UCS-FI-M-6324.png",
+  "front_file_name":"",
+  "rear_file_size":[216,1216],
+  "front_file_size":[],
+  "expansion_modules_slots":[
+  ],
+  "expansion_modules_models":[
+  ],
+  "rear_ports":{
+    "1":{
+      "port_coord":[60,536],
+      "port_type":"sfp",
+      "port_size":[54,83]
+    },
+    "2":{
+      "port_coord":[60,624],
+      "port_type":"sfp",
+      "port_size":[54,83]
+    },
+    "3":{
+      "port_coord":[60,712],
+      "port_type":"sfp",
+      "port_size":[54,83]
+    },
+    "4":{
+      "port_coord":[60,799],
+      "port_type":"sfp",
+      "port_size":[54,83]
+    },
+    "5":{
+      "port_coord":[62,913],
+      "port_type":"qsfp",
+      "port_size":[49,111]
+    }
+  }
+}

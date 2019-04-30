@@ -1,0 +1,50 @@
+{
+  "rear_file_name":"UCSC-PCIE-C25Q-04.png",
+  "rear_file_name_half":"UCSC-PCIE-C25Q-04_half.png",
+  "rear_file_size":[593,75],
+  "rear_file_size_half":[389,75],
+  "rear_ports": {
+    "x/1": {
+      "port_coord": [164, 11],
+      "port_type": "sfp",
+      "port_size": [82, 55]
+    },
+    "x/2": {
+      "port_coord": [253, 11],
+      "port_type": "sfp",
+      "port_size": [82, 55]
+    },
+	"x/3": {
+      "port_coord": [342, 11],
+      "port_type": "sfp",
+      "port_size": [82, 55]
+    },
+    "x/4": {
+      "port_coord": [431, 11],
+      "port_type": "sfp",
+      "port_size": [82, 55]
+    }
+  },
+  "rear_ports_half": {
+    "x/1": {
+      "port_coord": [19, 11],
+      "port_type": "sfp",
+      "port_size": [82, 55]
+    },
+    "x/2": {
+      "port_coord": [108, 11],
+      "port_type": "sfp",
+      "port_size": [82, 55]
+    },
+	"x/3": {
+      "port_coord": [197, 11],
+      "port_type": "sfp",
+      "port_size": [82, 55]
+    },
+    "x/4": {
+      "port_coord": [286, 11],
+      "port_type": "sfp",
+      "port_size": [82, 55]
+    }
+  }
+}

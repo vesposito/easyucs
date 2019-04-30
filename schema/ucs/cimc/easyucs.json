@@ -1,0 +1,158 @@
+{
+   "id":"ucs_cimc_easyucs#",
+   "$schema":"http://json-schema.org/draft-07/schema#",
+   "title":"EasyUCS cimc easyucs section",
+   "description":"EasyUCS cimc easyucs section JSON schema",
+   "type":"object",
+   "properties":{
+      "metadata":{
+         "description":"EasyUCS metadata list",
+         "type":"array",
+         "items":{
+            "description":"EasyUCS metadata entry",
+            "type":"object",
+            "properties":{
+               "category":{
+                  "description":"Category of the JSON file",
+                  "type":"string",
+                  "default":"custom",
+                  "enum":[
+                     "best-practices",
+                     "custom",
+                     "cvd"
+                  ]
+               },
+               "device_name":{
+                  "description":"Name of the device to which this config/inventory was attached",
+                  "type":"string"
+               },
+               "device_type":{
+                  "description":"Type of the device to which this config/inventory was attached",
+                  "type":"string",
+                  "enum": [
+                     "cimc"
+                  ]
+               },
+               "device_uuid":{
+                  "description":"UUID of the device to which this config/inventory was attached",
+                  "type":"string"
+               },
+               "device_version":{
+                  "description":"Version of the device to which this config/inventory was attached",
+                  "type":"string"
+               },
+               "easyucs_version":{
+                  "description":"Minimum required version of EasyUCS",
+                  "type":"string",
+                  "default":"0.1"
+               },
+               "file_type":{
+                  "description":"Type of the JSON file",
+                  "type":"string",
+                  "enum":[
+                     "config",
+                     "device",
+                     "inventory"
+                  ]
+               },
+               "hash":{
+                  "description":"Hash of the file - Used for validating its content",
+                  "type":"string"
+               },
+               "name":{
+                  "description":"Name of the JSON file",
+                  "type":"string"
+               },
+               "origin":{
+                  "description":"Origin of the JSON file content",
+                  "type":"string",
+                  "enum":[
+                     "file",
+                     "live"
+                  ]
+               },
+               "revision":{
+                  "description":"Revision of the JSON file",
+                  "type":"string",
+                  "default":"1.0"
+               },
+               "subcategory":{
+                  "description":"Subcategory of the JSON file",
+                  "type":"string"
+               },
+               "timestamp":{
+                  "description":"Timestamp of when the config/device/inventory was created",
+                  "type":"string"
+               },
+               "url":{
+                  "description":"URL for more information about the JSON file",
+                  "type":"string",
+                  "format":"uri"
+               },
+               "uuid":{
+                  "description":"UUID of the config/device/inventory that has been exported to the JSON file",
+                  "type":"string"
+               }
+            },
+            "additionalProperties":false,
+            "required":[
+               "device_type",
+               "file_type",
+               "easyucs_version"
+            ]
+         },
+         "minItems":1,
+         "maxItems":1
+      },
+      "options":{
+         "description":"EasyUCS options",
+         "type":"array",
+         "items":{
+            "description":"EasyUCS options entry",
+            "type":"object",
+            "properties":{
+               "erase_all_virtual_drives_before_reset": {
+                  "description": "Erase all virtual drives of all discovered servers before performing a reset",
+                  "type": "string",
+                  "default": "no",
+                  "enum": [
+                     "no",
+                     "yes"
+                  ]
+               },
+               "erase_all_flexflash_before_reset": {
+                  "description": "Erase all FlexFlash cards of all discovered servers before performing a reset",
+                  "type": "string",
+                  "default": "no",
+                  "enum": [
+                     "no",
+                     "yes"
+                  ]
+               },
+               "clear_all_sel_logs_before_reset": {
+                  "description": "Clear all SEL logs of all discovered servers before performing a reset",
+                  "type": "string",
+                  "default": "no",
+                  "enum": [
+                     "no",
+                     "yes"
+                  ]
+               },
+               "set_drives_to_status": {
+                  "description": "Set the specified status to the physical drives",
+                  "type": "string",
+                  "default": "jbod",
+                  "enum": [
+                     "jbod",
+                     "unconfigured-good"
+                  ]
+               }
+            },
+            "additionalProperties":false
+         },
+         "minItems":1,
+         "maxItems":1
+      }
+   },
+   "additionalProperties":false
+}

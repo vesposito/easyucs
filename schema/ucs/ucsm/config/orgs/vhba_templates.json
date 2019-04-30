@@ -1,0 +1,95 @@
+{
+   "id": "ucs_system_config_vhba_templates#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS ucs system config orgs vhba_templates section",
+   "description": "EasyUCS ucs system config orgs vhba_templates section JSON schema",
+   "type": "object",
+   "properties": {
+      "name": {
+         "description": "vHBA Template Name",
+         "type": "string",
+         "default": "",
+         "pattern": "^[\\-\\.:_a-zA-Z0-9]{1,16}$"
+      },
+      "fabric": {
+         "description": "vHBA Template - Fabric",
+         "type": "string",
+         "default": "A",
+         "enum":  [
+            "A",
+            "B"
+         ]
+      },
+      "descr": {
+         "description": "Description of vHBA Template",
+         "type": "string",
+         "default": "",
+         "pattern": "^[ !#$%&\\(\\)\\*\\+,\\-\\./:;\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{0,256}$"
+      },
+      "redundancy_type": {
+         "description": "vHBA Template - Redundancy Pair Type",
+         "type": "string",
+         "default": "no-redundancy",
+         "enum": [
+            "none",
+            "primary",
+            "secondary",
+            "no-redundancy"
+         ]
+      },
+      "peer_redundancy_template": {
+         "description": "vHBA Template - Peer Redundancy Template",
+         "type": "string",
+         "default": "",
+         "pattern": "^[\\-\\.:_a-zA-Z0-9]{0,16}$"
+      },
+      "template_type": {
+         "description": "vHBA Template - Template Type",
+         "type": "string",
+         "default": "initial-template",
+         "enum": [
+            "initial-template",
+            "updating-template"
+         ]
+      },
+      "qos_policy": {
+         "description": "vHBA Template - QOS Policy",
+         "type": "string",
+         "default": "",
+         "pattern": "^[\\-\\.:_a-zA-Z0-9]{0,16}$"
+      },
+      "pin_group": {
+         "description": "vHBA Template - Pin Group",
+         "type": "string",
+         "default": "",
+         "pattern": "^[\\-\\.:_a-zA-Z0-9]{0,16}$"
+      },
+      "max_data_field_size": {
+         "description": "vHBA Template - Max Data Field Size",
+         "type": "string",
+         "default": "2048",
+         "pattern": "^25[6-9]$|^2[6-9][0-9]$|^[3-9][0-9][0-9]$|^1[0-9][0-9][0-9]$|^20[0-9][0-9]$|^210[0-9]$|^211[0-2]$"
+      },
+      "wwpn_pool": {
+         "description": "vHBA Template - WWPN Pool",
+         "type": "string",
+         "default": "default"
+      },
+      "stats_threshold_policy": {
+         "description": "vHBA Template - Stats Threshold Policy",
+         "type": "string",
+         "default": "default",
+         "pattern": "^[\\-\\.:_a-zA-Z0-9]{0,16}$"
+      },
+      "vsan": {
+         "description": "vHBA Template - VSAN",
+         "type": "string",
+         "default": "",
+         "pattern": "^[\\-\\.:_a-zA-Z0-9]{0,32}$"
+      }
+   },
+   "additionalProperties": false,
+   "required": [
+      "name"
+   ]
+}

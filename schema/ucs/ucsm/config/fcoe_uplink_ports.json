@@ -1,0 +1,83 @@
+{
+   "id":"ucs_system_config_fcoe_uplink_ports#",
+   "$schema":"http://json-schema.org/draft-07/schema#",
+   "title":"EasyUCS ucs system config fcoe_uplink_ports section",
+   "description":"EasyUCS ucs system config fcoe_uplink_ports section JSON schema",
+   "type":"object",
+   "properties":{
+      "fabric":{
+         "description":"Fabric ID of FCoE Uplink Port (\"A\" or \"B\")",
+         "type":"string",
+         "enum":[
+            "a",
+            "A",
+            "b",
+            "B"
+         ]
+      },
+      "slot_id":{
+         "description":"Slot ID of FCoE Uplink Port",
+         "type":"string",
+         "pattern":"^[1-5]$"
+      },
+      "port_id":{
+         "description":"Port ID of FCoE Uplink Port",
+         "type":"string",
+         "pattern":"^[1-9]$|^[1-4][0-9]$|^5[0-4]$"
+      },
+      "aggr_id":{
+         "description":"Aggregate ID of FCoE Uplink Port (for Breakout Ports)",
+         "type":"string",
+         "pattern":"^[1-4]$"
+      },
+      "user_label":{
+         "description":"User Label of FCoE Uplink Port",
+         "type":"string",
+         "default":"",
+         "pattern":"^[ !#$%&\\(\\)\\*\\+,\\-\\./:;\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{0,32}$"
+      },
+      "link_profile":{
+         "description":"Link Profile assigned to FCoE Uplink Port",
+         "type":"string",
+         "pattern":"^[\\-\\.:_a-zA-Z0-9]{0,16}$"
+      },
+      "admin_state":{
+         "description":"Admin State of FCoE Uplink Port",
+         "type":"string",
+         "default":"enabled",
+         "enum":[
+            "disabled",
+            "enabled"
+         ]
+      },
+      "admin_speed":{
+         "description":"Admin Speed of FCoE Uplink Port",
+         "type":"string",
+         "default": "auto",
+         "enum":[
+            "1gbps",
+            "10gbps",
+            "25gbps",
+            "40gbps",
+            "100gbps",
+            "auto"
+         ]
+      },
+      "fec": {
+         "description": "FEC value of FCoE Uplink Port",
+         "type": "string",
+         "default": "auto",
+         "enum": [
+            "auto",
+            "cl74",
+            "cl91"
+         ]
+      }
+   },
+   "additionalProperties":false,
+   "required":[
+      "fabric",
+      "slot_id",
+      "port_id"
+   ]
+}

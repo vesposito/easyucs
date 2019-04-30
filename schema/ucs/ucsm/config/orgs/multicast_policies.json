@@ -1,0 +1,103 @@
+{
+   "id": "ucs_system_config_multicast_policies#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS ucs system config orgs multicast_policies section",
+   "description": "EasyUCS ucs system config orgs multicast_policies section JSON schema",
+   "type": "object",
+   "properties": {
+      "name": {
+         "description": "Multicast Policy Name",
+         "type": "string",
+         "default": "",
+         "pattern": "^[\\-\\.:_a-zA-Z0-9]{1,16}$"
+      },
+      "descr": {
+         "description": "Description of Multicast Policy",
+         "type": "string",
+         "default": "",
+         "pattern": "^[ !#$%&\\(\\)\\*\\+,\\-\\./:;\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{0,256}$"
+      },
+      "igmp_snooping_state": {
+         "description": "Multicast Policy IGMP Snooping State",
+         "type": "string",
+         "default": "enabled",
+         "enum": [
+            "disabled",
+            "enabled"
+         ]
+      },
+      "igmp_snooping_querier_state": {
+         "description": "Multicast Policy IGMP Snooping Querier State",
+         "type": "string",
+         "default": "disabled",
+         "enum": [
+            "disabled",
+            "enabled"
+         ]
+      },
+      "fi_a_querier_ip_address": {
+         "description": "Multicast Policy IGMP Snooping FI-A Querier IPv4 Address",
+         "type": "string",
+         "default": "0.0.0.0",
+         "format": "ipv4"
+      },
+      "fi_b_querier_ip_address": {
+         "description": "Multicast Policy IGMP Snooping FI-B Querier IPv4 Address",
+         "type": "string",
+         "default": "0.0.0.0",
+         "format": "ipv4"
+      }
+   },
+   "additionalProperties": false,
+   "required": [
+      "name"
+   ],
+   "if": {
+      "$comment": "Force igmp_snooping_state to be enabled if igmp_snooping_querier_state is enabled",
+      "properties": {
+         "igmp_snooping_querier_state": {
+            "enum": [
+               "enabled"
+            ]
+         }
+      },
+      "required": [
+         "igmp_snooping_querier_state"
+      ]
+   },
+   "then": {
+      "properties": {
+         "igmp_snooping_state": {
+            "enum": [
+               "enabled"
+            ]
+         }
+      },
+      "required": [
+         "igmp_snooping_state",
+         "fi_a_querier_ip_address"
+      ]
+   },
+   "else": {
+      "properties": {
+         "igmp_snooping_state": {
+            "enum": [
+               "disabled",
+               "enabled"
+            ]
+         },
+         "name": {
+            "type": "string"
+         },
+         "descr": {
+            "type": "string"
+         },
+         "igmp_snooping_querier_state": {
+            "enum": [
+               "disabled"
+            ]
+         }
+      },
+      "additionalProperties": false
+   }
+}

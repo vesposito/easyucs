@@ -1,0 +1,32 @@
+{
+   "id": "ucs_ucsc_config#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS ucsc config section",
+   "description": "EasyUCS ucsc config section JSON schema",
+   "type": "object",
+   "properties": {
+      "orgs": {
+         "description": "EasyUCS config/orgs section",
+         "type": "array",
+         "items": {
+            "description": "EasyUCS config/org_root element",
+            "type": "object",
+            "$ref": "config/org_root.json"
+         },
+         "minItems":1,
+         "maxItems":1
+      },
+      "domain_groups": {
+         "description": "EasyUCS config/domain_groups section",
+         "type": "array",
+         "items": {
+            "description": "EasyUCS config/domain_group_root element",
+            "type": "object",
+            "$ref": "config/domain_group_root.json"
+         },
+         "minItems":1,
+         "maxItems":1
+      }
+   },
+   "additionalProperties": true
+}

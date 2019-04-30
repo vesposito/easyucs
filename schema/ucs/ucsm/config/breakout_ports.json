@@ -1,0 +1,44 @@
+{
+   "id":"ucs_system_config_breakout_ports#",
+   "$schema":"http://json-schema.org/draft-07/schema#",
+   "title":"EasyUCS ucs system config breakout_ports section",
+   "description":"EasyUCS ucs system config breakout_ports section JSON schema",
+   "type":"object",
+   "properties":{
+      "fabric":{
+         "description":"Fabric ID of Breakout Port (\"A\" or \"B\")",
+         "type":"string",
+         "enum":[
+            "a",
+            "A",
+            "b",
+            "B"
+         ]
+      },
+      "slot_id":{
+         "description":"Slot ID of Breakout Port",
+         "type":"string",
+         "pattern":"^[1-2]$"
+      },
+      "port_id":{
+         "description":"Port ID of Breakout Port",
+         "type":"string",
+         "pattern":"^[1-9]$|^[1-4][0-9]$|^5[0-4]$"
+      },
+      "breakout_type": {
+         "description": "Breakout type of Breakout Port",
+         "type": "string",
+         "default": "10g-4x",
+         "enum": [
+            "10g-4x",
+            "25g-4x"
+         ]
+      }
+   },
+   "additionalProperties":false,
+   "required":[
+      "fabric",
+      "slot_id",
+      "port_id"
+   ]
+}

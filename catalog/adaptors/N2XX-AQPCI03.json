@@ -1,0 +1,30 @@
+{
+  "rear_file_name":"N2XX-AQPCI03.png",
+  "rear_file_name_half":"N2XX-AQPCI03_half.png",
+  "rear_file_size":[593,75],
+  "rear_file_size_half":[389,75],
+  "rear_ports": {
+  "x/1": {
+      "port_coord": [261, 14],
+      "port_type": "sfp",
+      "port_size": [76, 49]
+    },
+    "x/2": {
+      "port_coord": [365, 14],
+      "port_type": "sfp",
+      "port_size": [76, 49]
+    }
+  },
+  "rear_ports_half": {
+  "x/1": {
+      "port_coord": [129, 14],
+      "port_type": "sfp",
+      "port_size": [76, 49]
+    },
+    "x/2": {
+      "port_coord": [233, 14],
+      "port_type": "sfp",
+      "port_size": [76, 49]
+    }
+  }
+}

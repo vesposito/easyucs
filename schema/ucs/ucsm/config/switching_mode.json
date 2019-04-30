@@ -1,0 +1,28 @@
+{
+   "id":"ucs_system_config_switching_mode#",
+   "$schema":"http://json-schema.org/draft-07/schema#",
+   "title":"EasyUCS ucs system config switching_mode section",
+   "description":"EasyUCS ucs system config switching_mode section JSON schema",
+   "type":"object",
+   "properties":{
+      "ethernet_mode":{
+         "description":"Ethernet Switching Mode",
+         "type":"string",
+         "default":"end-host",
+         "enum":[
+            "end-host",
+            "switch"
+         ]
+      },
+      "fc_mode":{
+         "description":"Fibre Channel Switching Mode",
+         "type":"string",
+         "default":"end-host",
+         "enum":[
+            "end-host",
+            "switch"
+         ]
+      }
+   },
+   "additionalProperties":false
+}

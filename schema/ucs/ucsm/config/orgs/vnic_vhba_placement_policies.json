@@ -1,0 +1,77 @@
+{
+   "id": "ucs_system_config_vnic_vhba_placement_policies#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS ucs system config orgs vnic_vhba_placement_policies section",
+   "description": "EasyUCS ucs system config orgs vnic_vhba_placement_policies section JSON schema",
+   "type": "object",
+   "properties": {
+      "name": {
+         "description": "vNIC/vHBA Placement Policy Name",
+         "type": "string",
+         "default": "",
+         "pattern": "^[\\-\\.:_a-zA-Z0-9]{1,16}$"
+      },
+      "virtual_slot_mapping_scheme": {
+         "description": "Assignment Order of vNIC/vHBA Placement Policy",
+         "type": "string",
+         "default": "round-robin",
+         "enum": [
+            "linear-ordered",
+            "round-robin"
+         ]
+      },
+      "virtual_host_interfaces": {
+         "description": "Virtual Host Interfaces in vNIC/vHBA Placement Policy",
+         "type": "array",
+         "items": {
+            "type": "object",
+            "properties": {
+               "virtual_slot": {
+                  "description": "vNIC/vHBA Placement Policy - Virtual Host Interface - Virtual Slot",
+                  "type": "string",
+                  "enum": [
+                     "1",
+                     "2",
+                     "3",
+                     "4"
+                  ]
+               },
+               "selection_preference": {
+                  "description": "vNIC/vHBA Placement Policy - Virtual Host Interface - Selection Preference",
+                  "type": "string",
+                  "default": "all",
+                  "enum": [
+                     "all",
+                     "assigned-only",
+                     "dynamic-only",
+                     "exclude-dynamic",
+                     "exclude-unassigned",
+                     "exclude-usnic",
+                     "unassigned-only",
+                     "usnic-only"
+                  ]
+               },
+               "transport": {
+                  "description": "vNIC/vHBA Placement Policy - Virtual Host Interface - Transport",
+                  "type": "string",
+                  "default": "ethernet,fc",
+                  "enum": [
+                     "ethernet",
+                     "fc",
+                     "ethernet,fc"
+                  ]
+               }
+            },
+            "additionalProperties": false,
+            "required": [
+               "virtual_slot"
+            ]
+         },
+         "minItems": 1
+      }
+   },
+   "additionalProperties": false,
+   "required": [
+      "name"
+   ]
+}

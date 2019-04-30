@@ -1,0 +1,61 @@
+{
+   "id":"ucs_system_config_appliance_network_control_policies#",
+   "$schema":"http://json-schema.org/draft-07/schema#",
+   "title":"EasyUCS ucs system config appliance_network_control_policies section",
+   "description":"EasyUCS ucs system config appliance_network_control_policies section JSON schema",
+   "type":"object",
+   "properties":{
+      "name":{
+         "description":"Appliance Network Control Policy Name",
+         "type":"string",
+         "default":"",
+         "pattern":"^[\\-\\.:_a-zA-Z0-9]{1,16}$"
+      },
+      "descr":{
+         "description":"Description of Appliance Network Control Policy",
+         "type":"string",
+         "default":"",
+         "pattern":"^[ !#$%&\\(\\)\\*\\+,\\-\\./:;\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{0,256}$"
+      },
+      "cdp_admin_state":{
+         "description":"Appliance Network Control Policy CDP Admin State",
+         "type":"string",
+         "default":"disabled",
+         "enum":[
+            "disabled",
+            "enabled"
+         ]
+      },
+      "action_on_uplink_fail":{
+         "description":"Appliance Network Control Policy Action on Uplink Fail",
+         "type":"string",
+         "default":"link-down",
+         "enum":[
+            "link-down",
+            "warning"
+         ]
+      },
+      "mac_register_mode":{
+         "description":"Appliance Network Control Policy MAC Register Mode",
+         "type":"string",
+         "default":"only-native-vlan",
+         "enum":[
+            "all-host-vlans",
+            "only-native-vlan"
+         ]
+      },
+      "mac_security_forge":{
+         "description":"Appliance Network Control Policy MAC Security - Allow/Deny Forged MAC Addresses",
+         "type":"string",
+         "default":"allow",
+         "enum":[
+            "allow",
+            "deny"
+         ]
+      }
+   },
+   "additionalProperties":false,
+   "required":[
+      "name"
+   ]
+}

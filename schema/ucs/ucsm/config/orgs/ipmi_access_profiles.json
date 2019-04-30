@@ -1,0 +1,79 @@
+{
+   "id": "ucs_system_config_ipmi_access_profiles#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS ucs system config orgs ipmi_access_profiles section",
+   "description": "EasyUCS ucs system config orgs ipmi_access_profiles section JSON schema",
+   "type": "object",
+   "properties": {
+      "name": {
+         "description": "IPMI Access Profiles Name",
+         "type": "string",
+         "default": "",
+         "pattern": "^[\\-\\.:_a-zA-Z0-9]{1,16}$"
+      },
+      "descr": {
+         "description": "Description of IPMI Access Profiles",
+         "type": "string",
+         "default": "",
+         "pattern": "^[ !#$%&\\(\\)\\*\\+,\\-\\./:;\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{0,256}$"
+      },
+      "ipmi_over_lan": {
+         "description": "IPMI Access Profiles - IPMI/Red Fish Over LAN",
+         "type": "string",
+         "default": "enable",
+         "enum": [
+            "enable",
+            "disable"
+         ]
+      },
+      "users": {
+         "description": "IPMI Access Profiles - Users",
+         "type": "array",
+         "items": {
+            "type": "object",
+            "properties": {
+               "name": {
+                  "description": "IPMI Access Profiles - Users - Name",
+                  "type": "string",
+                  "default": "",
+                  "pattern": "^[\\-\\.:_a-zA-Z0-9]{1,15}$"
+               },
+               "password": {
+                  "description": "IPMI Access Profiles - Users - Password",
+                  "type": "string",
+                  "default": "",
+                  "pattern": "^[!\"\"#%&'\\(\\)\\*\\+,\\-\\./:;<>@\\[\\\\\\]\\^_`\\{\\|\\}~a-zA-Z0-9]{1,20}$"
+               },
+               "descr": {
+                  "description": "IPMI Access Profiles - Users - Description",
+                  "type": "string",
+                  "default": "",
+                  "pattern": "^[ !#$%&\\(\\)\\*\\+,\\-\\./:;\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{0,256}$"
+               },
+                "role": {
+                  "description": "IPMI Access Profiles - Users - Role",
+                  "type": "string",
+                  "default": "readonly",
+                   "enum": [
+                      "admin",
+                      "readonly",
+                      "read_only",
+                      "read-only",
+                      "read only"
+                   ]
+                }
+            },
+            "additionalProperties": false,
+            "required": [
+               "name",
+               "password"
+            ]
+         },
+         "minItems": 1
+      }
+   },
+   "additionalProperties": false,
+   "required": [
+      "name"
+   ]
+}

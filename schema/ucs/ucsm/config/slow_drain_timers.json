@@ -1,0 +1,53 @@
+{
+   "id": "ucs_system_config_slow_drain_timers#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS ucs system config slow_drain_timers section",
+   "description": "EasyUCS ucs system config slow_drain_timers section JSON schema",
+   "type": "object",
+   "properties": {
+      "fcoe_port": {
+         "description": "Slow Drain Timers - FCoE Port Admin State",
+         "type": "string",
+         "default": "disabled",
+         "enum": [
+            "disabled",
+            "enabled"
+         ]
+      },
+      "core_fcoe_port": {
+         "description": "Slow Drain Timers - Core FCoE Port (ms)",
+         "type": "string",
+         "default": "500",
+         "enum": [
+            "100",
+            "1000",
+            "200",
+            "300",
+            "400",
+            "500",
+            "600",
+            "700",
+            "800",
+            "900"
+         ]
+      },
+      "edge_fcoe_port": {
+         "description": "Slow Drain Timers - Edge FCoE Port (ms)",
+         "type": "string",
+         "default": "500",
+         "enum": [
+            "100",
+            "1000",
+            "200",
+            "300",
+            "400",
+            "500",
+            "600",
+            "700",
+            "800",
+            "900"
+         ]
+      }
+   },
+   "additionalProperties": false
+}

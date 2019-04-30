@@ -1,0 +1,27 @@
+{
+   "id": "ucs_ucsc_device#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS ucsc device section",
+   "description": "EasyUCS ucsc device section JSON schema",
+   "type": "object",
+   "properties": {
+      "target":{
+         "description":"The UCS Central Device IP or hostname targeted",
+         "type":"string"
+      },
+      "username": {
+         "description": "User Name to use for the UCS Central Device",
+         "type": "string"
+      },
+      "password": {
+         "description": "Password of the User to use for the UCS Cental Device",
+         "type": "string"
+      }
+   },
+   "required": [
+      "target",
+      "username",
+      "password"
+   ],
+   "additionalProperties": false
+}

@@ -1,0 +1,34 @@
+{
+   "id": "ucs_system_config_compute_connection_policies#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS ucs system config compute_connection_policies section",
+   "description": "EasyUCS ucs system config compute_connection_policies section JSON schema",
+   "type": "object",
+   "properties": {
+      "name": {
+         "description": "Compute Connection Policy Name",
+         "type": "string",
+         "default": "",
+         "pattern": "^[\\-\\.:_a-zA-Z0-9]{1,16}$"
+      },
+      "descr": {
+         "description": "Description of Compute Connection Policy",
+         "type": "string",
+         "default": "",
+         "pattern": "^[ !#$%&\\(\\)\\*\\+,\\-\\./:;\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{0,256}$"
+      },
+      "server_sioc_connectivity": {
+         "description": "Server SIOC Connectivity of Compute Connection Policy",
+         "type": "string",
+         "default": "single-server-single-sioc",
+         "enum": [
+            "single-server-dual-sioc",
+            "single-server-single-sioc"
+         ]
+      }
+   },
+   "additionalProperties":false,
+   "required":[
+      "name"
+   ]
+}

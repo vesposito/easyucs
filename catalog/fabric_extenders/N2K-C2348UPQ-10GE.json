@@ -1,0 +1,303 @@
+{
+  "rear_file_name":"N2K-C2348UPQ-10GE_rear.png",
+  "front_file_name":"N2K-C2348UPQ-10GE_front.png",
+  "rear_file_size":[2916,334],
+  "front_file_size":[2916,334],
+  "rear_ports": {
+    "1": {
+      "port_coord": [208, 76],
+      "port_type": "sfp",
+      "port_size": [83, 54]
+    },
+    "2": {
+      "port_coord": [208, 165],
+      "port_type": "sfp",
+      "port_size": [83, 54]
+    },
+    "3": {
+      "port_coord": [293, 76],
+      "port_type": "sfp",
+      "port_size": [83, 54]
+    },
+    "4": {
+      "port_coord": [293, 165],
+      "port_type": "sfp",
+      "port_size": [83, 54]
+    },
+    "5": {
+      "port_coord": [377, 76],
+      "port_type": "sfp",
+      "port_size": [83, 54]
+    },
+    "6": {
+      "port_coord": [377, 165],
+      "port_type": "sfp",
+      "port_size": [83, 54]
+    },
+    "7": {
+      "port_coord": [462, 76],
+      "port_type": "sfp",
+      "port_size": [83, 54]
+    },
+    "8": {
+      "port_coord": [462, 165],
+      "port_type": "sfp",
+      "port_size": [83, 54]
+    },
+    "9": {
+      "port_coord": [546, 76],
+      "port_type": "sfp",
+      "port_size": [83, 54]
+    },
+    "10": {
+      "port_coord": [546, 165],
+      "port_type": "sfp",
+      "port_size": [83, 54]
+    },
+    "11": {
+      "port_coord": [631, 76],
+      "port_type": "sfp",
+      "port_size": [83, 54]
+    },
+    "12": {
+      "port_coord": [631, 165],
+      "port_type": "sfp",
+      "port_size": [83, 54]
+    },
+    "13": {
+      "port_coord": [715, 76],
+      "port_type": "sfp",
+      "port_size": [83, 54]
+    },
+    "14": {
+      "port_coord": [715, 165],
+      "port_type": "sfp",
+      "port_size": [83, 54]
+    },
+    "15": {
+      "port_coord": [800, 76],
+      "port_type": "sfp",
+      "port_size": [83, 54]
+    },
+    "16": {
+      "port_coord": [800, 165],
+      "port_type": "sfp",
+      "port_size": [83, 54]
+    },
+    "17": {
+      "port_coord": [885, 76],
+      "port_type": "sfp",
+      "port_size": [83, 54]
+    },
+    "18": {
+      "port_coord": [885, 165],
+      "port_type": "sfp",
+      "port_size": [83, 54]
+    },
+    "19": {
+      "port_coord": [969, 76],
+      "port_type": "sfp",
+      "port_size": [83, 54]
+    },
+    "20": {
+      "port_coord": [969, 165],
+      "port_type": "sfp",
+      "port_size": [83, 54]
+    },
+    "21": {
+      "port_coord": [1054, 76],
+      "port_type": "sfp",
+      "port_size": [83, 54]
+    },
+    "22": {
+      "port_coord": [1054, 165],
+      "port_type": "sfp",
+      "port_size": [83, 54]
+    },
+    "23": {
+      "port_coord": [1139, 76],
+      "port_type": "sfp",
+      "port_size": [83, 54]
+    },
+    "24": {
+      "port_coord": [1139, 165],
+      "port_type": "sfp",
+      "port_size": [83, 54]
+    },
+    "25": {
+      "port_coord": [1260, 76],
+      "port_type": "sfp",
+      "port_size": [83, 54]
+    },
+    "26": {
+      "port_coord": [1260, 165],
+      "port_type": "sfp",
+      "port_size": [83, 54]
+    },
+    "27": {
+      "port_coord": [1345, 76],
+      "port_type": "sfp",
+      "port_size": [83, 54]
+    },
+    "28": {
+      "port_coord": [1345, 165],
+      "port_type": "sfp",
+      "port_size": [83, 54]
+    },
+    "29": {
+      "port_coord": [1429, 76],
+      "port_type": "sfp",
+      "port_size": [83, 54]
+    },
+    "30": {
+      "port_coord": [1429, 165],
+      "port_type": "sfp",
+      "port_size": [83, 54]
+    },
+    "31": {
+      "port_coord": [1514, 76],
+      "port_type": "sfp",
+      "port_size": [83, 54]
+    },
+    "32": {
+      "port_coord": [1514, 165],
+      "port_type": "sfp",
+      "port_size": [83, 54]
+    },
+    "33": {
+      "port_coord": [1598, 76],
+      "port_type": "sfp",
+      "port_size": [83, 54]
+    },
+    "34": {
+      "port_coord": [1598, 165],
+      "port_type": "sfp",
+      "port_size": [83, 54]
+    },
+    "35": {
+      "port_coord": [1683, 76],
+      "port_type": "sfp",
+      "port_size": [83, 54]
+    },
+    "36": {
+      "port_coord": [1683, 165],
+      "port_type": "sfp",
+      "port_size": [83, 54]
+    },
+    "37": {
+      "port_coord": [1767, 76],
+      "port_type": "sfp",
+      "port_size": [83, 54]
+    },
+    "38": {
+      "port_coord": [1767, 165],
+      "port_type": "sfp",
+      "port_size": [83, 54]
+    },
+    "39": {
+      "port_coord": [1852, 76],
+      "port_type": "sfp",
+      "port_size": [83, 54]
+    },
+    "40": {
+      "port_coord": [1852, 165],
+      "port_type": "sfp",
+      "port_size": [83, 54]
+    },
+    "41": {
+      "port_coord": [1937, 76],
+      "port_type": "sfp",
+      "port_size": [83, 54]
+    },
+    "42": {
+      "port_coord": [1937, 165],
+      "port_type": "sfp",
+      "port_size": [83, 54]
+    },
+    "43": {
+      "port_coord": [2021, 76],
+      "port_type": "sfp",
+      "port_size": [83, 54]
+    },
+    "44": {
+      "port_coord": [2021, 165],
+      "port_type": "sfp",
+      "port_size": [83, 54]
+    },
+    "45": {
+      "port_coord": [2106, 76],
+      "port_type": "sfp",
+      "port_size": [83, 54]
+    },
+    "46": {
+      "port_coord": [2106, 165],
+      "port_type": "sfp",
+      "port_size": [83, 54]
+    },
+    "47": {
+      "port_coord": [2191, 76],
+      "port_type": "sfp",
+      "port_size": [83, 54]
+    },
+    "48": {
+      "port_coord": [2191, 165],
+      "port_type": "sfp",
+      "port_size": [83, 54]
+    },
+    "1/1": {
+      "port_coord": [2327, 68],
+      "port_type": "qsfp",
+      "port_size": [111, 49]
+    },
+    "1/2": {
+      "port_coord": [2327, 178],
+      "port_type": "qsfp",
+      "port_size": [111, 49]
+    },
+    "1/3": {
+      "port_coord": [2443, 68],
+      "port_type": "qsfp",
+      "port_size": [111, 49]
+    },
+    "1/4": {
+      "port_coord": [2443, 178],
+      "port_type": "qsfp",
+      "port_size": [111, 49]
+    },
+    "1/5": {
+      "port_coord": [2559, 68],
+      "port_type": "qsfp",
+      "port_size": [111, 49]
+    },
+    "1/6": {
+      "port_coord": [2559, 178],
+      "port_type": "qsfp",
+      "port_size": [111, 49]
+    }
+  },
+  "psus_slots":[
+    {
+      "id":1,
+      "coord":[208,31]
+    },
+    {
+      "id":2,
+      "coord":[1927,31]
+    }
+  ],
+  "psus_models":[
+    {
+      "name":"N2200-PAC-400W",
+      "description":"N2K/N3K AC Power Supply. Std airflow (port side exhaust)"
+    },
+    {
+      "name":"N2200-PAC-400W-B",
+      "description":"N2K/N3K AC Power Supply. Reversed airflow (port side intake)"
+    },
+    {
+      "name":"N2200-P-BLNK",
+      "type":"blank",
+      "description":"N2K-C2200 Series Power Supply Blank. spare"
+    }
+  ]
+}

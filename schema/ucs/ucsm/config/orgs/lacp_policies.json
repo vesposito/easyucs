@@ -1,0 +1,43 @@
+{
+   "id": "ucs_system_config_lacp_policies#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS ucs system config orgs lacp_policies section",
+   "description": "EasyUCS ucs system config orgs lacp_policies section JSON schema",
+   "type": "object",
+   "properties": {
+      "name": {
+         "description": "LACP Policy Name",
+         "type": "string",
+         "default": "",
+         "pattern": "^[\\-\\.:_a-zA-Z0-9]{1,16}$"
+      },
+      "descr": {
+         "description": "Description of LACP Policy",
+         "type": "string",
+         "default": "",
+         "pattern": "^[ !#$%&\\(\\)\\*\\+,\\-\\./:;\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{0,256}$"
+      },
+      "suspend_individual": {
+         "description": "LACP Policy Suspend Individual",
+         "type": "string",
+         "default": "false",
+         "enum": [
+            "false",
+            "true"
+         ]
+      },
+      "lacp_rate": {
+         "description": "LACP Policy - LACP Rate",
+         "type": "string",
+         "default": "normal",
+         "enum": [
+            "fast",
+            "normal"
+         ]
+      }
+   },
+   "additionalProperties": false,
+   "required": [
+      "name"
+   ]
+}

@@ -1,0 +1,107 @@
+{
+   "id": "ucs_system_config_iqn_suffix_pools#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS ucs system config orgs iqn_suffix_pools section",
+   "description": "EasyUCS ucs system config orgs iqn_suffix_pools section JSON schema",
+   "type": "object",
+   "properties": {
+      "name": {
+         "description": "IQN Suffix Pool Name",
+         "type": "string",
+         "default": "",
+         "pattern": "^[\\-\\.:_a-zA-Z0-9]{1,32}$"
+      },
+      "descr": {
+         "description": "Description of IQN Suffix Pool",
+         "type": "string",
+         "default": "",
+         "pattern": "^[ !#$%&\\(\\)\\*\\+,\\-\\./:;\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{0,256}$"
+      },
+      "order": {
+         "description": "Assignment Order of IQN Suffix Pool",
+         "type": "string",
+         "default": "default",
+         "enum": [
+            "default",
+            "sequential"
+         ]
+      },
+      "prefix": {
+         "description": "IQN Suffix Pool- Prefix",
+         "type": "string",
+         "default": "",
+         "pattern": "^[0-9a-zA-Z\\.:-]{0,150}$|^''$"
+      },
+      "iqn_blocks": {
+         "description": "Blocks of IQN Suffix Pool",
+         "type": "array",
+         "items": {
+            "type": "object",
+            "oneOf": [
+               {
+                  "properties": {
+                     "from": {
+                        "description": "First Suffix of Block",
+                        "type": "string",
+                        "default": "0",
+                        "pattern": "^[0-9]$|^[1-9][0-9]$|^[1-9][0-9][0-9]$|^[1-9][0-9][0-9][0-9]$|^[1-5][0-9][0-9][0-9][0-9]$|^6[0-4][0-9][0-9][0-9]$|^65[0-4][0-9][0-9]$|^655[0-2][0-9]$|^6553[0-5]$"
+                     },
+                     "to": {
+                        "description": "Last Suffix of Block",
+                        "type": "string",
+                        "default": "1",
+                        "pattern": "^[0-9]$|^[1-9][0-9]$|^[1-9][0-9][0-9]$|^[1-9][0-9][0-9][0-9]$|^[1-5][0-9][0-9][0-9][0-9]$|^6[0-4][0-9][0-9][0-9]$|^65[0-4][0-9][0-9]$|^655[0-2][0-9]$|^6553[0-5]$"
+                     },
+                     "suffix": {
+                        "description": "Suffix of IQN Suffix Block",
+                        "type": "string",
+                        "default": "",
+                        "pattern": "^[0-9a-zA-Z\\.:-]{0,64}$"
+                     }
+                  },
+                  "additionalProperties":false,
+                  "required": [
+                     "from",
+                     "to",
+                     "suffix"
+                  ]
+               },
+               {
+                  "properties": {
+                     "from": {
+                        "description": "First Suffix of Block",
+                        "type": "string",
+                        "default": "0",
+                        "pattern": "^[0-9]$|^[1-9][0-9]$|^[1-9][0-9][0-9]$|^[1-9][0-9][0-9][0-9]$|^[1-5][0-9][0-9][0-9][0-9]$|^6[0-4][0-9][0-9][0-9]$|^65[0-4][0-9][0-9]$|^655[0-2][0-9]$|^6553[0-5]$"
+                     },
+                     "size": {
+                        "description": "Size of Suffix Block",
+                        "type": "string",
+                        "default": "1",
+                        "pattern": "^[0-9]$|^[1-9][0-9]$|^[1-9][0-9][0-9]$|^[1-9][0-9][0-9][0-9]$|^[1-5][0-9][0-9][0-9][0-9]$|^6[0-4][0-9][0-9][0-9]$|^65[0-4][0-9][0-9]$|^655[0-2][0-9]$|^6553[0-5]$"
+                     },
+                     "suffix": {
+                        "description": "Suffix of IQN Suffix Block",
+                        "type": "string",
+                        "default": "",
+                        "pattern": "^[0-9a-zA-Z\\.:-]{0,64}$"
+                     }
+                  },
+                  "additionalProperties":false,
+                  "required": [
+                     "from",
+                     "size",
+                     "suffix"
+                  ]
+               }
+            ]
+         },
+         "minItems": 1
+      }
+   },
+   "additionalProperties":false,
+   "required": [
+      "name",
+      "prefix"
+   ]
+}

@@ -1,0 +1,75 @@
+{
+   "id":"ucs_system_config_fc_zone_profiles#",
+   "$schema":"http://json-schema.org/draft-07/schema#",
+   "title":"EasyUCS ucs system config fc_zone_profiles section",
+   "description":"EasyUCS ucs system config fc_zone_profiles section JSON schema",
+   "type":"object",
+   "properties":{
+      "name":{
+         "description":"FC Zone Profile - Name",
+         "type":"string",
+         "pattern":"^[\\-\\.:_a-zA-Z0-9]{2,16}$"
+      },
+      "descr":{
+         "description":"FC Zone Profile - Descr",
+         "type":"string",
+         "pattern":"^[ !#$%&\\(\\)\\*\\+,\\-\\./:;\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{0,256}$"
+      },
+      "fc_zoning":{
+         "description":"FC Zone Profile - FC Zoning",
+         "type":"string",
+         "default": "disabled",
+         "enum": [
+            "disabled",
+            "enabled"
+         ]
+      },
+      "fc_user_zones":{
+         "description":"FC Zone Profile - FC User Zones",
+         "type":"array",
+         "items":{
+            "type":"object",
+            "properties":{
+               "name":{
+                  "description":"FC Zone Profile - FC User Zone - Name",
+                  "type":"string",
+                  "pattern":"^[\\-\\.:_a-zA-Z0-9]{2,16}$"
+               },
+               "path":{
+                  "description":"FC Zone Profile - FC User Zone - Path",
+                  "type":"string",
+                  "default": "A",
+                  "enum": [
+                     "A",
+                     "B"
+                  ]
+               },
+               "vsan":{
+                  "description":"FC Zone Profile - FC User Zone - VSAN",
+                  "type":"string",
+                  "pattern": "^[\\-\\.:_a-zA-Z0-9]{0,32}$"
+               },
+               "wwpns":{
+                  "description":"FC Zone Profile - FC User Zone - WWPNs",
+                  "type":"array",
+                  "items": {
+                     "type": "string",
+                     "description": "FC Zone Profile - FC User Zone - WWPN",
+                     "pattern": "^(([A-Fa-f0-9][A-Fa-f0-9]:){7}[A-Fa-f0-9][A-Fa-f0-9])$|^0$"
+                  },
+                  "minItems":1
+               }
+            },
+            "additionalProperties":false,
+            "required":[
+               "name"
+            ]
+         },
+         "minItems":1
+      }
+   },
+   "additionalProperties":false,
+   "required":[
+      "name"
+   ]
+}

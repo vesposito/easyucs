@@ -1,0 +1,113 @@
+{
+   "id":"ucs_system_config_vlan_groups#",
+   "$schema":"http://json-schema.org/draft-07/schema#",
+   "title":"EasyUCS ucs system config vlan_groups section",
+   "description":"EasyUCS ucs system config vlan_groups section JSON schema",
+   "type":"object",
+   "properties":{
+      "name":{
+         "description":"VLAN Group Name",
+         "type":"string",
+         "default":""
+      },
+      "native_vlan":{
+         "description":"VLAN Group Native VLAN Name",
+         "type":"string"
+      },
+      "vlans":{
+         "description":"VLAN Group VLANs List",
+         "type":"array",
+         "items":{
+            "description":"VLAN Group VLAN Member Name",
+            "type":"string"
+         },
+         "minItems":1
+      },
+      "org_permissions": {
+         "description": "Organizations assigned to the VLAN group",
+         "type": "array",
+         "items": {
+            "type": "string",
+            "description": "Organization assigned to the VLAN Group(full path)",
+            "default": "",
+            "pattern": "^[\\-\\./:_a-zA-Z0-9]{1,128}$"
+         },
+         "minItems": 1
+      },
+      "lan_uplink_ports":{
+         "description":"VLAN Group Assigned LAN Uplink Ports List",
+         "type":"array",
+         "items":{
+            "description":"VLAN Group Assigned LAN Uplink Port",
+            "type":"object",
+            "properties":{
+               "fabric":{
+                  "description":"VLAN Group Assigned LAN Uplink Port Fabric ID",
+                  "type":"string",
+                  "enum":[
+                     "a",
+                     "A",
+                     "b",
+                     "B"
+                  ]
+               },
+               "slot_id":{
+                  "description":"VLAN Group Assigned LAN Uplink Port Slot ID",
+                  "type":"string",
+                  "pattern":"^[1-5]$"
+               },
+               "port_id":{
+                  "description":"VLAN Group Assigned LAN Uplink Port Port ID",
+                  "type":"string"
+               },
+               "aggr_id":{
+                  "description":"VLAN Group Assigned LAN Uplink Port Aggregate ID (for Breakout Ports)",
+                  "type":"string",
+                  "pattern":"^[1-4]$"
+               }
+            },
+            "additionalProperties":false,
+            "required":[
+               "fabric",
+               "slot_id",
+               "port_id"
+            ]
+         },
+         "minItems":1
+      },
+      "lan_port_channels":{
+         "description":"VLAN Group Assigned LAN Port-Channels List",
+         "type":"array",
+         "items":{
+            "description":"VLAN Group Assigned LAN Port-Channel",
+            "type":"object",
+            "properties":{
+               "fabric":{
+                  "description":"VLAN Group Assigned LAN Port-Channel Fabric ID",
+                  "type":"string",
+                  "enum":[
+                     "a",
+                     "A",
+                     "b",
+                     "B"
+                  ]
+               },
+               "pc_id":{
+                  "description":"VLAN Group Assigned LAN Port-Channel ID",
+                  "type":"string"
+               }
+            },
+            "additionalProperties":false,
+            "required":[
+               "fabric",
+               "pc_id"
+            ]
+         },
+         "minItems":1
+      }
+   },
+   "additionalProperties":false,
+   "required":[
+      "name"
+   ]
+}

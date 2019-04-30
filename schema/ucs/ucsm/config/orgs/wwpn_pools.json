@@ -1,0 +1,86 @@
+{
+   "id": "ucs_system_config_wwpn_pools#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS ucs system config orgs wwpn_pools section",
+   "description": "EasyUCS ucs system config orgs wwpn_pools section JSON schema",
+   "type": "object",
+   "properties": {
+      "name": {
+         "description": "WWPN Pool Name",
+         "type": "string",
+         "default": "",
+         "pattern": "^[\\-\\.:_a-zA-Z0-9]{1,32}$"
+      },
+      "descr": {
+         "description": "Description of WWPN Pool",
+         "type": "string",
+         "default": "",
+         "pattern": "^[ !#$%&\\(\\)\\*\\+,\\-\\./:;\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{0,256}$"
+      },
+      "order": {
+         "description": "Assignment Order of WWPN Pool",
+         "type": "string",
+         "default": "default",
+         "enum": [
+            "default",
+            "sequential"
+         ]
+      },
+      "wwpn_blocks": {
+         "description": "Blocks of WWPNs in WWPN Pool",
+         "type": "array",
+         "items": {
+            "type": "object",
+            "oneOf": [
+               {
+                  "properties": {
+                     "from": {
+                        "description": "First WWPN of Block",
+                        "type": "string",
+                        "default": "20:00:00:25:B5:00:00:00",
+                        "pattern": "^(([A-Fa-f0-9][A-Fa-f0-9]:){7}[A-Fa-f0-9][A-Fa-f0-9])$|^0$"
+                     },
+                     "to": {
+                        "description": "Last WWPN of Block",
+                        "type": "string",
+                        "default": "20:00:00:25:B5:00:00:00",
+                        "pattern": "^(([A-Fa-f0-9][A-Fa-f0-9]:){7}[A-Fa-f0-9][A-Fa-f0-9])$|^0$"
+                     }
+                  },
+                  "additionalProperties":false,
+                  "required": [
+                     "from",
+                     "to"
+                  ]
+               },
+               {
+                  "properties": {
+                     "from": {
+                        "description": "First WWPN of Block",
+                        "type": "string",
+                        "default": "20:00:00:25:B5:00:00:00",
+                        "pattern": "^(([A-Fa-f0-9][A-Fa-f0-9]:){7}[A-Fa-f0-9][A-Fa-f0-9])$|^0$"
+                     },
+                     "size": {
+                        "description": "Size of WWPN Block",
+                        "type": "string",
+                        "default": "1",
+                        "pattern": "^[1-9]$|^[1-9][0-9]$|^[1-9][0-9][0-9]$|^1000$"
+                     }
+                  },
+                  "additionalProperties":false,
+                  "required": [
+                     "from",
+                     "size"
+                  ]
+               }
+            ]
+         },
+         "minItems": 1
+      }
+   },
+   "additionalProperties":false,
+   "required": [
+      "name"
+   ]
+}

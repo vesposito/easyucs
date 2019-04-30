@@ -1,0 +1,155 @@
+{
+   "id":"ucs_system_config_global_policies#",
+   "$schema":"http://json-schema.org/draft-07/schema#",
+   "title":"EasyUCS ucs system config global_policies section",
+   "description":"EasyUCS ucs system config global_policies section JSON schema",
+   "type":"object",
+   "properties":{
+      "chassis_discovery_policy":{
+         "description":"Chassis/FEX Discovery Policy",
+         "type":"array",
+         "items":{
+            "properties":{
+               "action_link":{
+                  "description":"Number of links for new Chassis/FEX discovered",
+                  "type":"string",
+                  "default":"1",
+                  "enum":[
+                     "1",
+                     "2",
+                     "4",
+                     "8",
+                     "immediate",
+                     "max",
+                     "platform-max",
+                     "user-acknowledged"
+                  ]
+               },
+               "link_grouping_preference":{
+                  "description":"Link Grouping mode for new Chassis/FEX discovered",
+                  "type":"string",
+                  "default":"none",
+                  "enum":[
+                     "none",
+                     "port-channel"
+                  ]
+               },
+               "multicast_hardware_hash":{
+                  "description":"Multicast Hardware Hash Admin State",
+                  "type":"string",
+                  "default":"disabled",
+                  "enum":[
+                     "disabled",
+                     "enabled"
+                  ]
+               },
+               "backplane_speed_preference": {
+                  "description": "Backplane Speed Preference",
+                  "type": "string",
+                  "default": "40G",
+                  "enum": [
+                     "40G",
+                     "4x10G"
+                  ]
+               }
+            },
+            "additionalProperties":false
+         }
+      },
+      "rack_server_discovery_policy":{
+         "description":"Rack Server Discovery Policy",
+         "type":"array",
+         "items":{
+            "properties":{
+               "action":{
+                  "description":"How UCS Manager reacts when adding a new server",
+                  "type":"string",
+                  "default":"immediate",
+                  "enum":[
+                     "diag",
+                     "immediate",
+                     "user-acknowledged"
+                  ]
+               },
+               "scrub_policy":{
+                  "description":"Scrub Policy to run on a newly discovered server",
+                  "type":"string"
+               }
+            },
+            "additionalProperties":false
+         }
+      },
+      "rack_management_connection_policy":{
+         "description":"Rack Management Connection Policy",
+         "type":"string",
+         "default":"auto-acknowledged",
+         "enum":[
+            "auto-acknowledged",
+            "user-acknowledged"
+         ]
+      },
+      "power_policy":{
+         "description":"Power Policy (Redundancy)",
+         "type":"string",
+         "default":"non-redundant",
+         "enum":[
+            "grid",
+            "n+1",
+            "non-redundant"
+         ]
+      },
+      "mac_address_table_aging":{
+         "description":"MAC Address Table Aging Time",
+         "type":"string",
+         "default":"mode-default"
+      },
+      "global_power_allocation_policy":{
+         "description":"Global Power Allocation Policy",
+         "type":"string",
+         "default":"intelligent-policy-driven",
+         "enum":[
+            "intelligent-policy-driven",
+            "manual-per-blade"
+         ]
+      },
+      "firmware_auto_sync_server_policy":{
+         "description":"Firmware Auto-Sync Server Policy",
+         "type":"string",
+         "default":"No Actions",
+         "enum":[
+            "No Actions",
+            "User Acknowledge"
+         ]
+      },
+      "global_power_profiling_policy":{
+         "description":"Global Power Profiling Policy - Profile Power?",
+         "type":"string",
+         "default":"no",
+         "enum":[
+            "false",
+            "no",
+            "true",
+            "yes"
+         ]
+      },
+      "info_policy":{
+         "description":"Info Policy",
+         "type":"string",
+         "default":"disabled",
+         "enum":[
+            "disabled",
+            "enabled"
+         ]
+      },
+      "hardware_change_discovery_policy":{
+         "description":"Hardware Change Discovery Policy",
+         "type":"string",
+         "default":"auto-acknowledged",
+         "enum":[
+            "auto-acknowledged",
+            "user-acknowledged"
+         ]
+      }
+   },
+   "additionalProperties":false
+}

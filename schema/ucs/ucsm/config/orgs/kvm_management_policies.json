@@ -1,0 +1,34 @@
+{
+   "id": "ucs_system_config_kvm_management_policies#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS ucs system config kvm_management_policies section",
+   "description": "EasyUCS ucs system config kvm_management_policies section JSON schema",
+   "type": "object",
+   "properties": {
+      "name": {
+         "description": "KVM Management Policy Name",
+         "type": "string",
+         "default": "",
+         "pattern": "^[\\-\\.:_a-zA-Z0-9]{1,16}$"
+      },
+      "descr": {
+         "description": "Description of KVM Management Policy",
+         "type": "string",
+         "default": "",
+         "pattern": "^[ !#$%&\\(\\)\\*\\+,\\-\\./:;\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{0,256}$"
+      },
+      "vmedia_encryption": {
+         "description": "vMedia encryption of KVM Management Policy",
+         "type": "string",
+         "default": "disable",
+         "enum": [
+            "disable",
+            "enable"
+         ]
+      }
+   },
+   "additionalProperties":false,
+   "required":[
+      "name"
+   ]
+}

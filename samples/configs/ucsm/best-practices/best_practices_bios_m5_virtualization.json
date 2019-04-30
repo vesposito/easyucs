@@ -1,0 +1,55 @@
+{
+   "easyucs":{
+      "metadata":[
+         {
+            "file_type": "config",
+            "device_type": "ucsm",
+            "category":"best-practices",
+            "subcategory":"BIOS",
+            "name":"UCS Manager BIOS Policy for Virtualization on Cisco UCS M5 Servers",
+            "url":"https://www.cisco.com/c/dam/en/us/products/collateral/servers-unified-computing/ucs-b-series-blade-servers/whitepaper_c11-740098.pdf",
+            "easyucs_version":"0.9.0",
+            "revision": "1.0"
+         }
+      ]
+   },
+   "config":{
+      "orgs":[
+         {
+            "name":"root",
+            "bios_policies": [
+               {
+                  "name":"Virtu-M5",
+                  "descr": "BIOS Policy for Virtualization on Cisco UCS M5 Servers",
+                  "enhanced_intel_speedstep_tech":"platform-default",
+                  "intel_hyperthreading_tech":"platform-default",
+  				  "intel_virtualization_technology":"platform-default",
+				  "intel_vt_for_directed_io":"platform-default",
+				  "cpu_performance":"platform-default",
+                  "llc_prefetch": "platform-default",
+				  "direct_cache_access":"platform-default",
+                  "power_technology":"custom",
+                  "intel_turbo_boost_tech":"platform-default",
+                  "p_state_coordination": "platform-default",
+                  "energy_performance":"platform-default",
+                  "processor_c_state":"disabled",
+                  "processor_c1e":"disabled",
+				  "processor_c3_report":"disabled",
+				  "processor_c6_report":"disabled",
+				  "processor_c7_report":"disabled",
+                  "package_c_state_limit":"platform-default",
+                  "energy_performance_tuning": "platform-default",
+                  "cpu_hardware_power_management":"platform-default",
+                  "workload_configuration": "platform-default",
+                  "numa_optimized":"platform-default",
+                  "imc_inteleave": "platform-default",
+                  "xpt_prefetch": "platform-default",
+                  "upi_prefetch": "platform-default",
+                  "sub_numa_clustering": "platform-default",
+                  "memory_ras_configuration":"platform-default"
+               }
+            ]
+         }
+      ]
+   }
+}

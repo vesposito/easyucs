@@ -1,0 +1,42 @@
+{
+   "id":"ucs_central_config_domain_groups_vlan_groups#",
+   "$schema":"http://json-schema.org/draft-07/schema#",
+   "title":"EasyUCS ucs central config domain_groups vlan_groups section",
+   "description":"EasyUCS ucs central config domain_groups vlan_groups section JSON schema",
+   "type":"object",
+   "properties":{
+      "name":{
+         "description":"VLAN Group Name",
+         "type":"string",
+         "default":""
+      },
+      "native_vlan":{
+         "description":"VLAN Group Native VLAN Name",
+         "type":"string"
+      },
+      "vlans":{
+         "description":"VLAN Group VLANs List",
+         "type":"array",
+         "items":{
+            "description":"VLAN Group VLAN Member Name",
+            "type":"string"
+         },
+         "minItems":1
+      },
+      "org_permissions": {
+         "description": "Organizations assigned to the VLAN Group",
+         "type": "array",
+         "items": {
+            "type": "string",
+            "description": "Organization assigned to the VLAN Group(full path)",
+            "default": "",
+            "pattern": "^[\\-\\./:_a-zA-Z0-9]{1,128}$"
+         },
+         "minItems": 1
+      }
+   },
+   "additionalProperties":false,
+   "required":[
+      "name"
+   ]
+}

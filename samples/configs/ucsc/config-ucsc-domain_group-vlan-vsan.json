@@ -1,0 +1,105 @@
+{
+   "easyucs":{
+      "metadata":[
+         {
+            "file_type": "config",
+            "device_type": "ucsc",
+            "category":"custom",
+            "subcategory":"samples",
+            "name":"UCS Central Domain Group/VLAN/VSAN-related sections configuration sample",
+            "easyucs_version":"0.9.0",
+            "revision": "1.0"
+         }
+      ]
+   },
+   "config":{
+      "domain_groups": [
+         {
+            "name": "root",
+            "vlans": [
+               {
+                  "name": "vlan300",
+                  "id": "300",
+                  "native_vlan": "yes"
+               },
+               {
+                  "name":"vlan400",
+                  "id":"400",
+                  "sharing_type":"primary",
+                  "multicast_policy_name":"default",
+                  "org_permissions": [
+                     "TEST"
+                  ]
+               },
+               {
+                  "name":"vlan401",
+                  "id":"401",
+                  "sharing_type":"isolated",
+                  "primary_vlan_name":"vlan400"
+               },
+               {
+                  "prefix": "vlan-",
+                  "id_from": "440",
+                  "id_to": "450"
+               }
+            ],
+            "vlan_groups":[
+               {
+                  "name":"test",
+                  "native_vlan":"ESX-100",
+                  "vlans":[
+                     "ESX-101",
+                     "ESX-102"
+                  ],
+                  "org_permissions": [
+                     "TEST"
+                  ]
+               }
+            ],
+            "appliance_vlans":[
+               {
+                  "name":"testA",
+                  "id":"231",
+                  "sharing_type":"isolated",
+                  "primary_vlan_name":"testGlobal"
+               },
+               {
+                  "name":"testGlobal",
+                  "id":"230",
+                  "sharing_type":"primary",
+                  "primary_vlan_name":"testGlobal",
+                  "org_permissions": [
+                     "root"
+                  ]
+               }
+            ],
+            "domain_groups": [
+               {
+                  "name": "DG1",
+                  "descr": "Domain Group 1",
+                  "domain_groups": [
+                     {
+                        "name": "DG11",
+                        "descr": "Domain Group 1-1"
+                     }
+                  ]
+               },
+               {
+                  "name": "DG2",
+                  "descr": "Domain Group 2"
+               }
+            ]
+         }
+      ],
+      "orgs":[
+         {
+            "name":"root",
+            "orgs": [
+               {
+                  "name": "TEST"
+               }
+            ]
+         }
+      ]
+   }
+}

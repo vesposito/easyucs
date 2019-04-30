@@ -1,0 +1,29 @@
+type: object
+properties:
+    devices:
+      type: array
+      items:
+        required:
+          - device-uuid
+          - name
+          - type
+        properties:
+          device-uuid:
+            type: string
+            description: UUID of the device
+            example: 9fcfe5dd-3b3f-481e-9036-9bb4169fd4ee
+          name:
+            type: string
+            description: Name of the device
+            example: UCS-DEMO
+          type:
+            type: string
+            enum:
+              - cimc
+              - ucsm
+            description: Device type
+            example: ucsm
+          ip:
+            type: string
+            description: IP address of the device
+            example: 1.2.3.4

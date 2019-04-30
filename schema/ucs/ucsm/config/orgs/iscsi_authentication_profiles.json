@@ -1,0 +1,36 @@
+{
+   "id": "ucs_system_config_iscsi_authentication_profiles#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS ucs system config iscsi_authentication_profiles section",
+   "description": "EasyUCS ucs system config iscsi_authentication_profiles section JSON schema",
+   "type": "object",
+   "properties": {
+      "name": {
+         "description": "iSCSI Authentication Profile Name",
+         "type": "string",
+         "default": "",
+         "pattern": "^[\\-\\.:_a-zA-Z0-9]{1,16}$"
+      },
+      "descr": {
+         "description": "Description of iSCSI Authentication Profile",
+         "type": "string",
+         "default": "",
+         "pattern": "^[ !#$%&\\(\\)\\*\\+,\\-\\./:;\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{0,256}$"
+      },
+      "user_id": {
+         "description": "User ID of iSCSI Authentication Profile",
+         "type": "string"
+      },
+      "password": {
+         "description": "Password of iSCSI Authentication Profile",
+         "type": "string",
+         "pattern": "^[!\"\"#%&'\\(\\)\\*\\+,\\-\\./:;<>@\\[\\\\\\]\\^_`\\{\\|\\}~a-zA-Z0-9]{12,16}$"
+      }
+   },
+   "additionalProperties":false,
+   "required":[
+      "name",
+      "user_id",
+      "password"
+   ]
+}

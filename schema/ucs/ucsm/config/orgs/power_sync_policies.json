@@ -1,0 +1,37 @@
+{
+   "id": "ucs_system_config_power_sync_policies#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS ucs system config power_sync_policies section",
+   "description": "EasyUCS ucs system config power_sync_policies section JSON schema",
+   "type": "object",
+   "properties": {
+      "name": {
+         "description": "Power Sync Policy Name",
+         "type": "string",
+         "default": "",
+         "pattern": "^[\\-\\.:_a-zA-Z0-9]{1,16}$"
+      },
+      "descr": {
+         "description": "Description of Power Sync Policy",
+         "type": "string",
+         "default": "",
+         "pattern": "^[ !#$%&\\(\\)\\*\\+,\\-\\./:;\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{0,256}$"
+      },
+      "sync_option": {
+         "description": "Sync Option of Power Sync Policy",
+         "type": "string",
+         "default": "initial-only-sync",
+         "enum": [
+            "always-sync",
+            "always",
+            "default",
+            "initial-only-sync",
+            "initial"
+         ]
+      }
+   },
+   "additionalProperties":false,
+   "required":[
+      "name"
+   ]
+}

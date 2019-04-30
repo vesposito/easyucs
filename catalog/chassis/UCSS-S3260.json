@@ -1,0 +1,131 @@
+{
+  "rear_file_name":"UCSS-S3260_rear.png",
+  "front_file_name":"UCSS-S3260_front.png",
+  "rear_file_size":[2862,1054],
+  "front_file_size":[2862,1058],
+  "system_io_controllers_slots":[
+    {
+      "id":1,
+      "coord":[214, 592]
+    },
+    {
+      "id":2,
+      "coord":[1472,592]
+    }
+  ],
+  "system_io_controllers_models":[
+    {
+      "name":"UCSC-C3260-SIOC",
+      "description":"Cisco UCS C3260 System IO Controller with VIC 1300 incl."
+    },
+    {
+      "name":"UCSC-C3X60-SBLKP",
+      "type":"blank",
+      "description":"Cisco UCS C3X60 SIOC blanking plate"
+    }
+  ],
+  "blades_slots_rear":[
+    {
+      "id":1,
+      "coord":[140,26]
+    },
+    {
+      "id":2,
+      "coord":[140,302]
+    }
+  ],
+  "blades_models":[
+    {
+      "name":"UCSC-C3X60-SVRNB",
+      "description":"Cisco UCS C3160 Server Node",
+      "width":"half"
+    },
+    {
+      "name":"UCSC-C3K-M4SRB",
+      "description":"UCS C3000 M4 Server Node for Intel E5-2600 v4",
+      "width":"half"
+    },
+    {
+      "name":"UCS-S3260-M5SRB",
+      "description":"UCS S3260 M5 Server Node for Intel Scalable CPUs",
+      "width":"half"
+    },
+    {
+      "name":"UCSC-C3X60-BLKP",
+      "type":"blank",
+      "description":"Cisco UCS C3X60 Server Node blanking plate",
+      "width":"half"
+    }
+  ],
+  "psus_slots_rear":[
+    {
+      "id":1,
+      "coord":[228,763]
+    },
+    {
+      "id":2,
+      "coord":[688,763]
+    },
+    {
+      "id":3,
+      "coord":[1731,763]
+    },
+    {
+      "id":4,
+      "coord":[2187,763]
+    }
+  ],
+  "psus_models":[
+    {
+      "name":"UCSC-PSU1-1050W",
+      "description":"Cisco UCS C3X60 1050W (AC) Power Supply Unit"
+    },
+    {
+      "name":"UCSC-PSUV2-1050DC",
+      "description":"Cisco UCS C3X60 1050W (DC) Power Supply Unit"
+    },
+    {
+      "name":"UCSC-PSU-BLKP1U",
+      "type":"blank",
+      "description":"Power Supply Blanking Panel for C220 M4 servers"
+    }
+  ],
+  "disks_slots_rear":[
+    {
+      "id":1,
+      "format":"sff_7mm",
+      "orientation":"horizontal",
+      "coord":[1221, 785],
+      "size":[428,39]
+    },
+    {
+      "id":2,
+      "format":"sff_7mm",
+      "orientation":"horizontal",
+      "coord":[1221, 842],
+      "size":[428,39]
+    },
+    {
+      "id":3,
+      "format":"sff_7mm",
+      "orientation":"horizontal",
+      "coord":[1221, 899],
+      "size":[428,39]
+    },
+    {
+      "id":4,
+      "format":"sff_7mm",
+      "orientation":"horizontal",
+      "coord":[1221, 956],
+      "size":[428,39]
+    }
+  ],
+  "disks_models":[
+    {
+      "name":"N20-BBLKD-7MM",
+      "type":"blank",
+	  "format":"sff_7mm",
+      "description":"UCS 7mm SSD blanking panel"
+    }
+  ]
+}

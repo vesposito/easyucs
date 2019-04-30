@@ -1,0 +1,30 @@
+{
+  "rear_file_name":"UCSC-PCIE-E16002.png",
+  "rear_file_name_half":"UCSC-PCIE-E16002_half.png",
+  "rear_file_size":[593,75],
+  "rear_file_size_half":[389,75],
+  "rear_ports": {
+    "x/1": {
+      "port_coord": [260, 11],
+      "port_type": "sfp",
+      "port_size": [82, 55]
+    },
+    "x/2": {
+      "port_coord": [371, 11],
+      "port_type": "sfp",
+      "port_size": [82, 55]
+    }
+  },
+  "rear_ports_half": {
+    "x/1": {
+      "port_coord": [116, 11],
+      "port_type": "sfp",
+      "port_size": [82, 55]
+    },
+    "x/2": {
+      "port_coord": [227, 11],
+      "port_type": "sfp",
+      "port_size": [82, 55]
+    }
+  }
+}

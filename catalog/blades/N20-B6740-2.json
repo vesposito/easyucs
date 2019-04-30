@@ -1,0 +1,42 @@
+{
+  "front_file_name":"N20-B6740-2.png",
+  "front_file_size":[2485,288],
+  "disks_slots":[
+    {
+      "id":1,
+      "format":"sff",
+      "orientation":"horizontal",
+      "coord":[32, 20],
+      "size":[459,103]
+    },
+    {
+      "id":2,
+      "format":"sff",
+      "orientation":"horizontal",
+      "coord":[522, 20],
+      "size":[459,103]
+    },
+    {
+      "id":3,
+      "format":"sff",
+      "orientation":"horizontal",
+      "coord":[1052, 20],
+      "size":[459,103]
+    },
+    {
+      "id":4,
+      "format":"sff",
+      "orientation":"horizontal",
+      "coord":[1542, 20],
+      "size":[459,103]
+    }
+  ],
+  "disks_models":[
+    {
+      "name":"N20-BBLKD",
+      "type":"blank",
+	  "format":"sff",
+      "description":"UCS 2.5 inch HDD blanking panel"
+    }
+  ]
+}

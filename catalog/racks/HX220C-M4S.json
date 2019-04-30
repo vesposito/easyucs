@@ -1,0 +1,177 @@
+{
+  "rear_file_name":"UCSC-C220-M4_rear.png",
+  "front_file_name":"HX220C-M4S_front.png",
+  "rear_file_size":[2862,273],
+  "front_file_size":[2860,273],
+  "mlom_slots":[
+    {
+      "id":1,
+      "coord":[249, 153]
+    }
+  ],
+  "mlom_models":[
+    {
+      "name":"UCSC-MLOM-C10T-02",
+      "description":"Cisco UCS VIC1227T VIC MLOM - Dual Port 10GBaseT"
+    },
+    {
+      "name":"UCSC-MLOM-CSC-02",
+      "description":"Cisco UCS VIC1227 VIC MLOM - Dual Port 10Gb SFP+"
+    },
+    {
+      "name":"UCSC-MLOM-IRJ45",
+      "description":"Intel i350 quad-port MLOM NIC"
+    },
+    {
+      "name":"UCSC-MLOM-C40Q-03",
+      "description":"Cisco VIC 1387 Dual Port 40Gb QSFP CNA MLOM"
+    },
+    {
+      "name":"UCSC-MLOM-BLK",
+      "type":"blank",
+      "description":"MLOM Blanking Panel"
+    }
+  ],
+  "pcie_slots":[
+    {
+      "id":2,
+      "width":"half",
+      "orientation":"reverse",
+      "coord":[1338, 51]
+    },
+    {
+      "id":1,
+      "width":"full",
+      "coord":[646, 40]
+    }
+  ],
+  "pcie_models":[
+    {
+      "name":"UCSC-PCIE-CSC-02",
+      "description":"Cisco VIC 1225 Dual Port 10Gb SFP+ CNA"
+    },
+    {
+      "name":"UCSC-PCIE-C10T-02",
+      "description":"Cisco VIC 1225T Dual Port 10GBaseT Adapter"
+    },
+    {
+      "name":"UCSC-PCIE-C40Q-03",
+      "description":"Cisco VIC 1385 Dual Port 40Gb QSFP+ CNA w/RDMA"
+    },
+    {
+      "name":"UCSC-PCIF-01F",
+      "type":"blank",
+      "width":"full",
+      "description":"PCIe Full Height blanking panel for UCS C-Series Server"
+    },
+    {
+      "name":"UCSC-PCIF-01H",
+      "type":"blank",
+      "width":"half",
+      "description":"PCIe Low Profile blanking panel for UCS C-Series Server"
+    }
+  ],
+  "psus_slots_rear":[
+    {
+      "id":1,
+      "coord":[1777,12]
+    },
+    {
+      "id":2,
+      "coord":[2235,12]
+    }
+  ],
+  "psus_models":[
+    {
+      "name":"UCSC-PSU-BLKP1U",
+      "type":"blank",
+      "description":"Power Supply Blanking Panel for C220 M4 servers"
+    },
+    {
+      "name":"UCSC-PSU1-770W",
+      "description":"Cisco UCS 770W AC Power Supply for Rack Server"
+    },
+    {
+      "name":"UCSC-PSUV2-1050DC",
+      "description":"Cisco UCS 1050W -48V DC Power Supply for Rack Server"
+    }
+  ],
+  "lom_ports": {
+    "1": {
+      "port_coord": [1192, 187],
+      "port_type": "rj45",
+      "port_size": [69,40]
+    },
+    "2": {
+      "port_coord": [1323,187],
+      "port_type": "rj45",
+      "port_size": [69,40]
+    }
+  },
+  "disks_slots":[
+    {
+      "id":1,
+      "format":"sff",
+      "orientation":"horizontal",
+      "coord":[197, 51],
+      "size":[457,100]
+    },
+    {
+      "id":2,
+      "format":"sff",
+      "orientation":"horizontal",
+      "coord":[699, 51],
+      "size":[457,100]
+    },
+    {
+      "id":3,
+      "format":"sff",
+      "orientation":"horizontal",
+      "coord":[1201, 51],
+      "size":[457,100]
+    },
+    {
+      "id":4,
+      "format":"sff",
+      "orientation":"horizontal",
+      "coord":[197, 154],
+      "size":[457,100]
+    },
+    {
+      "id":5,
+      "format":"sff",
+      "orientation":"horizontal",
+      "coord":[699, 154],
+      "size":[457,100]
+    },
+    {
+      "id":6,
+      "format":"sff",
+      "orientation":"horizontal",
+      "coord":[1201, 154],
+      "size":[457,100]
+    },
+    {
+      "id":7,
+      "format":"sff",
+      "orientation":"horizontal",
+      "coord":[1703, 154],
+      "size":[457,100]
+    },
+    {
+      "id":8,
+      "format":"sff",
+      "orientation":"horizontal",
+      "coord":[2204, 154],
+      "size":[457,100]
+    }
+  ],
+  "disks_models":[
+    {
+      "name":"N20-BBLKD",
+      "type":"blank",
+	  "format":"sff",
+      "description":"UCS 2.5 inch HDD blanking panel"
+    }
+  ]
+}

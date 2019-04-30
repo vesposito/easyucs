@@ -1,0 +1,142 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR ORGANIZATION
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"POT-Creation-Date: 2018-03-19 18:35+0100\n"
+"PO-Revision-Date: 2018-03-19 18:58+0100\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: fr\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: pygettext.py 1.5\n"
+"X-Generator: Poedit 2.0.4\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+#: .\report.py:77
+msgid "My title"
+msgstr "Mon titre"
+
+#: .\report.py:78 .\subelement.py:96 .\subelement.py:120 .\subelement.py:130
+msgid "Description"
+msgstr ""
+
+#: .\section.py:54
+msgid "Equipment Inventory"
+msgstr "Inventaire des équipements"
+
+#: .\section.py:62
+msgid "Rack Inventory"
+msgstr "Inventaire des racks"
+
+#: .\section.py:93
+msgid "Port list for Adaptor"
+msgstr ""
+
+#: .\section.py:102
+msgid "Network Neighbors"
+msgstr "Voisins réseau"
+
+#: .\section.py:111
+msgid "Lan Neighbors"
+msgstr "Voisins LAN"
+
+#: .\section.py:120
+msgid "San Neighbors"
+msgstr "Voisins SAN"
+
+#: .\section.py:130
+msgid "Service Profile allocation on equipments"
+msgstr "Allocation des Service Profile sur les équipements"
+
+#: .\section.py:139
+msgid "Service Profile on Racks"
+msgstr "Service Profile sur les racks"
+
+#: .\section.py:153
+msgid "Service Profile on Chassis"
+msgstr "Service Profile sur les chassis"
+
+#: .\section.py:167
+msgid "Infrastructure detailed view"
+msgstr "Vue détaillée de l'infrastructure"
+
+#: .\section.py:175
+msgid "Infra from FIs to Racks"
+msgstr ""
+
+#: .\section.py:179
+msgid "FIs to Rack #"
+msgstr ""
+
+#: .\section.py:195
+msgid "Fabric Interconnect - Cluster Information"
+msgstr "Fabric Interconnect - Informations du cluster"
+
+#: .\subelement.py:96 .\subelement.py:120
+msgid "Value"
+msgstr "Valeur"
+
+#: .\subelement.py:97
+msgid "Rack id"
+msgstr ""
+
+#: .\subelement.py:98
+msgid "SKU / Model"
+msgstr ""
+
+#: .\subelement.py:99
+msgid "Serial Number"
+msgstr "Numéro de série"
+
+#: .\subelement.py:106
+msgid "Peer"
+msgstr ""
+
+#: .\subelement.py:106
+msgid "Port"
+msgstr ""
+
+#: .\subelement.py:121
+msgid "System Name"
+msgstr "Nom du système"
+
+#: .\subelement.py:122
+msgid "Cluster IP Address"
+msgstr ""
+
+#: .\subelement.py:123
+msgid "Netmask"
+msgstr "Masque de sous-réseau"
+
+#: .\subelement.py:124
+msgid "Gateway"
+msgstr "Passerelle"
+
+#: .\subelement.py:126
+msgid "Cluster IP V6 Address"
+msgstr ""
+
+#: .\subelement.py:128
+msgid "Gateway V6"
+msgstr "Passerelle V6"
+
+#: .\subelement.py:132
+msgid "Site"
+msgstr ""
+
+#: .\subelement.py:134
+msgid "Owner"
+msgstr ""
+
+#: .\subelement.py:136
+msgid "Domain Name"
+msgstr "Nom de domaine"
+
+#: .\subelement.py:137
+msgid "Admin password"
+msgstr "Mot de passe de l'admin"

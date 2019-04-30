@@ -1,0 +1,16 @@
+{
+  "rear_file_name":"UCSC-C3260-SIOC.png",
+  "rear_file_size":[1147,153],
+  "rear_ports": {
+    "1": {
+      "port_coord": [309, 62],
+      "port_type": "qsfp",
+      "port_size": [111, 52]
+    },
+    "5": {
+      "port_coord": [117, 62],
+      "port_type": "qsfp",
+      "port_size": [111, 52]
+    }
+  }
+}

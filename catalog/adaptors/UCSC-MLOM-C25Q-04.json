@@ -1,0 +1,26 @@
+{
+  "rear_file_name":"UCSC-MLOM-C25Q-04.png",
+  "rear_file_size":[523,94],
+  "rear_ports": {
+    "x/1": {
+      "port_coord": [64, 16],
+      "port_type": "sfp",
+      "port_size": [82, 55]
+    },
+    "x/2": {
+      "port_coord": [172, 16],
+      "port_type": "sfp",
+      "port_size": [82, 55]
+    },
+	"x/3": {
+      "port_coord": [258, 16],
+      "port_type": "sfp",
+      "port_size": [82, 55]
+    },
+    "x/4": {
+      "port_coord": [368, 16],
+      "port_type": "sfp",
+      "port_size": [82, 55]
+    }
+  }
+}

@@ -1,0 +1,42 @@
+{
+  "front_file_name":"UCSB-EX-M4-3A.png",
+  "front_file_size":[2485,608],
+  "disks_slots":[
+    {
+      "id":3,
+      "format":"sff_7mm",
+      "orientation":"horizontal",
+      "coord":[352, 20],
+      "size":[428,39]
+    },
+    {
+      "id":4,
+      "format":"sff_7mm",
+      "orientation":"horizontal",
+      "coord":[1702, 20],
+      "size":[428,39]
+    },
+    {
+      "id":1,
+      "format":"sff_7mm",
+      "orientation":"horizontal",
+      "coord":[352, 331],
+      "size":[428,39]
+    },
+    {
+      "id":2,
+      "format":"sff_7mm",
+      "orientation":"horizontal",
+      "coord":[1702, 331],
+      "size":[428,39]
+    }
+  ],
+  "disks_models":[
+    {
+      "name":"N20-BBLKD-7MM",
+      "type":"blank",
+	  "format":"sff_7mm",
+      "description":"UCS 7mm SSD blanking panel"
+    }
+  ]
+}
