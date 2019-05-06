@@ -81,7 +81,17 @@ class UcsSystemDrawInfraServiceProfile(UcsSystemDrawInfraEquipment):
                                                {"color": "red", "template_name": "", "template_org": ""},
                                                {"color": "pink", "template_name": "", "template_org": ""},
                                                {"color": "violet", "template_name": "", "template_org": ""},
-                                               {"color": "brown", "template_name": "", "template_org": ""}]
+                                               {"color": "brown", "template_name": "", "template_org": ""},
+                                               {"color": "orange", "template_name": "", "template_org": ""},
+                                               {"color": "gold", "template_name": "", "template_org": ""},
+                                               {"color": "slateblue", "template_name": "", "template_org": ""},
+                                               {"color": "salmon", "template_name": "", "template_org": ""},
+                                               {"color": "olive", "template_name": "", "template_org": ""},
+                                               {"color": "antiquewhite", "template_name": "", "template_org": ""},
+                                               {"color": "burlywood", "template_name": "", "template_org": ""},
+                                               {"color": "greenyellow", "template_name": "", "template_org": ""},
+                                               {"color": "goldenrod", "template_name": "", "template_org": ""},
+                                               {"color": "lavender", "template_name": "", "template_org": ""}]
 
         self.font_size_name = self._max_length_sp_name()
         self.font_size_org = round(self.font_size_name / 2)

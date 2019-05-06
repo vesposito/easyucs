@@ -24,7 +24,11 @@ class GenericDrawRackFront(GenericUcsDrawObject):
         if not self.storage_controller_list:
             if "disks_slots" in self.json_file:
                 # Fill blank for disks slots
-                unused_slot = [*range(1, len(self.json_file["disks_slots"])+1)]
+                potential_slot = [*range(1, len(self.json_file["disks_slots"])+1)]
+                used_slot = self.disk_slots_used
+                unused_slot = []
+                for blank_id in set(potential_slot) - set(used_slot):
+                    unused_slot.append(blank_id)
                 for slot_id in unused_slot:
                     blank_name = None
                     orientation = "horizontal"
@@ -92,8 +96,9 @@ class GenericDrawRackFront(GenericUcsDrawObject):
         for disk in self._parent.nvme_drives:
             # Prevent potential disk with ID 0 to be used in Draw (happens sometimes with B200 M2)
             if disk.id != "0" and disk.slot_type == "sff-nvme":
-                disk_list.append(UcsSystemDrawStorageLocalDisk(parent=disk, parent_draw=self))
-                self.disk_slots_used.append(int(disk.id))
+                if disk.id in [str(i["id"]) for i in self.json_file["disks_slots"]]:
+                    disk_list.append(UcsSystemDrawStorageLocalDisk(parent=disk, parent_draw=self))
+                    self.disk_slots_used.append(int(disk.id))
         return disk_list
 
 
@@ -191,8 +196,9 @@ class GenericDrawRackRear(GenericUcsDrawObject):
         for disk in self._parent.nvme_drives:
             # Prevent potential disk with ID 0 to be used in Draw (happens sometimes with B200 M2)
             if disk.id != "0" and disk.slot_type == "sff-nvme":
-                disk_list.append(UcsSystemDrawStorageLocalDisk(parent=disk, parent_draw=self))
-                self.disk_slots_used.append(int(disk.id))
+                if disk.id in [str(i["id"]) for i in self.json_file["disks_slots_rear"]]:
+                    disk_list.append(UcsSystemDrawStorageLocalDisk(parent=disk, parent_draw=self))
+                    self.disk_slots_used.append(int(disk.id))
         return disk_list
 
     def fill_blanks(self):

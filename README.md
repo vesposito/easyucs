@@ -2,7 +2,7 @@
 
 EasyUCS is a toolbox to help deploy and manage Cisco UCS devices.
 
-This tool can :
+It can :
 
 * [deploy a configuration](docs/CONFIG.md) on a running UCS device:
     - UCS system (UCS Manager)
