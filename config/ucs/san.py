@@ -472,7 +472,7 @@ class UcsSystemSanUplinkPort(UcsSystemConfigObject):
                                 '/' + self.port_id)
         else:
             self.logger(message="Adding to the handle " + self._CONFIG_NAME + " configuration: " + self.fabric + " " +
-                                self.slot_id + ", waiting for a commit")
+                                self.slot_id + '/' + self.port_id + ", waiting for a commit")
 
         parent_mo = "fabric/san/" + self.fabric.upper()
 
