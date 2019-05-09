@@ -48,35 +48,13 @@ class UcsSystemDrawStorageController:
         disk_list = []
         for disk in self._parent.disks:
             # We handle the rear slot disks present on C240 M5 models
-            # C240 M5SX
-            if ("DrawRackFront" in self.parent_draw.__class__.__name__) \
-                    and (self.parent_draw._parent.sku in ["UCSC-C240-M5SX", "HX240C-M5SX", "HXAF240C-M5SX"]):
-                if int(disk.id) > 24:
-                    continue
-            if ("DrawRackRear" in self.parent_draw.__class__.__name__) \
-                    and (self.parent_draw._parent.sku in ["UCSC-C240-M5SX", "HX240C-M5SX", "HXAF240C-M5SX"]):
-                if int(disk.id) <= 24:
-                    continue
-
-            # C240 M5S
-            if ("DrawRackFront" in self.parent_draw.__class__.__name__) \
-                    and (self.parent_draw._parent.sku == "UCSC-C240-M5S"):
-                if int(disk.id) > 8:
-                    continue
-            if ("DrawRackRear" in self.parent_draw.__class__.__name__) \
-                    and (self.parent_draw._parent.sku == "UCSC-C240-M5S"):
-                if int(disk.id) <= 8:
-                    continue
-
-            # C240 M5L
-            if ("DrawRackFront" in self.parent_draw.__class__.__name__) \
-                    and (self.parent_draw._parent.sku in ["UCSC-C240-M5L", "HX240C-M5L"]):
-                if int(disk.id) > 12:
-                    continue
-            if ("DrawRackRear" in self.parent_draw.__class__.__name__) \
-                    and (self.parent_draw._parent.sku in ["UCSC-C240-M5L", "HX240C-M5L"]):
-                if int(disk.id) <= 12:
-                    continue
+            if "M5" in self.parent_draw._parent.sku:
+                if "Front" in self.parent_draw.__class__.__name__:
+                    if int(disk.id) not in [int(disk['id']) for disk in self.parent_draw.json_file["disks_slots"]]:
+                        continue
+                if "Rear" in self.parent_draw.__class__.__name__ and "disks_slots_rear" in self.parent_draw.json_file:
+                    if int(disk.id) not in [int(disk['id']) for disk in self.parent_draw.json_file["disks_slots_rear"]]:
+                        continue
 
             # We handle the internal slot disks present on C480 M5 models
             if ("DrawRackFront" in self.parent_draw.__class__.__name__) \
@@ -102,7 +80,7 @@ class UcsSystemDrawStorageController:
     def fill_blanks(self):
         if "disks_slots" in self.parent_draw.json_file:
             # For rack front or blade only
-            if "Rear" not in self.parent_draw.__class__.__name__:
+            if "Front" in self.parent_draw.__class__.__name__:
                 if len(self.disks) < len(self.parent_draw.json_file["disks_slots"]):  # Fill blank for disks slots
                     used_slot = []
                     potential_slot = []
@@ -152,8 +130,8 @@ class UcsSystemDrawStorageController:
                     unused_slot = []
                     for disk in self.disks:
                         disk_id = int(disk._parent.id)
-
                         used_slot.append(disk_id)
+
                     for disk in self.parent_draw.json_file["disks_slots_rear"]:
                         potential_slot.append(disk["id"])
                     for blank_id in set(potential_slot) - set(used_slot):
