@@ -80,7 +80,7 @@ class UcsSystemDrawStorageController:
     def fill_blanks(self):
         if "disks_slots" in self.parent_draw.json_file:
             # For rack front or blade only
-            if "Front" in self.parent_draw.__class__.__name__:
+            if "Front" in self.parent_draw.__class__.__name__ or "Blade" in self.parent_draw.__class__.__name__:
                 if len(self.disks) < len(self.parent_draw.json_file["disks_slots"]):  # Fill blank for disks slots
                     used_slot = []
                     potential_slot = []
