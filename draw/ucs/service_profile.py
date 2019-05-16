@@ -118,6 +118,7 @@ class UcsSystemDrawInfraServiceProfile(UcsSystemDrawInfraEquipment):
             elif "Rack" in equipment.__class__.__name__:
                 equip_type = "rack"
                 equipment.storage_controller_list = equipment.get_storage_controllers()
+                equipment.fill_blanks()
             self.draw_equipment_service_profile_info(equip_type, equipment)
 
         self.parse_template_list()
