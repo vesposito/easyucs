@@ -74,6 +74,17 @@ class UcsImcServerNode(UcsServerNode, UcsImcInventoryObject):
 
         UcsImcInventoryObject.__init__(self, parent=parent, ucs_sdk_object=compute_server_node)
 
+        # Adding a human-readable attribute for memory capacity
+        if self.memory_total:
+            if self.memory_total / 1024 < 1024:
+                memory_total_gb = str(self.memory_total / 1024)
+                memory_total_gb = memory_total_gb.rstrip('0').rstrip('.') if '.' in memory_total_gb else memory_total_gb
+                self.memory_total_marketing = memory_total_gb + " GB"
+            else:
+                memory_total_tb = str(self.memory_total / 1048576)
+                memory_total_tb = memory_total_tb.rstrip('0').rstrip('.') if '.' in memory_total_tb else memory_total_tb
+                self.memory_total_marketing = memory_total_tb + " TB"
+
         # Since we don't have a catalog item for finding the SKU, we set it manually here
         self.sku = self.model
 

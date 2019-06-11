@@ -12,8 +12,9 @@ from PIL import Image, ImageDraw, ImageTk, ImageFont
 
 
 class UcsSystemDrawFiRear(GenericUcsDrawEquipment):
-    def __init__(self, parent=None, parent_draw=None):
+    def __init__(self, parent=None, parent_draw=None, color_ports=True):
         self.parent_draw = parent_draw
+        self.color_ports = color_ports
         GenericUcsDrawEquipment.__init__(self, parent=parent)
         if not self.picture:
             return
@@ -29,13 +30,19 @@ class UcsSystemDrawFiRear(GenericUcsDrawEquipment):
 
         self.legend_items = []
         self.ports = []
-        self.draw_ports()
+        if color_ports:
+            self.draw_ports()
         self.expansion_modules = self.get_expansion_modules()
         self.fill_blanks()
 
         self._file_name = None
         if not self.parent_draw:
             self._file_name = self._device_target + "_fi_" + self._parent.id + "_rear"
+            if not self.color_ports:
+                self._file_name = self._device_target + "_fi_" + self._parent.id + "_rear_clear"
+
+        if color_ports:
+            self.clear_version = UcsSystemDrawFiRear(parent=parent, parent_draw=parent_draw, color_ports=False)
 
     def _get_picture_offset(self):
         img_w, img_h = self.picture.size
@@ -210,7 +217,8 @@ class UcsSystemDrawGem(GenericUcsDrawEquipment):
         self.ports = []
         self.parent_draw.paste_layer(self.picture, self.picture_offset)
 
-        self.draw_ports()
+        if self.parent_draw.color_ports:
+            self.draw_ports()
 
     def _get_picture_offset(self):
         for slot in self.parent_draw.json_file["expansion_modules_slots"]:
@@ -219,7 +227,7 @@ class UcsSystemDrawGem(GenericUcsDrawEquipment):
         return self.parent_draw.picture_offset[0] + coord[0], self.parent_draw.picture_offset[1] + coord[1]
 
     def draw_ports(self):
-        # Draws color-coded rectangles on top of GEM ports
+        # Draws color-coded rectangles on top of FEX ports
         for port in self._parent.ports:
             if port.role != "unknown":
                 port_color = self.COLOR_DEFAULT
@@ -286,8 +294,9 @@ class UcsSystemDrawGem(GenericUcsDrawEquipment):
 
 
 class UcsSystemDrawFexRear(GenericUcsDrawEquipment):
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, color_ports=True):
         GenericUcsDrawEquipment.__init__(self, parent=parent)
+        self.color_ports = color_ports
         if not self.picture:
             return
 
@@ -299,11 +308,17 @@ class UcsSystemDrawFexRear(GenericUcsDrawEquipment):
         self.fabric_port_list = []
         self.host_port_list = []
 
-        self.draw_port()
+        if color_ports:
+            self.draw_ports()
 
         self._file_name = self._device_target + "_fex_" + self._parent.id + "_rear"
+        if not self.color_ports:
+            self._file_name = self._device_target + "_fex_" + self._parent.id + "_rear_clear"
 
-    def draw_port(self):
+        if color_ports:
+            self.clear_version = UcsSystemDrawFexRear(parent=parent, color_ports=False)
+
+    def draw_ports(self):
         # Draws color-coded rectangles on top of base ports
         for port in self._parent.host_ports:
             if port.oper_state != "indeterminate":

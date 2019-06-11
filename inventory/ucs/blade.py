@@ -85,6 +85,17 @@ class UcsSystemBlade(UcsBlade, UcsSystemInventoryObject):
 
         UcsSystemInventoryObject.__init__(self, parent=parent, ucs_sdk_object=compute_blade)
 
+        # Adding a human-readable attribute for memory capacity
+        if self.memory_total:
+            if self.memory_total / 1024 < 1024:
+                memory_total_gb = str(self.memory_total / 1024)
+                memory_total_gb = memory_total_gb.rstrip('0').rstrip('.') if '.' in memory_total_gb else memory_total_gb
+                self.memory_total_marketing = memory_total_gb + " GB"
+            else:
+                memory_total_tb = str(self.memory_total / 1048576)
+                memory_total_tb = memory_total_tb.rstrip('0').rstrip('.') if '.' in memory_total_tb else memory_total_tb
+                self.memory_total_marketing = memory_total_tb + " TB"
+
         self.locator_led_status = None
         self.os_arch = None
         self.os_kernel_version = None
@@ -252,9 +263,9 @@ class UcsSystemBlade(UcsBlade, UcsSystemInventoryObject):
                             adaptor.driver_name_ethernet = current_driver["name"]
                             adaptor.driver_version_ethernet = current_driver["version"]
                             self.logger(level="debug",
-                                        message="Found Ethernet VIC driver (" + current_driver["name"] + ") version " +
-                                                current_driver["version"] + " for adaptor " + adaptor.id +
-                                                " of blade " + self.id)
+                                        message="Found Ethernet VIC driver (" + str(current_driver["name"]) +
+                                                ") version " + str(current_driver["version"]) + " for adaptor " +
+                                                str(adaptor.id) + " of blade " + str(self.id))
 
                 # UCS VIC Fibre Channel driver
                 if current_driver["name"] in ["fnic", "nfnic"]:
@@ -282,9 +293,9 @@ class UcsSystemBlade(UcsBlade, UcsSystemInventoryObject):
                             adaptor.driver_name_fibre_channel = current_driver["name"]
                             adaptor.driver_version_fibre_channel = current_driver["version"]
                             self.logger(level="debug",
-                                        message="Found Fibre Channel VIC driver (" + current_driver["name"] +
-                                                ") version " + current_driver["version"] + " for adaptor " +
-                                                adaptor.id + " of blade " + self.id)
+                                        message="Found Fibre Channel VIC driver (" + str(current_driver["name"]) +
+                                                ") version " + str(current_driver["version"]) + " for adaptor " +
+                                                str(adaptor.id) + " of blade " + str(self.id))
 
                 # Avago/LSI MegaRAID SAS driver
                 if current_driver["name"] in ["lsi_mr3", "megaraid_sas"]:
@@ -294,9 +305,10 @@ class UcsSystemBlade(UcsBlade, UcsSystemInventoryObject):
                             storage_controller.driver_name = current_driver["name"]
                             storage_controller.driver_version = current_driver["version"]
                             self.logger(level="debug",
-                                        message="Found Storage controller driver (" + current_driver["name"] +
-                                                ") version " + current_driver["version"] + " for storage controller " +
-                                                storage_controller.id + " of blade " + self.id)
+                                        message="Found Storage controller driver (" + str(current_driver["name"]) +
+                                                ") version " + str(current_driver["version"]) +
+                                                " for storage controller " + str(storage_controller.id) +
+                                                " of blade " + str(self.id))
 
             return True
         else:

@@ -15,7 +15,7 @@ from draw.ucs.rack import UcsSystemDrawRackRear, UcsSystemDrawRackFront
 
 class UcsSystemDrawInfraServiceProfile(UcsSystemDrawInfraEquipment):
     def __init__(self, parent=None, draw_chassis_list=[], draw_chassis_front_list=[], draw_chassis_rear_list=[],
-                 draw_rack_list=[], page=1, color_list_per_sp_template=[]):
+                 draw_rack_list=[], page=1):
         UcsSystemDrawInfraEquipment.__init__(self, parent=parent)
         self._parent = parent
 
@@ -68,30 +68,10 @@ class UcsSystemDrawInfraServiceProfile(UcsSystemDrawInfraEquipment):
         self.background = self._create_background(self.canvas_width, self.canvas_height, self.canvas_color)
         self.draw = self._create_draw()
 
-        self.color_list_per_sp_template = []
-        self.equipments_dict = self.sort_equipments()
-
+        self.color_list_per_sp_template = self._inventory._draw_color_list_per_sp_template
         self.sp_template_used = []
-        if color_list_per_sp_template:
-            for color in color_list_per_sp_template:
-                self.color_list_per_sp_template.append(dict(color))
-        else:
-            self.color_list_per_sp_template = [{"color": "lightblue", "template_name": "", "template_org": ""},
-                                               {"color": "green", "template_name": "", "template_org": ""},
-                                               {"color": "red", "template_name": "", "template_org": ""},
-                                               {"color": "pink", "template_name": "", "template_org": ""},
-                                               {"color": "violet", "template_name": "", "template_org": ""},
-                                               {"color": "brown", "template_name": "", "template_org": ""},
-                                               {"color": "orange", "template_name": "", "template_org": ""},
-                                               {"color": "gold", "template_name": "", "template_org": ""},
-                                               {"color": "slateblue", "template_name": "", "template_org": ""},
-                                               {"color": "salmon", "template_name": "", "template_org": ""},
-                                               {"color": "olive", "template_name": "", "template_org": ""},
-                                               {"color": "antiquewhite", "template_name": "", "template_org": ""},
-                                               {"color": "burlywood", "template_name": "", "template_org": ""},
-                                               {"color": "greenyellow", "template_name": "", "template_org": ""},
-                                               {"color": "goldenrod", "template_name": "", "template_org": ""},
-                                               {"color": "lavender", "template_name": "", "template_org": ""}]
+
+        self.equipments_dict = self.sort_equipments()
 
         self.font_size_name = self._max_length_sp_name()
         self.font_size_org = round(self.font_size_name / 2)
@@ -275,7 +255,6 @@ class UcsSystemDrawInfraServiceProfile(UcsSystemDrawInfraEquipment):
                 self.sp_template_used.append(sp_template_org + sp_template_name)
                 cover_color = self.determine_color_service_profile(sp_template_name, sp_template_org)
             cover = self.generate_cover(cover_color, equipment.picture.size)
-            # cover = Image.open("catalog/misc/cover.gif", 'r')
             self.paste_layer(cover, equipment.picture_offset)
 
             if service_profile_name:
@@ -348,8 +327,7 @@ class UcsSystemDrawInfraServiceProfile(UcsSystemDrawInfraEquipment):
                 if i == self.max_rack_per_page:
                     self.next_page_infra = \
                         UcsSystemDrawInfraServiceProfile(draw_rack_list=self.rack_list[i:len(self.rack_list)],
-                                                         page=self.page + 1, parent=self._parent,
-                                                         color_list_per_sp_template=self.color_list_per_sp_template)
+                                                         page=self.page + 1, parent=self._parent)
                 if i < self.max_rack_per_page:
                     equipments_dict.update({i: self.rack_list[i]})
         if self.chassis_list:
@@ -361,7 +339,7 @@ class UcsSystemDrawInfraServiceProfile(UcsSystemDrawInfraEquipment):
                     if j == self.max_chassis_per_page:
                         self.next_page_infra = UcsSystemDrawInfraServiceProfile(
                             draw_chassis_list=self.chassis_list[j:len(self.chassis_list)], page=self.page + 1,
-                            parent=self._parent, color_list_per_sp_template=self.color_list_per_sp_template)
+                            parent=self._parent)
                     if j < self.max_chassis_per_page:
                         equipments_dict.update({j: self.chassis_list[j]})
 

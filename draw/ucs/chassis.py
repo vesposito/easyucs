@@ -123,8 +123,9 @@ class UcsSystemDrawChassisFront(GenericUcsDrawEquipment):
 
 
 class UcsSystemDrawChassisRear(GenericUcsDrawEquipment):
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, color_ports=True):
         GenericUcsDrawEquipment.__init__(self, parent=parent, orientation="rear")
+        self.color_ports = color_ports
         if not self.picture:
             return
 
@@ -160,6 +161,12 @@ class UcsSystemDrawChassisRear(GenericUcsDrawEquipment):
         else:
             self.logger(level="error", message="No FI, SIOC or IOM in chassis " + self.chassis.id +
                                                ". Skipping chassis...")
+
+        if not self.color_ports:
+            self._file_name = self._device_target + "_chassis_" + self._parent.id + "_rear_clear"
+
+        if self.color_ports:
+            self.clear_version = UcsSystemDrawChassisRear(parent=parent, color_ports=False)
 
     def get_storage_enclosures(self):
         storage_enclosure_list = []
@@ -392,7 +399,8 @@ class UcsSystemDrawIom(GenericUcsDrawEquipment):
         self.ports = []
         self.parent_draw.paste_layer(self.picture, self.picture_offset)
 
-        self.draw_ports()
+        if self.parent_draw.color_ports:
+            self.draw_ports()
 
         # TODO : Should not work on UCS-S3260-PCISIOC
 
@@ -456,7 +464,8 @@ class GenericUcsDrawSioc(GenericUcsDrawEquipment):
         self.ports = []
         self.parent_draw.paste_layer(self.picture, self.picture_offset)
 
-        self.draw_ports()
+        if self.parent_draw.color_ports:
+            self.draw_ports()
 
     def _get_picture_offset(self):
         for slot in self.parent_draw.json_file["system_io_controllers_slots"]:
@@ -608,14 +617,14 @@ class UcsSystemDrawInfraChassis(UcsSystemDrawInfraEquipment):
             self.fex_a.picture_offset = self.fex_a_offset
             self.fex_a.fabric_ports = []
             self.fex_a.host_ports = []
-            self.fex_a.draw_port()
+            self.fex_a.draw_ports()
 
             self.fex_b.draw = self.draw
             self.fex_b.background = self.background
             self.fex_b.picture_offset = self.fex_b_offset
             self.fex_b.fabric_ports = []
             self.fex_b.host_ports = []
-            self.fex_b.draw_port()
+            self.fex_b.draw_ports()
 
         if "blades_slots_rear" in self.chassis.json_file:
             self.chassis.blade_list = self.chassis.get_blades()

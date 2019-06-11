@@ -56,4 +56,6 @@ List of arguments :
                     | Print log in a file
 - **-o OUTPUT_DIRECTORY**, --out OUTPUT_DIRECTORY
                     | Output schemas directory
+- **-c CLEAR_PICTURES**, --clear CLEAR_PICTURES
+                    | Export clear pictures (without colored ports)
 - **-y**, --yes             | Answer yes to all questions

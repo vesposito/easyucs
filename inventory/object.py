@@ -327,15 +327,15 @@ class UcsSystemInventoryObject(GenericUcsInventoryObject):
         if self._equipment_fru_variant is not None:
             # We use the equipmentFruVariant PID for retrieving the object's SKU
             if hasattr(self._equipment_fru_variant, "pid"):
-                if self._equipment_fru_variant.pid != "" and self._equipment_fru_variant.pid != "N/A":
+                if self._equipment_fru_variant.pid not in ["", "N/A", "NA"]:
                     self.sku = self._equipment_fru_variant.pid
         else:
             # We fetch the object's SKU or if the field is empty, its PID (if not empty as well)
             if hasattr(self._equipment_manufacturing_def, "sku"):
-                if self._equipment_manufacturing_def.sku != "" and self._equipment_manufacturing_def.sku != "N/A":
+                if self._equipment_manufacturing_def.sku not in ["", "N/A", "NA"]:
                     self.sku = self._equipment_manufacturing_def.sku
             elif hasattr(self._equipment_manufacturing_def, "pid"):
-                if self._equipment_manufacturing_def.pid != "" and self._equipment_manufacturing_def.pid != "N/A":
+                if self._equipment_manufacturing_def.pid not in ["", "N/A", "NA"]:
                     self.sku = self._equipment_manufacturing_def.pid
 
         return True

@@ -156,6 +156,27 @@ class UcsSystemInventory(GenericUcsInventory):
         self._draw_infra_lan_neighbors = None
         self._draw_infra_rack_service_profiles = None
         self._draw_infra_chassis_service_profiles = None
+        # Set the list of Service Profile template used for Infra Draw of Service Profiles on chassis and racks
+        self._draw_color_list_per_sp_template = [{"color": "lightblue", "template_name": "", "template_org": ""},
+                                                 {"color": "green", "template_name": "", "template_org": ""},
+                                                 {"color": "red", "template_name": "", "template_org": ""},
+                                                 {"color": "pink", "template_name": "", "template_org": ""},
+                                                 {"color": "violet", "template_name": "", "template_org": ""},
+                                                 {"color": "brown", "template_name": "", "template_org": ""},
+                                                 {"color": "orange", "template_name": "", "template_org": ""},
+                                                 {"color": "gold", "template_name": "", "template_org": ""},
+                                                 {"color": "slateblue", "template_name": "", "template_org": ""},
+                                                 {"color": "salmon", "template_name": "", "template_org": ""},
+                                                 {"color": "olive", "template_name": "", "template_org": ""},
+                                                 {"color": "antiquewhite", "template_name": "", "template_org": ""},
+                                                 {"color": "burlywood", "template_name": "", "template_org": ""},
+                                                 {"color": "greenyellow", "template_name": "", "template_org": ""},
+                                                 {"color": "goldenrod", "template_name": "", "template_org": ""},
+                                                 {"color": "lavender", "template_name": "", "template_org": ""},
+                                                 {"color": "darkkhaki", "template_name": "", "template_org": ""},
+                                                 {"color": "blueviolet", "template_name": "", "template_org": ""},
+                                                 {"color": "chartreuse", "template_name": "", "template_org": ""},
+                                                 {"color": "darkcyan", "template_name": "", "template_org": ""}]
 
         GenericUcsInventory.__init__(self, parent=parent)
 

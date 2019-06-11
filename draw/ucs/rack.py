@@ -349,8 +349,9 @@ class GenericDrawRackRear(GenericUcsDrawObject):
 
 
 class UcsSystemDrawRackRear(GenericDrawRackRear, GenericUcsDrawEquipment):
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, color_ports=True):
         GenericUcsDrawEquipment.__init__(self, parent=parent, orientation="rear")
+        self.color_ports = color_ports
         if not self.picture:
             return
         self.background = self._create_background(self.canvas_width, self.canvas_height, self.canvas_color)
@@ -369,6 +370,12 @@ class UcsSystemDrawRackRear(GenericDrawRackRear, GenericUcsDrawEquipment):
 
         self.fill_blanks()
         self._file_name = self._device_target + "_rack_" + self._parent.id + "_rear"
+
+        if not self.color_ports:
+            self._file_name = self._device_target + "_rack_" + self._parent.id + "_rear_clear"
+
+        if self.color_ports:
+            self.clear_version = UcsSystemDrawRackRear(parent=parent, color_ports=False)
 
 
 class UcsImcDrawRackRear(GenericDrawRackRear, GenericUcsDrawEquipment):
@@ -420,16 +427,18 @@ class UcsSystemDrawInfraRack(UcsSystemDrawInfraEquipment):
             if self.fex_presence:
                 self.fex_list = self._get_fex(fex_list)
                 self.fex_a = self.fex_list[0]
-                self.fex_b = None
-                if len(self.fex_list) > 1:
-                    self.fex_b = self.fex_list[1]
+                self.fex_b = self.fex_list[1]
+                if self.fex_a:
+                    self.valid_fex = self.fex_a
+                else:
+                    self.valid_fex = self.fex_b
 
         # Canvas settings
         if self.fex_presence:
             # self.canvas_width = self.fi_a.picture.size[0] * 2 + self.rack.picture.size[0] + self.fex_a.picture.size[0] * 2 + 200  # arbitrary
-            self.canvas_width = self.rack.picture.size[0] + self.fex_a.picture.size[0] * 2 + 100  # arbitrary
+            self.canvas_width = self.rack.picture.size[0] + self.valid_fex.picture.size[0] * 2 + 100  # arbitrary
             self.canvas_height = self.fi_a.picture.size[1] + self.rack.picture.size[1] + \
-                                 self.fex_a.picture.size[1] + 400  # arbitrary
+                                 self.valid_fex.picture.size[1] + 400  # arbitrary
         else:
             self.canvas_width = self.fi_a.picture.size[0] * 2 + self.rack.picture.size[0] + 100  # arbitrary
             self.canvas_height = self.fi_a.picture.size[1] + self.rack.picture.size[1] + 100  # arbitrary
@@ -440,7 +449,8 @@ class UcsSystemDrawInfraRack(UcsSystemDrawInfraEquipment):
         if self.fi_b:
             self.fi_b_offset = self._get_picture_offset("fi_b")
         if self.fex_presence:
-            self.fex_a_offset = self._get_picture_offset("fex_a")
+            if self.fex_a:
+                self.fex_a_offset = self._get_picture_offset("fex_a")
             if self.fex_b:
                 self.fex_b_offset = self._get_picture_offset("fex_b")
 
@@ -453,7 +463,8 @@ class UcsSystemDrawInfraRack(UcsSystemDrawInfraEquipment):
         if self.fi_b:
             self.paste_layer(self.fi_b.picture, self.fi_b_offset)
         if self.fex_presence:
-            self.paste_layer(self.fex_a.picture, self.fex_a_offset)
+            if self.fex_a:
+                self.paste_layer(self.fex_a.picture, self.fex_a_offset)
             if self.fex_b:
                 self.paste_layer(self.fex_b.picture, self.fex_b_offset)
 
@@ -476,19 +487,20 @@ class UcsSystemDrawInfraRack(UcsSystemDrawInfraEquipment):
             self.fi_b.fill_blanks()
 
         if self.fex_presence:
-            self.fex_a.draw = self.draw
-            self.fex_a.background = self.background
-            self.fex_a.picture_offset = self.fex_a_offset
-            self.fex_a.fabric_port_list = []
-            self.fex_a.host_port_list = []
-            self.fex_a.draw_port()
+            if self.fex_a:
+                self.fex_a.draw = self.draw
+                self.fex_a.background = self.background
+                self.fex_a.picture_offset = self.fex_a_offset
+                self.fex_a.fabric_port_list = []
+                self.fex_a.host_port_list = []
+                self.fex_a.draw_ports()
             if self.fex_b:
                 self.fex_b.draw = self.draw
                 self.fex_b.background = self.background
                 self.fex_b.picture_offset = self.fex_b_offset
                 self.fex_b.fabric_port_list = []
                 self.fex_b.host_port_list = []
-                self.fex_b.draw_port()
+                self.fex_b.draw_ports()
 
         self.rack.draw = self.draw
         self.rack.background = self.background
@@ -539,14 +551,14 @@ class UcsSystemDrawInfraRack(UcsSystemDrawInfraEquipment):
         fex_id_list = []
         for mgmt_if in self.rack._parent.mgmt_interfaces:
             fex_id_list.append(str(mgmt_if.peer["fex"]))
-        fex_list = []
+        fex_list = [None, None]
         for id in fex_id_list:
             for fex in list:
                 if fex._parent.id == id:
-                    fex_list.append(copy.copy(fex))
-        if len(fex_list) > 2:
-            self.logger(level="error", message="more than two FEX for one equipment")
-        fex_list.sort(key=lambda fex: fex._parent.switch_id)
+                    if fex._parent.switch_id == 'A':
+                        fex_list[0] = copy.copy(fex)
+                    elif fex._parent.switch_id == 'B':
+                        fex_list[1] = copy.copy(fex)
         return fex_list
 
     def _get_fi(self, fi_list, id):
@@ -590,11 +602,12 @@ class UcsSystemDrawInfraRack(UcsSystemDrawInfraEquipment):
         self.draw.text((round(self.canvas_width / 2 - w / 2), self.rack_offset[1] - (font_size + 16)), msg,
                        fill=fill_color, font=font_title)
         if self.fex_presence:
-            msg = "Fex #" + self.fex_a._parent.id
-            w, h = self.draw.textsize(msg, font=font_title)
-            # 16 px space between text and equipment
-            self.draw.text((self.fex_a.picture.size[0] - w, self.fex_a_offset[1] - (font_size + 16)), msg,
-                           fill=fill_color, font=font_title)
+            if self.fex_a:
+                msg = "Fex #" + self.fex_a._parent.id
+                w, h = self.draw.textsize(msg, font=font_title)
+                # 16 px space between text and equipment
+                self.draw.text((self.fex_a.picture.size[0] - w, self.fex_a_offset[1] - (font_size + 16)), msg,
+                               fill=fill_color, font=font_title)
             if self.fex_b:
                 msg = "Fex #" + self.fex_b._parent.id
                 w, h = self.draw.textsize(msg, font=font_title)
@@ -865,10 +878,14 @@ class UcsSystemDrawInfraRack(UcsSystemDrawInfraEquipment):
 
         # Handling wire from FEX to FI
         if self.fex_presence:
-            if self.fex_b:
+            if self.fex_a and self.fex_b:
                 fex_list = [self.fex_a, self.fex_b]
-            else:
+            elif self.fex_a:
                 fex_list = [self.fex_a]
+            elif self.fex_b:
+                fex_list = [self.fex_b]
+            else:
+                fex_list = []
             for fex in fex_list:
                 for fex_port in fex.fabric_port_list:
                     # Search for peer information

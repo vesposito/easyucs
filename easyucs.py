@@ -306,7 +306,7 @@ def init_process(ucs_device, args, config_string):
         ucs_device.set_task_progression(75)
 
         directory = args.output_directory
-        ucs_device.inventory_manager.export_draw(directory=directory)
+        ucs_device.inventory_manager.export_draw(directory=directory, export_clear_pictures=args.clear_pictures)
 
     ucs_device.set_task_progression(100)
     ucs_device.print_logger_summary()
@@ -470,6 +470,8 @@ def main():
     parser_schemas_create.add_argument('-o', '--out', dest='output_directory', action='store',
                                        help='Output schemas directory',
                                        required=True)
+    parser_schemas_create.add_argument('-c', '--clear', dest='clear_pictures', action='store_true',
+                                       help='Export clear pictures (without colored ports)')
     parser_schemas_create.add_argument('-y', '--yes', dest='yes', action='store_true',
                                        help='Answer yes to all questions')
 

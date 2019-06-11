@@ -31,6 +31,18 @@ class UcsSystemGpu(UcsGpu, UcsSystemInventoryObject):
 
         UcsSystemInventoryObject.__init__(self, parent=parent, ucs_sdk_object=graphics_card)
 
+        # Small fix for when GPU SKU is not present in UCS catalog
+        if hasattr(self, "sku"):
+            if not self.sku:
+                if any(x in self.model for x in ["UCSB-", "UCSC-"]):
+                    self.sku = self.model
+                if self.model == "Nvidia GRID K1 P2401-502":
+                    self.sku = "UCSC-GPU-VGXK1"
+                if self.model == "Nvidia GRID K2 P2055-552":
+                    self.sku = "UCSC-GPU-VGXK2"
+                if self.model == "Nvidia M60":
+                    self.sku = "UCSC-GPU-M60"
+
 
 class UcsImcGpu(UcsGpu, UcsImcInventoryObject):
     _UCS_SDK_OBJECT_NAME = "pciEquipSlot"

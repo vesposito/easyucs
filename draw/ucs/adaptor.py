@@ -29,7 +29,8 @@ class UcsSystemDrawAdaptor(GenericUcsDrawEquipment):
 
         self.parent_draw.paste_layer(self.picture, self.picture_offset)
         if "UcsImc" not in parent.__class__.__name__:
-            self.draw_ports()
+            if self.parent_draw.color_ports:
+                self.draw_ports()
 
     def _get_picture(self):
         if self._parent.pci_slot != "MLOM":  # for MLOM Slot

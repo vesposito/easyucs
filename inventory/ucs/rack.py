@@ -37,6 +37,17 @@ class UcsRack(GenericUcsInventoryObject):
                                              attribute_secondary_name="user_label")
         self.vendor = self.get_attribute(ucs_sdk_object=compute_rack_unit, attribute_name="vendor")
 
+        # Adding a human-readable attribute for memory capacity
+        if self.memory_total:
+            if self.memory_total / 1024 < 1024:
+                memory_total_gb = str(self.memory_total / 1024)
+                memory_total_gb = memory_total_gb.rstrip('0').rstrip('.') if '.' in memory_total_gb else memory_total_gb
+                self.memory_total_marketing = memory_total_gb + " GB"
+            else:
+                memory_total_tb = str(self.memory_total / 1048576)
+                memory_total_tb = memory_total_tb.rstrip('0').rstrip('.') if '.' in memory_total_tb else memory_total_tb
+                self.memory_total_marketing = memory_total_tb + " TB"
+
         self.adaptors = self._get_adaptors()
         self.cpus = self._get_cpus()
         self.gpus = self._get_gpus()

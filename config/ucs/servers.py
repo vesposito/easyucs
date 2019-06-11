@@ -1945,21 +1945,17 @@ class UcsSystemBiosPolicy(UcsSystemConfigObject):
                                 bios_token_children = [child for child in self._config.sdk_objects["biosTokenSettings"]
                                                        if bios_token.dn in child.dn]
                                 for bios_token_child in bios_token_children:
-                                    param_name = None
+                                    bios_token_name = None
                                     for bios_key, bios_values in bios_table.items():
-                                        if not param_name:
+                                        if not bios_token_name:
                                             if bios_values["target_name"] == bios_token.target_token_name:
-                                                param_name = bios_key
-                                    if param_name:
+                                                bios_token_name = bios_key
+                                    if bios_token_name:
                                         if bios_token_child.is_assigned == "yes":
                                             token_value = bios_token_child.settings_mo_rn
-                                            setattr(self, bios_token.param_name.lower().replace("/", "_").replace(
-                                                "-", "_").replace("  ", "_").replace(' ', '_').split("(")[0],
-                                                    token_value)
+                                            setattr(self, bios_token_name, token_value)
                                         else:
-                                            setattr(self, bios_token.param_name.lower().replace("/", "_").replace(
-                                                "-", "_").replace("  ", "_").replace(' ', '_').split("(")[0],
-                                                    "platform-default")
+                                            setattr(self, bios_token_name, "platform-default")
                                     else:
                                         self.logger(level="warning",
                                                     message="BIOS Param name " + bios_token.param_name + " not found")

@@ -427,13 +427,14 @@ class UcsSystemInventoryManager(GenericUcsInventoryManager):
             else:
                 rack_draw._parent._draw_infra = None
 
-    def export_draw(self, uuid=None, export_format="png", directory=None):
+    def export_draw(self, uuid=None, export_format="png", directory=None, export_clear_pictures=False):
         """
         Export all the drawings
 
         :param uuid: The UUID of the drawn inventory to be exported. If not specified, the most recent inventory will be used
         :param export_format: "png" by default, not used for now
         :param directory:
+        :param export_clear_pictures : Export the pictures without colored ports
         :return:
         """
 
@@ -461,6 +462,8 @@ class UcsSystemInventoryManager(GenericUcsInventoryManager):
             if hasattr(chassis, "_draw_rear"):
                 if chassis._draw_rear:
                     chassis._draw_rear.save_image(output_directory=directory, format=export_format)
+                    if export_clear_pictures:
+                        chassis._draw_rear.clear_version.save_image(output_directory=directory, format=export_format)
             if hasattr(chassis, "_draw_infra"):
                 if chassis._draw_infra:
                     chassis._draw_infra.save_image(output_directory=directory, format=export_format)
@@ -472,6 +475,8 @@ class UcsSystemInventoryManager(GenericUcsInventoryManager):
             if hasattr(rack, "_draw_rear"):
                 if rack._draw_rear:
                     rack._draw_rear.save_image(output_directory=directory, format=export_format)
+                    if export_clear_pictures:
+                        rack._draw_rear.clear_version.save_image(output_directory=directory, format=export_format)
             if hasattr(rack, "_draw_infra"):
                 if rack._draw_infra:
                     rack._draw_infra.save_image(output_directory=directory, format=export_format)
@@ -483,6 +488,8 @@ class UcsSystemInventoryManager(GenericUcsInventoryManager):
             if hasattr(fi, "_draw_rear"):
                 if fi._draw_rear:
                     fi._draw_rear.save_image(output_directory=directory, format=export_format)
+                    if export_clear_pictures:
+                        fi._draw_rear.clear_version.save_image(output_directory=directory, format=export_format)
 
         for fex in inventory.fabric_extenders:
             if hasattr(fex, "_draw_front"):
@@ -491,6 +498,8 @@ class UcsSystemInventoryManager(GenericUcsInventoryManager):
             if hasattr(fex, "_draw_rear"):
                 if fex._draw_rear:
                     fex._draw_rear.save_image(output_directory=directory, format=export_format)
+                    if export_clear_pictures:
+                        fex._draw_rear.clear_version.save_image(output_directory=directory, format=export_format)
 
         if inventory._draw_infra_san_neighbors:
             inventory._draw_infra_san_neighbors.save_image(output_directory=directory, format=export_format)
