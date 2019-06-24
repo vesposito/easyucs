@@ -1,4 +1,5 @@
 {
+  "model_short_name": "HX240c M4 All Flash",
   "rear_file_name":"UCSC-C240-M4_rear.png",
   "front_file_name":"HXAF240C-M4SX_front.png",
   "rear_file_size":[2862,540],
@@ -300,5 +301,6 @@
 	  "format":"sff",
       "description":"UCS 2.5 inch HDD blanking panel"
     }
-  ]
+  ],
+  "spec_sheet_url": "https://www.cisco.com/c/dam/en/us/products/collateral/hyperconverged-infrastructure/hyperflex-hx-series/HXAF240c_M4_SpecSheet.pdf"
 }

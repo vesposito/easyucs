@@ -1,4 +1,5 @@
 {
+  "model_short_name": "QLogic QLE2562 2x8G",
   "rear_file_name":"N2XX-AQPCI05.png",
   "rear_file_name_half":"N2XX-AQPCI05_half.png",
   "rear_file_size":[593,75],
@@ -6,25 +7,26 @@
   "rear_ports": {
     "x/1": {
       "port_coord": [284, 10],
-      "port_type": "sfp",
+      "port_type": "sfp+",
       "port_size": [73, 53]
     },
     "x/2": {
       "port_coord": [390, 10],
-      "port_type": "sfp",
+      "port_type": "sfp+",
       "port_size": [73, 53]
     }
   },
   "rear_ports_half": {
     "x/1": {
       "port_coord": [105, 10],
-      "port_type": "sfp",
+      "port_type": "sfp+",
       "port_size": [73, 53]
     },
     "x/2": {
       "port_coord": [211, 10],
-      "port_type": "sfp",
+      "port_type": "sfp+",
       "port_size": [73, 53]
     }
-  }
+  },
+  "data_sheet_url": "https://www.cisco.com/c/dam/en/us/products/collateral/interfaces-modules/ucs-virtual-interface-card-1225/datasheet_2500_Series_adapter.pdf"
 }

@@ -1,4 +1,5 @@
 {
+  "model_short_name": "QLogic QLE2672 2x16G",
   "rear_file_name":"UCSC-PCIE-Q2672.png",
   "rear_file_name_half":"UCSC-PCIE-Q2672_half.png",
   "rear_file_size":[593,75],
@@ -6,25 +7,26 @@
   "rear_ports": {
     "x/2": {
       "port_coord": [279, 10],
-      "port_type": "sfp",
+      "port_type": "sfp+",
       "port_size": [82, 55]
     },
     "x/1": {
       "port_coord": [385, 10],
-      "port_type": "sfp",
+      "port_type": "sfp+",
       "port_size": [82, 55]
     }
   },
   "rear_ports_half": {
     "x/2": {
       "port_coord": [77, 10],
-      "port_type": "sfp",
+      "port_type": "sfp+",
       "port_size": [82, 55]
     },
     "x/1": {
       "port_coord": [183, 10],
-      "port_type": "sfp",
+      "port_type": "sfp+",
       "port_size": [82, 55]
     }
-  }
+  },
+  "data_sheet_url": "https://www.cisco.com/c/dam/en/us/products/collateral/servers-unified-computing/ucs-b-series-blade-servers/datasheet_2600.pdf"
 }

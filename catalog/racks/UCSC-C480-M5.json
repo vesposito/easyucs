@@ -1,4 +1,5 @@
 {
+  "model_short_name": "C480 M5",
   "rear_file_name":"UCSC-C480-M5_rear.png",
   "front_file_name":"UCSC-C480-M5_front.png",
   "rear_file_size":[2862,1063],
@@ -333,5 +334,6 @@
       "name":"UCSC-C480-CM",
       "description":"UCS C480 M5 CPU Module w/o CPU, mem"
     }
-  ]
+  ],
+  "spec_sheet_url": "https://www.cisco.com/c/dam/en/us/products/collateral/servers-unified-computing/ucs-c-series-rack-servers/c480-m5-high-performance-specsheet.pdf"
 }

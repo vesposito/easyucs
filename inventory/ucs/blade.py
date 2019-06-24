@@ -5,6 +5,8 @@
 from __init__ import __author__, __copyright__,  __version__, __status__
 
 
+import json
+
 from inventory.object import GenericUcsInventoryObject, UcsSystemInventoryObject
 from inventory.ucs.adaptor import UcsSystemAdaptor
 from inventory.ucs.cpu import UcsSystemCpu
@@ -54,6 +56,32 @@ class UcsBlade(GenericUcsInventoryObject):
 
     def _get_mgmt_interfaces(self):
         return []
+
+    def _get_model_short_name(self):
+        """
+        Returns blade server short name from EasyUCS catalog files
+        """
+        if self.sku is not None:
+            # We use the catalog file to get the blade short name
+            try:
+                if self.sku_scaled:
+                    json_file = open("catalog/blades/" + self.sku_scaled + ".json")
+                else:
+                    json_file = open("catalog/blades/" + self.sku + ".json")
+                blade_catalog = json.load(fp=json_file)
+                json_file.close()
+
+                if "model_short_name" in blade_catalog:
+                    return blade_catalog["model_short_name"]
+
+            except FileNotFoundError:
+                if self.sku_scaled:
+                    self.logger(level="error", message="Blade catalog file " + self.sku_scaled + ".json not found")
+                else:
+                    self.logger(level="error", message="Blade catalog file " + self.sku + ".json not found")
+                return None
+
+        return None
 
     def _get_storage_controllers(self):
         return []
@@ -110,6 +138,7 @@ class UcsSystemBlade(UcsBlade, UcsSystemInventoryObject):
         self.service_profile_template = None
         self.service_profile_template_org = None
         self.service_profile_template_name = None
+        self.short_name = None
         self.sku_scaled = None
         if self._inventory.load_from == "live":
             # Handle specific case of SKU for B260 M4 / B460 M4
@@ -119,6 +148,7 @@ class UcsSystemBlade(UcsBlade, UcsSystemInventoryObject):
                 elif self.scaled_mode == "scaled":
                     self.sku_scaled = self.sku + "A"
 
+            self.short_name = self._get_model_short_name()
             self.locator_led_status = self._determine_locator_led_status()
             self._get_os_details()
             if self.assigned_to_dn is not None and self.assigned_to_dn != "":
@@ -141,7 +171,8 @@ class UcsSystemBlade(UcsBlade, UcsSystemInventoryObject):
             for attribute in ["locator_led_status", "os_arch", "os_kernel_version", "os_patch_version",
                               "os_release_version", "os_type", "os_ucs_tool_version", "os_update_version", "os_vendor",
                               "service_profile_org", "service_profile_name", "service_profile_template",
-                              "service_profile_template_org", "service_profile_template_name", "sku_scaled"]:
+                              "service_profile_template_org", "service_profile_template_name", "short_name",
+                              "sku_scaled"]:
                 setattr(self, attribute, None)
                 if attribute in compute_blade:
                     setattr(self, attribute, self.get_attribute(ucs_sdk_object=compute_blade,

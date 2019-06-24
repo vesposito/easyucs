@@ -4,22 +4,22 @@
   "rear_ports": {
     "x/1": {
       "port_coord": [58, 557],
-      "port_type": "sfp",
+      "port_type": "sfp+",
       "port_size": [54, 84]
     },
     "x/2": {
       "port_coord": [58, 643],
-      "port_type": "sfp",
+      "port_type": "sfp+",
       "port_size": [54, 84]
     },
     "x/3": {
       "port_coord": [58, 731],
-      "port_type": "sfp",
+      "port_type": "sfp+",
       "port_size": [54, 84]
     },
     "x/4": {
       "port_coord": [58, 817],
-      "port_type": "sfp",
+      "port_type": "sfp+",
       "port_size": [54, 84]
     }
   }

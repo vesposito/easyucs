@@ -4,6 +4,7 @@
 """ rack.py: Easy UCS Deployment Tool """
 from __init__ import __author__, __copyright__,  __version__, __status__
 
+import json
 
 from inventory.object import GenericUcsInventoryObject, UcsImcInventoryObject, UcsSystemInventoryObject
 from inventory.ucs.adaptor import UcsImcAdaptor, UcsImcNetworkAdapter, UcsSystemAdaptor
@@ -77,6 +78,26 @@ class UcsRack(GenericUcsInventoryObject):
     def _get_mgmt_interfaces(self):
         return []
 
+    def _get_model_short_name(self):
+        """
+        Returns rack server short name from EasyUCS catalog files
+        """
+        if self.sku is not None:
+            # We use the catalog file to get the rack short name
+            try:
+                json_file = open("catalog/racks/" + self.sku + ".json")
+                rack_catalog = json.load(fp=json_file)
+                json_file.close()
+
+                if "model_short_name" in rack_catalog:
+                    return rack_catalog["model_short_name"]
+
+            except FileNotFoundError:
+                self.logger(level="error", message="Rack catalog file " + self.sku + ".json not found")
+                return None
+
+        return None
+
     def _get_nvme_drives(self):
         return []
 
@@ -121,7 +142,9 @@ class UcsSystemRack(UcsRack, UcsSystemInventoryObject):
         self.service_profile_template = None
         self.service_profile_template_org = None
         self.service_profile_template_name = None
+        self.short_name = None
         if self._inventory.load_from == "live":
+            self.short_name = self._get_model_short_name()
             self.mgmt_connection_type = self._get_mgmt_connection_type()
             self.locator_led_status = self._determine_locator_led_status()
             self._get_os_details()
@@ -146,7 +169,7 @@ class UcsSystemRack(UcsRack, UcsSystemInventoryObject):
                               "os_patch_version", "os_release_version", "os_type", "os_ucs_tool_version",
                               "os_update_version", "os_vendor", "service_profile_org", "service_profile_name",
                               "service_profile_template", "service_profile_template_org",
-                              "service_profile_template_name"]:
+                              "service_profile_template_name", "short_name"]:
                 setattr(self, attribute, None)
                 if attribute in compute_rack_unit:
                     setattr(self, attribute, self.get_attribute(ucs_sdk_object=compute_rack_unit,
@@ -403,9 +426,13 @@ class UcsSystemRack(UcsRack, UcsSystemInventoryObject):
 class UcsImcRack(UcsRack, UcsImcInventoryObject):
     def __init__(self, parent=None, compute_rack_unit=None):
         UcsRack.__init__(self, parent=parent, compute_rack_unit=compute_rack_unit)
+
+        self.name = self.get_attribute(ucs_sdk_object=compute_rack_unit, attribute_name="name")
+
         UcsImcInventoryObject.__init__(self, parent=parent, ucs_sdk_object=compute_rack_unit)
 
         self.locator_led_status = None
+        self.short_name = None
 
         # Since we don't have a catalog item for finding the SKU, we set it manually here
         self.sku = self.model
@@ -413,9 +440,10 @@ class UcsImcRack(UcsRack, UcsImcInventoryObject):
         self.adaptors = self._get_adaptors() + self._get_network_adapters()
 
         if self._inventory.load_from == "live":
+            self.short_name = self._get_model_short_name()
             self.locator_led_status = self._determine_locator_led_status()
         elif self._inventory.load_from == "file":
-            for attribute in ["locator_led_status"]:
+            for attribute in ["locator_led_status", "short_name"]:
                 setattr(self, attribute, None)
                 if attribute in compute_rack_unit:
                     setattr(self, attribute, self.get_attribute(ucs_sdk_object=compute_rack_unit,

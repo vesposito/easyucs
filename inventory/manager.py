@@ -7,6 +7,7 @@ from __init__ import __author__, __copyright__,  __version__, __status__
 
 import json
 import os
+import re
 import uuid
 
 from inventory.inventory import UcsImcInventory, UcsSystemInventory
@@ -527,15 +528,15 @@ class UcsSystemInventoryManager(GenericUcsInventoryManager):
             inventory.san_neighbors = inventory._get_san_neighbors()
 
         if "equipmentChassis" in inventory.sdk_objects.keys():
-            for equipment_chassis in sorted(inventory.sdk_objects["equipmentChassis"], key=lambda rack: rack.id):
+            for equipment_chassis in sorted(inventory.sdk_objects["equipmentChassis"], key=lambda chassis: [int(t) if t.isdigit() else t.lower() for t in re.split('(\d+)', chassis.id)]):
                 inventory.chassis.append(UcsSystemChassis(parent=inventory, equipment_chassis=equipment_chassis))
 
         if "equipmentFex" in inventory.sdk_objects.keys():
-            for equipment_fex in sorted(inventory.sdk_objects["equipmentFex"], key=lambda fex: fex.id):
+            for equipment_fex in sorted(inventory.sdk_objects["equipmentFex"], key=lambda fex: [int(t) if t.isdigit() else t.lower() for t in re.split('(\d+)', fex.id)]):
                 inventory.fabric_extenders.append(UcsSystemFex(parent=inventory, equipment_fex=equipment_fex))
 
         if "computeRackUnit" in inventory.sdk_objects.keys():
-            for compute_rack_unit in sorted(inventory.sdk_objects["computeRackUnit"], key=lambda rack: rack.id):
+            for compute_rack_unit in sorted(inventory.sdk_objects["computeRackUnit"], key=lambda rack: [int(t) if t.isdigit() else t.lower() for t in re.split('(\d+)', rack.id)]):
                 inventory.rack_units.append(UcsSystemRack(parent=inventory, compute_rack_unit=compute_rack_unit))
 
         self.inventory_list.append(inventory)
@@ -650,13 +651,14 @@ class UcsImcInventoryManager(GenericUcsInventoryManager):
         for chassis in inventory.chassis:
             chassis._generate_draw()
 
-    def export_draw(self, uuid=None, export_format="png", directory=None):
+    def export_draw(self, uuid=None, export_format="png", directory=None, export_clear_pictures=False):
         """
         Export all the drawings
 
         :param uuid: The UUID of the drawn inventory to be exported. If not specified, the most recent inventory will be used
         :param export_format: "png" by default, not used for now
         :param directory:
+        :param export_clear_pictures: not used
         :return:
         """
 
@@ -672,6 +674,9 @@ class UcsImcInventoryManager(GenericUcsInventoryManager):
                 return False
             else:
                 inventory = inventory_list[0]
+
+        if inventory is None:
+            return False
 
         for chassis in inventory.chassis:
             if hasattr(chassis, "_draw_front"):

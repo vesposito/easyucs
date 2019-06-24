@@ -1,4 +1,5 @@
 {
+  "model_short_name": "HX220c M5 All Flash",
   "rear_file_name":"UCSC-C220-M5_rear.png",
   "front_file_name":"HXAF220C-M5SX_front.png",
   "rear_file_size":[2862,273],
@@ -187,5 +188,6 @@
 	  "format":"sff_m5",
       "description":"C-Series M5 SFF drive blanking panel"
     }
-  ]
+  ],
+  "spec_sheet_url": "https://www.cisco.com/c/dam/en/us/products/collateral/hyperconverged-infrastructure/hyperflex-hx-series/hxaf-220c-m5-specsheet.pdf"
 }

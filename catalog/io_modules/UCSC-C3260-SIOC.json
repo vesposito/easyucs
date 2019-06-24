@@ -4,12 +4,12 @@
   "rear_ports": {
     "1": {
       "port_coord": [309, 62],
-      "port_type": "qsfp",
+      "port_type": "qsfp+",
       "port_size": [111, 52]
     },
     "5": {
       "port_coord": [117, 62],
-      "port_type": "qsfp",
+      "port_type": "qsfp+",
       "port_size": [111, 52]
     }
   }

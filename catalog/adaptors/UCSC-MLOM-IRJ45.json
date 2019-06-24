@@ -1,4 +1,5 @@
 {
+  "model_short_name": "Intel I350 4x1G",
   "rear_file_name":"UCSC-MLOM-IRJ45.png",
   "rear_file_size":[523,94],
   "rear_ports": {
@@ -22,5 +23,6 @@
       "port_type": "rj45",
       "port_size": [67, 39]
     }
-  }
+  },
+  "data_sheet_url": "https://www.cisco.com/c/dam/en/us/products/collateral/interfaces-modules/ucs-virtual-interface-card-1225/intel_i350_server_adapter_brief.pdf"
 }

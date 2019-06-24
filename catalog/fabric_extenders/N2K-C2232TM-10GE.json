@@ -1,4 +1,5 @@
 {
+  "model_short_name": "2232TM",
   "rear_file_name":"N2K-C2232TM-10GE_rear.png",
   "front_file_name":"N2K-C2232TM-10GE_front.png",
   "rear_file_size":[2916,334],
@@ -166,42 +167,42 @@
     },
     "1/1": {
       "port_coord": [2226, 69],
-      "port_type": "sfp",
+      "port_type": "sfp+",
       "port_size": [83, 54]
     },
     "1/2": {
       "port_coord": [2226, 158],
-      "port_type": "sfp",
+      "port_type": "sfp+",
       "port_size": [83, 54]
     },
     "1/3": {
       "port_coord": [2311, 69],
-      "port_type": "sfp",
+      "port_type": "sfp+",
       "port_size": [83, 54]
     },
     "1/4": {
       "port_coord": [2311, 158],
-      "port_type": "sfp",
+      "port_type": "sfp+",
       "port_size": [83, 54]
     },
     "1/5": {
       "port_coord": [2396, 69],
-      "port_type": "sfp",
+      "port_type": "sfp+",
       "port_size": [83, 54]
     },
     "1/6": {
       "port_coord": [2396, 158],
-      "port_type": "sfp",
+      "port_type": "sfp+",
       "port_size": [83, 54]
     },
     "1/7": {
       "port_coord": [2481, 69],
-      "port_type": "sfp",
+      "port_type": "sfp+",
       "port_size": [83, 54]
     },
     "1/8": {
       "port_coord": [2481, 158],
-      "port_type": "sfp",
+      "port_type": "sfp+",
       "port_size": [83, 54]
     }
   },
@@ -229,5 +230,35 @@
       "type":"blank",
       "description":"N2K-C2200 Series Power Supply Blank. spare"
     }
-  ]
+  ],
+  "data_sheet_url": "https://www.cisco.com/c/en/us/products/collateral/switches/nexus-2000-series-fabric-extenders/data_sheet_c78-507093.html",
+  "specs": {
+    "descr": "The Cisco Nexus 2232TM 40-Port Fabric Extender is a One-Rack-Unit (1RU) 1/10 Gigabit Ethernet and FCoE switch offering up to 800 Gbps throughput and up to 40 ports. The switch has 32 fixed 1/10-Gbps RJ-45 server ports and 8 10-Gbps uplink SFP+ ports. All Ethernet ports are capable of supporting FCoE.",
+    "form_factor": "1RU",
+    "throughput": {
+      "gbps": 800,
+      "mpps": 595
+    },
+    "latency": "<2 µs",
+    "power_typical": 280,
+    "power_maximum": 386,
+    "heat_dissipation": 1297,
+    "dimensions": {
+      "centimeters": {
+        "height": 4.37,
+        "width": 43.94,
+        "depth": 44.96
+      },
+      "inches": {
+        "height": 1.72,
+        "width": 17.3,
+        "depth": 17.7
+      },
+      "rack_units": 1
+    },
+    "weight": {
+      "lb": 18.5,
+      "kg": 8.4
+    }
+  }
 }

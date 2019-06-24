@@ -5,37 +5,37 @@
   "rear_ports": {
     "x/1": {
       "port_coord": [62, 128],
-      "port_type": "sfp",
+      "port_type": "qsfp+",
       "port_size": [51, 110]
     },
     "x/2": {
       "port_coord": [62, 334],
-      "port_type": "sfp",
+      "port_type": "qsfp+",
       "port_size": [51, 110]
     },
     "x/3": {
       "port_coord": [62, 564],
-      "port_type": "sfp",
+      "port_type": "qsfp+",
       "port_size": [51, 110]
     },
     "x/4": {
       "port_coord": [62, 768],
-      "port_type": "sfp",
+      "port_type": "qsfp+",
       "port_size": [51, 110]
     },
 	"x/5": {
       "port_coord": [62, 334],
-      "port_type": "sfp",
+      "port_type": "qsfp+",
       "port_size": [51, 110]
     },
     "x/9": {
       "port_coord": [62, 564],
-      "port_type": "sfp",
+      "port_type": "qsfp+",
       "port_size": [51, 110]
     },
     "x/13": {
       "port_coord": [62, 768],
-      "port_type": "sfp",
+      "port_type": "qsfp+",
       "port_size": [51, 110]
     }
   }

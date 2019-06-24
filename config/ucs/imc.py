@@ -1674,7 +1674,7 @@ class UcsImcVirtualMedia(UcsImcConfigObject):
 
         if self.mappings:
             self.logger(level="warning",
-                        message="Add mappings with EasyUcs is not yet possible. Please use the CIMC GUI.")
+                        message="Add mappings with EasyUCS is not yet possible. Please use the CIMC GUI.")
         # TODO : Not working : "Operation not supported: Update commVMediaMap object not supported.
         #  Try deleting and creating object."
         #  Even if the object does not exist. All attributes from commSavedVMediaMap are readOnly.

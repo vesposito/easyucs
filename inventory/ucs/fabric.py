@@ -4,6 +4,7 @@
 """ fabric.py: Easy UCS Deployment Tool """
 from __init__ import __author__, __copyright__,  __version__, __status__
 
+import json
 
 from draw.ucs.fabric import UcsSystemDrawFexFront, UcsSystemDrawFexRear, UcsSystemDrawFiRear, UcsSystemDrawFiFront ,UcsSystemDrawGem
 from inventory.object import GenericUcsInventoryObject, UcsSystemInventoryObject
@@ -37,6 +38,26 @@ class UcsFex(GenericUcsInventoryObject):
     def _get_host_ports(self):
         return []
 
+    def _get_model_short_name(self):
+        """
+        Returns Fabric Extender short name from EasyUCS catalog files
+        """
+        if self.sku is not None:
+            # We use the catalog file to get the FEX short name
+            try:
+                json_file = open("catalog/fabric_extenders/" + self.sku + ".json")
+                fex_catalog = json.load(fp=json_file)
+                json_file.close()
+
+                if "model_short_name" in fex_catalog:
+                    return fex_catalog["model_short_name"]
+
+            except FileNotFoundError:
+                self.logger(level="error", message="Fabric Extender catalog file " + self.sku + ".json not found")
+                return None
+
+        return None
+
     def _get_power_supplies(self):
         return []
 
@@ -62,6 +83,26 @@ class UcsFi(GenericUcsInventoryObject):
 
     def _get_expansion_modules(self):
         return []
+
+    def _get_model_short_name(self):
+        """
+        Returns Fabric Interconnect short name from EasyUCS catalog files
+        """
+        if self.sku is not None:
+            # We use the catalog file to get the FI short name
+            try:
+                json_file = open("catalog/fabric_interconnects/" + self.sku + ".json")
+                fi_catalog = json.load(fp=json_file)
+                json_file.close()
+
+                if "model_short_name" in fi_catalog:
+                    return fi_catalog["model_short_name"]
+
+            except FileNotFoundError:
+                self.logger(level="error", message="Fabric Interconnect catalog file " + self.sku + ".json not found")
+                return None
+
+        return None
 
     def _get_ports(self):
         return []
@@ -97,7 +138,20 @@ class UcsSystemFex(UcsFex, UcsSystemInventoryObject):
 
     def __init__(self, parent=None, equipment_fex=None):
         UcsFex.__init__(self, parent=parent, equipment_fex=equipment_fex)
+
+        self.short_name = None
+
         UcsSystemInventoryObject.__init__(self, parent=parent, ucs_sdk_object=equipment_fex)
+
+        if self._inventory.load_from == "live":
+            self.locator_led_status = self._determine_locator_led_status()
+            self.short_name = self._get_model_short_name()
+        elif self._inventory.load_from == "file":
+            for attribute in ["locator_led_status", "short_name"]:
+                setattr(self, attribute, None)
+                if attribute in equipment_fex:
+                    setattr(self, attribute, self.get_attribute(ucs_sdk_object=equipment_fex,
+                                                                attribute_name=attribute))
 
     def _generate_draw(self):
         self._draw_rear = UcsSystemDrawFexRear(parent=self)
@@ -147,6 +201,7 @@ class UcsSystemFi(UcsFi, UcsSystemInventoryObject):
                                               attribute_secondary_name="mac_address")
 
         self.locator_led_status = None
+        self.short_name = None
 
         # UCS Mini Fabric Interconnect is a bit different - The CapProvider object needs to be changed
         if self.model == "UCS-FI-M-6324":
@@ -156,8 +211,9 @@ class UcsSystemFi(UcsFi, UcsSystemInventoryObject):
 
         if self._inventory.load_from == "live":
             self.locator_led_status = self._determine_locator_led_status()
+            self.short_name = self._get_model_short_name()
         elif self._inventory.load_from == "file":
-            for attribute in ["locator_led_status"]:
+            for attribute in ["locator_led_status", "short_name"]:
                 setattr(self, attribute, None)
                 if attribute in network_element:
                     setattr(self, attribute, self.get_attribute(ucs_sdk_object=network_element,

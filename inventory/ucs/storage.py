@@ -5,6 +5,7 @@
 from __init__ import __author__, __copyright__,  __version__, __status__
 
 
+import math
 import re
 from inventory.object import GenericUcsInventoryObject, UcsImcInventoryObject, UcsSystemInventoryObject
 
@@ -484,6 +485,11 @@ class UcsSystemStorageFlexFlashCard(UcsStorageFlexFlashCard, UcsSystemInventoryO
 
         if self._inventory.load_from == "live":
             self.block_size = int(self.block_size)
+            self.capacity_marketing = str(int(2 ** math.ceil(math.log2(self.capacity)) / 1024)) + "GB"
+
+        elif self._inventory.load_from == "file":
+            self.capacity_marketing = self.get_attribute(ucs_sdk_object=storage_flexflash_card,
+                                                         attribute_name="capacity_marketing")
 
 
 class UcsImcStorageFlexFlashCard(UcsStorageFlexFlashCard, UcsImcInventoryObject):
@@ -512,8 +518,13 @@ class UcsImcStorageFlexFlashCard(UcsStorageFlexFlashCard, UcsImcInventoryObject)
         if self._inventory.load_from == "live":
             if " MB" in self.capacity:
                 self.capacity = int(self.capacity.split(" ")[0])
+                self.capacity_marketing = str(int(2 ** math.ceil(math.log2(self.capacity)) / 1024)) + "GB"
             if " bytes" in self.block_size:
                 self.block_size = int(self.block_size.split(" ")[0])
+
+        elif self._inventory.load_from == "file":
+            self.capacity_marketing = self.get_attribute(ucs_sdk_object=storage_flexflash_card,
+                                                         attribute_name="capacity_marketing")
 
 
 class UcsStorageLocalDisk(GenericUcsInventoryObject):

@@ -1,4 +1,5 @@
 {
+  "model_short_name": "C420 M3",
   "rear_file_name":"UCSC-C420-M3_rear.png",
   "front_file_name":"UCSC-C420-M3_front.png",
   "rear_file_size":[2862,540],
@@ -257,5 +258,6 @@
 	  "format":"sff",
       "description":"C-Series M5 SFF drive blanking panel"
     }
-  ]
+  ],
+  "spec_sheet_url": "https://www.cisco.com/c/dam/en/us/products/collateral/servers-unified-computing/ucs-c-series-rack-servers/c420m3-specsheet-v16.pdf"
 }

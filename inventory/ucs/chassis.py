@@ -36,6 +36,26 @@ class UcsChassis(GenericUcsInventoryObject):
     def _generate_draw(self):
         pass
 
+    def _get_model_short_name(self):
+        """
+        Returns Chassis short name from EasyUCS catalog files
+        """
+        if self.sku is not None:
+            # We use the catalog file to get the chassis short name
+            try:
+                json_file = open("catalog/chassis/" + self.sku + ".json")
+                chassis_catalog = json.load(fp=json_file)
+                json_file.close()
+
+                if "model_short_name" in chassis_catalog:
+                    return chassis_catalog["model_short_name"]
+
+            except FileNotFoundError:
+                self.logger(level="error", message="Chassis catalog file " + self.sku + ".json not found")
+                return None
+
+        return None
+
     def _get_power_supplies(self):
         return []
 
@@ -100,11 +120,13 @@ class UcsSystemChassis(UcsChassis, UcsSystemInventoryObject):
         self.slots_free_half = self._calculate_chassis_slots_free_half()
         self.slots_free_full = self._calculate_chassis_slots_free_full()
         self.locator_led_status = None
+        self.short_name = None
 
         if self._inventory.load_from == "live":
             self.locator_led_status = self._determine_locator_led_status()
+            self.short_name = self._get_model_short_name()
         elif self._inventory.load_from == "file":
-            for attribute in ["locator_led_status"]:
+            for attribute in ["locator_led_status", "short_name"]:
                 setattr(self, attribute, None)
                 if attribute in equipment_chassis:
                     setattr(self, attribute, self.get_attribute(ucs_sdk_object=equipment_chassis,
@@ -288,12 +310,25 @@ class UcsImcChassis(UcsChassis, UcsImcInventoryObject):
         if self.sku == "UCSS-S3260-BASE":
             self.sku = "UCSS-S3260"
 
+        self.locator_led_status = None
+        self.short_name = None
+
         self.server_nodes = self._get_server_nodes()
         self.storage_enclosures = self._get_storage_enclosures()
         self.slots_max = self._get_chassis_slots_max()
         self.slots_populated = self._calculate_chassis_slots_populated()
         self.slots_free_half = self._calculate_chassis_slots_free_half()
         self.slots_free_full = self._calculate_chassis_slots_free_full()
+
+        if self._inventory.load_from == "live":
+            self.locator_led_status = self._determine_locator_led_status()
+            self.short_name = self._get_model_short_name()
+        elif self._inventory.load_from == "file":
+            for attribute in ["locator_led_status", "short_name"]:
+                setattr(self, attribute, None)
+                if attribute in equipment_chassis:
+                    setattr(self, attribute, self.get_attribute(ucs_sdk_object=equipment_chassis,
+                                                                attribute_name=attribute))
 
     def _calculate_chassis_slots_free_full(self):
         if self.slots_max is None:

@@ -4,6 +4,7 @@
 """ adaptor.py: Easy UCS Deployment Tool """
 from __init__ import __author__, __copyright__,  __version__, __status__
 
+import json
 
 from inventory.object import GenericUcsInventoryObject, UcsImcInventoryObject, UcsSystemInventoryObject
 from inventory.ucs.port import UcsImcAdaptorPort, UcsImcNetworkAdapterPort, UcsSystemAdaptorPort
@@ -16,6 +17,26 @@ class UcsAdaptor(GenericUcsInventoryObject):
         self.model = self.get_attribute(ucs_sdk_object=adaptor_unit, attribute_name="model")
 
         self.ports = self._get_ports()
+
+    def _get_model_short_name(self):
+        """
+        Returns adaptor short name from EasyUCS catalog files
+        """
+        if self.sku is not None:
+            # We use the catalog file to get the adaptor short name
+            try:
+                json_file = open("catalog/adaptors/" + self.sku + ".json")
+                adaptor_catalog = json.load(fp=json_file)
+                json_file.close()
+
+                if "model_short_name" in adaptor_catalog:
+                    return adaptor_catalog["model_short_name"]
+
+            except FileNotFoundError:
+                self.logger(level="error", message="Adaptor catalog file " + self.sku + ".json not found")
+                return None
+
+        return None
 
     def _get_ports(self):
         return []
@@ -38,14 +59,16 @@ class UcsSystemAdaptor(UcsAdaptor, UcsSystemInventoryObject):
 
         UcsSystemInventoryObject.__init__(self, parent=parent, ucs_sdk_object=adaptor_unit)
 
+        self.short_name = None
         if self._inventory.load_from == "live":
             self.driver_name_ethernet = None
             self.driver_name_fibre_channel = None
             self.driver_version_ethernet = None
             self.driver_version_fibre_channel = None
+            self.short_name = self._get_model_short_name()
         elif self._inventory.load_from == "file":
             for attribute in ["driver_name_ethernet", "driver_name_fibre_channel", "driver_version_ethernet",
-                              "driver_version_fibre_channel"]:
+                              "driver_version_fibre_channel", "short_name"]:
                 setattr(self, attribute, None)
                 if attribute in adaptor_unit:
                     setattr(self, attribute, self.get_attribute(ucs_sdk_object=adaptor_unit, attribute_name=attribute))
@@ -85,13 +108,17 @@ class UcsImcAdaptor(UcsAdaptor, UcsImcInventoryObject):
                                   "UCSC-PCIE-C25Q-04", "UCSC-MLOM-C25Q-04", "UCSC-PCIE-C100-04", "UCSC-MLOM-C100-04"]:
                     self.sku = self.model
 
+        self.short_name = None
         if self._inventory.load_from == "live":
             if not self._find_pci_details():
                 self.option_rom_status = None
                 self.version = None
+            self.short_name = self._get_model_short_name()
         elif self._inventory.load_from == "file":
-            self.option_rom_status = self.get_attribute(ucs_sdk_object=adaptor_unit, attribute_name="option_rom_status")
-            self.version = self.get_attribute(ucs_sdk_object=adaptor_unit, attribute_name="version")
+            for attribute in ["option_rom_status", "short_name", "version"]:
+                setattr(self, attribute, None)
+                if attribute in adaptor_unit:
+                    setattr(self, attribute, self.get_attribute(ucs_sdk_object=adaptor_unit, attribute_name=attribute))
 
     def _find_pci_details(self):
         # We check if we already have fetched the list of pciEquipSlot objects
@@ -133,6 +160,7 @@ class UcsImcNetworkAdapter(UcsAdaptor, UcsImcInventoryObject):
 
         UcsImcInventoryObject.__init__(self, parent=parent, ucs_sdk_object=network_adapter_unit)
 
+        self.short_name = None
         if self._inventory.load_from == "live":
             if not self._find_pci_details():
                 self.option_rom_status = None
@@ -273,11 +301,14 @@ class UcsImcNetworkAdapter(UcsAdaptor, UcsImcInventoryObject):
             elif self.pci_slot == "14" and self._parent.sku == "UCS-S3260-M5SRB":  # For LoM on S3260 M5 server node
                 self.type = "nic"
 
+            self.short_name = self._get_model_short_name()
+
         elif self._inventory.load_from == "file":
-            self.option_rom_status = self.get_attribute(ucs_sdk_object=network_adapter_unit,
-                                                        attribute_name="option_rom_status")
-            self.vendor = self.get_attribute(ucs_sdk_object=network_adapter_unit, attribute_name="vendor")
-            self.version = self.get_attribute(ucs_sdk_object=network_adapter_unit, attribute_name="version")
+            for attribute in ["option_rom_status", "short_name", "vendor", "version"]:
+                setattr(self, attribute, None)
+                if attribute in network_adapter_unit:
+                    setattr(self, attribute, self.get_attribute(ucs_sdk_object=network_adapter_unit,
+                                                                attribute_name=attribute))
 
     def _find_pci_details(self):
         # We check if we already have fetched the list of pciEquipSlot objects

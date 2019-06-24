@@ -5,6 +5,7 @@
 from __init__ import __author__, __copyright__,  __version__, __status__
 
 
+import re
 import time
 import uuid
 import urllib
@@ -124,8 +125,10 @@ class GenericUcsConfig(GenericConfig):
                                 filtered_sdk_objects_list.append(sdk_object)
 
                         easyucs_objects_list = []
-                        for sdk_object in sorted(filtered_sdk_objects_list, key=lambda sdk_obj: sdk_obj.dn):
-                            # We instantiate an Config Object for each corresponding SDK object
+                        for sdk_object in sorted(filtered_sdk_objects_list,
+                                                 key=lambda sdk_obj: [int(t) if t.isdigit() else t.lower()
+                                                                      for t in re.split('(\d+)', sdk_obj.dn)]):
+                            # We instantiate a Config Object for each corresponding SDK object
                             easyucs_objects_list.append(object_class(parent, None, sdk_object))
                         return easyucs_objects_list
         return []

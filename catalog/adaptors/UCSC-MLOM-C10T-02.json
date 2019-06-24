@@ -1,4 +1,5 @@
 {
+  "model_short_name": "VIC 1227T",
   "rear_file_name":"UCSC-MLOM-C10T-02.png",
   "rear_file_size":[523,94],
   "rear_ports": {
@@ -12,5 +13,6 @@
       "port_type": "rj45",
       "port_size": [67, 39]
     }
-  }
+  },
+  "data_sheet_url": "https://www.cisco.com/c/en/us/products/collateral/interfaces-modules/unified-computing-system-adapters/datasheet-c78-734728.pdf"
 }

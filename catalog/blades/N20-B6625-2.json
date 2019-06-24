@@ -1,4 +1,5 @@
 {
+  "model_short_name": "B250 M2",
   "front_file_name":"N20-B6625-2.png",
   "front_file_size":[2485,304],
   "disks_slots":[
@@ -24,5 +25,6 @@
 	  "format":"sff",
       "description":"UCS 2.5 inch HDD blanking panel"
     }
-  ]
+  ],
+  "spec_sheet_url": "https://www.cisco.com/c/dam/en/us/products/collateral/servers-unified-computing/ucs-5100-series-blade-server-chassis/b250m2_specsheet.pdf"
 }

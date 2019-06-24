@@ -1,4 +1,5 @@
 {
+  "model_short_name": "6332",
   "rear_file_name":"UCS-FI-6332_rear.png",
   "front_file_name":"UCS-FI-6332_front.png",
   "rear_file_size":[2862,270],
@@ -22,163 +23,197 @@
   "rear_ports":{
     "1":{
       "port_coord":[398,45],
-      "port_type":"sfp",
+      "port_type":"qsfp+",
       "port_size":[111,49]
     },
     "2":{
       "port_coord":[398,145],
-      "port_type":"sfp",
+      "port_type":"qsfp+",
       "port_size":[111,49]
     },
     "3":{
       "port_coord":[543,45],
-      "port_type":"sfp",
+      "port_type":"qsfp+",
       "port_size":[111,49]
     },
     "4":{
       "port_coord":[543,145],
-      "port_type":"sfp",
+      "port_type":"qsfp+",
       "port_size":[111,49]
     },
     "5":{
       "port_coord":[688,45],
-      "port_type":"sfp",
+      "port_type":"qsfp+",
       "port_size":[111,49]
     },
     "6":{
       "port_coord":[688,145],
-      "port_type":"sfp",
+      "port_type":"qsfp+",
       "port_size":[111,49]
     },
     "7":{
       "port_coord":[833,45],
-      "port_type":"sfp",
+      "port_type":"qsfp+",
       "port_size":[111,49]
     },
     "8":{
       "port_coord":[833,145],
-      "port_type":"sfp",
+      "port_type":"qsfp+",
       "port_size":[111,49]
     },
     "9":{
       "port_coord":[978,45],
-      "port_type":"qsfp",
+      "port_type":"qsfp+",
       "port_size":[111,49]
     },
     "10":{
       "port_coord":[978,145],
-      "port_type":"qsfp",
+      "port_type":"qsfp+",
       "port_size":[111,49]
     },
     "11":{
       "port_coord":[1123,45],
-      "port_type":"qsfp",
+      "port_type":"qsfp+",
       "port_size":[111,49]
     },
     "12":{
       "port_coord":[1123,145],
-      "port_type":"qsfp",
+      "port_type":"qsfp+",
       "port_size":[111,49]
     },
     "13":{
       "port_coord":[1268,45],
-      "port_type":"qsfp",
+      "port_type":"qsfp+",
       "port_size":[111,49]
     },
     "14":{
       "port_coord":[1268,145],
-      "port_type":"qsfp",
+      "port_type":"qsfp+",
       "port_size":[111,49]
     },
     "15":{
       "port_coord":[1413,45],
-      "port_type":"qsfp",
+      "port_type":"qsfp+",
       "port_size":[111,49]
     },
     "16":{
       "port_coord":[1413,145],
-      "port_type":"qsfp",
+      "port_type":"qsfp+",
       "port_size":[111,49]
     },
     "17":{
       "port_coord":[1558,45],
-      "port_type":"qsfp",
+      "port_type":"qsfp+",
       "port_size":[111,49]
     },
     "18":{
       "port_coord":[1558,145],
-      "port_type":"qsfp",
+      "port_type":"qsfp+",
       "port_size":[111,49]
     },
     "19":{
       "port_coord":[1703,45],
-      "port_type":"qsfp",
+      "port_type":"qsfp+",
       "port_size":[111,49]
     },
     "20":{
       "port_coord":[1703,145],
-      "port_type":"qsfp",
+      "port_type":"qsfp+",
       "port_size":[111,49]
     },
     "21":{
       "port_coord":[1848,45],
-      "port_type":"qsfp",
+      "port_type":"qsfp+",
       "port_size":[111,49]
     },
     "22":{
       "port_coord":[1848,145],
-      "port_type":"qsfp",
+      "port_type":"qsfp+",
       "port_size":[111,49]
     },
     "23":{
       "port_coord":[1993,45],
-      "port_type":"qsfp",
+      "port_type":"qsfp+",
       "port_size":[111,49]
     },
     "24":{
       "port_coord":[1993,145],
-      "port_type":"qsfp",
+      "port_type":"qsfp+",
       "port_size":[111,49]
     },
     "25":{
       "port_coord":[2138,45],
-      "port_type":"qsfp",
+      "port_type":"qsfp+",
       "port_size":[111,49]
     },
     "26":{
       "port_coord":[2138,145],
-      "port_type":"qsfp",
+      "port_type":"qsfp+",
       "port_size":[111,49]
     },
     "27":{
       "port_coord":[2283,45],
-      "port_type":"qsfp",
+      "port_type":"qsfp+",
       "port_size":[111,49]
     },
     "28":{
       "port_coord":[2283,145],
-      "port_type":"qsfp",
+      "port_type":"qsfp+",
       "port_size":[111,49]
     },
     "29":{
       "port_coord":[2428,45],
-      "port_type":"qsfp",
+      "port_type":"qsfp+",
       "port_size":[111,49]
     },
     "30":{
       "port_coord":[2428,145],
-      "port_type":"qsfp",
+      "port_type":"qsfp+",
       "port_size":[111,49]
     },
     "31":{
       "port_coord":[2573,45],
-      "port_type":"qsfp",
+      "port_type":"qsfp+",
       "port_size":[111,49]
     },
     "32":{
       "port_coord":[2573,145],
-      "port_type":"qsfp",
+      "port_type":"qsfp+",
       "port_size":[111,49]
+    }
+  },
+  "spec_sheet_url": "https://www.cisco.com/c/dam/en/us/products/collateral/servers-unified-computing/ucs-b-series-blade-servers/6332-specsheet.pdf",
+  "data_sheet_url": "https://www.cisco.com/c/en/us/products/collateral/servers-unified-computing/ucs-6300-series-fabric-interconnects/datasheet-c78-736682.html",
+  "specs": {
+    "descr": "The Cisco UCS 6332 32-Port Fabric Interconnect is a One-Rack-Unit (1RU) 40 Gigabit Ethernet and FCoE switch offering up to 2.56 Tbps throughput and up to 32 ports. The switch has 32 fixed 40-Gbps Ethernet ports. All Ethernet ports are capable of supporting FCoE.",
+    "form_factor": "1RU",
+    "throughput": {
+      "gbps": 2560,
+      "mpps": 720
+    },
+    "latency": "<2 µs",
+    "power_typical": 212,
+    "power_maximum": 650,
+    "power_typical_dc": 400,
+    "power_maximum_dc": 930,
+    "heat_dissipation": 2217,
+    "heat_dissipation_dc": 3171.3,
+    "dimensions": {
+      "centimeters": {
+        "height": 4.4,
+        "width": 43.9,
+        "depth": 57.1
+      },
+      "inches": {
+        "height": 1.72,
+        "width": 17.3,
+        "depth": 22.5
+      },
+      "rack_units": 1
+    },
+    "weight": {
+      "lb": 22,
+      "kg": 9.97
     }
   }
 }

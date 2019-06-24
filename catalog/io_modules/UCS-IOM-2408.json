@@ -4,42 +4,42 @@
   "rear_ports": {
     "x/1": {
       "port_coord": [58, 231],
-      "port_type": "sfp",
+      "port_type": "sfp28",
       "port_size": [56, 86]
     },
     "x/2": {
       "port_coord": [58, 318],
-      "port_type": "sfp",
+      "port_type": "sfp28",
       "port_size": [56, 86]
     },
     "x/3": {
       "port_coord": [58, 406],
-      "port_type": "sfp",
+      "port_type": "sfp28",
       "port_size": [56, 86]
     },
     "x/4": {
       "port_coord": [58, 493],
-      "port_type": "sfp",
+      "port_type": "sfp28",
       "port_size": [56, 86]
     },
     "x/5": {
       "port_coord": [58, 614],
-      "port_type": "sfp",
+      "port_type": "sfp28",
       "port_size": [56, 86]
     },
     "x/6": {
       "port_coord": [58, 703],
-      "port_type": "sfp",
+      "port_type": "sfp28",
       "port_size": [56, 86]
     },
     "x/7": {
       "port_coord": [58, 790],
-      "port_type": "sfp",
+      "port_type": "sfp28",
       "port_size": [56, 86]
     },
     "x/8": {
       "port_coord": [58, 878],
-      "port_type": "sfp",
+      "port_type": "sfp28",
       "port_size": [56, 86]
     }
   }

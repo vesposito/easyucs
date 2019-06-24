@@ -1,4 +1,5 @@
 {
+  "model_short_name": "5108 DC2",
   "rear_file_name":"UCSB-5108-DC2_rear.png",
   "front_file_name":"UCSB-5108-DC2_front.png",
   "rear_file_size":[2862,1587],
@@ -204,5 +205,28 @@
       "type":"blank",
       "description":"Power supply unit blanking panel for UCS 5108"
     }
-  ]
+  ],
+  "spec_sheet_url": "https://www.cisco.com/c/dam/en/us/products/collateral/servers-unified-computing/ucs-b-series-blade-servers/spec_sheet_c17-644224.pdf",
+  "data_sheet_url": "https://www.cisco.com/c/en/us/products/collateral/servers-unified-computing/ucs-5100-series-blade-server-chassis/data_sheet_c78-526830.html",
+  "specs": {
+    "descr": "The Cisco UCS 5108 Blade Server Chassis is a Six-Rack-Unit (6RU) chassis that can house up to eight half-width Cisco UCS B-Series Blade Servers and can accommodate both half-width and full-width blade form factors.",
+    "form_factor": "6RU",
+    "dimensions": {
+      "centimeters": {
+        "height": 26.7,
+        "width": 44.5,
+        "depth": 81.2
+      },
+      "inches": {
+        "height": 10.5,
+        "width": 17.5,
+        "depth": 32
+      },
+      "rack_units": 6
+    },
+    "weight": {
+      "lb": 255,
+      "kg": 115.66
+    }
+  }
 }

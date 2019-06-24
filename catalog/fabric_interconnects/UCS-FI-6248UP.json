@@ -1,4 +1,5 @@
 {
+  "model_short_name": "6248UP",
   "rear_file_name":"UCS-FI-6248UP_rear.png",
   "front_file_name":"UCS-FI-6248UP_front.png",
   "rear_file_size":[2862,270],
@@ -35,163 +36,197 @@
   "rear_ports":{
     "1":{
       "port_coord":[262,55],
-      "port_type":"sfp",
+      "port_type":"sfp+",
       "port_size":[83,54]
     },
     "2":{
       "port_coord":[262,143],
-      "port_type":"sfp",
+      "port_type":"sfp+",
       "port_size":[83,54]
     },
     "3":{
       "port_coord":[347,55],
-      "port_type":"sfp",
+      "port_type":"sfp+",
       "port_size":[83,54]
     },
     "4":{
       "port_coord":[347,143],
-      "port_type":"sfp",
+      "port_type":"sfp+",
       "port_size":[83,54]
     },
     "5":{
       "port_coord":[432,55],
-      "port_type":"sfp",
+      "port_type":"sfp+",
       "port_size":[83,54]
     },
     "6":{
       "port_coord":[432,143],
-      "port_type":"sfp",
+      "port_type":"sfp+",
       "port_size":[83,54]
     },
     "7":{
       "port_coord":[518,55],
-      "port_type":"sfp",
+      "port_type":"sfp+",
       "port_size":[83,54]
     },
     "8":{
       "port_coord":[518,143],
-      "port_type":"sfp",
+      "port_type":"sfp+",
       "port_size":[83,54]
     },
     "9":{
       "port_coord":[603,55],
-      "port_type":"sfp",
+      "port_type":"sfp+",
       "port_size":[83,54]
     },
     "10":{
       "port_coord":[603,143],
-      "port_type":"sfp",
+      "port_type":"sfp+",
       "port_size":[83,54]
     },
     "11":{
       "port_coord":[688,55],
-      "port_type":"sfp",
+      "port_type":"sfp+",
       "port_size":[83,54]
     },
     "12":{
       "port_coord":[688,143],
-      "port_type":"sfp",
+      "port_type":"sfp+",
       "port_size":[83,54]
     },
     "13":{
       "port_coord":[774,55],
-      "port_type":"sfp",
+      "port_type":"sfp+",
       "port_size":[83,54]
     },
     "14":{
       "port_coord":[774,143],
-      "port_type":"sfp",
+      "port_type":"sfp+",
       "port_size":[83,54]
     },
     "15":{
       "port_coord":[859,55],
-      "port_type":"sfp",
+      "port_type":"sfp+",
       "port_size":[83,54]
     },
     "16":{
       "port_coord":[859,143],
-      "port_type":"sfp",
+      "port_type":"sfp+",
       "port_size":[83,54]
     },
     "17":{
       "port_coord":[1012,55],
-      "port_type":"sfp",
+      "port_type":"sfp+",
       "port_size":[83,54]
     },
     "18":{
       "port_coord":[1012,143],
-      "port_type":"sfp",
+      "port_type":"sfp+",
       "port_size":[83,54]
     },
     "19":{
       "port_coord":[1097,55],
-      "port_type":"sfp",
+      "port_type":"sfp+",
       "port_size":[83,54]
     },
     "20":{
       "port_coord":[1097,143],
-      "port_type":"sfp",
+      "port_type":"sfp+",
       "port_size":[83,54]
     },
     "21":{
       "port_coord":[1183,55],
-      "port_type":"sfp",
+      "port_type":"sfp+",
       "port_size":[83,54]
     },
     "22":{
       "port_coord":[1183,143],
-      "port_type":"sfp",
+      "port_type":"sfp+",
       "port_size":[83,54]
     },
     "23":{
       "port_coord":[1268,55],
-      "port_type":"sfp",
+      "port_type":"sfp+",
       "port_size":[83,54]
     },
     "24":{
       "port_coord":[1268,143],
-      "port_type":"sfp",
+      "port_type":"sfp+",
       "port_size":[83,54]
     },
     "25":{
       "port_coord":[1353,55],
-      "port_type":"sfp",
+      "port_type":"sfp+",
       "port_size":[83,54]
     },
     "26":{
       "port_coord":[1353,143],
-      "port_type":"sfp",
+      "port_type":"sfp+",
       "port_size":[83,54]
     },
     "27":{
       "port_coord":[1438,55],
-      "port_type":"sfp",
+      "port_type":"sfp+",
       "port_size":[83,54]
     },
     "28":{
       "port_coord":[1438,143],
-      "port_type":"sfp",
+      "port_type":"sfp+",
       "port_size":[83,54]
     },
     "29":{
       "port_coord":[1524,55],
-      "port_type":"sfp",
+      "port_type":"sfp+",
       "port_size":[83,54]
     },
     "30":{
       "port_coord":[1524,143],
-      "port_type":"sfp",
+      "port_type":"sfp+",
       "port_size":[83,54]
     },
     "31":{
       "port_coord":[1609,55],
-      "port_type":"sfp",
+      "port_type":"sfp+",
       "port_size":[83,54]
     },
     "32":{
       "port_coord":[1609,143],
-      "port_type":"sfp",
+      "port_type":"sfp+",
       "port_size":[83,54]
+    }
+  },
+  "spec_sheet_url": "https://www.cisco.com/c/dam/en/us/products/collateral/servers-unified-computing/ucs-b-series-blade-servers/6200_SpecSheet.pdf",
+  "data_sheet_url": "https://www.cisco.com/c/en/us/products/collateral/servers-unified-computing/ucs-6200-series-fabric-interconnects/data_sheet_c78-675245.html",
+  "specs": {
+    "descr": "The Cisco UCS 6248UP 48-Port Fabric Interconnect is a One-Rack-Unit (1RU) 10 Gigabit Ethernet, FCoE, and Fibre Channel switch offering up to 960 Gbps throughput and up to 48 ports. The switch has 32 fixed unified ports and 1 expansion slot of 16 unified ports that can support 1/10 Gigabit Ethernet or 1/2/4/8-Gbps Fibre Channel. All Ethernet ports are capable of supporting FCoE.",
+    "form_factor": "1RU",
+    "throughput": {
+      "gbps": 960,
+      "mpps": 714.24
+    },
+    "latency": "3.2 µs",
+    "power_typical": 350,
+    "power_maximum": 600,
+    "power_typical_dc": 400,
+    "power_maximum_dc": 750,
+    "heat_dissipation": 1998,
+    "heat_dissipation_dc": 2815,
+    "dimensions": {
+      "centimeters": {
+        "height": 4.4,
+        "width": 43.9,
+        "depth": 76.2
+      },
+      "inches": {
+        "height": 1.72,
+        "width": 17.3,
+        "depth": 30
+      },
+      "rack_units": 1
+    },
+    "weight": {
+      "lb": 35,
+      "kg": 15.88
     }
   }
 }

@@ -1,4 +1,5 @@
 {
+  "model_short_name": "VIC 1225",
   "rear_file_name":"UCSC-PCIE-CSC-02.png",
   "rear_file_name_half":"UCSC-PCIE-CSC-02_half.png",
   "rear_file_size":[593,75],
@@ -6,25 +7,26 @@
   "rear_ports": {
     "x/2": {
       "port_coord": [268, 15],
-      "port_type": "sfp",
+      "port_type": "sfp+",
       "port_size": [82, 55]
     },
     "x/1": {
       "port_coord": [365, 15],
-      "port_type": "sfp",
+      "port_type": "sfp+",
       "port_size": [82, 55]
     }
   },
   "rear_ports_half": {
     "x/2": {
       "port_coord": [108, 15],
-      "port_type": "sfp",
+      "port_type": "sfp+",
       "port_size": [82, 55]
     },
     "x/1": {
       "port_coord": [205, 15],
-      "port_type": "sfp",
+      "port_type": "sfp+",
       "port_size": [82, 55]
     }
-  }
+  },
+  "data_sheet_url": "https://www.cisco.com/c/en/us/products/collateral/interfaces-modules/ucs-virtual-interface-card-1225/data_sheet_c78-708295.pdf"
 }

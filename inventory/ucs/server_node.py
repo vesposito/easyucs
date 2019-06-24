@@ -4,6 +4,7 @@
 """ chassis.py: Easy UCS Deployment Tool """
 from __init__ import __author__, __copyright__,  __version__, __status__
 
+import json
 
 from inventory.object import GenericUcsInventoryObject, UcsImcInventoryObject
 from inventory.ucs.adaptor import UcsImcAdaptor, UcsImcNetworkAdapter
@@ -50,6 +51,29 @@ class UcsServerNode(GenericUcsInventoryObject):
     def _get_mgmt_interfaces(self):
         return []
 
+    def _get_model_short_name(self):
+        """
+        Returns server node short name from EasyUCS catalog files
+        """
+        if self.sku is not None:
+            # We use the catalog file to get the server node short name
+            try:
+                json_file = open("catalog/blades/" + self.sku + ".json")
+                blade_catalog = json.load(fp=json_file)
+                json_file.close()
+
+                if "model_short_name" in blade_catalog:
+                    return blade_catalog["model_short_name"]
+
+            except FileNotFoundError:
+                if self.sku_scaled:
+                    self.logger(level="error", message="Blade catalog file " + self.sku_scaled + ".json not found")
+                else:
+                    self.logger(level="error", message="Blade catalog file " + self.sku + ".json not found")
+                return None
+
+        return None
+
     def _get_network_adapters(self):
         return []
 
@@ -92,6 +116,10 @@ class UcsImcServerNode(UcsServerNode, UcsImcInventoryObject):
         # objects in IMC, and S3260 server nodes are displayed as Blades in UCSM
         self.slot_id = self.id
 
+        self.locator_led_status = None
+
+        self.short_name = self._get_model_short_name()
+
         self.adaptors = self._get_adaptors() + self._get_network_adapters()
         self.storage_controllers = self._get_storage_controllers()
 
@@ -104,11 +132,12 @@ class UcsImcServerNode(UcsServerNode, UcsImcInventoryObject):
         self.os_update_version = None
         self.os_vendor = None
         if self._inventory.load_from == "live":
+            self.locator_led_status = self._determine_locator_led_status()
             self._get_os_details()
 
         elif self._inventory.load_from == "file":
-            for attribute in ["os_arch", "os_kernel_version", "os_patch_version", "os_release_version", "os_type",
-                              "os_ucs_tool_version", "os_update_version", "os_vendor"]:
+            for attribute in ["locator_led_status", "os_arch", "os_kernel_version", "os_patch_version",
+                              "os_release_version", "os_type", "os_ucs_tool_version", "os_update_version", "os_vendor"]:
                 setattr(self, attribute, None)
                 if attribute in compute_server_node:
                     setattr(self, attribute, self.get_attribute(ucs_sdk_object=compute_server_node,

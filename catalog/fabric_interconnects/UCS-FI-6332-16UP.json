@@ -1,4 +1,5 @@
 {
+  "model_short_name": "6332-16UP",
   "rear_file_name":"UCS-FI-6332-16UP_rear.png",
   "front_file_name":"UCS-FI-6332_front.png",
   "rear_file_size":[2862,270],
@@ -22,203 +23,237 @@
   "rear_ports":{
     "1":{
       "port_coord":[401,49],
-      "port_type":"sfp",
+      "port_type":"sfp+",
       "port_size":[83,54]
     },
     "2":{
       "port_coord":[401,138],
-      "port_type":"sfp",
+      "port_type":"sfp+",
       "port_size":[83,54]
     },
     "3":{
       "port_coord":[486,49],
-      "port_type":"sfp",
+      "port_type":"sfp+",
       "port_size":[83,54]
     },
     "4":{
       "port_coord":[486,138],
-      "port_type":"sfp",
+      "port_type":"sfp+",
       "port_size":[83,54]
     },
     "5":{
       "port_coord":[572,49],
-      "port_type":"sfp",
+      "port_type":"sfp+",
       "port_size":[83,54]
     },
     "6":{
       "port_coord":[572,138],
-      "port_type":"sfp",
+      "port_type":"sfp+",
       "port_size":[83,54]
     },
     "7":{
       "port_coord":[657,49],
-      "port_type":"sfp",
+      "port_type":"sfp+",
       "port_size":[83,54]
     },
     "8":{
       "port_coord":[657,138],
-      "port_type":"sfp",
+      "port_type":"sfp+",
       "port_size":[83,54]
     },
     "9":{
       "port_coord":[742,49],
-      "port_type":"sfp",
+      "port_type":"sfp+",
       "port_size":[83,54]
     },
     "10":{
       "port_coord":[742,138],
-      "port_type":"sfp",
+      "port_type":"sfp+",
       "port_size":[83,54]
     },
     "11":{
       "port_coord":[828,49],
-      "port_type":"sfp",
+      "port_type":"sfp+",
       "port_size":[83,54]
     },
     "12":{
       "port_coord":[828,138],
-      "port_type":"sfp",
+      "port_type":"sfp+",
       "port_size":[83,54]
     },
     "13":{
       "port_coord":[913,49],
-      "port_type":"sfp",
+      "port_type":"sfp+",
       "port_size":[83,54]
     },
     "14":{
       "port_coord":[913,138],
-      "port_type":"sfp",
+      "port_type":"sfp+",
       "port_size":[83,54]
     },
     "15":{
       "port_coord":[998,49],
-      "port_type":"sfp",
+      "port_type":"sfp+",
       "port_size":[83,54]
     },
     "16":{
       "port_coord":[998,138],
-      "port_type":"sfp",
+      "port_type":"sfp+",
       "port_size":[83,54]
     },
     "17":{
       "port_coord":[1105,45],
-      "port_type":"qsfp",
+      "port_type":"qsfp+",
       "port_size":[111,49]
     },
     "18":{
       "port_coord":[1105,145],
-      "port_type":"qsfp",
+      "port_type":"qsfp+",
       "port_size":[111,49]
     },
     "19":{
       "port_coord":[1239,45],
-      "port_type":"qsfp",
+      "port_type":"qsfp+",
       "port_size":[111,49]
     },
     "20":{
       "port_coord":[1239,145],
-      "port_type":"qsfp",
+      "port_type":"qsfp+",
       "port_size":[111,49]
     },
     "21":{
       "port_coord":[1372,45],
-      "port_type":"qsfp",
+      "port_type":"qsfp+",
       "port_size":[111,49]
     },
     "22":{
       "port_coord":[1372,145],
-      "port_type":"qsfp",
+      "port_type":"qsfp+",
       "port_size":[111,49]
     },
     "23":{
       "port_coord":[1506,45],
-      "port_type":"qsfp",
+      "port_type":"qsfp+",
       "port_size":[111,49]
     },
     "24":{
       "port_coord":[1506,145],
-      "port_type":"qsfp",
+      "port_type":"qsfp+",
       "port_size":[111,49]
     },
     "25":{
       "port_coord":[1639,45],
-      "port_type":"qsfp",
+      "port_type":"qsfp+",
       "port_size":[111,49]
     },
     "26":{
       "port_coord":[1639,145],
-      "port_type":"qsfp",
+      "port_type":"qsfp+",
       "port_size":[111,49]
     },
     "27":{
       "port_coord":[1772,45],
-      "port_type":"qsfp",
+      "port_type":"qsfp+",
       "port_size":[111,49]
     },
     "28":{
       "port_coord":[1772,145],
-      "port_type":"qsfp",
+      "port_type":"qsfp+",
       "port_size":[111,49]
     },
     "29":{
       "port_coord":[1906,45],
-      "port_type":"qsfp",
+      "port_type":"qsfp+",
       "port_size":[111,49]
     },
     "30":{
       "port_coord":[1906,145],
-      "port_type":"qsfp",
+      "port_type":"qsfp+",
       "port_size":[111,49]
     },
     "31":{
       "port_coord":[2039,45],
-      "port_type":"qsfp",
+      "port_type":"qsfp+",
       "port_size":[111,49]
     },
     "32":{
       "port_coord":[2039,145],
-      "port_type":"qsfp",
+      "port_type":"qsfp+",
       "port_size":[111,49]
     },
     "33":{
       "port_coord":[2173,45],
-      "port_type":"qsfp",
+      "port_type":"qsfp+",
       "port_size":[111,49]
     },
     "34":{
       "port_coord":[2173,145],
-      "port_type":"qsfp",
+      "port_type":"qsfp+",
       "port_size":[111,49]
     },
     "35":{
       "port_coord":[2306,45],
-      "port_type":"qsfp",
+      "port_type":"qsfp+",
       "port_size":[111,49]
     },
     "36":{
       "port_coord":[2306,145],
-      "port_type":"qsfp",
+      "port_type":"qsfp+",
       "port_size":[111,49]
     },
     "37":{
       "port_coord":[2439,45],
-      "port_type":"qsfp",
+      "port_type":"qsfp+",
       "port_size":[111,49]
     },
     "38":{
       "port_coord":[2439,145],
-      "port_type":"qsfp",
+      "port_type":"qsfp+",
       "port_size":[111,49]
     },
     "39":{
       "port_coord":[2573,45],
-      "port_type":"qsfp",
+      "port_type":"qsfp+",
       "port_size":[111,49]
     },
     "40":{
       "port_coord":[2573,145],
-      "port_type":"qsfp",
+      "port_type":"qsfp+",
       "port_size":[111,49]
+    }
+  },
+  "spec_sheet_url": "https://www.cisco.com/c/dam/en/us/products/collateral/servers-unified-computing/ucs-b-series-blade-servers/6332-specsheet.pdf",
+  "data_sheet_url": "https://www.cisco.com/c/en/us/products/collateral/servers-unified-computing/ucs-6300-series-fabric-interconnects/datasheet-c78-736682.html",
+  "specs": {
+    "descr": "The Cisco UCS 6332-16UP 40-Port Fabric Interconnect is a One-Rack-Unit (1RU) 10 and 40 Gigabit Ethernet, FCoE, and Fibre Channel switch offering up to 2.43 Tbps throughput and up to 40 ports. The switch has 24 fixed 40-Gbps Ethernet ports and 16 unified ports that can support 1/10 Gigabit Ethernet or 4/8/16-Gbps Fibre Channel. All Ethernet ports are capable of supporting FCoE.",
+    "form_factor": "1RU",
+    "throughput": {
+      "gbps": 2432,
+      "mpps": 683
+    },
+    "latency": "<2 µs",
+    "power_typical": 212,
+    "power_maximum": 650,
+    "power_typical_dc": 400,
+    "power_maximum_dc": 930,
+    "heat_dissipation": 2217,
+    "heat_dissipation_dc": 3171.3,
+    "dimensions": {
+      "centimeters": {
+        "height": 4.4,
+        "width": 43.9,
+        "depth": 57.1
+      },
+      "inches": {
+        "height": 1.72,
+        "width": 17.3,
+        "depth": 22.5
+      },
+      "rack_units": 1
+    },
+    "weight": {
+      "lb": 22.6,
+      "kg": 10.25
     }
   }
 }

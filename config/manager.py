@@ -8,6 +8,7 @@ from __init__ import __author__, __copyright__,  __version__, __status__
 import json
 import jsonschema
 import os
+import re
 import time
 import urllib
 import uuid
@@ -424,7 +425,14 @@ class UcsSystemConfigManager(GenericUcsConfigManager):
             config.roles.append(UcsSystemRole(parent=config, aaa_role=aaa_role))
 
         for aaa_user in config.sdk_objects["aaaUser"]:
-            config.local_users.append(UcsSystemLocalUser(parent=config, aaa_user=aaa_user))
+            # We except users that have been automatically pushed by UCS Central for cross-launch authentication since
+            # they are for internal use. They begin with "ucsc_".
+            if hasattr(aaa_user, "name"):
+                if aaa_user.name.startswith("ucsc_"):
+                    self.logger(level="debug", message="Ignoring Local User " + aaa_user.name +
+                                                       " since it has been pushed by UCS Central")
+                else:
+                    config.local_users.append(UcsSystemLocalUser(parent=config, aaa_user=aaa_user))
 
         for qos_class in list(config.sdk_objects["qosclassEthClassified"] + config.sdk_objects["qosclassFc"] +
                               config.sdk_objects["qosclassEthBE"]):
@@ -450,7 +458,9 @@ class UcsSystemConfigManager(GenericUcsConfigManager):
         for fabric_eth_lan_ep in config.sdk_objects["fabricEthLanEp"]:
             config.lan_uplink_ports.append(UcsSystemLanUplinkPort(parent=config, fabric_eth_lan_ep=fabric_eth_lan_ep))
 
-        for fabric_dce_sw_srv_ep in sorted(config.sdk_objects["fabricDceSwSrvEp"], key=lambda port: port.dn):
+        for fabric_dce_sw_srv_ep in sorted(config.sdk_objects["fabricDceSwSrvEp"],
+                                           key=lambda port: [int(t) if t.isdigit() else t.lower()
+                                                             for t in re.split('(\d+)', port.dn)]):
             config.server_ports.append(UcsSystemServerPort(parent=config, fabric_dce_sw_srv_ep=fabric_dce_sw_srv_ep))
 
         for fabric_eth_estc_ep in config.sdk_objects["fabricEthEstcEp"]:

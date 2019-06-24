@@ -1,4 +1,5 @@
 {
+  "model_short_name": "C220 M5L",
   "rear_file_name":"UCSC-C220-M5_rear.png",
   "front_file_name":"UCSC-C220-M5L_front.png",
   "rear_file_size":[2862,273],
@@ -145,5 +146,6 @@
 	  "format":"lff_m5",
       "description":"C-Series M5 LFF drive blanking panel"
     }
-  ]
+  ],
+  "spec_sheet_url": "https://www.cisco.com/c/dam/en/us/products/collateral/servers-unified-computing/ucs-c-series-rack-servers/c220m5-lff-specsheet.pdf"
 }

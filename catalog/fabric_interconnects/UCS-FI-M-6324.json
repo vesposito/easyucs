@@ -1,4 +1,5 @@
 {
+  "model_short_name": "6324",
   "rear_file_name":"UCS-FI-M-6324.png",
   "front_file_name":"",
   "rear_file_size":[216,1216],
@@ -10,28 +11,56 @@
   "rear_ports":{
     "1":{
       "port_coord":[60,536],
-      "port_type":"sfp",
+      "port_type":"sfp+",
       "port_size":[54,83]
     },
     "2":{
       "port_coord":[60,624],
-      "port_type":"sfp",
+      "port_type":"sfp+",
       "port_size":[54,83]
     },
     "3":{
       "port_coord":[60,712],
-      "port_type":"sfp",
+      "port_type":"sfp+",
       "port_size":[54,83]
     },
     "4":{
       "port_coord":[60,799],
-      "port_type":"sfp",
+      "port_type":"sfp+",
       "port_size":[54,83]
     },
     "5":{
       "port_coord":[62,913],
-      "port_type":"qsfp",
+      "port_type":"qsfp+",
       "port_size":[49,111]
+    }
+  },
+  "spec_sheet_url": "https://www.cisco.com/c/dam/en/us/products/collateral/servers-unified-computing/ucs-b-series-blade-servers/ucsmini-specsheet.pdf",
+  "data_sheet_url": "https://www.cisco.com/c/en/us/products/collateral/servers-unified-computing/ucs-6300-series-fabric-interconnects/datasheet-c78-732207.html",
+  "specs": {
+    "descr": "The Cisco UCS 6324 Fabric Interconnect is a 10 Gigabit Ethernet, FCoE, and Fibre Channel switch offering up to 500 Gbps throughput and up to 5 ports. The switch has 4 fixed unified ports that can support 1/10 Gigabit Ethernet or 2/4/8-Gbps Fibre Channel and 1 scalability port that can support up to 4 10 Gigabit Ethernet using a QSFP+ connector. All Ethernet ports are capable of supporting FCoE.",
+    "form_factor": "I/O Module",
+    "throughput": {
+      "gbps": 500,
+      "mpps": 375
+    },
+    "latency": "<1 µs",
+    "dimensions": {
+      "centimeters": {
+        "height": 19.4,
+        "width": 3.45,
+        "depth": 18.3
+      },
+      "inches": {
+        "height": 7.64,
+        "width": 1.36,
+        "depth": 7.2
+      },
+      "rack_units": 0
+    },
+    "weight": {
+      "lb": 2.5,
+      "kg": 1.134
     }
   }
 }

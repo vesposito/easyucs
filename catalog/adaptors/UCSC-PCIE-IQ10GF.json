@@ -1,0 +1,52 @@
+{
+  "model_short_name": "Intel X710-DA4 4x10G",
+  "rear_file_name":"UCSC-PCIE-IQ10GF.png",
+  "rear_file_name_half":"UCSC-PCIE-IQ10GF_half.png",
+  "rear_file_size":[593,75],
+  "rear_file_size_half":[389,75],
+    "rear_ports": {
+    "x/1": {
+      "port_coord": [164, 11],
+      "port_type": "sfp28",
+      "port_size": [82, 55]
+    },
+    "x/2": {
+      "port_coord": [253, 11],
+      "port_type": "sfp28",
+      "port_size": [82, 55]
+    },
+	"x/3": {
+      "port_coord": [342, 11],
+      "port_type": "sfp28",
+      "port_size": [82, 55]
+    },
+    "x/4": {
+      "port_coord": [431, 11],
+      "port_type": "sfp28",
+      "port_size": [82, 55]
+    }
+  },
+  "rear_ports_half": {
+    "x/1": {
+      "port_coord": [19, 11],
+      "port_type": "sfp28",
+      "port_size": [82, 55]
+    },
+    "x/2": {
+      "port_coord": [108, 11],
+      "port_type": "sfp28",
+      "port_size": [82, 55]
+    },
+	"x/3": {
+      "port_coord": [197, 11],
+      "port_type": "sfp28",
+      "port_size": [82, 55]
+    },
+    "x/4": {
+      "port_coord": [286, 11],
+      "port_type": "sfp28",
+      "port_size": [82, 55]
+    }
+  },
+  "data_sheet_url": "https://www.cisco.com/c/dam/en/us/products/collateral/servers-unified-computing/ucs-c-series-rack-servers/intel-x710-product-brief.pdf"
+}

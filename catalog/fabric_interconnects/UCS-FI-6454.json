@@ -1,4 +1,5 @@
 {
+  "model_short_name": "6454",
   "rear_file_name":"UCS-FI-6454_rear.png",
   "front_file_name":"UCS-FI-6454_front.png",
   "rear_file_size":[2862,268],
@@ -289,6 +290,37 @@
       "port_coord":[2583,144],
       "port_type":"qsfp28",
       "port_size":[111,56]
+    }
+  },
+  "spec_sheet_url": "https://www.cisco.com/c/dam/en/us/products/collateral/servers-unified-computing/ucs-b-series-blade-servers/ucs-6454-fab-int-specsheet.pdf",
+  "data_sheet_url": "https://www.cisco.com/c/en/us/products/collateral/servers-unified-computing/datasheet-c78-741116.html",
+  "specs": {
+    "descr": "The Cisco UCS 6454 54-Port Fabric Interconnect is a One-Rack-Unit (1RU) 10/25/40/100 Gigabit Ethernet, FCoE and Fibre Channel switch offering up to 3.82 Tbps throughput and up to 54 ports. The switch has 28 10/25-Gbps Ethernet ports, 4 1/10/25-Gbps Ethernet ports, 6 40/100-Gbps Ethernet uplink ports and 16 unified ports that can support 10/25-Gbps Ethernet or 8/16/32-Gbps Fibre Channel. All Ethernet ports are capable of supporting FCoE.",
+    "form_factor": "1RU",
+    "throughput": {
+      "gbps": 3824,
+      "mpps": 4200
+    },
+    "latency": "<1 µs",
+    "power_typical": 260,
+    "power_maximum": 400,
+    "power_maximum_dc": 380,
+    "dimensions": {
+      "centimeters": {
+        "height": 4.4,
+        "width": 43.9,
+        "depth": 57.1
+      },
+      "inches": {
+        "height": 1.72,
+        "width": 17.3,
+        "depth": 22.5
+      },
+      "rack_units": 1
+    },
+    "weight": {
+      "lb": 23.24,
+      "kg": 10.5
     }
   }
 }

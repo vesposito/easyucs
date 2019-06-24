@@ -4,82 +4,82 @@
   "rear_ports":{
     "1":{
       "port_coord":[97,36],
-      "port_type":"sfp",
+      "port_type":"sfp+",
       "port_size":[83,54]
     },
     "2":{
       "port_coord":[97,122],
-      "port_type":"sfp",
+      "port_type":"sfp+",
       "port_size":[83,54]
     },
     "3":{
       "port_coord":[183,36],
-      "port_type":"sfp",
+      "port_type":"sfp+",
       "port_size":[83,54]
     },
     "4":{
       "port_coord":[183,122],
-      "port_type":"sfp",
+      "port_type":"sfp+",
       "port_size":[83,54]
     },
     "5":{
       "port_coord":[269,36],
-      "port_type":"sfp",
+      "port_type":"sfp+",
       "port_size":[83,54]
     },
     "6":{
       "port_coord":[269,122],
-      "port_type":"sfp",
+      "port_type":"sfp+",
       "port_size":[83,54]
     },
     "7":{
       "port_coord":[355,36],
-      "port_type":"sfp",
+      "port_type":"sfp+",
       "port_size":[83,54]
     },
     "8":{
       "port_coord":[355,122],
-      "port_type":"sfp",
+      "port_type":"sfp+",
       "port_size":[83,54]
     },
     "9":{
       "port_coord":[441,36],
-      "port_type":"sfp",
+      "port_type":"sfp+",
       "port_size":[83,54]
     },
     "10":{
       "port_coord":[441,122],
-      "port_type":"sfp",
+      "port_type":"sfp+",
       "port_size":[83,54]
     },
     "11":{
       "port_coord":[527,36],
-      "port_type":"sfp",
+      "port_type":"sfp+",
       "port_size":[83,54]
     },
     "12":{
       "port_coord":[527,122],
-      "port_type":"sfp",
+      "port_type":"sfp+",
       "port_size":[83,54]
     },
     "13":{
       "port_coord":[613,36],
-      "port_type":"sfp",
+      "port_type":"sfp+",
       "port_size":[83,54]
     },
     "14":{
       "port_coord":[613,122],
-      "port_type":"sfp",
+      "port_type":"sfp+",
       "port_size":[83,54]
     },
     "15":{
       "port_coord":[699,36],
-      "port_type":"sfp",
+      "port_type":"sfp+",
       "port_size":[83,54]
     },
     "16":{
       "port_coord":[699,122],
-      "port_type":"sfp",
+      "port_type":"sfp+",
       "port_size":[83,54]
     }
   }

@@ -1,4 +1,5 @@
 {
+  "model_short_name": "C240 M4L",
   "rear_file_name":"UCSC-C240-M4_rear.png",
   "front_file_name":"UCSC-C240-M4L_front.png",
   "rear_file_size":[2862,540],
@@ -238,5 +239,6 @@
 	  "format":"lff",
       "description":"UCS 3.5-inch HDD blanking panel"
     }
-  ]
+  ],
+  "spec_sheet_url": "https://www.cisco.com/c/dam/en/us/products/collateral/servers-unified-computing/ucs-c-series-rack-servers/c240m4-lff-spec-sheet.pdf"
 }

@@ -519,7 +519,7 @@ class UcsSystem(GenericUcsDevice):
         self._set_device_name_and_version()
 
     def generate_report(self, inventory=None, config=None, language="en", output_format="docx", page_layout="a4",
-                        directory=None, filename=None):
+                        directory=None, filename=None, size="full"):
         """
         Generates a report of a UCS System using given inventory and config
         :param inventory: inventory to be used to generate the report from
@@ -563,7 +563,7 @@ class UcsSystem(GenericUcsDevice):
                     message="Generating report in " + output_format + " format with layout " + page_layout.upper() +
                             " in " + language.upper())
         UcsSystemReport(device=self, inventory=inventory, config=config, language=language, output_format=output_format,
-                        page_layout=page_layout, directory=directory, filename=filename)
+                        page_layout=page_layout, directory=directory, filename=filename, size=size)
 
     def initial_setup(self, fi_ip_list=[], config=None):
         """
@@ -2215,7 +2215,7 @@ class UcsImc(GenericUcsDevice):
         return True
 
     def generate_report(self, inventory=None, config=None, language="en", output_format="docx", page_layout="a4",
-                        directory=None, filename=None):
+                        directory=None, filename=None, size="full"):
         """
         Generates a report of a UCS IMC using given inventory and config
         :param inventory: inventory to be used to generate the report from
@@ -2257,7 +2257,7 @@ class UcsImc(GenericUcsDevice):
         self.logger(level="debug",
                     message="Generating report in " + output_format + " format with layout " + page_layout)
         UcsImcReport(device=self, inventory=inventory, config=config, language=language, output_format=output_format,
-                     page_layout=page_layout, directory=directory, filename=filename)
+                     page_layout=page_layout, directory=directory, filename=filename, size=size)
 
     def _set_device_name_and_version(self):
         """

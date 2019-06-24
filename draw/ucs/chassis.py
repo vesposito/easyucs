@@ -464,8 +464,9 @@ class GenericUcsDrawSioc(GenericUcsDrawEquipment):
         self.ports = []
         self.parent_draw.paste_layer(self.picture, self.picture_offset)
 
-        if self.parent_draw.color_ports:
-            self.draw_ports()
+        if hasattr(self.parent_draw, "color_ports"):
+            if self.parent_draw.color_ports:
+                self.draw_ports()
 
     def _get_picture_offset(self):
         for slot in self.parent_draw.json_file["system_io_controllers_slots"]:

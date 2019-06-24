@@ -1,4 +1,5 @@
 {
+  "model_short_name": "Broadcom 57712 2x10G",
   "rear_file_name":"UCSC-PCIE-BSFP.png",
   "rear_file_name_half":"UCSC-PCIE-BSFP_half.png",
   "rear_file_size":[593,75],
@@ -6,25 +7,26 @@
   "rear_ports": {
     "x/2": {
       "port_coord": [282, 13],
-      "port_type": "qsfp",
+      "port_type": "sfp+",
       "port_size": [82, 49]
     },
     "x/1": {
       "port_coord": [405, 13],
-      "port_type": "qsfp",
+      "port_type": "sfp+",
       "port_size": [82, 49]
     }
   },
   "rear_ports_half": {
     "x/2": {
       "port_coord": [121, 13],
-      "port_type": "qsfp",
+      "port_type": "sfp+",
       "port_size": [82, 49]
     },
     "x/1": {
       "port_coord": [244, 13],
-      "port_type": "qsfp",
+      "port_type": "sfp+",
       "port_size": [82, 49]
     }
-  }
+  },
+  "data_sheet_url": "https://www.cisco.com/c/dam/en/us/products/collateral/interfaces-modules/ucs-virtual-interface-card-1225/1cs57712_pb00_rds.pdf"
 }
