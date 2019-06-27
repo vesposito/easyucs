@@ -1,4 +1,4 @@
-paramiko >= 2.4.2
+paramiko >= 2.6.0
 imcsdk >= 0.9.6
 jsonschema >= 3.0.1
 python-docx >= 0.8.10
@@ -10,5 +10,3 @@ netaddr >= 0.7.19
 pyyaml >= 5.1
 packaging >= 19.0
 Flask >= 1.0.2
-# Before a new update for paramiko fix the pop up "CryptographyDeprecationWarnings": (https://github.com/paramiko/paramiko/issues/1369)
-cryptography == 2.4.2

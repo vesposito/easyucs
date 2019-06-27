@@ -39,6 +39,7 @@ class UcsRack(GenericUcsInventoryObject):
         self.vendor = self.get_attribute(ucs_sdk_object=compute_rack_unit, attribute_name="vendor")
 
         # Adding a human-readable attribute for memory capacity
+        self.memory_total_marketing = None
         if self.memory_total:
             if self.memory_total / 1024 < 1024:
                 memory_total_gb = str(self.memory_total / 1024)

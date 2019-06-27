@@ -114,6 +114,7 @@ class UcsSystemBlade(UcsBlade, UcsSystemInventoryObject):
         UcsSystemInventoryObject.__init__(self, parent=parent, ucs_sdk_object=compute_blade)
 
         # Adding a human-readable attribute for memory capacity
+        self.memory_total_marketing = None
         if self.memory_total:
             if self.memory_total / 1024 < 1024:
                 memory_total_gb = str(self.memory_total / 1024)
