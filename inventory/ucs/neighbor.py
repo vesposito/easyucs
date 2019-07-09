@@ -133,7 +133,11 @@ class UcsSystemLanNeighborEntry(UcsSystemNeighborEntry):
                     self.device_type = "router"
 
             elif hasattr(self, 'lldp_capabilities'):
-                lldp_capabilities_list = self.lldp_capabilities.split(", ")
+                if "," in self.lldp_capabilities:
+                    lldp_capabilities_list = self.lldp_capabilities.split(", ")
+                else:
+                    # Sometimes LLDP capabilities are not separated by a comma but simply appended as a string
+                    lldp_capabilities_list = self.lldp_capabilities
                 if "B" in lldp_capabilities_list:
                     if "R" in lldp_capabilities_list:
                         if self.is_nexus:

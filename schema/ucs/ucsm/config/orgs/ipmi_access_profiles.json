@@ -65,8 +65,7 @@
             },
             "additionalProperties": false,
             "required": [
-               "name",
-               "password"
+               "name"
             ]
          },
          "minItems": 1

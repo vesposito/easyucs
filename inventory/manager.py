@@ -519,6 +519,7 @@ class UcsSystemInventoryManager(GenericUcsInventoryManager):
         inventory.origin = "live"
         inventory.load_from = "live"
         inventory._fetch_sdk_objects()
+        self.logger(level="debug", message="Finished fetching UCS SDK objects for inventory")
 
         if "networkElement" in inventory.sdk_objects.keys():
             for network_element in sorted(inventory.sdk_objects["networkElement"], key=lambda fi: fi.dn):
@@ -539,7 +540,10 @@ class UcsSystemInventoryManager(GenericUcsInventoryManager):
             for compute_rack_unit in sorted(inventory.sdk_objects["computeRackUnit"], key=lambda rack: [int(t) if t.isdigit() else t.lower() for t in re.split('(\d+)', rack.id)]):
                 inventory.rack_units.append(UcsSystemRack(parent=inventory, compute_rack_unit=compute_rack_unit))
 
+        # Removing the list of SDK objects fetched from the live UCS device
+        inventory.sdk_objects = None
         self.inventory_list.append(inventory)
+        self.logger(message="Finished fetching inventory with UUID " + str(inventory.uuid) + " from live device")
         return inventory.uuid
 
     def _fill_inventory_from_json(self, inventory=None, inventory_json=None):
@@ -586,6 +590,7 @@ class UcsImcInventoryManager(GenericUcsInventoryManager):
         inventory.origin = "live"
         inventory.load_from = "live"
         inventory._fetch_sdk_objects()
+        self.logger(level="debug", message="Finished fetching UCS SDK objects for inventory")
 
         if "computeRackUnit" in inventory.sdk_objects:
             # Server is a standalone rack server
@@ -596,7 +601,10 @@ class UcsImcInventoryManager(GenericUcsInventoryManager):
             inventory.chassis.append(UcsImcChassis(parent=inventory,
                                                    equipment_chassis=inventory.sdk_objects["equipmentChassis"][0]))
 
+        # Removing the list of SDK objects fetched from the live UCS device
+        inventory.sdk_objects = None
         self.inventory_list.append(inventory)
+        self.logger(message="Finished fetching inventory with UUID " + str(inventory.uuid) + " from live device")
         return inventory.uuid
 
     def _fill_inventory_from_json(self, inventory=None, inventory_json=None):

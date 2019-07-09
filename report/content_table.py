@@ -11,10 +11,11 @@ from docx.enum.table import WD_CELL_VERTICAL_ALIGNMENT
 from docx.enum.table import WD_ROW_HEIGHT_RULE
 import os.path
 
+from draw.object import GenericDrawObject
 
 class GenericReportTable(GenericReportContent):
     def __init__(self, order_id, parent, row_number, column_number, centered=False, cells_list=[],
-                 style="Light Grid Accent 1", autofit=False, font_size=10):
+                 style="Light Grid Accent 1", autofit=True, font_size=10):
         """
         :param order_id:
         :param parent:
@@ -81,6 +82,9 @@ class GenericReportTable(GenericReportContent):
             if row_index != 0:
                 empty = True
                 for column_in_row in self.cells_list[row_index]:
+                    if isinstance(column_in_row, type(None)):
+                        # Avoid issue with None value that is misinterpret by Word. We change None to empty string
+                        self.cells_list[row_index][self.cells_list[row_index].index(column_in_row)] = ""
                     if not empty:
                         continue
                     if column_in_row == self.cells_list[row_index][0]:
@@ -105,20 +109,39 @@ class GenericReportTable(GenericReportContent):
         table = self.report.document.add_table(rows=self.row_number, cols=self.column_number,
                                                style=self.style)
         table.alignment = int(bool(self.centered))
-        table.autofit = self.autofit
-        table.style.font.size = Pt(self.font_size)
-        # table.style.paragraph_format.widow_control = True
-        # table.style.paragraph_format.keep_together = True
-        # table.style.paragraph_format.keep_with_next = True
 
         for i in range(len(self.cells_list)):
             row = self.cells_list[i]
+            row = list(filter(None.__ne__, row))  # Remove None values
             row_cells = table.rows[i].cells
             for j in range(0, len(row)):
                 row_cells[j].text = str(row[j])
                 row_cells[j].vertical_alignment = WD_CELL_VERTICAL_ALIGNMENT.CENTER
                 if self.autofit:
-                    row_cells[j].width = WD_ROW_HEIGHT_RULE.AUTO
+                    # For more info : https://github.com/python-openxml/python-docx/issues/209
+                    row_cells[j]._tc.tcPr.tcW.type = 'auto'
+
+        # Change to keep the table on one page 1/2 - Put all the value at False (default values)
+        table.style.paragraph_format.keep_together = False
+        table.style.paragraph_format.keep_with_next = False
+
+        # Change the font size
+        for row in table.rows:
+            for cell in row.cells:
+                paragraphs = cell.paragraphs
+                for paragraph in paragraphs:
+                    for run in paragraph.runs:
+                        run.font.size = Pt(self.font_size)
+
+        # Change to keep the table on one page 2/2
+        # Put the entire table at "keep together" and then put all the rows, except the last one, at "keep with next"
+        # Tips found here : https://wordribbon.tips.net/T012975_Keeping_Tables_on_One_Page
+        table.style.paragraph_format.keep_together = True
+        for row in table.rows[:-1]:
+            for cell in row.cells:
+                paragraphs = cell.paragraphs
+                for paragraph in paragraphs:
+                    paragraph.paragraph_format.keep_with_next = True
 
     def __format_column_to_row(self):
         column_cells_list = self.cells_list
@@ -133,14 +156,77 @@ class GenericReportTable(GenericReportContent):
         self.cells_list = row_cells_list
         self.cells_type = "row"
 
+    @staticmethod
+    def get_name_and_sku(inventory_object):
+        """
+        Generate proper name depending on available attributes
+        :param inventory_object:
+        :return: key
+        """
+        key = ""
+
+        if hasattr(inventory_object, "name"):
+            if inventory_object.name:
+                key = inventory_object.name
+                if inventory_object.sku:
+                    key = inventory_object.name + ' (' + inventory_object.sku + ')'
+                elif inventory_object.model and inventory_object.model != inventory_object.name:
+                    key = inventory_object.name + ' (' + inventory_object.model + ')'
+        if not key:
+            if inventory_object.sku:
+                key = inventory_object.sku
+            elif inventory_object.model:
+                key = inventory_object.model
+
+        return key
+
 
 class FiUcsReportTable(GenericReportTable):
     def __init__(self, order_id, parent, fi, centered=False):
         rows = [[_("Description"),_("Value")]]
-        rows.append([_("FI"), fi.id])
-        rows.append([_("SKU / Model"), fi.sku])
+        rows.append([_("Fabric"), fi.id])
+        rows.append([_("SKU"), fi.sku])
+        rows.append([_("Model"), fi.name])
         rows.append([_("Serial Number"), fi.serial])
-        rows.append([_("Firmware Package Version"), fi.firmware_package_version])
+        rows.append([_("Firmware"), fi.firmware_package_version])
+
+
+        # We have to get the JSON file of the device to get informations about the ports
+        # We use a DrawingObject because they already have a method to get the JSON file efficiently
+        draw = GenericDrawObject(parent=fi)
+        draw._get_json_file()
+        rear_ports = draw.json_file['rear_ports']
+        if rear_ports:
+            port_dict = {}
+            for port in rear_ports.items():
+                if port[1]['port_type'] in port_dict:
+                    port_dict[port[1]['port_type']] += 1
+                else:
+                    port_dict.update({port[1]['port_type']: 1})
+            port_info = "\n".join([(str(i[1]) + "x " + str(i[0]).upper()) for i in port_dict.items()])
+            rows.append([_("Ports"), port_info])
+
+        if fi.power_supplies:
+            psu_dict = {}
+            for psu in fi.power_supplies:
+                key = self.get_name_and_sku(psu)
+                if key in psu_dict:
+                    psu_dict[key] += 1
+                else:
+                    psu_dict.update({key: 1})
+            psu_models = "\n".join([(str(i[1]) + "x " + str(i[0])) for i in psu_dict.items()])
+            rows.append([_("Power Supplies"), psu_models])
+            
+        if fi.expansion_modules:
+            expansion_dict = {}
+            for expansion in fi.expansion_modules:
+                key = self.get_name_and_sku(expansion)
+                if key in expansion_dict:
+                    expansion_dict[key] += 1
+                else:
+                    expansion_dict.update({key: 1})
+            gem_models = "\n".join([(str(i[1]) + "x " + str(i[0])) for i in expansion_dict.items()])
+            rows.append([_("Expansion Modules"), gem_models])
 
         GenericReportTable.__init__(self, order_id=order_id, parent=parent, row_number=len(rows),
                                     column_number=len(rows[1]), centered=centered, cells_list=rows)
@@ -150,8 +236,36 @@ class FexUcsReportTable(GenericReportTable):
     def __init__(self, order_id, parent, fex, centered=False):
         rows = [[_("Description"),_("Value")]]
         rows.append([_("FEX"), fex.id])
-        rows.append([_("SKU / Model"), fex.sku])
+        rows.append([_("Fabric"), fex.switch_id])
+        rows.append([_("SKU"), fex.sku])
+        rows.append([_("Model"), fex.name])
         rows.append([_("Serial Number"), fex.serial])
+
+        # We have to get the JSON file of the device to get informations about the ports
+        # We use a DrawingObject because they already have a method to get the JSON file efficiently
+        draw = GenericDrawObject(parent=fex)
+        draw._get_json_file()
+        rear_ports = draw.json_file['rear_ports']
+        if rear_ports:
+            port_dict = {}
+            for port in rear_ports.items():
+                if port[1]['port_type'] in port_dict:
+                    port_dict[port[1]['port_type']] += 1
+                else:
+                    port_dict.update({port[1]['port_type']: 1})
+            port_info = "\n".join([(str(i[1]) + "x " + str(i[0]).upper()) for i in port_dict.items()])
+            rows.append([_("Ports"), port_info])
+
+        if fex.power_supplies:
+            psu_dict = {}
+            for psu in fex.power_supplies:
+                key = self.get_name_and_sku(psu)
+                if key in psu_dict:
+                    psu_dict[key] += 1
+                else:
+                    psu_dict.update({key: 1})
+            psu_models = "\n".join([(str(i[1]) + "x " + str(i[0])) for i in psu_dict.items()])
+            rows.append([_("Power Supplies"), psu_models])
 
         GenericReportTable.__init__(self, order_id=order_id, parent=parent, row_number=len(rows),
                                     column_number=len(rows[1]), centered=centered, cells_list=rows)
@@ -160,27 +274,123 @@ class FexUcsReportTable(GenericReportTable):
 class RackUcsReportTable(GenericReportTable):
     def __init__(self, order_id, parent, rack, centered=False):
         rows = [[_("Description"),_("Value")]]
-        rows.append([_("Rack Id"), rack.id])
-        rows.append([_("SKU / Model"), rack.sku])
+        rows.append([_("Rack ID"), rack.id])
+        rows.append([_("SKU"), rack.sku])
+        rows.append([_("Model"), rack.name])
         rows.append([_("Serial Number"), rack.serial])
-        rows.append([_("Total Memory"), rack.memory_total])
-        rows.append([_("Adaptors"), len(rack.adaptors)])
+
+        memory_info = ""
+        if rack.memory_arrays:
+            memory_dict = {}
+            for array in rack.memory_arrays:
+                for unit in array.memory_units:
+                    if not unit.capacity:
+                        continue
+                    if unit.sku:
+                        if unit.clock and unit.type:
+                            key = str(int(unit.capacity / 1024)) + 'GB ' + str(unit.type) + ' ' + str(unit.clock) + 'MHz (' + unit.sku + ')'
+                        elif unit.clock:
+                            key = str(int(unit.capacity / 1024)) + 'GB ' + str(unit.clock) + 'MHz (' + unit.sku + ')'
+                        else:
+                            key = str(int(unit.capacity / 1024)) + 'GB ' + str(unit.type) + ' (' + unit.sku + ')'
+                    else:
+                        if unit.clock and unit.type:
+                            key = str(int(unit.capacity / 1024)) + 'GB ' + str(unit.type) + ' ' + str(unit.clock) + 'MHz'
+                        elif unit.clock:
+                            key = str(int(unit.capacity / 1024)) + 'GB ' + str(unit.clock) + 'MHz'
+                        else:
+                            key = str(int(unit.capacity / 1024)) + 'GB' + str(unit.type)
+                    if key in memory_dict:
+                        memory_dict[key] += 1
+                    else:
+                        memory_dict.update({key: 1})
+            memory_info = "\n".join([(str(i[1]) + "x " + str(i[0])) for i in memory_dict.items()])
+        rows.append([_("Memory"), str(rack.memory_total_marketing) + "\n" + memory_info])
+
+        if rack.adaptors:
+            adaptor_dict = {}
+            for adaptor in rack.adaptors:
+                key = self.get_name_and_sku(adaptor)
+                if key in adaptor_dict:
+                    adaptor_dict[key] += 1
+                else:
+                    adaptor_dict.update({key: 1})
+            adaptor_models = "\n".join([(str(i[1]) + "x " + str(i[0])) for i in adaptor_dict.items()])
+            rows.append([_("Adaptors"), adaptor_models])
+
+        cpu_model = ""
+        cores = 0
         if rack.cpus:
-            cpu_model = rack.cpus[0].model
-            cores = rack.cpus[0].cores
-            if len(rack.cpus) > 1:
-                cpu_model = str(len(rack.cpus)) + "x " + rack.cpus[0].model
-                cores = int(rack.cpus[0].cores) * len(rack.cpus)
-            rows.append([_("CPU(s) Model"), cpu_model])
-            rows.append([_("CPU(s) Cores"), cores])
-        rows.append([_("GPU(s)"), len(rack.gpus)])
+            cpu_dict = {}
+
+            for cpu in rack.cpus:
+                key = self.get_name_and_sku(cpu)
+                if key in cpu_dict:
+                    cpu_dict[key] += 1
+                else:
+                    cpu_dict.update({key: 1})
+                if cpu.cores:
+                    cores += int(cpu.cores)
+
+            cpu_model = "\n".join([(str(i[1]) + "x " + str(i[0])) for i in cpu_dict.items()])
+
+        rows.append([_("CPUs"), cpu_model])
+        rows.append([_("Cores"), cores])
+
+        gpu_models = ""
         if rack.gpus:
-            gpu_models = rack.gpus[0].model
+            gpu_dict = {}
             for gpu in rack.gpus:
-                if gpu_models != gpu.model:
-                    # We avoid the first model with this condition
-                    gpu_models = gpu_models + " / " + gpu.model
-            rows.append([_("GPU(s)  Model"), gpu_models])
+                key = self.get_name_and_sku(gpu)
+                if key in gpu_dict:
+                    gpu_dict[key] += 1
+                else:
+                    gpu_dict.update({key: 1})
+            gpu_models = "\n".join([(str(i[1]) + "x " + str(i[0])) for i in gpu_dict.items()])
+            rows.append([_("GPUs"), gpu_models])
+
+        storage = ""
+        drives = ""
+        if rack.storage_controllers:
+            storage_dict = {}
+            drives_dict = {}
+            for controller in rack.storage_controllers:
+                key = self.get_name_and_sku(controller)
+                if key in storage_dict:
+                    storage_dict[key] += 1
+                else:
+                    storage_dict.update({key: 1})
+
+                for drive in controller.disks:
+                    key_drive = self.get_name_and_sku(drive)
+                    if key_drive in drives_dict:
+                        drives_dict[key_drive] += 1
+                    else:
+                        drives_dict.update({key_drive: 1})
+
+            for drive in rack.nvme_drives:
+                key_drive = self.get_name_and_sku(drive)
+                if key_drive in drives_dict:
+                    drives_dict[key_drive] += 1
+                else:
+                    drives_dict.update({key_drive: 1})
+
+            storage = "\n".join([(str(i[1]) + "x " + str(i[0])) for i in storage_dict.items()])
+            drives = "\n".join([(str(i[1]) + "x " + str(i[0])) for i in drives_dict.items()])
+        rows.append([_("Storage Controllers"), storage])
+        rows.append([_("Drives"), drives])
+
+        flash_cards = ""
+        if rack.storage_flexflash_controllers:
+            flash_dict = {}
+            for controller in rack.storage_flexflash_controllers:
+                for card in controller.flexflash_cards:
+                    if card.capacity_marketing in flash_dict:
+                        flash_dict[card.capacity_marketing] += 1
+                    else:
+                        flash_dict.update({card.capacity_marketing: 1})
+            flash_cards = "\n".join([(str(i[1]) + "x " + str(i[0])) for i in flash_dict.items()])
+        rows.append([_("FlexFlash SD Cards"), flash_cards])
 
         GenericReportTable.__init__(self, order_id=order_id, parent=parent, row_number=len(rows),
                                     column_number=len(rows[1]), centered=centered, cells_list=rows)
@@ -189,15 +399,47 @@ class RackUcsReportTable(GenericReportTable):
 class ChassisUcsReportTable(GenericReportTable):
     def __init__(self, order_id, parent, chassis, centered=False):
         rows = [[_("Description"),_("Value")]]
-        rows.append([_("Chassis Id"), chassis.id])
-        rows.append([_("SKU / Model"), chassis.name])
+        rows.append([_("Chassis ID"), chassis.id])
+        rows.append([_("SKU"), chassis.sku])
+        rows.append([_("Model"), chassis.name])
         rows.append([_("Serial Number"), chassis.serial])
-        rows.append([_("Populated slots"), str(chassis.slots_populated) + "/" + str(chassis.slots_max)])
-        rows.append([_("Free full size slots"), chassis.slots_free_full])
-        if len(chassis.io_modules):
-            rows.append([_("IO Modules"), len(chassis.io_modules)])
-        if len(chassis.system_io_controllers):
-            rows.append([_("SIOCs"), len(chassis.system_io_controllers)])
+        rows.append([_("Slots Used/Total"), str(chassis.slots_populated) + "/" + str(chassis.slots_max)])
+        rows.append([_("Slots Free (full-size)"), chassis.slots_free_full])
+        rows.append([_("Slots Free (half-size)"), chassis.slots_free_half])
+
+
+        if chassis.io_modules:
+            io_dict = {}
+            for io_module in chassis.io_modules:
+                key = self.get_name_and_sku(io_module)
+                if key in io_dict:
+                    io_dict[key] += 1
+                else:
+                    io_dict.update({key: 1})
+            io_modules_models = "\n".join([(str(i[1]) + "x " + str(i[0])) for i in io_dict.items()])
+            rows.append([_("IO Modules"), io_modules_models])
+            
+        if chassis.system_io_controllers:
+            sioc_dict = {}
+            for sioc_controller in chassis.system_io_controllers:
+                key = self.get_name_and_sku(sioc_controller)
+                if key in sioc_dict:
+                    sioc_dict[key] += 1
+                else:
+                    sioc_dict.update({key: 1})
+            sioc_models = "\n".join([(str(i[1]) + "x " + str(i[0])) for i in sioc_dict.items()])
+            rows.append([_("SIOCs"), sioc_models])
+            
+        if chassis.power_supplies:
+            psu_dict = {}
+            for psu in chassis.power_supplies:
+                key = self.get_name_and_sku(psu)
+                if key in psu_dict:
+                    psu_dict[key] += 1
+                else:
+                    psu_dict.update({key: 1})
+            psu_models = "\n".join([(str(i[1]) + "x " + str(i[0])) for i in psu_dict.items()])
+            rows.append([_("Power Supplies"), psu_models])
 
         GenericReportTable.__init__(self, order_id=order_id, parent=parent, row_number=len(rows),
                                     column_number=len(rows[1]), centered=centered, cells_list=rows)
@@ -206,30 +448,122 @@ class ChassisUcsReportTable(GenericReportTable):
 class BladeUcsReportTable(GenericReportTable):
     def __init__(self, order_id, parent, blade, centered=False):
         rows = [[_("Description"),_("Value")]]
-        rows.append([_("Blade Id"), blade.id])
-        rows.append([_("SKU / Model"), blade.sku])
+        rows.append([_("Blade ID"), blade.id])
+        rows.append([_("SKU"), blade.sku])
+        rows.append([_("Model"), blade.name])
         rows.append([_("Serial Number"), blade.serial])
-        rows.append([_("Total Memory"), blade.memory_total])
-        rows.append([_("Adaptors"), len(blade.adaptors)])
-        if blade.cpus:
-            cpu_model = blade.cpus[0].model
-            cores = blade.cpus[0].cores
-            if len(blade.cpus) > 1:
-                cpu_model = str(len(blade.cpus)) + "x " + str(blade.cpus[0].model)
-                if blade.cpus[0].cores:
-                    cores = int(blade.cpus[0].cores) * len(blade.cpus)
+        rows.append([_("Firmware Package"), blade.firmware_package_version])
+
+        memory_info = ""
+        if blade.memory_arrays:
+            memory_dict = {}
+            for array in blade.memory_arrays:
+                for unit in array.memory_units:
+                    if not unit.capacity:
+                        continue
+                    if unit.sku:
+                        if unit.clock:
+                            key = str(int(unit.capacity / 1024)) + 'GB ' + str(unit.type) + ' ' + str(
+                                unit.clock) + 'MHz (' + unit.sku + ')'
+                        else:
+                            key = str(int(unit.capacity / 1024)) + 'GB ' + str(unit.type) + ' (' + unit.sku + ')'
+                    else:
+                        if unit.clock:
+                            key = str(int(unit.capacity / 1024)) + 'GB ' + str(unit.type) + ' ' + str(
+                                unit.clock) + 'MHz'
+                        else:
+                            key = str(int(unit.capacity / 1024)) + 'GB' + str(unit.type)
+                    if key in memory_dict:
+                        memory_dict[key] += 1
+                    else:
+                        memory_dict.update({key: 1})
+            memory_info = "\n".join([(str(i[1]) + "x " + str(i[0])) for i in memory_dict.items()])
+            rows.append([_("Memory"), str(blade.memory_total_marketing) + "\n" + memory_info])
+
+        if blade.adaptors:
+            adaptor_dict = {}
+            for adaptor in blade.adaptors:
+                key = self.get_name_and_sku(adaptor)
+                if key in adaptor_dict:
+                    adaptor_dict[key] += 1
                 else:
-                    cores = "N/A"
-            rows.append([_("CPU(s) Model"), cpu_model])
-            rows.append([_("CPU(s) Cores"), cores])
-        rows.append([_("GPU(s)"), len(blade.gpus)])
+                    adaptor_dict.update({key: 1})
+            adaptor_models = "\n".join([(str(i[1]) + "x " + str(i[0])) for i in adaptor_dict.items()])
+            rows.append([_("Adaptors"), adaptor_models])
+
+        cpu_model = ""
+        cores = 0
+        if blade.cpus:
+            cpu_dict = {}
+
+            for cpu in blade.cpus:
+                key = self.get_name_and_sku(cpu)
+                if key in cpu_dict:
+                    cpu_dict[key] += 1
+                else:
+                    cpu_dict.update({key: 1})
+                if cpu.cores:
+                    cores += int(cpu.cores)
+
+            cpu_model = "\n".join([(str(i[1]) + "x " + str(i[0])) for i in cpu_dict.items()])
+
+        rows.append([_("CPUs"), cpu_model])
+        rows.append([_("Cores"), cores])
+
+        gpu_models = ""
         if blade.gpus:
-            gpu_models = blade.gpus[0].model
+            gpu_dict = {}
             for gpu in blade.gpus:
-                if gpu_models != gpu.model:
-                    # We avoid the first model with this condition
-                    gpu_models = gpu_models + " / " + gpu.model
-            rows.append([_("GPU(s)  Model"), gpu_models])
+                key = self.get_name_and_sku(gpu)
+                if key in gpu_dict:
+                    gpu_dict[key] += 1
+                else:
+                    gpu_dict.update({key: 1})
+            gpu_models = "\n".join([(str(i[1]) + "x " + str(i[0])) for i in gpu_dict.items()])
+            rows.append([_("GPUs"), gpu_models])
+
+        storage = ""
+        drives = ""
+        if blade.storage_controllers:
+            storage_dict = {}
+            drives_dict = {}
+            for controller in blade.storage_controllers:
+                key = self.get_name_and_sku(controller)
+                if key in storage_dict:
+                    storage_dict[key] += 1
+                else:
+                    storage_dict.update({key: 1})
+
+                for drive in controller.disks:
+                    key_drive = self.get_name_and_sku(drive)
+                    if key_drive in drives_dict:
+                        drives_dict[key_drive] += 1
+                    else:
+                        drives_dict.update({key_drive: 1})
+
+            for drive in blade.nvme_drives:
+                key_drive = self.get_name_and_sku(drive)
+                if key_drive in drives_dict:
+                    drives_dict[key_drive] += 1
+                else:
+                    drives_dict.update({key_drive: 1})
+
+            storage = "\n".join([(str(i[1]) + "x " + str(i[0])) for i in storage_dict.items()])
+            drives = "\n".join([(str(i[1]) + "x " + str(i[0])) for i in drives_dict.items()])
+        rows.append([_("Storage Controllers"), storage])
+        rows.append([_("Drives"), drives])
+
+        flash_cards = ""
+        if blade.storage_flexflash_controllers:
+            flash_dict = {}
+            for controller in blade.storage_flexflash_controllers:
+                for card in controller.flexflash_cards:
+                    if card.capacity_marketing in flash_dict:
+                        flash_dict[card.capacity_marketing] += 1
+                    else:
+                        flash_dict.update({card.capacity_marketing: 1})
+            flash_cards = "\n".join([(str(i[1]) + "x " + str(i[0])) for i in flash_dict.items()])
+        rows.append([_("FlexFlash SD Cards"), flash_cards])
 
         GenericReportTable.__init__(self, order_id=order_id, parent=parent, row_number=len(rows),
                                     column_number=len(rows[1]), centered=centered, cells_list=rows)
@@ -237,11 +571,11 @@ class BladeUcsReportTable(GenericReportTable):
 
 class VlanUcsReportTable(GenericReportTable):
     def __init__(self, order_id, parent, vlans, centered=False):
-        rows = [[_("VLAN ID"), _("VLAN Name")]]
+        rows = [[_("ID"), _("VLAN Name"), _("Fabric"), _("Multicast Policy"), _("Sharing Type")]]
 
         vlans.sort(key=lambda x: int(x.id), reverse=False)
         for vlan in vlans:
-            rows.append([vlan.id, vlan.name])
+            rows.append([vlan.id, vlan.name, vlan.fabric, vlan.multicast_policy_name, vlan.sharing_type])
 
         GenericReportTable.__init__(self, order_id=order_id, parent=parent, row_number=len(rows),
                                     column_number=len(rows[1]), centered=centered, cells_list=rows)
@@ -265,7 +599,7 @@ class VlanGroupUcsReportTable(GenericReportTable):
 
 class VsanUcsReportTable(GenericReportTable):
     def __init__(self, order_id, parent, vsans, centered=False):
-        rows = [[_("VSAN ID"), _("FCoE VLAN ID"),_("VSAN Name"), _("Fabric"), _("Zoning")]]
+        rows = [[_("ID"), _("FCoE VLAN ID"),_("VSAN Name"), _("Fabric"), _("Zoning")]]
 
         for vsan in vsans:
             rows.append([vsan.id, vsan.fcoe_vlan_id, vsan.name, vsan.fabric, vsan.zoning])
@@ -276,23 +610,28 @@ class VsanUcsReportTable(GenericReportTable):
 
 class IomSectionInfoUcsReportTable(GenericReportTable):
     def __init__(self, order_id, parent, iom, centered=False):
-        rows = [[_("IO Module Id"),_("SKU / Model"), _("Serial Number"), _("Firmware Package Version"),
-                 _("Number of ports used")]]
+        rows = [[_("ID"),_("SKU"), _("Model"), _("Serial Number"), _("Firmware"),
+                 _("Fabric ports used")]]
 
         for iom_unit in iom:
-            rows.append([iom_unit.id, iom_unit.sku, iom_unit.serial, iom_unit.firmware_package_version,
+            rows.append([iom_unit.id, iom_unit.sku, iom_unit.name, iom_unit.serial, iom_unit.firmware_package_version,
                          len(iom_unit.ports)])
 
-        GenericReportTable.__init__(self,order_id=order_id, parent=parent, row_number=len(rows),
+        GenericReportTable.__init__(self, order_id=order_id, parent=parent, row_number=len(rows),
                                     column_number=len(rows[1]), centered=centered, cells_list=rows)
 
 
 class PsuSectionInfoUcsReportTable(GenericReportTable):
     def __init__(self, order_id, parent, psu, centered=False):
-        rows = [[_("PSU Id"),_("SKU / Model"), _("Serial Number"), _("Info")]]
+        rows = [[_("ID"),_("SKU"), _("Model"), _("Serial Number")]]
 
         for power_supply in psu:
-            rows.append([power_supply.id, power_supply.sku, power_supply.serial, power_supply.name])
+            if hasattr(power_supply, 'name'):  # IMC doesn't have .name
+                name = power_supply.name
+            else:
+                name = power_supply.model
+
+            rows.append([power_supply.id, power_supply.sku, name, power_supply.serial])
 
         GenericReportTable.__init__(self,order_id=order_id, parent=parent, row_number=len(rows),
                                     column_number=len(rows[1]), centered=centered, cells_list=rows)
@@ -300,10 +639,33 @@ class PsuSectionInfoUcsReportTable(GenericReportTable):
 
 class GemSectionInfoUcsReportTable(GenericReportTable):
     def __init__(self, order_id, parent, gem, centered=False):
-        rows = [[_("GEM Id"),_("SKU / Model"), _("Serial Number"), _("Info")]]
+        rows = [[_("ID"),_("SKU"), _("Model"), _("Serial Number")]]
 
         for expansion_module in gem:
-            rows.append([expansion_module.id, expansion_module.sku, expansion_module.serial, expansion_module.name])
+            rows.append([expansion_module.id, expansion_module.sku, expansion_module.name, expansion_module.serial])
+
+        GenericReportTable.__init__(self,order_id=order_id, parent=parent, row_number=len(rows),
+                                    column_number=len(rows[1]), centered=centered, cells_list=rows)
+
+
+class DiskSectionInfoUcsReportTable(GenericReportTable):
+    def __init__(self, order_id, parent, disks, centered=False):
+        rows = [[_("ID"),_("SKU"), _("Drive Type"), _("Connection Protocol"), _("Size"), _("Block Size"), _("RPM")]]
+
+        for disk in disks:
+            connection_protocol = None
+            if hasattr(disk, "link_speed"):
+                if disk.link_speed not in ["unknown", "NA", None]:
+                    connection_protocol = disk.connection_protocol + ' (' + str(disk.link_speed) + 'Gbps)'
+                else:
+                    connection_protocol = disk.connection_protocol
+            rpm = None
+            if hasattr(disk, "rotational_speed_marketing"):
+                rpm = disk.rotational_speed_marketing if disk.rotational_speed_marketing != 0 else None
+            block_size = None
+            if hasattr(disk, "block_size"):
+                block_size = disk.block_size
+            rows.append([disk.id, disk.sku, disk.drive_type, connection_protocol, disk.size_marketing, block_size, rpm])
 
         GenericReportTable.__init__(self,order_id=order_id, parent=parent, row_number=len(rows),
                                     column_number=len(rows[1]), centered=centered, cells_list=rows)
@@ -311,19 +673,163 @@ class GemSectionInfoUcsReportTable(GenericReportTable):
 
 class BladesSectionInfoUcsReportTable(GenericReportTable):
     def __init__(self, order_id, parent, blades, centered=False):
-        rows = [[_("Blade Id"),_("SKU / Model"), _("Serial Number"), _("Firmware Package Version")]]
+        rows = [[ _("ID"), _("Model"), _("Serial Number"), _("RAM"), _("CPUs"), _("Cores"),
+                 _("Adapters"), _("GPUs"), _("Drives"), _("SD Cards")]]
 
         for blade in blades:
-            rows.append([blade.slot_id, blade.sku, blade.serial, blade.firmware_package_version])
+            cores = ""
+            if blade.cpus:
+                if blade.cpus[0].cores:
+                    cores = int(blade.cpus[0].cores)
+                    if len(blade.cpus) > 1:
+                        cores = int(blade.cpus[0].cores) * len(blade.cpus)
+
+            adaptor_sum = 0
+            adaptor_models = ""  # If all drives have the same capacity, we write it down
+            if blade.adaptors:
+                adaptor_sum = len(blade.adaptors)
+                if type(adaptor_models) == str:
+                    adaptor_models = blade.adaptors[0].short_name
+                if adaptor_models:
+                    for adaptor in blade.adaptors:
+                        if adaptor.short_name != adaptor_models:
+                            adaptor_models = None
+            if adaptor_models and adaptor_sum:
+                adaptor_sum = str(adaptor_sum) + "x " + adaptor_models
+
+            drives = 0
+            drives_capacity = ""  # If all drives have the same capacity, we write it down
+            for storage_controller in blade.storage_controllers:
+                if storage_controller.disks:
+                    drives += len(storage_controller.disks)
+                    if type(drives_capacity) == str:
+                        drives_capacity = storage_controller.disks[0].size_marketing
+                    if drives_capacity:
+                        for disk in storage_controller.disks:
+                            if disk.size_marketing != drives_capacity:
+                                drives_capacity = None
+            if blade.nvme_drives:
+                drives += len(blade.nvme_drives)
+                if type(drives_capacity) == str:
+                    drives_capacity = blade.nvme_drives[0].size_marketing
+                if drives_capacity:
+                    for disk in blade.nvme_drives:
+                        if disk.size_marketing != drives_capacity:
+                            drives_capacity = None
+            if drives_capacity and drives:
+                drives = str(drives) + "x " + drives_capacity
+
+            sd_cards = 0
+            sd_cards_capacity = ""   # If all drives have the same capacity, we write it down
+            for storage_flexflash_controller in blade.storage_flexflash_controllers:
+                if storage_flexflash_controller.flexflash_cards:
+                    sd_cards += len(storage_flexflash_controller.flexflash_cards)
+                    if type(sd_cards_capacity) == str:
+                        sd_cards_capacity = storage_flexflash_controller.flexflash_cards[0].capacity_marketing
+                    if sd_cards_capacity:
+                        for sd_card in storage_flexflash_controller.flexflash_cards:
+                            if sd_card.capacity_marketing != sd_cards_capacity:
+                                sd_cards_capacity = None
+                if sd_cards_capacity and sd_cards:
+                    sd_cards = str(sd_cards) + "x " + sd_cards_capacity
+
+            if parent.__class__.__name__ == "BladesUcsReportSection":
+                id = blade.id
+            else:
+                id = blade.slot_id
+
+            if blade.cpus[0].model_short_name:
+                rows.append([id, blade.short_name, blade.serial,
+                             blade.memory_total_marketing, str(len(blade.cpus)) + "x " + blade.cpus[0].model_short_name,
+                             cores, adaptor_sum, len(blade.gpus), drives, sd_cards])
+            else:
+                rows.append([id, blade.short_name, blade.serial,
+                             blade.memory_total_marketing, str(len(blade.cpus)),
+                             cores, adaptor_sum, len(blade.gpus), drives, sd_cards])
 
         GenericReportTable.__init__(self,order_id=order_id, parent=parent, row_number=len(rows),
-                                    column_number=len(rows[1]), centered=centered, cells_list=rows)
+                                    column_number=len(rows[1]), centered=centered, cells_list=rows, font_size=9)
+
+
+class RackUnitsSectionInfoUcsReportTable(GenericReportTable):
+    def __init__(self, order_id, parent, rack_units, centered=False):
+        rows = [[ _("ID"), _("Model"), _("Serial Number"), _("RAM"), _("CPUs"), _("Cores"),
+                 _("Adapters"), _("GPUs"), _("Drives"), _("SD Cards")]]
+
+        for rack in rack_units:
+            cores = ""
+            if rack.cpus:
+                if rack.cpus[0].cores:
+                    cores = int(rack.cpus[0].cores)
+                    if len(rack.cpus) > 1:
+                        cores = int(rack.cpus[0].cores) * len(rack.cpus)
+
+            adaptor_sum = 0
+            adaptor_models = ""  # If all drives have the same capacity, we write it down
+            if rack.adaptors:
+                adaptor_sum = len(rack.adaptors)
+                if type(adaptor_models) == str:
+                    adaptor_models = rack.adaptors[0].short_name
+                if adaptor_models:
+                    for adaptor in rack.adaptors:
+                        if adaptor.short_name != adaptor_models:
+                            adaptor_models = None
+            if adaptor_models and adaptor_sum:
+                adaptor_sum = str(adaptor_sum) + "x " + adaptor_models
+
+            drives = 0
+            drives_capacity = ""  # If all drives have the same capacity, we write it down
+            for storage_controller in rack.storage_controllers:
+                if storage_controller.disks:
+                    drives += len(storage_controller.disks)
+                    if type(drives_capacity) == str:
+                        drives_capacity = storage_controller.disks[0].size_marketing
+                    if drives_capacity:
+                        for disk in storage_controller.disks:
+                            if disk.size_marketing != drives_capacity:
+                                drives_capacity = None
+            if rack.nvme_drives:
+                drives += len(rack.nvme_drives)
+                if type(drives_capacity) == str:
+                    drives_capacity = rack.nvme_drives[0].size_marketing
+                if drives_capacity:
+                    for disk in rack.nvme_drives:
+                        if disk.size_marketing != drives_capacity:
+                            drives_capacity = None
+            if drives_capacity and drives:
+                drives = str(drives) + "x " + drives_capacity
+
+            sd_cards = 0
+            sd_cards_capacity = ""   # If all drives have the same capacity, we write it down
+            for storage_flexflash_controller in rack.storage_flexflash_controllers:
+                if storage_flexflash_controller.flexflash_cards:
+                    sd_cards += len(storage_flexflash_controller.flexflash_cards)
+                    if type(sd_cards_capacity) == str:
+                        sd_cards_capacity = storage_flexflash_controller.flexflash_cards[0].capacity_marketing
+                    if sd_cards_capacity:
+                        for sd_card in storage_flexflash_controller.flexflash_cards:
+                            if sd_card.capacity_marketing != sd_cards_capacity:
+                                sd_cards_capacity = None
+                if sd_cards_capacity and sd_cards:
+                    sd_cards = str(sd_cards) + "x " + sd_cards_capacity
+
+            if rack.cpus[0].model_short_name:
+                rows.append([rack.id, rack.short_name, rack.serial,
+                             rack.memory_total_marketing, str(len(rack.cpus)) + "x " + rack.cpus[0].model_short_name,
+                             cores, adaptor_sum, len(rack.gpus), drives, sd_cards])
+            else:
+                rows.append([rack.id, rack.short_name, rack.serial,
+                             rack.memory_total_marketing, str(len(rack.cpus)),
+                             cores, adaptor_sum, len(rack.gpus), drives, sd_cards])
+
+        GenericReportTable.__init__(self,order_id=order_id, parent=parent, row_number=len(rows),
+                                    column_number=len(rows[1]), centered=centered, cells_list=rows, font_size=9)
 
 
 class UcsReportRackConnectivityTable(GenericReportTable):
     def __init__(self, order_id, parent, fis, fexs, rack, centered=False, autofit=True):
         rows = [
-            [_("FI"), _("FI Port"), _("FEX"), _("FEX Fabric Port"), _("FEX Host Port"),
+            [_("Fabric"), _("Fabric Port"), _("FEX ID"), _("FEX Fabric Port"), _("FEX Host Port"),
              _("Adaptor ID"), _("Adaptor Port"), _("Transceiver SKU/Type"),
              _("Transceiver S/N"), _("Transceiver Length")]]
 
@@ -362,7 +868,7 @@ class UcsReportRackConnectivityTable(GenericReportTable):
                             for fex in fexs:
                                 # We need to find the FEX and the associated peer port
                                 if fex.id == str(port.peer['fex']):
-                                    fex_fabric_port = port.peer['slot'] + port.peer['port']
+                                    fex_fabric_port = str(port.peer['slot']) + "/" + str(port.peer['port'])
                                     for fex_host_port in fex.host_ports:
                                         if fex_host_port.peer:
                                             if "rack" in fex_host_port.peer.keys():
@@ -373,7 +879,7 @@ class UcsReportRackConnectivityTable(GenericReportTable):
                                                                    fex_host_port.aggr_port_id + "/" + \
                                                                    fex_host_port.port_id
                                                     else:
-                                                        fex_port = port.slot_id + "/" + port.port_id
+                                                        fex_port = fex_host_port.slot_id + "/" + fex_host_port.port_id
                                                     adaptor = fex_host_port.peer['slot']
                                                     adaptor_port = fex_host_port.peer['port']
                                                     if len(fex_host_port.transceivers) == 1:
@@ -397,11 +903,11 @@ class UcsReportRackConnectivityTable(GenericReportTable):
                                         column_number=len(rows[1]), centered=centered, cells_list=rows, autofit=autofit)
 
 
-
 class UcsReportChassisConnectivityTable(GenericReportTable):
     def __init__(self, order_id, parent, fis, fexs, chassis, centered=False, autofit=True):
-        rows = [[_("FI"), _("FI Port"), _("FEX"), _("FEX Fabric Port"), _("FEX Host Port"),_("IOM/SIOC"),
-                 _("IOM/SIOC Port"), _("Transceiver SKU/Type"), _("Transceiver S/N"),
+        ext_port_type = "SIOC" if chassis.model in ["UCSC-C3X60", "UCSS-S3260"] else "IOM"
+        rows = [[_("Fabric"), _("Fabric Port"), _("FEX ID"), _("FEX Fabric Port"), _("FEX Host Port"),_(ext_port_type),
+                 _(ext_port_type + " Port"), _("Transceiver SKU/Type"), _("Transceiver S/N"),
                  _("Transceiver Length")]]
 
         for fi in fis:
@@ -437,7 +943,7 @@ class UcsReportChassisConnectivityTable(GenericReportTable):
                             for fex in fexs:
                                 # We need to find the FEX and the associated peer port
                                 if fex.id == str(port.peer['fex']):
-                                    fex_fabric_port = port.peer['slot'] + port.peer['port']
+                                    fex_fabric_port = str(port.peer['slot']) + "/" + str(port.peer['port'])
                                     for fex_host_port in fex.host_ports:
                                         if fex_host_port.peer:
                                             if "chassis" in fex_host_port.peer.keys():
@@ -448,7 +954,7 @@ class UcsReportChassisConnectivityTable(GenericReportTable):
                                                                    fex_host_port.aggr_port_id + "/" + \
                                                                    fex_host_port.port_id
                                                     else:
-                                                        fex_port = port.slot_id + "/" + port.port_id
+                                                        fex_port = fex_host_port.slot_id + "/" + fex_host_port.port_id
                                                     adaptor = fex_host_port.peer['slot']
                                                     adaptor_port = fex_host_port.peer['port']
                                                     if len(fex_host_port.transceivers) == 1:
@@ -472,10 +978,9 @@ class UcsReportChassisConnectivityTable(GenericReportTable):
                                     column_number=len(rows[1]), centered=centered, cells_list=rows, autofit=autofit)
 
 
-
 class UcsReportLanNeighborsConnectivityTable(GenericReportTable):
     def __init__(self, order_id, parent, fis, centered=False, autofit=True):
-        rows = [[_("FI"), _("FI Port"), _("Remote Name"), _("Remote Interface"),
+        rows = [[_("Fabric"), _("Fabric Port"), _("Remote Name"), _("Remote Interface"),
                  _("Remote Model"), _("Remote S/N"), _("Transceiver SKU/Type"), _("Transceiver S/N"),
                  _("Transceiver Length")]]
 
@@ -491,19 +996,21 @@ class UcsReportLanNeighborsConnectivityTable(GenericReportTable):
                                 else:
                                     fi_port = port.slot_id + "/" + port.port_id
 
-                                if neighbor_entry.lldp_system_name:
-                                    remote_name = neighbor_entry.cdp_system_name
-                                elif neighbor_entry.cdp_system_name:
-                                    remote_name = neighbor_entry.cdp_system_name
-                                else:
-                                    remote_name = ""
+                                remote_name = ""
+                                if hasattr(neighbor_entry, "lldp_system_name"):
+                                    if neighbor_entry.lldp_system_name:
+                                        remote_name = neighbor_entry.lldp_system_name
+                                if hasattr(neighbor_entry, "cdp_system_name") and not remote_name:
+                                    if neighbor_entry.cdp_system_name:
+                                        remote_name = neighbor_entry.cdp_system_name
 
-                                if neighbor_entry.cdp_remote_interface:
-                                    remote_interface = neighbor_entry.cdp_remote_interface
-                                elif neighbor_entry.lldp_remote_interface:
-                                    remote_interface = neighbor_entry.lldp_remote_interface
-                                else:
-                                    remote_interface = ""
+                                remote_interface = ""
+                                if hasattr(neighbor_entry, "cdp_remote_interface"):
+                                    if neighbor_entry.cdp_remote_interface:
+                                        remote_interface = neighbor_entry.cdp_remote_interface
+                                if hasattr(neighbor_entry, "lldp_remote_interface") and not remote_interface:
+                                    if neighbor_entry.lldp_remote_interface:
+                                        remote_interface = neighbor_entry.lldp_remote_interface
 
                                 remote_device_model = neighbor_entry.model
                                 remote_sn = neighbor_entry.serial
@@ -524,12 +1031,13 @@ class UcsReportLanNeighborsConnectivityTable(GenericReportTable):
                                              transceiver_length])
 
             GenericReportTable.__init__(self, order_id=order_id, parent=parent, row_number=len(rows),
-                                        column_number=len(rows[1]), centered=centered, cells_list=rows, autofit=autofit)
+                                        column_number=len(rows[1]), centered=centered, cells_list=rows, autofit=autofit,
+                                        font_size=8)
 
 
 class UcsReportSanNeighborsConnectivityTable(GenericReportTable):
     def __init__(self, order_id, parent, fis, centered=False, autofit=True):
-        rows = [[_("FI"), _("FI Port"), _("Remote IP"), _("Remote WWNN"), _("Remote WWPN"),
+        rows = [[_("Fabric"), _("Fabric Port"), _("Remote Mgmt IP"), _("Remote WWNN"), _("Remote WWPN"),
                  _("Transceiver SKU/Type"), _("Transceiver S/N"), _("Transceiver Length")]]
 
         for fi in fis:
@@ -544,7 +1052,8 @@ class UcsReportSanNeighborsConnectivityTable(GenericReportTable):
                                 else:
                                     fi_port = port.slot_id + "/" + port.port_id
 
-                                fabric_mgmt_addr = neighbor_entry.fabric_mgmt_addr
+                                fabric_mgmt_addr = neighbor_entry.fabric_mgmt_addr \
+                                    if neighbor_entry.fabric_mgmt_addr != "null" else None
                                 fabric_nwwn = neighbor_entry.fabric_nwwn
                                 fabric_pwwn = neighbor_entry.fabric_pwwn
 
@@ -563,7 +1072,8 @@ class UcsReportSanNeighborsConnectivityTable(GenericReportTable):
                                              transceiver_type, transceiver_sn, transceiver_length])
 
         GenericReportTable.__init__(self, order_id=order_id, parent=parent, row_number=len(rows),
-                                    column_number=len(rows[1]), centered=centered, cells_list=rows, autofit=autofit)
+                                    column_number=len(rows[1]), centered=centered, cells_list=rows, autofit=autofit,
+                                    font_size=8)
 
 
 class ClusterInfoUcsReportTable(GenericReportTable):
@@ -638,7 +1148,7 @@ class CommServicesInfoUcsReportTable(GenericReportTable):
         rows.append([_("Telnet"), communication_services.telnet_service])
 
         GenericReportTable.__init__(self, order_id=order_id, parent=parent, row_number=len(rows),
-                                    column_number=len(rows[0]), centered=centered, cells_list=rows)
+                                    column_number=len(rows[0]), centered=centered, cells_list=rows, autofit=True)
 
 
 class ServiceProfilesRacksUcsReportTable(GenericReportTable):

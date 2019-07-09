@@ -392,6 +392,7 @@ class UcsSystemConfigManager(GenericUcsConfigManager):
         config.origin = "live"
         config.load_from = "live"
         config._fetch_sdk_objects()
+        self.logger(level="debug", message="Finished fetching UCS SDK objects for config")
 
         # Put in order the items to append
         config.system.append(UcsSystemInformation(parent=config))
@@ -438,9 +439,10 @@ class UcsSystemConfigManager(GenericUcsConfigManager):
                               config.sdk_objects["qosclassEthBE"]):
             config.qos_system_class.append(UcsSystemQosSystemClass(parent=config, qos_class=qos_class))
 
-        for fabric_fc_zone_profile in config.sdk_objects["fabricFcZoneProfile"]:
-            config.fc_zone_profiles.append(UcsSystemFcZoneProfile(parent=config,
-                                                                  fabric_fc_zone_profile=fabric_fc_zone_profile))
+        if "fabricFcZoneProfile" in config.sdk_objects:
+            for fabric_fc_zone_profile in config.sdk_objects["fabricFcZoneProfile"]:
+                config.fc_zone_profiles.append(UcsSystemFcZoneProfile(parent=config,
+                                                                      fabric_fc_zone_profile=fabric_fc_zone_profile))
 
         for fabric_udld_link_policy in config.sdk_objects["fabricUdldLinkPolicy"]:
             config.udld_link_policies.append(UcsSystemUdldLinkPolicy(parent=config,
@@ -530,13 +532,17 @@ class UcsSystemConfigManager(GenericUcsConfigManager):
         if "fcPIo" in config.sdk_objects:
             if config.sdk_objects["fcPIo"]:
                 config.san_unified_ports.append(UcsSystemSanUnifiedPort(parent=config, fabric="A"))
-                config.san_unified_ports.append(UcsSystemSanUnifiedPort(parent=config, fabric="B"))
+                if self.parent.sys_mode == "cluster":
+                    config.san_unified_ports.append(UcsSystemSanUnifiedPort(parent=config, fabric="B"))
 
         for org_org in sorted(config.sdk_objects["orgOrg"], key=lambda org: org.dn):
             if org_org.dn == "org-root":
                 config.orgs.append(UcsSystemOrg(parent=config, org_org=org_org))
 
+        # Removing the list of SDK objects fetched from the live UCS device
+        config.sdk_objects = None
         self.config_list.append(config)
+        self.logger(message="Finished fetching config with UUID " + str(config.uuid) + " from live device")
         return config.uuid
 
     def push_config(self, uuid=None, reset=False, fi_ip_list=[], bypass_version_checks=False):
@@ -1241,6 +1247,7 @@ class UcsImcConfigManager(GenericUcsConfigManager):
         config.origin = "live"
         config.load_from = "live"
         config._fetch_sdk_objects()
+        self.logger(level="debug", message="Finished fetching UCS SDK objects for config")
 
         # Put in order the items to append
         config.admin_networking.append(UcsImcAdminNetwork(parent=config))
@@ -1284,7 +1291,10 @@ class UcsImcConfigManager(GenericUcsConfigManager):
             config.storage_flex_flash_controllers.append(
                 UcsImcStorageFlexFlashController(parent=config, storage_controller=storage_flex_flash_controller))
 
+        # Removing the list of SDK objects fetched from the live UCS device
+        config.sdk_objects = None
         self.config_list.append(config)
+        self.logger(message="Finished fetching config with UUID " + str(config.uuid) + " from live device")
         return config.uuid
 
     def push_config(self, uuid=None, reset=False, imc_ip=None, bypass_version_checks=False):
@@ -1725,6 +1735,7 @@ class UcsCentralConfigManager(GenericUcsConfigManager):
         config.origin = "live"
         config.load_from = "live"
         config._fetch_sdk_objects()
+        self.logger(level="debug", message="Finished fetching UCS SDK objects for config")
 
         # Put in order the items to append
         for org_org in sorted(config.sdk_objects["orgOrg"], key=lambda org: org.dn):
@@ -1734,7 +1745,10 @@ class UcsCentralConfigManager(GenericUcsConfigManager):
             if org_domain_group.dn == "domaingroup-root":
                 config.domain_groups.append(UcsCentralDomainGroup(parent=config, org_domain_group=org_domain_group))
 
+        # Removing the list of SDK objects fetched from the live UCS device
+        config.sdk_objects = None
         self.config_list.append(config)
+        self.logger(message="Finished fetching config with UUID " + str(config.uuid) + " from live device")
         return config.uuid
 
     def _validate_config_from_json(self, config_json=None):

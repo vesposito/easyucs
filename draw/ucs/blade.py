@@ -6,7 +6,8 @@ from __init__ import __author__, __copyright__,  __version__, __status__
 
 
 from draw.object import GenericUcsDrawEquipment
-from draw.ucs.storage import UcsSystemDrawStorageController, GenericUcsDrawStorageEnclosure
+from draw.ucs.storage import UcsSystemDrawStorageController, UcsSystemDrawStorageLocalDisk
+
 from PIL import Image, ImageDraw, ImageTk, ImageFont
 import json
 
@@ -27,6 +28,12 @@ class GenericUcsDrawBlade(GenericUcsDrawEquipment):
         self.parent_draw.paste_layer(self.picture, self.picture_offset)
 
         self.storage_controllers = self._get_storage_controllers()
+
+        self.nvme_disks = []
+        if hasattr(self._parent, "nvme_drives") and "disks_slots" in self.json_file:
+            self.nvme_disks = self._get_nvme_disks()
+            for disk in self.nvme_disks:
+                self.parent_draw.paste_layer(disk.picture, disk.picture_offset)
 
         self.fill_blanks()
 
@@ -74,12 +81,23 @@ class GenericUcsDrawBlade(GenericUcsDrawEquipment):
                 # storage_controller_list = remove_not_completed_in_list(storage_controller_list)
         return storage_controller_list
 
+    def _get_nvme_disks(self):
+        disk_list = []
+        for disk in self._parent.nvme_drives:
+            # Prevent potential disk with ID 0 to be used in Draw (happens sometimes with B200 M2)
+            if disk.id != "0" and disk.slot_type == "sff-nvme":
+                if disk.id in [str(i["id"]) for i in self.json_file["disks_slots"]]:
+                    disk_list.append(UcsSystemDrawStorageLocalDisk(parent=disk, parent_draw=self))
+                    self.disk_slots_used.append(int(disk.id))
+        return disk_list
+
     def fill_blanks(self):
         if not self.storage_controllers:
             if "disks_slots" in self.json_file:
                 # Fill blank for disks slots
-                unused_slot = [*range(1, len(self.json_file["disks_slots"])+1)]
-                for slot_id in unused_slot:
+                disks_slots = [*range(1, len(self.json_file["disks_slots"])+1)]
+                disks_slots = set(disks_slots) - set(self.disk_slots_used)
+                for slot_id in disks_slots:
                     blank_name = None
                     orientation = "horizontal"
                     disk_format = None

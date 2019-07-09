@@ -14,7 +14,9 @@ import xml
 from inventory.ucs.chassis import UcsImcSioc
 from inventory.ucs.neighbor import UcsSystemLanNeighbor, UcsSystemSanNeighbor
 from inventory.ucs.gpu import UcsImcGpu
-from inventory.ucs.storage import UcsImcStorageControllerNvmeDrive
+from inventory.ucs.psu import UcsSystemPsu
+from inventory.ucs.storage import UcsSystemStorageController, UcsImcStorageControllerNvmeDrive,\
+    UcsSystemStorageControllerNvmeDrive
 
 from ucsmsdk.ucsexception import UcsException
 from imcsdk.imcexception import ImcException
@@ -129,6 +131,21 @@ class GenericUcsInventory(GenericInventory):
                                     if any(x in sdk_object.id for x in ["PCIe-Switch", "NVMe-direct-U.2-drives",
                                                                         "NVMe-direct-HHHL-drives"]):
                                         continue
+                                # Also filter absent DIMMs reported by UCS Manager as "NO DIMM"
+                                if hasattr(sdk_object, "model") and sdk_object.model == "NO DIMM":
+                                    continue
+                                # Also filter storageController of types other than NVME for
+                                # UcsSystemStorageControllerNvmeDrive
+                                if object_class is UcsSystemStorageControllerNvmeDrive and hasattr(sdk_object, "type"):
+                                    if sdk_object.type not in ["NVME"]:
+                                        continue
+                                # Also filter storageController of type NVME for UcsSystemStorageController
+                                if object_class is UcsSystemStorageController and hasattr(sdk_object, "type"):
+                                    if sdk_object.type in ["NVME"]:
+                                        continue
+                                # Also filter equipmentPsu that have an ID of 0
+                                if object_class is UcsSystemPsu and sdk_object.id == "0":
+                                    continue
 
                                 filtered_sdk_objects_list.append(sdk_object)
                             # Handle the case of LAN/SAN Neighbor objects for which we use fiPortDn attribute
@@ -195,7 +212,8 @@ class UcsSystemInventory(GenericUcsInventory):
                                 "equipmentSwitchCard", "equipmentSwitchIOCard", "equipmentXcvr", "etherPIo",
                                 "etherServerIntFIo", "etherSwitchIntFIo", "fcPIo", "firmwareRunning", "graphicsCard",
                                 "lsServer", "mgmtConnection", "moInvKv", "networkElement", "networkLanNeighborEntry",
-                                "networkLldpNeighborEntry", "networkSanNeighborEntry", "storageFlexFlashCard"]
+                                "networkLldpNeighborEntry", "networkSanNeighborEntry", "storageFlexFlashCard",
+                                "storageNvmeStats"]
         self.logger(level="debug", message="Fetching UCS System SDK objects for inventory")
         for sdk_object_name in sdk_objects_to_fetch:
             try:

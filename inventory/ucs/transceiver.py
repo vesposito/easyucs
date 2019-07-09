@@ -140,12 +140,26 @@ class UcsSystemTransceiver(UcsTransceiver, UcsSystemInventoryObject):
             "qsfp40glr4": {"sku": "QSFP-40G-LR4/LR4-S", "length": "<=10km"},
 
             # QSFP28 100Gbps transceivers
-            "qsfpqsa": {"sku": "CVR-QSFP-SFP10G", "length": "n/a"}
+            "qsfp100g40gbidi": {"sku": "QSFP-40/100-SRBD", "length": "<=100m"},
+            "qsfp100gsmsr": {"sku": "QSFP-100G-SM-SR", "length": "<=2km"}
         }
         for transceiver_type in transceiver_types_matrix.keys():
             if self.type == transceiver_type:
                 self.sku = transceiver_types_matrix[transceiver_type]["sku"]
                 self.length = transceiver_types_matrix[transceiver_type]["length"]
+
+        # Manual entries for FC transceivers
+        if self._parent.__class__.__name__ == "UcsSystemFiFcPort":
+            if self.type in ["sfp", "unknown"]:
+                if self.model in ["FTLF8528P2BCV-CS", "SFBR-5780AMZ-CS2", "SFBR-5780APZ-CS2"]:
+                    self.sku = "DS-SFP-FC8G-SW"
+                    self.length = "<=190m"
+                if self.model in ["FTLF8528P3BCV-CS", "FTLF8529P3BCV-CS", "AFBR-57F5PZ-CS1"]:
+                    self.sku = "DS-SFP-FC16G-SW"
+                    self.length = "<=125m"
+                if self.model in ["FTLF8532P4BCV-C1", "SFBR-57G5MZ-CS1"]:
+                    self.sku = "DS-SFP-FC32G-SW"
+                    self.length = "<=100m"
 
 
 class UcsImcTransceiver(UcsTransceiver, UcsImcInventoryObject):

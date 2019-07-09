@@ -63,9 +63,12 @@ class UcsSystemDrawChassisFront(GenericUcsDrawEquipment):
             unused_slot = []
             for slot in self._parent.blades:
                 if hasattr(slot, "scaled_mode"):
-                    if slot.scaled_mode:
-                        used_slot.append(int(slot.slot_id)-2)
-                        used_slot.append(int(slot.slot_id)-1)
+                    if slot.scaled_mode == "scaled":
+                        used_slot.append(int(slot.slot_id) - 2)
+                        used_slot.append(int(slot.slot_id) - 1)
+                        used_slot.append(int(slot.slot_id) + 1)
+                    if slot.scaled_mode == "single":
+                        used_slot.append(int(slot.slot_id) + 1)
                 # We handle the specific case of a B460 M4 for which we also use the 2 slots above the master blade
                 used_slot.append(int(slot.slot_id))
             for slot in self.json_file["blades_slots"]:
@@ -1088,9 +1091,12 @@ class UcsImcDrawChassisFront(GenericUcsDrawEquipment):
             unused_slot = []
             for slot in self._parent.server_nodes:
                 if hasattr(slot, "scaled_mode"):
-                    if slot.scaled_mode:
-                        used_slot.append(int(slot.slot_id)-2)
-                        used_slot.append(int(slot.slot_id)-1)
+                    if slot.scaled_mode == "scaled":
+                        used_slot.append(int(slot.slot_id) - 2)
+                        used_slot.append(int(slot.slot_id) - 1)
+                        used_slot.append(int(slot.slot_id) + 1)
+                    if slot.scaled_mode == "single":
+                        used_slot.append(int(slot.slot_id) + 1)
                 # We handle the specific case of a B460 M4 for which we also use the 2 slots above the master blade
                 used_slot.append(int(slot.slot_id))
             for slot in self.json_file["blades_slots"]:

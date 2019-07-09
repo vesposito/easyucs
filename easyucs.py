@@ -15,6 +15,7 @@ from device.device import UcsImc, UcsSystem, BlindUcs, GenericUcsDevice, UcsCent
 
 from imcsdk.imchandle import ImcHandle
 from ucsmsdk.ucshandle import UcsHandle
+from pathlib import Path
 
 # from hcl.hcl import UcsSystemHclCheck
 
@@ -308,6 +309,34 @@ def init_process(ucs_device, args, config_string):
         directory = args.output_directory
         ucs_device.inventory_manager.export_draw(directory=directory, export_clear_pictures=args.clear_pictures)
 
+    elif args.scope == "report" and args.action == "generate":
+        # Fetching inventory from live UCS Device, create schemas and generate report of it
+        if not ucs_device.connect(bypass_version_checks=bypass_version_checks):
+            ucs_device.logger(level="error", message="Impossible to connect to UCS device")
+            exit()
+
+        ucs_device.config_manager.fetch_config()
+        ucs_device.set_task_progression(25)
+
+        ucs_device.inventory_manager.fetch_inventory()
+        ucs_device.set_task_progression(50)
+
+        # Exporting inventory to specified output config file
+        directory = os.path.dirname(args.output_report)
+        extension = Path(args.output_report).suffix
+        # Filename with extension (if filled)
+        full_filename = os.path.basename(args.output_report)
+        # Filename without extension
+        filename = full_filename.replace(extension, "")
+
+        ucs_device.inventory_manager.draw_inventory()
+        ucs_device.set_task_progression(75)
+
+        ucs_device.inventory_manager.export_draw(directory=directory, export_clear_pictures=True)
+        ucs_device.set_task_progression(90)
+
+        ucs_device.generate_report(filename=filename, directory=directory, page_layout=args.layout)
+
     ucs_device.set_task_progression(100)
     ucs_device.print_logger_summary()
 
@@ -361,6 +390,13 @@ def main():
           python easyucs.py schemas create -t cimc -i 192.168.0.2 -u admin -p password -o schemas
                 create schemas from UCS IMC and save them to schemas folder'''
 
+    example_report_generate_text = '''Examples:
+              python easyucs.py report generate -t ucsm -i 192.168.0.1 -u admin -p password -o reports/report.docx
+                    create report from UCS system and save it to reports/report.docx
+
+              python easyucs.py report generate -t cimc -i 192.168.0.2 -u admin -p password -o reports/report.docx
+                    create schemas from UCS IMC and save it to reports/report.docx'''
+
     # Create the main parser
     parser = argparse.ArgumentParser(prog='easyucs.py', description='EasyUCS Command-Line Interface',
                                      epilog=example_text,
@@ -389,6 +425,14 @@ def main():
     subparsers_schemas = parser_schemas.add_subparsers(dest='action', title='Action',
                                                        help='Schemas actions')
     subparsers_schemas.required = True  # Not set directly in above line to avoid issue if running Python < 3.7
+
+    # Create the parsers for the "report" scopes
+    parser_report = subparsers.add_parser('report', help='report-related actions',
+                                           epilog=example_report_generate_text,
+                                           formatter_class=argparse.RawDescriptionHelpFormatter)
+    subparsers_report = parser_report.add_subparsers(dest='action', title='Action',
+                                                       help='Report actions')
+    subparsers_report.required = True  # Not set directly in above line to avoid issue if running Python < 3.7
 
     # Create the parsers for the "fetch" & "push" actions of config
     parser_config_fetch = subparsers_config.add_parser('fetch', help='Fetch a config from a UCS device',
@@ -473,6 +517,32 @@ def main():
     parser_schemas_create.add_argument('-c', '--clear', dest='clear_pictures', action='store_true',
                                        help='Export clear pictures (without colored ports)')
     parser_schemas_create.add_argument('-y', '--yes', dest='yes', action='store_true',
+                                       help='Answer yes to all questions')
+
+    # Create the parsers for the "create" action of schemas
+    parser_report_generate = subparsers_report.add_parser('generate', help='Generate report of an UCS device',
+                                                          epilog=example_report_generate_text,
+                                                          formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser_report_generate.add_argument('-i', '--ip', dest='ip', action='store', help='UCS IP address', required=True)
+    parser_report_generate.add_argument('-u', '--username', dest='username', action='store',
+                                       help='UCS Account Username',
+                                       required=True)
+    parser_report_generate.add_argument('-p', '--password', dest='password', action='store',
+                                       help='UCS Account Password',
+                                       required=True)
+    parser_report_generate.add_argument('-t', '--ucstype', dest='ucstype', action='store', choices=['ucsm', 'cimc'],
+                                       help='UCS system type ("ucsm" or "cimc")')
+
+    parser_report_generate.add_argument('-s', '--layoutsize', dest='layout', action='store', choices=['a4', 'letter'],
+                                        help='Report layout size ("a4" or "letter")')
+
+    parser_report_generate.add_argument('-v', '--verbose', dest='log', action='store_true', help='Print debug log')
+    parser_report_generate.add_argument('-l', '--logfile', dest='logfile', action='store', help='Print log in a file')
+
+    parser_report_generate.add_argument('-o', '--out', dest='output_report', action='store',
+                                       help='Output report file',
+                                       required=True)
+    parser_report_generate.add_argument('-y', '--yes', dest='yes', action='store_true',
                                        help='Answer yes to all questions')
 
     args = parser.parse_args()

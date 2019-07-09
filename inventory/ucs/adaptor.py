@@ -33,8 +33,20 @@ class UcsAdaptor(GenericUcsInventoryObject):
                     return adaptor_catalog["model_short_name"]
 
             except FileNotFoundError:
-                self.logger(level="error", message="Adaptor catalog file " + self.sku + ".json not found")
-                return None
+                # If we are on a S3260 chassis, we look for the catalog file in the io_modules folder
+                try:
+                    json_file = open("catalog/io_modules/" + self.sku + ".json")
+                    adaptor_catalog = json.load(fp=json_file)
+                    json_file.close()
+
+                    if "model_short_name" in adaptor_catalog:
+                        return adaptor_catalog["model_short_name"]
+
+                except FileNotFoundError:
+                    # If we are on a S3260 chassis, we look for the catalog file in the io_modules folder
+
+                    self.logger(level="error", message="Adaptor catalog file " + self.sku + ".json not found")
+                    return None
 
         return None
 

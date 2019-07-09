@@ -7,18 +7,19 @@ from __init__ import __author__, __copyright__,  __version__, __status__
 
 import time, datetime, os, sys, gettext, uuid
 from docx import Document
-from docx.shared import Cm, RGBColor
+from docx.shared import Cm, RGBColor, Mm
 from report.section import *
 
 
 class GenericReport:
-    def __init__(self, device, inventory, config, language, output_format, page_layout, directory, filename):
+    def __init__(self, device, inventory, config, language, output_format, page_layout, directory, filename, size):
         self.uuid = uuid.uuid4()
         self.language = language
         self.output_format = output_format
         self.page_layout = page_layout
         self.directory = directory
         self.filename = filename
+        self.size = size
         self.timestamp = time.time()
 
         self.img_path = self.directory + "/" + device.target + "_"
@@ -32,10 +33,26 @@ class GenericReport:
         self.element_list = [] # list of Section, front page, content table, etc.
         self.current_order_id = 0
 
-        self.title = self.device.device_type
+        self.title = ""
+        if self.device.device_type_short == "ucsm":
+            self.title = self.config.system[0].name
+        elif self.device.device_type_short == "cimc":
+            self.title = self.config.admin_networking[0].management_hostname
 
         if self.output_format == "docx":
-            self.document = Document()
+            # Open an empty word as a template for some style setting
+            # The template layout is letter by default
+            self.document = Document('./report/template.docx')
+            if self.page_layout.lower() == "a4".lower():
+                section = self.document.sections[0]
+                section.page_height = Mm(297)
+                section.page_width = Mm(210)
+                section.left_margin = Mm(25.4)
+                section.right_margin = Mm(25.4)
+                section.top_margin = Mm(25.4)
+                section.bottom_margin = Mm(25.4)
+                section.header_distance = Mm(12.7)
+                section.footer_distance = Mm(12.7)
         self.install_language()
 
     def install_language(self):
@@ -59,20 +76,42 @@ class GenericReport:
 
 
 class UcsGenericReport(GenericReport):
-    def __init__(self, device, inventory, config, language, output_format, page_layout, directory, filename):
+    def __init__(self, device, inventory, config, language, output_format, page_layout, directory, filename, size):
         GenericReport.__init__(self,device=device, inventory=inventory, config=config, language=language, output_format=output_format, page_layout=page_layout,
-                               directory=directory, filename=filename)
+                               directory=directory, filename=filename, size=size)
+
+    def recursive_add_in_word_report(self, element):
+        # None if add_in_word_report not found
+        call = getattr(element, "add_in_word_report", None)
+        if call:
+            if callable(call):
+                if hasattr(element, "content_list"):
+                    if element.content_list:
+                        element.add_in_word_report()
+                elif hasattr(element, "element_list"):
+                    if element.element_list:
+                        element.add_in_word_report()
+                else:
+                    element.add_in_word_report()
+
+        if hasattr(element, "content_list"):
+            for content in element.content_list:
+                self.recursive_add_in_word_report(element=content)
+
+        if hasattr(element, "element_list"):
+            for content in element.element_list:
+                self.recursive_add_in_word_report(element=content)
 
 
 class UcsSystemReport(UcsGenericReport):
-    def __init__(self, device, inventory, config, language, output_format, page_layout, directory, filename):
+    def __init__(self, device, inventory, config, language, output_format, page_layout, directory, filename, size):
         UcsGenericReport.__init__(self, device=device, inventory=inventory, config=config, language=language,
                                   output_format=output_format, page_layout=page_layout,
-                                  directory=directory, filename=filename)
+                                  directory=directory, filename=filename, size=size)
 
         self.element_list.append(
-            ReportFrontPage(order_id=self.get_current_order_id(),parent=self,title=_("EasyUcs Report"),
-                            description=_("Created with EasyUcs") + " - " + time.strftime("%d %B %Y"),
+            ReportFrontPage(order_id=self.get_current_order_id(),parent=self,title=self.title,
+                            description=_("Created with EasyUCS") + " - " + time.strftime("%d %B %Y"),
                             authors=__author__))
 
         # We determine the order id of the ReportTableOfContents at the begining (second element to be added but
@@ -91,6 +130,7 @@ class UcsSystemReport(UcsGenericReport):
         # Always last to append
         self.element_list.append(
             ReportTableOfContents(order_id=table_content_order_id, parent=self, section_list=self.element_list))
+        table_of_content = self.element_list[-1]
 
         # We sort the element list in order to put the table of content at the begining
         self.element_list = sorted(self.element_list, key=lambda element: element.order_id)
@@ -99,32 +139,79 @@ class UcsSystemReport(UcsGenericReport):
 
         if self.output_format == "docx":
             self.logger(message="Generating " + self.output_format + " report")
-            #self.document.sections[0].footer.text = "Created with EasyUcs"
             self.recursive_add_in_word_report(element=self)
+
+            # Change margins, footer, headers
+            section = self.document.sections[0]
+            section.right_margin = Cm(2)
+            section.left_margin = Cm(2)
+            section.different_first_page_header_footer = True
+            section.header.paragraphs[0].alignment = 1  # Centered
+            section.header.paragraphs[0].text = "Created with EasyUCS - " + self.title
             try:
-                self.document.save(self.directory + '/' + filename + '.docx')
-                self.logger(message="Report generated and saved :" + self.directory + '/' + filename + '.docx')
+                full_filename = self.directory + '/' + filename + '.docx'
+                self.document.save(full_filename)
+
+                # Update the TOC (Windows only)
+                # Not used
+                # table_of_content.update_toc(full_filename=full_filename)
+
+                self.logger(message="Report generated and saved: " + full_filename)
             except PermissionError:
-                self.logger(level="error",message="Report has not been created. Permission denied. Please close Word.")
-
-
-    def recursive_add_in_word_report(self, element):
-        # None if add_in_word_report not found
-        call = getattr(element, "add_in_word_report", None)
-        if call:
-            if callable(call):
-                element.add_in_word_report()
-
-        if hasattr(element, "content_list"):
-            for content in element.content_list:
-                self.recursive_add_in_word_report(element=content)
-
-        if hasattr(element, "element_list"):
-            for content in element.element_list:
-                self.recursive_add_in_word_report(element=content)
+                self.logger(level="error",
+                            message="Report has not been created. Permission denied. Please close Word document.")
 
 
 class UcsImcReport(UcsGenericReport):
-    def __init__(self, device, inventory, config, language, output_format, page_layout, directory, filename):
-        UcsGenericReport.__init__(self, device=device, inventory=inventory, config=config, language=language, output_format=output_format, page_layout=page_layout,
-                                  directory=directory, filename=filename)
+    def __init__(self, device, inventory, config, language, output_format, page_layout, directory, filename, size):
+        UcsGenericReport.__init__(self, device=device, inventory=inventory, config=config, language=language,
+                                  output_format=output_format, page_layout=page_layout,
+                                  directory=directory, filename=filename, size=size)
+
+        self.element_list.append(
+            ReportFrontPage(order_id=self.get_current_order_id(), parent=self, title=self.title,
+                            description=_("Created with EasyUCS") + " - " + time.strftime("%d %B %Y"),
+                            authors=__author__))
+
+        # We determine the order id of the ReportTableOfContents at the begining (second element to be added but
+        # created at the end for obvious reason)
+        table_content_order_id = self.get_current_order_id()
+
+        self.element_list.append(
+            EquipmentInventoryUcsImcReportSection(order_id=self.get_current_order_id(), parent=self))
+        # self.element_list.append(
+        #     LogicalConfigurationUcsReportSection(order_id=self.get_current_order_id(), parent=self))
+
+        # Always last to append
+        self.element_list.append(
+            ReportTableOfContents(order_id=table_content_order_id, parent=self, section_list=self.element_list))
+        table_of_content = self.element_list[-1]
+
+        # We sort the element list in order to put the table of content at the begining
+        self.element_list = sorted(self.element_list, key=lambda element: element.order_id)
+
+        self.logger(level="debug", message="All report elements added to the list")
+
+        if self.output_format == "docx":
+            self.logger(message="Generating " + self.output_format + " report")
+            self.recursive_add_in_word_report(element=self)
+
+            # Change margins, footer, headers
+            section = self.document.sections[0]
+            section.right_margin = Cm(2)
+            section.left_margin = Cm(2)
+            section.different_first_page_header_footer = True
+            section.header.paragraphs[0].alignment = 1  # Centered
+            section.header.paragraphs[0].text = "Created with EasyUCS - " + self.title
+            try:
+                full_filename = self.directory + '/' + filename + '.docx'
+                self.document.save(full_filename)
+
+                # Update the TOC (Windows only)
+                # Not used
+                # table_of_content.update_toc(full_filename=full_filename)
+
+                self.logger(message="Report generated and saved: " + full_filename)
+            except PermissionError:
+                self.logger(level="error",
+                            message="Report has not been created. Permission denied. Please close Word document.")

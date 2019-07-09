@@ -13,8 +13,8 @@ from inventory.ucs.cpu import UcsSystemCpu
 from inventory.ucs.gpu import UcsSystemGpu
 from inventory.ucs.memory import UcsSystemMemoryArray
 from inventory.ucs.mgmt import UcsSystemMgmtInterface
-from inventory.ucs.storage import UcsSystemStorageController, UcsSystemStorageFlexFlashController,\
-    UcsSystemStorageEnclosure
+from inventory.ucs.storage import UcsSystemStorageController, UcsSystemStorageControllerNvmeDrive,\
+    UcsSystemStorageFlexFlashController, UcsSystemStorageEnclosure
 from inventory.ucs.tpm import UcsSystemTpm
 from inventory.ucs.psu import UcsSystemPsu
 
@@ -38,6 +38,7 @@ class UcsBlade(GenericUcsInventoryObject):
         self.gpus = self._get_gpus()
         self.memory_arrays = self._get_memory_arrays()
         self.mgmt_interfaces = self._get_mgmt_interfaces()
+        self.nvme_drives = self._get_nvme_drives()
         self.storage_controllers = self._get_storage_controllers()
         self.storage_flexflash_controllers = self._get_storage_flexflash_controllers()
         self.tpms = self._get_tpms()
@@ -82,6 +83,9 @@ class UcsBlade(GenericUcsInventoryObject):
                 return None
 
         return None
+
+    def _get_nvme_drives(self):
+        return []
 
     def _get_storage_controllers(self):
         return []
@@ -220,6 +224,17 @@ class UcsSystemBlade(UcsBlade, UcsSystemInventoryObject):
                                                                   object_class=UcsSystemMgmtInterface, parent=self)
         elif self._inventory.load_from == "file" and "mgmt_interfaces" in self._ucs_sdk_object:
             return [UcsSystemMgmtInterface(self, mgmt_if) for mgmt_if in self._ucs_sdk_object["mgmt_interfaces"]]
+        else:
+            return []
+
+    def _get_nvme_drives(self):
+        if self._inventory.load_from == "live":
+            return self._inventory.get_inventory_objects_under_dn(dn=self.dn,
+                                                                  object_class=UcsSystemStorageControllerNvmeDrive,
+                                                                  parent=self)
+        elif self._inventory.load_from == "file" and "nvme_drives" in self._ucs_sdk_object:
+            return [UcsSystemStorageControllerNvmeDrive(self, nvme_drive) for nvme_drive in
+                    self._ucs_sdk_object["nvme_drives"]]
         else:
             return []
 

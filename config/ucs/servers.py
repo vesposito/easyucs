@@ -515,8 +515,9 @@ class UcsSystemMaintenancePolicy(UcsSystemConfigObject):
                 self.name = lsmaint_maint_policy.name
                 self.descr = lsmaint_maint_policy.descr
                 self.soft_shutdown_timer = lsmaint_maint_policy.soft_shutdown_timer
-                if "-secs" in self.soft_shutdown_timer:
-                    self.soft_shutdown_timer = self.soft_shutdown_timer.split('-secs')[0]
+                if self.soft_shutdown_timer:
+                    if "-secs" in self.soft_shutdown_timer:
+                        self.soft_shutdown_timer = self.soft_shutdown_timer.split('-secs')[0]
                 self.schedule = lsmaint_maint_policy.sched_name
                 if lsmaint_maint_policy.trigger_config == "on-next-boot":
                     self.on_next_boot = "on"
@@ -1940,9 +1941,19 @@ class UcsSystemBiosPolicy(UcsSystemConfigObject):
                 if self._bios_token_method and bios_table:
                     if "biosTokenParam" in self._parent._config.sdk_objects and "biosTokenSettings" in \
                             self._parent._config.sdk_objects:
-                        for bios_token in self._config.sdk_objects["biosTokenParam"]:
+
+                        bios_token_param_list = [bios_token_param for bios_token_param in
+                                                 self._config.sdk_objects["biosTokenParam"]
+                                                 if
+                                                 self._parent._dn + "/bios-prof-" + self.name + "/" in bios_token_param.dn]
+                        bios_token_settings_list = [bios_token_setting for bios_token_setting in
+                                                    self._config.sdk_objects["biosTokenSettings"]
+                                                    if
+                                                    self._parent._dn + "/bios-prof-" + self.name + "/" in bios_token_setting.dn]
+
+                        for bios_token in bios_token_param_list:
                             if self._parent._dn + "/bios-prof-" + self.name + "/" in bios_token.dn:
-                                bios_token_children = [child for child in self._config.sdk_objects["biosTokenSettings"]
+                                bios_token_children = [child for child in bios_token_settings_list
                                                        if bios_token.dn in child.dn]
                                 for bios_token_child in bios_token_children:
                                     bios_token_name = None

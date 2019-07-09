@@ -96,7 +96,9 @@ from ucsmsdk.mometa.compute.ComputePortDiscPolicy import ComputePortDiscPolicy
 from ucsmsdk.mometa.compute.ComputePsuPolicy import ComputePsuPolicy
 from ucsmsdk.mometa.compute.ComputeServerDiscPolicy import ComputeServerDiscPolicy
 from ucsmsdk.mometa.compute.ComputeServerMgmtPolicy import ComputeServerMgmtPolicy
+from ucsmsdk.mometa.fabric.FabricFcSan import FabricFcSan
 from ucsmsdk.mometa.fabric.FabricLanCloud import FabricLanCloud
+from ucsmsdk.mometa.fabric.FabricOrgVlanPolicy import FabricOrgVlanPolicy
 from ucsmsdk.mometa.fabric.FabricSanCloud import FabricSanCloud
 from ucsmsdk.mometa.firmware.FirmwareAck import FirmwareAck
 from ucsmsdk.mometa.firmware.FirmwareAutoSyncPolicy import FirmwareAutoSyncPolicy
@@ -104,6 +106,7 @@ from ucsmsdk.mometa.mgmt.MgmtBackupExportExtPolicy import MgmtBackupExportExtPol
 from ucsmsdk.mometa.mgmt.MgmtBackupPolicy import MgmtBackupPolicy
 from ucsmsdk.mometa.mgmt.MgmtCfgExportPolicy import MgmtCfgExportPolicy
 from ucsmsdk.mometa.mgmt.MgmtIPv6IfAddr import MgmtIPv6IfAddr
+from ucsmsdk.mometa.mgmt.MgmtInbandProfile import MgmtInbandProfile
 from ucsmsdk.mometa.network.NetworkElement import NetworkElement
 from ucsmsdk.mometa.org.OrgOrg import OrgOrg
 from ucsmsdk.mometa.policy.PolicyCommunication import PolicyCommunication
@@ -918,11 +921,18 @@ class UcsSystemGlobalPolicies(UcsSystemConfigObject):
         self.rack_management_connection_policy = None
         self.power_policy = None
         self.mac_address_table_aging = None
+        self.vlan_port_count_optimization = None
+        self.org_permissions = None
+        self.inband_profile_vlan_group = None
+        self.inband_profile_network = None
+        self.inband_profile_ip_pool_name = None
         self.global_power_allocation_policy = None
         self.firmware_auto_sync_server_policy = None
         self.global_power_profiling_policy = None
         self.info_policy = None
         self.hardware_change_discovery_policy = None
+        self.fi_a_fc_uplink_trunking = None
+        self.fi_b_fc_uplink_trunking = None
 
         if self._config.load_from == "live":
             # Locating SDK objects needed to initialize
@@ -955,6 +965,15 @@ class UcsSystemGlobalPolicies(UcsSystemConfigObject):
 
             if "fabricLanCloud" in self._config.sdk_objects:
                 self.mac_address_table_aging = self._config.sdk_objects["fabricLanCloud"][0].mac_aging
+                self.vlan_port_count_optimization = self._config.sdk_objects["fabricLanCloud"][0].vlan_compression
+
+            if "fabricOrgVlanPolicy" in self._config.sdk_objects:
+                self.org_permissions = self._config.sdk_objects["fabricOrgVlanPolicy"][0].admin_state
+
+            if "mgmtInbandProfile" in self._config.sdk_objects:
+                self.inband_profile_vlan_group = self._config.sdk_objects["mgmtInbandProfile"][0].name
+                self.inband_profile_network = self._config.sdk_objects["mgmtInbandProfile"][0].default_vlan_name
+                self.inband_profile_ip_pool_name = self._config.sdk_objects["mgmtInbandProfile"][0].pool_name
 
             if "powerMgmtPolicy" in self._config.sdk_objects:
                 self.global_power_allocation_policy = self._config.sdk_objects["powerMgmtPolicy"][0].style
@@ -968,6 +987,13 @@ class UcsSystemGlobalPolicies(UcsSystemConfigObject):
 
             if "computeHwChangeDiscPolicy" in self._config.sdk_objects:
                 self.hardware_change_discovery_policy = self._config.sdk_objects["computeHwChangeDiscPolicy"][0].action
+
+            if "fabricFcSan" in self._config.sdk_objects:
+                    for fi in self._config.sdk_objects["fabricFcSan"]:
+                        if fi.id == "A":
+                            self.fi_a_fc_uplink_trunking = fi.uplink_trunking
+                        elif fi.id == "B":
+                            self.fi_b_fc_uplink_trunking = fi.uplink_trunking
 
         elif self._config.load_from == "file":
             if json_content is not None:
@@ -987,6 +1013,8 @@ class UcsSystemGlobalPolicies(UcsSystemConfigObject):
         parent_mo_root = "org-root"
         parent_mo_sys = "sys"
         parent_mo_fabric = "fabric"
+        parent_mo_lan = "fabric/lan"
+        parent_mo_san = "fabric/san"
 
         if self.chassis_discovery_policy:
             action = self.chassis_discovery_policy[0]["action_link"]
@@ -1055,6 +1083,33 @@ class UcsSystemGlobalPolicies(UcsSystemConfigObject):
                 if self.commit("MAC Address Table Aging") != True:
                     return False
 
+        if self.vlan_port_count_optimization:
+            mo_fabric_lan_cloud = FabricLanCloud(parent_mo_or_dn=parent_mo_fabric,
+                                                 vlan_compression=self.vlan_port_count_optimization)
+            self._handle.add_mo(mo_fabric_lan_cloud, modify_present=True)
+            if commit:
+                if self.commit("VLAN Port Count Optimization") != True:
+                    return False
+
+        if self.org_permissions:
+            mo_fabric_org_vlan_policy = FabricOrgVlanPolicy(parent_mo_or_dn=parent_mo_root,
+                                                            admin_state=self.org_permissions)
+            self._handle.add_mo(mo_fabric_org_vlan_policy, modify_present=True)
+            if commit:
+                if self.commit("Org Permissions") != True:
+                    return False
+
+        if self.inband_profile_network or self.inband_profile_vlan_group or self.inband_profile_ip_pool_name:
+            mo_mgmt_inband_profile = MgmtInbandProfile(parent_mo_or_dn=parent_mo_lan,
+                                                       default_vlan_name=self.inband_profile_network,
+                                                       name=self.inband_profile_vlan_group,
+                                                       pool_name=self.inband_profile_ip_pool_name
+                                                       )
+            self._handle.add_mo(mo_mgmt_inband_profile, modify_present=True)
+            if commit:
+                if self.commit("Inband Profile") != True:
+                    return False
+
         if self.global_power_allocation_policy:
             if self.global_power_allocation_policy == "Policy Driven Chassis Group Cap":
                 self.global_power_allocation_policy = "intelligent-policy-driven"
@@ -1102,6 +1157,22 @@ class UcsSystemGlobalPolicies(UcsSystemConfigObject):
             if commit:
                 if self.commit("Hardware Change Discovery Policy") != True:
                     return False
+        if self.fi_a_fc_uplink_trunking or self.fi_b_fc_uplink_trunking:
+            if self.fi_a_fc_uplink_trunking:
+                mo_fabric_a_fc_san = FabricFcSan(parent_mo_or_dn=parent_mo_san, id="A",
+                                                 uplink_trunking=self.fi_a_fc_uplink_trunking)
+                self._handle.add_mo(mo_fabric_a_fc_san, modify_present=True)
+
+            if self.fi_b_fc_uplink_trunking:
+                mo_fabric_b_fc_san = FabricFcSan(parent_mo_or_dn=parent_mo_san, id="B",
+                                                 uplink_trunking=self.fi_b_fc_uplink_trunking)
+                self._handle.add_mo(mo_fabric_b_fc_san, modify_present=True)
+
+            if self.fi_a_fc_uplink_trunking or self.fi_b_fc_uplink_trunking:
+                if commit:
+                    if self.commit("FC Uplink Trunking") != True:
+                        return False
+
         return True
 
 
@@ -1197,7 +1268,7 @@ class UcsSystemCommunicationServices(UcsSystemConfigObject):
                         user.update({"descr": snmp_user.descr})
                         user.update({"privacy_password": snmp_user.privpwd})
                         user.update({"password": snmp_user.pwd})
-                        user.update({"auth": snmp_user.auth})
+                        user.update({"auth_type": snmp_user.auth})
                         user.update({"use_aes": snmp_user.use_aes})
                         users.append(user)
 
@@ -1238,7 +1309,7 @@ class UcsSystemCommunicationServices(UcsSystemConfigObject):
                                     subelement[subvalue] = None
                     if element["snmp_users"]:
                         for subelement in element["snmp_users"]:
-                            for subvalue in ["name", "descr", "privacy_password", "password", "auth", "use_aes"]:
+                            for subvalue in ["name", "descr", "privacy_password", "password", "auth_type", "use_aes"]:
                                 if subvalue not in subelement:
                                     subelement[subvalue] = None
 
@@ -1328,7 +1399,7 @@ class UcsSystemCommunicationServices(UcsSystemConfigObject):
             if self.snmp_service[0]["snmp_users"]:
                 for user in self.snmp_service[0]["snmp_users"]:
                     CommSnmpUser(parent_mo_or_dn=mo_comm_snmp, name=user["name"], descr=user["descr"],
-                                 pwd=user["password"], privpwd=user["privacy_password"], auth=user["auth"],
+                                 pwd=user["password"], privpwd=user["privacy_password"], auth=user["auth_type"],
                                  use_aes=user["use_aes"])
             if self.snmp_service[0]["snmp_traps"]:
                 for trap in self.snmp_service[0]["snmp_traps"]:

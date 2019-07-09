@@ -117,6 +117,13 @@ class UcsSystemDrawRackFront(GenericDrawRackFront, GenericUcsDrawEquipment):
         self.storage_controller_list = self.get_storage_controllers()
         if self._parent.sku in ["UCSC-C480-M5"]:
             self.cpu_modules = self.get_cpu_modules()
+
+        self.nvme_disks = []
+        if hasattr(self._parent, "nvme_drives") and "disks_slots" in self.json_file:
+            self.nvme_disks = self.get_nvme_disks()
+            for disk in self.nvme_disks:
+                self.paste_layer(disk.picture, disk.picture_offset)
+
         self.fill_blanks()
 
         self._file_name = self._device_target + "_rack_" + self._parent.id + "_front"
@@ -367,6 +374,12 @@ class UcsSystemDrawRackRear(GenericDrawRackRear, GenericUcsDrawEquipment):
 
         if any(x in self._parent.sku for x in ["C240-M5", "HX240C-M5", "HXAF240C-M5"]):
             self.storage_controller_list = self.get_storage_controllers()
+
+        self.nvme_disks = []
+        if hasattr(self._parent, "nvme_drives") and "disks_slots_rear" in self.json_file:
+            self.nvme_disks = self.get_nvme_disks()
+            for disk in self.nvme_disks:
+                self.paste_layer(disk.picture, disk.picture_offset)
 
         self.fill_blanks()
         self._file_name = self._device_target + "_rack_" + self._parent.id + "_rear"

@@ -25,11 +25,12 @@ The scope of action:
 Scope:
   Scope of action
 
-  {config,inventory,schemas}  
-                      EasyUCS scope
-    config            config-related actions
-    inventory         inventory-related actions
-    schemas           schemas-related actions
+  {config,inventory,schemas,report}
+                        EasyUCS scope
+    config              config-related actions
+    inventory           inventory-related actions
+    schemas             schemas-related actions
+    report              report-related actions
 ```
 
 The second argument is the type of action:

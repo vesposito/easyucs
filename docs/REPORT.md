@@ -1,16 +1,16 @@
-# Working with inventory files
+# Infrastructure & equipment report generation
 
-Inventory files can be fetched from a UCS device. They are JSON-formatted files that are meant to be **human-readable** with each section corresponding to a UCS equipment.
+EasyUCS can generate infrastructure & equipment report from a live device.
 
 
-## Fetch inventories
+## Schemas creation
 
 ### Using the Command-Line Interface (CLI)
 
 The file **[easyucs.py](../easyucs.py)** is the main file that you will use. 
-You can have find help at each step by entering the **"-h"** argument.
+You can find help at each step by entering the **"-h"** argument.
 
-It first needs the type of scope of action you want to use as an argument. 
+It first needs the type of scope of action you want to use as an argument.
 The scope of action:
 ```
 Scope:
@@ -27,11 +27,11 @@ Scope:
 The second argument is the type of action:
 ```
 Action:
-  {fetch,push}  Inventory actions
-    fetch       Fetch an inventory from a UCS device
+  {generate}  Report actions
+    generate  Generate report of an UCS device
 ```
 
-#### Arguments for an inventory fetch
+#### Arguments for report generation
 
 List of arguments :
 
@@ -43,9 +43,11 @@ List of arguments :
                     | UCS Account Password
 - **-t** {**ucsm**,**cimc**}, --ucstype {ucsm,cimc}
                     | UCS system type ("ucsm" or "cimc")
+- **-s** {**a4**,**letter**}, --layoutsize {a4,letter}
+                    | Report layout size ("a4" or "letter")
 - **-v**, --verbose         | Print debug log
 - **-l LOGFILE**, --logfile LOGFILE
                     | Print log in a file
-- **-o OUTPUT_CONFIG**, --out OUTPUT_CONFIG
-                    | Output config file
+- **-o OUTPUT_REPORT**, --out OUTPUT_REPORT
+                    | Output report file
 - **-y**, --yes             | Answer yes to all questions

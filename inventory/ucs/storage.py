@@ -51,11 +51,6 @@ class UcsSystemStorageController(UcsStorageController, UcsSystemInventoryObject)
 
         UcsSystemInventoryObject.__init__(self, parent=parent, ucs_sdk_object=storage_controller)
 
-        # Add SKU of Storage Controller to disk in case storage controller is an NVMe drive
-        if self.type == "NVME":
-            if len(self.disks) == 1:
-                self.disks[0].sku = self.sku
-
         if self._inventory.load_from == "live":
             self.driver_name = None
             self.driver_version = None
@@ -625,6 +620,14 @@ class UcsSystemStorageLocalDisk(UcsStorageLocalDisk, UcsSystemInventoryObject):
                         else:
                             self.size_marketing = str(round(self.size_marketing / 1000, ndigits=1)) + "TB"
 
+            # Manual adjustment for wrong round up of some drives
+            if self.size_marketing == "147GB":
+                self.size_marketing = "146GB"
+            elif self.size_marketing == "98GB":
+                self.size_marketing = "100GB"
+            elif self.size_marketing == "118GB":
+                self.size_marketing = "120GB"
+
             if self.rotational_speed is not None:
                 self.rotational_speed_marketing = self.rotational_speed
 
@@ -646,6 +649,47 @@ class UcsSystemStorageLocalDisk(UcsStorageLocalDisk, UcsSystemInventoryObject):
                     self.rotational_speed_marketing = "10K"
                 elif self.rotational_speed_marketing == 7202:
                     self.rotational_speed_marketing = "7.2K"
+
+            # Manual adjustments for catalog SKU with double values like "UCS-SD100G0KA2-G/UCS-SD100G0KA2-S"
+            if self.sku == "UCS-SD100G0KA2-G/UCS-SD100G0KA2-S":
+                # Determining if parent server is a B230 M2 blade
+                if hasattr(self._parent._parent, "model"):
+                    if self._parent._parent.model == "B230-BASE-M2":
+                        self.sku = "UCS-SD100G0KA2-S"
+                    else:
+                        self.sku = "UCS-SD100G0KA2-G"
+
+            elif self.sku == "UCS-SD400G0KA2-G/UCS-SD400G0KA2-S":
+                # Determining if parent server is a B230 M2 blade
+                if hasattr(self._parent._parent, "model"):
+                    if self._parent._parent.model == "B230-BASE-M2":
+                        self.sku = "UCS-SD400G0KA2-S"
+                    else:
+                        self.sku = "UCS-SD400G0KA2-G"
+
+            elif self.sku == "UCS-SSD100GI1F105 / UCS-SD100G0KA2-E":
+                # Determining if parent server is a B230 M2 blade
+                if hasattr(self._parent._parent, "model"):
+                    if self._parent._parent.model == "B230-BASE-M2":
+                        self.sku = "UCS-SSD100GI1F105"
+                    else:
+                        self.sku = "UCS-SD100G0KA2-E"
+
+            elif self.sku == "UCS-SD200G0KA2-T / UCS-SD200G0KA2-E":
+                # Determining if parent server is a B230 M2 blade
+                if hasattr(self._parent._parent, "model"):
+                    if self._parent._parent.model == "B230-BASE-M2":
+                        self.sku = "UCS-SD200G0KA2-T"
+                    else:
+                        self.sku = "UCS-SD200G0KA2-E"
+
+            elif self.sku == "UCS-SD300G0KA2-T / UCS-SD300G0KA2-E":
+                # Determining if parent server is a B230 M2 blade
+                if hasattr(self._parent._parent, "model"):
+                    if self._parent._parent.model == "B230-BASE-M2":
+                        self.sku = "UCS-SD300G0KA2-T"
+                    else:
+                        self.sku = "UCS-SD300G0KA2-E"
 
         elif self._inventory.load_from == "file":
             for attribute in ["block_size_catalog", "cache_size", "capacity_catalog", "locator_led_status",
@@ -764,6 +808,14 @@ class UcsImcStorageLocalDisk(UcsStorageLocalDisk, UcsImcInventoryObject):
                     if self._pid_catalog.description == "UNKNOWN":
                         self.size_marketing = "400G"
 
+            # Manual adjustment for wrong round up of some drives
+            if self.size_marketing == "147GB":
+                self.size_marketing = "146GB"
+            elif self.size_marketing == "98GB":
+                self.size_marketing = "100GB"
+            elif self.size_marketing == "118GB":
+                self.size_marketing = "120GB"
+
         elif self._inventory.load_from == "file":
             for attribute in ["block_size", "bootable", "number_of_blocks", "rotational_speed_marketing",
                               "size_marketing", "size_raw"]:
@@ -801,6 +853,131 @@ class UcsImcStorageLocalDisk(UcsStorageLocalDisk, UcsImcInventoryObject):
 class UcsStorageNvmeDrive(GenericUcsInventoryObject):
     def __init__(self, parent=None, ucs_sdk_object=None):
         GenericUcsInventoryObject.__init__(self, parent=parent, ucs_sdk_object=ucs_sdk_object)
+
+
+class UcsSystemStorageControllerNvmeDrive(UcsStorageNvmeDrive, UcsSystemInventoryObject):
+    _UCS_SDK_OBJECT_NAME = "storageController"
+    _UCS_SDK_CATALOG_OBJECT_NAME = "equipmentLocalDiskControllerCapProvider"
+    _UCS_SDK_FIRMWARE_RUNNING_SUFFIX = "/fw-system"
+
+    def __init__(self, parent=None, storage_controller=None):
+        UcsStorageNvmeDrive.__init__(self, parent=parent, ucs_sdk_object=storage_controller)
+
+        self.id = self.get_attribute(ucs_sdk_object=storage_controller, attribute_name="id")
+        self.model = self.get_attribute(ucs_sdk_object=storage_controller, attribute_name="model")
+        self.pci_slot = self.get_attribute(ucs_sdk_object=storage_controller, attribute_name="pci_slot")
+        self.revision = self.get_attribute(ucs_sdk_object=storage_controller, attribute_name="revision")
+        self.serial = self.get_attribute(ucs_sdk_object=storage_controller, attribute_name="serial")
+        # self.temperature = self.get_attribute(ucs_sdk_object=storage_controller,
+        #                                       attribute_name="controller_chip_temp_celsius",
+        #                                       attribute_secondary_name="temperature")
+        self.vendor = self.get_attribute(ucs_sdk_object=storage_controller, attribute_name="vendor")
+
+        UcsSystemInventoryObject.__init__(self, parent=parent, ucs_sdk_object=storage_controller)
+
+        if self._inventory.load_from == "live":
+            self.block_size = None
+            self.block_size_catalog = None
+            self.block_size_physical = None
+            self.bootable = None
+            self.cache_size = None
+            self.capacity_catalog = None
+            self.connection_protocol = None
+            self.drive_state = None
+            self.drive_type = None
+            self.firmware_version = None
+            self.life_left_in_days = None
+            self.link_speed = None
+            self.locator_led_status = None
+            self.number_of_blocks = None
+            self.number_of_blocks_catalog = None
+            self.operability = None
+            self.rotational_speed = None
+            self.rotational_speed_marketing = None
+            self.self_encrypting_drive = None
+            self.size = None
+            self.size_marketing = None
+            self.size_raw = None
+            self.slot_type = None
+            self.temperature = None
+            if self.pci_slot:
+                if "FRONT" in self.pci_slot:
+                    self.slot_type = "sff-nvme"
+                else:
+                    self.slot_type = "pcie-nvme"
+
+            disks = self._inventory.get_inventory_objects_under_dn(dn=self.dn, object_class=UcsSystemStorageLocalDisk,
+                                                                   parent=self)
+            if len(disks) == 1:
+                self.block_size = disks[0].block_size
+                self.block_size_catalog = disks[0].block_size_catalog
+                self.block_size_physical = disks[0].block_size_physical
+                self.bootable = disks[0].bootable
+                self.cache_size = disks[0].cache_size
+                self.capacity_catalog = disks[0].capacity_catalog
+                self.connection_protocol = disks[0].connection_protocol
+                self.drive_state = disks[0].drive_state
+                self.drive_type = disks[0].drive_type
+                self.firmware_version = disks[0].firmware_version
+                self.link_speed = disks[0].link_speed
+                self.locator_led_status = disks[0].locator_led_status
+                self.number_of_blocks = disks[0].number_of_blocks
+                self.number_of_blocks_catalog = disks[0].number_of_blocks_catalog
+                self.operability = disks[0].operability
+                self.rotational_speed = disks[0].rotational_speed
+                self.rotational_speed_marketing = disks[0].rotational_speed_marketing
+                self.self_encrypting_drive = disks[0].self_encrypting_drive
+                self.size = disks[0].size
+                self.size_marketing = disks[0].size_marketing
+                self.size_raw = disks[0].size_raw
+
+            nvme_stats = self._find_corresponding_storage_nvme_stats()
+            if nvme_stats:
+                self.temperature = nvme_stats.temperature
+                self.life_left_in_days = nvme_stats.life_left_in_days
+
+                if self.temperature is not None:
+                    if " degrees C" in self.temperature:
+                        self.temperature = float(self.temperature.split(" degrees C")[0])
+                    else:
+                        self.temperature = float(self.temperature)
+
+                if self.life_left_in_days is not None:
+                    self.life_left_in_days = int(self.life_left_in_days)
+
+        elif self._inventory.load_from == "file":
+            for attribute in ["block_size", "block_size_catalog", "block_size_physical", "bootable", "cache_size",
+                              "capacity_catalog", "connection_protocol", "drive_state", "drive_type",
+                              "firmware_version", "life_left_in_days", "link_speed", "locator_led_status",
+                              "number_of_blocks", "number_of_blocks_catalog", "operability", "rotational_speed",
+                              "rotational_speed_marketing", "self_encrypting_drive", "size", "size_marketing",
+                              "size_raw", "slot_type", "temperature"]:
+                setattr(self, attribute, None)
+                if attribute in storage_controller:
+                    setattr(self, attribute, self.get_attribute(ucs_sdk_object=storage_controller,
+                                                                attribute_name=attribute))
+
+    def _find_corresponding_storage_nvme_stats(self):
+        if "storageNvmeStats" not in self._inventory.sdk_objects.keys():
+            return False
+
+        # We check if we already have fetched the list of storageNvmeStats objects
+        if self._inventory.sdk_objects["storageNvmeStats"] is not None:
+
+            # We need to find the matching storageNvmeStats object
+            storage_nvme_stats_list = [storage_nvme_stats for storage_nvme_stats in
+                                       self._inventory.sdk_objects["storageNvmeStats"] if
+                                       self.dn + "/nvme-stats" == storage_nvme_stats.dn]
+            if (len(storage_nvme_stats_list)) != 1:
+                self.logger(level="debug",
+                            message="Could not find the corresponding storageNvmeStats for object with DN " +
+                                    self.dn + " of model \"" + self.model + "\" with ID " + self.id)
+                self.logger(level="info", message="NVMe stats of disk with id " + self.id + " are not available.")
+                return False
+            else:
+                return storage_nvme_stats_list[0]
+
+        return False
 
 
 class UcsImcStorageControllerNvmeDrive(UcsStorageNvmeDrive, UcsImcInventoryObject):

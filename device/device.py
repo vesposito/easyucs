@@ -1012,6 +1012,7 @@ class UcsSystem(GenericUcsDevice):
                 mo_ssh = ucsmsdk_CommSsh(parent_mo_or_dn="sys/svc-ext", admin_state="enabled")
                 self.handle.set_mo(mo_ssh)
                 self.handle.commit()
+                self.logger(level="debug", message="SSH service is enabled on UCS System")
                 time.sleep(5)
 
         except Exception:
@@ -1040,6 +1041,12 @@ class UcsSystem(GenericUcsDevice):
                 self.handle.remove_mo(ucs_central)
                 self.handle.commit()
                 time.sleep(5)
+                # Waiting for UCSM to be ready after unregistering with UCS Central
+                self.wait_for_reboot_after_reset(fi_ip_list=[self.target])
+                # Try to connect again after beeing disconnected due to unregistering with UCS Central
+                if not self.connect(bypass_version_checks=bypass_version_checks):
+                    self.logger(level="error", message="Unable to connect to UCS System")
+                    return False
 
         except Exception as err:
             self.logger(level="error", message="Unable to unregister UCS System from UCS Central " +
@@ -1258,6 +1265,7 @@ class UcsSystem(GenericUcsDevice):
                     mo_ssh = ucsmsdk_CommSsh(parent_mo_or_dn="sys/svc-ext", admin_state="enabled")
                     self.handle.set_mo(mo_ssh)
                     self.handle.commit()
+                    self.logger(level="debug", message="SSH service is enabled on UCS")
                     time.sleep(5)
 
             except Exception:
@@ -1701,7 +1709,7 @@ class UcsSystem(GenericUcsDevice):
                 if res_mr is not None:
                     mr = res_mr.group(1)
 
-                version = major + "." + minor + "(" + mr + ")"
+                version = major + "." + minor + "(" + mr + "a)"
                 self.logger(level="warning", message="Running unknown version " + self.version.version +
                                                      ". Using version " + version + " as version number instead.")
                 self.version = UcsVersion(version)
@@ -1904,6 +1912,7 @@ class UcsImc(GenericUcsDevice):
                 mo_ssh = imcsdk_CommSsh(parent_mo_or_dn="sys/svc-ext", admin_state="enabled")
                 self.handle.set_mo(mo_ssh)
                 self.handle.commit()
+                self.logger(level="debug", message="SSH service is enabled on UCS IMC")
                 time.sleep(5)
 
         except Exception:

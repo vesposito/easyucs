@@ -44,6 +44,9 @@ class UcsCpu(GenericUcsInventoryObject):
                     # Remove trailing 0 for E5-2XXX processors models
                     if self.model_short_name.endswith(" 0"):
                         self.model_short_name = self.model_short_name[:-2]
+                    # Fix catalog issue for E7-8867L processor model
+                    if self.model_short_name == "E7-L8867":
+                        self.model_short_name = "E7-8867L"
                     # Remove extra space for E7-XXXX processors models
                     if "- " in self.model_short_name:
                         self.model_short_name = self.model_short_name.replace("- ", "-")
@@ -55,11 +58,14 @@ class UcsCpu(GenericUcsInventoryObject):
                             self.family_name = "Intel Xeon E7-8800 Series processors"
                 else:
                     # We might have an M5 Intel CPU
-                    regex2 = r"Xeon\(R\) .* (\d*) CPU"
+                    regex2 = r"Xeon\(R\) .* (\d*\w?) CPU"
                     res2 = re.search(regex2, self.model)
                     if res2 is not None:
                         self.model_short_name = res2.group(1)
-                        self.family_name = "Intel Xeon Processor Scalable Family"
+                        if self.model_short_name[1:2] == "1":
+                            self.family_name = "Intel Xeon Processor Scalable Family"
+                        elif self.model_short_name[1:2] == "2":
+                            self.family_name = "2nd Gen Intel Xeon Processor Scalable Family"
 
                 if self.model_short_name is not None:
                     if self.model_short_name[:5] == "E5-24":

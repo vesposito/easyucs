@@ -13,7 +13,7 @@ It can :
 * fetch a configuration and export it in JSON format
 * [fetch an inventory](docs/INVENTORY.md) and export it in JSON format
 * create pictures of equipment and infrastructure [schemas](docs/SCHEMAS.md)
-* create Technical Architecture Documentation (TAD) in Word format (coming soon)
+* create Technical Architecture Documentation (TAD) in Word format
 
 ## Getting Started
 
@@ -105,6 +105,11 @@ Create schemas from UCS system and save them to schemas folder
 python easyucs.py schemas create -t ucsm -i 192.168.0.1 -u admin -p password -o schemas
 ```
 
+Create report from UCS system and save it to reports/report.docx
+```
+python easyucs.py report generate -t ucsm -i 192.168.0.1 -u admin -p password -o reports/report.docx
+```
+
 #### Using the Web Graphical User Interface (GUI)
 
 The Web GUI is hosted by your machine, in order to launch it you need to use the file **[easyucs_gui.py](./easyucs_gui.py)**.
@@ -123,13 +128,21 @@ python easyucs_gui.py
 
 ## Versioning
 
-#### 0.9.0 - Lightning
+#### 0.9.1
+
+* Add automatic Technical Architecture Documentation creation (containing detailed inventory and architecture schemas)
+* Add support for LAN & SAN Global Policies in UCS Manager (VLAN Port Count Optimization, VLAN Org Permissions, Inband Profile)
+* Rework of NVMe drives support in inventory (now displayed in its own nvme_drives section instead of being in storage_controllers)
+* Add support for IOM 2408, HXAF220C All NVMe, C480 M5 ML
+* Various bug fixes and improvements
+
+#### 0.9.0
 
 Initial release
 
 ## Authors
 
-* **Marc Abu El Ghait** - *Initial work* - [github account link](https://github.com/)
+* **Marc Abu El Ghait** - *Initial work*
 * **Franck Bonneau** - *Initial work* - [github account link](https://github.com/Franck-Bonneau)
 * **Vincent Esposito** - *Initial work* - [github account link](https://github.com/vesposito)
 

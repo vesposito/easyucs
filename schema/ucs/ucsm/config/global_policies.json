@@ -103,6 +103,41 @@
          "type":"string",
          "default":"mode-default"
       },
+      "vlan_port_count_optimization":{
+         "description":"VLAN Port Count Optimization",
+         "type":"string",
+         "default":"disabled",
+         "enum": [
+            "enabled",
+            "disabled"
+         ]
+      },
+      "org_permissions":{
+         "description":"Org Permissions",
+         "type":"string",
+         "default":"disabled",
+         "enum": [
+            "enabled",
+            "disabled"
+         ]
+      },
+      "inband_profile_vlan_group":{
+         "description":"Inband Profile - Inband VLAN Group",
+         "type":"string",
+         "default":"",
+         "pattern": "^[\\-\\.:_a-zA-Z0-9]{0,32}$"
+      },
+      "inband_profile_network":{
+         "description":"Inband Profile - Network",
+         "type":"string",
+         "default":""
+      },
+      "inband_profile_ip_pool_name":{
+         "description":"Inband Profile - IP Pool Name",
+         "type":"string",
+         "default":"",
+         "pattern": "^[\\-\\.:_a-zA-Z0-9]{0,32}$"
+      },
       "global_power_allocation_policy":{
          "description":"Global Power Allocation Policy",
          "type":"string",
@@ -148,6 +183,24 @@
          "enum":[
             "auto-acknowledged",
             "user-acknowledged"
+         ]
+      },
+      "fi_a_fc_uplink_trunking":{
+         "description":"FI A - FC Uplink Trunking",
+         "type":"string",
+         "default":"disabled",
+         "enum": [
+            "enabled",
+            "disabled"
+         ]
+      },
+      "fi_b_fc_uplink_trunking":{
+         "description":"FI B - FC Uplink Trunking",
+         "type":"string",
+         "default":"disabled",
+         "enum": [
+            "enabled",
+            "disabled"
          ]
       }
    },

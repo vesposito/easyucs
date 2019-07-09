@@ -187,7 +187,7 @@ class UcsSystemDrawStorageLocalDisk(GenericUcsDrawEquipment):
             self.orientation = self.disk_info["orientation"]
             self.format = self.disk_info["format"]
 
-            # Special case for NVMe disks
+            # Special case for M5 NVMe disks
             if self._parent.connection_protocol == "NVME" and self.format == "sff_m5":
                 self.format = self.format + "_nvme"
 
@@ -228,6 +228,10 @@ class UcsSystemDrawStorageLocalDisk(GenericUcsDrawEquipment):
                             or (self.parent_draw.parent_draw._parent.sku == "UCSC-C3K-M4SRB"):
                         return self.parent_draw.parent_draw.parent_draw.picture_offset[0] + self.disk_info["coord"][0],\
                                self.parent_draw.parent_draw.parent_draw.picture_offset[1] + self.disk_info["coord"][1]
+            # For NVMe Disk on a blade
+            elif self.parent_draw.__class__.__name__ == "GenericUcsDrawBlade":
+                return self.parent_draw.picture_offset[0] + self.disk_info["coord"][0], \
+                       self.parent_draw.picture_offset[1] + self.disk_info["coord"][1]
 
             return self.parent_draw.parent_draw.picture_offset[0] + self.disk_info["coord"][0], \
                    self.parent_draw.parent_draw.picture_offset[1] + self.disk_info["coord"][1]
@@ -259,6 +263,11 @@ class UcsSystemDrawStorageLocalDisk(GenericUcsDrawEquipment):
 
             elif "disks_slots" in self.parent_draw.parent_draw.json_file:
                 for disk in self.parent_draw.parent_draw.json_file["disks_slots"]:
+                    if self.id == disk['id']:
+                        return disk
+
+            elif "disks_slots" in self.parent_draw.json_file:
+                for disk in self.parent_draw.json_file["disks_slots"]:
                     if self.id == disk['id']:
                         return disk
 
@@ -313,11 +322,13 @@ class UcsSystemDrawStorageLocalDisk(GenericUcsDrawEquipment):
                 self.sku = self._parent.vendor + " " + self._parent.model
             else:
                 self.sku = "UNKNOWN"
+
         if self.device_type is None:
             self.logger(level="warning", message="Disk with id " + str(self.id) + " of server " + self._parent.id +
                                                  " has an unknown device type!")
             warning = True
             self.device_type = ""
+
         if self.disk_size is None:
             self.logger(level="warning", message="Disk with id " + str(self.id) + " of server " + self._parent.id +
                                                  " has an unknown size!")

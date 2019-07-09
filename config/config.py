@@ -445,17 +445,16 @@ class UcsSystemConfig(GenericUcsConfig):
                                 'fabricDceSwSrvEp', 'fabricEthEstcEp', 'fabricEthEstcPc', 'fabricEthEstcPcEp',
                                 'fabricEthLanEp', 'fabricEthLanPc', 'fabricEthLanPcEp', 'fabricEthLinkProfile',
                                 'fabricEthTargetEp', 'fabricEthVlanPc', 'fabricEthVlanPortEp', 'fabricFcEndpoint',
-                                'fabricFcEstcEp', 'fabricFcSanEp', 'fabricFcSanPc', 'fabricFcSanPcEp',
+                                'fabricFcEstcEp', 'fabricFcSan', 'fabricFcSanEp', 'fabricFcSanPc', 'fabricFcSanPcEp',
                                 'fabricFcUserZone', 'fabricFcVsanPc', 'fabricFcVsanPortEp', 'fabricFcZoneProfile',
                                 'fabricFcoeEstcEp', 'fabricFcoeSanEp', 'fabricFcoeSanPc', 'fabricFcoeSanPcEp',
                                 'fabricFcoeVsanPortEp', 'fabricLacpPolicy', 'fabricLanCloud', 'fabricLanPinGroup',
                                 'fabricLanPinTarget', 'fabricMulticastPolicy', 'fabricNetGroup', 'fabricNetGroupRef',
-                                'fabricNetGroupRef', 'fabricPooledVlan', 'fabricSanCloud', 'fabricSanPinGroup',
-                                'fabricSanPinTarget', 'fabricUdldLinkPolicy', 'fabricUdldPolicy', 'fabricVCon',
-                                'fabricVConProfile', 'fabricVlan', 'fabricVlanGroupReq',
-                                'fabricVlanReq', 'fabricVsan', 'fcPIo',
-                                'fcpoolBlock', 'fcpoolInitiators', 'firmwareAutoSyncPolicy', 'firmwareChassisPack',
-                                'firmwareComputeHostPack', 'firmwareExcludeChassisComponent',
+                                'fabricNetGroupRef', 'fabricOrgVlanPolicy', 'fabricPooledVlan', 'fabricSanCloud',
+                                'fabricSanPinGroup', 'fabricSanPinTarget', 'fabricUdldLinkPolicy', 'fabricUdldPolicy',
+                                'fabricVCon', 'fabricVConProfile', 'fabricVlan', 'fabricVlanGroupReq', 'fabricVlanReq',
+                                'fabricVsan', 'fcPIo', 'fcpoolBlock', 'fcpoolInitiators', 'firmwareAutoSyncPolicy',
+                                'firmwareChassisPack', 'firmwareComputeHostPack', 'firmwareExcludeChassisComponent',
                                 'firmwareExcludeServerComponent', 'firmwarePackItem', 'flowctrlItem', 'ippoolBlock',
                                 'ippoolIpV6Block', 'ippoolPool', 'iqnpoolBlock', 'iqnpoolPool', 'iscsiAuthProfile',
                                 'lsBinding', 'lsPower', 'lsRequirement', 'lsServer', 'lsServerExtension',
@@ -474,25 +473,25 @@ class UcsSystemConfig(GenericUcsConfig):
                                 'lstorageProfile', 'lstorageProfileBinding', 'lstorageRemote',
                                 'lstorageSasExpanderConfigPolicy', 'lstorageVirtualDriveDef', 'macpoolBlock',
                                 'macpoolPool', 'memoryQual', 'mgmtBackupExportExtPolicy', 'mgmtBackupPolicy',
-                                'mgmtCfgExportPolicy', 'mgmtIPv6IfAddr', 'networkElement', 'nwctrlDefinition', 'orgOrg',
-                                'policyCommunication', 'policyConfigBackup', 'policyControlEp', 'policyDateTime',
-                                'policyDns', 'policyEquipment', 'policyFault', 'policyInfraFirmware', 'policyMEp',
-                                'policyMonitoring', 'policyPortConfig', 'policyPowerMgmt', 'policyPsu',
-                                'policySecurity', 'powerGroupQual', 'powerMgmtPolicy', 'powerPolicy', 'processorQual',
-                                'qosclassEthBE', 'qosclassEthClassified', 'qosclassFc', 'qosclassSlowDrain',
-                                'solPolicy', 'statsThrFloatDefinition', 'statsThrFloatValue', 'statsThresholdClass',
-                                'statsThresholdPolicy', 'storageConnectionPolicy', 'storageFcTargetEp',
-                                'storageIniGroup', 'storageInitiator', 'storageLocalDiskConfigPolicy', 'storageQual',
-                                'storageVsanRef', 'storageVsanRef', 'sysdebugBackupBehavior', 'sysdebugMEpLogPolicy',
-                                'topInfoPolicy', 'uuidpoolBlock', 'uuidpoolPool', 'vnicConnDef',
-                                'vnicDynamicConPolicyRef', 'vnicEther', 'vnicEtherIf', 'vnicFc', 'vnicFcGroupDef',
-                                'vnicFcIf', 'vnicFcNode', 'vnicIPv4Dhcp', 'vnicIPv4If', 'vnicIPv4PooledIscsiAddr',
-                                'vnicIScsi', 'vnicIScsiAutoTargetIf', 'vnicIScsiBootParams', 'vnicIScsiBootVnic',
-                                'vnicIScsiLCP', 'vnicIScsiNode', 'vnicIScsiStaticTargetIf', 'vnicIpV4MgmtPooledAddr',
-                                'vnicIpV6MgmtPooledAddr', 'vnicLanConnPolicy', 'vnicLanConnTempl', 'vnicLun',
-                                'vnicSanConnPolicy', 'vnicSanConnTempl', 'vnicUsnicConPolicyRef', 'vnicVhbaBehPolicy',
-                                'vnicVlan', 'vnicVlan', 'vnicVmqConPolicyRef',
-                                'vnicVnicBehPolicy'] + bios_sdk_objects_to_fetch
+                                'mgmtCfgExportPolicy', 'mgmtIPv6IfAddr', 'mgmtInbandProfile', 'networkElement',
+                                'nwctrlDefinition', 'orgOrg', 'policyCommunication', 'policyConfigBackup',
+                                'policyControlEp', 'policyDateTime', 'policyDns', 'policyEquipment', 'policyFault',
+                                'policyInfraFirmware', 'policyMEp', 'policyMonitoring', 'policyPortConfig',
+                                'policyPowerMgmt', 'policyPsu', 'policySecurity', 'powerGroupQual', 'powerMgmtPolicy',
+                                'powerPolicy', 'processorQual', 'qosclassEthBE', 'qosclassEthClassified', 'qosclassFc',
+                                'qosclassSlowDrain', 'solPolicy', 'statsThrFloatDefinition', 'statsThrFloatValue',
+                                'statsThresholdClass', 'statsThresholdPolicy', 'storageConnectionPolicy',
+                                'storageFcTargetEp', 'storageIniGroup', 'storageInitiator',
+                                'storageLocalDiskConfigPolicy', 'storageQual', 'storageVsanRef', 'storageVsanRef',
+                                'sysdebugBackupBehavior', 'sysdebugMEpLogPolicy', 'topInfoPolicy', 'uuidpoolBlock',
+                                'uuidpoolPool', 'vnicConnDef', 'vnicDynamicConPolicyRef', 'vnicEther', 'vnicEtherIf',
+                                'vnicFc', 'vnicFcGroupDef', 'vnicFcIf', 'vnicFcNode', 'vnicIPv4Dhcp', 'vnicIPv4If',
+                                'vnicIPv4PooledIscsiAddr', 'vnicIScsi', 'vnicIScsiAutoTargetIf', 'vnicIScsiBootParams',
+                                'vnicIScsiBootVnic', 'vnicIScsiLCP', 'vnicIScsiNode', 'vnicIScsiStaticTargetIf',
+                                'vnicIpV4MgmtPooledAddr', 'vnicIpV6MgmtPooledAddr', 'vnicLanConnPolicy',
+                                'vnicLanConnTempl', 'vnicLun', 'vnicSanConnPolicy', 'vnicSanConnTempl',
+                                'vnicUsnicConPolicyRef', 'vnicVhbaBehPolicy', 'vnicVlan', 'vnicVlan',
+                                'vnicVmqConPolicyRef', 'vnicVnicBehPolicy'] + bios_sdk_objects_to_fetch
 
         self.logger(level="debug", message="Fetching UCS System SDK objects for config")
         failed_to_fetch = []
@@ -513,6 +512,7 @@ class UcsSystemConfig(GenericUcsConfig):
                 self.logger(level="error", message="Timeout error while fetching UCS class " + sdk_object_name)
                 failed_to_fetch.append(sdk_object_name)
 
+        # We retry all SDK objects that failed to fetch properly
         if failed_to_fetch:
             for sdk_object_name in failed_to_fetch:
                 self.logger(level="info", message="Retrying to fetch " + sdk_object_name)
@@ -527,7 +527,11 @@ class UcsSystemConfig(GenericUcsConfig):
                                                        sdk_object_name + ": Connection refused")
                 except urllib.error.URLError:
                     self.logger(level="error", message="Timeout error while fetching UCS class " + sdk_object_name)
-                    failed_to_fetch.append(sdk_object_name)
+
+        # In case we still have SDK objects that failed to fetch, we list them in a warning message
+        if failed_to_fetch:
+            for sdk_object_name in failed_to_fetch:
+                self.logger(level="warning", message="Impossible to fetch " + sdk_object_name + " after 2 attempts.")
 
 
 class UcsImcConfig(GenericUcsConfig):
@@ -638,6 +642,7 @@ class UcsImcConfig(GenericUcsConfig):
                 self.logger(level="error", message="Error while trying to fetch UCS IMC class " + sdk_object_name +
                                                    ": " + str(err))
 
+        # We retry all SDK objects that failed to fetch properly
         if failed_to_fetch:
             for sdk_object_name in failed_to_fetch:
                 self.logger(level="info", message="Retrying to fetch " + sdk_object_name)
@@ -653,13 +658,13 @@ class UcsImcConfig(GenericUcsConfig):
                 except urllib.error.URLError:
                     self.logger(level="error", message="Timeout error while fetching UCS IMC class " + sdk_object_name)
 
+        # In case we still have SDK objects that failed to fetch, we list them in a warning message
         if failed_to_fetch:
             for sdk_object_name in failed_to_fetch:
                 self.logger(level="warning", message="Impossible to fetch " + sdk_object_name + " after 2 attempts.")
 
 
 class UcsCentralConfig(GenericUcsConfig):
-
     def __init__(self, parent=None):
         self.orgs = []
         self.domain_groups = []
@@ -697,6 +702,7 @@ class UcsCentralConfig(GenericUcsConfig):
                 self.logger(level="error", message="Timeout error while fetching UCS Central class " + sdk_object_name)
                 failed_to_fetch.append(sdk_object_name)
 
+        # We retry all SDK objects that failed to fetch properly
         if failed_to_fetch:
             for sdk_object_name in failed_to_fetch:
                 self.logger(level="info", message="Retrying to fetch " + sdk_object_name)
@@ -713,6 +719,7 @@ class UcsCentralConfig(GenericUcsConfig):
                     self.logger(level="error", message="Timeout error while fetching UCS Central class " +
                                                        sdk_object_name)
 
+        # In case we still have SDK objects that failed to fetch, we list them in a warning message
         if failed_to_fetch:
             for sdk_object_name in failed_to_fetch:
                 self.logger(level="warning", message="Impossible to fetch " + sdk_object_name + " after 2 attempts.")

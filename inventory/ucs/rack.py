@@ -15,7 +15,7 @@ from inventory.ucs.mgmt import UcsImcMgmtInterface, UcsSystemMgmtInterface
 from inventory.ucs.psu import UcsImcPsu, UcsSystemPsu
 from inventory.ucs.storage import UcsImcStorageController, UcsImcStorageFlexFlashController,\
     UcsImcStorageControllerNvmeDrive, UcsImcStorageNvmeDrive, UcsSystemStorageController,\
-    UcsSystemStorageFlexFlashController
+    UcsSystemStorageControllerNvmeDrive, UcsSystemStorageFlexFlashController
 from inventory.ucs.tpm import UcsImcTpm, UcsSystemTpm
 from draw.ucs.rack import UcsSystemDrawRackFront, UcsSystemDrawRackRear, UcsImcDrawRackFront, UcsImcDrawRackRear
 
@@ -234,6 +234,17 @@ class UcsSystemRack(UcsRack, UcsSystemInventoryObject):
                                                                   object_class=UcsSystemMgmtInterface, parent=self)
         elif self._inventory.load_from == "file" and "mgmt_interfaces" in self._ucs_sdk_object:
             return [UcsSystemMgmtInterface(self, mgmt_if) for mgmt_if in self._ucs_sdk_object["mgmt_interfaces"]]
+        else:
+            return []
+
+    def _get_nvme_drives(self):
+        if self._inventory.load_from == "live":
+            return self._inventory.get_inventory_objects_under_dn(dn=self.dn,
+                                                                  object_class=UcsSystemStorageControllerNvmeDrive,
+                                                                  parent=self)
+        elif self._inventory.load_from == "file" and "nvme_drives" in self._ucs_sdk_object:
+            return [UcsSystemStorageControllerNvmeDrive(self, nvme_drive) for nvme_drive in
+                    self._ucs_sdk_object["nvme_drives"]]
         else:
             return []
 
