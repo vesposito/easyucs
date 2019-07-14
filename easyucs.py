@@ -344,7 +344,7 @@ def init_process(ucs_device, args, config_string):
 def main():
     # Example texts for parser
     example_text = '''Examples:
-      To see examples, please type: python easyucs.py {config, inventory, schemas} -h'''
+      To see examples, please type: python easyucs.py {config, inventory, schemas, report} -h'''
 
     example_config_text = '''Examples:
       python easyucs.py config fetch -t ucsm -i 192.168.0.1 -u admin -p password -o configs/config_ucsm.json
@@ -392,10 +392,10 @@ def main():
 
     example_report_generate_text = '''Examples:
               python easyucs.py report generate -t ucsm -i 192.168.0.1 -u admin -p password -o reports/report.docx
-                    create report from UCS system and save it to reports/report.docx
+                    create schemas and report.docx from UCS system and save it to reports/
 
               python easyucs.py report generate -t cimc -i 192.168.0.2 -u admin -p password -o reports/report.docx
-                    create schemas from UCS IMC and save it to reports/report.docx'''
+                    create schemas and report.docx from UCS IMC and save it to reports/'''
 
     # Create the main parser
     parser = argparse.ArgumentParser(prog='easyucs.py', description='EasyUCS Command-Line Interface',

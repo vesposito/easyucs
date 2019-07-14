@@ -557,6 +557,9 @@ class UcsSystem(GenericUcsDevice):
                 self.logger(level="error", message="No config found. Unable to generate report.")
                 return False
 
+        if page_layout is None:
+            page_layout = "a4"
+
         self.logger(message="Generating report for device " + self.target + " using config: " + str(config.uuid)
                     + " and inventory: " + str(inventory.uuid))
         self.logger(level="debug",

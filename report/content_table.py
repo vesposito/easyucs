@@ -1030,9 +1030,9 @@ class UcsReportLanNeighborsConnectivityTable(GenericReportTable):
                                              remote_device_model, remote_sn, transceiver_type, transceiver_sn,
                                              transceiver_length])
 
-            GenericReportTable.__init__(self, order_id=order_id, parent=parent, row_number=len(rows),
-                                        column_number=len(rows[1]), centered=centered, cells_list=rows, autofit=autofit,
-                                        font_size=8)
+        GenericReportTable.__init__(self, order_id=order_id, parent=parent, row_number=len(rows),
+                                    column_number=len(rows[1]), centered=centered, cells_list=rows, autofit=autofit,
+                                    font_size=8)
 
 
 class UcsReportSanNeighborsConnectivityTable(GenericReportTable):

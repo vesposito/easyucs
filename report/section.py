@@ -67,9 +67,12 @@ class InfraRackEquipmentUcsReportSection(GenericReportSection):
             title = _("UCS Rack Servers Internal Infrastructure cabling")
         GenericReportSection.__init__(self, order_id=order_id, parent=parent, title=title)
         for rack in self.report.inventory.rack_units:
+            rack_name = rack.id
+            if rack.user_label:
+                rack_name = rack.id + " - " + rack.user_label
             self.content_list.append(InfraRackUcsReportSection(order_id=self.report.get_current_order_id(),
                                                                parent=self,
-                                                               title=_("UCS Rack #") + rack.id, rack=rack))
+                                                               title=_("UCS Rack #") + rack_name, rack=rack))
 
 
 class InfraRackUcsReportSection(GenericReportSection):
@@ -99,9 +102,12 @@ class InfraChassisEquipmentUcsReportSection(GenericReportSection):
             title = _("UCS Chassis Internal Infrastructure cabling")
         GenericReportSection.__init__(self, order_id=order_id, parent=parent, title=title)
         for chassis in self.report.inventory.chassis:
+            chassis_name = chassis.id
+            if chassis.user_label:
+                chassis_name = chassis.id + " - " + chassis.user_label
             self.content_list.append(InfraChassisUcsReportSection(order_id=self.report.get_current_order_id(),
                                                                   parent=self,
-                                                                  title=_("UCS Chassis #") + chassis.id,
+                                                                  title=_("UCS Chassis #") + chassis_name,
                                                                   chassis=chassis))
 
 
@@ -177,8 +183,11 @@ class ChassisInventoryUcsReportSection(GenericReportSection):
                                                        string=descr))
         blade_list = []
         for chassis in self.report.inventory.chassis:
+            chassis_name = chassis.id
+            if chassis.user_label:
+                chassis_name = chassis.id + " - " + chassis.user_label
             self.content_list.append(ChassisUcsReportSection(order_id=self.report.get_current_order_id(), parent=self,
-                                                             title="Chassis #"+chassis.id, chassis=chassis))
+                                                             title="Chassis #" + chassis_name, chassis=chassis))
             if chassis.blades:
                 blade_list = blade_list + chassis.blades
 
@@ -208,8 +217,11 @@ class RackInventoryUcsReportSection(GenericReportSection):
             self.content_list.append(GenericReportText(order_id=self.report.get_current_order_id(), parent=self,
                                                        string=descr))
         for rack in self.report.inventory.rack_units:
+            rack_name = rack.id
+            if rack.user_label:
+                rack_name = rack.id + " - " + rack.user_label
             self.content_list.append(RackUcsReportSection(order_id=self.report.get_current_order_id(), parent=self,
-                                                          title="Rack #" + rack.id, rack=rack))
+                                                          title="Rack #" + rack_name, rack=rack))
 
         if self.report.device.device_type == "UCS System":
             if self.report.inventory.rack_units:
@@ -440,8 +452,11 @@ class BladeServersUcsReportSection(GenericReportSection):
                                     blades=chassis.blades, centered=True))
 
             for blade in chassis.blades:
+                blade_name = blade.id + " details"
+                if blade.user_label:
+                    blade_name = blade.id + " details - " + blade.user_label
                 self.content_list.append(BladeUcsReportSection(order_id=self.report.get_current_order_id(), parent=self,
-                                                               title=_("Blade Server " + blade.id + " details"),
+                                                               title=_("Blade Server " + blade_name),
                                                                blade=blade))
 
 

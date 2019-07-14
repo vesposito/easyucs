@@ -142,7 +142,7 @@ Initial release
 
 ## Authors
 
-* **Marc Abu El Ghait** - *Initial work*
+* **Marc Abu El Ghait** - *Initial work* - [github account link](https://github.com/marc-aeg)
 * **Franck Bonneau** - *Initial work* - [github account link](https://github.com/Franck-Bonneau)
 * **Vincent Esposito** - *Initial work* - [github account link](https://github.com/vesposito)
 
