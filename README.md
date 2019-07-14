@@ -13,7 +13,7 @@ It can :
 * fetch a configuration and export it in JSON format
 * [fetch an inventory](docs/INVENTORY.md) and export it in JSON format
 * create pictures of equipment and infrastructure [schemas](docs/SCHEMAS.md)
-* create Technical Architecture Documentation (TAD) in Word format
+* create [Technical Architecture Documentation (TAD)](docs/REPORT.md) in Word format
 
 ## Getting Started
 
