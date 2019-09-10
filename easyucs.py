@@ -333,7 +333,12 @@ def init_process(ucs_device, args, config_string):
         ucs_device.set_task_progression(75)
 
         ucs_device.inventory_manager.export_draw(directory=directory, export_clear_pictures=True)
-        ucs_device.set_task_progression(90)
+        ucs_device.set_task_progression(80)
+
+        if ucs_device.device_type_short == "ucsm":
+            ucs_device.config_manager.generate_config_plots()
+            ucs_device.config_manager.export_config_plots(directory=directory)
+            ucs_device.set_task_progression(90)
 
         ucs_device.generate_report(filename=filename, directory=directory, page_layout=args.layout)
 

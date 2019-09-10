@@ -13,10 +13,10 @@ import uuid
 from inventory.inventory import UcsImcInventory, UcsSystemInventory
 from inventory.ucs.chassis import UcsImcChassis, UcsSystemChassis
 from inventory.ucs.fabric import UcsSystemFex, UcsSystemFi
-from inventory.ucs.rack import UcsImcRack, UcsSystemRack
+from inventory.ucs.rack import UcsImcRack, UcsImcRackEnclosure, UcsSystemRack, UcsSystemRackEnclosure
 from draw.ucs.neighbor import UcsSystemDrawInfraNeighborsLan, UcsSystemDrawInfraNeighborsSan
 from draw.ucs.chassis import UcsSystemDrawInfraChassis
-from draw.ucs.rack import UcsSystemDrawInfraRack
+from draw.ucs.rack import UcsSystemDrawInfraRack, UcsSystemDrawInfraRackEnclosure
 from draw.ucs.service_profile import UcsSystemDrawInfraServiceProfile
 import export
 
@@ -213,6 +213,10 @@ class GenericInventoryManager:
                 if "metadata" in complete_json["easyucs"]:
                     if "uuid" in complete_json["easyucs"]["metadata"][0]:
                         inventory.uuid = uuid.UUID(complete_json["easyucs"]["metadata"][0]["uuid"])
+                    if "device_version" in complete_json["easyucs"]["metadata"][0]:
+                        inventory.device_version = complete_json["easyucs"]["metadata"][0]["device_version"]
+                    if "intersight_status" in complete_json["easyucs"]["metadata"][0]:
+                        inventory.intersight_status = complete_json["easyucs"]["metadata"][0]["intersight_status"]
 
             # We start filling up the inventory
             self.logger(message="Importing inventory from " + import_format)
@@ -345,6 +349,16 @@ class UcsSystemInventoryManager(GenericUcsInventoryManager):
         rack_front_draw_list = [rack for rack in rack_front_draw_list if rack.picture]
         rack_rear_draw_list = [rack for rack in rack_rear_draw_list if rack.picture]
 
+        rack_enclosure_front_draw_list = []
+        rack_enclosure_rear_draw_list = []
+        for rack_enclosure in inventory.rack_enclosures:
+            rack_enclosure._generate_draw()
+            rack_enclosure_front_draw_list.append(rack_enclosure._draw_front)
+            rack_enclosure_rear_draw_list.append(rack_enclosure._draw_rear)
+        # We only keep the racks that have been fully created -> json file and picture
+        rack_enclosure_front_draw_list = [rack_enclosure for rack_enclosure in rack_enclosure_front_draw_list if rack_enclosure.picture]
+        rack_enclosure_rear_draw_list = [rack_enclosure for rack_enclosure in rack_enclosure_rear_draw_list if rack_enclosure.picture]
+
         fi_rear_draw_list = []
         for fi in inventory.fabric_interconnects:
             fi._generate_draw()
@@ -382,12 +396,14 @@ class UcsSystemInventoryManager(GenericUcsInventoryManager):
                 UcsSystemDrawInfraNeighborsSan(draw_neighbor_list=san_neighbor_draw_list,
                                                draw_fi_list=fi_rear_draw_list, parent=fi_rear_draw_list[0]._parent)
 
+        # Draw infra Service Profiles
         inventory._draw_infra_chassis_service_profiles = []
         if chassis_front_draw_list or chassis_rear_draw_list:
-            inventory._draw_infra_chassis_service_profiles.append(
-                UcsSystemDrawInfraServiceProfile(draw_chassis_front_list=chassis_front_draw_list,
-                                                 draw_chassis_rear_list=chassis_rear_draw_list,
-                                                 parent=fi_rear_draw_list[0]._parent))
+            if fi_rear_draw_list:
+                inventory._draw_infra_chassis_service_profiles.append(
+                    UcsSystemDrawInfraServiceProfile(draw_chassis_front_list=chassis_front_draw_list,
+                                                     draw_chassis_rear_list=chassis_rear_draw_list,
+                                                     parent=fi_rear_draw_list[0]._parent))
         if inventory._draw_infra_chassis_service_profiles:
             infra = inventory._draw_infra_chassis_service_profiles[0]
             while infra.next_page_infra:
@@ -396,37 +412,71 @@ class UcsSystemInventoryManager(GenericUcsInventoryManager):
 
         inventory._draw_infra_rack_service_profiles = []
         if rack_front_draw_list:
-            inventory._draw_infra_rack_service_profiles.append(
-                UcsSystemDrawInfraServiceProfile(draw_rack_list=rack_front_draw_list,
-                                                 parent=fi_rear_draw_list[0]._parent))
+            if fi_rear_draw_list:
+                inventory._draw_infra_rack_service_profiles.append(
+                    UcsSystemDrawInfraServiceProfile(draw_rack_list=rack_front_draw_list,
+                                                     parent=fi_rear_draw_list[0]._parent))
         if inventory._draw_infra_rack_service_profiles:
             infra = inventory._draw_infra_rack_service_profiles[0]
             while infra.next_page_infra:
                 inventory._draw_infra_rack_service_profiles.append(infra.next_page_infra)
                 infra = infra.next_page_infra
 
+        inventory._draw_infra_rack_enclosure_service_profiles = []
+        if rack_enclosure_rear_draw_list:
+            if fi_rear_draw_list:
+                inventory._draw_infra_rack_enclosure_service_profiles.append(
+                    UcsSystemDrawInfraServiceProfile(draw_rack_enclosure_list=rack_enclosure_rear_draw_list,
+                                                     parent=fi_rear_draw_list[0]._parent))
+        if inventory._draw_infra_rack_enclosure_service_profiles:
+            infra = inventory._draw_infra_rack_enclosure_service_profiles[0]
+            while infra.next_page_infra:
+                inventory._draw_infra_rack_enclosure_service_profiles.append(infra.next_page_infra)
+                infra = infra.next_page_infra
+
+        # Draw infra of equipments
         for chassis_draw in chassis_rear_draw_list:
             # if draw_rotated_fi_list exists then the chassis 1 is a UCS Mini chassis
             if not (rotated_fi_draw_list and chassis_draw._parent.id == '1'):
-                infra = UcsSystemDrawInfraChassis(chassis=chassis_draw,
-                                                  fi_list=fi_rear_draw_list,
-                                                  fex_list=fex_rear_draw_list,
-                                                  parent=fi_rear_draw_list[0]._parent)
-                if hasattr(infra, "_file_name"):
-                    # If wires are present
-                    chassis_draw._parent._draw_infra = infra
+                if fi_rear_draw_list:
+                    infra = UcsSystemDrawInfraChassis(chassis=chassis_draw,
+                                                      fi_list=fi_rear_draw_list,
+                                                      fex_list=fex_rear_draw_list,
+                                                      parent=fi_rear_draw_list[0]._parent)
+                    if hasattr(infra, "_file_name"):
+                        # If wires are present
+                        chassis_draw._parent._draw_infra = infra
+                    else:
+                        chassis_draw._parent._draw_infra = None
                 else:
                     chassis_draw._parent._draw_infra = None
 
         for rack_draw in rack_rear_draw_list:
-            infra = UcsSystemDrawInfraRack(rack=rack_draw, fi_list=fi_rear_draw_list,
-                                           fex_list=fex_rear_draw_list,
-                                           parent=fi_rear_draw_list[0]._parent)
-            if hasattr(infra, "_file_name"):
-                # If wires are present
-                rack_draw._parent._draw_infra = infra
+            if fi_rear_draw_list:
+                infra = UcsSystemDrawInfraRack(rack=rack_draw, fi_list=fi_rear_draw_list,
+                                               fex_list=fex_rear_draw_list,
+                                               parent=fi_rear_draw_list[0]._parent)
+                if hasattr(infra, "_file_name"):
+                    # If wires are present
+                    rack_draw._parent._draw_infra = infra
+                else:
+                    rack_draw._parent._draw_infra = None
             else:
                 rack_draw._parent._draw_infra = None
+
+
+        for rack_enclosure_draw in rack_enclosure_rear_draw_list:
+            if fi_rear_draw_list:
+                infra = UcsSystemDrawInfraRackEnclosure(rack_enclosure=rack_enclosure_draw, fi_list=fi_rear_draw_list,
+                                               fex_list=fex_rear_draw_list,
+                                               parent=fi_rear_draw_list[0]._parent)
+                if hasattr(infra, "_file_name"):
+                    # If wires are present
+                    rack_enclosure_draw._parent._draw_infra = infra
+                else:
+                    rack_enclosure_draw._parent._draw_infra = None
+            else:
+                rack_enclosure_draw._parent._draw_infra = None
 
     def export_draw(self, uuid=None, export_format="png", directory=None, export_clear_pictures=False):
         """
@@ -464,7 +514,9 @@ class UcsSystemInventoryManager(GenericUcsInventoryManager):
                 if chassis._draw_rear:
                     chassis._draw_rear.save_image(output_directory=directory, format=export_format)
                     if export_clear_pictures:
-                        chassis._draw_rear.clear_version.save_image(output_directory=directory, format=export_format)
+                        if hasattr(chassis._draw_rear, "clear_version"):
+                            chassis._draw_rear.clear_version.save_image(output_directory=directory,
+                                                                        format=export_format)
             if hasattr(chassis, "_draw_infra"):
                 if chassis._draw_infra:
                     chassis._draw_infra.save_image(output_directory=directory, format=export_format)
@@ -477,10 +529,25 @@ class UcsSystemInventoryManager(GenericUcsInventoryManager):
                 if rack._draw_rear:
                     rack._draw_rear.save_image(output_directory=directory, format=export_format)
                     if export_clear_pictures:
-                        rack._draw_rear.clear_version.save_image(output_directory=directory, format=export_format)
+                        if hasattr(rack._draw_rear, "clear_version"):
+                            rack._draw_rear.clear_version.save_image(output_directory=directory, format=export_format)
             if hasattr(rack, "_draw_infra"):
                 if rack._draw_infra:
                     rack._draw_infra.save_image(output_directory=directory, format=export_format)
+                    
+        for rack_enclosure in inventory.rack_enclosures:
+            if hasattr(rack_enclosure, "_draw_front"):
+                if rack_enclosure._draw_front:
+                    rack_enclosure._draw_front.save_image(output_directory=directory, format=export_format)
+            if hasattr(rack_enclosure, "_draw_rear"):
+                if rack_enclosure._draw_rear:
+                    rack_enclosure._draw_rear.save_image(output_directory=directory, format=export_format)
+                    if export_clear_pictures:
+                        if hasattr(rack_enclosure._draw_rear, "clear_version"):
+                            rack_enclosure._draw_rear.clear_version.save_image(output_directory=directory, format=export_format)
+            if hasattr(rack_enclosure, "_draw_infra"):
+                if rack_enclosure._draw_infra:
+                    rack_enclosure._draw_infra.save_image(output_directory=directory, format=export_format)
 
         for fi in inventory.fabric_interconnects:
             if hasattr(fi, "_draw_front"):
@@ -490,7 +557,8 @@ class UcsSystemInventoryManager(GenericUcsInventoryManager):
                 if fi._draw_rear:
                     fi._draw_rear.save_image(output_directory=directory, format=export_format)
                     if export_clear_pictures:
-                        fi._draw_rear.clear_version.save_image(output_directory=directory, format=export_format)
+                        if hasattr(fi._draw_rear, "clear_version"):
+                            fi._draw_rear.clear_version.save_image(output_directory=directory, format=export_format)
 
         for fex in inventory.fabric_extenders:
             if hasattr(fex, "_draw_front"):
@@ -500,7 +568,8 @@ class UcsSystemInventoryManager(GenericUcsInventoryManager):
                 if fex._draw_rear:
                     fex._draw_rear.save_image(output_directory=directory, format=export_format)
                     if export_clear_pictures:
-                        fex._draw_rear.clear_version.save_image(output_directory=directory, format=export_format)
+                        if hasattr(fex._draw_rear, "clear_version"):
+                            fex._draw_rear.clear_version.save_image(output_directory=directory, format=export_format)
 
         if inventory._draw_infra_san_neighbors:
             inventory._draw_infra_san_neighbors.save_image(output_directory=directory, format=export_format)
@@ -511,6 +580,9 @@ class UcsSystemInventoryManager(GenericUcsInventoryManager):
                 infra.save_image(output_directory=directory, format=export_format)
         if inventory._draw_infra_chassis_service_profiles:
             for infra in inventory._draw_infra_chassis_service_profiles:
+                infra.save_image(output_directory=directory, format=export_format)
+        if inventory._draw_infra_rack_enclosure_service_profiles:
+            for infra in inventory._draw_infra_rack_enclosure_service_profiles:
                 infra.save_image(output_directory=directory, format=export_format)
 
     def fetch_inventory(self):
@@ -524,9 +596,23 @@ class UcsSystemInventoryManager(GenericUcsInventoryManager):
         if "networkElement" in inventory.sdk_objects.keys():
             for network_element in sorted(inventory.sdk_objects["networkElement"], key=lambda fi: fi.dn):
                 inventory.fabric_interconnects.append(UcsSystemFi(parent=inventory, network_element=network_element))
-            # Fetch LAN & SAN neighbors
-            inventory.lan_neighbors = inventory._get_lan_neighbors()
-            inventory.san_neighbors = inventory._get_san_neighbors()
+
+            # Verifying that Info Policy is enabled before trying to fetch neighbors
+            self.logger(level="debug", message="Verifying that Info Policy is enabled")
+            info_policy_state = None
+            try:
+                info_policy = self.parent.handle.query_dn("sys/info-policy")
+                info_policy_state = info_policy.state
+            except Exception:
+                self.logger(level="error", message="Unable to get Info Policy State")
+                return False
+
+            if info_policy_state == "disabled":
+                self.logger(level="warning", message="Info Policy is disabled. No neighbors can be found")
+            else:
+                # Fetch LAN & SAN neighbors
+                inventory.lan_neighbors = inventory._get_lan_neighbors()
+                inventory.san_neighbors = inventory._get_san_neighbors()
 
         if "equipmentChassis" in inventory.sdk_objects.keys():
             for equipment_chassis in sorted(inventory.sdk_objects["equipmentChassis"], key=lambda chassis: [int(t) if t.isdigit() else t.lower() for t in re.split('(\d+)', chassis.id)]):
@@ -536,9 +622,15 @@ class UcsSystemInventoryManager(GenericUcsInventoryManager):
             for equipment_fex in sorted(inventory.sdk_objects["equipmentFex"], key=lambda fex: [int(t) if t.isdigit() else t.lower() for t in re.split('(\d+)', fex.id)]):
                 inventory.fabric_extenders.append(UcsSystemFex(parent=inventory, equipment_fex=equipment_fex))
 
+        if "equipmentRackEnclosure" in inventory.sdk_objects.keys():
+            for equipment_rack_enclosure in sorted(inventory.sdk_objects["equipmentRackEnclosure"], key=lambda enclosure: [int(t) if t.isdigit() else t.lower() for t in re.split('(\d+)', enclosure.id)]):
+                inventory.rack_enclosures.append(UcsSystemRackEnclosure(parent=inventory, equipment_rack_enclosure=equipment_rack_enclosure))
+
         if "computeRackUnit" in inventory.sdk_objects.keys():
             for compute_rack_unit in sorted(inventory.sdk_objects["computeRackUnit"], key=lambda rack: [int(t) if t.isdigit() else t.lower() for t in re.split('(\d+)', rack.id)]):
-                inventory.rack_units.append(UcsSystemRack(parent=inventory, compute_rack_unit=compute_rack_unit))
+                # We filter out rack servers that are inside enclosures (e.g. for UCS C4200)
+                if compute_rack_unit.enclosure_id in ["0", None]:
+                    inventory.rack_units.append(UcsSystemRack(parent=inventory, compute_rack_unit=compute_rack_unit))
 
         # Removing the list of SDK objects fetched from the live UCS device
         inventory.sdk_objects = None
@@ -573,6 +665,11 @@ class UcsSystemInventoryManager(GenericUcsInventoryManager):
             for equipment_fex in inventory_json["fabric_extenders"]:
                 inventory.fabric_extenders.append(UcsSystemFex(parent=inventory, equipment_fex=equipment_fex))
 
+        if "rack_enclosures" in inventory_json:
+            for equipment_rack_enclosure in inventory_json["rack_enclosures"]:
+                inventory.rack_enclosures.append(
+                    UcsSystemRackEnclosure(parent=inventory, equipment_rack_enclosure=equipment_rack_enclosure))
+
         if "rack_units" in inventory_json:
             for compute_rack_unit in inventory_json["rack_units"]:
                 inventory.rack_units.append(UcsSystemRack(parent=inventory, compute_rack_unit=compute_rack_unit))
@@ -592,14 +689,21 @@ class UcsImcInventoryManager(GenericUcsInventoryManager):
         inventory._fetch_sdk_objects()
         self.logger(level="debug", message="Finished fetching UCS SDK objects for inventory")
 
-        if "computeRackUnit" in inventory.sdk_objects:
-            # Server is a standalone rack server
-            inventory.rack_units.append(UcsImcRack(parent=inventory,
-                                                   compute_rack_unit=inventory.sdk_objects["computeRackUnit"][0]))
+        if "equipmentRackEnclosure" in inventory.sdk_objects and len(inventory.sdk_objects["equipmentRackEnclosure"]) > 0:
+            # Server is a server node inside a rack enclosure
+            inventory.rack_enclosures.append(
+                UcsImcRackEnclosure(parent=inventory,
+                                    equipment_rack_enclosure=inventory.sdk_objects["equipmentRackEnclosure"][0]))
+
         elif "equipmentChassis" in inventory.sdk_objects:
             # Server is a chassis like S3260
             inventory.chassis.append(UcsImcChassis(parent=inventory,
                                                    equipment_chassis=inventory.sdk_objects["equipmentChassis"][0]))
+
+        elif "computeRackUnit" in inventory.sdk_objects:
+            # Server is a standalone rack server
+            inventory.rack_units.append(UcsImcRack(parent=inventory,
+                                                   compute_rack_unit=inventory.sdk_objects["computeRackUnit"][0]))
 
         # Removing the list of SDK objects fetched from the live UCS device
         inventory.sdk_objects = None
@@ -618,13 +722,18 @@ class UcsImcInventoryManager(GenericUcsInventoryManager):
             self.logger(level="debug", message="Missing inventory or inventory_json parameter!")
             return False
 
-        if "rack_units" in inventory_json:
-            for compute_rack_unit in inventory_json["rack_units"]:
-                inventory.rack_units.append(UcsImcRack(parent=inventory, compute_rack_unit=compute_rack_unit))
+        if "rack_enclosures" in inventory_json:
+            for equipment_rack_enclosure in inventory_json["rack_enclosures"]:
+                inventory.rack_enclosures.append(UcsImcRackEnclosure(parent=inventory,
+                                                                     equipment_rack_enclosure=equipment_rack_enclosure))
 
         if "chassis" in inventory_json:
             for chassis in inventory_json["chassis"]:
                 inventory.chassis.append(UcsImcChassis(parent=inventory, equipment_chassis=chassis))
+
+        if "rack_units" in inventory_json:
+            for compute_rack_unit in inventory_json["rack_units"]:
+                inventory.rack_units.append(UcsImcRack(parent=inventory, compute_rack_unit=compute_rack_unit))
 
         return True
 
@@ -655,6 +764,9 @@ class UcsImcInventoryManager(GenericUcsInventoryManager):
             rack._generate_draw()
             # rack_front_draw_list.append(rack._draw_front)
             # rack_rear_draw_list.append(rack._draw_rear)
+
+        for rack in inventory.rack_enclosures:
+            rack._generate_draw()
 
         for chassis in inventory.chassis:
             chassis._generate_draw()
@@ -701,3 +813,11 @@ class UcsImcInventoryManager(GenericUcsInventoryManager):
             if hasattr(rack, "_draw_rear"):
                 if rack._draw_rear:
                     rack._draw_rear.save_image(output_directory=directory, format=export_format)
+
+        for rack_enclosure in inventory.rack_enclosures:
+            if hasattr(rack_enclosure, "_draw_front"):
+                if rack_enclosure._draw_front:
+                    rack_enclosure._draw_front.save_image(output_directory=directory, format=export_format)
+            if hasattr(rack_enclosure, "_draw_rear"):
+                if rack_enclosure._draw_rear:
+                    rack_enclosure._draw_rear.save_image(output_directory=directory, format=export_format)

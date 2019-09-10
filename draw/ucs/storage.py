@@ -284,6 +284,20 @@ class UcsSystemDrawStorageLocalDisk(GenericUcsDrawEquipment):
                                                             ", no match found in the json file")
                 return None
 
+        # For NVME rear disks
+        elif hasattr(self, "parent_draw"):
+            if "DrawRackRear" in self.parent_draw.__class__.__name__:
+                if any(x in self.parent_draw._parent.sku
+                       for x in ["UCSC-C240-M5", "HX240C-M5", "HXAF240C-M5"]):
+                    for disk in self.parent_draw.json_file["disks_slots_rear"]:
+                        if self.id == disk['id']:
+                            return disk
+                    if self.parent_draw._parent.sku == "UCSC-C240-M5S":
+                        # It happens that the rear disk port ID of UCSC-C240-M5S are 11 / 12 instead of 9 / 10
+                        if self.id > 10:
+                            self.id = self.id - 2
+                            return self._get_disk_info()
+
         else:
             if "DrawRackRear" in self.parent_draw.__class__.__name__:
                 for disk in self.parent_draw.json_file["disks_slots"]:

@@ -46,7 +46,7 @@ class UcsSystemTransceiver(UcsTransceiver, UcsSystemInventoryObject):
             "h10gaoc10m": {"sku": "SFP-10G-AOC10M", "length": "10m"},
             # SFP+ 10Gbps Twinax & AOC Indeterminate models
             "h10gacuaoc1m": {"sku": "SFP-H10GB-ACU/AOC1M", "length": "1m"},
-            "h10gacuaoc2m": {"sku": "SFP-H10GB-ACU/AOC1M", "length": "2m"},
+            "h10gacuaoc2m": {"sku": "SFP-H10GB-ACU/AOC2M", "length": "2m"},
             "h10gacuaoc3m": {"sku": "SFP-H10GB-ACU/AOC3M", "length": "3m"},
             "h10gacuaoc5m": {"sku": "SFP-H10GB-ACU/AOC5M", "length": "5m"},
             "h10gacuaoc7m": {"sku": "SFP-H10GB-ACU/AOC7M", "length": "7m"},
@@ -141,7 +141,8 @@ class UcsSystemTransceiver(UcsTransceiver, UcsSystemInventoryObject):
 
             # QSFP28 100Gbps transceivers
             "qsfp100g40gbidi": {"sku": "QSFP-40/100-SRBD", "length": "<=100m"},
-            "qsfp100gsmsr": {"sku": "QSFP-100G-SM-SR", "length": "<=2km"}
+            "qsfp100gsmsr": {"sku": "QSFP-100G-SM-SR", "length": "<=2km"},
+            "qsfp100gcr4": {"sku": "QSFP-100G-SR4-S", "length": "<=100m"}
         }
         for transceiver_type in transceiver_types_matrix.keys():
             if self.type == transceiver_type:
@@ -151,7 +152,7 @@ class UcsSystemTransceiver(UcsTransceiver, UcsSystemInventoryObject):
         # Manual entries for FC transceivers
         if self._parent.__class__.__name__ == "UcsSystemFiFcPort":
             if self.type in ["sfp", "unknown"]:
-                if self.model in ["FTLF8528P2BCV-CS", "SFBR-5780AMZ-CS2", "SFBR-5780APZ-CS2"]:
+                if self.model in ["FTLF8528P2BCV-CS", "FTLF8528P3BCV-C1", "SFBR-5780AMZ-CS2", "SFBR-5780APZ-CS2"]:
                     self.sku = "DS-SFP-FC8G-SW"
                     self.length = "<=190m"
                 if self.model in ["FTLF8528P3BCV-CS", "FTLF8529P3BCV-CS", "AFBR-57F5PZ-CS1"]:

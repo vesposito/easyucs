@@ -10,12 +10,12 @@ from PIL import Image, ImageDraw, ImageFont
 
 from draw.object import UcsSystemDrawInfraEquipment
 from draw.ucs.chassis import UcsSystemDrawChassisRear, UcsSystemDrawChassisFront
-from draw.ucs.rack import UcsSystemDrawRackRear, UcsSystemDrawRackFront
+from draw.ucs.rack import UcsSystemDrawRackRear, UcsSystemDrawRackFront, UcsSystemDrawRackEnclosureRear
 
 
 class UcsSystemDrawInfraServiceProfile(UcsSystemDrawInfraEquipment):
     def __init__(self, parent=None, draw_chassis_list=[], draw_chassis_front_list=[], draw_chassis_rear_list=[],
-                 draw_rack_list=[], page=1):
+                 draw_rack_list=[], draw_rack_enclosure_list=[], page=1):
         UcsSystemDrawInfraEquipment.__init__(self, parent=parent)
         self._parent = parent
 
@@ -28,8 +28,12 @@ class UcsSystemDrawInfraServiceProfile(UcsSystemDrawInfraEquipment):
         else:
             self.chassis_list = []
         self.rack_list = draw_rack_list
+        self.rack_enclosure_list = draw_rack_enclosure_list
+
         if self.rack_list:
             self.duplicate_rack_list()
+        if self.rack_enclosure_list:
+            self.duplicate_rack_enclosure_list()
         if self.chassis_list:
             self.duplicate_chassis_list()
         
@@ -39,6 +43,7 @@ class UcsSystemDrawInfraServiceProfile(UcsSystemDrawInfraEquipment):
 
         self.max_chassis_per_page = 6
         self.max_rack_per_page = 12
+        self.max_rack_enclosure_per_page = 12
 
         # Adapt max_in_a_row value
         if self.chassis_list:
@@ -56,6 +61,15 @@ class UcsSystemDrawInfraServiceProfile(UcsSystemDrawInfraEquipment):
 
             if len(self.rack_list) < self.max_rack_per_page:
                 self.number_of_row = math.ceil(len(self.rack_list) / self.max_in_a_row)
+            else:
+                self.number_of_row = math.ceil(self.max_rack_per_page/self.max_in_a_row)
+
+        elif self.rack_enclosure_list:
+            if len(self.rack_enclosure_list) < self.max_in_a_row:
+                self.max_in_a_row = len(self.rack_enclosure_list)
+
+            if len(self.rack_enclosure_list) < self.max_rack_per_page:
+                self.number_of_row = math.ceil(len(self.rack_enclosure_list) / self.max_in_a_row)
             else:
                 self.number_of_row = math.ceil(self.max_rack_per_page/self.max_in_a_row)
 
@@ -93,8 +107,15 @@ class UcsSystemDrawInfraServiceProfile(UcsSystemDrawInfraEquipment):
                         equipment.psu_list = equipment.get_power_supplies()
                 if "psus_slots" in equipment.json_file:
                     equipment.psu_list = equipment.get_power_supplies()
+                if "disks_slots_rear" in equipment.json_file:
+                    equipment.storage_enclosures = equipment.get_storage_enclosures()
                 if "blades_slots" or "psus_slots" or "blades_slots_rear" in equipment.json_file:
                     equipment.fill_blanks()
+            elif "Enclosure" in equipment.__class__.__name__:
+                equip_type = "rack_enclosure"
+                equipment.server_nodes_list = equipment.get_server_nodes()
+                equipment.psu_list = equipment.get_psu_list()
+                equipment.fill_blanks()
             elif "Rack" in equipment.__class__.__name__:
                 equip_type = "rack"
                 equipment.storage_controller_list = equipment.get_storage_controllers()
@@ -106,8 +127,10 @@ class UcsSystemDrawInfraServiceProfile(UcsSystemDrawInfraEquipment):
 
         if self.rack_list:
             type = "rack"
-        else:
+        elif self.chassis_list:
             type = "chassis"
+        elif self.rack_enclosure_list:
+            type = "rack_enclosure"
         self._file_name = self._device_target + "_infra_service_profile_" + type + '_' + str(self.page)
 
     def _get_picture_offset(self, order, equipment):
@@ -135,8 +158,12 @@ class UcsSystemDrawInfraServiceProfile(UcsSystemDrawInfraEquipment):
             for chassis in self.chassis_list:
                 if chassis.picture.size[1] > max:
                     max = chassis.picture.size[1]
-        else:
+        elif self.rack_list:
             for rack in self.rack_list:
+                if rack.picture.size[1] > max:
+                    max = rack.picture.size[1]
+        elif self.rack_enclosure_list:
+            for rack in self.rack_enclosure_list:
                 if rack.picture.size[1] > max:
                     max = rack.picture.size[1]
         return max
@@ -147,8 +174,12 @@ class UcsSystemDrawInfraServiceProfile(UcsSystemDrawInfraEquipment):
             for chassis in self.chassis_list:
                 if chassis.picture.size[0] > max:
                     max = chassis.picture.size[0]
-        else:
+        elif self.rack_list:
             for rack in self.rack_list:
+                if rack.picture.size[0] > max:
+                    max = rack.picture.size[0]
+        elif self.rack_enclosure_list:
+            for rack in self.rack_enclosure_list:
                 if rack.picture.size[0] > max:
                     max = rack.picture.size[0]
         return max
@@ -166,6 +197,15 @@ class UcsSystemDrawInfraServiceProfile(UcsSystemDrawInfraEquipment):
                             if len(name) > len(max_name):
                                 max_name = name
                             length = blade.picture.size[0]
+                            if length < min_length_equipment:
+                                min_length_equipment = length
+                elif "Enclosure" in equipment.__class__.__name__:
+                    for server_node in equipment.server_nodes_list:
+                        if server_node._parent.service_profile_name:
+                            name = server_node._parent.service_profile_name
+                            if len(name) > len(max_name):
+                                max_name = name
+                            length = server_node.picture.size[0]
                             if length < min_length_equipment:
                                 min_length_equipment = length
                 else:
@@ -217,6 +257,14 @@ class UcsSystemDrawInfraServiceProfile(UcsSystemDrawInfraEquipment):
             new_list.append(new_rack)
         # Sort the racks by id
         self.rack_list = sorted(new_list, key=lambda x: int(x._parent.id))
+
+    def duplicate_rack_enclosure_list(self):
+        new_list = []
+        for rack_enclosure in self.rack_enclosure_list:
+            new_rack = UcsSystemDrawRackEnclosureRear(parent=rack_enclosure._parent)
+            new_list.append(new_rack)
+        # Sort the racks by id
+        self.rack_enclosure_list = sorted(new_list, key=lambda x: int(x._parent.id))
 
     def parse_template_list(self):
         parsed_list = []
@@ -276,6 +324,41 @@ class UcsSystemDrawInfraServiceProfile(UcsSystemDrawInfraEquipment):
             self.draw.text((equipment.picture_offset[0] + equipment.picture.size[0]/2 - w/2,
                             equipment.picture_offset[1] - h - 5), rack_info,
                            fill=fill_color, font=font_org)
+
+        elif type == "rack_enclosure":
+            if "server_node_slots" in equipment.json_file:
+                for server_node in equipment.server_nodes_list:
+                    cover_color = "grey"
+
+                    service_profile_org = server_node._parent.service_profile_org
+                    service_profile_name = server_node._parent.service_profile_name
+                    sp_template_name = server_node._parent.service_profile_template_name
+                    sp_template_org = server_node._parent.service_profile_template_org
+                    if sp_template_name:
+                        self.sp_template_used.append(sp_template_org + sp_template_name)
+                        cover_color = self.determine_color_service_profile(sp_template_name, sp_template_org)
+                    cover = self.generate_cover(cover_color, server_node.picture.size)
+                    self.paste_layer(cover, server_node.picture_offset)
+
+                    if service_profile_name:
+                        w, h = self.draw.textsize(service_profile_name, font=font_name)
+                        w_org, h_org = self.draw.textsize(service_profile_org, font=font_org)
+                        # Draw service profile name info
+                        self.draw.text((server_node.picture_offset[0] + server_node.picture.size[0] / 2 - w / 2,
+                                        server_node.picture_offset[1] + server_node.picture.size[1] / 2 - h / 2),
+                                       service_profile_name, fill=fill_color, font=font_name)
+                        # Draw service profile org info
+                        self.draw.text((server_node.picture_offset[0] + server_node.picture.size[0] / 2 - w_org / 2,
+                                        server_node.picture_offset[1] + h_org / 8),
+                                       service_profile_org, fill=fill_color, font=font_org)
+                    # if equipment._parent.user_label:
+                    #     chassis_info = "Chassis #" + equipment._parent.id + " - " + equipment._parent.user_label
+                    # else:
+                    #     chassis_info = "Chassis #" + equipment._parent.id
+                    # w, h = self.draw.textsize(chassis_info, font=font_org)
+                    # self.draw.text((equipment.picture_offset[0] + equipment.picture.size[0]/2 - w/2,
+                    #                 equipment.picture_offset[1] - h - 5), chassis_info,
+                    #                fill=fill_color, font=font_org)
 
         else:
             if "blades_slots" or "blade_slots_rear" in equipment.json_file:
@@ -342,5 +425,13 @@ class UcsSystemDrawInfraServiceProfile(UcsSystemDrawInfraEquipment):
                             parent=self._parent)
                     if j < self.max_chassis_per_page:
                         equipments_dict.update({j: self.chassis_list[j]})
+        if self.rack_enclosure_list:
+            for i in range(0, len(self.rack_enclosure_list)):
+                if i == self.max_rack_enclosure_per_page:
+                    self.next_page_infra = \
+                        UcsSystemDrawInfraServiceProfile(draw_rack_enclosure_list=self.rack_enclosure_list[i:len(self.rack_enclosure_list)],
+                                                         page=self.page + 1, parent=self._parent)
+                if i < self.max_rack_enclosure_per_page:
+                    equipments_dict.update({i: self.rack_enclosure_list[i]})
 
         return equipments_dict

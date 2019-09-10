@@ -33,7 +33,9 @@ class UcsSystemDrawAdaptor(GenericUcsDrawEquipment):
                 self.draw_ports()
 
     def _get_picture(self):
-        if self._parent.pci_slot != "MLOM":  # for MLOM Slot
+        if "SIOC" in self._parent.pci_slot:
+            self.width = self.parent_draw.json_file["pcie_slots"][0]["width"]
+        elif self._parent.pci_slot not in ["MLOM", "OCP"]:  # not MLOM or OCP
             for slot in self.parent_draw.json_file["pcie_slots"]:
                 if slot["id"] == int(self._parent.pci_slot):
                     if "width" in slot:
@@ -68,6 +70,10 @@ class UcsSystemDrawAdaptor(GenericUcsDrawEquipment):
     def _get_picture_offset(self):
         if self._parent.pci_slot == "MLOM":  # for MLOM Slot
             coord = self.parent_draw.json_file["mlom_slots"][0]["coord"]
+        elif self._parent.pci_slot == "OCP":  # for OCP Slot
+            coord = self.parent_draw.json_file["ocp_slots"][0]["coord"]
+        elif "SIOC" in self._parent.pci_slot:  # for PCIe slot in UCS-S3260-PCISIOC
+            coord = self.parent_draw.json_file["pcie_slots"][0]["coord"]
         else:  # for PCIe Slot
             for slot in self.parent_draw.json_file["pcie_slots"]:
                 if slot["id"] == int(self._parent.pci_slot):

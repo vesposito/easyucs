@@ -1,0 +1,218 @@
+{
+  "model_short_name": "C4200",
+  "rear_file_name":"UCSC-C4200-SFF_rear.png",
+  "front_file_name":"UCSC-C4200-SFF_front.png",
+  "rear_file_size":[2856,522],
+  "front_file_size":[2860,533],
+  "server_node_slots":[
+    {
+      "id":3,
+      "coord":[167, 14],
+      "size":[1047,254]
+    },
+    {
+      "id":4,
+      "coord":[167, 265],
+      "size":[1047,254]
+    },
+    {
+      "id":1,
+      "coord":[1656, 14],
+      "size":[1047,254]
+    },
+    {
+      "id":2,
+      "coord":[1656, 265],
+      "size":[1047,254]
+    }
+  ],
+  "server_node_models":[
+    {
+      "name":"UCSC-NBLKD-C4200",
+      "type":"blank",
+      "description":"Cisco UCS C4200 Node Blank"
+    },
+    {
+      "name":"UCSC-C125",
+      "description":""
+    }
+  ],
+  "psus_slots_rear":[
+    {
+      "id":1,
+      "coord":[1230,20]
+    },
+    {
+      "id":2,
+      "coord":[1230,271]
+    }
+  ],
+  "psus_models":[
+    {
+      "name":"UCSC-PSU3-2400W",
+      "description":"UCS C4200 2400W Power Supply Unit"
+    },
+    {
+      "name":"UCSC-PSU3-BLK",
+      "type":"blank",
+      "description":"Power Supply Blanking Panel for C4200 servers"
+    }
+  ],
+  "disks_slots":[
+    {
+      "id":1,
+      "format":"sff_m5",
+      "orientation":"vertical",
+      "coord":[215, 41],
+      "size":[437,97]
+    },
+    {
+      "id":2,
+      "format":"sff_m5",
+      "orientation":"vertical",
+      "coord":[316, 41],
+      "size":[437,97]
+    },{
+      "id":3,
+      "format":"sff_m5",
+      "orientation":"vertical",
+      "coord":[417, 41],
+      "size":[437,97]
+    },{
+      "id":4,
+      "format":"sff_m5",
+      "orientation":"vertical",
+      "coord":[519, 41],
+      "size":[437,97]
+    },{
+      "id":5,
+      "format":"sff_m5",
+      "orientation":"vertical",
+      "coord":[620, 41],
+      "size":[437,97]
+    },{
+      "id":6,
+      "format":"sff_m5",
+      "orientation":"vertical",
+      "coord":[721, 41],
+      "size":[437,97]
+    },{
+      "id":7,
+      "format":"sff_m5",
+      "orientation":"vertical",
+      "coord":[823, 41],
+      "size":[437,97]
+    },{
+      "id":8,
+      "format":"sff_m5",
+      "orientation":"vertical",
+      "coord":[924, 41],
+      "size":[437,97]
+    },{
+      "id":9,
+      "format":"sff_m5",
+      "orientation":"vertical",
+      "coord":[1026, 41],
+      "size":[437,97]
+    },{
+      "id":10,
+      "format":"sff_m5",
+      "orientation":"vertical",
+      "coord":[1127, 41],
+      "size":[437,97]
+    },{
+      "id":11,
+      "format":"sff_m5",
+      "orientation":"vertical",
+      "coord":[1228, 41],
+      "size":[437,97]
+    },{
+      "id":12,
+      "format":"sff_m5",
+      "orientation":"vertical",
+      "coord":[1330, 41],
+      "size":[437,97]
+    },{
+      "id":13,
+      "format":"sff_m5",
+      "orientation":"vertical",
+      "coord":[1431, 41],
+      "size":[437,97]
+    },{
+      "id":14,
+      "format":"sff_m5",
+      "orientation":"vertical",
+      "coord":[1532, 41],
+      "size":[437,97]
+    },{
+      "id":15,
+      "format":"sff_m5",
+      "orientation":"vertical",
+      "coord":[1634, 41],
+      "size":[437,97]
+    },{
+      "id":16,
+      "format":"sff_m5",
+      "orientation":"vertical",
+      "coord":[1735, 41],
+      "size":[437,97]
+    },{
+      "id":17,
+      "format":"sff_m5",
+      "orientation":"vertical",
+      "coord":[1836, 41],
+      "size":[437,97]
+    },{
+      "id":18,
+      "format":"sff_m5",
+      "orientation":"vertical",
+      "coord":[1938, 41],
+      "size":[437,97]
+    },{
+      "id":19,
+      "format":"sff_m5",
+      "orientation":"vertical",
+      "coord":[2039, 41],
+      "size":[437,97]
+    },{
+      "id":20,
+      "format":"sff_m5",
+      "orientation":"vertical",
+      "coord":[2140, 41],
+      "size":[437,97]
+    },{
+      "id":21,
+      "format":"sff_m5",
+      "orientation":"vertical",
+      "coord":[2242, 41],
+      "size":[437,97]
+    },{
+      "id":22,
+      "format":"sff_m5",
+      "orientation":"vertical",
+      "coord":[2343, 41],
+      "size":[437,97]
+    },{
+      "id":23,
+      "format":"sff_m5",
+      "orientation":"vertical",
+      "coord":[2444, 41],
+      "size":[437,97]
+    },{
+      "id":24,
+      "format":"sff_m5",
+      "orientation":"vertical",
+      "coord":[2546, 41],
+      "size":[437,97]
+    }
+  ],
+  "disks_models":[
+    {
+      "name":"UCSC-BBLKD-S2",
+      "type":"blank",
+      "format":"sff_m5",
+      "description":"C-Series M5 SFF drive blanking panel"
+    }
+  ],
+  "spec_sheet_url": "https://www.cisco.com/c/dam/en/us/products/collateral/servers-unified-computing/ucs-c-series-rack-servers/c125m5-rack-server-node.pdf"
+}

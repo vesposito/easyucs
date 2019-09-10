@@ -627,6 +627,8 @@ class UcsSystemStorageLocalDisk(UcsStorageLocalDisk, UcsSystemInventoryObject):
                 self.size_marketing = "100GB"
             elif self.size_marketing == "118GB":
                 self.size_marketing = "120GB"
+            elif self.size_marketing == "998GB":
+                self.size_marketing = "1TB"
 
             if self.rotational_speed is not None:
                 self.rotational_speed_marketing = self.rotational_speed
@@ -815,6 +817,8 @@ class UcsImcStorageLocalDisk(UcsStorageLocalDisk, UcsImcInventoryObject):
                 self.size_marketing = "100GB"
             elif self.size_marketing == "118GB":
                 self.size_marketing = "120GB"
+            elif self.size_marketing == "998GB":
+                self.size_marketing = "1TB"
 
         elif self._inventory.load_from == "file":
             for attribute in ["block_size", "bootable", "number_of_blocks", "rotational_speed_marketing",
@@ -901,7 +905,7 @@ class UcsSystemStorageControllerNvmeDrive(UcsStorageNvmeDrive, UcsSystemInventor
             self.slot_type = None
             self.temperature = None
             if self.pci_slot:
-                if "FRONT" in self.pci_slot:
+                if any(x in self.pci_slot for x in ["FRONT", "REAR"]):
                     self.slot_type = "sff-nvme"
                 else:
                     self.slot_type = "pcie-nvme"

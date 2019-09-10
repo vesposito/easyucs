@@ -48,6 +48,7 @@ from ucsmsdk.mometa.qosclass.QosclassEthBE import QosclassEthBE
 from ucsmsdk.mometa.qosclass.QosclassEthClassified import QosclassEthClassified
 from ucsmsdk.mometa.qosclass.QosclassFc import QosclassFc
 from ucsmsdk.mometa.qosclass.QosclassSlowDrain import QosclassSlowDrain
+from ucsmsdk.mometa.vnic.VnicDynamicConPolicy import VnicDynamicConPolicy
 from ucsmsdk.mometa.vnic.VnicDynamicConPolicyRef import VnicDynamicConPolicyRef
 from ucsmsdk.mometa.vnic.VnicEther import VnicEther
 from ucsmsdk.mometa.vnic.VnicEtherIf import VnicEtherIf
@@ -1172,21 +1173,16 @@ class UcsSystemQosSystemClass(UcsSystemConfigObject):
             if qos_class is not None:
                 self.priority = qos_class.priority
                 self.weight = qos_class.weight
-                if self.priority in ["best effort", "best-effort", "best_effort"]:
+                if self.priority not in ["fibre channel", "fibre-channel", "fibre_channel", "fc"]:
                     self.multicast_optimized = qos_class.multicast_optimize
-                    self.mtu = qos_class.mtu
-                elif self.priority in ["fibre channel", "fibre-channel", "fibre_channel", "fc"]:
-                    self.cos = qos_class.cos
-                else:
-                    self.state = qos_class.admin_state
-                    self.packet_drop = qos_class.drop
-                    if self.packet_drop == "drop":
-                        self.packet_drop = "enabled"
-                    if self.packet_drop == "no-drop":
-                        self.packet_drop = "disabled"
-                    self.multicast_optimized = qos_class.multicast_optimize
-                    self.mtu = qos_class.mtu
-                    self.cos = qos_class.cos
+                self.state = qos_class.admin_state
+                self.packet_drop = qos_class.drop
+                if self.packet_drop == "drop":
+                    self.packet_drop = "enabled"
+                if self.packet_drop == "no-drop":
+                    self.packet_drop = "disabled"
+                self.mtu = qos_class.mtu
+                self.cos = qos_class.cos
 
         elif self._config.load_from == "file":
             if json_content is not None:
@@ -2731,3 +2727,57 @@ class UcsSystemLanConnectivityPolicy(UcsSystemConfigObject):
             if self.commit(detail=self.name) != True:
                 return False
         return True
+
+class UcsSystemDynamicVnicConnectionPolicy(UcsSystemConfigObject):
+    _CONFIG_NAME = "Dynamic vNIC Connection Policy"
+    _UCS_SDK_OBJECT_NAME = "vnicDynamicConPolicy"
+
+    def __init__(self, parent=None, json_content=None, vnic_dynamic_con_policy=None):
+        UcsSystemConfigObject.__init__(self, parent=parent)
+        self.name = None
+        self.descr = None
+        self.number_dynamic_vnics = None
+        self.adapter_policy = None
+        self.protection = None
+
+        if self._config.load_from == "live":
+            if vnic_dynamic_con_policy is not None:
+                self.name = vnic_dynamic_con_policy.name
+                self.descr = vnic_dynamic_con_policy.descr
+                self.number_dynamic_vnics = vnic_dynamic_con_policy.dynamic_eth
+                self.adapter_policy = vnic_dynamic_con_policy.adaptor_profile_name
+                self.protection = vnic_dynamic_con_policy.protection
+
+        elif self._config.load_from == "file":
+            if json_content is not None:
+                if not self.get_attributes_from_json(json_content=json_content):
+                    self.logger(level="error",
+                                message="Unable to get attributes from JSON content for " + self._CONFIG_NAME)
+
+        self.clean_object()
+
+    def push_object(self, commit=True):
+        if commit:
+            self.logger(message="Pushing " + self._CONFIG_NAME + " configuration: " + str(self.name))
+        else:
+            self.logger(message="Adding to the handle " + self._CONFIG_NAME + " configuration: " + str(self.name) +
+                                ", waiting for a commit")
+
+        if hasattr(self._parent, '_dn'):
+            parent_mo = self._parent._dn
+        else:
+            self.logger(level="error",
+                        message="Impossible to find the parent dn of " + self._CONFIG_NAME + " : " + self.name)
+            return False
+
+        mo_vnic_dynamic_con_policy = VnicDynamicConPolicy(parent_mo_or_dn=parent_mo,
+                                                          descr=self.descr,
+                                                          name=self.name,
+                                                          dynamic_eth=self.number_dynamic_vnics,
+                                                          adaptor_profile_name=self.adapter_policy,
+                                                          protection=self.protection)
+
+        self._handle.add_mo(mo=mo_vnic_dynamic_con_policy, modify_present=True)
+        if commit:
+            if self.commit(detail=self.name) != True:
+                return False

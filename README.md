@@ -128,6 +128,14 @@ python easyucs_gui.py
 
 ## Versioning
 
+#### 0.9.2
+
+* Include portions of Logical Configuration in Technical Architecture Documentation, including Networking, Organizations, Identities and Service Profiles
+* Add support for Dynamic vNIC Connection Policies in UCS Manager
+* Add preliminary support for S3260 in IMC for config fetch/push - works for single server node only for now
+* Add support for C4200 and C125 server node
+* Various bug fixes and improvements
+
 #### 0.9.1
 
 * Add automatic Technical Architecture Documentation creation (containing detailed inventory and architecture schemas)

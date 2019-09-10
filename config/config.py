@@ -5,6 +5,7 @@
 from __init__ import __author__, __copyright__,  __version__, __status__
 
 
+import http
 import re
 import time
 import uuid
@@ -20,12 +21,13 @@ from ucsmsdk.ucscoremeta import UcsVersion
 class GenericConfig:
     def __init__(self, parent=None):
         self.custom = None
+        self.device = parent.parent
+        self.device_version = ""
         self.load_from = None
         self.options = {}
         self.origin = None
-        self.status = None
         self.parent = parent
-        self.device = parent.parent
+        self.status = None
         self.timestamp = time.strftime("%a, %d %b %Y %H:%M:%S", time.localtime())
         self.uuid = uuid.uuid4()
 
@@ -59,6 +61,7 @@ class GenericUcsConfig(GenericConfig):
         GenericConfig.__init__(self, parent=parent)
         self.export_list = None
         self.handle = self.parent.parent.handle
+        self.intersight_status = ""
         self.sdk_objects = {}
 
     def _fetch_sdk_objects(self):
@@ -170,6 +173,9 @@ class UcsSystemConfig(GenericUcsConfig):
     _BIOS_TOKENS_MIN_REQUIRED_VERSION = "3.2(1d)"
 
     def __init__(self, parent=None):
+        self.service_profile_plots = None
+        self.orgs_plot = None
+
         self.appliance_network_control_policies = []
         self.appliance_port_channels = []
         self.appliance_ports = []
@@ -484,7 +490,8 @@ class UcsSystemConfig(GenericUcsConfig):
                                 'storageFcTargetEp', 'storageIniGroup', 'storageInitiator',
                                 'storageLocalDiskConfigPolicy', 'storageQual', 'storageVsanRef', 'storageVsanRef',
                                 'sysdebugBackupBehavior', 'sysdebugMEpLogPolicy', 'topInfoPolicy', 'uuidpoolBlock',
-                                'uuidpoolPool', 'vnicConnDef', 'vnicDynamicConPolicyRef', 'vnicEther', 'vnicEtherIf',
+                                'uuidpoolPool', 'vnicConnDef', 'vnicDynamicConPolicy', 'vnicDynamicConPolicyRef',
+                                'vnicEther', 'vnicEtherIf',
                                 'vnicFc', 'vnicFcGroupDef', 'vnicFcIf', 'vnicFcNode', 'vnicIPv4Dhcp', 'vnicIPv4If',
                                 'vnicIPv4PooledIscsiAddr', 'vnicIScsi', 'vnicIScsiAutoTargetIf', 'vnicIScsiBootParams',
                                 'vnicIScsiBootVnic', 'vnicIScsiLCP', 'vnicIScsiNode', 'vnicIScsiStaticTargetIf',
@@ -511,6 +518,9 @@ class UcsSystemConfig(GenericUcsConfig):
             except urllib.error.URLError:
                 self.logger(level="error", message="Timeout error while fetching UCS class " + sdk_object_name)
                 failed_to_fetch.append(sdk_object_name)
+            except http.client.RemoteDisconnected:
+                self.logger(level="error", message="Connection closed while fetching UCS class " + sdk_object_name)
+                failed_to_fetch.append(sdk_object_name)
 
         # We retry all SDK objects that failed to fetch properly
         if failed_to_fetch:
@@ -533,6 +543,10 @@ class UcsSystemConfig(GenericUcsConfig):
             for sdk_object_name in failed_to_fetch:
                 self.logger(level="warning", message="Impossible to fetch " + sdk_object_name + " after 2 attempts.")
 
+        # We sort all sdk objects by their DN in human readable format
+        for key, value in self.sdk_objects.items():
+            value.sort(key=lambda obj: [int(t) if t.isdigit() else t.lower() for t in re.split('(\d+)', obj.dn)])
+
 
 class UcsImcConfig(GenericUcsConfig):
     def __init__(self, parent=None):
@@ -542,6 +556,7 @@ class UcsImcConfig(GenericUcsConfig):
         self.boot_order_properties = []
         self.chassis_inventory = []
         self.communications_services = []
+        self.dynamic_storage_zoning = []
         self.ip_blocking_properties = []
         self.ip_filtering_properties = []
         self.ldap_settings = []
@@ -564,12 +579,13 @@ class UcsImcConfig(GenericUcsConfig):
 
         # List of attributes to be exported in a config export
         self.export_list = ['adapter_cards', 'admin_networking', 'bios_settings', 'boot_order_properties',
-                            'chassis_inventory', 'communications_services', 'ip_blocking_properties',
-                            'ip_filtering_properties', 'ldap_settings', 'local_users', 'local_users_properties',
-                            'platform_event_filters', 'power_cap_configuration', 'power_policies',
-                            'secure_key_management', 'serial_over_lan_properties', 'server_properties',
-                            'smtp_properties', 'snmp', 'storage_controllers', 'storage_flex_flash_controllers',
-                            'timezone_mgmt', 'virtual_kvm_properties', 'virtual_media']
+                            'chassis_inventory', 'communications_services', 'dynamic_storage_zoning',
+                            'ip_blocking_properties', 'ip_filtering_properties', 'ldap_settings', 'local_users',
+                            'local_users_properties', 'platform_event_filters', 'power_cap_configuration',
+                            'power_policies', 'secure_key_management', 'serial_over_lan_properties',
+                            'server_properties', 'smtp_properties', 'snmp', 'storage_controllers',
+                            'storage_flex_flash_controllers', 'timezone_mgmt', 'virtual_kvm_properties',
+                            'virtual_media']
 
     def _fetch_sdk_objects(self):
         GenericUcsConfig._fetch_sdk_objects(self)
@@ -606,18 +622,17 @@ class UcsImcConfig(GenericUcsConfig):
                                 'biosVfUsbXhciSupport', 'biosVfVgaPriority', 'biosVfWorkLoadConfig', 'commHttp',
                                 'commHttps', 'commIpmiLan', 'commKvm', 'commMailAlert', 'commRedfish',
                                 'commSavedVMediaMap', 'commSnmp', 'commSsh', 'commVMedia', 'commVMediaMap',
-                                'computeRackUnit', 'fanPolicy', 'ipBlocking', 'ipFiltering', 'kmipServerLogin',
-                                'ldapCACertificateManagement', 'lsbootDef', 'lsbootDevPrecision', 'lsbootEfi',
-                                'lsbootEfi', 'lsbootHdd', 'lsbootIscsi', 'lsbootLan', 'lsbootLan', 'lsbootNVMe',
+                                'computeRackUnit', 'computeServerRef', 'equipmentChassis', 'fanPolicy', 'ipBlocking',
+                                'ipFiltering', 'kmipServerLogin', 'ldapCACertificateManagement', 'lsbootDef',
+                                'lsbootDevPrecision', 'lsbootEfi', 'lsbootHdd', 'lsbootIscsi', 'lsbootLan',
                                 'lsbootNVMe', 'lsbootPchStorage', 'lsbootPxe', 'lsbootSan', 'lsbootSd', 'lsbootStorage',
-                                'lsbootStorage', 'lsbootUefiShell', 'lsbootUsb', 'lsbootVMedia', 'lsbootVirtualMedia',
-                                'lsbootVirtualMedia', 'mailRecipient', 'memoryArray', 'mgmtIf',
-                                'oneTimePrecisionBootDevice', 'oneTimePrecisionBootDevice', 'platformEventFilters',
+                                'lsbootUefiShell', 'lsbootUsb', 'lsbootVMedia', 'lsbootVirtualMedia', 'mailRecipient',
+                                'memoryArray', 'mgmtIf', 'oneTimePrecisionBootDevice', 'platformEventFilters',
                                 'powerBudget', 'selfEncryptStorageController', 'solIf', 'standardPowerProfile',
                                 'storageController', 'storageFlexFlashOperationalProfile',
-                                'storageFlexFlashPhysicalDrive',
-                                'storageFlexFlashVirtualDrive', 'storageFlexFlashController', 'storageLocalDisk',
-                                'storageLocalDiskUsage', 'storageVirtualDrive']
+                                'storageFlexFlashPhysicalDrive', 'storageFlexFlashVirtualDrive',
+                                'storageFlexFlashController', 'storageLocalDisk', 'storageLocalDiskUsage',
+                                'storageVirtualDrive']
 
         self.logger(level="debug", message="Fetching UCS IMC SDK objects for config")
         failed_to_fetch = []

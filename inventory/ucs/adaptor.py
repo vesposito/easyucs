@@ -182,7 +182,7 @@ class UcsImcNetworkAdapter(UcsAdaptor, UcsImcInventoryObject):
             # We default the interface type to "unknown"
             self.type = "unknown"
 
-            # Handling incomplete UCS catalog entries
+            # Handling potentially incomplete UCS catalog entries (when SKU is not found)
             if self.sku is None:
                 if hasattr(self, "_pid_catalog"):
                     if all(hasattr(self._pid_catalog, attr) for attr in ["vendor", "device", "subvendor", "subdevice"]):
@@ -289,6 +289,8 @@ class UcsImcNetworkAdapter(UcsAdaptor, UcsImcInventoryObject):
                             self.sku = "UCSC-PCIE-QD25GF"
                         elif (vendor, device, subvendor, subdevice) == ("0x1077", "0x1634", "0x1137", "0x0245"):
                             self.sku = "UCSC-PCIE-QD40GF"
+                        elif (vendor, device, subvendor, subdevice) == ("0x1077", "0x8070", "0x1077", "0x0019"):
+                            self.sku = "UCSC-OCP-QD25GF"
 
             if self.sku in ["N2XX-AEPCI01", "UCSC-PCIE-ESFP", "UCSC-PCIE-E14102B", "UCSC-PCIE-E14102", "N2XX-AQPCI01",
                             "UCSC-PCIE-QSFP", "UCSC-PCIE-Q8362"]:
@@ -302,7 +304,8 @@ class UcsImcNetworkAdapter(UcsAdaptor, UcsImcInventoryObject):
                               "UCSC-PCIE-IRJ45", "UCSC-MLOM-IRJ45", "UCSC-PCIE-ITG", "UCSC-PCIE-ID10GC",
                               "UCSC-PCIE-ID10GF", "UCSC-PCIE-IQ10GF", "UCSC-PCIE-IQ10GC", "UCSC-PCIE-ID40GF",
                               "UCSC-PCIE-ID25GF", "N2XX-AMPCI01", "UCSC-PCIE-QNICBT", "UCSC-PCIE-QNICSFP",
-                              "UCSC-PCIE-QD25GF", "UCSC-PCIE-QD40GF", "UCSX-MLOM-001"]:
+                              "UCSC-PCIE-QD25GF", "UCSC-PCIE-QD40GF", "UCSX-MLOM-001", "UCSC-OCP-QD10GC",
+                              "UCSC-OCP-QD25GF"]:
                 self.type = "nic"
             elif self.sku in ["N2XX-ACPCI01", "UCSC-PCIE-CSC-02", "UCSC-PCIE-C10T-02", "UCSC-MLOM-CSC-02",
                               "UCSC-MLOM-C10T-02", "UCSC-PCIE-C40Q-02", "UCSC-PCIE-C40Q-03", "UCSC-MLOM-C40Q-03",

@@ -41,6 +41,162 @@
             "platform-default"
          ]
       },
+      "acs_control_gpu_1": {
+         "description": "BIOS Policy - Access Control Services - ACS Control GPU-1",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "Disabled",
+            "Enabled",
+            "Platform Default",
+            "disabled",
+            "enabled",
+            "platform-default"
+         ]
+      },
+      "acs_control_gpu_2": {
+         "description": "BIOS Policy - Access Control Services - ACS Control GPU-2",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "Disabled",
+            "Enabled",
+            "Platform Default",
+            "disabled",
+            "enabled",
+            "platform-default"
+         ]
+      },
+      "acs_control_gpu_3": {
+         "description": "BIOS Policy - Access Control Services - ACS Control GPU-3",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "Disabled",
+            "Enabled",
+            "Platform Default",
+            "disabled",
+            "enabled",
+            "platform-default"
+         ]
+      },
+      "acs_control_gpu_4": {
+         "description": "BIOS Policy - Access Control Services - ACS Control GPU-4",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "Disabled",
+            "Enabled",
+            "Platform Default",
+            "disabled",
+            "enabled",
+            "platform-default"
+         ]
+      },
+      "acs_control_gpu_5": {
+         "description": "BIOS Policy - Access Control Services - ACS Control GPU-5",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "Disabled",
+            "Enabled",
+            "Platform Default",
+            "disabled",
+            "enabled",
+            "platform-default"
+         ]
+      },
+      "acs_control_gpu_6": {
+         "description": "BIOS Policy - Access Control Services - ACS Control GPU-6",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "Disabled",
+            "Enabled",
+            "Platform Default",
+            "disabled",
+            "enabled",
+            "platform-default"
+         ]
+      },
+      "acs_control_gpu_7": {
+         "description": "BIOS Policy - Access Control Services - ACS Control GPU-7",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "Disabled",
+            "Enabled",
+            "Platform Default",
+            "disabled",
+            "enabled",
+            "platform-default"
+         ]
+      },
+      "acs_control_gpu_8": {
+         "description": "BIOS Policy - Access Control Services - ACS Control GPU-8",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "Disabled",
+            "Enabled",
+            "Platform Default",
+            "disabled",
+            "enabled",
+            "platform-default"
+         ]
+      },
+      "acs_control_slot_11": {
+         "description": "BIOS Policy - Access Control Services - ACS Control SLOT-11",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "Disabled",
+            "Enabled",
+            "Platform Default",
+            "disabled",
+            "enabled",
+            "platform-default"
+         ]
+      },
+      "acs_control_slot_12": {
+         "description": "BIOS Policy - Access Control Services - ACS Control SLOT-12",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "Disabled",
+            "Enabled",
+            "Platform Default",
+            "disabled",
+            "enabled",
+            "platform-default"
+         ]
+      },
+      "acs_control_slot_13": {
+         "description": "BIOS Policy - Access Control Services - ACS Control SLOT-13",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "Disabled",
+            "Enabled",
+            "Platform Default",
+            "disabled",
+            "enabled",
+            "platform-default"
+         ]
+      },
+      "acs_control_slot_14": {
+         "description": "BIOS Policy - Access Control Services - ACS Control SLOT-14",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "Disabled",
+            "Enabled",
+            "Platform Default",
+            "disabled",
+            "enabled",
+            "platform-default"
+         ]
+      },
       "adaptive_memory_training": {
          "description": "BIOS Policy - Adaptive Memory Training - Adaptive Memory Training",
          "type": "string",
@@ -347,6 +503,19 @@
             "platform-default"
          ]
       },
+      "configurable_tdp_control": {
+         "description": "BIOS Policy - Processor - Configurable TDP Control",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "Auto",
+            "Manual",
+            "Platform Default",
+            "auto",
+            "manual",
+            "platform-default"
+         ]
+      },
       "console_redirection": {
          "description": "BIOS Policy - Console redirection - Console redirection",
          "type": "string",
@@ -463,6 +632,19 @@
             "enterprise",
             "high-throughput",
             "hpc",
+            "platform-default"
+         ]
+      },
+      "dcpmm_firmware_downgrade": {
+         "description": "BIOS Policy - DCPMM Firmware Downgrade Configuration - DCPMM Firmware Downgrade",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "Disabled",
+            "Enabled",
+            "Platform Default",
+            "disabled",
+            "enabled",
             "platform-default"
          ]
       },
@@ -885,6 +1067,21 @@
             "Platform Default",
             "disabled",
             "enabled",
+            "platform-default"
+         ]
+      },
+      "intel_speed_select": {
+         "description": "BIOS Policy - IntelSpeedSelect Configuration - Intel Speed Select",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "Base",
+            "Config-1",
+            "Config-2",
+            "Platform Default",
+            "base",
+            "config-1",
+            "config-2",
             "platform-default"
          ]
       },
@@ -1393,12 +1590,14 @@
          "type": "string",
          "default": "platform-default",
          "enum": [
+            "ADDDC-Sparing",
             "Lockstep",
             "Maximum-Performance",
             "Mirror-Mode-1LM",
             "Mirroring",
             "Platform Default",
             "Sparing",
+            "adddc-sparing",
             "lockstep",
             "maximum-performance",
             "mirror-mode-1lm",
@@ -3852,9 +4051,11 @@
          "type": "string",
          "default": "platform-default",
          "enum": [
+            "Auto",
             "Disabled",
             "Enabled",
             "Platform Default",
+            "auto",
             "disabled",
             "enabled",
             "platform-default"

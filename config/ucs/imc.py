@@ -119,6 +119,8 @@ from imcsdk.mometa.comm.CommSvcEp import CommSvcEp
 from imcsdk.mometa.comm.CommVMedia import CommVMedia
 from imcsdk.mometa.comm.CommVMediaMap import CommVMediaMap
 from imcsdk.mometa.compute.ComputeRackUnit import ComputeRackUnit
+from imcsdk.mometa.compute.ComputeServerRef import ComputeServerRef
+from imcsdk.mometa.equipment.EquipmentChassis import EquipmentChassis
 from imcsdk.mometa.fan.FanPolicy import FanPolicy
 from imcsdk.mometa.ip.IpBlocking import IpBlocking
 from imcsdk.mometa.ip.IpFiltering import IpFiltering
@@ -203,8 +205,14 @@ class UcsImcAdminNetwork(UcsImcConfigObject):
             # Locating SDK objects needed to initialize
             mgmt_if = None
             if "mgmtIf" in self._config.sdk_objects:
+                # For rack servers
                 if len(self._config.sdk_objects["mgmtIf"]) == 1:
                     mgmt_if = self._config.sdk_objects["mgmtIf"][0]
+                # For S3260 chassis servers
+                if len(self._config.sdk_objects["mgmtIf"]) > 1:
+                    for interface in self._config.sdk_objects["mgmtIf"]:
+                        if interface.dn == "sys/chassis-1/if-1":
+                            mgmt_if = interface
 
             if mgmt_if is not None:
                 self.auto_negotiation = mgmt_if.auto_neg
@@ -213,7 +221,10 @@ class UcsImcAdminNetwork(UcsImcConfigObject):
                 self.dns_preferred_ipv4 = mgmt_if.dns_preferred
                 self.enable_ipv6 = mgmt_if.v6ext_enabled
                 self.gateway_ipv4 = mgmt_if.ext_gw
-                self.management_hostname = mgmt_if.hostname
+                if self._device.platform_type == "classic":
+                    self.management_hostname = mgmt_if.hostname
+                elif self._device.platform_type == "modular":
+                    self.management_hostname = mgmt_if.v_hostname
                 self.management_ipv4_address = mgmt_if.ext_ip
                 self.management_subnet_mask = mgmt_if.ext_mask
                 self.nic_mode = mgmt_if.nic_mode
@@ -283,7 +294,12 @@ class UcsImcAdminNetwork(UcsImcConfigObject):
             self.vlan_id = None
             self.vlan_priority = None
 
-        mo_mgmt_if = MgmtIf(parent_mo_or_dn="sys/rack-unit-1/mgmt", admin_duplex=self.admin_duplex,
+        if self._device.platform_type == "classic":
+            parent_mo = "sys/rack-unit-1/mgmt"
+        elif self._device.platform_type == "modular":
+            parent_mo = "sys/chassis-1"
+
+        mo_mgmt_if = MgmtIf(parent_mo_or_dn=parent_mo, admin_duplex=self.admin_duplex,
                             admin_net_speed=self.admin_port_speed, auto_neg=self.auto_negotiation,
                             ddns_domain=self.dynamic_dns_update_domain, ddns_enable=self.dynamic_dns_enable,
                             dhcp_enable=self.use_dhcp_v4, dns_alternate=self.dns_alternate_ipv4,
@@ -502,18 +518,27 @@ class UcsImcLocalUsersProperties(UcsImcConfigObject):
 
 
 class UcsImcServerProperties(UcsImcConfigObject):
-    _CONFIG_NAME = "Server Properties"
+    _CONFIG_NAME = "Server/Chassis Properties"
 
     def __init__(self, parent=None, json_content=None):
         UcsImcConfigObject.__init__(self, parent=parent)
         self.description = None
         self.asset_tag = None
+        self.server_sioc_connectivity = None
 
         if self._config.load_from == "live":
-            if "computeRackUnit" in self._config.sdk_objects:
-                if len(self._config.sdk_objects["computeRackUnit"]) == 1:
-                    self.description = self._config.sdk_objects["computeRackUnit"][0].usr_lbl
-                    self.asset_tag = self._config.sdk_objects["computeRackUnit"][0].asset_tag
+            if self._device.platform_type == "classic":
+                if "computeRackUnit" in self._config.sdk_objects:
+                    if len(self._config.sdk_objects["computeRackUnit"]) == 1:
+                        self.description = self._config.sdk_objects["computeRackUnit"][0].usr_lbl
+                        self.asset_tag = self._config.sdk_objects["computeRackUnit"][0].asset_tag
+            elif self._device.platform_type == "modular":
+                if "equipmentChassis" in self._config.sdk_objects:
+                    if len(self._config.sdk_objects["equipmentChassis"]) == 1:
+                        self.description = self._config.sdk_objects["equipmentChassis"][0].usr_lbl
+                        self.asset_tag = self._config.sdk_objects["equipmentChassis"][0].asset_tag
+                        self.server_sioc_connectivity = \
+                            self._config.sdk_objects["equipmentChassis"][0].server_sioc_connectivity
 
         elif self._config.load_from == "file":
             if json_content is not None:
@@ -531,11 +556,86 @@ class UcsImcServerProperties(UcsImcConfigObject):
                                 ", waiting for a commit")
 
         parent_mo = "sys"
-        mo_compute_rack_unit = ComputeRackUnit(parent_mo_or_dn=parent_mo, server_id="1",
-                                               asset_tag=self.asset_tag, usr_lbl=self.description)
+        mo_server_properties = None
+        if self._device.platform_type == "classic":
+            mo_server_properties = ComputeRackUnit(parent_mo_or_dn=parent_mo, server_id="1",
+                                                   asset_tag=self.asset_tag, usr_lbl=self.description)
+        elif self._device.platform_type == "modular":
+            mo_server_properties = EquipmentChassis(parent_mo_or_dn=parent_mo, asset_tag=self.asset_tag,
+                                                    usr_lbl=self.description,
+                                                    server_sioc_connectivity=self.server_sioc_connectivity)
+
         if commit:
-            if self.commit(mo=mo_compute_rack_unit) != True:
+            if self.commit(mo=mo_server_properties) != True:
                 return False
+
+        return True
+
+
+class UcsImcDynamicStorageZoning(UcsImcConfigObject):
+    _CONFIG_NAME = "Dynamic Storage Zoning"
+
+    def __init__(self, parent=None, json_content=None):
+        UcsImcConfigObject.__init__(self, parent=parent)
+        self.disks = []
+
+        if self._config.load_from == "live":
+            if "computeServerRef" in self._config.sdk_objects:
+                for compute_server_ref in self._config.sdk_objects["computeServerRef"]:
+                    disk = {}
+                    disk["slot"] = compute_server_ref.slot
+                    disk["ownership"] = compute_server_ref.ownership
+                    self.disks.append(disk)
+
+        elif self._config.load_from == "file":
+            if json_content is not None:
+                if not self.get_attributes_from_json(json_content=json_content):
+                    self.logger(level="error",
+                                message="Unable to get attributes from JSON content for " + self._CONFIG_NAME)
+
+                for element in self.disks:
+                    for value in ["slot", "ownership"]:
+                        if value not in element:
+                            element[value] = None
+
+        self.clean_object()
+
+    def push_object(self, commit=True):
+        if commit:
+            self.logger(message="Pushing " + self._CONFIG_NAME + " configuration")
+        else:
+            self.logger(message="Adding to the handle " + self._CONFIG_NAME + " configuration" +
+                                ", waiting for a commit")
+
+        parent_mo = "sys/chassis-1/enc-1"
+        mo_compute_server_ref = None
+
+        # Fetching the information needed
+        all_compute_server_refs = self._device.query(mode="classid", target="computeServerRef")
+
+        for disk in self.disks:
+            live_compute_server_ref = [compute_server_ref for compute_server_ref in all_compute_server_refs
+                                       if compute_server_ref.slot == disk["slot"]]
+            if len(live_compute_server_ref) == 1:
+                if live_compute_server_ref[0].ownership == "none":
+                    live_compute_server_ref[0].ownership = disk["ownership"]
+                    #mo_compute_server_ref = ComputeServerRef(parent_mo_or_dn=parent_mo, ownership=disk["ownership"],
+                    #                                         slot=disk["slot"])
+                elif live_compute_server_ref[0].ownership != disk["ownership"]:
+                    self.logger(level="debug", message="Un-assigning disk " + disk["id"] + " before changing ownership")
+                    # mo_compute_server_ref = ComputeServerRef(parent_mo_or_dn=parent_mo, ownership="none",
+                    #                                          slot=disk["slot"])
+                    live_compute_server_ref[0].ownership = "none"
+                    if commit:
+                        if self.commit(mo=live_compute_server_ref[0]) != True:
+                            return False
+                    # mo_compute_server_ref = ComputeServerRef(parent_mo_or_dn=parent_mo, ownership=disk["ownership"],
+                    #                                          slot=disk["slot"])
+                    live_compute_server_ref[0].ownership = disk["ownership"]
+
+            if commit:
+                if self.commit(mo=live_compute_server_ref[0]) != True:
+                    return False
 
         return True
 
@@ -1866,30 +1966,36 @@ class UcsImcBios(UcsImcConfigObject):
         self.os_watchdog_timer_policy = None
 
         if self._config.load_from == "live":
+
+            if self._device.platform_type == "classic":
+                bios_dn = "sys/rack-unit-1/bios/bios-settings"
+            elif self._device.platform_type == "modular":
+                bios_dn = "sys/chassis-1/server-1/bios/bios-settings"  # FIXME: Add support for server-2 in S3260
+
             if "biosVfTPMSupport" in self._config.sdk_objects:
                 for policy in self._config.sdk_objects["biosVfTPMSupport"]:
-                    if "sys/rack-unit-1/bios/bios-settings" in policy.dn:
+                    if bios_dn in policy.dn:
                         self.tpm_support = policy.vp_tpm_support
             if "biosVfPowerOnPasswordSupport" in self._config.sdk_objects:
                 for policy in self._config.sdk_objects["biosVfPowerOnPasswordSupport"]:
-                    if "sys/rack-unit-1/bios/bios-settings" in policy.dn:
+                    if bios_dn in policy.dn:
                         self.power_on_password_support = policy.vp_pop_support
             # Advanced - Processor Configuration
             if "biosVfIntelHyperThreadingTech" in self._config.sdk_objects:
                 for policy in self._config.sdk_objects["biosVfIntelHyperThreadingTech"]:
-                    if "sys/rack-unit-1/bios/bios-settings" in policy.dn:
+                    if bios_dn in policy.dn:
                         self.intel_hyper_threading_technology = policy.vp_intel_hyper_threading_tech
             if "biosVfCoreMultiProcessing" in self._config.sdk_objects:
                 for policy in self._config.sdk_objects["biosVfCoreMultiProcessing"]:
-                    if "sys/rack-unit-1/bios/bios-settings" in policy.dn:
+                    if bios_dn in policy.dn:
                         self.number_of_enabled_cores = policy.vp_core_multi_processing
             if "biosVfExecuteDisableBit" in self._config.sdk_objects:
                 for policy in self._config.sdk_objects["biosVfExecuteDisableBit"]:
-                    if "sys/rack-unit-1/bios/bios-settings" in policy.dn:
+                    if bios_dn in policy.dn:
                         self.execute_disable = policy.vp_execute_disable_bit
             if "biosVfIntelVTForDirectedIO" in self._config.sdk_objects:
                 for policy in self._config.sdk_objects["biosVfIntelVTForDirectedIO"]:
-                    if "sys/rack-unit-1/bios/bios-settings" in policy.dn:
+                    if bios_dn in policy.dn:
                         self.intel_vtd = policy.vp_intel_vt_for_directed_io
                         self.intel_pass_through_dma = policy.vp_intel_vtd_pass_through_dma_support
                         self.intel_vtd_ats_support = policy.vp_intel_vtdats_support
@@ -1897,148 +2003,148 @@ class UcsImcBios(UcsImcConfigObject):
                         self.intel_vtd_coherency_support = policy.vp_intel_vtd_coherency_support
             if "biosVfIntelVirtualizationTechnology" in self._config.sdk_objects:
                 for policy in self._config.sdk_objects["biosVfIntelVirtualizationTechnology"]:
-                    if "sys/rack-unit-1/bios/bios-settings" in policy.dn:
+                    if bios_dn in policy.dn:
                         self.intel_vt = policy.vp_intel_virtualization_technology
             if "biosVfCPUPerformance" in self._config.sdk_objects:
                 for policy in self._config.sdk_objects["biosVfCPUPerformance"]:
-                    if "sys/rack-unit-1/bios/bios-settings" in policy.dn:
+                    if bios_dn in policy.dn:
                         self.cpu_performance = policy.vp_cpu_performance
             if "biosVfHardwarePrefetch" in self._config.sdk_objects:
                 for policy in self._config.sdk_objects["biosVfHardwarePrefetch"]:
-                    if "sys/rack-unit-1/bios/bios-settings" in policy.dn:
+                    if bios_dn in policy.dn:
                         self.hardware_prefetcher = policy.vp_hardware_prefetch
             if "biosVfAdjacentCacheLinePrefetch" in self._config.sdk_objects:
                 for policy in self._config.sdk_objects["biosVfAdjacentCacheLinePrefetch"]:
-                    if "sys/rack-unit-1/bios/bios-settings" in policy.dn:
+                    if bios_dn in policy.dn:
                         self.adjacent_cache_line_prefetcher = policy.vp_adjacent_cache_line_prefetch
             if "biosVfDCUPrefetch" in self._config.sdk_objects:
                 for policy in self._config.sdk_objects["biosVfDCUPrefetch"]:
-                    if "sys/rack-unit-1/bios/bios-settings" in policy.dn:
+                    if bios_dn in policy.dn:
                         self.dcu_streamer_prefetch = policy.vp_streamer_prefetch
                         self.dcu_ip_prefetcher = policy.vp_ip_prefetch
             if "biosVfDirectCacheAccess" in self._config.sdk_objects:
                 for policy in self._config.sdk_objects["biosVfDirectCacheAccess"]:
-                    if "sys/rack-unit-1/bios/bios-settings" in policy.dn:
+                    if bios_dn in policy.dn:
                         self.direct_cache_access_support = policy.vp_direct_cache_access
             if "biosVfCPUPowerManagement" in self._config.sdk_objects:
                 for policy in self._config.sdk_objects["biosVfCPUPowerManagement"]:
-                    if "sys/rack-unit-1/bios/bios-settings" in policy.dn:
+                    if bios_dn in policy.dn:
                         self.power_technology = policy.vp_cpu_power_management
             if "biosVfEnhancedIntelSpeedStepTech" in self._config.sdk_objects:
                 for policy in self._config.sdk_objects["biosVfEnhancedIntelSpeedStepTech"]:
-                    if "sys/rack-unit-1/bios/bios-settings" in policy.dn:
+                    if bios_dn in policy.dn:
                         self.enhanced_intel_speedstep_techonology = policy.vp_enhanced_intel_speed_step_tech
             if "biosVfIntelTurboBoostTech" in self._config.sdk_objects:
                 for policy in self._config.sdk_objects["biosVfIntelTurboBoostTech"]:
-                    if "sys/rack-unit-1/bios/bios-settings" in policy.dn:
+                    if bios_dn in policy.dn:
                         self.intel_turbo_boost_technology = policy.vp_intel_turbo_boost_tech
             if "biosVfProcessorC3Report" in self._config.sdk_objects:
                 for policy in self._config.sdk_objects["biosVfProcessorC3Report"]:
-                    if "sys/rack-unit-1/bios/bios-settings" in policy.dn:
+                    if bios_dn in policy.dn:
                         self.processor_c3_report = policy.vp_processor_c3_report
             if "biosVfProcessorC6Report" in self._config.sdk_objects:
                 for policy in self._config.sdk_objects["biosVfProcessorC6Report"]:
-                    if "sys/rack-unit-1/bios/bios-settings" in policy.dn:
+                    if bios_dn in policy.dn:
                         self.processor_c6_report = policy.vp_processor_c6_report
             if "biosVfProcessorC1E" in self._config.sdk_objects:
                 for policy in self._config.sdk_objects["biosVfProcessorC1E"]:
-                    if "sys/rack-unit-1/bios/bios-settings" in policy.dn:
+                    if bios_dn in policy.dn:
                         self.processor_power_state_c1_enhanced = policy.vp_processor_c1_e
             if "biosVfPStateCoordType" in self._config.sdk_objects:
                 for policy in self._config.sdk_objects["biosVfPStateCoordType"]:
-                    if "sys/rack-unit-1/bios/bios-settings" in policy.dn:
+                    if bios_dn in policy.dn:
                         self.pstate_coordination = policy.vp_p_state_coord_type
             if "biosVfBootPerformanceMode" in self._config.sdk_objects:
                 for policy in self._config.sdk_objects["biosVfBootPerformanceMode"]:
-                    if "sys/rack-unit-1/bios/bios-settings" in policy.dn:
+                    if bios_dn in policy.dn:
                         self.boot_performance_mode = policy.vp_boot_performance_mode
             if "biosVfPwrPerfTuning" in self._config.sdk_objects:
                 for policy in self._config.sdk_objects["biosVfPwrPerfTuning"]:
-                    if "sys/rack-unit-1/bios/bios-settings" in policy.dn:
+                    if bios_dn in policy.dn:
                         self.energy_performance_tuning = policy.vp_pwr_perf_tuning
             if "biosVfCPUEnergyPerformance" in self._config.sdk_objects:
                 for policy in self._config.sdk_objects["biosVfCPUEnergyPerformance"]:
-                    if "sys/rack-unit-1/bios/bios-settings" in policy.dn:
+                    if bios_dn in policy.dn:
                         self.energy_performance = policy.vp_cpu_energy_performance
             if "biosVfPackageCStateLimit" in self._config.sdk_objects:
                 for policy in self._config.sdk_objects["biosVfPackageCStateLimit"]:
-                    if "sys/rack-unit-1/bios/bios-settings" in policy.dn:
+                    if bios_dn in policy.dn:
                         self.package_c_state_limit = policy.vp_package_c_state_limit
             if "biosVfExtendedAPIC" in self._config.sdk_objects:
                 for policy in self._config.sdk_objects["biosVfExtendedAPIC"]:
-                    if "sys/rack-unit-1/bios/bios-settings" in policy.dn:
+                    if bios_dn in policy.dn:
                         self.extended_apic = policy.vp_extended_apic
             if "biosVfWorkLoadConfig" in self._config.sdk_objects:
                 for policy in self._config.sdk_objects["biosVfWorkLoadConfig"]:
-                    if "sys/rack-unit-1/bios/bios-settings" in policy.dn:
+                    if bios_dn in policy.dn:
                         self.workload_configuration = policy.vp_work_load_config
             if "biosVfHWPMEnable" in self._config.sdk_objects:
                 for policy in self._config.sdk_objects["biosVfHWPMEnable"]:
-                    if "sys/rack-unit-1/bios/bios-settings" in policy.dn:
+                    if bios_dn in policy.dn:
                         self.cpu_hwpm = policy.vp_hwpm_enable
             if "biosVfAutonumousCstateEnable" in self._config.sdk_objects:
                 for policy in self._config.sdk_objects["biosVfAutonumousCstateEnable"]:
-                    if "sys/rack-unit-1/bios/bios-settings" in policy.dn:
+                    if bios_dn in policy.dn:
                         self.cpu_autonomous_cstate = policy.vp_autonumous_cstate_enable
             if "biosVfCmciEnable" in self._config.sdk_objects:
                 for policy in self._config.sdk_objects["biosVfCmciEnable"]:
-                    if "sys/rack-unit-1/bios/bios-settings" in policy.dn:
+                    if bios_dn in policy.dn:
                         self.processor_cmci = policy.vp_cmci_enable
             # Advanced - Memory Configuration
             if "biosVfSelectMemoryRASConfiguration" in self._config.sdk_objects:
                 for policy in self._config.sdk_objects["biosVfSelectMemoryRASConfiguration"]:
-                    if "sys/rack-unit-1/bios/bios-settings" in policy.dn:
+                    if bios_dn in policy.dn:
                         self.select_memory_ras = policy.vp_select_memory_ras_configuration
             if "biosVfNUMAOptimized" in self._config.sdk_objects:
                 for policy in self._config.sdk_objects["biosVfNUMAOptimized"]:
-                    if "sys/rack-unit-1/bios/bios-settings" in policy.dn:
+                    if bios_dn in policy.dn:
                         self.numa = policy.vp_numa_optimized
             if "biosVfMemoryInterleave" in self._config.sdk_objects:
                 for policy in self._config.sdk_objects["biosVfMemoryInterleave"]:
-                    if "sys/rack-unit-1/bios/bios-settings" in policy.dn:
+                    if bios_dn in policy.dn:
                         self.channel_interleaving = policy.vp_channel_inter_leave
                         self.rank_interleaving = policy.vp_rank_inter_leave
             if "biosVfPatrolScrub" in self._config.sdk_objects:
                 for policy in self._config.sdk_objects["biosVfPatrolScrub"]:
-                    if "sys/rack-unit-1/bios/bios-settings" in policy.dn:
+                    if bios_dn in policy.dn:
                         self.patrol_scrub = policy.vp_patrol_scrub
             if "biosVfDemandScrub" in self._config.sdk_objects:
                 for policy in self._config.sdk_objects["biosVfDemandScrub"]:
-                    if "sys/rack-unit-1/bios/bios-settings" in policy.dn:
+                    if bios_dn in policy.dn:
                         self.demand_scrub = policy.vp_demand_scrub
             if "biosVfAltitude" in self._config.sdk_objects:
                 for policy in self._config.sdk_objects["biosVfAltitude"]:
-                    if "sys/rack-unit-1/bios/bios-settings" in policy.dn:
+                    if bios_dn in policy.dn:
                         self.altitude = policy.vp_altitude
             # Advanced - QPI Configuration
             if "biosVfQPIConfig" in self._config.sdk_objects:
                 for policy in self._config.sdk_objects["biosVfQPIConfig"]:
-                    if "sys/rack-unit-1/bios/bios-settings" in policy.dn:
+                    if bios_dn in policy.dn:
                         self.qpi_link_frequency_select = policy.vp_qpi_link_frequency
             if "biosVfQpiSnoopMode" in self._config.sdk_objects:
                 for policy in self._config.sdk_objects["biosVfQpiSnoopMode"]:
-                    if "sys/rack-unit-1/bios/bios-settings" in policy.dn:
+                    if bios_dn in policy.dn:
                         self.qpi_snoop_mode = policy.vp_qpi_snoop_mode
             # Advanced - USB Configuration
             if "biosVfLegacyUSBSupport" in self._config.sdk_objects:
                 for policy in self._config.sdk_objects["biosVfLegacyUSBSupport"]:
-                    if "sys/rack-unit-1/bios/bios-settings" in policy.dn:
+                    if bios_dn in policy.dn:
                         self.legacy_usb_support = policy.vp_legacy_usb_support
             if "biosVfUSBEmulation" in self._config.sdk_objects:
                 for policy in self._config.sdk_objects["biosVfUSBEmulation"]:
-                    if "sys/rack-unit-1/bios/bios-settings" in policy.dn:
+                    if bios_dn in policy.dn:
                         self.port_60_64_emulation = policy.vp_usb_emul6064
             if "biosVfPchUsb30Mode" in self._config.sdk_objects:
                 for policy in self._config.sdk_objects["biosVfPchUsb30Mode"]:
-                    if "sys/rack-unit-1/bios/bios-settings" in policy.dn:
+                    if bios_dn in policy.dn:
                         self.xhci_mode = policy.vp_pch_usb30_mode
             if "biosVfUsbXhciSupport" in self._config.sdk_objects:
                 for policy in self._config.sdk_objects["biosVfUsbXhciSupport"]:
-                    if "sys/rack-unit-1/bios/bios-settings" in policy.dn:
+                    if bios_dn in policy.dn:
                         self.xhci_legacy_support = policy.vp_usb_xhci_support
             if "biosVfUSBPortsConfig" in self._config.sdk_objects:
                 for policy in self._config.sdk_objects["biosVfUSBPortsConfig"]:
-                    if "sys/rack-unit-1/bios/bios-settings" in policy.dn:
+                    if bios_dn in policy.dn:
                         self.all_usb_devices = policy.vp_all_usb_devices
                         self.usb_port_front = policy.vp_usb_port_front
                         self.usb_port_rear = policy.vp_usb_port_rear
@@ -2048,28 +2154,28 @@ class UcsImcBios(UcsImcConfigObject):
             # Advanced - PCI Configuration
             if "biosVfMemoryMappedIOAbove4GB" in self._config.sdk_objects:
                 for policy in self._config.sdk_objects["biosVfMemoryMappedIOAbove4GB"]:
-                    if "sys/rack-unit-1/bios/bios-settings" in policy.dn:
+                    if bios_dn in policy.dn:
                         self.mmio_above_4gb = policy.vp_memory_mapped_io_above4_gb
             if "biosVfSrIov" in self._config.sdk_objects:
                 for policy in self._config.sdk_objects["biosVfSrIov"]:
-                    if "sys/rack-unit-1/bios/bios-settings" in policy.dn:
+                    if bios_dn in policy.dn:
                         self.sr_iov_support = policy.vp_sr_iov
             if "biosVfPCIeSSDHotPlugSupport" in self._config.sdk_objects:
                 for policy in self._config.sdk_objects["biosVfPCIeSSDHotPlugSupport"]:
-                    if "sys/rack-unit-1/bios/bios-settings" in policy.dn:
+                    if bios_dn in policy.dn:
                         self.nvme_ssd_hot_plug_support = policy.vp_pc_ie_ssd_hot_plug_support
             if "biosVfVgaPriority" in self._config.sdk_objects:
                 for policy in self._config.sdk_objects["biosVfVgaPriority"]:
-                    if "sys/rack-unit-1/bios/bios-settings" in policy.dn:
+                    if bios_dn in policy.dn:
                         self.vga_priority = policy.vp_vga_priority
             # Advanced - Serial Configuration
             if "biosVfOutOfBandMgmtPort" in self._config.sdk_objects:
                 for policy in self._config.sdk_objects["biosVfOutOfBandMgmtPort"]:
-                    if "sys/rack-unit-1/bios/bios-settings" in policy.dn:
+                    if bios_dn in policy.dn:
                         self.out_of_band_management = policy.vp_out_of_band_mgmt_port
             if "biosVfConsoleRedirection" in self._config.sdk_objects:
                 for policy in self._config.sdk_objects["biosVfConsoleRedirection"]:
-                    if "sys/rack-unit-1/bios/bios-settings" in policy.dn:
+                    if bios_dn in policy.dn:
                         self.console_redirection = policy.vp_console_redirection
                         self.terminal_type = policy.vp_terminal_type
                         self.bits_per_second = policy.vp_baud_rate
@@ -2079,29 +2185,29 @@ class UcsImcBios(UcsImcConfigObject):
             # Advanced - LOM & PCIe Slots Configuration
             if "biosVfCDNEnable" in self._config.sdk_objects:
                 for policy in self._config.sdk_objects["biosVfCDNEnable"]:
-                    if "sys/rack-unit-1/bios/bios-settings" in policy.dn:
+                    if bios_dn in policy.dn:
                         self.cdn_support_for_vic = policy.vp_cdn_enable
             if "biosVfPciRomClp" in self._config.sdk_objects:
                 for policy in self._config.sdk_objects["biosVfPciRomClp"]:
-                    if "sys/rack-unit-1/bios/bios-settings" in policy.dn:
+                    if bios_dn in policy.dn:
                         self.pci_rom_clp = policy.vp_pci_rom_clp
             if "biosVfSataModeSelect" in self._config.sdk_objects:
                 for policy in self._config.sdk_objects["biosVfSataModeSelect"]:
-                    if "sys/rack-unit-1/bios/bios-settings" in policy.dn:
+                    if bios_dn in policy.dn:
                         self.pch_sata_mode = policy.vp_sata_mode_select
             if "biosVfLOMPortOptionROM" in self._config.sdk_objects:
                 for policy in self._config.sdk_objects["biosVfLOMPortOptionROM"]:
-                    if "sys/rack-unit-1/bios/bios-settings" in policy.dn:
+                    if bios_dn in policy.dn:
                         self.all_onboard_lom_ports = policy.vp_lom_ports_all_state
                         self.lom_port_1_option_rom = policy.vp_lom_port0_state
                         self.lom_port_2_option_rom = policy.vp_lom_port1_state
             if "biosVfPCIOptionROMs" in self._config.sdk_objects:
                 for policy in self._config.sdk_objects["biosVfPCIOptionROMs"]:
-                    if "sys/rack-unit-1/bios/bios-settings" in policy.dn:
+                    if bios_dn in policy.dn:
                         self.all_pcie_slots_option_rom = policy.vp_pci_option_ro_ms
             if "biosVfPCISlotOptionROMEnable" in self._config.sdk_objects:
                 for policy in self._config.sdk_objects["biosVfPCISlotOptionROMEnable"]:
-                    if "sys/rack-unit-1/bios/bios-settings" in policy.dn:
+                    if bios_dn in policy.dn:
                         self.pcie_slot_1_option_rom = policy.vp_slot1_state
                         self.pcie_slot_2_option_rom = policy.vp_slot2_state
                         self.pcie_slot_mlom_option_rom = policy.vp_slot_mlom_state
@@ -2117,19 +2223,19 @@ class UcsImcBios(UcsImcConfigObject):
             # Server Management
             if "biosVfFRB2Enable" in self._config.sdk_objects:
                 for policy in self._config.sdk_objects["biosVfFRB2Enable"]:
-                    if "sys/rack-unit-1/bios/bios-settings" in policy.dn:
+                    if bios_dn in policy.dn:
                         self.frb2_timer = policy.vp_fr_b2_enable
             if "biosVfOSBootWatchdogTimer" in self._config.sdk_objects:
                 for policy in self._config.sdk_objects["biosVfOSBootWatchdogTimer"]:
-                    if "sys/rack-unit-1/bios/bios-settings" in policy.dn:
+                    if bios_dn in policy.dn:
                         self.os_watchdog_timer = policy.vp_os_boot_watchdog_timer
             if "biosVfOSBootWatchdogTimerPolicy" in self._config.sdk_objects:
                 for policy in self._config.sdk_objects["biosVfOSBootWatchdogTimerPolicy"]:
-                    if "sys/rack-unit-1/bios/bios-settings" in policy.dn:
+                    if bios_dn in policy.dn:
                         self.os_watchdog_timer_policy = policy.vp_os_boot_watchdog_timer_policy
             if "biosVfOSBootWatchdogTimerTimeout" in self._config.sdk_objects:
                 for policy in self._config.sdk_objects["biosVfOSBootWatchdogTimerTimeout"]:
-                    if "sys/rack-unit-1/bios/bios-settings" in policy.dn:
+                    if bios_dn in policy.dn:
                         self.os_watchdog_timer_timeout = policy.vp_os_boot_watchdog_timer_timeout
 
         elif self._config.load_from == "file":
@@ -2147,7 +2253,10 @@ class UcsImcBios(UcsImcConfigObject):
             self.logger(message="Adding to the handle " + self._CONFIG_NAME + " configuration" +
                                 ", waiting for a commit")
 
-        parent_mo = "sys/rack-unit-1/bios"
+        if self._device.platform_type == "classic":
+            parent_mo = "sys/rack-unit-1/bios"
+        elif self._device.platform_type == "modular":
+            parent_mo = "sys/chassis-1/server-1/bios"  # FIXME: Add support for setting BIOS params for server-2
         mo_bios_settings = BiosSettings(parent_mo_or_dn=parent_mo)
 
         BiosVfTPMSupport(parent_mo_or_dn=mo_bios_settings, vp_tpm_support=self.tpm_support)
@@ -2581,7 +2690,10 @@ class UcsImcBootOrder(UcsImcConfigObject):
             self.logger(message="Adding to the handle " + self._CONFIG_NAME + " configuration" +
                                 ", waiting for a commit")
 
-        parent_mo = "sys/rack-unit-1"
+        if self._device.platform_type == "classic":
+            parent_mo = "sys/rack-unit-1"
+        elif self._device.platform_type == "modular":
+            parent_mo = "sys/chassis-1/server-1"  # FIXME: add support for server-2 for S3260
 
         configured_boot_mode = self.configured_boot_mode
         if self.configured_boot_mode == "None":
@@ -2687,12 +2799,14 @@ class UcsImcStorageController(UcsImcConfigObject):
                         drive["name"] = virtual_disk.name
                         drive["raid_level"] = virtual_disk.raid_level
                         drive["size"] = virtual_disk.size
-                        drive["strip_size"] = virtual_disk.strip_size
-                        drive["write_policy"] = virtual_disk.current_write_cache_policy
-                        drive["disk_cache_policy"] = virtual_disk.disk_cache_policy
+                        drive["strip_size"] = virtual_disk.strip_size  # FIXME:  The value '64 KB' is not an element of the set {'64k', '128k', '256k', '512k', '1024k', 'default'}
+                        drive["write_policy"] = virtual_disk.requested_write_cache_policy
+                        drive["disk_cache_policy"] = virtual_disk.disk_cache_policy.lower()
                         drive["cache_policy"] = virtual_disk.cache_policy
+                        if virtual_disk.cache_policy == "Direct":
+                            drive["cache_policy"] = "direct-io"  # FIXME: DEBUG - cache_policy valid values are ['', 'cached-io', 'default', 'direct-io']
                         drive["read_policy"] = virtual_disk.read_policy
-                        drive["access_policy"] = virtual_disk.access_policy
+                        drive["access_policy"] = virtual_disk.access_policy.lower()  # FIXME: DEBUG - access_policy valid values are ['', 'blocked', 'default', 'hidden', 'read-only', 'read-write']
                         if virtual_disk.access_policy == "hidden":
                             drive["status"] = "hidden"
                         elif virtual_disk.access_policy == "Transport Ready":
@@ -2701,7 +2815,7 @@ class UcsImcStorageController(UcsImcConfigObject):
                             drive["status"] = "boot drive"
                         drive["physical_disk_usage"] = []
                         for local_disk in self._config.sdk_objects["storageLocalDiskUsage"]:
-                            if virtual_disk.dn in local_disk.dn:
+                            if virtual_disk.dn + "/" in local_disk.dn:
                                 drive["physical_disk_usage"].append(local_disk.physical_drive)
                         self.virtual_drives.append(drive)
 
@@ -2747,7 +2861,11 @@ class UcsImcStorageController(UcsImcConfigObject):
         else:
             self.logger(message="Adding to the handle " + self._CONFIG_NAME + " configuration: " + self.id)
 
-        parent_mo = "sys/rack-unit-1/board"
+        parent_mo = ""
+        if self._device.platform_type == "classic":
+            parent_mo = "sys/rack-unit-1/board"
+        elif self._device.platform_type == "modular":
+            parent_mo = "sys/chassis-1/server-1/board"  # TODO : Fix to add support for server-2 in S3260
         mo_storage_controller = StorageController(parent_mo_or_dn=parent_mo, id=self.id, type=self.type)
 
         if commit:
@@ -2783,14 +2901,14 @@ class UcsImcStorageController(UcsImcConfigObject):
 
         # Fetching the information needed
         all_local_disks = self._device.query(mode="classid", target="storageLocalDisk")
-        controller_local_disks = [disk for disk in all_local_disks if mo_storage_controller.dn in disk.dn]
+        controller_local_disks = [disk for disk in all_local_disks if mo_storage_controller.dn + "/" in disk.dn]
 
         all_virtual_drive = self._device.query(mode="classid", target="storageVirtualDrive")
-        controller_virtual_drives = [disk for disk in all_virtual_drive if mo_storage_controller.dn in disk.dn]
+        controller_virtual_drives = [disk for disk in all_virtual_drive if mo_storage_controller.dn + "/" in disk.dn]
 
         all_local_disk_usage = self._device.query(mode="classid", target="storageLocalDiskUsage")
         controller_disks_used = [local_disk_usage for local_disk_usage in all_local_disk_usage if
-                                 mo_storage_controller.dn in local_disk_usage.dn]
+                                 mo_storage_controller.dn + "/" in local_disk_usage.dn]
 
         for drive in self.virtual_drives:
 
@@ -2834,7 +2952,7 @@ class UcsImcStorageController(UcsImcConfigObject):
             for drive_id in requested_drive_group:
                 for disk in controller_local_disks:
                     if disk.id == drive_id:
-                        if disk.drive_state == "Unconfigured Good":
+                        if disk.drive_state in ["Unconfigured Good", "unconfigured good"]:
                             unconfigured.append(drive_id)
             if len(unconfigured) == len(requested_drive_group):
                 # Case : all the local disk are not configured
@@ -2866,6 +2984,7 @@ class UcsImcStorageController(UcsImcConfigObject):
             for disk in controller_disks_used:
                 virtual_drive_dict[disk.virtual_drive].append(disk.physical_drive)
 
+            virtual_id = ""
             for virtual_id, physical_ids in virtual_drive_dict.items():
                 if sorted(physical_ids) == sorted(drive["physical_disk_usage"]):
                     break
@@ -2914,7 +3033,7 @@ class UcsImcStorageController(UcsImcConfigObject):
                         live_drive_status = "transport ready"
                     elif virtual_disk.boot_drive.lower() == "true":
                         live_drive_status = "boot drive"
-            if live_drive_status == drive["status"].lower():
+            if live_drive_status == str(drive["status"]).lower():
                 # We skip the drive if the status is the same as the one already configured
                 continue
             # We need to clear the previous configuration
@@ -2940,7 +3059,7 @@ class UcsImcStorageController(UcsImcConfigObject):
                     self.commit(mo=mo_virtual_drive)
 
             # We configure the new status
-            if drive["status"].lower() == "boot drive":
+            if str(drive["status"]).lower() == "boot drive":
                 self.logger(level="debug",
                             message=self._CONFIG_NAME + " configuration: " + self.id + " - Virtual Drive " + drive[
                                 "id"] + " - Setting status to " + drive["status"])
@@ -2949,7 +3068,7 @@ class UcsImcStorageController(UcsImcConfigObject):
                                                        admin_action="set-boot-drive")
                 if commit:
                     self.commit(mo=mo_virtual_drive)
-            elif drive["status"].lower() == "hidden":
+            elif str(drive["status"]).lower() == "hidden":
                 self.logger(level="debug",
                             message=self._CONFIG_NAME + " configuration: " + self.id + " - Virtual Drive " + drive[
                                 "id"] + " - Setting status to " + drive["status"])
@@ -2958,7 +3077,7 @@ class UcsImcStorageController(UcsImcConfigObject):
                                                        admin_action="hide-virtual-drive")
                 if commit:
                     self.commit(mo=mo_virtual_drive)
-            elif drive["status"].lower() == "transport ready":
+            elif str(drive["status"]).lower() == "transport ready":
                 self.logger(level="debug",
                             message=self._CONFIG_NAME + " configuration: " + self.id + " - Virtual Drive " + drive[
                                 "id"] + " - Setting status to " + drive["status"])

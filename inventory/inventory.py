@@ -25,6 +25,8 @@ from imcsdk.imcexception import ImcException
 class GenericInventory:
     def __init__(self, parent=None):
         self.custom = False
+        self.device = parent.parent
+        self.device_version = ""
         self.load_from = None
         self.origin = None
         self.status = None
@@ -62,15 +64,16 @@ class GenericUcsInventory(GenericInventory):
         GenericInventory.__init__(self, parent=parent)
         self.export_list = None
         self.handle = self.parent.parent.handle
+        self.intersight_status = ""
         self.sdk_objects = {}
 
     def _fetch_sdk_objects(self):
         # List of SDK objects to fetch that are common to UCS System & IMC
         sdk_objects_to_fetch = ["adaptorExtEthIf", "adaptorUnit", "computeRackUnit", "equipmentChassis",
-                                "equipmentLocatorLed", "equipmentPsu", "equipmentSystemIOController", "equipmentTpm",
-                                "memoryArray", "memoryUnit", "mgmtController", "mgmtIf", "processorUnit",
-                                "storageController", "storageEnclosure", "storageFlexFlashController",
-                                "storageLocalDisk", "storageRaidBattery"]
+                                "equipmentLocatorLed", "equipmentPsu", "equipmentRackEnclosure",
+                                "equipmentSystemIOController", "equipmentTpm", "memoryArray", "memoryUnit",
+                                "mgmtController", "mgmtIf", "processorUnit", "storageController", "storageEnclosure",
+                                "storageFlexFlashController", "storageLocalDisk", "storageRaidBattery"]
         self.logger(level="debug", message="Fetching common UCS SDK objects for inventory")
         for sdk_object_name in sdk_objects_to_fetch:
             try:
@@ -169,12 +172,14 @@ class UcsSystemInventory(GenericUcsInventory):
         self.fabric_extenders = []
         self.fabric_interconnects = []
         self.lan_neighbors = []
+        self.rack_enclosures = []
         self.rack_units = []
         self.san_neighbors = []
 
         self._draw_infra_san_neighbors = None
         self._draw_infra_lan_neighbors = None
         self._draw_infra_rack_service_profiles = None
+        self._draw_infra_rack_enclosure_service_profiles = None
         self._draw_infra_chassis_service_profiles = None
         # Set the list of Service Profile template used for Infra Draw of Service Profiles on chassis and racks
         self._draw_color_list_per_sp_template = [{"color": "lightblue", "template_name": "", "template_org": ""},
@@ -201,8 +206,8 @@ class UcsSystemInventory(GenericUcsInventory):
         GenericUcsInventory.__init__(self, parent=parent)
 
         # List of attributes to be exported in an inventory export
-        self.export_list = ["chassis", "fabric_extenders", "fabric_interconnects", "lan_neighbors", "rack_units",
-                            "san_neighbors"]
+        self.export_list = ["chassis", "fabric_extenders", "fabric_interconnects", "lan_neighbors", "rack_enclosures",
+                            "rack_units", "san_neighbors"]
 
     def _fetch_sdk_objects(self):
         GenericUcsInventory._fetch_sdk_objects(self)
@@ -356,11 +361,12 @@ class UcsSystemInventory(GenericUcsInventory):
 class UcsImcInventory(GenericUcsInventory):
     def __init__(self, parent=None):
         self.chassis = []  # Used for chassis models like S3260
+        self.rack_enclosures = []  # Used for server nodes inside rack enclosures like C4200
         self.rack_units = []
         GenericUcsInventory.__init__(self, parent=parent)
 
         # List of attributes to be exported in an inventory export
-        self.export_list = ["chassis", "rack_units"]
+        self.export_list = ["chassis", "rack_enclosures", "rack_units"]
 
     def _fetch_sdk_objects(self):
         GenericUcsInventory._fetch_sdk_objects(self)

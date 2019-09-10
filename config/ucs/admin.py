@@ -15,7 +15,8 @@ from config.object import GenericUcsConfigObject, UcsImcConfigObject, UcsSystemC
 
 from config.ucs.lan import UcsSystemIpPool, UcsSystemMacPool, UcsSystemVnicTemplate, UcsSystemQosPolicy,\
     UcsSystemNetworkControlPolicy, UcsSystemMulticastPolicy, UcsSystemLinkProtocolPolicy,\
-    UcsSystemLanConnectivityPolicy, UcsSystemLacpPolicy, UcsSystemFlowControlPolicy, UcsSystemDefaultVnicBehavior
+    UcsSystemLanConnectivityPolicy, UcsSystemLacpPolicy, UcsSystemFlowControlPolicy, UcsSystemDefaultVnicBehavior,\
+    UcsSystemDynamicVnicConnectionPolicy
 from config.ucs.servers import UcsSystemUuidPool, UcsSystemServerPool, UcsSystemServerPoolPolicy,\
     UcsSystemPowerControlPolicy, UcsSystemMaintenancePolicy, UcsSystemGraphicsCardPolicy,\
     UcsSystemLocalDiskConfPolicy, UcsSystemServerPoolPolicyQualifications, UcsSystemPowerSyncPolicy,\
@@ -361,6 +362,9 @@ class UcsSystemOrg(UcsSystemConfigObject):
         self.qos_policies = \
             self._get_generic_element(json_content=json_content, object_class=UcsSystemQosPolicy,
                                       name_to_fetch="qos_policies")
+        self.dynamic_vnic_connection_policies = \
+            self._get_generic_element(json_content=json_content, object_class=UcsSystemDynamicVnicConnectionPolicy,
+                                      name_to_fetch="dynamic_vnic_connection_policies")
         self.maintenance_policies = \
             self._get_generic_element(json_content=json_content, object_class=UcsSystemMaintenancePolicy,
                                       name_to_fetch="maintenance_policies")
@@ -507,7 +511,8 @@ class UcsSystemOrg(UcsSystemConfigObject):
         objects_to_push_in_order = ['server_pool_policy_qualifications', 'server_pools', 'server_pool_policies',
                                     'ip_pools', 'mac_pools', 'uuid_pools', 'wwpn_pools', 'wwnn_pools', 'wwxn_pools',
                                     'bios_policies', 'boot_policies', 'orgs', 'iqn_suffix_pools',
-                                    'vmedia_policies', 'qos_policies', 'ethernet_adapter_policies',
+                                    'vmedia_policies', 'qos_policies', 'dynamic_vnic_connection_policies',
+                                    'ethernet_adapter_policies',
                                     'fibre_channel_adapter_policies', 'diagnostics_policies',
                                     'iscsi_adapter_policies', 'ipmi_access_profiles', 'power_control_policies',
                                     'serial_over_lan_policies', 'power_sync_policies', 'vnic_vhba_placement_policies',

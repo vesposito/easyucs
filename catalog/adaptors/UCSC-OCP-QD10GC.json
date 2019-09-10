@@ -1,0 +1,18 @@
+{
+  "model_short_name": "QLogic QL41132HORJ 2x10G",
+  "rear_file_name":"UCSC-OCP-QD10GC.png",
+  "rear_file_size":[475,113],
+  "rear_ports": {
+    "x/1": {
+      "port_coord": [248, 42],
+      "port_type": "rj45",
+      "port_size": [73, 47]
+    },
+    "x/2": {
+      "port_coord": [375, 42],
+      "port_type": "rj45",
+      "port_size": [73, 47]
+    }
+  },
+  "data_sheet_url": "https://www.cisco.com/c/dam/en/us/products/collateral/servers-unified-computing/ucs-c-series-rack-servers/qlogic-ql41132horj-product-brief.pdf"
+}

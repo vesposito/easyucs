@@ -37,6 +37,15 @@ class GenericReportSection(GenericReportElement):
         else:
             return None
 
+    def parse_org(self, org, element_list, element_to_parse):
+        if eval("org." + element_to_parse) is not None:
+            for element in eval("org." + element_to_parse):
+                element_list.append(element)
+        if hasattr(org, "orgs"):
+            if org.orgs is not None:
+                for suborg in org.orgs:
+                    self.parse_org(suborg, element_list, element_to_parse)
+
 
 class ArchitectureUcsReportSection(GenericReportSection):
     def __init__(self, order_id, parent, title=""):
@@ -50,12 +59,18 @@ class ArchitectureUcsReportSection(GenericReportSection):
 class InfraCablingUcsReportSection(GenericReportSection):
     def __init__(self, order_id, parent, title=""):
         if not title:
-            title = _("UCS Internal Infrastructure cabling")
+            title = _("Internal Infrastructure cabling")
         GenericReportSection.__init__(self, order_id=order_id, parent=parent, title=title)
         if self.report.inventory.chassis:
             if self.report.inventory.fabric_interconnects[0].model not in ["UCS-FI-M-6324"]:
                 self.content_list.append(InfraChassisEquipmentUcsReportSection(order_id=self.report.get_current_order_id(),
                                                                                parent=self))
+            else:
+                # Checking if we have a second chassis in UCS Mini, otherwise infra section is not needed
+                if len(self.report.inventory.chassis) > 1:
+                    self.content_list.append(
+                        InfraChassisEquipmentUcsReportSection(order_id=self.report.get_current_order_id(),
+                                                              parent=self))
         if self.report.inventory.rack_units:
             self.content_list.append(InfraRackEquipmentUcsReportSection(order_id=self.report.get_current_order_id(),
                                                                         parent=self))
@@ -64,7 +79,7 @@ class InfraCablingUcsReportSection(GenericReportSection):
 class InfraRackEquipmentUcsReportSection(GenericReportSection):
     def __init__(self, order_id, parent, title=""):
         if not title:
-            title = _("UCS Rack Servers Internal Infrastructure cabling")
+            title = _("Rack Servers Internal Infrastructure cabling")
         GenericReportSection.__init__(self, order_id=order_id, parent=parent, title=title)
         for rack in self.report.inventory.rack_units:
             rack_name = rack.id
@@ -72,7 +87,7 @@ class InfraRackEquipmentUcsReportSection(GenericReportSection):
                 rack_name = rack.id + " - " + rack.user_label
             self.content_list.append(InfraRackUcsReportSection(order_id=self.report.get_current_order_id(),
                                                                parent=self,
-                                                               title=_("UCS Rack #") + rack_name, rack=rack))
+                                                               title=_("Rack ") + rack_name, rack=rack))
 
 
 class InfraRackUcsReportSection(GenericReportSection):
@@ -99,15 +114,18 @@ class InfraRackUcsReportSection(GenericReportSection):
 class InfraChassisEquipmentUcsReportSection(GenericReportSection):
     def __init__(self, order_id, parent, title=""):
         if not title:
-            title = _("UCS Chassis Internal Infrastructure cabling")
+            title = _("Chassis Internal Infrastructure cabling")
         GenericReportSection.__init__(self, order_id=order_id, parent=parent, title=title)
         for chassis in self.report.inventory.chassis:
+            if chassis.id == "1" and self.report.inventory.fabric_interconnects[0].model in ["UCS-FI-M-6324"]:
+                # We do not create a section for chassis 1 in UCS Mini
+                continue
             chassis_name = chassis.id
             if chassis.user_label:
                 chassis_name = chassis.id + " - " + chassis.user_label
             self.content_list.append(InfraChassisUcsReportSection(order_id=self.report.get_current_order_id(),
                                                                   parent=self,
-                                                                  title=_("UCS Chassis #") + chassis_name,
+                                                                  title=_("Chassis ") + chassis_name,
                                                                   chassis=chassis))
 
 
@@ -130,7 +148,7 @@ class InfraChassisUcsReportSection(GenericReportSection):
             )
         else:
             self.content_list.append(GenericReportText(order_id=self.report.get_current_order_id(), parent=self,
-                                                       string=_("This device is not connected to any FI or FEX")))
+                                                       string=_("This device is not connected to any FI")))
 
 
 class InfraNeighborsUcsReportSection(GenericReportSection):
@@ -187,7 +205,7 @@ class ChassisInventoryUcsReportSection(GenericReportSection):
             if chassis.user_label:
                 chassis_name = chassis.id + " - " + chassis.user_label
             self.content_list.append(ChassisUcsReportSection(order_id=self.report.get_current_order_id(), parent=self,
-                                                             title="Chassis #" + chassis_name, chassis=chassis))
+                                                             title="Chassis " + chassis_name, chassis=chassis))
             if chassis.blades:
                 blade_list = blade_list + chassis.blades
 
@@ -210,7 +228,7 @@ class BladesUcsReportSection(GenericReportSection):
 class RackInventoryUcsReportSection(GenericReportSection):
     def __init__(self, order_id, parent, title=""):
         if not title:
-            title = _("Rack Inventory")
+            title = _("Rack Servers Inventory")
         GenericReportSection.__init__(self, order_id=order_id, parent=parent, title=title)
         if self.report.inventory.rack_units:
             descr = ""  # TODO
@@ -221,7 +239,7 @@ class RackInventoryUcsReportSection(GenericReportSection):
             if rack.user_label:
                 rack_name = rack.id + " - " + rack.user_label
             self.content_list.append(RackUcsReportSection(order_id=self.report.get_current_order_id(), parent=self,
-                                                          title="Rack #" + rack_name, rack=rack))
+                                                          title="Rack " + rack_name, rack=rack))
 
         if self.report.device.device_type == "UCS System":
             if self.report.inventory.rack_units:
@@ -564,19 +582,77 @@ class InfraSanNeighborsUcsReportSection(GenericReportSection):
 class LogicalConfigurationUcsReportSection(GenericReportSection):
     def __init__(self, order_id, parent, title=""):
         if not title:
-            title = _("Logical Configuration")
+            title = _("Configuration")
+        GenericReportSection.__init__(self, order_id=order_id, parent=parent, title=title)
+        self.content_list.append(FiLogicalConfigurationUcsReportSection(order_id=self.report.get_current_order_id(),
+                                                                        parent=self))
+        self.content_list.append(NetworkingUcsReportSection(order_id=self.report.get_current_order_id(), parent=self))
+        self.content_list.append(OrganizationUcsReportSection(order_id=self.report.get_current_order_id(), parent=self))
+        self.content_list.append(IdentitiesUcsReportSection(order_id=self.report.get_current_order_id(), parent=self))
+        self.content_list.append(ServiceProfilesUcsReportSection(order_id=self.report.get_current_order_id(),
+                                                                 parent=self))
+
+
+class NetworkingUcsReportSection(GenericReportSection):
+    def __init__(self, order_id, parent, title=""):
+        if not title:
+            title = _("Networking")
         GenericReportSection.__init__(self, order_id=order_id, parent=parent, title=title)
 
         self.content_list.append(VlanUcsReportSection(order_id=self.report.get_current_order_id(), parent=self))
-        self.content_list.append(VsanUcsReportSection(order_id=self.report.get_current_order_id(), parent=self))
         self.content_list.append(VlanGroupUcsReportSection(order_id=self.report.get_current_order_id(), parent=self))
-        self.content_list.append(ServiceProfilesUcsReportSection(order_id=self.report.get_current_order_id(), parent=self))
+        self.content_list.append(VsanUcsReportSection(order_id=self.report.get_current_order_id(), parent=self))
+        self.content_list.append(LanPortChannelUcsReportSection(order_id=self.report.get_current_order_id(),
+                                                                parent=self))
+        self.content_list.append(SanPortChannelUcsReportSection(order_id=self.report.get_current_order_id(),
+                                                                parent=self))
+        self.content_list.append(FcoePortChannelUcsReportSection(order_id=self.report.get_current_order_id(),
+                                                                parent=self))
+        self.content_list.append(QosSystemClassUcsReportSection(order_id=self.report.get_current_order_id(), parent=self))
+
+
+class FiLogicalConfigurationUcsReportSection(GenericReportSection):
+    def __init__(self, order_id, parent, title=""):
+        if not title:
+            title = _("Fabric Interconnect Ports Configuration")
+        GenericReportSection.__init__(self, order_id=order_id, parent=parent, title=title)
+
+        for fi in self.report.inventory.fabric_interconnects:
+            self.content_list.append(FiPortsUcsReportSection(order_id=self.report.get_current_order_id(), parent=self,
+                                                        title="Fabric Interconnect " + fi.id +
+                                                              " Ports Configuration", fi=fi))
+
+
+class FiPortsUcsReportSection(GenericReportSection):
+    def __init__(self, order_id, parent, title, fi):
+        GenericReportSection.__init__(self, order_id=order_id, parent=parent, title=title)
+
+        if fi.model in ["UCS-FI-M-6324"]:
+            # UCS Mini FI only has a rear picture
+            path_rear = self.report.img_path + "fi_" + fi.id + "_rear.png"
+            if os.path.exists(path_rear):
+                # rotate and create an horizontal picture of the FI from UCS Mini
+                image = Image.open(path_rear).rotate(90, expand=True)
+                path_rear = self.report.img_path + "fi_" + fi.id + "_rear_horizontal.png"
+                image.save(path_rear)
+            self.content_list.append(
+                GenericReportImage(order_id=self.report.get_current_order_id(), parent=self, path=path_rear,
+                                   centered=True, spacing_after=2))
+        else:
+
+            path_rear = self.report.img_path + "fi_" + fi.id + "_rear.png"
+            self.content_list.append(
+                GenericReportImage(order_id=self.report.get_current_order_id(), parent=self, path=path_rear,
+                                   centered=True, spacing_after=2))
+
+        self.content_list.append(
+            FiPortsUcsReportTable(order_id=self.report.get_current_order_id(), parent=self, fi=fi, centered=True))
 
 
 class VlanUcsReportSection(GenericReportSection):
     def __init__(self, order_id, parent, title=""):
         if not title:
-            title = _("VLAN Information")
+            title = _("VLANs")
         GenericReportSection.__init__(self, order_id=order_id, parent=parent, title=title)
         if self.report.config.vlans:
             self.content_list.append(
@@ -590,7 +666,7 @@ class VlanUcsReportSection(GenericReportSection):
 class VlanGroupUcsReportSection(GenericReportSection):
     def __init__(self, order_id, parent, title=""):
         if not title:
-            title = _("VLAN Group Information")
+            title = _("VLAN Groups")
         GenericReportSection.__init__(self, order_id=order_id, parent=parent, title=title)
         if self.report.config.vlan_groups:
             self.content_list.append(
@@ -598,14 +674,14 @@ class VlanGroupUcsReportSection(GenericReportSection):
                                   string=(_("There is a total of ") + str(len(self.report.config.vlan_groups)) +
                                           _(" VLANs groups"))))
             self.content_list.append(
-                VlanGroupUcsReportTable(order_id=self.report.get_current_order_id(), parent=self,
-                                                        vlan_groups=self.report.config.vlan_groups))
+                VlanGroupUcsReportTable(order_id=self.report.get_current_order_id(), parent=self, centered=True,
+                                        vlan_groups=self.report.config.vlan_groups))
 
 
 class VsanUcsReportSection(GenericReportSection):
     def __init__(self, order_id, parent, title=""):
         if not title:
-            title = _("VSAN Information")
+            title = _("VSANs")
         GenericReportSection.__init__(self, order_id=order_id, parent=parent, title=title)
         if self.report.config.vsans:
             self.content_list.append(
@@ -616,10 +692,382 @@ class VsanUcsReportSection(GenericReportSection):
                                                         vsans=self.report.config.vsans, centered=True))
 
 
+class LanPortChannelUcsReportSection(GenericReportSection):
+    def __init__(self, order_id, parent, title=""):
+        if not title:
+            title = _("LAN Port-Channels")
+        GenericReportSection.__init__(self, order_id=order_id, parent=parent, title=title)
+        if self.report.config.lan_port_channels:
+            self.content_list.append(
+                LanPortChannelUcsReportTable(order_id=self.report.get_current_order_id(), parent=self, centered=True,
+                                             lan_port_channels=self.report.config.lan_port_channels))
+
+
+class SanPortChannelUcsReportSection(GenericReportSection):
+    def __init__(self, order_id, parent, title=""):
+        if not title:
+            title = _("SAN Port-Channels")
+        GenericReportSection.__init__(self, order_id=order_id, parent=parent, title=title)
+        if self.report.config.san_port_channels:
+            self.content_list.append(
+                SanPortChannelUcsReportTable(order_id=self.report.get_current_order_id(), parent=self, centered=True,
+                                             san_port_channels=self.report.config.san_port_channels))
+
+
+class FcoePortChannelUcsReportSection(GenericReportSection):
+    def __init__(self, order_id, parent, title=""):
+        if not title:
+            title = _("FCoE Port-Channels")
+        GenericReportSection.__init__(self, order_id=order_id, parent=parent, title=title)
+        if self.report.config.fcoe_port_channels:
+            self.content_list.append(
+                FcoePortChannelUcsReportTable(order_id=self.report.get_current_order_id(), parent=self, centered=True,
+                                              fcoe_port_channels=self.report.config.fcoe_port_channels))
+
+
+class IpPoolUcsReportSection(GenericReportSection):
+    def __init__(self, order_id, parent, title=""):
+        if not title:
+            title = _("IP Pools")
+        GenericReportSection.__init__(self, order_id=order_id, parent=parent, title=title)
+
+        ip_pool_list = []
+        # Searching for all IP Pools
+        for org in self.report.config.orgs:
+            self.parse_org(org, ip_pool_list, element_to_parse="ip_pools")
+
+        if ip_pool_list:
+            for ip_pool in ip_pool_list:
+                self.content_list.append(
+                    IpPoolDescriptionUcsReportSection(order_id=self.report.get_current_order_id(),
+                                                      parent=self,
+                                                      ip_pool=ip_pool,
+                                                      title=_("IP Pool ") + ip_pool.name))
+
+
+class IpPoolDescriptionUcsReportSection(GenericReportSection):
+    def __init__(self, order_id, parent, ip_pool, title=""):
+        GenericReportSection.__init__(self, order_id=order_id, parent=parent, title=title)
+
+        if ip_pool.ip_blocks:
+            self.content_list.append(
+                GenericReportText(order_id=self.report.get_current_order_id(),
+                                  parent=self,
+                                  string=_("\nIPv4 Blocks :"), bolded=True)
+            )
+            self.content_list.append(
+                IpPoolSectionInfoBlockUcsReportTable(order_id=self.report.get_current_order_id(),
+                                                     parent=self, centered=True,
+                                                     blocks_ipv4=ip_pool.ip_blocks))
+
+        if ip_pool.ipv6_blocks:
+            self.content_list.append(
+                GenericReportText(order_id=self.report.get_current_order_id(),
+                                  parent=self,
+                                  string=_("\nIPv6 Blocks :"), bolded=True)
+            )
+            self.content_list.append(
+                IpPoolSectionInfoBlockv6UcsReportTable(order_id=self.report.get_current_order_id(),
+                                                       parent=self, centered=True,
+                                                       blocks_ipv6=ip_pool.ipv6_blocks))
+
+
+class MacPoolUcsReportSection(GenericReportSection):
+    def __init__(self, order_id, parent, title=""):
+        if not title:
+            title = _("MAC Pools")
+        GenericReportSection.__init__(self, order_id=order_id, parent=parent, title=title)
+
+        mac_pool_list = []
+        # Searching for all IP Pools
+        for org in self.report.config.orgs:
+            self.parse_org(org, mac_pool_list, element_to_parse="mac_pools")
+
+        if mac_pool_list:
+            for mac_pool in mac_pool_list:
+                self.content_list.append(
+                    MacPoolDescriptionUcsReportSection(order_id=self.report.get_current_order_id(),
+                                                       parent=self,
+                                                       mac_pool=mac_pool,
+                                                       title=_("MAC Pool ") + mac_pool.name))
+
+
+class MacPoolDescriptionUcsReportSection(GenericReportSection):
+    def __init__(self, order_id, parent, mac_pool, title=""):
+        GenericReportSection.__init__(self, order_id=order_id, parent=parent, title=title)
+
+        if mac_pool.mac_blocks:
+            self.content_list.append(
+                GenericSectionInfoBlockUcsReportTable(order_id=self.report.get_current_order_id(),
+                                                      parent=self, centered=True,
+                                                      blocks=mac_pool.mac_blocks))
+
+
+class UuidPoolUcsReportSection(GenericReportSection):
+    def __init__(self, order_id, parent, title=""):
+        if not title:
+            title = _("UUID Pools")
+        GenericReportSection.__init__(self, order_id=order_id, parent=parent, title=title)
+
+        uuid_pool_list = []
+        # Searching for all UUID Pools
+        for org in self.report.config.orgs:
+            self.parse_org(org, uuid_pool_list, element_to_parse="uuid_pools")
+
+        if uuid_pool_list:
+            for uuid_pool in uuid_pool_list:
+                self.content_list.append(
+                    UuidPoolDescriptionUcsReportSection(order_id=self.report.get_current_order_id(),
+                                                        parent=self,
+                                                        uuid_pool=uuid_pool,
+                                                        title=_("UUID Pool ") + uuid_pool.name))
+
+
+class UuidPoolDescriptionUcsReportSection(GenericReportSection):
+    def __init__(self, order_id, parent, uuid_pool, title=""):
+        GenericReportSection.__init__(self, order_id=order_id, parent=parent, title=title)
+
+        self.content_list.append(
+            GenericReportText(order_id=self.report.get_current_order_id(), parent=self,
+                              string=_("\nPrefix : "), bolded=False))
+        self.content_list.append(
+            GenericReportText(order_id=self.report.get_current_order_id(), parent=self,
+                              string=_(uuid_pool.prefix), bolded=True, new_paragraph=False))
+
+        if uuid_pool.uuid_blocks:
+            self.content_list.append(
+                GenericSectionInfoBlockUcsReportTable(order_id=self.report.get_current_order_id(),
+                                                      parent=self, centered=True,
+                                                      blocks=uuid_pool.uuid_blocks))
+            
+            
+class WwnnPoolUcsReportSection(GenericReportSection):
+    def __init__(self, order_id, parent, title=""):
+        if not title:
+            title = _("WWNN Pools")
+        GenericReportSection.__init__(self, order_id=order_id, parent=parent, title=title)
+
+        wwnn_pool_list = []
+        # Searching for all WWNN Pools
+        for org in self.report.config.orgs:
+            self.parse_org(org, wwnn_pool_list, element_to_parse="wwnn_pools")
+
+        if wwnn_pool_list:
+            for wwnn_pool in wwnn_pool_list:
+                self.content_list.append(
+                    WwnnPoolDescriptionUcsReportSection(order_id=self.report.get_current_order_id(),
+                                                        parent=self,
+                                                        wwnn_pool=wwnn_pool,
+                                                        title=_("WWNN Pool ") + wwnn_pool.name))
+
+
+class WwnnPoolDescriptionUcsReportSection(GenericReportSection):
+    def __init__(self, order_id, parent, wwnn_pool, title=""):
+        GenericReportSection.__init__(self, order_id=order_id, parent=parent, title=title)
+
+        if wwnn_pool.wwnn_blocks:
+            self.content_list.append(
+                GenericSectionInfoBlockUcsReportTable(order_id=self.report.get_current_order_id(),
+                                                      parent=self, centered=True,
+                                                      blocks=wwnn_pool.wwnn_blocks))
+
+
+class WwpnPoolUcsReportSection(GenericReportSection):
+    def __init__(self, order_id, parent, title=""):
+        if not title:
+            title = _("WWPN Pools")
+        GenericReportSection.__init__(self, order_id=order_id, parent=parent, title=title)
+
+        wwpn_pool_list = []
+        # Searching for all WWPN Pools
+        for org in self.report.config.orgs:
+            self.parse_org(org, wwpn_pool_list, element_to_parse="wwpn_pools")
+
+        if wwpn_pool_list:
+            for wwpn_pool in wwpn_pool_list:
+                self.content_list.append(
+                    WwpnPoolDescriptionUcsReportSection(order_id=self.report.get_current_order_id(),
+                                                        parent=self,
+                                                        wwpn_pool=wwpn_pool,
+                                                        title=_("WWPN Pool ") + wwpn_pool.name))
+
+
+class WwpnPoolDescriptionUcsReportSection(GenericReportSection):
+    def __init__(self, order_id, parent, wwpn_pool, title=""):
+        GenericReportSection.__init__(self, order_id=order_id, parent=parent, title=title)
+
+        if wwpn_pool.wwpn_blocks:
+            self.content_list.append(
+                GenericSectionInfoBlockUcsReportTable(order_id=self.report.get_current_order_id(),
+                                                      parent=self, centered=True,
+                                                      blocks=wwpn_pool.wwpn_blocks))
+
+
+class WwxnPoolUcsReportSection(GenericReportSection):
+    def __init__(self, order_id, parent, title=""):
+        if not title:
+            title = _("WWxN Pools")
+        GenericReportSection.__init__(self, order_id=order_id, parent=parent, title=title)
+
+        wwxn_pool_list = []
+        # Searching for all WWxN Pools
+        for org in self.report.config.orgs:
+            self.parse_org(org, wwxn_pool_list, element_to_parse="wwxn_pools")
+
+        if wwxn_pool_list:
+            for wwxn_pool in wwxn_pool_list:
+                self.content_list.append(
+                    WwxnPoolDescriptionUcsReportSection(order_id=self.report.get_current_order_id(),
+                                                        parent=self,
+                                                        wwxn_pool=wwxn_pool,
+                                                        title=_("WWxN Pool ") + wwxn_pool.name))
+
+
+class WwxnPoolDescriptionUcsReportSection(GenericReportSection):
+    def __init__(self, order_id, parent, wwxn_pool, title=""):
+        GenericReportSection.__init__(self, order_id=order_id, parent=parent, title=title)
+
+        self.content_list.append(
+            GenericReportText(order_id=self.report.get_current_order_id(), parent=self,
+                              string=_("\nMax ports per Node : "), bolded=False))
+        self.content_list.append(
+            GenericReportText(order_id=self.report.get_current_order_id(), parent=self,
+                              string=_(wwxn_pool.max_ports_per_node), bolded=True, new_paragraph=False))
+
+        if wwxn_pool.wwxn_blocks:
+            self.content_list.append(
+                GenericSectionInfoBlockUcsReportTable(order_id=self.report.get_current_order_id(),
+                                                      parent=self, centered=True,
+                                                      blocks=wwxn_pool.wwxn_blocks))
+
+
+class QosSystemClassUcsReportSection(GenericReportSection):
+    def __init__(self, order_id, parent, title=""):
+        if not title:
+            title = _("QoS System Class")
+        GenericReportSection.__init__(self, order_id=order_id, parent=parent, title=title)
+        if self.report.config.qos_system_class:
+            self.content_list.append(
+                QosSystemClassUcsReportTable(order_id=self.report.get_current_order_id(), parent=self,
+                                             centered=True,
+                                             qos_system_class=self.report.config.qos_system_class))
+
+
 class ServiceProfilesUcsReportSection(GenericReportSection):
     def __init__(self, order_id, parent, title=""):
         if not title:
-            title = _("Service Profile allocation")
+            title = _("Service Profiles & Templates")
+        GenericReportSection.__init__(self, order_id=order_id, parent=parent, title=title)
+
+        self.content_list.append(ServiceProfilesTemplatesDescriptionUcsReportSection(order_id=self.report.get_current_order_id(),
+                                                                           parent=self))
+        self.content_list.append(ServiceProfilesDescriptionUcsReportSection(order_id=self.report.get_current_order_id(),
+                                                                            parent=self))
+        self.content_list.append(ServiceProfilesAllocationUcsReportSection(order_id=self.report.get_current_order_id(),
+                                                                           parent=self))
+
+
+class ServiceProfilesDescriptionUcsReportSection(GenericReportSection):
+    def parse_org(self, org, service_profile_list, element_to_parse="service_profiles"):
+        if org.service_profiles is not None:
+            for service_profile in org.service_profiles:
+                if not service_profile.service_profile_template:
+                    if not service_profile.type in ["updating-template", "initial-template"]:
+                        service_profile_list.append(service_profile)
+        if hasattr(org, "orgs"):
+            if org.orgs is not None:
+                for suborg in org.orgs:
+                    self.parse_org(suborg, service_profile_list)
+
+    def __init__(self, order_id, parent, title=""):
+
+        if not title:
+            title = _("Service Profiles")
+        GenericReportSection.__init__(self, order_id=order_id, parent=parent, title=title)
+
+        service_profile_list = []
+        # Searching for all updating template Service Profile
+        for org in self.report.config.orgs:
+            self.parse_org(org, service_profile_list)
+
+        for sp in service_profile_list:
+            self.content_list.append(ServiceProfileDescriptionUcsReportSection(order_id=self.report.get_current_order_id(),
+                                                                               parent=self,
+                                                                               service_profile=sp,
+                                                                               title=_("Service Profile " + sp.name)))
+
+
+class ServiceProfilesTemplatesDescriptionUcsReportSection(GenericReportSection):
+    def parse_org(self, org, service_profile_temp_list, service_profile_child_list, element_to_parse="service_profiles"):
+        if org.service_profiles is not None:
+            for service_profile in org.service_profiles:
+                if not service_profile.service_profile_template:
+                    if service_profile.type in ["updating-template", "initial-template"]:
+                        service_profile_temp_list.append(service_profile)
+                else:
+                    service_profile_child_list.append(service_profile)
+
+        if hasattr(org, "orgs"):
+            if org.orgs is not None:
+                for suborg in org.orgs:
+                    self.parse_org(suborg, service_profile_temp_list, service_profile_child_list)
+
+    def __init__(self, order_id, parent, title=""):
+
+        if not title:
+            title = _("Service Profiles Templates")
+        GenericReportSection.__init__(self, order_id=order_id, parent=parent, title=title)
+
+        service_profile_temp_list = []
+        service_profile_child_list = []
+        # Searching for all updating template Service Profile
+        for org in self.report.config.orgs:
+            self.parse_org(org, service_profile_temp_list, service_profile_child_list)
+
+        for sp_temp in service_profile_temp_list:
+            # Get the SP spawned from the template
+            children = ""
+            for child in service_profile_child_list:
+                if child.service_profile_template == sp_temp.name:
+                    if not children:
+                        children = child.name
+                    else:
+                        children = children + ", " + child.name
+            sp_temp.children = children
+
+            self.content_list.append(ServiceProfileDescriptionUcsReportSection(order_id=self.report.get_current_order_id(),
+                                                                               parent=self,
+                                                                               service_profile=sp_temp,
+                                                                               title=_("Service Profile Template " +
+                                                                                       sp_temp.name)))
+            delattr(sp_temp, "children")
+
+
+class ServiceProfileDescriptionUcsReportSection(GenericReportSection):
+    def __init__(self, order_id, parent, service_profile, title=""):
+
+        GenericReportSection.__init__(self, order_id=order_id, parent=parent, title=title)
+
+        if "template" in service_profile.type:
+            service_profile_path = self.report.img_path + service_profile._parent._dn.replace(
+                "/", "_") + "_Service_Profile_Template_" + "_".join(service_profile.name.split(" ")) + '.png'
+        else:
+            service_profile_path = self.report.img_path + service_profile._parent._dn.replace(
+                "/", "_") + "_Service_Profile_" + "_".join(service_profile.name.split(" ")) + '.png'
+        self.content_list.append(
+            GenericReportImage(order_id=self.report.get_current_order_id(), parent=self, path=service_profile_path,
+                               centered=True, size=18))
+
+        self.content_list.append(ServiceProfileUcsReportTable(order_id=self.report.get_current_order_id(),
+                                                              parent=self,
+                                                              centered=True,
+                                                              service_profile=service_profile))
+
+
+class ServiceProfilesAllocationUcsReportSection(GenericReportSection):
+    def __init__(self, order_id, parent, title=""):
+        if not title:
+            title = _("Service Profiles associations")
         GenericReportSection.__init__(self, order_id=order_id, parent=parent, title=title)
         if self.report.inventory.chassis:
             self.content_list.append(
@@ -629,11 +1077,56 @@ class ServiceProfilesUcsReportSection(GenericReportSection):
             self.content_list.append(
                 InfraRackServiceProfileUcsReportSection(order_id=self.report.get_current_order_id(), parent=self))
 
+        if self.report.inventory.rack_enclosures:
+            self.content_list.append(
+                InfraRackEnclosureServiceProfileUcsReportSection(order_id=self.report.get_current_order_id(),
+                                                                 parent=self))
+
+
+class OrganizationUcsReportSection(GenericReportSection):
+    def __init__(self, order_id, parent, title=""):
+        if not title:
+            title = _("Organizations")
+
+        GenericReportSection.__init__(self, order_id=order_id, parent=parent, title=title)
+
+        org_list = []
+        # Searching for all orgs
+        for org in self.report.config.orgs:
+            self.parse_org(org, org_list, element_to_parse="orgs")
+        if org_list:
+            self.content_list.append(GenericReportText(order_id=self.report.get_current_order_id(), parent=self,
+                                                       string=_("There is a total of " + str(len(org_list)) +
+                                                                " organizations (excluding 'root').")))
+        if len(org_list) == 0:
+            self.content_list.append(GenericReportText(order_id=self.report.get_current_order_id(), parent=self,
+                                                       string=_("There are no organizations (other than 'root')."),
+                                                       italicized=True, bolded=False))
+        else:
+            org_path = self.report.img_path + "orgs.png"
+            self.content_list.append(
+                GenericReportImage(order_id=self.report.get_current_order_id(), parent=self, path=org_path,
+                                   centered=True, size=18))
+
+
+class IdentitiesUcsReportSection(GenericReportSection):
+    def __init__(self, order_id, parent, title=""):
+        if not title:
+            title = _("Identities")
+        GenericReportSection.__init__(self, order_id=order_id, parent=parent, title=title)
+
+        self.content_list.append(IpPoolUcsReportSection(order_id=self.report.get_current_order_id(), parent=self))
+        self.content_list.append(MacPoolUcsReportSection(order_id=self.report.get_current_order_id(), parent=self))
+        self.content_list.append(UuidPoolUcsReportSection(order_id=self.report.get_current_order_id(), parent=self))
+        self.content_list.append(WwnnPoolUcsReportSection(order_id=self.report.get_current_order_id(), parent=self))
+        self.content_list.append(WwpnPoolUcsReportSection(order_id=self.report.get_current_order_id(), parent=self))
+        self.content_list.append(WwxnPoolUcsReportSection(order_id=self.report.get_current_order_id(), parent=self))
+
 
 class InfraRackServiceProfileUcsReportSection(GenericReportSection):
     def __init__(self, order_id, parent, title=""):
         if not title:
-            title = _("Service Profile on Racks")
+            title = _("Rack Servers associations")
         GenericReportSection.__init__(self, order_id=order_id, parent=parent, title=title)
         i = 1
         path = self.report.img_path + "infra_service_profile_" + "rack_" + str(i) + ".png"
@@ -650,14 +1143,40 @@ class InfraRackServiceProfileUcsReportSection(GenericReportSection):
                 flag = True
         if flag:
             self.content_list.append(ServiceProfilesRacksUcsReportTable(order_id=self.report.get_current_order_id(),
-                                                                        parent=self,
+                                                                        parent=self, centered=True,
                                                                         rack_units=self.report.inventory.rack_units))
+
+
+class InfraRackEnclosureServiceProfileUcsReportSection(GenericReportSection):
+    def __init__(self, order_id, parent, title=""):
+        if not title:
+            title = _("Rack Enclosures Servers associations")
+        GenericReportSection.__init__(self, order_id=order_id, parent=parent, title=title)
+        i = 1
+        path = self.report.img_path + "infra_service_profile_" + "rack_enclosure_" + str(i) + ".png"
+        while os.path.exists(path):
+            self.content_list.append(
+                GenericReportImage(order_id=self.report.get_current_order_id(), parent=self, path=path, centered=True,
+                                   size=18))
+            i += 1
+            path = self.report.img_path + "infra_service_profile_" + "rack_enclosure_" + str(i) + ".png"
+
+        flag = False
+        for rack_enclosure in self.report.inventory.rack_enclosures:
+            for server_node in rack_enclosure.server_nodes:
+                if server_node.service_profile_name:
+                    flag = True
+        if flag:
+            self.content_list.append(
+                ServiceProfilesRackEnclosuresUcsReportTable(order_id=self.report.get_current_order_id(),
+                                                            parent=self, centered=True,
+                                                            rack_enclosures=self.report.inventory.rack_enclosures))
 
 
 class InfraChassisServiceProfileUcsReportSection(GenericReportSection):
     def __init__(self, order_id, parent, title=""):
         if not title:
-            title = _("Service Profile on Chassis")
+            title = _("Blade Servers associations")
         GenericReportSection.__init__(self, order_id=order_id, parent=parent, title=title)
         i = 1
         path = self.report.img_path + "infra_service_profile_" + "chassis_" + str(i) + ".png"
@@ -675,14 +1194,14 @@ class InfraChassisServiceProfileUcsReportSection(GenericReportSection):
                     flag = True
         if flag:
             self.content_list.append(ServiceProfilesChassisUcsReportTable(order_id=self.report.get_current_order_id(),
-                                                                              parent=self,
-                                                                              chassis=self.report.inventory.chassis))
+                                                                          parent=self, centered=True,
+                                                                          chassis=self.report.inventory.chassis))
 
 
 class ClusterOverviewUcsReportSection(GenericReportSection):
     def __init__(self, order_id, parent, title=""):
         if not title:
-            title = _("Fabric Interconnect - Cluster Overview")
+            title = _("UCS System Overview")
         GenericReportSection.__init__(self, order_id=order_id, parent=parent, title=title)
         self.content_list.append(
             ClusterInfoUcsReportTable(order_id=self.report.get_current_order_id(), parent=self,
@@ -694,7 +1213,7 @@ class ClusterOverviewUcsReportSection(GenericReportSection):
 class ClusterCommServicesUcsReportSection(GenericReportSection):
     def __init__(self, order_id, parent, title=""):
         if not title:
-            title = _("Communications Services")
+            title = _("Communication Services")
         GenericReportSection.__init__(self, order_id=order_id, parent=parent, title=title)
         self.content_list.append(
             CommServicesInfoUcsReportTable(order_id=self.report.get_current_order_id(), parent=self,

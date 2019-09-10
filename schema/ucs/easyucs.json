@@ -61,6 +61,15 @@
                   "description":"Hash of the file - Used for validating its content",
                   "type":"string"
                },
+               "intersight_status": {
+                  "description": "Intersight claim status",
+                  "type": "string",
+                  "enum": [
+                     "claimed",
+                     "unclaimed",
+                     "unknown"
+                  ]
+               },
                "name":{
                   "description":"Name of the JSON file",
                   "type":"string"

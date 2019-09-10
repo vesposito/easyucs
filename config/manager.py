@@ -23,13 +23,15 @@ from ucsmsdk.mometa.fabric.FabricEthLanEp import FabricEthLanEp
 from imcsdk.imchandle import ImcHandle
 
 from config.config import UcsImcConfig, UcsSystemConfig, UcsCentralConfig
+from config.plot import UcsSystemConfigPlot, UcsSystemOrgConfigPlot, UcsSystemServiceProfileConfigPlot
+
 from config.ucs.central import UcsCentralOrg, UcsCentralDomainGroup
 from config.ucs.imc import UcsImcAdminNetwork, UcsImcLocalUser, UcsImcLocalUsersProperties, UcsImcServerProperties,\
     UcsImcTimezoneMgmt, UcsImcIpFilteringProperties, UcsImcIpBlockingProperties, UcsImcPowerPolicies,\
     UcsImcAdapterCard, UcsImcCommunicationsServices, UcsImcChassisInventory, UcsImcPowerCapConfiguration,\
     UcsImcVKvmProperties, UcsImcSecureKeyManagement, UcsImcSnmp, UcsImcSmtpProperties, UcsImcPlatformEventFilter,\
     UcsImcVirtualMedia, UcsImcSerialOverLanProperties, UcsImcBios, UcsImcLdap, UcsImcBootOrder,\
-    UcsImcStorageController, UcsImcStorageFlexFlashController
+    UcsImcStorageController, UcsImcStorageFlexFlashController, UcsImcDynamicStorageZoning
 from config.ucs.admin import UcsSystemDns, UcsSystemInformation, UcsSystemManagementInterface, UcsSystemOrg, \
     UcsSystemTimezoneMgmt, UcsSystemLocalUser, UcsSystemRole, UcsSystemLocale, UcsSystemLocalUsersProperties, \
     UcsSystemCommunicationServices, UcsSystemGlobalPolicies, UcsSystemPreLoginBanner, UcsSystemBackupExportPolicy,\
@@ -251,6 +253,10 @@ class GenericConfigManager:
                 if "metadata" in complete_json["easyucs"]:
                     if "uuid" in complete_json["easyucs"]["metadata"][0]:
                         config.uuid = uuid.UUID(complete_json["easyucs"]["metadata"][0]["uuid"])
+                    if "device_version" in complete_json["easyucs"]["metadata"][0]:
+                        config.device_version = complete_json["easyucs"]["metadata"][0]["device_version"]
+                    if "intersight_status" in complete_json["easyucs"]["metadata"][0]:
+                        config.intersight_status = complete_json["easyucs"]["metadata"][0]["intersight_status"]
 
             # We start filling up the config
             self.logger(message="Importing config from " + import_format)
@@ -342,11 +348,55 @@ class GenericUcsConfigManager(GenericConfigManager):
     def __init__(self, parent=None):
         GenericConfigManager.__init__(self, parent=parent)
 
+    def export_config_plots(self, config=None, export_format="png", directory=None):
+        pass
+
+    def generate_config_plots(self, config=None):
+        pass
+
 
 class UcsSystemConfigManager(GenericUcsConfigManager):
     def __init__(self, parent=None):
         GenericUcsConfigManager.__init__(self, parent=parent)
         self.config_class_name = UcsSystemConfig
+
+    def generate_config_plots(self, config=None):
+        if config is None:
+            config = self.get_latest_config()
+            self.logger(level="debug", message="No config UUID specified in generate report request. Using latest.")
+
+            if config is None:
+                self.logger(level="error", message="No config found. Unable to generate report.")
+                return False
+
+        self.logger(level="debug", message="Generating plots for device " + self.parent.target + " using config: " +
+                                           str(config.uuid))
+
+        config.service_profile_plots = UcsSystemServiceProfileConfigPlot(parent=self, config=config)
+        if config.orgs[0].orgs:  # If 'root' is not the only organization
+            config.orgs_plot = UcsSystemOrgConfigPlot(parent=self, config=config)
+
+    def export_config_plots(self, config=None, export_format="png", directory=None):
+        if directory is None:
+            self.logger(level="debug",
+                        message="No directory specified in generate report request. Using local folder.")
+            directory = "."
+
+        if config is None:
+            config = self.get_latest_config()
+            self.logger(level="debug", message="No config UUID specified in generate report request. Using latest.")
+
+            if config is None:
+                self.logger(level="error", message="No config found. Unable to export plots.")
+                return False
+
+        if config.service_profile_plots:
+            config.service_profile_plots.export_plots(export_format=export_format, directory=directory)
+        if config.orgs_plot:
+            config.orgs_plot.export_plots(export_format=export_format, directory=directory)
+        if not config.orgs_plot and not config.service_profile_plots:
+            self.logger(level="error", message="No plots found. Unable to export plots.")
+            return False
 
     def check_if_push_config_requires_reboot(self, uuid=None):
         """
@@ -531,8 +581,16 @@ class UcsSystemConfigManager(GenericUcsConfigManager):
 
         if "fcPIo" in config.sdk_objects:
             if config.sdk_objects["fcPIo"]:
-                config.san_unified_ports.append(UcsSystemSanUnifiedPort(parent=config, fabric="A"))
-                if self.parent.sys_mode == "cluster":
+                fi_a_fc_ports_presence = False
+                fi_b_fc_ports_presence = False
+                for fc_pio in config.sdk_objects["fcPIo"]:
+                    if fc_pio.dn.startswith("sys/switch-A/"):
+                        fi_a_fc_ports_presence = True
+                    if fc_pio.dn.startswith("sys/switch-B/"):
+                        fi_b_fc_ports_presence = True
+                if fi_a_fc_ports_presence:
+                    config.san_unified_ports.append(UcsSystemSanUnifiedPort(parent=config, fabric="A"))
+                if fi_b_fc_ports_presence:
                     config.san_unified_ports.append(UcsSystemSanUnifiedPort(parent=config, fabric="B"))
 
         for org_org in sorted(config.sdk_objects["orgOrg"], key=lambda org: org.dn):
@@ -1284,6 +1342,7 @@ class UcsImcConfigManager(GenericUcsConfigManager):
                                                  "Please power on/reboot the host.")
         config.ldap_settings.append(UcsImcLdap(parent=config))
         config.boot_order_properties.append(UcsImcBootOrder(parent=config))
+        config.dynamic_storage_zoning.append(UcsImcDynamicStorageZoning(parent=config))
         for storage_controller in config.sdk_objects["storageController"]:
             config.storage_controllers.append(UcsImcStorageController(parent=config,
                                                                       storage_controller=storage_controller))
@@ -1494,6 +1553,8 @@ class UcsImcConfigManager(GenericUcsConfigManager):
                 config.ldap_settings[0].push_object()
             if config.boot_order_properties:
                 config.boot_order_properties[0].push_object()
+            if config.dynamic_storage_zoning:
+                config.dynamic_storage_zoning[0].push_object()
             for storage_controller in config.storage_controllers:
                 storage_controller.push_object()
             for storage_flex_flash_controller in config.storage_flex_flash_controllers:
@@ -1643,6 +1704,9 @@ class UcsImcConfigManager(GenericUcsConfigManager):
         if "boot_order_properties" in config_json:
             config.boot_order_properties.append(
                 UcsImcBootOrder(parent=config, json_content=config_json["boot_order_properties"][0]))
+        if "dynamic_storage_zoning" in config_json:
+            config.dynamic_storage_zoning.append(
+                UcsImcDynamicStorageZoning(parent=config, json_content=config_json["dynamic_storage_zoning"][0]))
         if "storage_controllers" in config_json:
             for storage_controller in config_json["storage_controllers"]:
                 config.storage_controllers.append(UcsImcStorageController(parent=config,

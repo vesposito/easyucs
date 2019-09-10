@@ -23,6 +23,7 @@ class GenericReport:
         self.timestamp = time.time()
 
         self.img_path = self.directory + "/" + device.target + "_"
+        self.target = device.target
 
         self.device = device
         self.inventory = inventory
@@ -77,7 +78,7 @@ class GenericReport:
 
 class UcsGenericReport(GenericReport):
     def __init__(self, device, inventory, config, language, output_format, page_layout, directory, filename, size):
-        GenericReport.__init__(self,device=device, inventory=inventory, config=config, language=language, output_format=output_format, page_layout=page_layout,
+        GenericReport.__init__(self, device=device, inventory=inventory, config=config, language=language, output_format=output_format, page_layout=page_layout,
                                directory=directory, filename=filename, size=size)
 
     def recursive_add_in_word_report(self, element):
@@ -147,7 +148,7 @@ class UcsSystemReport(UcsGenericReport):
             section.left_margin = Cm(2)
             section.different_first_page_header_footer = True
             section.header.paragraphs[0].alignment = 1  # Centered
-            section.header.paragraphs[0].text = "Created with EasyUCS - " + self.title
+            section.header.paragraphs[0].text = "Created with EasyUCS - " + str(self.title)
             try:
                 full_filename = self.directory + '/' + filename + '.docx'
                 self.document.save(full_filename)
@@ -202,7 +203,7 @@ class UcsImcReport(UcsGenericReport):
             section.left_margin = Cm(2)
             section.different_first_page_header_footer = True
             section.header.paragraphs[0].alignment = 1  # Centered
-            section.header.paragraphs[0].text = "Created with EasyUCS - " + self.title
+            section.header.paragraphs[0].text = "Created with EasyUCS - " + str(self.title)
             try:
                 full_filename = self.directory + '/' + filename + '.docx'
                 self.document.save(full_filename)

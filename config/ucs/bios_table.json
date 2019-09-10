@@ -143,6 +143,7 @@
       "values": [
          "Maximum-Performance",
          "Mirror-Mode-1LM",
+         "ADDDC-Sparing",
          "Mirroring",
          "Lockstep",
          "Sparing",
@@ -151,6 +152,7 @@
       "legacy_values": [
          "maximum-performance",
          "mirror-mode-1lm",
+         "adddc-sparing",
          "mirroring",
          "lockstep",
          "sparing",
@@ -1801,6 +1803,22 @@
          "platform-default"
       ]
    },
+   "bme_dma_mitigation": {
+      "param_name": "BME DMA Mitigation",
+      "target_name": "BmeDmaMitigation",
+      "feature_group": "BME DMA Mitigation",
+      "available_in_legacy_mode": true,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
    "assert_nmi_on_perr": {
       "param_name": "Assert NMI on PERR",
       "target_name": "AssertNMIOnPERR",
@@ -2533,10 +2551,10 @@
          "platform-default"
       ]
    },
-   "xpt_prefetch": {
-      "param_name": "XPT Prefetch",
-      "target_name": "XPTPrefetch",
-      "feature_group": "Processor Prefetch Config",
+   "optionrom_launch_optimization": {
+      "param_name": "OptionROM Launch Optimization",
+      "target_name": "CiscoOpromLaunchOptimization",
+      "feature_group": "OptionROM Launch Optimization",
       "available_in_legacy_mode": false,
       "values": [
          "Disabled",
@@ -2546,6 +2564,24 @@
       "legacy_values": [
          "disabled",
          "enabled",
+         "platform-default"
+      ]
+   },
+   "xpt_prefetch": {
+      "param_name": "XPT Prefetch",
+      "target_name": "XPTPrefetch",
+      "feature_group": "Processor Prefetch Config",
+      "available_in_legacy_mode": false,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "Auto",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "auto",
          "platform-default"
       ]
    },
@@ -2761,6 +2797,118 @@
          "platform-default"
       ]
    },
+   "pcie_slot_gpu6_optionrom": {
+      "param_name": "PCIe Slot GPU6 OptionROM",
+      "target_name": "PcieSlotGPU6OptionROM",
+      "feature_group": "PCI Slot OptionROM Enable",
+      "available_in_legacy_mode": false,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "pcie_slot_gpu7_optionrom": {
+      "param_name": "PCIe Slot GPU7 OptionROM",
+      "target_name": "PcieSlotGPU7OptionROM",
+      "feature_group": "PCI Slot OptionROM Enable",
+      "available_in_legacy_mode": false,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "pcie_slot_gpu4_optionrom": {
+      "param_name": "PCIe Slot GPU4 OptionROM",
+      "target_name": "PcieSlotGPU4OptionROM",
+      "feature_group": "PCI Slot OptionROM Enable",
+      "available_in_legacy_mode": false,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "pcie_slot_gpu5_optionrom": {
+      "param_name": "PCIe Slot GPU5 OptionROM",
+      "target_name": "PcieSlotGPU5OptionROM",
+      "feature_group": "PCI Slot OptionROM Enable",
+      "available_in_legacy_mode": false,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "pcie_slot_gpu2_optionrom": {
+      "param_name": "PCIe Slot GPU2 OptionROM",
+      "target_name": "PcieSlotGPU2OptionROM",
+      "feature_group": "PCI Slot OptionROM Enable",
+      "available_in_legacy_mode": false,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "pcie_slot_gpu3_optionrom": {
+      "param_name": "PCIe Slot GPU3 OptionROM",
+      "target_name": "PcieSlotGPU3OptionROM",
+      "feature_group": "PCI Slot OptionROM Enable",
+      "available_in_legacy_mode": false,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "pcie_slot_gpu1_optionrom": {
+      "param_name": "PCIe Slot GPU1 OptionROM",
+      "target_name": "PcieSlotGPU1OptionROM",
+      "feature_group": "PCI Slot OptionROM Enable",
+      "available_in_legacy_mode": false,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
    "pcie_slot_raid_optionrom": {
       "param_name": "PCIe Slot RAID OptionROM",
       "target_name": "PcieSlotRAIDOptionROM",
@@ -2776,6 +2924,22 @@
       "legacy_values": [
          "legacy-only",
          "uefi-only",
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "pcie_slot_gpu8_optionrom": {
+      "param_name": "PCIe Slot GPU8 OptionROM",
+      "target_name": "PcieSlotGPU8OptionROM",
+      "feature_group": "PCI Slot OptionROM Enable",
+      "available_in_legacy_mode": false,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
          "disabled",
          "enabled",
          "platform-default"
@@ -3081,6 +3245,26 @@
          "platform-default"
       ]
    },
+   "slot_14_state": {
+      "param_name": "Slot 14 state",
+      "target_name": "PcieSlot14OptionROM",
+      "feature_group": "PCI Slot OptionROM Enable",
+      "available_in_legacy_mode": false,
+      "values": [
+         "Legacy-Only",
+         "UEFI-Only",
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "legacy-only",
+         "uefi-only",
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
    "pcie_slot_n8_optionrom": {
       "param_name": "PCIe Slot N8 OptionROM",
       "target_name": "PcieSlotN8OptionROM",
@@ -3144,6 +3328,26 @@
    "slot_12_state": {
       "param_name": "Slot 12 state",
       "target_name": "PcieSlot12OptionROM",
+      "feature_group": "PCI Slot OptionROM Enable",
+      "available_in_legacy_mode": false,
+      "values": [
+         "Legacy-Only",
+         "UEFI-Only",
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "legacy-only",
+         "uefi-only",
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "slot_13_state": {
+      "param_name": "Slot 13 state",
+      "target_name": "PcieSlot13OptionROM",
       "feature_group": "PCI Slot OptionROM Enable",
       "available_in_legacy_mode": false,
       "values": [
@@ -3375,6 +3579,22 @@
          "platform-default"
       ]
    },
+   "adaptive_memory_training": {
+      "param_name": "Adaptive Memory Training",
+      "target_name": "CiscoAdaptiveMemTraining",
+      "feature_group": "Adaptive Memory Training",
+      "available_in_legacy_mode": false,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
    "energy_efficient_turbo": {
       "param_name": "Energy Efficient Turbo",
       "target_name": "EnergyEfficientTurbo",
@@ -3454,6 +3674,22 @@
       "legacy_values": [
          "legacy-only",
          "uefi-only",
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "cdn_support_for_loms": {
+      "param_name": "CDN Support for LOMs",
+      "target_name": "CdnSupport",
+      "feature_group": "Onboard LOM Option ROM",
+      "available_in_legacy_mode": false,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
          "disabled",
          "enabled",
          "platform-default"
@@ -3981,6 +4217,24 @@
          "platform-default"
       ]
    },
+   "bios_techlog_level": {
+      "param_name": "BIOS Techlog Level",
+      "target_name": "CiscoDebugLevel",
+      "feature_group": "BIOS Techlog Level",
+      "available_in_legacy_mode": false,
+      "values": [
+         "Minimum",
+         "Maximum",
+         "Normal",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "minimum",
+         "maximum",
+         "normal",
+         "platform-default"
+      ]
+   },
    "number_of_retries": {
       "param_name": "Number of Retries",
       "target_name": "BORNumRetry",
@@ -4051,6 +4305,22 @@
          "platform-default"
       ]
    },
+   "vmd_enable": {
+      "param_name": "VMD Enable",
+      "target_name": "VMDEnable",
+      "feature_group": "VMD Enablement",
+      "available_in_legacy_mode": false,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
    "p_sata_mode": {
       "param_name": "P-SATA mode",
       "target_name": "pSATA",
@@ -4066,288 +4336,6 @@
          "lsi-sw-raid",
          "disabled",
          "ahci",
-         "platform-default"
-      ]
-   },
-   "ipv6_pxe_support": {
-      "param_name": "IPV6 PXE Support",
-      "target_name": "IPV6PXE",
-      "feature_group": "PXE BOOT",
-      "available_in_legacy_mode": false,
-      "values": [
-         "Disabled",
-         "Enabled",
-         "Platform Default"
-      ],
-      "legacy_values": [
-         "disabled",
-         "enabled",
-         "platform-default"
-      ]
-   },
-   "bme_dma_mitigation": {
-      "param_name": "BME DMA Mitigation",
-      "target_name": "BmeDmaMitigation",
-      "feature_group": "BME DMA Mitigation",
-      "available_in_legacy_mode": true,
-      "values": [
-         "Disabled",
-         "Enabled",
-         "Platform Default"
-      ],
-      "legacy_values": [
-         "disabled",
-         "enabled",
-         "platform-default"
-      ]
-   },
-   "optionrom_launch_optimization": {
-      "param_name": "OptionROM Launch Optimization",
-      "target_name": "CiscoOpromLaunchOptimization",
-      "feature_group": "OptionROM Launch Optimization",
-      "available_in_legacy_mode": false,
-      "values": [
-         "Disabled",
-         "Enabled",
-         "Platform Default"
-      ],
-      "legacy_values": [
-         "disabled",
-         "enabled",
-         "platform-default"
-      ]
-   },
-   "pcie_slot_gpu6_optionrom": {
-      "param_name": "PCIe Slot GPU6 OptionROM",
-      "target_name": "PcieSlotGPU6OptionROM",
-      "feature_group": "PCI Slot OptionROM Enable",
-      "available_in_legacy_mode": false,
-      "values": [
-         "Disabled",
-         "Enabled",
-         "Platform Default"
-      ],
-      "legacy_values": [
-         "disabled",
-         "enabled",
-         "platform-default"
-      ]
-   },
-   "pcie_slot_gpu7_optionrom": {
-      "param_name": "PCIe Slot GPU7 OptionROM",
-      "target_name": "PcieSlotGPU7OptionROM",
-      "feature_group": "PCI Slot OptionROM Enable",
-      "available_in_legacy_mode": false,
-      "values": [
-         "Disabled",
-         "Enabled",
-         "Platform Default"
-      ],
-      "legacy_values": [
-         "disabled",
-         "enabled",
-         "platform-default"
-      ]
-   },
-   "pcie_slot_gpu4_optionrom": {
-      "param_name": "PCIe Slot GPU4 OptionROM",
-      "target_name": "PcieSlotGPU4OptionROM",
-      "feature_group": "PCI Slot OptionROM Enable",
-      "available_in_legacy_mode": false,
-      "values": [
-         "Disabled",
-         "Enabled",
-         "Platform Default"
-      ],
-      "legacy_values": [
-         "disabled",
-         "enabled",
-         "platform-default"
-      ]
-   },
-   "pcie_slot_gpu5_optionrom": {
-      "param_name": "PCIe Slot GPU5 OptionROM",
-      "target_name": "PcieSlotGPU5OptionROM",
-      "feature_group": "PCI Slot OptionROM Enable",
-      "available_in_legacy_mode": false,
-      "values": [
-         "Disabled",
-         "Enabled",
-         "Platform Default"
-      ],
-      "legacy_values": [
-         "disabled",
-         "enabled",
-         "platform-default"
-      ]
-   },
-   "pcie_slot_gpu2_optionrom": {
-      "param_name": "PCIe Slot GPU2 OptionROM",
-      "target_name": "PcieSlotGPU2OptionROM",
-      "feature_group": "PCI Slot OptionROM Enable",
-      "available_in_legacy_mode": false,
-      "values": [
-         "Disabled",
-         "Enabled",
-         "Platform Default"
-      ],
-      "legacy_values": [
-         "disabled",
-         "enabled",
-         "platform-default"
-      ]
-   },
-   "pcie_slot_gpu3_optionrom": {
-      "param_name": "PCIe Slot GPU3 OptionROM",
-      "target_name": "PcieSlotGPU3OptionROM",
-      "feature_group": "PCI Slot OptionROM Enable",
-      "available_in_legacy_mode": false,
-      "values": [
-         "Disabled",
-         "Enabled",
-         "Platform Default"
-      ],
-      "legacy_values": [
-         "disabled",
-         "enabled",
-         "platform-default"
-      ]
-   },
-   "pcie_slot_gpu1_optionrom": {
-      "param_name": "PCIe Slot GPU1 OptionROM",
-      "target_name": "PcieSlotGPU1OptionROM",
-      "feature_group": "PCI Slot OptionROM Enable",
-      "available_in_legacy_mode": false,
-      "values": [
-         "Disabled",
-         "Enabled",
-         "Platform Default"
-      ],
-      "legacy_values": [
-         "disabled",
-         "enabled",
-         "platform-default"
-      ]
-   },
-   "pcie_slot_gpu8_optionrom": {
-      "param_name": "PCIe Slot GPU8 OptionROM",
-      "target_name": "PcieSlotGPU8OptionROM",
-      "feature_group": "PCI Slot OptionROM Enable",
-      "available_in_legacy_mode": false,
-      "values": [
-         "Disabled",
-         "Enabled",
-         "Platform Default"
-      ],
-      "legacy_values": [
-         "disabled",
-         "enabled",
-         "platform-default"
-      ]
-   },
-   "slot_14_state": {
-      "param_name": "Slot 14 state",
-      "target_name": "PcieSlot14OptionROM",
-      "feature_group": "PCI Slot OptionROM Enable",
-      "available_in_legacy_mode": false,
-      "values": [
-         "Legacy-Only",
-         "UEFI-Only",
-         "Disabled",
-         "Enabled",
-         "Platform Default"
-      ],
-      "legacy_values": [
-         "legacy-only",
-         "uefi-only",
-         "disabled",
-         "enabled",
-         "platform-default"
-      ]
-   },
-   "slot_13_state": {
-      "param_name": "Slot 13 state",
-      "target_name": "PcieSlot13OptionROM",
-      "feature_group": "PCI Slot OptionROM Enable",
-      "available_in_legacy_mode": false,
-      "values": [
-         "Legacy-Only",
-         "UEFI-Only",
-         "Disabled",
-         "Enabled",
-         "Platform Default"
-      ],
-      "legacy_values": [
-         "legacy-only",
-         "uefi-only",
-         "disabled",
-         "enabled",
-         "platform-default"
-      ]
-   },
-   "adaptive_memory_training": {
-      "param_name": "Adaptive Memory Training",
-      "target_name": "CiscoAdaptiveMemTraining",
-      "feature_group": "Adaptive Memory Training",
-      "available_in_legacy_mode": false,
-      "values": [
-         "Disabled",
-         "Enabled",
-         "Platform Default"
-      ],
-      "legacy_values": [
-         "disabled",
-         "enabled",
-         "platform-default"
-      ]
-   },
-   "cdn_support_for_loms": {
-      "param_name": "CDN Support for LOMs",
-      "target_name": "CdnSupport",
-      "feature_group": "Onboard LOM Option ROM",
-      "available_in_legacy_mode": false,
-      "values": [
-         "Disabled",
-         "Enabled",
-         "Platform Default"
-      ],
-      "legacy_values": [
-         "disabled",
-         "enabled",
-         "platform-default"
-      ]
-   },
-   "bios_techlog_level": {
-      "param_name": "BIOS Techlog Level",
-      "target_name": "CiscoDebugLevel",
-      "feature_group": "BIOS Techlog Level",
-      "available_in_legacy_mode": false,
-      "values": [
-         "Minimum",
-         "Maximum",
-         "Normal",
-         "Platform Default"
-      ],
-      "legacy_values": [
-         "minimum",
-         "maximum",
-         "normal",
-         "platform-default"
-      ]
-   },
-   "vmd_enable": {
-      "param_name": "VMD Enable",
-      "target_name": "VMDEnable",
-      "feature_group": "VMD Enablement",
-      "available_in_legacy_mode": false,
-      "values": [
-         "Disabled",
-         "Enabled",
-         "Platform Default"
-      ],
-      "legacy_values": [
-         "disabled",
-         "enabled",
          "platform-default"
       ]
    },
@@ -4606,6 +4594,264 @@
       "legacy_values": [
          "disabled",
          "enabled",
+         "platform-default"
+      ]
+   },
+   "ipv6_pxe_support": {
+      "param_name": "IPV6 PXE Support",
+      "target_name": "IPV6PXE",
+      "feature_group": "PXE BOOT",
+      "available_in_legacy_mode": false,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "dcpmm_firmware_downgrade": {
+      "param_name": "DCPMM Firmware Downgrade",
+      "target_name": "DCPMMFirmwareDowngrade",
+      "feature_group": "DCPMM Firmware Downgrade Configuration",
+      "available_in_legacy_mode": false,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "intel_speed_select": {
+      "param_name": "Intel Speed Select",
+      "target_name": "IntelSpeedSelect",
+      "feature_group": "IntelSpeedSelect Configuration",
+      "available_in_legacy_mode": false,
+      "values": [
+         "Config-2",
+         "Config-1",
+         "Base",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "config-2",
+         "config-1",
+         "base",
+         "platform-default"
+      ]
+   },
+   "acs_control_slot_14": {
+      "param_name": "ACS Control SLOT-14",
+      "target_name": "ACSCtlSlot14",
+      "feature_group": "Access Control Services",
+      "available_in_legacy_mode": false,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "acs_control_slot_13": {
+      "param_name": "ACS Control SLOT-13",
+      "target_name": "ACSCtlSlot13",
+      "feature_group": "Access Control Services",
+      "available_in_legacy_mode": false,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "acs_control_slot_12": {
+      "param_name": "ACS Control SLOT-12",
+      "target_name": "ACSCtlSlot12",
+      "feature_group": "Access Control Services",
+      "available_in_legacy_mode": false,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "acs_control_slot_11": {
+      "param_name": "ACS Control SLOT-11",
+      "target_name": "ACSCtlSlot11",
+      "feature_group": "Access Control Services",
+      "available_in_legacy_mode": false,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "acs_control_gpu_8": {
+      "param_name": "ACS Control GPU-8",
+      "target_name": "ACSCtlGpu8",
+      "feature_group": "Access Control Services",
+      "available_in_legacy_mode": false,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "acs_control_gpu_7": {
+      "param_name": "ACS Control GPU-7",
+      "target_name": "ACSCtlGpu7",
+      "feature_group": "Access Control Services",
+      "available_in_legacy_mode": false,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "acs_control_gpu_6": {
+      "param_name": "ACS Control GPU-6",
+      "target_name": "ACSCtlGpu6",
+      "feature_group": "Access Control Services",
+      "available_in_legacy_mode": false,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "acs_control_gpu_5": {
+      "param_name": "ACS Control GPU-5",
+      "target_name": "ACSCtlGpu5",
+      "feature_group": "Access Control Services",
+      "available_in_legacy_mode": false,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "acs_control_gpu_4": {
+      "param_name": "ACS Control GPU-4",
+      "target_name": "ACSCtlGpu4",
+      "feature_group": "Access Control Services",
+      "available_in_legacy_mode": false,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "acs_control_gpu_3": {
+      "param_name": "ACS Control GPU-3",
+      "target_name": "ACSCtlGpu3",
+      "feature_group": "Access Control Services",
+      "available_in_legacy_mode": false,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "acs_control_gpu_2": {
+      "param_name": "ACS Control GPU-2",
+      "target_name": "ACSCtlGpu2",
+      "feature_group": "Access Control Services",
+      "available_in_legacy_mode": false,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "acs_control_gpu_1": {
+      "param_name": "ACS Control GPU-1",
+      "target_name": "ACSCtlGpu1",
+      "feature_group": "Access Control Services",
+      "available_in_legacy_mode": false,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "configurable_tdp_control": {
+      "param_name": "Configurable TDP Control",
+      "target_name": "CbsCmncTDPCtl",
+      "feature_group": "Processor",
+      "available_in_legacy_mode": false,
+      "values": [
+         "Manual",
+         "Auto",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "manual",
+         "auto",
          "platform-default"
       ]
    }

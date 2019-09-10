@@ -96,9 +96,9 @@ class GenericUcsConfigObject(GenericConfigObject):
 
         for key in self.__dict__.keys():
             if getattr(self, key) in str_to_avoid:
-                self.logger(level="debug",
-                            message="In " + self._CONFIG_NAME + ", key '" + key + "' with value " +
-                                    (getattr(self, key) if getattr(self, key) != "" else "''") + " cleaned")
+                # self.logger(level="debug",
+                #             message="In " + self._CONFIG_NAME + ", key '" + key + "' with value " +
+                #                     (getattr(self, key) if getattr(self, key) != "" else "''") + " cleaned")
                 setattr(self, key, None)
 
             elif getattr(self, key).__class__.__name__ == "list":
@@ -106,10 +106,10 @@ class GenericUcsConfigObject(GenericConfigObject):
                     if item.__class__.__name__ == "dict":
                         for item_key, value in item.items():
                             if value in str_to_avoid:
-                                self.logger(level="debug",
-                                            message="In " + self._CONFIG_NAME + ", in " + key + ": key '" + item_key +
-                                                    "' with value " +
-                                                    (item[item_key] if item[item_key] != "" else "''") + " cleaned")
+                                # self.logger(level="debug",
+                                #             message="In " + self._CONFIG_NAME + ", in " + key + ": key '" + item_key +
+                                #                     "' with value " +
+                                #                     (item[item_key] if item[item_key] != "" else "''") + " cleaned")
                                 item[item_key] = None
 
 

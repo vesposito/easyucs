@@ -13,6 +13,7 @@ import sys
 from docx.oxml import shared, OxmlElement, ns
 from docx.opc import constants
 
+
 class GenericReportElement():
     def __init__(self, order_id, parent):
         self.order_id = order_id
@@ -44,14 +45,28 @@ class GenericReportContent(GenericReportElement):
 
 
 class GenericReportHeading(GenericReportContent):
-    def __init__(self, order_id, parent, string, heading_size=0):
+    def __init__(self, order_id, parent, string, indent=False):
         GenericReportContent.__init__(self, order_id=order_id, parent=parent)
         self.string = string
-        self.heading_size = heading_size
+        if self.indent:
+            self.indent = indent
+        else:
+            self.indent = self.__find_indent()
 
     def add_in_word_report(self):
         #self.logger(level="debug", message="Adding " + self.__class__.__name__ + " in word")
-        self.report.document.add_heading(text=self.string, level=self.heading_size)
+        self.report.document.add_heading(text=self.string, level=self.indent)
+
+    def __find_indent(self):
+        indent = 1
+        current_object = self.parent
+        while hasattr(current_object, 'parent') and not hasattr(current_object, 'timestamp'):
+            current_object = current_object.parent
+            indent += 1
+        if hasattr(current_object, 'timestamp'):
+            return indent
+        else:
+            return None
 
 
 class GenericReportText(GenericReportContent):

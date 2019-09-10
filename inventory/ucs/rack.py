@@ -17,10 +17,12 @@ from inventory.ucs.storage import UcsImcStorageController, UcsImcStorageFlexFlas
     UcsImcStorageControllerNvmeDrive, UcsImcStorageNvmeDrive, UcsSystemStorageController,\
     UcsSystemStorageControllerNvmeDrive, UcsSystemStorageFlexFlashController
 from inventory.ucs.tpm import UcsImcTpm, UcsSystemTpm
-from draw.ucs.rack import UcsSystemDrawRackFront, UcsSystemDrawRackRear, UcsImcDrawRackFront, UcsImcDrawRackRear
+from draw.ucs.rack import UcsSystemDrawRackFront, UcsSystemDrawRackRear, UcsImcDrawRackFront, UcsImcDrawRackRear, UcsSystemDrawRackEnclosureFront, UcsSystemDrawRackEnclosureRear, UcsImcDrawRackEnclosureFront, UcsImcDrawRackEnclosureRear
 
 
 class UcsRack(GenericUcsInventoryObject):
+    _UCS_SDK_OBJECT_NAME = "computeRackUnit"
+
     def __init__(self, parent=None, compute_rack_unit=None):
         GenericUcsInventoryObject.__init__(self, parent=parent, ucs_sdk_object=compute_rack_unit)
 
@@ -34,6 +36,7 @@ class UcsRack(GenericUcsInventoryObject):
                                                attribute_secondary_name="memory_total", attribute_type="int")
         self.model = self.get_attribute(ucs_sdk_object=compute_rack_unit, attribute_name="model")
         self.serial = self.get_attribute(ucs_sdk_object=compute_rack_unit, attribute_name="serial")
+        self.slot_id = self.get_attribute(ucs_sdk_object=compute_rack_unit, attribute_name="slot_id")
         self.user_label = self.get_attribute(ucs_sdk_object=compute_rack_unit, attribute_name="usr_lbl",
                                              attribute_secondary_name="user_label")
         self.vendor = self.get_attribute(ucs_sdk_object=compute_rack_unit, attribute_name="vendor")
@@ -56,7 +59,8 @@ class UcsRack(GenericUcsInventoryObject):
         self.memory_arrays = self._get_memory_arrays()
         self.mgmt_interfaces = self._get_mgmt_interfaces()
         self.nvme_drives = self._get_nvme_drives()
-        self.power_supplies = self._get_power_supplies()
+        if self.slot_id in [None, "0"]:  # We only get power supplies for rack servers that are not part of an enclosure
+            self.power_supplies = self._get_power_supplies()
         self.storage_controllers = self._get_storage_controllers()
         self.storage_flexflash_controllers = self._get_storage_flexflash_controllers()
         self.tpms = self._get_tpms()
@@ -86,7 +90,10 @@ class UcsRack(GenericUcsInventoryObject):
         if self.sku is not None:
             # We use the catalog file to get the rack short name
             try:
-                json_file = open("catalog/racks/" + self.sku + ".json")
+                if self.sku in ["UCSC-C125"]:
+                    json_file = open("catalog/server_nodes/" + self.sku + ".json")
+                else:
+                    json_file = open("catalog/racks/" + self.sku + ".json")
                 rack_catalog = json.load(fp=json_file)
                 json_file.close()
 
@@ -115,6 +122,25 @@ class UcsRack(GenericUcsInventoryObject):
         return []
 
 
+class UcsRackEnclosure(GenericUcsInventoryObject):
+    _UCS_SDK_OBJECT_NAME = "equipmentRackEnclosure"
+
+    def __init__(self, parent=None, equipment_rack_enclosure=None):
+        GenericUcsInventoryObject.__init__(self, parent=parent, ucs_sdk_object=equipment_rack_enclosure)
+
+        self.model = self.get_attribute(ucs_sdk_object=equipment_rack_enclosure, attribute_name="model")
+        self.serial = self.get_attribute(ucs_sdk_object=equipment_rack_enclosure, attribute_name="serial")
+
+        self.power_supplies = self._get_power_supplies()
+        self.server_nodes = self._get_server_nodes()
+
+    def _get_power_supplies(self):
+        return []
+
+    def _get_server_nodes(self):
+        return []
+
+
 class UcsSystemRack(UcsRack, UcsSystemInventoryObject):
     _UCS_SDK_CATALOG_OBJECT_NAME = "equipmentRackUnitCapProvider"
     _UCS_SDK_FIRMWARE_RUNNING_SUFFIX = "/mgmt/fw-system"
@@ -124,6 +150,7 @@ class UcsSystemRack(UcsRack, UcsSystemInventoryObject):
 
         self.assigned_to_dn = self.get_attribute(ucs_sdk_object=compute_rack_unit, attribute_name="assigned_to_dn")
         self.association = self.get_attribute(ucs_sdk_object=compute_rack_unit, attribute_name="association")
+        self.enclosure_id = self.get_attribute(ucs_sdk_object=compute_rack_unit, attribute_name="enclosure_id")
         self.revision = self.get_attribute(ucs_sdk_object=compute_rack_unit, attribute_name="revision")
 
         UcsSystemInventoryObject.__init__(self, parent=parent, ucs_sdk_object=compute_rack_unit)
@@ -435,6 +462,44 @@ class UcsSystemRack(UcsRack, UcsSystemInventoryObject):
             return []
 
 
+class UcsSystemRackEnclosure(UcsRackEnclosure, UcsSystemInventoryObject):
+    _UCS_SDK_CATALOG_OBJECT_NAME = "equipmentRackEnclosureCapProvider"
+
+    def __init__(self, parent=None, equipment_rack_enclosure=None):
+        UcsRackEnclosure.__init__(self, parent=parent, equipment_rack_enclosure=equipment_rack_enclosure)
+
+        self.id = self.get_attribute(ucs_sdk_object=equipment_rack_enclosure, attribute_name="id")
+        self.revision = self.get_attribute(ucs_sdk_object=equipment_rack_enclosure, attribute_name="revision")
+        self.vendor = self.get_attribute(ucs_sdk_object=equipment_rack_enclosure, attribute_name="vendor")
+
+        UcsSystemInventoryObject.__init__(self, parent=parent, ucs_sdk_object=equipment_rack_enclosure)
+
+    def _generate_draw(self):
+        self._draw_front = UcsSystemDrawRackEnclosureFront(parent=self)
+        self._draw_rear = UcsSystemDrawRackEnclosureRear(parent=self)
+        self._draw_infra = None
+
+    def _get_power_supplies(self):
+        if self._inventory.load_from == "live":
+            return self._inventory.get_inventory_objects_under_dn(dn=self.dn, object_class=UcsSystemPsu, parent=self)
+        elif self._inventory.load_from == "file" and "power_supplies" in self._ucs_sdk_object:
+            return [UcsSystemPsu(self, psu) for psu in self._ucs_sdk_object["power_supplies"]]
+        else:
+            return []
+
+    def _get_server_nodes(self):
+        if self._inventory.load_from == "live":
+            # We force the dn manually since computeRackUnit objects are not under equipmentRackEnclosure in UCSM SDK
+            # We only get computeRackUnit objects that have an enclosureId value that is not "0"
+            racks = self._inventory.get_inventory_objects_under_dn(dn="sys", object_class=UcsSystemRack, parent=self)
+            return [rack for rack in racks if rack.enclosure_id != "0"]
+            #return self._inventory.get_inventory_objects_under_dn(dn="sys", object_class=UcsSystemRack, parent=self)
+        elif self._inventory.load_from == "file" and "server_nodes" in self._ucs_sdk_object:
+            return [UcsSystemRack(self, server_node) for server_node in self._ucs_sdk_object["server_nodes"]]
+        else:
+            return []
+
+
 class UcsImcRack(UcsRack, UcsImcInventoryObject):
     def __init__(self, parent=None, compute_rack_unit=None):
         UcsRack.__init__(self, parent=parent, compute_rack_unit=compute_rack_unit)
@@ -566,3 +631,36 @@ class UcsImcRack(UcsRack, UcsImcInventoryObject):
     def _generate_draw(self):
         self._draw_front = UcsImcDrawRackFront(parent=self)
         self._draw_rear = UcsImcDrawRackRear(parent=self)
+
+
+class UcsImcRackEnclosure(UcsRackEnclosure, UcsImcInventoryObject):
+    def __init__(self, parent=None, equipment_rack_enclosure=None):
+        UcsRackEnclosure.__init__(self, parent=parent, equipment_rack_enclosure=equipment_rack_enclosure)
+
+        UcsImcInventoryObject.__init__(self, parent=parent, ucs_sdk_object=equipment_rack_enclosure)
+
+        # Since we don't have a catalog item for finding the SKU, we set it manually here
+        self.sku = self.model
+
+    def _get_power_supplies(self):
+        if self._inventory.load_from == "live":
+            # We force the dn manually since equipmentPsu objects are not under equipmentRackEnclosure in IMC SDK
+            return self._inventory.get_inventory_objects_under_dn(dn="sys/rack-unit-1", object_class=UcsImcPsu,
+                                                                  parent=self)
+        elif self._inventory.load_from == "file" and "power_supplies" in self._ucs_sdk_object:
+            return [UcsImcPsu(self, psu) for psu in self._ucs_sdk_object["power_supplies"]]
+        else:
+            return []
+
+    def _get_server_nodes(self):
+        if self._inventory.load_from == "live":
+            # We force the dn manually since computeRackUnit objects are not under equipmentRackEnclosure in IMC SDK
+            return self._inventory.get_inventory_objects_under_dn(dn="sys", object_class=UcsImcRack, parent=self)
+        elif self._inventory.load_from == "file" and "server_nodes" in self._ucs_sdk_object:
+            return [UcsImcRack(self, server_node) for server_node in self._ucs_sdk_object["server_nodes"]]
+        else:
+            return []
+
+    def _generate_draw(self):
+        self._draw_front = UcsImcDrawRackEnclosureFront(parent=self)
+        self._draw_rear = UcsImcDrawRackEnclosureRear(parent=self)

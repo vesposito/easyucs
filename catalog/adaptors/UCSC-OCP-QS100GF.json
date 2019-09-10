@@ -1,0 +1,13 @@
+{
+  "model_short_name": "QLogic QL45631HOCU 1x100G",
+  "rear_file_name":"UCSC-OCP-QS100GF.png",
+  "rear_file_size":[475,113],
+  "rear_ports": {
+    "x/1": {
+      "port_coord": [345, 32],
+      "port_type": "qsfp28",
+      "port_size": [111, 49]
+    }
+  },
+  "data_sheet_url": "https://www.marvell.com/documents/tacwfd7qkp4g2cmqcbhr/"
+}

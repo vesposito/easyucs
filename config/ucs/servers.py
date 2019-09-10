@@ -1134,7 +1134,7 @@ class UcsSystemHostFirmwarePackage(UcsSystemConfigObject):
 
 
 class UcsSystemIpmiAccessProfile(UcsSystemConfigObject):
-    _CONFIG_NAME = "IPMI Access Profiles"
+    _CONFIG_NAME = "IPMI Access Profile"
     _UCS_SDK_OBJECT_NAME = "aaaEpAuthProfile"
 
     def __init__(self, parent=None, json_content=None, aaa_ep_auth_profile=None):
@@ -3581,10 +3581,18 @@ class UcsSystemServiceProfile(UcsSystemConfigObject):
 
                 parent_template_type = None
                 if self.service_profile_template:
-                    mo_template_ls = self._device.query(mode="dn", target=self._parent._dn + "/ls-" +
-                                                                          self.service_profile_template)
-                    if mo_template_ls:
-                        parent_template_type = mo_template_ls.type
+                    # We first try to get the SP Template object by using the operSrcTemplName attribute value
+                    if ls_server.oper_src_templ_name:
+                        mo_template_ls = self._device.query(mode="dn", target=ls_server.oper_src_templ_name)
+                        if mo_template_ls:
+                            parent_template_type = mo_template_ls.type
+                    else:
+                        # If the operSrcTemplName attribute is not set (e.g. with UCS Central), we try to find the SP
+                        # Template using a query for its name. In case it is the only object with this name, we use it
+                        filter_str = '(name, "' + self.service_profile_template + '", type="eq")'
+                        mo_template_ls = self._device.query(mode="classid", target="lsServer", filter_str=filter_str)
+                        if len(mo_template_ls) == 1:
+                            parent_template_type = mo_template_ls[0].type
 
                 if parent_template_type != "updating-template":
                     self.dynamic_vnic_connection_policy = ls_server.dynamic_con_policy_name

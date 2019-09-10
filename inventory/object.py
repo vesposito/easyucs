@@ -117,10 +117,11 @@ class GenericUcsInventoryObject(GenericInventoryObject):
                 elif attribute_name in ucs_sdk_object.keys():
                     result = ucs_sdk_object[attribute_name]
                 else:
-                    self.logger(level="debug",
-                                message="Attributes " + attribute_name + " or " + attribute_secondary_name +
-                                        " do not exist in inventory file for object of class " +
-                                        str(self.__class__.__name__))
+                    if attribute_name not in ["usr_lbl"]:  # We don't log for those attributes
+                        self.logger(level="debug",
+                                    message="Attributes " + attribute_name + " or " + attribute_secondary_name +
+                                            " do not exist in inventory file for object of class " +
+                                            str(self.__class__.__name__))
                     return None
             else:
                 if attribute_name in ucs_sdk_object.keys():

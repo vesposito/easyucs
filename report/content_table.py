@@ -9,9 +9,12 @@ from docx.shared import Cm, Pt
 from report.content import GenericReportContent
 from docx.enum.table import WD_CELL_VERTICAL_ALIGNMENT
 from docx.enum.table import WD_ROW_HEIGHT_RULE
+from ipaddress import IPv4Address, IPv6Address
+
 import os.path
 
 from draw.object import GenericDrawObject
+
 
 class GenericReportTable(GenericReportContent):
     def __init__(self, order_id, parent, row_number, column_number, centered=False, cells_list=[],
@@ -57,7 +60,7 @@ class GenericReportTable(GenericReportContent):
                 if not empty:
                     continue
                 if row == self.cells_list[0]:
-                    # We skip the firt row because it can't be empty in a "row" cells_type table
+                    # We skip the first row because it can't be empty in a "row" cells_type table
                     continue
                 if row[column_index] or row[column_index] == 0:
                     empty = False
@@ -195,7 +198,10 @@ class FiUcsReportTable(GenericReportTable):
         # We use a DrawingObject because they already have a method to get the JSON file efficiently
         draw = GenericDrawObject(parent=fi)
         draw._get_json_file()
-        rear_ports = draw.json_file['rear_ports']
+        rear_ports = None
+        if draw.json_file:
+            if "rear_ports" in draw.json_file:
+                rear_ports = draw.json_file['rear_ports']
         if rear_ports:
             port_dict = {}
             for port in rear_ports.items():
@@ -597,10 +603,97 @@ class VlanGroupUcsReportTable(GenericReportTable):
                                     column_number=len(rows[1]), centered=centered, cells_list=rows)
 
 
+class LanPortChannelUcsReportTable(GenericReportTable):
+    def __init__(self, order_id, parent, lan_port_channels, centered=False):
+        rows = [[_("ID"), _("Fabric"), _("Interfaces"), _("Name"), _("Admin Speed"), _("Flow Control Policy"),
+                 _("LACP Policy")]]
+
+        # TODO : Put in order by the PC ID (now : 119, 120, 13, 14, ...)
+        for lan_port_channel in lan_port_channels:
+
+            interfaces = ""
+            for interface in lan_port_channel.interfaces:
+                if "aggr_id" in interface.keys() and interface["aggr_id"]:
+                    interfaces += interface["slot_id"] + "/" + interface["port_id"] + "/" + interface["aggr_id"] + ", "
+                else:
+                    interfaces += interface["slot_id"] + "/" + interface["port_id"] + ", "
+            if interfaces:
+                interfaces = interfaces[:-2]  # remove the last ", " at the end of the string
+
+            rows.append([lan_port_channel.pc_id, lan_port_channel.fabric,
+                         interfaces, lan_port_channel.name, lan_port_channel.admin_speed,
+                         lan_port_channel.flow_control_policy, lan_port_channel.lacp_policy])
+
+        GenericReportTable.__init__(self, order_id=order_id, parent=parent, row_number=len(rows),
+                                    column_number=len(rows[1]), centered=centered, cells_list=rows)
+
+
+class SanPortChannelUcsReportTable(GenericReportTable):
+    def __init__(self, order_id, parent, san_port_channels, centered=False):
+        rows = [[_("ID"), _("Fabric"), _("Interfaces"), _("Name"), _("Admin Speed"), _("VSAN Fabric"),
+                 _("VSAN")]]
+
+        # TODO : Put in order by the PC ID (now : 119, 120, 13, 14, ...)
+        for san_port_channel in san_port_channels:
+
+            interfaces = ""
+            for interface in san_port_channel.interfaces:
+                interfaces += interface["slot_id"] + "/" + interface["port_id"] + ", "
+            if interfaces:
+                interfaces = interfaces[:-2]  # remove the last ", " at the end of the string
+
+            rows.append([san_port_channel.pc_id, san_port_channel.fabric,
+                         interfaces, san_port_channel.name, san_port_channel.admin_speed,
+                         san_port_channel.vsan_fabric, san_port_channel.vsan])
+
+        GenericReportTable.__init__(self, order_id=order_id, parent=parent, row_number=len(rows),
+                                    column_number=len(rows[1]), centered=centered, cells_list=rows)
+
+
+class FcoePortChannelUcsReportTable(GenericReportTable):
+    def __init__(self, order_id, parent, fcoe_port_channels, centered=False):
+        rows = [[_("ID"), _("Fabric"), _("Interfaces"), _("Name"), _("LACP Policy")]]
+
+        # TODO : Put in order by the PC ID (now : 119, 120, 13, 14, ...)
+        for fcoe_port_channel in fcoe_port_channels:
+
+            interfaces = ""
+            for interface in fcoe_port_channel.interfaces:
+                if "aggr_id" in interface.keys() and interface["aggr_id"]:
+                    interfaces += interface["slot_id"] + "/" + interface["port_id"] + "/" + interface["aggr_id"] + ", "
+                else:
+                    interfaces += interface["slot_id"] + "/" + interface["port_id"] + ", "
+            if interfaces:
+                interfaces = interfaces[:-2]  # remove the last ", " at the end of the string
+
+            rows.append([fcoe_port_channel.pc_id, fcoe_port_channel.fabric,
+                         interfaces, fcoe_port_channel.name, fcoe_port_channel.lacp_policy])
+
+        GenericReportTable.__init__(self, order_id=order_id, parent=parent, row_number=len(rows),
+                                    column_number=len(rows[1]), centered=centered, cells_list=rows)
+
+
+class QosSystemClassUcsReportTable(GenericReportTable):
+    def __init__(self, order_id, parent, qos_system_class, centered=False):
+        rows = [[_("Priority"), _("State"), _("CoS"), _("Packet Drop"), _("Weight"), _("MTU"),
+                 _("Multicast Optimized")]]
+
+        priority_order = ["platinum", "gold", "silver", "bronze", "fc", "best-effort"]
+        order = {key: i for i, key in enumerate(priority_order)}
+
+        for priority in sorted(qos_system_class, key=lambda x: order[x.priority], reverse=False):
+            priority_name = priority.priority.replace("-"," ").title() if priority.priority != "fc" else "Fibre Channel"
+            rows.append([priority_name, priority.state, priority.cos,
+                         priority.packet_drop, priority.weight, priority.mtu, priority.multicast_optimized])
+
+        GenericReportTable.__init__(self, order_id=order_id, parent=parent, row_number=len(rows),
+                                    column_number=len(rows[1]), centered=centered, cells_list=rows)
+
 class VsanUcsReportTable(GenericReportTable):
     def __init__(self, order_id, parent, vsans, centered=False):
         rows = [[_("ID"), _("FCoE VLAN ID"),_("VSAN Name"), _("Fabric"), _("Zoning")]]
 
+        vsans.sort(key=lambda x: int(x.id), reverse=False)
         for vsan in vsans:
             rows.append([vsan.id, vsan.fcoe_vlan_id, vsan.name, vsan.fabric, vsan.zoning])
 
@@ -1084,6 +1177,7 @@ class ClusterInfoUcsReportTable(GenericReportTable):
         rows = [[_("Description"),_("Value")]]
         # Cluster info
         rows.append([_("System Name"), config_system.name])
+        rows.append([_("Version"), config.device_version])
         rows.append([_("Admin password"), device.password])
         rows.append([_("Cluster IP Address"),config_system.virtual_ip])
         rows.append([_("Netmask"), config_mng_int.netmask])
@@ -1125,9 +1219,10 @@ class ClusterInfoUcsReportTable(GenericReportTable):
         if config.call_home:
             rows.append([_("Call Home"), config.call_home[0].admin_state])
         if config.ucs_central:
-            rows.append([_("Link to UCS Central"), _("Connected to ") + config.ucs_central[0].ip_address])
+            rows.append([_("Link to UCS Central"), _("Registered to ") + config.ucs_central[0].ip_address])
         else:
             rows.append([_("Link to UCS Central"), "off"])
+        rows.append([_("Intersight Claim Status"), config.intersight_status])
 
         GenericReportTable.__init__(self, order_id=order_id, parent=parent, row_number=len(rows),
                                     column_number=len(rows[0]), centered=centered, cells_list=rows)
@@ -1173,6 +1268,30 @@ class ServiceProfilesRacksUcsReportTable(GenericReportTable):
                                     column_number=len(rows[0]), centered=centered, cells_list=rows)
 
 
+class ServiceProfilesRackEnclosuresUcsReportTable(GenericReportTable):
+    def __init__(self, order_id, parent, rack_enclosures, centered=False):
+
+        rows = [[_("Rack Enclosure ID"), _("Rack ID"), _("Service Profile"), _("Service Profile Org"),
+                 _("Service Profile Template"), _("Service Profile Template Org")]]
+        # Rack Enclosures Service Profile info
+        for rack_enclosure in rack_enclosures:
+            for server_node in rack_enclosure.server_nodes:
+                rack_enclosure_id = rack_enclosure.id
+                rack_id = server_node.id
+                ls_name = server_node.service_profile_name
+                ls_org = server_node.service_profile_org
+                ls_template = None
+                ls_template_org = None
+
+                if server_node.service_profile_template_name:
+                    ls_template = server_node.service_profile_template_name
+                    ls_template_org = server_node.service_profile_template_org
+                rows.append([rack_enclosure_id, rack_id, ls_name, ls_org, ls_template, ls_template_org])
+
+        GenericReportTable.__init__(self, order_id=order_id, parent=parent, row_number=len(rows),
+                                    column_number=len(rows[0]), centered=centered, cells_list=rows)
+
+
 class ServiceProfilesChassisUcsReportTable(GenericReportTable):
     def __init__(self, order_id, parent, chassis, centered=False):
 
@@ -1192,6 +1311,119 @@ class ServiceProfilesChassisUcsReportTable(GenericReportTable):
                     ls_template = blade.service_profile_template_name
                     ls_template_org = blade.service_profile_template_org
                 rows.append([chassis_id, blade_id, ls_name, ls_org, ls_template, ls_template_org])
+
+        GenericReportTable.__init__(self, order_id=order_id, parent=parent, row_number=len(rows),
+                                    column_number=len(rows[1]), centered=centered, cells_list=rows)
+
+
+class ServiceProfileUcsReportTable(GenericReportTable):
+    def __init__(self, order_id, parent, service_profile, centered=False):
+        rows = [[_("Description"),_("Value")]]
+        rows.append([_("Name"), service_profile.name])
+        rows.append([_("Type"), service_profile.type])
+        rows.append([_("Organization"), service_profile._parent._dn])
+        rows.append([_("BIOS Policy"), service_profile.bios_policy])
+        rows.append([_("Boot Policy"), service_profile.boot_policy])
+        rows.append([_("Maintenance Policy"), service_profile.maintenance_policy])
+        rows.append([_("Local Disk Configuration Policy"), service_profile.local_disk_configuration_policy])
+        rows.append([_("Dynamic vNIC Connection Policy"), service_profile.dynamic_vnic_connection_policy])
+        rows.append([_("LAN Connectivity Policy"), service_profile.lan_connectivity_policy])
+        rows.append([_("SAN Connectivity Policy"), service_profile.san_connectivity_policy])
+        rows.append([_("Placement Policy"), service_profile.placement_policy])
+        rows.append([_("vMedia Policy"), service_profile.vmedia_policy])
+        rows.append([_("Serial Over LAN Policy"), service_profile.serial_over_lan_policy])
+        rows.append([_("Threshold Policy"), service_profile.threshold_policy])
+        rows.append([_("Power Control Policy"), service_profile.power_control_policy])
+        rows.append([_("Scrub Policy"), service_profile.scrub_policy])
+        rows.append([_("KVM Management Policy"), service_profile.kvm_management_policy])
+        rows.append([_("Graphics Card Policy"), service_profile.graphics_card_policy])
+        rows.append([_("Power Sync Policy"), service_profile.power_sync_policy])
+        rows.append([_("Storage Profile"), service_profile.storage_profile])
+        rows.append([_("IPMI Access Profile"), service_profile.ipmi_access_profile])
+        rows.append([_("UUID Pool"), service_profile.uuid_pool])
+        rows.append([_("WWNN Pool"), service_profile.wwnn_pool])
+        rows.append([_("Server Pool"), service_profile.server_pool])
+        rows.append([_("Host Firmware Package"), service_profile.host_firmware_package])
+        if hasattr(service_profile, "children"):
+            rows.append([_("Instantiated Service Profiles"), service_profile.children.replace(", ", "\n")])
+
+        GenericReportTable.__init__(self, order_id=order_id, parent=parent, row_number=len(rows),
+                                    column_number=len(rows[1]), centered=centered, cells_list=rows)
+
+
+class FiPortsUcsReportTable(GenericReportTable):
+    def __init__(self, order_id, parent, fi, centered=False, autofit=True):
+        rows = [[_("Fabric"), _("Port"), _("Port Role"), _("Speed"),
+                 _("Transceiver SKU/Type"), _("Transceiver S/N"), _("Transceiver Length")]]
+
+        for port in fi.ports:
+            fi_id = fi.id
+            if port.aggr_port_id:
+                fi_port = port.slot_id + "/" + port.aggr_port_id + "/" + port.port_id
+            else:
+                fi_port = port.slot_id + "/" + port.port_id
+
+            fi_port_role = port.role if port.role != "unknown" else _("not configured")
+            fi_port_speed = port.oper_speed if port.oper_speed != "indeterminate" else ""
+
+            if len(port.transceivers) == 1:
+                if port.transceivers[0].sku:
+                    transceiver_type = port.transceivers[0].sku
+                else:
+                    transceiver_type = port.transceivers[0].type
+                transceiver_sn = port.transceivers[0].serial
+                transceiver_length = port.transceivers[0].length
+            else:
+                transceiver_type = ""
+                transceiver_sn = ""
+                transceiver_length = ""
+
+            if fi_port_role != "not configured":
+                rows.append([fi_id, fi_port, fi_port_role, fi_port_speed, transceiver_type, transceiver_sn,
+                             transceiver_length])
+
+        GenericReportTable.__init__(self, order_id=order_id, parent=parent, row_number=len(rows),
+                                    column_number=len(rows[1]), centered=centered, cells_list=rows, autofit=autofit,
+                                    font_size=8)
+
+
+class IpPoolSectionInfoBlockUcsReportTable(GenericReportTable):
+    def __init__(self, order_id, parent, blocks_ipv4, centered=False):
+        rows = [[ _("From"), _("To"), _("Subnet"), _("Gateway"), _("Primary DNS"), _("Secondary DNS"), _("Size")]]
+
+        for block_ipv4 in blocks_ipv4:
+            size = int(IPv4Address(block_ipv4["to"])) - int(IPv4Address(block_ipv4["from"])) + 1
+            rows.append([block_ipv4["from"], block_ipv4["to"], block_ipv4["netmask"],
+                         block_ipv4["gateway"], block_ipv4["primary_dns"],
+                         block_ipv4["secondary_dns"], size])
+
+        GenericReportTable.__init__(self, order_id=order_id, parent=parent, row_number=len(rows),
+                                    column_number=len(rows[1]), centered=centered, cells_list=rows)
+
+
+class IpPoolSectionInfoBlockv6UcsReportTable(GenericReportTable):
+    def __init__(self, order_id, parent, blocks_ipv6, centered=False):
+        rows = [[ _("From"), _("To"), _("Prefix"), _("Gateway"), _("Primary DNS"), _("Secondary DNS"), _("Size")]]
+
+        for block_ipv6 in blocks_ipv6:
+            size = int(IPv6Address(block_ipv6["to"])) - int(IPv6Address(block_ipv6["from"]))
+            rows.append([block_ipv6["from"], block_ipv6["to"], block_ipv6["prefix"],
+                         block_ipv6["gateway"], block_ipv6["primary_dns"],
+                         block_ipv6["secondary_dns"], size])
+
+        GenericReportTable.__init__(self, order_id=order_id, parent=parent, row_number=len(rows),
+                                    column_number=len(rows[1]), centered=centered, cells_list=rows)
+
+
+class GenericSectionInfoBlockUcsReportTable(GenericReportTable):
+    # Used for WWNN, WWPN, WWXN, UUID and MAC Blocks
+    def __init__(self, order_id, parent, blocks, centered=False):
+        rows = [[ _("From"), _("To"), _("Size")]]
+
+        for block in blocks:
+            size = int(block["to"].replace("-", "").replace(":", ""), 16) - int(block["from"].replace(
+                "-", "").replace(":", ""), 16) + 1
+            rows.append([block["from"], block["to"], size])
 
         GenericReportTable.__init__(self, order_id=order_id, parent=parent, row_number=len(rows),
                                     column_number=len(rows[1]), centered=centered, cells_list=rows)

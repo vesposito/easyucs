@@ -252,6 +252,9 @@ class GenericDevice:
                         filename=None):
         pass
 
+    def generate_config_plots(self, config=None, directory=None):
+        pass
+
     def reset(self):
         pass
 
@@ -354,7 +357,7 @@ class GenericDevice:
 
 class GenericUcsDevice(GenericDevice):
     _MAX_PUSH_ATTEMPTS = 3
-    _PUSH_INTERVAL_AFTER_FAIL = 1
+    _PUSH_INTERVAL_AFTER_FAIL = 5
 
     def __init__(self, target="", user="", password="", logger_handle_log_level="info", log_file_path=None):
         GenericDevice.__init__(self, target=target, password=password, user=user,
@@ -362,6 +365,7 @@ class GenericUcsDevice(GenericDevice):
         self.device_type = "UCS Generic"
         self.device_type_short = "ucs"
         self.handle = None
+        self.intersight_status = "unknown"
 
         # Commit parameters
         self.push_attempts = self._MAX_PUSH_ATTEMPTS
@@ -1065,7 +1069,9 @@ class UcsSystem(GenericUcsDevice):
 
         try:
             # Get IP address of FI A
-            switch_a = self.handle.query_dn("sys/switch-A")
+            # We use self.query() instead of handle.query_dn() to support retries. In some rare cases, if UCS System is
+            # unregistered from Central, reconnection might not work properly right away (API does not respond)
+            switch_a = self.query(mode="dn", target="sys/switch-A")
             ip_a = switch_a.oob_if_ip
             ip_sw_addr.append(ip_a)
             self.logger(level="debug", message="IP address of FI A: " + ip_a)
@@ -1077,7 +1083,7 @@ class UcsSystem(GenericUcsDevice):
         try:
             # Get IP address of FI B if present (in cluster mode only)
             if self.sys_mode == "cluster":
-                switch_b = self.handle.query_dn("sys/switch-B")
+                switch_b = self.query(mode="dn", target="sys/switch-B")
                 ip_b = switch_b.oob_if_ip
                 ip_sw_addr.append(ip_b)
                 self.logger(level="debug", message="IP address of FI B: " + ip_b)
@@ -1466,12 +1472,14 @@ class UcsSystem(GenericUcsDevice):
                     dn_list = self.handle.query_dn(target)
                     return dn_list
             except ConnectionRefusedError as err:
-                self.logger(level="error", message="Error while querying UCS System: " + str(err))
+                self.logger(level="debug", message="Error while querying UCS System: " + str(err))
             except UcsException as err:
-                self.logger(level="error", message="Unable to fetch " + target + " " + err.error_descr)
+                self.logger(level="debug", message="Unable to fetch " + target + ": " + err.error_descr)
             except urllib.error.URLError:
-                self.logger(level="error", message="Timeout error while fetching " + target)
+                self.logger(level="debug", message="Timeout error while fetching " + target)
             time.sleep(self.push_interval_after_fail)
+
+        self.logger(level="error", message="Unable to fetch " + target + " after " + str(retries) + " attempts")
         return []
 
     def wait_for_fsm_complete(self, ucs_sdk_object_class=None, timeout=300):
@@ -1687,6 +1695,17 @@ class UcsSystem(GenericUcsDevice):
                                                                     filter_str="(dn,'sys/switch-B')")[0].model
                 except UcsException as err:
                     self.logger(level="error", message="Unable to get the FI system mode & model: " + err.error_descr)
+
+                # Trying to fetch Intersight claim status
+                try:
+                    cloud_device_connector = self.handle.query_classid("cloudDeviceConnectorEp")
+                    if cloud_device_connector:
+                        self.intersight_status = cloud_device_connector[0].claim_state
+                        if self.intersight_status == "none":
+                            self.intersight_status = "unknown"
+                except UcsException:
+                    self.logger(level="debug", message="Unable to determine Intersight claim status")
+
         self.name = self.handle.ucs
         self.version = self.handle.version
 
@@ -1727,6 +1746,7 @@ class UcsImc(GenericUcsDevice):
         self.handle = ImcHandle(ip=target, username=user, password=password)
         self.device_type = "UCS IMC"
         self.device_type_short = "cimc"
+        self.platform_type = ""
         self.version_min_required = ImcVersion(self.UCS_IMC_MIN_REQUIRED_VERSION)
         self.config_manager = UcsImcConfigManager(parent=self)
         self.inventory_manager = UcsImcInventoryManager(parent=self)
@@ -2264,10 +2284,14 @@ class UcsImc(GenericUcsDevice):
                 self.logger(level="error", message="No config found. Unable to generate report.")
                 return False
 
+        if page_layout is None:
+            page_layout = "a4"
+
         self.logger(message="Generating report for device " + self.target + " using config: " + str(config.uuid)
                             + " and inventory: " + str(inventory.uuid))
         self.logger(level="debug",
-                    message="Generating report in " + output_format + " format with layout " + page_layout)
+                    message="Generating report in " + output_format + " format with layout " + page_layout.upper() +
+                            " in " + language.upper())
         UcsImcReport(device=self, inventory=inventory, config=config, language=language, output_format=output_format,
                      page_layout=page_layout, directory=directory, filename=filename, size=size)
 
@@ -2278,6 +2302,8 @@ class UcsImc(GenericUcsDevice):
         """
         self.name = self.handle.imc
         self.version = self.handle.version
+        if self.handle.session_id:  # We first make sure we have already connected at least once to avoid crash
+            self.platform_type = self.handle.platform
 
     def _set_sdk_version(self):
         """

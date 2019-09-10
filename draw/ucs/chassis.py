@@ -6,6 +6,7 @@ from __init__ import __author__, __copyright__,  __version__, __status__
 
 
 from draw.object import GenericUcsDrawEquipment, UcsSystemDrawInfraEquipment
+from draw.ucs.adaptor import UcsSystemDrawAdaptor
 from draw.ucs.blade import GenericUcsDrawBlade
 from draw.ucs.psu import GenericUcsDrawPsu
 from draw.ucs.port import UcsSystemDrawPort
@@ -464,8 +465,18 @@ class GenericUcsDrawSioc(GenericUcsDrawEquipment):
         if not self.picture:
             return
 
+        # We do this to be able to support adding a modular adaptor for UCS-S3260-PCISIOC
+        #self.background = self._create_background(self.canvas_width, self.canvas_height, self.canvas_color)
+        #self.draw = self._create_draw()
+        self.draw = self.parent_draw.draw
+        self.background = self.parent_draw.background
+
+        self.adaptor_list = None
         self.ports = []
         self.parent_draw.paste_layer(self.picture, self.picture_offset)
+
+        if self._parent.sku in ["UCS-S3260-PCISIOC"]:
+            self.adaptor_list = self.get_adaptor_list()
 
         if hasattr(self.parent_draw, "color_ports"):
             if self.parent_draw.color_ports:
@@ -534,6 +545,27 @@ class GenericUcsDrawSioc(GenericUcsDrawEquipment):
                                      (self.picture_offset[0] + coord_x + port_size_x,
                                       self.picture_offset[1] + coord_y + port_size_y)), color=port_color,
                                     width=rectangle_width)
+
+    def get_adaptor_list(self):
+        adaptor_list = []
+        if hasattr(self._parent, "_parent"):
+            if hasattr(self._parent._parent, "server_nodes"):
+                for server_node in self._parent._parent.server_nodes:
+                    for adaptor in server_node.adaptors:
+                        if hasattr(adaptor, "id"):
+                            if "SIOC" in adaptor.id:
+                                if adaptor.id[-1] == self._parent.id:
+                                    adaptor_list.append(UcsSystemDrawAdaptor(parent=adaptor, parent_draw=self))
+            elif hasattr(self._parent._parent, "blades"):
+                for blade in self._parent._parent.blades:
+                    for adaptor in blade.adaptors:
+                        if hasattr(adaptor, "id"):
+                            if "SIOC" in adaptor.id:
+                                if adaptor.id[-1] == self._parent.id:
+                                    adaptor_list.append(UcsSystemDrawAdaptor(parent=adaptor, parent_draw=self))
+
+        adaptor_list = [adaptor for adaptor in adaptor_list if adaptor.picture]
+        return [e for e in adaptor_list if hasattr(e, "_parent")]
 
 
 class UcsSystemDrawInfraChassis(UcsSystemDrawInfraEquipment):

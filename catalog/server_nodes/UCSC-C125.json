@@ -1,0 +1,63 @@
+{
+  "model_short_name": "C125 M5",
+  "rear_file_name":"UCSC-C125_rear.png",
+  "rear_file_size":[1047,254],
+  "ocp_slots":[
+    {
+      "id": 1,
+      "coord":[13, 138]
+    }
+  ],
+  "ocp_models":[
+    {
+      "name": "UCSC-OCP-QD25GF",
+      "description": "Cisco UCS C125 10/25Gb SFP adapter"
+    },
+    {
+      "name": "UCSC-OCP-QD10GC",
+      "description": "Cisco UCS C125 10Gbase-T adapter"
+    },
+    {
+      "name": "UCSC-OCP-QS100GF",
+      "description": "Cisco UCS C125 100Gb QSFP28 adapter"
+    },
+    {
+      "name": "UCSC-OCP-BLK",
+      "type":"blank",
+      "description": "Cisco UCS C125 100Gb QSFP28 adapter"
+    }
+  ],
+  "pcie_slots":[
+    {
+      "id":1,
+      "width":"half",
+      "coord":[92, 38]
+    },
+    {
+      "id":2,
+      "width":"half",
+      "coord":[549, 51]
+    }
+  ],
+  "pcie_models":[
+    {
+      "name":"UCSC-PCIE-CSC-02",
+      "description":"Cisco VIC 1225 Dual Port 10Gb SFP+ CNA"
+    },
+    {
+      "name":"UCSC-PCIE-C10T-02",
+      "description":"Cisco VIC 1225T Dual Port 10GBaseT Adapter"
+    },
+    {
+      "name":"UCSC-PCIE-C40Q-03",
+      "description":"Cisco VIC 1385 Dual Port 40Gb QSFP+ CNA w/RDMA"
+    },
+    {
+      "name":"UCSC-PCIF-01H",
+      "type":"blank",
+      "width":"half",
+      "description":"PCIe Half Height blanking panel for UCS C-Series Server"
+    }
+  ],
+  "spec_sheet_url": "https://www.cisco.com/c/dam/en/us/products/collateral/servers-unified-computing/ucs-c-series-rack-servers/c125m5-rack-server-node.pdf"
+}

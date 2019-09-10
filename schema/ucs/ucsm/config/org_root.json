@@ -141,6 +141,16 @@
          },
          "minItems": 1
       },
+      "dynamic_vnic_connection_policies": {
+         "description": "EasyUCS config/orgs/dynamic_vnic_connection_policies section",
+         "type": "array",
+         "items": {
+            "description:": "EasyUCS config/orgs/dynamic_vnic_connection_policies element",
+            "type": "object",
+            "$ref": "orgs/dynamic_vnic_connection_policies.json"
+         },
+         "minItems": 1
+      },
       "ethernet_adapter_policies": {
          "description": "EasyUCS config/orgs/ethernet_adapter_policies section",
          "type": "array",
