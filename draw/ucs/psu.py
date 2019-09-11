@@ -34,7 +34,10 @@ class GenericUcsDrawPsu(GenericUcsDrawEquipment):
                     if model["type"] == "blank":
                         file_name = model["name"]
         try:
-            self.picture = Image.open("catalog/power_supplies/img/" + str(file_name) + ".png", 'r')
+            if file_name:
+                self.picture = Image.open("catalog/power_supplies/img/" + str(file_name) + ".png", 'r')
+            else:
+                return False
         except FileNotFoundError:
             self.logger(level="error",
                         message="Image file " "catalog/power_supplies/img/" + str(file_name) + " not found")

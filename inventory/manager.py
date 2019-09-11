@@ -167,7 +167,12 @@ class GenericInventoryManager:
             if import_format == "json":
                 self.logger(level="debug", message="Requested inventory import format is JSON")
                 with open(directory + '/' + filename, 'r') as inventory_json_file:
-                    complete_json = json.load(inventory_json_file)
+                    try:
+                        complete_json = json.load(inventory_json_file)
+                    except json.decoder.JSONDecodeError as err:
+                        self.logger(level="error", message="Invalid inventory JSON file " + directory + "/" +
+                                                           filename + ": " + str(err))
+                        return False
                 inventory_json_file.close()
 
         else:

@@ -198,7 +198,12 @@ class GenericConfigManager:
             if import_format == "json":
                 self.logger(level="debug", message="Requested config import format is JSON")
                 with open(directory + '/' + filename, 'r') as config_json_file:
-                    complete_json = json.load(config_json_file)
+                    try:
+                        complete_json = json.load(config_json_file)
+                    except json.decoder.JSONDecodeError as err:
+                        self.logger(level="error",
+                                    message="Invalid config JSON file " + directory + "/" + filename + ": " + str(err))
+                        return False
                 config_json_file.close()
 
         else:
@@ -363,10 +368,11 @@ class UcsSystemConfigManager(GenericUcsConfigManager):
     def generate_config_plots(self, config=None):
         if config is None:
             config = self.get_latest_config()
-            self.logger(level="debug", message="No config UUID specified in generate report request. Using latest.")
+            self.logger(level="debug",
+                        message="No config UUID specified in generate config plots request. Using latest.")
 
             if config is None:
-                self.logger(level="error", message="No config found. Unable to generate report.")
+                self.logger(level="error", message="No config found. Unable to generate config plots.")
                 return False
 
         self.logger(level="debug", message="Generating plots for device " + self.parent.target + " using config: " +
@@ -379,12 +385,12 @@ class UcsSystemConfigManager(GenericUcsConfigManager):
     def export_config_plots(self, config=None, export_format="png", directory=None):
         if directory is None:
             self.logger(level="debug",
-                        message="No directory specified in generate report request. Using local folder.")
+                        message="No directory specified in export config plots request. Using local folder.")
             directory = "."
 
         if config is None:
             config = self.get_latest_config()
-            self.logger(level="debug", message="No config UUID specified in generate report request. Using latest.")
+            self.logger(level="debug", message="No config UUID specified in export config plots request. Using latest.")
 
             if config is None:
                 self.logger(level="error", message="No config found. Unable to export plots.")

@@ -2304,6 +2304,7 @@ class UcsImc(GenericUcsDevice):
         self.version = self.handle.version
         if self.handle.session_id:  # We first make sure we have already connected at least once to avoid crash
             self.platform_type = self.handle.platform
+            self.logger(level="debug", message="Detected IMC platform type: " + self.platform_type)
 
     def _set_sdk_version(self):
         """
