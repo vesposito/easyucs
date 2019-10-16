@@ -227,13 +227,13 @@ class GenericInventoryManager:
             self.logger(message="Importing inventory from " + import_format)
             result = self._fill_inventory_from_json(inventory=inventory, inventory_json=inventory_json)
             if result:
-                self.logger(level="debug",
-                            message="inventory import successful. Appending inventory to the list of inventories")
+                self.logger(message="Inventory import successful. Appending inventory to the list of inventories " +
+                                    "for device " + str(self.parent.uuid))
                 # We add the inventory to the list of inventories
                 self.inventory_list.append(inventory)
                 return True
             else:
-                self.logger(level="error", message="inventory import failed!")
+                self.logger(level="error", message="Inventory import failed!")
                 return False
 
     def fetch_inventory(self):

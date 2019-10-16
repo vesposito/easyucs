@@ -48,7 +48,8 @@
                   "type": "string",
                   "enum": [
                      "cdd",
-                     "hdd"
+                     "hdd",
+                     "unknown"
                   ]
                },
                "protocol": {
@@ -58,7 +59,8 @@
                      "cifs",
                      "http",
                      "https",
-                     "nfs"
+                     "nfs",
+                     "unknown"
                   ]
                },
                "authentication_protocol": {

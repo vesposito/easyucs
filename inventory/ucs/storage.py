@@ -645,9 +645,7 @@ class UcsSystemStorageLocalDisk(UcsStorageLocalDisk, UcsSystemInventoryObject):
                 elif self.rotational_speed_marketing == 0:
                     self.rotational_speed_marketing = None
                 # Handle catalog issues
-                elif self.rotational_speed_marketing == 10:
-                    self.rotational_speed_marketing = "10K"
-                elif self.rotational_speed_marketing == 10025:
+                elif self.rotational_speed_marketing in [10, 10025, 10520]:
                     self.rotational_speed_marketing = "10K"
                 elif self.rotational_speed_marketing == 7202:
                     self.rotational_speed_marketing = "7.2K"

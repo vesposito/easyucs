@@ -904,25 +904,24 @@ class UcsSystemLanPinGroup(UcsSystemConfigObject):
                     if interfaces:
                         for interface_ep_pc in interfaces:
                             interface = {}
+                            interface["fabric"] = interface_ep_pc.fabric_id
+
                             if "phys" in interface_ep_pc.ep_dn:
+                                # We are facing a physical interface (not a port-channel)
                                 interface["aggr_id"] = None
                                 interface["slot_id"] = None
                                 interface["port_id"] = None
-                                interface["fabric"] = None
-                                if "aggr_id" in interface_ep_pc.ep_dn:
-                                    interface.update({"aggr_id": interface_ep_pc.ep_dn.split('/')[4].split('-')[4]})
-                                    interface.update({"port_id": interface_ep_pc.ep_dn.split('/')[3].split('-')[4]})
+                                if "aggr-port" in interface_ep_pc.ep_dn:
+                                    interface.update({"port_id": interface_ep_pc.ep_dn.split('/')[4].split('-')[4]})
+                                    interface.update({"aggr_id": interface_ep_pc.ep_dn.split('/')[3].split('-')[4]})
                                     interface.update({"slot_id": interface_ep_pc.ep_dn.split('/')[3].split('-')[1]})
-                                    interface.update({"fabric": interface_ep_pc.ep_dn.split('/')[2]})
                                 else:
                                     interface.update({"port_id": interface_ep_pc.ep_dn.split('/')[3].split('-')[4]})
                                     interface.update({"slot_id": interface_ep_pc.ep_dn.split('/')[3].split('-')[2]})
-                                    interface.update({"fabric": interface_ep_pc.ep_dn.split('/')[2]})
-                                    del interface["aggr_id"]
                             elif "pc" in interface_ep_pc.ep_dn:
+                                # We are facing a port-channel interface
                                 interface["pc_id"] = None
                                 interface.update({"pc_id": interface_ep_pc.ep_dn.split('/')[3].split('-')[1]})
-                                interface.update({"fabric": interface_ep_pc.ep_dn.split('/')[2]})
                             self.interfaces.append(interface)
 
         elif self._config.load_from == "file":

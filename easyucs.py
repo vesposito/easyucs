@@ -321,13 +321,14 @@ def init_process(ucs_device, args, config_string):
         ucs_device.inventory_manager.fetch_inventory()
         ucs_device.set_task_progression(50)
 
-        # Exporting inventory to specified output config file
-        directory = os.path.dirname(args.output_report)
-        extension = Path(args.output_report).suffix
-        # Filename with extension (if filled)
-        full_filename = os.path.basename(args.output_report)
-        # Filename without extension
-        filename = full_filename.replace(extension, "")
+        # Exporting report to specified output directory
+        directory = args.output_directory
+
+        # Exporting inventory & config to JSON files
+        ucs_device.inventory_manager.export_inventory(directory=directory,
+                                                      filename="inventory_" + ucs_device.target + ".json")
+        ucs_device.config_manager.export_config(directory=directory, filename="config_" + ucs_device.target + ".json")
+        ucs_device.set_task_progression(60)
 
         ucs_device.inventory_manager.draw_inventory()
         ucs_device.set_task_progression(75)
@@ -340,7 +341,8 @@ def init_process(ucs_device, args, config_string):
             ucs_device.config_manager.export_config_plots(directory=directory)
             ucs_device.set_task_progression(90)
 
-        ucs_device.generate_report(filename=filename, directory=directory, page_layout=args.layout)
+        ucs_device.generate_report(filename="report_" + ucs_device.target, directory=directory,
+                                   page_layout=args.layout)
 
     ucs_device.set_task_progression(100)
     ucs_device.print_logger_summary()
@@ -544,8 +546,8 @@ def main():
     parser_report_generate.add_argument('-v', '--verbose', dest='log', action='store_true', help='Print debug log')
     parser_report_generate.add_argument('-l', '--logfile', dest='logfile', action='store', help='Print log in a file')
 
-    parser_report_generate.add_argument('-o', '--out', dest='output_report', action='store',
-                                       help='Output report file',
+    parser_report_generate.add_argument('-o', '--out', dest='output_directory', action='store',
+                                       help='Output report directory',
                                        required=True)
     parser_report_generate.add_argument('-y', '--yes', dest='yes', action='store_true',
                                        help='Answer yes to all questions')

@@ -18,7 +18,7 @@ from ucsmsdk.mometa.lstorage.LstorageDiskSlot import LstorageDiskSlot
 from ucsmsdk.mometa.lstorage.LstorageDiskZoningPolicy import LstorageDiskZoningPolicy
 from ucsmsdk.mometa.lstorage.LstorageSasExpanderConfigPolicy import LstorageSasExpanderConfigPolicy
 from ucsmsdk.ucsbasetype import DnSet, Dn
-from ucsmsdk.ucsmethodfactory import equipment_instantiate_n_named_template
+from ucsmsdk.ucsmethodfactory import equipment_instantiate_n_named_template, equipment_instantiate_template
 
 
 class UcsSystemChassisMaintenancePolicy(UcsSystemConfigObject):
@@ -322,11 +322,31 @@ class UcsSystemChassisProfile(UcsSystemConfigObject):
                 self.name = equipment_chassis_profile.name
                 self.descr = equipment_chassis_profile.descr
                 self.type = equipment_chassis_profile.type
-                self.disk_zoning_policy = equipment_chassis_profile.disk_zoning_policy_name
-                self.chassis_firmware_policy = equipment_chassis_profile.chassis_fw_policy_name
-                self.compute_connection_policy = equipment_chassis_profile.compute_conn_policy_name
-                self.chassis_maintenance_policy = equipment_chassis_profile.maint_policy_name
-                self.sas_expander_configuration_policy = equipment_chassis_profile.sas_expander_config_policy_name
+                self.chassis_profile_template = equipment_chassis_profile.src_templ_name
+
+                parent_template_type = None
+                if self.chassis_profile_template:
+                    # We first try to get the CP Template object by using the operSrcTemplName attribute value
+                    if equipment_chassis_profile.oper_src_templ_name:
+                        mo_template_cp = self._device.query(mode="dn",
+                                                            target=equipment_chassis_profile.oper_src_templ_name)
+                        if mo_template_cp:
+                            parent_template_type = mo_template_cp.type
+                    else:
+                        # If the operSrcTemplName attribute is not set (e.g. with UCS Central), we try to find the CP
+                        # Template using a query for its name. In case it is the only object with this name, we use it
+                        filter_str = '(name, "' + self.chassis_profile_template + '", type="eq")'
+                        mo_template_cp = self._device.query(mode="classid", target="equipmentChassisProfile",
+                                                            filter_str=filter_str)
+                        if len(mo_template_cp) == 1:
+                            parent_template_type = mo_template_cp[0].type
+
+                if parent_template_type != "updating-template":
+                    self.disk_zoning_policy = equipment_chassis_profile.disk_zoning_policy_name
+                    self.chassis_firmware_policy = equipment_chassis_profile.chassis_fw_policy_name
+                    self.compute_connection_policy = equipment_chassis_profile.compute_conn_policy_name
+                    self.chassis_maintenance_policy = equipment_chassis_profile.maint_policy_name
+                    self.sas_expander_configuration_policy = equipment_chassis_profile.sas_expander_config_policy_name
                 if self.type == "instance":
                     if "equipmentBinding" in self._parent._config.sdk_objects:
                         for binding in self._config.sdk_objects["equipmentBinding"]:
@@ -335,7 +355,6 @@ class UcsSystemChassisProfile(UcsSystemConfigObject):
                                     if binding.chassis_dn:
                                         self.chassis_assignment_id = binding.chassis_dn.split("-")[1]
                                     self.restrict_migration = binding.restrict_migration
-                # self.chassis_profile_template = equipment_chassis_profile.oper_src_templ_name
 
         elif self._config.load_from == "file":
             if json_content is not None:
@@ -380,7 +399,8 @@ class UcsSystemChassisProfile(UcsSystemConfigObject):
         return True
 
     def instantiate_profile(self):
-        self.logger(message="Instantiating " + self._CONFIG_NAME + " configuration")
+        self.logger(message="Instantiating " + self._CONFIG_NAME + " configuration from " +
+                            str(self.chassis_profile_template))
 
         if hasattr(self._parent, '_dn'):
             parent_mo = self._parent._dn
@@ -394,21 +414,86 @@ class UcsSystemChassisProfile(UcsSystemConfigObject):
         if not hasattr(self, 'number_of_instances'):
             self.number_of_instances = "1"
 
-        dn_set = DnSet()
-        for i in range(int(self.suffix_start_number), int(self.number_of_instances) + int(self.suffix_start_number)):
-            dn = Dn()
-            dn.attr_set("value", str(self.name + str(i)))
-            dn_set.child_add(dn)
+        if self.suffix_start_number and self.number_of_instances:
+            dn_set = DnSet()
+            for i in range(int(self.suffix_start_number),
+                           int(self.number_of_instances) + int(self.suffix_start_number)):
+                dn = Dn()
+                dn.attr_set("value", str(self.name + str(i)))
+                dn_set.child_add(dn)
 
-        elem = equipment_instantiate_n_named_template(cookie=self._handle.cookie,
-                                                      dn=parent_mo + "/cp-" + self.chassis_profile_template,
-                                                      in_error_on_existing="false", in_name_set=dn_set,
-                                                      in_target_org=parent_mo, in_hierarchical="false")
-        self._handle.process_xml_elem(elem)
-        self.logger(level='debug', message=self.number_of_instances + " " + self._CONFIG_NAME + " instantiated from " +
-                                           self.chassis_profile_template + " starting with " + str(self.name) +
-                                           self.suffix_start_number)
-        return True
+            elem = equipment_instantiate_n_named_template(cookie=self._handle.cookie,
+                                                          dn=parent_mo + "/cp-" + self.chassis_profile_template,
+                                                          in_error_on_existing="false", in_name_set=dn_set,
+                                                          in_target_org=parent_mo, in_hierarchical="false")
+
+            for i in range(self._device.push_attempts):
+                try:
+                    if i:
+                        self.logger(level="warning",
+                                    message="Trying to push again the instantiated chassis profile(s) from " +
+                                            str(self.chassis_profile_template))
+                    self._handle.process_xml_elem(elem)
+                    self.logger(level='debug',
+                                message=self.number_of_instances + " " + self._CONFIG_NAME + " instantiated from " +
+                                        str(self.chassis_profile_template) + " starting with " + str(self.name) +
+                                        self.suffix_start_number)
+                    return True
+                except ConnectionRefusedError:
+                    self.logger(level="error", message="Connection refused while trying to instantiate from " +
+                                                       str(self.chassis_profile_template))
+                except UcsException as err:
+                    self.logger(level="error",
+                                message="Error while trying to instantiate from " +
+                                        str(self.chassis_profile_template) + " " + err.error_descr)
+                except urllib.error.URLError:
+                    self.logger(level="error",
+                                message="Timeout while trying to instantiate from " + str(
+                                    self.chassis_profile_template))
+
+        else:
+            elem = equipment_instantiate_template(cookie=self._handle.cookie,
+                                                  dn=parent_mo + "/cp-" + self.chassis_profile_template,
+                                                  in_error_on_existing="false",
+                                                  in_chassis_profile_name=self.name,
+                                                  in_target_org=parent_mo, in_hierarchical="false")
+
+            for i in range(self._device.push_attempts):
+                try:
+                    if i:
+                        self.logger(level="warning",
+                                    message="Trying to push again the instantiated chassis profile(s) from " +
+                                            str(self.chassis_profile_template))
+                    self._handle.process_xml_elem(elem)
+                    self.logger(level='debug',
+                                message=self._CONFIG_NAME + " " + str(self.name) + " instantiated from " +
+                                        str(self.chassis_profile_template))
+
+                    # We now need to associate the instantiated Chassis Profile to the Chassis ID if provided
+                    if self.type == "instance" and self.chassis_assignment_id:
+                        mo_equipment_chassis_profile = EquipmentChassisProfile(parent_mo_or_dn=parent_mo,
+                                                                               name=self.name)
+                        EquipmentBinding(parent_mo_or_dn=mo_equipment_chassis_profile,
+                                         chassis_dn="sys/chassis-" + self.chassis_assignment_id,
+                                         restrict_migration=self.restrict_migration)
+
+                    self._handle.add_mo(mo=mo_equipment_chassis_profile, modify_present=True)
+                    if self.commit(detail=self.name) != True:
+                        return False
+
+                    return True
+
+                except ConnectionRefusedError:
+                    self.logger(level="error", message="Connection refused while trying to instantiate from " +
+                                                       str(self.chassis_profile_template))
+                except UcsException as err:
+                    self.logger(level="error",
+                                message="Error while trying to instantiate from " +
+                                        str(self.chassis_profile_template) + " " + err.error_descr)
+                except urllib.error.URLError:
+                    self.logger(level="error",
+                                message="Timeout while trying to instantiate from " + str(
+                                    self.chassis_profile_template))
 
 
 class UcsSystemSasExpanderConfigurationPolicy(UcsSystemConfigObject):

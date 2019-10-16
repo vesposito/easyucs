@@ -89,25 +89,25 @@ Reset UCS system, perform initial setup using DHCP IP addresses 192.168.0.11 & 1
 python easyucs.py config push -t ucsm -f configs/config_ucsm.json -r -s 192.168.0.11 192.168.0.12
 ```
 
-Fetch config from UCS system and save it to configs/config_ucsm.json
+Fetch config from UCS system and save it to output/configs/config_ucsm.json
 ```
-python easyucs.py config fetch -t ucsm -i 192.168.0.1 -u admin -p password -o configs/config_ucsm.json
-```
-
-
-Fetch inventory from UCS IMC and save it to inventories/inventory_cimc.json
-```
-python easyucs.py inventory fetch -t cimc -i 192.168.0.2 -u admin -p password -o inventories/inventory_cimc.json
+python easyucs.py config fetch -t ucsm -i 192.168.0.1 -u admin -p password -o output/configs/config_ucsm.json
 ```
 
-Create schemas from UCS system and save them to schemas folder
+
+Fetch inventory from UCS IMC and save it to output/inventories/inventory_cimc.json
 ```
-python easyucs.py schemas create -t ucsm -i 192.168.0.1 -u admin -p password -o schemas
+python easyucs.py inventory fetch -t cimc -i 192.168.0.2 -u admin -p password -o output/inventories/inventory_cimc.json
 ```
 
-Create report from UCS system and save it to reports/report.docx
+Create schemas from UCS system and save them to output/schemas folder
 ```
-python easyucs.py report generate -t ucsm -i 192.168.0.1 -u admin -p password -o reports/report.docx
+python easyucs.py schemas create -t ucsm -i 192.168.0.1 -u admin -p password -o output/schemas
+```
+
+Create report from UCS system and save it to output/reports folder
+```
+python easyucs.py report generate -t ucsm -i 192.168.0.1 -u admin -p password -o output/reports
 ```
 
 #### Using the Web Graphical User Interface (GUI)
@@ -127,6 +127,16 @@ python easyucs_gui.py
 
 
 ## Versioning
+
+#### 0.9.3
+
+* Include Storage Enclosures & drives of S3260 in report
+* Add support for UEFI Boot Parameters in SAN Boot (Boot Policies)
+* Remove admin password from report (for security reasons)
+* Change "generate report" command argument to specify directory instead of report file name. All required files will be written in that directory
+* Automatically export config & inventory to JSON files when generating report
+* Lots of bug fixes and improvements
+
 
 #### 0.9.2
 

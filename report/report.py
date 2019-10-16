@@ -112,8 +112,8 @@ class UcsSystemReport(UcsGenericReport):
 
         self.element_list.append(
             ReportFrontPage(order_id=self.get_current_order_id(),parent=self,title=self.title,
-                            description=_("Created with EasyUCS") + " - " + time.strftime("%d %B %Y"),
-                            authors=__author__))
+                            description=_("Created with EasyUCS") + " " + __version__ + " - " +
+                                        time.strftime("%d %B %Y"), authors=__author__))
 
         # We determine the order id of the ReportTableOfContents at the begining (second element to be added but
         # created at the end for obvious reason)
@@ -148,7 +148,7 @@ class UcsSystemReport(UcsGenericReport):
             section.left_margin = Cm(2)
             section.different_first_page_header_footer = True
             section.header.paragraphs[0].alignment = 1  # Centered
-            section.header.paragraphs[0].text = "Created with EasyUCS - " + str(self.title)
+            section.header.paragraphs[0].text = "Created with EasyUCS " + __version__ + " - " + str(self.title)
             try:
                 full_filename = self.directory + '/' + filename + '.docx'
                 self.document.save(full_filename)
@@ -171,8 +171,8 @@ class UcsImcReport(UcsGenericReport):
 
         self.element_list.append(
             ReportFrontPage(order_id=self.get_current_order_id(), parent=self, title=self.title,
-                            description=_("Created with EasyUCS") + " - " + time.strftime("%d %B %Y"),
-                            authors=__author__))
+                            description=_("Created with EasyUCS") + " " + __version__ + " - " +
+                                        time.strftime("%d %B %Y"), authors=__author__))
 
         # We determine the order id of the ReportTableOfContents at the begining (second element to be added but
         # created at the end for obvious reason)
@@ -203,7 +203,7 @@ class UcsImcReport(UcsGenericReport):
             section.left_margin = Cm(2)
             section.different_first_page_header_footer = True
             section.header.paragraphs[0].alignment = 1  # Centered
-            section.header.paragraphs[0].text = "Created with EasyUCS - " + str(self.title)
+            section.header.paragraphs[0].text = "Created with EasyUCS " + __version__ + " - " + str(self.title)
             try:
                 full_filename = self.directory + '/' + filename + '.docx'
                 self.document.save(full_filename)

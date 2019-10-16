@@ -771,27 +771,37 @@ class UcsSystemSanPinGroup(UcsSystemConfigObject):
                         for interface_ep_pc in interfaces:
                             interface = {}
                             interface["fcoe"] = "no"
+                            interface["fabric"] = interface_ep_pc.fabric_id
                             if "fcoesan" in interface_ep_pc.ep_dn:
                                 interface["fcoe"] = "yes"
+
                             if "phys" in interface_ep_pc.ep_dn:
+                                # We are facing a physical interface (not a port-channel)
                                 interface["aggr_id"] = None
                                 interface["slot_id"] = None
                                 interface["port_id"] = None
-                                interface["fabric"] = None
-                                if "aggr_id" in interface_ep_pc.ep_dn:
-                                    interface.update({"aggr_id": interface_ep_pc.ep_dn.split('/')[4].split('-')[4]})
-                                    interface.update({"port_id": interface_ep_pc.ep_dn.split('/')[3].split('-')[4]})
-                                    interface.update({"slot_id": interface_ep_pc.ep_dn.split('/')[3].split('-')[1]})
-                                    interface.update({"fabric": interface_ep_pc.ep_dn.split('/')[2]})
+                                if "aggr-port" in interface_ep_pc.ep_dn:
+                                    if "fcoesan" in interface_ep_pc.ep_dn:
+                                        interface.update({"port_id": interface_ep_pc.ep_dn.split('/')[4].split('-')[5]})
+                                        interface.update({"aggr_id": interface_ep_pc.ep_dn.split('/')[3].split('-')[4]})
+                                        interface.update({"slot_id": interface_ep_pc.ep_dn.split('/')[3].split('-')[1]})
+                                    else:
+                                        # We should never end up here, since breakout is only for FCoE ports
+                                        # Left code in case breakout is supported for FC ports in the future
+                                        interface.update({"port_id": interface_ep_pc.ep_dn.split('/')[4].split('-')[4]})
+                                        interface.update({"aggr_id": interface_ep_pc.ep_dn.split('/')[3].split('-')[4]})
+                                        interface.update({"slot_id": interface_ep_pc.ep_dn.split('/')[3].split('-')[1]})
                                 else:
-                                    interface.update({"port_id": interface_ep_pc.ep_dn.split('/')[3].split('-')[4]})
-                                    interface.update({"slot_id": interface_ep_pc.ep_dn.split('/')[3].split('-')[2]})
-                                    interface.update({"fabric": interface_ep_pc.ep_dn.split('/')[2]})
-                                    del interface["aggr_id"]
+                                    if "fcoesan" in interface_ep_pc.ep_dn:
+                                        interface.update({"port_id": interface_ep_pc.ep_dn.split('/')[3].split('-')[5]})
+                                        interface.update({"slot_id": interface_ep_pc.ep_dn.split('/')[3].split('-')[3]})
+                                    else:
+                                        interface.update({"port_id": interface_ep_pc.ep_dn.split('/')[3].split('-')[4]})
+                                        interface.update({"slot_id": interface_ep_pc.ep_dn.split('/')[3].split('-')[2]})
                             elif "pc" in interface_ep_pc.ep_dn:
+                                # We are facing a port-channel interface
                                 interface["pc_id"] = None
                                 interface.update({"pc_id": interface_ep_pc.ep_dn.split('/')[3].split('-')[1]})
-                                interface.update({"fabric": interface_ep_pc.ep_dn.split('/')[2]})
                             self.interfaces.append(interface)
 
         elif self._config.load_from == "file":
@@ -799,6 +809,12 @@ class UcsSystemSanPinGroup(UcsSystemConfigObject):
                 if not self.get_attributes_from_json(json_content=json_content):
                     self.logger(level="error",
                                 message="Unable to get attributes from JSON content for " + self._CONFIG_NAME)
+
+                # We need to set all values that are not present in the config file to None
+                for element in self.interfaces:
+                    for value in ["aggr_id", "slot_id", "port_id", "fabric", "fcoe", "pc_id"]:
+                        if value not in element:
+                            element[value] = None
 
         self.clean_object()
 
@@ -1418,7 +1434,6 @@ class UcsSystemDefaultVhbaBehavior(UcsSystemConfigObject):
         self.clean_object()
 
     def push_object(self, commit=True):
-        print("toto")
         if commit:
             self.logger(message="Pushing " + self._CONFIG_NAME + " configuration")
         else:

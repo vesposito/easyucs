@@ -224,8 +224,11 @@ class UcsSystemInventory(GenericUcsInventory):
             try:
                 self.sdk_objects[sdk_object_name] = self.handle.query_classid(sdk_object_name)
             except (UcsException, ImcException) as err:
-                self.logger(level="debug",
-                            message="Could not fetch UCS System class " + sdk_object_name + ": " + str(err))
+                if err.error_code == "ERR-xml-parse-error" and "no class named " + sdk_object_name in err.error_descr:
+                    self.logger(level="debug", message="No UCS class named " + sdk_object_name)
+                else:
+                    self.logger(level="error", message="Error while trying to fetch UCS class " + sdk_object_name +
+                                                       ": " + str(err))
             except ConnectionRefusedError:
                 self.logger(level="error", message="Error while communicating with UCS class " + sdk_object_name +
                                                    ": Connection refused")

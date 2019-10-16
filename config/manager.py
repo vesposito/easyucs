@@ -267,8 +267,8 @@ class GenericConfigManager:
             self.logger(message="Importing config from " + import_format)
             result = self._fill_config_from_json(config=config, config_json=config_json)
             if result:
-                self.logger(level="debug",
-                            message="Config import successful. Appending config to the list of configs")
+                self.logger(message="Config import successful. Appending config to the list of configs for device " +
+                                    str(self.parent.uuid))
                 # We add the config to the list of configs
                 self.config_list.append(config)
                 return True
@@ -466,7 +466,10 @@ class UcsSystemConfigManager(GenericUcsConfigManager):
         config.local_users_properties.append(UcsSystemLocalUsersProperties(parent=config))
         config.sel_policy.append(UcsSystemSelPolicy(parent=config))
         config.port_auto_discovery_policy.append(UcsSystemPortAutoDiscoveryPolicy(parent=config))
-        config.slow_drain_timers.append(UcsSystemSlowDrainTimers(parent=config))
+
+        if "qosclassSlowDrain" in config.sdk_objects:
+            if config.sdk_objects["qosclassSlowDrain"]:
+                config.slow_drain_timers.append(UcsSystemSlowDrainTimers(parent=config))
 
         for ucs_central in config.sdk_objects['policyControlEp']:
             config.ucs_central.append(UcsSystemUcsCentral(parent=config))
@@ -516,7 +519,9 @@ class UcsSystemConfigManager(GenericUcsConfigManager):
         for fabric_eth_lan_ep in config.sdk_objects["fabricEthLanEp"]:
             config.lan_uplink_ports.append(UcsSystemLanUplinkPort(parent=config, fabric_eth_lan_ep=fabric_eth_lan_ep))
 
-        for fabric_dce_sw_srv_ep in sorted(config.sdk_objects["fabricDceSwSrvEp"],
+        # We also add server ports that are part of a port-channel (fabricDceSwSrvPcEp) since they are auto created
+        for fabric_dce_sw_srv_ep in sorted(config.sdk_objects["fabricDceSwSrvEp"] +
+                                           config.sdk_objects["fabricDceSwSrvPcEp"],
                                            key=lambda port: [int(t) if t.isdigit() else t.lower()
                                                              for t in re.split('(\d+)', port.dn)]):
             config.server_ports.append(UcsSystemServerPort(parent=config, fabric_dce_sw_srv_ep=fabric_dce_sw_srv_ep))

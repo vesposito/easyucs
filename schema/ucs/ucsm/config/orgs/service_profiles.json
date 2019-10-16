@@ -227,7 +227,7 @@
                   },
                   "minItems":1
                },
-               "template":{
+               "vnic_template":{
                   "description":"Service Profile - vNIC - Template",
                   "type":"string",
                   "pattern":"^[\\-\\.:_a-zA-Z0-9]{0,16}$"
@@ -396,7 +396,7 @@
                   "type":"string",
                   "pattern":"^[\\-\\.:_a-zA-Z0-9]{0,16}$"
                },
-               "template":{
+               "vhba_template":{
                   "description":"Service Profile - vHBA - Template",
                   "type":"string",
                   "pattern":"^[\\-\\.:_a-zA-Z0-9]{0,16}$"
@@ -407,9 +407,7 @@
                   "default":"A",
                   "enum":[
                      "A",
-                     "A-B",
-                     "B",
-                     "B-A"
+                     "B"
                   ]
                },
                "name":{

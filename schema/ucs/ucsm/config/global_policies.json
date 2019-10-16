@@ -185,7 +185,7 @@
             "user-acknowledged"
          ]
       },
-      "fi_a_fc_uplink_trunking":{
+      "fabric_a_fc_uplink_trunking":{
          "description":"FI A - FC Uplink Trunking",
          "type":"string",
          "default":"disabled",
@@ -194,7 +194,7 @@
             "disabled"
          ]
       },
-      "fi_b_fc_uplink_trunking":{
+      "fabric_b_fc_uplink_trunking":{
          "description":"FI B - FC Uplink Trunking",
          "type":"string",
          "default":"disabled",

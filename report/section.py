@@ -369,6 +369,7 @@ class FexUcsReportSection(GenericReportSection):
             self.content_list.append(PsuUcsReportSection(order_id=self.report.get_current_order_id(), parent=self,
                                                              title=_("Power Supplies"), device=fex))
 
+
 class RackUcsReportSection(GenericReportSection):
     def __init__(self, order_id, parent, title, rack):
         GenericReportSection.__init__(self,order_id=order_id, parent=parent ,title=title)
@@ -455,6 +456,12 @@ class ChassisUcsReportSection(GenericReportSection):
         if chassis.power_supplies:
             self.content_list.append(PsuUcsReportSection(order_id=self.report.get_current_order_id(), parent=self,
                                                              title=_("Power Supplies"), device=chassis))
+
+        if chassis.storage_enclosures:
+            self.content_list.append(StorageEnclosuresUcsReportSection(order_id=self.report.get_current_order_id(),
+                                                                       parent=self, title=_("Storage Enclosures"),
+                                                                       chassis=chassis))
+
         if chassis.blades:
             self.content_list.append(BladeServersUcsReportSection(order_id=self.report.get_current_order_id(), parent=self,
                                                              title=_("Blade Servers"), chassis=chassis))
@@ -524,6 +531,29 @@ class PsuUcsReportSection(GenericReportSection):
             self.content_list.append(
                 PsuSectionInfoUcsReportTable(order_id=self.report.get_current_order_id(), parent=self,
                                              psu=device.power_supplies, centered=True))
+
+
+class StorageEnclosuresUcsReportSection(GenericReportSection):
+    def __init__(self, order_id, parent, title, chassis):
+        GenericReportSection.__init__(self, order_id=order_id, parent=parent, title=title)
+
+        if self.report.size == "full":
+            for storage_enclosure in chassis.storage_enclosures:
+                storage_enclosure_name = storage_enclosure.descr + " (" + storage_enclosure.num_slots + " slots)"
+                self.content_list.append(EnclosureUcsReportSection(order_id=self.report.get_current_order_id(),
+                                                                   parent=self, title=storage_enclosure_name,
+                                                                   storage_enclosure=storage_enclosure))
+
+
+class EnclosureUcsReportSection(GenericReportSection):
+    def __init__(self, order_id, parent, title, storage_enclosure):
+        GenericReportSection.__init__(self, order_id=order_id, parent=parent, title=title)
+
+        if self.report.size == "full":
+            if storage_enclosure.disks:
+                self.content_list.append(
+                    DiskSectionInfoUcsReportTable(order_id=self.report.get_current_order_id(), parent=self,
+                                                  disks=storage_enclosure.disks, centered=True))
 
 
 class StorageControllerUcsReportSection(GenericReportSection):

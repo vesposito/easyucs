@@ -88,8 +88,10 @@ class GenericUcsConfigObject(GenericConfigObject):
         :return:
         """
 
-        if self.__class__.__name__ in ["UcsSystemBiosPolicy"]:
+        if self.__class__.__name__ in ["UcsSystemBiosPolicy", "UcsSystemDefaultVhbaBehavior",
+                                       "UcsSystemDefaultVnicBehavior"]:
             # We do not clean "None" values in a BIOS Policy because some parameters are using the string "None"
+            # Default vHBA / vNIC Behavior can also contain the string "None" as the default value for "action"
             str_to_avoid = ["N/A", "", "NA"]
         else:
             str_to_avoid = ["N/A", "", "NA", "none", "None"]

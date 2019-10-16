@@ -48,6 +48,6 @@ List of arguments :
 - **-v**, --verbose         | Print debug log
 - **-l LOGFILE**, --logfile LOGFILE
                     | Print log in a file
-- **-o OUTPUT_REPORT**, --out OUTPUT_REPORT
-                    | Output report file
+- **-o OUTPUT_DIRECTORY**, --out OUTPUT_DIRECTORY
+                    | Output report directory
 - **-y**, --yes             | Answer yes to all questions

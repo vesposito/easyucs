@@ -292,7 +292,7 @@ class UcsSystemServiceProfileConfigPlot(UcsSystemConfigPlot):
             os.remove(file)
 
             self.logger(level="debug", message="Plot of service profile " +
-                                               self.node_service_profile.split("\n")[1] + " saved at : " + cropped_file)
+                                               service_profile.name + " saved at: " + cropped_file)
 
     @staticmethod
     def get_service_profile_plot_options():
@@ -411,4 +411,4 @@ class UcsSystemOrgConfigPlot(UcsSystemConfigPlot):
             cropped.save(cropped_file)
             os.remove(file)
 
-            self.logger(level="debug", message="Plot of orgs saved at : " + file)
+            self.logger(level="debug", message="Plot of orgs saved at: " + file)

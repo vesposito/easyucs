@@ -232,7 +232,7 @@ from ucsmsdk.mometa.vnic.VnicVmqConPolicyRef import VnicVmqConPolicyRef
 from ucsmsdk.ucsbasetype import DnSet, Dn
 from ucsmsdk.ucscoremeta import UcsVersion
 from ucsmsdk.ucsexception import UcsException
-from ucsmsdk.ucsmethodfactory import ls_instantiate_n_named_template
+from ucsmsdk.ucsmethodfactory import ls_instantiate_n_named_template, ls_instantiate_template
 
 from config.object import UcsSystemConfigObject
 
@@ -345,18 +345,22 @@ class UcsSystemServerPool(UcsSystemConfigObject):
                 if "computePooledSlot" in self._parent._config.sdk_objects:
                     for pool_block in self._config.sdk_objects["computePooledSlot"]:
                         if self._parent._dn:
-                            if self._parent._dn + "/compute-pool-" + self.name + "/" in pool_block.dn:
-                                block = {}
-                                block.update({"chassis_id": pool_block.chassis_id})
-                                block.update({"slot_id": pool_block.slot_id})
-                                self.servers.append(block)
+                            # We avoid adding blade servers that are automatically added by a qualification policy
+                            if pool_block.owner != "policy":
+                                if self._parent._dn + "/compute-pool-" + self.name + "/" in pool_block.dn:
+                                    block = {}
+                                    block.update({"chassis_id": pool_block.chassis_id})
+                                    block.update({"slot_id": pool_block.slot_id})
+                                    self.servers.append(block)
                 if "computePooledRackUnit" in self._parent._config.sdk_objects:
                     for pool_block in self._config.sdk_objects["computePooledRackUnit"]:
                         if self._parent._dn:
-                            if self._parent._dn + "/compute-pool-" + self.name + "/" in pool_block.dn:
-                                block = {}
-                                block.update({"rack_id": pool_block.id})
-                                self.servers.append(block)
+                            # We avoid adding rack servers that are automatically added by a qualification policy
+                            if pool_block.owner != "policy":
+                                if self._parent._dn + "/compute-pool-" + self.name + "/" in pool_block.dn:
+                                    block = {}
+                                    block.update({"rack_id": pool_block.id})
+                                    self.servers.append(block)
 
         elif self._config.load_from == "file":
             if json_content is not None:
@@ -1635,6 +1639,21 @@ class UcsSystemBootPolicy(UcsSystemConfigObject):
                                                         image_path.update({"lun": target.lun})
                                                         image_path.update({"wwpn": target.wwn})
                                                         image["targets"].append(image_path)
+                                                        if "lsbootUEFIBootParam" in self._parent._config.sdk_objects:
+                                                            for boot_san_img_boot_param in \
+                                                                    self._config.sdk_objects["lsbootUEFIBootParam"]:
+                                                                if self._parent._dn + "/boot-policy-" + self.name + \
+                                                                        "/san/sanimg-" + vhba.type + "/sanimgpath-" + \
+                                                                        target.type in boot_san_img_boot_param.dn:
+                                                                    image_path.update({
+                                                                        "boot_loader_name":
+                                                                            boot_san_img_boot_param.boot_loader_name})
+                                                                    image_path.update({
+                                                                        "boot_loader_path":
+                                                                            boot_san_img_boot_param.boot_loader_path})
+                                                                    image_path.update({
+                                                                        "boot_loader_description":
+                                                                            boot_san_img_boot_param.boot_description})
                                             device["vhbas"].append(image)
                                 if device:
                                     self.boot_order.append(device)
@@ -1659,7 +1678,8 @@ class UcsSystemBootPolicy(UcsSystemConfigObject):
                                     vhba[subvalue] = None
                             if vhba["targets"]:
                                 for target in vhba["targets"]:
-                                    for subsubvalue in ["lun", "wwpn", "type"]:
+                                    for subsubvalue in ["lun", "wwpn", "type", "boot_loader_name", "boot_loader_path",
+                                                        "boot_loader_description"]:
                                         if subsubvalue not in target:
                                             target[subsubvalue] = None
                     if element["embedded_local_disks"]:
@@ -1824,12 +1844,19 @@ class UcsSystemBootPolicy(UcsSystemConfigObject):
                                                             vnic_name=vhba['name'])
                     if vhba['targets']:
                         for target in vhba['targets']:
-                            LsbootSanCatSanImagePath(parent_mo_or_dn=mo_cat_san_image, type=target['type'],
-                                                     lun=target['lun'], wwn=target['wwpn'])
+                            mo_boot_san_path = LsbootSanCatSanImagePath(parent_mo_or_dn=mo_cat_san_image,
+                                                                        type=target['type'], lun=target['lun'],
+                                                                        wwn=target['wwpn'])
+                            if target['boot_loader_path'] or target['boot_loader_name'] or \
+                                target['boot_loader_description']:
+                                LsbootUEFIBootParam(parent_mo_or_dn=mo_boot_san_path,
+                                                    boot_loader_path=target["boot_loader_path"],
+                                                    boot_loader_name=target["boot_loader_name"],
+                                                    boot_description=target["boot_loader_description"])
 
             self._handle.add_mo(mo=mo_ls_boot_policy, modify_present=True)
         if commit:
-            if self.commit(detail=self.name + 's devices') != True:
+            if self.commit(detail=self.name + ' devices') != True:
                 return False
         return True
 
@@ -1928,8 +1955,8 @@ class UcsSystemBiosPolicy(UcsSystemConfigObject):
 
         if self._config.load_from == "live":
 
-            # We check what type of method is used to create the BIOS policy depending on the version of UCS
-            # the BIOS token method is the newest method
+            # We check what type of method is used to create the BIOS policy depending on the version of UCS Manager
+            # The BIOS Token method is the newest method
             if self._device.version.__ge__(self._BIOS_TOKENS_MIN_REQUIRED_VERSION):
                 self._bios_token_method = True
 
@@ -1944,32 +1971,37 @@ class UcsSystemBiosPolicy(UcsSystemConfigObject):
 
                         bios_token_param_list = [bios_token_param for bios_token_param in
                                                  self._config.sdk_objects["biosTokenParam"]
-                                                 if
-                                                 self._parent._dn + "/bios-prof-" + self.name + "/" in bios_token_param.dn]
+                                                 if self._parent._dn + "/bios-prof-" + self.name + "/"
+                                                 in bios_token_param.dn]
                         bios_token_settings_list = [bios_token_setting for bios_token_setting in
                                                     self._config.sdk_objects["biosTokenSettings"]
-                                                    if
-                                                    self._parent._dn + "/bios-prof-" + self.name + "/" in bios_token_setting.dn]
+                                                    if self._parent._dn + "/bios-prof-" + self.name + "/"
+                                                    in bios_token_setting.dn]
 
-                        for bios_token in bios_token_param_list:
-                            if self._parent._dn + "/bios-prof-" + self.name + "/" in bios_token.dn:
-                                bios_token_children = [child for child in bios_token_settings_list
-                                                       if bios_token.dn in child.dn]
-                                for bios_token_child in bios_token_children:
+                        for bios_token_param in bios_token_param_list:
+                            if self._parent._dn + "/bios-prof-" + self.name + "/" in bios_token_param.dn:
+                                bios_token_settings_children_list = [child for child in bios_token_settings_list
+                                                                     if bios_token_param.dn in child.dn]
+                                bios_token_value = None
+                                for bios_token_settings_child in bios_token_settings_children_list:
+                                    # We first try to determine the bios_token_name as defined in our BIOS Table
                                     bios_token_name = None
-                                    for bios_key, bios_values in bios_table.items():
-                                        if not bios_token_name:
-                                            if bios_values["target_name"] == bios_token.target_token_name:
-                                                bios_token_name = bios_key
+                                    for bios_table_key, bios_table_values in bios_table.items():
+                                        if bios_table_values["target_name"] == bios_token_param.target_token_name:
+                                            bios_token_name = bios_table_key
+                                            # Since we have found the right BIOS Token name, we exit the for loop
+                                            continue
                                     if bios_token_name:
-                                        if bios_token_child.is_assigned == "yes":
-                                            token_value = bios_token_child.settings_mo_rn
-                                            setattr(self, bios_token_name, token_value)
-                                        else:
-                                            setattr(self, bios_token_name, "platform-default")
+                                        if bios_token_settings_child.is_assigned == "yes":
+                                            bios_token_value = bios_token_settings_child.settings_mo_rn
+                                            setattr(self, bios_token_name, bios_token_value)
+                                            # Since we have found the right BIOS Token value, we exit the for loop
+                                            continue
                                     else:
-                                        self.logger(level="warning",
-                                                    message="BIOS Param name " + bios_token.param_name + " not found")
+                                        self.logger(level="warning", message="BIOS Param name " +
+                                                                             bios_token_param.param_name + " not found")
+                                if bios_token_name and not bios_token_value:
+                                    setattr(self, bios_token_name, "platform-default")
 
                 else:
                     if "biosVfQuietBoot" in self._parent._config.sdk_objects:
@@ -2459,7 +2491,7 @@ class UcsSystemBiosPolicy(UcsSystemConfigObject):
                     # We transform all 'platform-recommended' values to "platform-default" because
                     # 'platform-recommended' does not exist in the GUI
                     for attr in self.__dict__.keys():
-                        if not attr.startswith("_"):
+                        if not attr.startswith("_") and getattr(self, attr) is not None:
                             setting_value = str(getattr(self, attr))
                             if setting_value in ['platform-recommended']:
                                 setting_value = "platform-default"
@@ -2507,6 +2539,7 @@ class UcsSystemBiosPolicy(UcsSystemConfigObject):
                 if self.commit(detail=self.name) != True:
                     return False
 
+            self.logger(message="Pushing BIOS Policy " + self.name + " tokens - It may take a while.")
             for option in bios_table:
                 setting_value = str(getattr(self, option))
                 if setting_value in ['platform-default', "Platform Default"]:
@@ -3023,27 +3056,45 @@ class UcsSystemVmediaPolicy(UcsSystemConfigObject):
                                                                         descr=self.descr)
 
         for media in self.vmedia_mounts:
-            device_type = media['device_type']
-            protocol = media['protocol']
+            # We first fetch the mandatory attributes
             media_name = media['name']
+            hostname = media['hostname']
+            file_path = media['remote_path']
+
             descr = None
             if 'descr' in media:
                 descr = media['descr']
-            if protocol == "nfs":
-                username = ""
-                pwd = ""
-            else:
-                username = media['username']
-                pwd = media['password']
-            inv = media['image_name_variable']
-            if inv != "none":
-                file_name = ""
-            else:
+            device_type = None
+            if "device_type" in media:
+                device_type = media['device_type']
+            protocol = None
+            if "protocol" in media:
+                protocol = media['protocol']
+
+            username = ""
+            pwd = ""
+            if protocol not in ["nfs"]:
+                if "username" in media:
+                    username = media['username']
+                if "password" in media:
+                    pwd = media['password']
+
+            file_name = ""
+            if "remote_file" in media:
                 file_name = media['remote_file']
-            file_path = media['remote_path']
-            hostname = media['hostname']
-            remap_on_eject = media['remap_on_eject']
-            authentication_protocol = media['authentication_protocol']
+
+            inv = None
+            if "image_name_variable" in media:
+                inv = media['image_name_variable']
+            if inv not in ["none", None]:
+                file_name = ""
+
+            remap_on_eject = None
+            if "remap_on_eject" in media:
+                remap_on_eject = media['remap_on_eject']
+            authentication_protocol = None
+            if "authentication_protocol" in media:
+                authentication_protocol = media['authentication_protocol']
 
             CimcvmediaConfigMountEntry(parent_mo_or_dn=mo_cimcvmedia_mount_config_policy, mapping_name=media_name,
                                        device_type=device_type, image_file_name=file_name, image_name_variable=inv,
@@ -3396,37 +3447,31 @@ class UcsSystemFibreChannelAdapterPolicy(UcsSystemConfigObject):
             if self.io_throttle_count == "16":
                 io_throttle_count = None
 
-        mo_adaptor_host_fc_if_profile = AdaptorHostFcIfProfile(parent_mo_or_dn=parent_mo,
-                                                               descr=self.descr,
+        mo_adaptor_host_fc_if_profile = AdaptorHostFcIfProfile(parent_mo_or_dn=parent_mo, descr=self.descr,
                                                                name=self.name)
         AdaptorFcWorkQueueProfile(parent_mo_or_dn=mo_adaptor_host_fc_if_profile,
                                   ring_size=self.transmit_queues_ring_size)
         AdaptorFcRecvQueueProfile(parent_mo_or_dn=mo_adaptor_host_fc_if_profile,
                                   ring_size=self.receive_queues_ring_size)
-        AdaptorFcCdbWorkQueueProfile(parent_mo_or_dn=mo_adaptor_host_fc_if_profile,
-                                     count=self.io_queues,
+        AdaptorFcCdbWorkQueueProfile(parent_mo_or_dn=mo_adaptor_host_fc_if_profile, count=self.io_queues,
                                      ring_size=self.io_queues_ring_size)
-        AdaptorFcPortFLogiProfile(parent_mo_or_dn=mo_adaptor_host_fc_if_profile,
-                                  retries=self.flogi_retries,
+        AdaptorFcPortFLogiProfile(parent_mo_or_dn=mo_adaptor_host_fc_if_profile, retries=self.flogi_retries,
                                   timeout=self.flogi_timeout)
-        AdaptorFcPortPLogiProfile(parent_mo_or_dn=mo_adaptor_host_fc_if_profile,
-                                  retries=self.plogi_retries,
+        AdaptorFcPortPLogiProfile(parent_mo_or_dn=mo_adaptor_host_fc_if_profile, retries=self.plogi_retries,
                                   timeout=self.plogi_timeout)
         AdaptorFcErrorRecoveryProfile(parent_mo_or_dn=mo_adaptor_host_fc_if_profile,
                                       fcp_error_recovery=self.fcp_error_recovery,
                                       port_down_timeout=self.port_down_timeout,
                                       port_down_io_retry_count=self.port_down_io_retry,
                                       link_down_timeout=self.link_down_timeout)
-        AdaptorFcPortProfile(parent_mo_or_dn=mo_adaptor_host_fc_if_profile,
-                             io_throttle_count=io_throttle_count,
+        AdaptorFcPortProfile(parent_mo_or_dn=mo_adaptor_host_fc_if_profile, io_throttle_count=io_throttle_count,
                              luns_per_target=self.max_luns_per_target)
-        AdaptorFcFnicProfile(parent_mo_or_dn=mo_adaptor_host_fc_if_profile,
-                             io_retry_timeout=self.io_retry_timeout,
+        AdaptorFcFnicProfile(parent_mo_or_dn=mo_adaptor_host_fc_if_profile, io_retry_timeout=self.io_retry_timeout,
                              lun_queue_depth=self.lun_queue_depth)
-        AdaptorFcInterruptProfile(parent_mo_or_dn=mo_adaptor_host_fc_if_profile,
-                                  mode=self.interrupt_mode)
-        AdaptorFcVhbaTypeProfile(parent_mo_or_dn=mo_adaptor_host_fc_if_profile,
-                                 mode=self.vhba_type)
+        AdaptorFcInterruptProfile(parent_mo_or_dn=mo_adaptor_host_fc_if_profile, mode=self.interrupt_mode)
+
+        if self.vhba_type:
+            AdaptorFcVhbaTypeProfile(parent_mo_or_dn=mo_adaptor_host_fc_if_profile, mode=self.vhba_type)
 
         self._handle.add_mo(mo=mo_adaptor_host_fc_if_profile, modify_present=True)
         if commit:
@@ -3616,7 +3661,11 @@ class UcsSystemServiceProfile(UcsSystemConfigObject):
                     self.threshold_policy = ls_server.stats_policy_name
                     self.kvm_management_policy = ls_server.kvm_mgmt_policy_name
                     self.graphics_card_policy = ls_server.graphics_card_policy_name
-                    self.outband_ipv4_pool = ls_server.ext_ip_pool_name
+                    if ls_server.ext_ip_state == "pooled":
+                        # We only fetch the Outband IPv4 Pool if it is configured explicitely. Other options ("none"
+                        # or "static") correspond respectively to using the default ext-mgmt pool and using a statically
+                        # assigned IP address to the CIMC
+                        self.outband_ipv4_pool = ls_server.ext_ip_pool_name
 
                     if "vnicFcNode" in self._parent._config.sdk_objects:
                         for pool in self._config.sdk_objects["vnicFcNode"]:
@@ -3684,62 +3733,66 @@ class UcsSystemServiceProfile(UcsSystemConfigObject):
                                 if self._parent._dn + "/ls-" + self.name + "/" in policy.dn:
                                     self.iscsi_initiator_name = policy.iqn_ident_pool_name
 
-                    if "vnicEther" in self._parent._config.sdk_objects:
-                        for vnic_ether in self._config.sdk_objects["vnicEther"]:
-                            if self._parent._dn:
-                                if self._parent._dn + "/ls-" + self.name + "/" in vnic_ether.dn:
-                                    vnic = {}
-                                    vnic.update({"name": vnic_ether.name})
-                                    if vnic_ether.addr != "derived":
-                                        vnic.update({"mac_address": vnic_ether.addr})
-                                    elif not vnic_ether.ident_pool_name and vnic_ether.addr == "derived":
-                                        vnic.update({"mac_address": "hardware-default"})
-                                    vnic.update({"mac_address_pool": vnic_ether.ident_pool_name})
-                                    vnic.update({"order": vnic_ether.order})
-                                    if vnic["order"] == "unspecified":
-                                        vnic["order"] = None
-                                    vnic.update({"fabric": vnic_ether.switch_id})
-                                    vnic.update({"pin_group": vnic_ether.pin_to_group_name})
-                                    vnic.update({"cdn_name": vnic_ether.admin_cdn_name})
-                                    vnic.update({"adapter_policy": vnic_ether.adaptor_profile_name})
-                                    vnic.update({"qos_policy": vnic_ether.qos_policy_name})
-                                    vnic.update({"network_control_policy": vnic_ether.nw_ctrl_policy_name})
-                                    vnic.update({"mtu": vnic_ether.mtu})
-                                    vnic.update({"template": vnic_ether.nw_templ_name})
-                                    vnic.update({"stats_threshold_policy": vnic_ether.stats_policy_name})
+                    if self.type in ["initial-template", "updating-template"] and not self.lan_connectivity_policy \
+                            or self.type in ["instance"]:
+                    # We only fetch vNICs when LAN Connectivity Policy is not set for a Service Profile Template
+                    # For a Service Profile Instance, we always fetch vNICs details to gather assigned identifiers
+                        if "vnicEther" in self._parent._config.sdk_objects:
+                            for vnic_ether in self._config.sdk_objects["vnicEther"]:
+                                if self._parent._dn:
+                                    if self._parent._dn + "/ls-" + self.name + "/" in vnic_ether.dn:
+                                        vnic = {}
+                                        vnic.update({"name": vnic_ether.name})
+                                        if vnic_ether.addr != "derived":
+                                            vnic.update({"mac_address": vnic_ether.addr})
+                                        elif not vnic_ether.ident_pool_name and vnic_ether.addr == "derived":
+                                            vnic.update({"mac_address": "hardware-default"})
+                                        vnic.update({"mac_address_pool": vnic_ether.ident_pool_name})
+                                        vnic.update({"order": vnic_ether.order})
+                                        if vnic["order"] == "unspecified":
+                                            vnic["order"] = None
+                                        vnic.update({"fabric": vnic_ether.switch_id})
+                                        vnic.update({"pin_group": vnic_ether.pin_to_group_name})
+                                        vnic.update({"cdn_name": vnic_ether.admin_cdn_name})
+                                        vnic.update({"adapter_policy": vnic_ether.adaptor_profile_name})
+                                        vnic.update({"qos_policy": vnic_ether.qos_policy_name})
+                                        vnic.update({"network_control_policy": vnic_ether.nw_ctrl_policy_name})
+                                        vnic.update({"mtu": vnic_ether.mtu})
+                                        vnic.update({"vnic_template": vnic_ether.nw_templ_name})
+                                        vnic.update({"stats_threshold_policy": vnic_ether.stats_policy_name})
 
-                                    if "vnicDynamicConPolicyRef" in self._parent._config.sdk_objects:
-                                        for vnic_policy in self._config.sdk_objects["vnicDynamicConPolicyRef"]:
-                                            if self._parent._dn + "/ls-" + self.name + "/" + "ether-" + \
-                                                    vnic['name'] + "/" in vnic_policy.dn:
-                                                vnic.update({"dynamic_vnic": vnic_policy.con_policy_name})
-                                    if "vnicUsnicConPolicyRef" in self._parent._config.sdk_objects:
-                                        for vnic_policy in self._config.sdk_objects["vnicUsnicConPolicyRef"]:
-                                            if self._parent._dn + "/ls-" + self.name + "/" + "ether-" + \
-                                                    vnic['name'] + "/" in vnic_policy.dn:
-                                                vnic.update({"usnic": vnic_policy.con_policy_name})
-                                    if "vnicVmqConPolicyRef" in self._parent._config.sdk_objects:
-                                        for vnic_policy in self._config.sdk_objects["vnicVmqConPolicyRef"]:
-                                            if self._parent._dn + "/ls-" + self.name + "/" + "ether-" + \
-                                                    vnic['name'] + "/" in vnic_policy.dn:
-                                                vnic.update({"usnic": vnic_policy.con_policy_name})
-                                    if "vnicEtherIf" in self._config.sdk_objects:
-                                        vnic.update({"vlans": []})
-                                        for vlan in self._config.sdk_objects["vnicEtherIf"]:
-                                            if self._parent._dn + "/ls-" + self.name + "/" + "ether-" + \
-                                                    vnic['name'] + "/" in vlan.dn:
-                                                if vlan.default_net in ["yes", "true"]:
-                                                    vnic.update({"vlan_native": vlan.name})
-                                                else:
-                                                    vnic['vlans'].append(vlan.name)
+                                        if "vnicDynamicConPolicyRef" in self._parent._config.sdk_objects:
+                                            for vnic_policy in self._config.sdk_objects["vnicDynamicConPolicyRef"]:
+                                                if self._parent._dn + "/ls-" + self.name + "/" + "ether-" + \
+                                                        vnic['name'] + "/" in vnic_policy.dn:
+                                                    vnic.update({"dynamic_vnic": vnic_policy.con_policy_name})
+                                        if "vnicUsnicConPolicyRef" in self._parent._config.sdk_objects:
+                                            for vnic_policy in self._config.sdk_objects["vnicUsnicConPolicyRef"]:
+                                                if self._parent._dn + "/ls-" + self.name + "/" + "ether-" + \
+                                                        vnic['name'] + "/" in vnic_policy.dn:
+                                                    vnic.update({"usnic": vnic_policy.con_policy_name})
+                                        if "vnicVmqConPolicyRef" in self._parent._config.sdk_objects:
+                                            for vnic_policy in self._config.sdk_objects["vnicVmqConPolicyRef"]:
+                                                if self._parent._dn + "/ls-" + self.name + "/" + "ether-" + \
+                                                        vnic['name'] + "/" in vnic_policy.dn:
+                                                    vnic.update({"usnic": vnic_policy.con_policy_name})
+                                        if "vnicEtherIf" in self._config.sdk_objects:
+                                            vnic.update({"vlans": []})
+                                            for vlan in self._config.sdk_objects["vnicEtherIf"]:
+                                                if self._parent._dn + "/ls-" + self.name + "/" + "ether-" + \
+                                                        vnic['name'] + "/" in vlan.dn:
+                                                    if vlan.default_net in ["yes", "true"]:
+                                                        vnic.update({"vlan_native": vlan.name})
+                                                    else:
+                                                        vnic['vlans'].append(vlan.name)
 
-                                    if "fabricNetGroupRef" in self._parent._config.sdk_objects:
-                                        vnic.update({"vlan_groups": []})
-                                        for vlan_group in self._config.sdk_objects["fabricNetGroupRef"]:
-                                            if self._parent._dn + "/ls-" + self.name + "/" + "ether-" + \
-                                                    vnic['name'] + "/" in vlan_group.dn:
-                                                vnic['vlan_groups'].append(vlan_group.name)
-                                    self.vnics.append(vnic)
+                                        if "fabricNetGroupRef" in self._parent._config.sdk_objects:
+                                            vnic.update({"vlan_groups": []})
+                                            for vlan_group in self._config.sdk_objects["fabricNetGroupRef"]:
+                                                if self._parent._dn + "/ls-" + self.name + "/" + "ether-" + \
+                                                        vnic['name'] + "/" in vlan_group.dn:
+                                                    vnic['vlan_groups'].append(vlan_group.name)
+                                        self.vnics.append(vnic)
 
                     if "vnicIScsi" in self._parent._config.sdk_objects:
                         for vnic_iscsi in self._config.sdk_objects["vnicIScsi"]:
@@ -3759,35 +3812,38 @@ class UcsSystemServiceProfile(UcsSystemConfigObject):
                                                 vnic.update({"vlan": vlan.vlan_name})
                                     self.iscsi_vnics.append(vnic)
 
-                    if "vnicfc" in self._parent._config.sdk_objects:
-                        for vnic_fc in self._config.sdk_objects["vnicfc"]:
-                            if self._parent._dn:
-                                if self._parent._dn + "/ls-" + self.name + "/" in vnic_fc.dn:
-                                    vhba = {}
-                                    vhba.update({"name": vnic_fc.name})
-                                    # vhba.update({"addr": vnic_fc.addr})
-                                    vhba.update({"wwpn_pool": vnic_fc.ident_pool_name})
-                                    if vnic_fc.addr != "derived":
-                                        vhba.update({"wwpn": vnic_fc.addr})
-                                    elif not vnic_fc.ident_pool_name and vnic_fc.addr == "derived":
-                                        vhba.update({"wwpn": "derived"})
-                                    vhba.update({"order": vnic_fc.order})
-                                    if vhba["order"] == "unspecified":
-                                        vhba["order"] = None
-                                    vhba.update({"fabric": vnic_fc.switch_id})
-                                    vhba.update({"max_data_field_size": vnic_fc.max_data_field_size})
-                                    vhba.update({"pin_group": vnic_fc.pin_to_group_name})
-                                    vhba.update({"adapter_policy": vnic_fc.adaptor_profile_name})
-                                    vhba.update({"qos_policy": vnic_fc.qos_policy_name})
-                                    vhba.update({"vhba_template": vnic_fc.nw_templ_name})
-                                    vhba.update({"stats_threshold_policy": vnic_fc.stats_policy_name})
-                                    vhba.update({"persistent_binding": vnic_fc.pers_bind})
-                                    if "vnicfcIf" in self._config.sdk_objects:
-                                        for vsan in self._config.sdk_objects["vnicfcIf"]:
-                                            if self._parent._dn + "/ls-" + self.name + "/" + "fc-" + \
-                                                    vhba['name'] + "/" in vsan.dn:
-                                                vhba['vsan'].append(vsan.name)
-                                    self.vhbas.append(vhba)
+                    if self.type in ["initial-template", "updating-template"] and not self.san_connectivity_policy \
+                            or self.type in ["instance"]:
+                    # We only fetch vHBAs when SAN Connectivity Policy is not set for a Service Profile Template
+                    # For a Service Profile Instance, we fetch vHBAs details to gather assigned identifiers
+                        if "vnicFc" in self._parent._config.sdk_objects:
+                            for vnic_fc in self._config.sdk_objects["vnicFc"]:
+                                if self._parent._dn:
+                                    if self._parent._dn + "/ls-" + self.name + "/" in vnic_fc.dn:
+                                        vhba = {}
+                                        vhba.update({"name": vnic_fc.name})
+                                        vhba.update({"wwpn_pool": vnic_fc.ident_pool_name})
+                                        if vnic_fc.addr != "derived":
+                                            vhba.update({"wwpn": vnic_fc.addr})
+                                        elif not vnic_fc.ident_pool_name and vnic_fc.addr == "derived":
+                                            vhba.update({"wwpn": "derived"})
+                                        vhba.update({"order": vnic_fc.order})
+                                        if vhba["order"] == "unspecified":
+                                            vhba["order"] = None
+                                        vhba.update({"fabric": vnic_fc.switch_id})
+                                        vhba.update({"max_data_field_size": vnic_fc.max_data_field_size})
+                                        vhba.update({"pin_group": vnic_fc.pin_to_group_name})
+                                        vhba.update({"adapter_policy": vnic_fc.adaptor_profile_name})
+                                        vhba.update({"qos_policy": vnic_fc.qos_policy_name})
+                                        vhba.update({"vhba_template": vnic_fc.nw_templ_name})
+                                        vhba.update({"stats_threshold_policy": vnic_fc.stats_policy_name})
+                                        vhba.update({"persistent_binding": vnic_fc.pers_bind})
+                                        if "vnicfcIf" in self._config.sdk_objects:
+                                            for vsan in self._config.sdk_objects["vnicfcIf"]:
+                                                if self._parent._dn + "/ls-" + self.name + "/" + "fc-" + \
+                                                        vhba['name'] + "/" in vsan.dn:
+                                                    vhba['vsan'].append(vsan.name)
+                                        self.vhbas.append(vhba)
 
                     if "lsVConAssign" in self._parent._config.sdk_objects:
                         for vcon in self._config.sdk_objects["lsVConAssign"]:
@@ -3867,9 +3923,8 @@ class UcsSystemServiceProfile(UcsSystemConfigObject):
                                 message="Unable to get attributes from JSON content for " + self._CONFIG_NAME)
                 
                 for element in self.vhbas:
-                    for value in ["adapter_policy", "template", "fabric",
-                                  "name", "order", "wwpn_pool", "pin_group",
-                                  "max_data_field_size", "qos_policy", "vsan", "stats_threshold_policy",
+                    for value in ["adapter_policy", "vhba_template", "fabric", "name", "order", "wwpn_pool",
+                                  "pin_group", "max_data_field_size", "qos_policy", "vsan", "stats_threshold_policy",
                                   "persistent_binding", "wwpn"]:
                         if value not in element:
                             element[value] = None
@@ -3890,9 +3945,8 @@ class UcsSystemServiceProfile(UcsSystemConfigObject):
                             element[value] = None
                 
                 for element in self.vnics:
-                    for value in ["vlans", "template", "adapter_policy",
-                                  "name", "cdn_source", "cdn_name", "vlan_native",
-                                  "order", "fabric", "mac_address_pool", "mtu", "qos_policy",
+                    for value in ["vlans", "vnic_template", "adapter_policy", "name", "cdn_source", "cdn_name",
+                                  "vlan_native", "order", "fabric", "mac_address_pool", "mtu", "qos_policy",
                                   "network_control_policy", "dynamic_vnic", "usnic", "vmq", "pin_group",
                                   "stats_threshold_policy", "mac_address", "vlan_groups"]:
                         if value not in element:
@@ -3968,21 +4022,26 @@ class UcsSystemServiceProfile(UcsSystemConfigObject):
                 return False
 
         # Add Asset Tag
-        LsServerExtension(parent_mo_or_dn=mo_ls_server, asset_tag=self.asset_tag)
+        if self.asset_tag:
+            LsServerExtension(parent_mo_or_dn=mo_ls_server, asset_tag=self.asset_tag)
 
-        # Add WWN Pool
-        VnicFcNode(parent_mo_or_dn=mo_ls_server, ident_pool_name=self.wwnn_pool, addr=self.wwnn)
+        # Add WWNN Pool
+        if self.wwnn_pool:
+            VnicFcNode(parent_mo_or_dn=mo_ls_server, ident_pool_name=self.wwnn_pool, addr=self.wwnn)
 
         # Add Server Pool
-        LsRequirement(parent_mo_or_dn=mo_ls_server, name=self.server_pool, qualifier=self.server_pool_qualification,
-                      restrict_migration=self.restrict_migration)
+        if self.server_pool:
+            LsRequirement(parent_mo_or_dn=mo_ls_server, name=self.server_pool, qualifier=self.server_pool_qualification,
+                          restrict_migration=self.restrict_migration)
 
         # Add a Storage Profile
-        LstorageProfileBinding(parent_mo_or_dn=mo_ls_server, storage_profile_name=self.storage_profile)
+        if self.storage_profile:
+            LstorageProfileBinding(parent_mo_or_dn=mo_ls_server, storage_profile_name=self.storage_profile)
 
         # Add SAN and/or LAN Connectivity Policy
-        VnicConnDef(parent_mo_or_dn=mo_ls_server, san_conn_policy_name=self.san_connectivity_policy,
-                    lan_conn_policy_name=self.lan_connectivity_policy)
+        if self.san_connectivity_policy or self.lan_connectivity_policy:
+            VnicConnDef(parent_mo_or_dn=mo_ls_server, san_conn_policy_name=self.san_connectivity_policy,
+                        lan_conn_policy_name=self.lan_connectivity_policy)
 
         # Add Inband Management IP Address
         if self.inband_ipv4_pool or self.inband_ipv6_pool:
@@ -3997,7 +4056,8 @@ class UcsSystemServiceProfile(UcsSystemConfigObject):
         # Add the power state to be applied when a server pool is associated with the server
         # Status : only "admin-down", "admin-up", "down" or "up" - are used in a service profile
         # "soft-shut-down-only" can also be found as a state
-        LsPower(parent_mo_or_dn=mo_ls_server, state=self.server_power_state)
+        if self.server_power_state:
+            LsPower(parent_mo_or_dn=mo_ls_server, state=self.server_power_state)
 
         # Add association to a server
         for server in self.servers:
@@ -4018,17 +4078,18 @@ class UcsSystemServiceProfile(UcsSystemConfigObject):
             if self.commit(detail="Service Profile policies of the service profile " + str(self.name)) != True:
                 return False
 
-        VnicIScsiNode(parent_mo_or_dn=mo_ls_server, iqn_ident_pool_name=self.iscsi_initiator_name)
-        for iscsi_vnic in self.iscsi_vnics:
-            mac_address_pool = iscsi_vnic['mac_address_pool']
-            mac_address = iscsi_vnic["mac_address"]
+        if self.iscsi_initiator_name or self.iscsi_vnics:
+            VnicIScsiNode(parent_mo_or_dn=mo_ls_server, iqn_ident_pool_name=self.iscsi_initiator_name)
+            for iscsi_vnic in self.iscsi_vnics:
+                mac_address_pool = iscsi_vnic['mac_address_pool']
+                mac_address = iscsi_vnic["mac_address"]
 
-            mo_vnic_iscsi = VnicIScsi(parent_mo_or_dn=mo_ls_server,
-                                      adaptor_profile_name=iscsi_vnic["adapter_policy"],
-                                      ident_pool_name=mac_address_pool,
-                                      addr=mac_address,
-                                      name=iscsi_vnic['name'])
-            VnicVlan(parent_mo_or_dn=mo_vnic_iscsi, vlan_name=iscsi_vnic["vlan"])
+                mo_vnic_iscsi = VnicIScsi(parent_mo_or_dn=mo_ls_server,
+                                          adaptor_profile_name=iscsi_vnic["adapter_policy"],
+                                          ident_pool_name=mac_address_pool,
+                                          addr=mac_address,
+                                          name=iscsi_vnic['name'])
+                VnicVlan(parent_mo_or_dn=mo_vnic_iscsi, vlan_name=iscsi_vnic["vlan"])
 
         for vnic in self.vnics:
             if vnic['fabric']:
@@ -4052,7 +4113,7 @@ class UcsSystemServiceProfile(UcsSystemConfigObject):
                                       qos_policy_name=vnic['qos_policy'],
                                       ident_pool_name=mac_address_pool,
                                       mtu=vnic['mtu'],
-                                      nw_templ_name=vnic['template'],
+                                      nw_templ_name=vnic['vnic_template'],
                                       stats_policy_name=vnic['stats_threshold_policy'],
                                       addr=mac_address)
 
@@ -4089,7 +4150,7 @@ class UcsSystemServiceProfile(UcsSystemConfigObject):
                                 ident_pool_name=vhba['wwpn_pool'],
                                 adaptor_profile_name=vhba['adapter_policy'],
                                 qos_policy_name=vhba['qos_policy'],
-                                nw_templ_name=vhba['template'],
+                                nw_templ_name=vhba['vhba_template'],
                                 stats_policy_name=vhba['stats_threshold_policy'],
                                 pers_bind=vhba['persistent_binding'],
                                 addr=vhba["wwpn"])
@@ -4189,38 +4250,72 @@ class UcsSystemServiceProfile(UcsSystemConfigObject):
         if not hasattr(self, 'number_of_instances'):
             self.number_of_instances = "1"
 
-        dn_set = DnSet()
-        for i in range(int(self.suffix_start_number), int(self.number_of_instances) + int(self.suffix_start_number)):
-            dn = Dn()
-            dn.attr_set("value", str(self.name + str(i)))
-            dn_set.child_add(dn)
+        if self.suffix_start_number and self.number_of_instances:
+            dn_set = DnSet()
+            for i in range(int(self.suffix_start_number),
+                           int(self.number_of_instances) + int(self.suffix_start_number)):
+                dn = Dn()
+                dn.attr_set("value", str(self.name + str(i)))
+                dn_set.child_add(dn)
 
-        elem = ls_instantiate_n_named_template(cookie=self._handle.cookie,
-                                               dn=parent_mo + "/ls-" + self.service_profile_template,
-                                               in_error_on_existing="false", in_name_set=dn_set,
-                                               in_target_org=parent_mo, in_hierarchical="false")
-        for i in range(self._device.push_attempts):
-            try:
-                if i:
-                    self.logger(level="warning",
-                                message="Trying to push again the instantiated service profile from " +
+            elem = ls_instantiate_n_named_template(cookie=self._handle.cookie,
+                                                   dn=parent_mo + "/ls-" + self.service_profile_template,
+                                                   in_error_on_existing="false", in_name_set=dn_set,
+                                                   in_target_org=parent_mo, in_hierarchical="false")
+
+            for i in range(self._device.push_attempts):
+                try:
+                    if i:
+                        self.logger(level="warning",
+                                    message="Trying to push again the instantiated service profile(s) from " +
+                                            str(self.service_profile_template))
+                    self._handle.process_xml_elem(elem)
+                    self.logger(level='debug',
+                                message=self.number_of_instances + " " + self._CONFIG_NAME + " instantiated from " +
+                                        str(self.service_profile_template) + " starting with " + str(self.name) +
+                                        self.suffix_start_number)
+                    return True
+                except ConnectionRefusedError:
+                    self.logger(level="error", message="Connection refused while trying to instantiate from " +
+                                                       str(self.service_profile_template))
+                except UcsException as err:
+                    self.logger(level="error",
+                                message="Error while trying to instantiate from " +
+                                        str(self.service_profile_template) + " " + err.error_descr)
+                except urllib.error.URLError:
+                    self.logger(level="error",
+                                message="Timeout while trying to instantiate from " + str(
+                                    self.service_profile_template))
+
+        else:
+            elem = ls_instantiate_template(cookie=self._handle.cookie,
+                                           dn=parent_mo + "/ls-" + self.service_profile_template,
+                                           in_error_on_existing="false",
+                                           in_server_name=self.name,
+                                           in_target_org=parent_mo, in_hierarchical="false")
+
+            for i in range(self._device.push_attempts):
+                try:
+                    if i:
+                        self.logger(level="warning",
+                                    message="Trying to push again the instantiated service profile(s) from " +
+                                            str(self.service_profile_template))
+                    self._handle.process_xml_elem(elem)
+                    self.logger(level='debug',
+                                message=self._CONFIG_NAME + " " + str(self.name) + " instantiated from " +
                                         str(self.service_profile_template))
-                self._handle.process_xml_elem(elem)
-                self.logger(level='debug',
-                            message=self.number_of_instances + " " + self._CONFIG_NAME + " instantiated from " +
-                                    str(self.service_profile_template) + " starting with " + str(self.name) +
-                                    self.suffix_start_number)
-                return True
-            except ConnectionRefusedError:
-                self.logger(level="error", message="Connection refused while trying to instantiate from " +
-                                                   str(self.service_profile_template))
-            except UcsException as err:
-                self.logger(level="error",
-                            message="Error while trying to instantiate from " +
-                                    str(self.service_profile_template) + " " + err.error_descr)
-            except urllib.error.URLError:
-                self.logger(level="error",
-                            message="Timeout while trying to instantiate from " + str(self.service_profile_template))
+                    return True
+                except ConnectionRefusedError:
+                    self.logger(level="error", message="Connection refused while trying to instantiate from " +
+                                                       str(self.service_profile_template))
+                except UcsException as err:
+                    self.logger(level="error",
+                                message="Error while trying to instantiate from " +
+                                        str(self.service_profile_template) + " " + err.error_descr)
+                except urllib.error.URLError:
+                    self.logger(level="error",
+                                message="Timeout while trying to instantiate from " + str(
+                                    self.service_profile_template))
 
 
 class UcsSystemMemoryPolicy(UcsSystemConfigObject):

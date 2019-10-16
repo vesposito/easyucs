@@ -831,14 +831,14 @@ class BladesSectionInfoUcsReportTable(GenericReportTable):
             else:
                 id = blade.slot_id
 
-            if blade.cpus[0].model_short_name:
-                rows.append([id, blade.short_name, blade.serial,
-                             blade.memory_total_marketing, str(len(blade.cpus)) + "x " + blade.cpus[0].model_short_name,
-                             cores, adaptor_sum, len(blade.gpus), drives, sd_cards])
-            else:
-                rows.append([id, blade.short_name, blade.serial,
-                             blade.memory_total_marketing, str(len(blade.cpus)),
-                             cores, adaptor_sum, len(blade.gpus), drives, sd_cards])
+            if blade.cpus:
+                if blade.cpus[0].model_short_name:
+                    rows.append([id, blade.short_name, blade.serial, blade.memory_total_marketing,
+                                 str(len(blade.cpus)) + "x " + blade.cpus[0].model_short_name, cores, adaptor_sum,
+                                 len(blade.gpus), drives, sd_cards])
+                else:
+                    rows.append([id, blade.short_name, blade.serial, blade.memory_total_marketing,
+                                 str(len(blade.cpus)), cores, adaptor_sum, len(blade.gpus), drives, sd_cards])
 
         GenericReportTable.__init__(self,order_id=order_id, parent=parent, row_number=len(rows),
                                     column_number=len(rows[1]), centered=centered, cells_list=rows, font_size=9)
@@ -906,14 +906,14 @@ class RackUnitsSectionInfoUcsReportTable(GenericReportTable):
                 if sd_cards_capacity and sd_cards:
                     sd_cards = str(sd_cards) + "x " + sd_cards_capacity
 
-            if rack.cpus[0].model_short_name:
-                rows.append([rack.id, rack.short_name, rack.serial,
-                             rack.memory_total_marketing, str(len(rack.cpus)) + "x " + rack.cpus[0].model_short_name,
-                             cores, adaptor_sum, len(rack.gpus), drives, sd_cards])
-            else:
-                rows.append([rack.id, rack.short_name, rack.serial,
-                             rack.memory_total_marketing, str(len(rack.cpus)),
-                             cores, adaptor_sum, len(rack.gpus), drives, sd_cards])
+            if rack.cpus:
+                if rack.cpus[0].model_short_name:
+                    rows.append([rack.id, rack.short_name, rack.serial, rack.memory_total_marketing,
+                                 str(len(rack.cpus)) + "x " + rack.cpus[0].model_short_name, cores, adaptor_sum,
+                                 len(rack.gpus), drives, sd_cards])
+                else:
+                    rows.append([rack.id, rack.short_name, rack.serial, rack.memory_total_marketing,
+                                 str(len(rack.cpus)), cores, adaptor_sum, len(rack.gpus), drives, sd_cards])
 
         GenericReportTable.__init__(self,order_id=order_id, parent=parent, row_number=len(rows),
                                     column_number=len(rows[1]), centered=centered, cells_list=rows, font_size=9)
@@ -1178,7 +1178,6 @@ class ClusterInfoUcsReportTable(GenericReportTable):
         # Cluster info
         rows.append([_("System Name"), config_system.name])
         rows.append([_("Version"), config.device_version])
-        rows.append([_("Admin password"), device.password])
         rows.append([_("Cluster IP Address"),config_system.virtual_ip])
         rows.append([_("Netmask"), config_mng_int.netmask])
         rows.append([_("Gateway"), config_mng_int.gateway])

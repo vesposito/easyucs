@@ -418,7 +418,7 @@ class UcsSystemOrg(UcsSystemConfigObject):
                                       name_to_fetch="flow_control_policies", restrict_to_root=True)
         self.lacp_policies = \
             self._get_generic_element(json_content=json_content, object_class=UcsSystemLacpPolicy,
-                                      name_to_fetch="lacp_policies")
+                                      name_to_fetch="lacp_policies", restrict_to_root=True)
         self.iscsi_authentication_profiles = \
             self._get_generic_element(json_content=json_content, object_class=UcsSystemIscsiAuthenticationProfile,
                                       name_to_fetch="iscsi_authentication_profiles")
@@ -427,7 +427,7 @@ class UcsSystemOrg(UcsSystemConfigObject):
                                       name_to_fetch="vmedia_policies")
         self.multicast_policies = \
             self._get_generic_element(json_content=json_content, object_class=UcsSystemMulticastPolicy,
-                                      name_to_fetch="multicast_policies")
+                                      name_to_fetch="multicast_policies", restrict_to_root=True)
         self.disk_group_policies = \
             self._get_generic_element(json_content=json_content, object_class=UcsSystemDiskGroupPolicy,
                                       name_to_fetch="disk_group_policies")
@@ -448,7 +448,7 @@ class UcsSystemOrg(UcsSystemConfigObject):
                                       name_to_fetch="disk_zoning_policies")
         self.link_protocol_policy = \
             self._get_generic_element(json_content=json_content, object_class=UcsSystemLinkProtocolPolicy,
-                                      name_to_fetch="link_protocol_policy")
+                                      name_to_fetch="link_protocol_policy", restrict_to_root=True)
         self.ethernet_adapter_policies = \
             self._get_generic_element(json_content=json_content, object_class=UcsSystemEthernetAdapterPolicy,
                                       name_to_fetch="ethernet_adapter_policies")
@@ -512,38 +512,68 @@ class UcsSystemOrg(UcsSystemConfigObject):
                                     'ip_pools', 'mac_pools', 'uuid_pools', 'wwpn_pools', 'wwnn_pools', 'wwxn_pools',
                                     'bios_policies', 'boot_policies', 'orgs', 'iqn_suffix_pools',
                                     'vmedia_policies', 'qos_policies', 'dynamic_vnic_connection_policies',
-                                    'ethernet_adapter_policies',
-                                    'fibre_channel_adapter_policies', 'diagnostics_policies',
-                                    'iscsi_adapter_policies', 'ipmi_access_profiles', 'power_control_policies',
-                                    'serial_over_lan_policies', 'power_sync_policies', 'vnic_vhba_placement_policies',
-                                    'lan_connectivity_policies', 'san_connectivity_policies',
-                                    'storage_connection_policies', 'local_disk_config_policies',
-                                    'host_firmware_packages', 'maintenance_policies', 'network_control_policies',
-                                    'multicast_policies', 'lacp_policies', 'link_protocol_policy',
-                                    'default_vnic_behavior', 'flow_control_policies', 'scrub_policies',
-                                    'vnic_templates', 'default_vhba_behavior', 'vhba_templates',
+                                    'ethernet_adapter_policies', 'fibre_channel_adapter_policies',
+                                    'diagnostics_policies', 'iscsi_adapter_policies', 'ipmi_access_profiles',
+                                    'power_control_policies', 'serial_over_lan_policies', 'power_sync_policies',
+                                    'vnic_vhba_placement_policies', 'lan_connectivity_policies',
+                                    'san_connectivity_policies', 'storage_connection_policies',
+                                    'local_disk_config_policies', 'host_firmware_packages', 'maintenance_policies',
+                                    'network_control_policies', 'multicast_policies', 'lacp_policies',
+                                    'link_protocol_policy', 'default_vnic_behavior', 'flow_control_policies',
+                                    'scrub_policies', 'vnic_templates', 'default_vhba_behavior', 'vhba_templates',
                                     'chassis_firmware_packages', 'chassis_maintenance_policies',
                                     'compute_connection_policies', 'disk_zoning_policies',
-                                    'sas_expander_configuration_policies', 'chassis_profiles',
-                                    'disk_group_policies', 'storage_profiles', 'graphics_card_policies',
-                                    'kvm_management_policies', 'memory_policy', 'threshold_policies',
-                                    'iscsi_authentication_profiles', 'service_profiles']
+                                    'sas_expander_configuration_policies', 'disk_group_policies', 'storage_profiles',
+                                    'graphics_card_policies', 'kvm_management_policies', 'memory_policy',
+                                    'threshold_policies', 'iscsi_authentication_profiles']
 
         for config_object in objects_to_push_in_order:
             if getattr(self, config_object) is not None:
                 if getattr(self, config_object).__class__.__name__ == "list":
                     for subobject in getattr(self, config_object):
-                        if config_object in ["service_profiles"]:
-                            # For service_profiles
-                            if all(getattr(subobject, attr) for attr in ["service_profile_template", "name"]):
-                                subobject.instantiate_profile()
-                                continue
-                        elif config_object in ["chassis_profiles"]:
-                            # For chassis_profiles
-                            if all(getattr(subobject, attr) for attr in ["chassis_profile_template", "name"]):
-                                subobject.instantiate_profile()
-                                continue
                         subobject.push_object()
+
+        # HANDLING OF CHASSIS PROFILES & TEMPLATES
+        # We first need to identify all Chassis Profile Templates and push them, and then push the Chassis Profiles
+        # so that instantiation can find the required Template
+        chassis_profile_templates = []
+        chassis_profiles = []
+        if self.chassis_profiles:
+            for chassis_profile in self.chassis_profiles:
+                if chassis_profile.type in ["initial-template", "updating-template"]:
+                    chassis_profile_templates.append(chassis_profile)
+                else:
+                    chassis_profiles.append(chassis_profile)
+
+        for chassis_profile_template in chassis_profile_templates:
+            chassis_profile_template.push_object()
+
+        for chassis_profile in chassis_profiles:
+            if all(getattr(chassis_profile, attr) for attr in ["chassis_profile_template", "name"]):
+                chassis_profile.instantiate_profile()
+            else:
+                chassis_profile.push_object()
+
+        # HANDLING OF SERVICE PROFILES & TEMPLATES
+        # We first need to identify all Service Profile Templates and push them, and then push the Service Profiles
+        # so that instantiation can find the required Template
+        service_profile_templates = []
+        service_profiles = []
+        if self.service_profiles:
+            for service_profile in self.service_profiles:
+                if service_profile.type in ["initial-template", "updating-template"]:
+                    service_profile_templates.append(service_profile)
+                else:
+                    service_profiles.append(service_profile)
+
+        for service_profile_template in service_profile_templates:
+            service_profile_template.push_object()
+
+        for service_profile in service_profiles:
+            if all(getattr(service_profile, attr) for attr in ["service_profile_template", "name"]):
+                service_profile.instantiate_profile()
+            else:
+                service_profile.push_object()
 
         return True
 
@@ -936,8 +966,8 @@ class UcsSystemGlobalPolicies(UcsSystemConfigObject):
         self.global_power_profiling_policy = None
         self.info_policy = None
         self.hardware_change_discovery_policy = None
-        self.fi_a_fc_uplink_trunking = None
-        self.fi_b_fc_uplink_trunking = None
+        self.fabric_a_fc_uplink_trunking = None
+        self.fabric_b_fc_uplink_trunking = None
 
         if self._config.load_from == "live":
             # Locating SDK objects needed to initialize
@@ -996,9 +1026,9 @@ class UcsSystemGlobalPolicies(UcsSystemConfigObject):
             if "fabricFcSan" in self._config.sdk_objects:
                     for fi in self._config.sdk_objects["fabricFcSan"]:
                         if fi.id == "A":
-                            self.fi_a_fc_uplink_trunking = fi.uplink_trunking
+                            self.fabric_a_fc_uplink_trunking = fi.uplink_trunking
                         elif fi.id == "B":
-                            self.fi_b_fc_uplink_trunking = fi.uplink_trunking
+                            self.fabric_b_fc_uplink_trunking = fi.uplink_trunking
 
         elif self._config.load_from == "file":
             if json_content is not None:
@@ -1162,18 +1192,18 @@ class UcsSystemGlobalPolicies(UcsSystemConfigObject):
             if commit:
                 if self.commit("Hardware Change Discovery Policy") != True:
                     return False
-        if self.fi_a_fc_uplink_trunking or self.fi_b_fc_uplink_trunking:
-            if self.fi_a_fc_uplink_trunking:
+        if self.fabric_a_fc_uplink_trunking or self.fabric_b_fc_uplink_trunking:
+            if self.fabric_a_fc_uplink_trunking:
                 mo_fabric_a_fc_san = FabricFcSan(parent_mo_or_dn=parent_mo_san, id="A",
-                                                 uplink_trunking=self.fi_a_fc_uplink_trunking)
+                                                 uplink_trunking=self.fabric_a_fc_uplink_trunking)
                 self._handle.add_mo(mo_fabric_a_fc_san, modify_present=True)
 
-            if self.fi_b_fc_uplink_trunking:
+            if self.fabric_b_fc_uplink_trunking:
                 mo_fabric_b_fc_san = FabricFcSan(parent_mo_or_dn=parent_mo_san, id="B",
-                                                 uplink_trunking=self.fi_b_fc_uplink_trunking)
+                                                 uplink_trunking=self.fabric_b_fc_uplink_trunking)
                 self._handle.add_mo(mo_fabric_b_fc_san, modify_present=True)
 
-            if self.fi_a_fc_uplink_trunking or self.fi_b_fc_uplink_trunking:
+            if self.fabric_a_fc_uplink_trunking or self.fabric_b_fc_uplink_trunking:
                 if commit:
                     if self.commit("FC Uplink Trunking") != True:
                         return False
@@ -1518,7 +1548,7 @@ class UcsSystemBackupExportPolicy(UcsSystemConfigObject):
                                                      schedule=schedule, name="default")
             self._handle.add_mo(mo_mgmt_backup_policy, modify_present=True)
             if commit:
-                if self.commit() != True:
+                if self.commit(detail="Full state") != True:
                     return False
 
         if self.all_configuration:
@@ -1541,7 +1571,7 @@ class UcsSystemBackupExportPolicy(UcsSystemConfigObject):
                                                             schedule=schedule, name="default")
             self._handle.add_mo(mo_mgmt_cfg_export_policy, modify_present=True)
             if commit:
-                if self.commit() != True:
+                if self.commit(detail="All configuration") != True:
                     return False
 
         if self.reminder:
@@ -1550,12 +1580,9 @@ class UcsSystemBackupExportPolicy(UcsSystemConfigObject):
                                                                          admin_state=self.reminder[0]["admin_state"])
             self._handle.add_mo(mo_mgmt_backup_export_ext_policy, modify_present=True)
             if commit:
-                if self.commit() != True:
+                if self.commit(detail="Reminder") != True:
                     return False
 
-        if commit:
-            if self.commit() != True:
-                return False
         return True
 
 
@@ -2051,6 +2078,14 @@ class UcsSystemRadius(UcsSystemConfigObject):
                 if not self.get_attributes_from_json(json_content=json_content):
                     self.logger(level="error",
                                 message="Unable to get attributes from JSON content for " + self._CONFIG_NAME)
+                for element in self.providers:
+                    for value in ["hostname", "timeout", "port", "key", "order", "retries"]:
+                        if value not in element:
+                            element[value] = None
+                for element in self.provider_groups:
+                    for value in ["name", "included_providers"]:
+                        if value not in element:
+                            element[value] = None
 
         self.clean_object()
 
@@ -2127,6 +2162,14 @@ class UcsSystemTacacs(UcsSystemConfigObject):
                 if not self.get_attributes_from_json(json_content=json_content):
                     self.logger(level="error",
                                 message="Unable to get attributes from JSON content for " + self._CONFIG_NAME)
+                for element in self.providers:
+                    for value in ["hostname", "timeout", "port", "key", "order"]:
+                        if value not in element:
+                            element[value] = None
+                for element in self.provider_groups:
+                    for value in ["name", "included_providers"]:
+                        if value not in element:
+                            element[value] = None
 
         self.clean_object()
 
@@ -2226,13 +2269,13 @@ class UcsSystemLdap(UcsSystemConfigObject):
                     if "aaaUserRole" in self._config.sdk_objects:
                         group_map["roles"] = []
                         for role in [role for role in self._config.sdk_objects["aaaUserRole"]
-                                     if "sys/ldap-ext/ldapgroup-" in role.dn]:
+                                     if "sys/ldap-ext/ldapgroup-" + ldap_group.name in role.dn]:
                             group_map["roles"].append(role.name)
 
                     if "aaaUserLocale" in self._config.sdk_objects:
                         group_map["locales"] = []
                         for role in [role for role in self._config.sdk_objects["aaaUserLocale"]
-                                     if "sys/ldap-ext/ldapgroup-" in role.dn]:
+                                     if "sys/ldap-ext/ldapgroup-" + ldap_group.name in role.dn]:
                             group_map["locales"].append(role.name)
 
                     self.group_maps.append(group_map)
@@ -2242,6 +2285,20 @@ class UcsSystemLdap(UcsSystemConfigObject):
                 if not self.get_attributes_from_json(json_content=json_content):
                     self.logger(level="error",
                                 message="Unable to get attributes from JSON content for " + self._CONFIG_NAME)
+                for element in self.providers:
+                    for value in ["bind_dn", "vendor", "password", "port", "attribute", "timeout", "hostname",
+                                  "base_dn", "ssl", "filter", "order", "group_authorization", "group_recursion",
+                                  "target_attribute", "use_primary_group"]:
+                        if value not in element:
+                            element[value] = None
+                for element in self.provider_groups:
+                    for value in ["name", "included_providers"]:
+                        if value not in element:
+                            element[value] = None
+                for element in self.group_maps:
+                    for value in ["group_dn", "roles", "locales"]:
+                        if value not in element:
+                            element[value] = None
 
         self.clean_object()
 
@@ -2387,6 +2444,15 @@ class UcsSystemCallHome(UcsSystemConfigObject):
                 if not self.get_attributes_from_json(json_content=json_content):
                     self.logger(level="error",
                                 message="Unable to get attributes from JSON content for " + self._CONFIG_NAME)
+                for element in self.profiles:
+                    for value in ["profile_name", "profile_level", "profile_format", "profile_max_size",
+                                  "profile_alert_groups", "profile_emails"]:
+                        if value not in element:
+                            element[value] = None
+                for element in self.policies:
+                    for value in ["state", "cause"]:
+                        if value not in element:
+                            element[value] = None
 
         self.clean_object()
 
@@ -2439,8 +2505,9 @@ class UcsSystemCallHome(UcsSystemConfigObject):
                                                       name=profile["profile_name"])
 
                 if "profile_emails" in profile:
-                    for email in profile["profile_emails"]:
-                        CallhomeDest(parent_mo_or_dn=mo_callhome_profile, email=email)
+                    if profile["profile_emails"]:
+                        for email in profile["profile_emails"]:
+                            CallhomeDest(parent_mo_or_dn=mo_callhome_profile, email=email)
                 self._handle.add_mo(mo_callhome_profile, modify_present=True)
         self._handle.add_mo(mo_callhome_anonymous_reporting, modify_present=True)
 

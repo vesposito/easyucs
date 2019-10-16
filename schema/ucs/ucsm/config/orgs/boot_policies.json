@@ -228,6 +228,18 @@
                                        "primary",
                                        "secondary"
                                     ]
+                                 },
+                                 "boot_loader_name": {
+                                    "description": "Boot Policy - Boot Order - UEFI Boot Parameters - Boot Loader Name (SAN Boot)",
+                                    "type": "string"
+                                 },
+                                 "boot_loader_path": {
+                                    "description": "Boot Policy - Boot Order - UEFI Boot Parameters - Boot Loader Path (SAN Boot)",
+                                    "type": "string"
+                                 },
+                                 "boot_loader_description": {
+                                    "description": "Boot Policy - Boot Order - UEFI Boot Parameters - Boot Loader Description (SAN Boot)",
+                                    "type": "string"
                                  }
                               },
                               "additionalProperties": false
