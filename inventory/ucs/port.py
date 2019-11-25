@@ -354,7 +354,7 @@ class UcsSystemFiPort(UcsPort):
                     self.is_breakout = True
 
             if self.is_port_channel_member:
-                self.pc_id = port.ep_dn.split("/")[3].split("-")[1]
+                self.pc_id = port.ep_dn.split("pc-")[1].split("/")[0]
 
         elif self._inventory.load_from == "file":
             for attribute in ["aggr_port_id", "is_breakout", "pc_id"]:
@@ -400,16 +400,18 @@ class UcsSystemFiEthPort(UcsSystemFiPort, UcsSystemInventoryObject):
             network_lldp_neighbor_entry_list = []
             ucs_system_lan_neighbor_entry_list = []
 
-            if self._inventory.sdk_objects["networkLanNeighborEntry"] is not None:
-                # We filter out SDK objects that are not under this Dn
-                network_lan_neighbor_entry_list = [network_lan_neighbor_entry for network_lan_neighbor_entry in
-                                                   self._inventory.sdk_objects["networkLanNeighborEntry"] if
-                                                   self.dn == network_lan_neighbor_entry.fi_port_dn]
-            if self._inventory.sdk_objects["networkLldpNeighborEntry"] is not None:
-                # We filter out SDK objects that are not under this Dn
-                network_lldp_neighbor_entry_list = [network_lldp_neighbor_entry for network_lldp_neighbor_entry in
-                                                    self._inventory.sdk_objects["networkLldpNeighborEntry"] if
-                                                    self.dn == network_lldp_neighbor_entry.fi_port_dn]
+            if "networkLanNeighborEntry" in self._inventory.sdk_objects:
+                if self._inventory.sdk_objects["networkLanNeighborEntry"] is not None:
+                    # We filter out SDK objects that are not under this Dn
+                    network_lan_neighbor_entry_list = [network_lan_neighbor_entry for network_lan_neighbor_entry in
+                                                       self._inventory.sdk_objects["networkLanNeighborEntry"] if
+                                                       self.dn == network_lan_neighbor_entry.fi_port_dn]
+            if "networkLldpNeighborEntry" in self._inventory.sdk_objects:
+                if self._inventory.sdk_objects["networkLldpNeighborEntry"] is not None:
+                    # We filter out SDK objects that are not under this Dn
+                    network_lldp_neighbor_entry_list = [network_lldp_neighbor_entry for network_lldp_neighbor_entry in
+                                                        self._inventory.sdk_objects["networkLldpNeighborEntry"] if
+                                                        self.dn == network_lldp_neighbor_entry.fi_port_dn]
 
             if len(network_lan_neighbor_entry_list) != 0 and len(network_lldp_neighbor_entry_list) != 0:
                 # We have both CDP and LLDP neighbors entries

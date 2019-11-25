@@ -5,6 +5,11 @@
    "description": "EasyUCS ucs system config serial_over_lan_policies section JSON schema",
    "type": "object",
    "properties": {
+      "comment": {
+         "description": "Serial over LAN Policy Comments",
+         "type": "string",
+         "default": ""
+      },
       "name": {
          "description": "Serial over LAN Policy Name",
          "type": "string",

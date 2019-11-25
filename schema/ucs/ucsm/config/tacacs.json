@@ -5,6 +5,11 @@
    "description":"EasyUCS ucs system config tacacs section JSON schema",
    "type":"object",
    "properties":{
+      "comment": {
+         "description": "TACACS+ Comments",
+         "type": "string",
+         "default": ""
+      },
       "timeout":{
          "description":"TACACS+ Timeout",
          "type":"string",

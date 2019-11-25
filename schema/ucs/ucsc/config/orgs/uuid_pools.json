@@ -5,6 +5,11 @@
    "description":"EasyUCS ucs central orgs config uuid_pools section JSON schema",
    "type":"object",
    "properties":{
+      "comment": {
+         "description": "UUID Suffix Pool Comments",
+         "type": "string",
+         "default": ""
+      },
       "name":{
          "description":"UUID Suffix Pool Name",
          "type":"string",
@@ -67,7 +72,7 @@
                         "description":"Size of UUID Suffix Block",
                         "type":"string",
                         "default":"1",
-                        "pattern":"^[1-9]$|^[1-9][0-9]$|^[1-9][0-9][0-9]$|^1000$"
+                        "pattern":"^[1-9]$|^[1-9][0-9]$|^[1-9][0-9][0-9]$|^10[0-1][0-9]$|^102[0-4]$"
                      },
                      "id_range_access_control": {
                         "description": "ID Range Access Control of UUID Suffix Block",

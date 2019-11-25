@@ -5,6 +5,11 @@
    "description": "EasyUCS ucs system config orgs iscsi_adapter_policies section JSON schema",
    "type": "object",
    "properties": {
+      "comment": {
+         "description": "iSCSI Adapter Policy Comments",
+         "type": "string",
+         "default": ""
+      },
       "name": {
          "description": "iSCSI Adapter Policy Name",
          "type": "string",

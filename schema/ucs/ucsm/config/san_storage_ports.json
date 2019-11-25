@@ -5,6 +5,11 @@
    "description":"EasyUCS ucs system config san_storage_ports section JSON schema",
    "type":"object",
    "properties":{
+      "comment": {
+         "description": "SAN Storage Port Comments",
+         "type": "string",
+         "default": ""
+      },
       "fabric":{
          "description":"Fabric ID of SAN Storage Port (\"A\" or \"B\")",
          "type":"string",

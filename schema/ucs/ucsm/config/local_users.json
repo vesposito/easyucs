@@ -5,6 +5,11 @@
    "description":"EasyUCS ucs system config local_users section JSON schema",
    "type":"object",
    "properties":{
+      "comment": {
+         "description": "Local User Comments",
+         "type": "string",
+         "default": ""
+      },
       "id":{
          "description":"Local User Login ID (account name)",
          "type":"string",

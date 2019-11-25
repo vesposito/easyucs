@@ -5,6 +5,11 @@
    "description":"EasyUCS ucs system config service_profiles section JSON schema",
    "type":"object",
    "properties":{
+      "comment": {
+         "description": "Service Profile Comments",
+         "type": "string",
+         "default": ""
+      },
       "service_profile_template":{
          "description":"Service Profile - Service Profile Template",
          "type":"string",

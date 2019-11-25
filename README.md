@@ -128,6 +128,17 @@ python easyucs_gui.py
 
 ## Versioning
 
+#### 0.9.4
+
+* Add support for "comment" field in all sections of a configuration file for easily add comments to specific items of a configuration
+* Add support for Fabric Interconnect port licenses in inventory and report
+* Add support for 1st Gen Fabric Interconnects 6120XP/6140XP
+* Add support for UCS Central inventory fetch (will fetch inventories of all registered domains)
+* Support up to 32 Service Profile Templates when generating schemas
+* Bump up requirements packages versions
+* Miscellaneous bug fixes and improvements
+
+
 #### 0.9.3
 
 * Include Storage Enclosures & drives of S3260 in report

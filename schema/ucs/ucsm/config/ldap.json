@@ -5,6 +5,11 @@
    "description":"EasyUCS ucs system config ldap section JSON schema",
    "type":"object",
    "properties":{
+      "comment": {
+         "description": "LDAP Comments",
+         "type": "string",
+         "default": ""
+      },
       "timeout":{
          "description":"LDAP Timeout",
          "type":"string",

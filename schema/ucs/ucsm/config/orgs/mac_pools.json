@@ -5,6 +5,11 @@
    "description":"EasyUCS ucs system config orgs mac_pools section JSON schema",
    "type":"object",
    "properties":{
+      "comment": {
+         "description": "MAC Pool Comments",
+         "type": "string",
+         "default": ""
+      },
       "name":{
          "description":"MAC Pool Name",
          "type":"string",

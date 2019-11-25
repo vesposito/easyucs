@@ -5,6 +5,11 @@
    "description": "EasyUCS ucs system config orgs wwxn_pools section JSON schema",
    "type": "object",
    "properties": {
+      "comment": {
+         "description": "WWxN Pool Comments",
+         "type": "string",
+         "default": ""
+      },
       "name": {
          "description": "WWxN Pool Name",
          "type": "string",

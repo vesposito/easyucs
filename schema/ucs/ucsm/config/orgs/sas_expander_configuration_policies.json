@@ -5,6 +5,11 @@
    "description": "EasyUCS ucs system config sas_expander_configuration_policies section JSON schema",
    "type": "object",
    "properties": {
+      "comment": {
+         "description": "SAS Expander Configuration Policy Comments",
+         "type": "string",
+         "default": ""
+      },
       "name": {
          "description": "SAS Expander Configuration Policy Name",
          "type": "string",

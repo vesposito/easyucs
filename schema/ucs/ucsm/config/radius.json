@@ -5,6 +5,11 @@
    "description":"EasyUCS ucs system config radius section JSON schema",
    "type":"object",
    "properties":{
+      "comment": {
+         "description": "RADIUS Comments",
+         "type": "string",
+         "default": ""
+      },
       "timeout":{
          "description":"RADIUS Timeout",
          "type":"string",

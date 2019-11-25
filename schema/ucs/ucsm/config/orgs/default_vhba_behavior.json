@@ -5,6 +5,11 @@
    "description":"EasyUCS ucs system config orgs default_vhba_behavior section JSON schema",
    "type":"object",
    "properties": {
+      "comment": {
+         "description": "Default vHBA Behavior Comments",
+         "type": "string",
+         "default": ""
+      },
       "action":{
          "description":"Action",
          "type":"string",

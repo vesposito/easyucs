@@ -5,6 +5,11 @@
    "description": "EasyUCS ucs system config orgs vhba_templates section JSON schema",
    "type": "object",
    "properties": {
+      "comment": {
+         "description": "vHBA Template Comments",
+         "type": "string",
+         "default": ""
+      },
       "name": {
          "description": "vHBA Template Name",
          "type": "string",

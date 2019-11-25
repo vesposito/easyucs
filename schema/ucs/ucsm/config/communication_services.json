@@ -5,6 +5,11 @@
    "description":"EasyUCS ucs system config communication_services section JSON schema",
    "type":"object",
    "properties":{
+      "comment": {
+         "description": "Communication Services Comments",
+         "type": "string",
+         "default": ""
+      },
       "web_session_limits":{
          "description":"Web Session Limits Section",
          "type":"array",

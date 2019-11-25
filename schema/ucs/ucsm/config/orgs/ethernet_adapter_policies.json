@@ -5,6 +5,11 @@
    "description": "EasyUCS ucs system config orgs ethernet_adapter_policies section JSON schema",
    "type": "object",
    "properties": {
+      "comment": {
+         "description": "Ethernet Adapter Policy Comments",
+         "type": "string",
+         "default": ""
+      },
       "name": {
          "description": "Ethernet Adapter Policy Name",
          "type": "string",

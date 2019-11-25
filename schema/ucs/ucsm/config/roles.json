@@ -5,18 +5,23 @@
    "description":"EasyUCS ucs system config roles section JSON schema",
    "type":"object",
    "properties":{
+      "comment": {
+         "description": "Role Comments",
+         "type": "string",
+         "default": ""
+      },
       "name":{
-         "description":"Role name",
+         "description":"Role Name",
          "type":"string"
       },
       "privileges":{
-         "description":"Role privileges list",
+         "description":"Role Privileges List",
          "type":"array",
          "default":[
             "read-only"
          ],
          "items":{
-            "description":"Role privilege",
+            "description":"Role Privilege",
             "type":"string",
             "enum":[
                "aaa",

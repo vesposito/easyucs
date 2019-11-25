@@ -284,7 +284,7 @@ class UcsSystemDrawStorageLocalDisk(GenericUcsDrawEquipment):
                                                             ", no match found in the json file")
                 return None
 
-        # For NVME rear disks
+        # For NVME disks (no storage controller as parent)
         elif hasattr(self, "parent_draw"):
             if "DrawRackRear" in self.parent_draw.__class__.__name__:
                 if any(x in self.parent_draw._parent.sku
@@ -297,6 +297,11 @@ class UcsSystemDrawStorageLocalDisk(GenericUcsDrawEquipment):
                         if self.id > 10:
                             self.id = self.id - 2
                             return self._get_disk_info()
+
+            elif "disks_slots" in self.parent_draw.json_file:
+                for disk in self.parent_draw.json_file["disks_slots"]:
+                    if self.id == disk['id']:
+                        return disk
 
         else:
             if "DrawRackRear" in self.parent_draw.__class__.__name__:

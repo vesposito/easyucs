@@ -5,6 +5,11 @@
    "description":"EasyUCS ucs system config local_users_properties section JSON schema",
    "type":"object",
    "properties":{
+      "comment": {
+         "description": "Local Users Properties Comments",
+         "type": "string",
+         "default": ""
+      },
       "password_strength_check":{
          "description":"Local Users Password Strength Check",
          "type":"string",

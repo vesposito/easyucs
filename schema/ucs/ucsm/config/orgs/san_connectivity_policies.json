@@ -7,6 +7,11 @@
    "oneOf":[
       {
          "properties":{
+            "comment": {
+               "description": "SAN Connectivity Policy Comments",
+               "type": "string",
+               "default": ""
+            },
             "name":{
                "description":"SAN Connectivity Policy Name",
                "type":"string",
@@ -186,6 +191,11 @@
       },
       {
          "properties":{
+            "comment": {
+               "description": "SAN Connectivity Policy Comments",
+               "type": "string",
+               "default": ""
+            },
             "name":{
                "description":"SAN Connectivity Policy Name",
                "type":"string",

@@ -5,6 +5,11 @@
    "description": "EasyUCS ucs system config chassis_profiles section JSON schema",
    "type": "object",
    "properties": {
+      "comment": {
+         "description": "Chassis Profile Comments",
+         "type": "string",
+         "default": ""
+      },
       "name": {
          "description": "Chassis Profile Name",
          "type": "string",

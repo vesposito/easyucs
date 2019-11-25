@@ -5,6 +5,11 @@
    "description":"EasyUCS ucs system config port_auto_discovery_policy section JSON schema",
    "type":"object",
    "properties":{
+      "comment": {
+         "description": "Port Auto-Discovery Policy Comments",
+         "type": "string",
+         "default": ""
+      },
       "auto_configure_server_ports":{
          "description":"Auto Configure Server Ports Admin State",
          "type":"string",

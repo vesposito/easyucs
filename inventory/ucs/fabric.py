@@ -200,6 +200,8 @@ class UcsSystemFi(UcsFi, UcsSystemInventoryObject):
         self.mac_address = self.get_attribute(ucs_sdk_object=network_element, attribute_name="oob_if_mac",
                                               attribute_secondary_name="mac_address")
 
+        self.license_host_id = None
+        self.licenses = []
         self.locator_led_status = None
         self.short_name = None
 
@@ -210,10 +212,12 @@ class UcsSystemFi(UcsFi, UcsSystemInventoryObject):
         UcsSystemInventoryObject.__init__(self, parent=parent, ucs_sdk_object=network_element)
 
         if self._inventory.load_from == "live":
+            self.license_host_id = self._get_license_host_id()
+            self._get_licenses()
             self.locator_led_status = self._determine_locator_led_status()
             self.short_name = self._get_model_short_name()
         elif self._inventory.load_from == "file":
-            for attribute in ["locator_led_status", "short_name"]:
+            for attribute in ["license_host_id", "licenses", "locator_led_status", "short_name"]:
                 setattr(self, attribute, None)
                 if attribute in network_element:
                     setattr(self, attribute, self.get_attribute(ucs_sdk_object=network_element,
@@ -231,6 +235,32 @@ class UcsSystemFi(UcsFi, UcsSystemInventoryObject):
             return [UcsSystemGem(self, gem) for gem in self._ucs_sdk_object["expansion_modules"]]
         else:
             return []
+
+    def _get_license_host_id(self):
+        if self._inventory.load_from == "live":
+            if "licenseServerHostId" in self._inventory.sdk_objects:
+                if self._inventory.sdk_objects["licenseServerHostId"] is not None:
+                    for license_server_host_id in self._inventory.sdk_objects["licenseServerHostId"]:
+                        if license_server_host_id.scope == self.id:
+                            return license_server_host_id.host_id
+        return None
+
+    def _get_licenses(self):
+        if self._inventory.load_from == "live":
+            if "licenseInstance" in self._inventory.sdk_objects:
+                if self._inventory.sdk_objects["licenseInstance"] is not None:
+                    for license_instance in self._inventory.sdk_objects["licenseInstance"]:
+                        if license_instance.scope == self.id:
+                            self.licenses.append({"feature": license_instance.feature,
+                                                  "grace_period_used_days": round(int(
+                                                      license_instance.grace_period_used) / 86400),
+                                                  "quantity": int(license_instance.abs_quant),
+                                                  "quantity_available": int(license_instance.abs_quant) - int(
+                                                      license_instance.used_quant),
+                                                  "quantity_default": int(license_instance.def_quant),
+                                                  "quantity_used": int(license_instance.used_quant),
+                                                  "sku": license_instance.sku,
+                                                  "status": license_instance.oper_state})
 
     def _get_ports(self):
         if self._inventory.load_from == "live":

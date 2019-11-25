@@ -5,6 +5,11 @@
    "description": "EasyUCS ucs system config graphics_card_policies section JSON schema",
    "type": "object",
    "properties": {
+      "comment": {
+         "description": "Graphics Card Policy Comments",
+         "type": "string",
+         "default": ""
+      },
       "name": {
          "description": "Graphics Card Policy Name",
          "type": "string",

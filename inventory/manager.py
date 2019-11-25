@@ -10,8 +10,9 @@ import os
 import re
 import uuid
 
-from inventory.inventory import UcsImcInventory, UcsSystemInventory
+from inventory.inventory import UcsImcInventory, UcsSystemInventory, UcsCentralInventory
 from inventory.ucs.chassis import UcsImcChassis, UcsSystemChassis
+from inventory.ucs.domain import UcsCentralDomain
 from inventory.ucs.fabric import UcsSystemFex, UcsSystemFi
 from inventory.ucs.rack import UcsImcRack, UcsImcRackEnclosure, UcsSystemRack, UcsSystemRackEnclosure
 from draw.ucs.neighbor import UcsSystemDrawInfraNeighborsLan, UcsSystemDrawInfraNeighborsSan
@@ -51,7 +52,7 @@ class GenericInventoryManager:
     def draw_inventory(self, uuid=None):
         pass
 
-    def export_draw(self, uuid=None, export_format="png", directory=None):
+    def export_draw(self, uuid=None, export_format="png", directory=None, export_clear_pictures=False):
         pass
 
     def export_inventory(self, uuid=None, export_format="json", directory=None, filename=None):
@@ -608,16 +609,16 @@ class UcsSystemInventoryManager(GenericUcsInventoryManager):
             try:
                 info_policy = self.parent.handle.query_dn("sys/info-policy")
                 info_policy_state = info_policy.state
-            except Exception:
-                self.logger(level="error", message="Unable to get Info Policy State")
-                return False
 
-            if info_policy_state == "disabled":
-                self.logger(level="warning", message="Info Policy is disabled. No neighbors can be found")
-            else:
-                # Fetch LAN & SAN neighbors
-                inventory.lan_neighbors = inventory._get_lan_neighbors()
-                inventory.san_neighbors = inventory._get_san_neighbors()
+                if info_policy_state == "disabled":
+                    self.logger(level="warning", message="Info Policy is disabled. No neighbors can be found")
+                else:
+                    # Fetch LAN & SAN neighbors
+                    inventory.lan_neighbors = inventory._get_lan_neighbors()
+                    inventory.san_neighbors = inventory._get_san_neighbors()
+
+            except Exception:
+                self.logger(level="warning", message="Unable to get Info Policy State")
 
         if "equipmentChassis" in inventory.sdk_objects.keys():
             for equipment_chassis in sorted(inventory.sdk_objects["equipmentChassis"], key=lambda chassis: [int(t) if t.isdigit() else t.lower() for t in re.split('(\d+)', chassis.id)]):
@@ -826,3 +827,45 @@ class UcsImcInventoryManager(GenericUcsInventoryManager):
             if hasattr(rack_enclosure, "_draw_rear"):
                 if rack_enclosure._draw_rear:
                     rack_enclosure._draw_rear.save_image(output_directory=directory, format=export_format)
+
+
+class UcsCentralInventoryManager(GenericUcsInventoryManager):
+    def __init__(self, parent=None):
+        GenericUcsInventoryManager.__init__(self, parent=parent)
+        self.inventory_class_name = UcsCentralInventory
+
+    def fetch_inventory(self):
+        self.logger(message="Fetching inventory from live device (can take several minutes)")
+        inventory = UcsCentralInventory(parent=self)
+        inventory.origin = "live"
+        inventory.load_from = "live"
+        inventory._fetch_sdk_objects()
+        self.logger(level="debug", message="Finished fetching UCS SDK objects for inventory")
+
+        if "computeSystem" in inventory.sdk_objects.keys():
+            for compute_system in sorted(inventory.sdk_objects["computeSystem"], key=lambda domain: [int(t) if t.isdigit() else t.lower() for t in re.split('(\d+)', domain.id)]):
+                inventory.domains.append(UcsCentralDomain(parent=inventory, compute_system=compute_system))
+
+        # Removing the list of SDK objects fetched from the live UCS device
+        inventory.sdk_objects = None
+        self.inventory_list.append(inventory)
+        self.logger(message="Finished fetching inventory with UUID " + str(inventory.uuid) + " from live device")
+        return inventory.uuid
+
+    def _fill_inventory_from_json(self, inventory=None, inventory_json=None):
+        """
+        Fills inventory using parsed JSON inventory file
+        :param inventory: inventory to be filled
+        :param inventory_json: parsed JSON content containing inventory
+        :return: True if successful, False otherwise
+        """
+        if inventory is None or inventory_json is None:
+            self.logger(level="debug", message="Missing inventory or inventory_json parameter!")
+            return False
+
+        if "domains" in inventory_json:
+            for compute_system in inventory_json["domains"]:
+                inventory.domains.append(UcsCentralDomain(parent=inventory, compute_system=compute_system))
+
+        return True
+

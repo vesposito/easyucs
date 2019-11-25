@@ -5,6 +5,11 @@
    "description": "EasyUCS ucs system config orgs dynamic_vnic_connection_policies section JSON schema",
    "type": "object",
    "properties": {
+      "comment": {
+         "description": "Dynamic vNIC Connection Policy Comments",
+         "type": "string",
+         "default": ""
+      },
       "name": {
          "description": "Dynamic vNIC Connection Policy Name",
          "type": "string",

@@ -5,6 +5,11 @@
    "description":"EasyUCS ucs system config orgs chassis_firmware_packages section JSON schema",
    "type":"object",
    "properties": {
+      "comment": {
+         "description": "Chassis Firmware Package Comments",
+         "type": "string",
+         "default": ""
+      },
       "name": {
          "description": "Chassis Firmware Package Name",
          "type": "string",

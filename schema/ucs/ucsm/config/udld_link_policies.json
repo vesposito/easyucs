@@ -5,6 +5,11 @@
    "description":"EasyUCS ucs system config udld_link_policies section JSON schema",
    "type":"object",
    "properties":{
+      "comment": {
+         "description": "UDLD Link Policy Comments",
+         "type": "string",
+         "default": ""
+      },
       "name":{
          "description":"UDLD Link Policy Name",
          "type":"string",

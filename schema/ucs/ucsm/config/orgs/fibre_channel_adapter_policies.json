@@ -5,6 +5,11 @@
    "description": "EasyUCS ucs system config orgs fibre_channel_adapter_policies section JSON schema",
    "type": "object",
    "properties": {
+      "comment": {
+         "description": "Fibre Channel Adapter Policy Comments",
+         "type": "string",
+         "default": ""
+      },
       "name": {
          "description": "Fibre Channel Adapter Policy Name",
          "type": "string",

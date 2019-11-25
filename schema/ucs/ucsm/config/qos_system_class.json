@@ -5,6 +5,11 @@
    "description":"EasyUCS ucs system config qos_system_class section JSON schema",
    "type":"object",
    "properties":{
+      "comment": {
+         "description": "QoS System Class Comments",
+         "type": "string",
+         "default": ""
+      },
       "priority":{
          "description":"Priority of QoS System Class",
          "type":"string",

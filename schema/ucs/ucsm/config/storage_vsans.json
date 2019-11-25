@@ -5,6 +5,11 @@
    "description":"EasyUCS ucs system config storage_vsans section JSON schema",
    "type":"object",
    "properties":{
+      "comment": {
+         "description": "Storage VSAN Comments",
+         "type": "string",
+         "default": ""
+      },
       "name":{
          "description":"Storage VSAN Name",
          "type":"string",

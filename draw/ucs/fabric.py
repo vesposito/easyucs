@@ -246,7 +246,14 @@ class UcsSystemDrawGem(GenericUcsDrawEquipment):
                                               port_info['port_coord'][1]
 
                 else:
-                    port_info = self.json_file["rear_ports"][port_id]
+                    # Handling special case of N10-E0440 GEM which has Ethernet and FC ports with the same port_id
+                    if self._parent.sku == "N10-E0440":
+                        if port.transport == "ether":
+                            port_info = self.json_file["rear_ports"][port_id]
+                        elif port.transport == "fc":
+                            port_info = self.json_file["rear_ports"]["fc" + port_id]
+                    else:
+                        port_info = self.json_file["rear_ports"][port_id]
 
                 if port.role == "network" and port.type == "lan":
                     port_color = self.COLOR_LAN_UPLINK_PORTS

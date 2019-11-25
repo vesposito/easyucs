@@ -5,6 +5,11 @@
    "description": "EasyUCS ucs system config slow_drain_timers section JSON schema",
    "type": "object",
    "properties": {
+      "comment": {
+         "description": "Slow Drain Timers Comments",
+         "type": "string",
+         "default": ""
+      },
       "fcoe_port": {
          "description": "Slow Drain Timers - FCoE Port Admin State",
          "type": "string",

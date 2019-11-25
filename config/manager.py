@@ -25,7 +25,8 @@ from imcsdk.imchandle import ImcHandle
 from config.config import UcsImcConfig, UcsSystemConfig, UcsCentralConfig
 from config.plot import UcsSystemConfigPlot, UcsSystemOrgConfigPlot, UcsSystemServiceProfileConfigPlot
 
-from config.ucs.central import UcsCentralOrg, UcsCentralDomainGroup
+from config.ucs.ucsc.orgs import UcsCentralOrg
+from config.ucs.ucsc.domain_groups import UcsCentralDomainGroup
 from config.ucs.imc import UcsImcAdminNetwork, UcsImcLocalUser, UcsImcLocalUsersProperties, UcsImcServerProperties,\
     UcsImcTimezoneMgmt, UcsImcIpFilteringProperties, UcsImcIpBlockingProperties, UcsImcPowerPolicies,\
     UcsImcAdapterCard, UcsImcCommunicationsServices, UcsImcChassisInventory, UcsImcPowerCapConfiguration,\
@@ -587,8 +588,9 @@ class UcsSystemConfigManager(GenericUcsConfigManager):
         for fabric_san_pin_group in config.sdk_objects["fabricSanPinGroup"]:
             config.san_pin_groups.append(UcsSystemSanPinGroup(parent=config, fabric_san_pin_group=fabric_san_pin_group))
             
-        for fabric_breakout in config.sdk_objects["fabricBreakout"]:
-            config.breakout_ports.append(UcsSystemBreakoutPort(parent=config, fabric_breakout=fabric_breakout))
+        if "fabricBreakout" in config.sdk_objects:
+            for fabric_breakout in config.sdk_objects["fabricBreakout"]:
+                config.breakout_ports.append(UcsSystemBreakoutPort(parent=config, fabric_breakout=fabric_breakout))
 
         if "fcPIo" in config.sdk_objects:
             if config.sdk_objects["fcPIo"]:
@@ -599,9 +601,10 @@ class UcsSystemConfigManager(GenericUcsConfigManager):
                         fi_a_fc_ports_presence = True
                     if fc_pio.dn.startswith("sys/switch-B/"):
                         fi_b_fc_ports_presence = True
-                if fi_a_fc_ports_presence:
+                # We only add items to the list of unified ports if we have FC ports and we are not using 1st Gen FIs
+                if fi_a_fc_ports_presence and self.parent.fi_a_model not in ["N10-S6100", "N10-S6200"]:
                     config.san_unified_ports.append(UcsSystemSanUnifiedPort(parent=config, fabric="A"))
-                if fi_b_fc_ports_presence:
+                if fi_b_fc_ports_presence and self.parent.fi_b_model not in ["N10-S6100", "N10-S6200"]:
                     config.san_unified_ports.append(UcsSystemSanUnifiedPort(parent=config, fabric="B"))
 
         for org_org in sorted(config.sdk_objects["orgOrg"], key=lambda org: org.dn):

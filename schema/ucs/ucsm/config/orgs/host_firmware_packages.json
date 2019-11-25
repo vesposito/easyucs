@@ -7,6 +7,11 @@
    "oneOf": [
       {
          "properties": {
+            "comment": {
+               "description": "Host Firmware Package Comments",
+               "type": "string",
+               "default": ""
+            },
             "name": {
                "description": "Host Firmware Package Name",
                "type": "string",
@@ -73,6 +78,11 @@
       },
       {
          "properties": {
+            "comment": {
+               "description": "Host Firmware Package Comments",
+               "type": "string",
+               "default": ""
+            },
             "name": {
                "description": "Host Firmware Package Name",
                "type": "string",

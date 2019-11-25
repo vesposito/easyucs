@@ -5,6 +5,11 @@
    "description": "EasyUCS ucs system config orgs flow_control_policies section JSON schema",
    "type": "object",
    "properties": {
+      "comment": {
+         "description": "Flow Control Policy Comments",
+         "type": "string",
+         "default": ""
+      },
       "name": {
          "description": "Flow Control Policy Name",
          "type": "string",

@@ -7,6 +7,11 @@
    "oneOf": [
       {
          "properties":{
+            "comment": {
+               "description": "VLAN Comments",
+               "type": "string",
+               "default": ""
+            },
             "name":{
                "description":"VLAN Name",
                "type":"string",
@@ -78,6 +83,11 @@
       },
       {
          "properties":{
+            "comment": {
+               "description": "VLAN Range Comments",
+               "type": "string",
+               "default": ""
+            },
             "prefix":{
                "description":"VLAN Prefix",
                "type":"string",

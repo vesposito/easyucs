@@ -5,6 +5,11 @@
    "description":"EasyUCS ucs system config appliance_network_control_policies section JSON schema",
    "type":"object",
    "properties":{
+      "comment": {
+         "description": "Appliance Network Control Policy Comments",
+         "type": "string",
+         "default": ""
+      },
       "name":{
          "description":"Appliance Network Control Policy Name",
          "type":"string",

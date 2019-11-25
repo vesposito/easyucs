@@ -5,6 +5,11 @@
    "description":"EasyUCS system config appliance_port_channels section JSON schema",
    "type":"object",
    "properties":{
+      "comment": {
+         "description": "Appliance Port-Channel Comments",
+         "type": "string",
+         "default": ""
+      },
       "name":{
          "description":"Name of Appliance Port-Channel",
          "type":"string",
@@ -67,6 +72,15 @@
             "40gbps"
          ]
       },
+      "admin_state":{
+         "description":"Admin State of Appliance Port-Channel",
+         "type":"string",
+         "default":"enabled",
+         "enum":[
+            "disabled",
+            "enabled"
+         ]
+      },
       "vlan_port_mode":{
          "description":"VLAN Port Mode of Appliance Port-Channel",
          "type":"string",
@@ -118,6 +132,15 @@
                   "type":"string",
                   "default":"",
                   "pattern":"^[ !#$%&\\(\\)\\*\\+,\\-\\./:;\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{0,32}$"
+               },
+               "admin_state":{
+                  "description":"Admin State of Interface member of Appliance Port-Channel",
+                  "type":"string",
+                  "default":"enabled",
+                  "enum":[
+                     "disabled",
+                     "enabled"
+                  ]
                }
             },
             "additionalProperties":false,

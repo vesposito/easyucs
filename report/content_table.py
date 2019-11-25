@@ -730,6 +730,19 @@ class PsuSectionInfoUcsReportTable(GenericReportTable):
                                     column_number=len(rows[1]), centered=centered, cells_list=rows)
 
 
+class LicensesSectionInfoUcsReportTable(GenericReportTable):
+    def __init__(self, order_id, parent, fi, centered=False):
+        rows = [[_("SKU"), _("Total"), _("Default"), _("Used"), _("Available"), _("Status"),
+                 _("Grace Period Used (days)")]]
+
+        for lic in fi.licenses:
+            rows.append([lic["sku"], lic["quantity"], lic["quantity_default"], lic["quantity_used"],
+                         lic["quantity_available"], lic["status"], lic["grace_period_used_days"]])
+
+        GenericReportTable.__init__(self,order_id=order_id, parent=parent, row_number=len(rows),
+                                    column_number=len(rows[1]), centered=centered, cells_list=rows)
+
+
 class GemSectionInfoUcsReportTable(GenericReportTable):
     def __init__(self, order_id, parent, gem, centered=False):
         rows = [[_("ID"),_("SKU"), _("Model"), _("Serial Number")]]

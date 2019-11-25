@@ -5,6 +5,11 @@
    "description":"EasyUCS ucs system config orgs maintenance_policies section JSON schema",
    "type":"object",
    "properties":{
+      "comment": {
+         "description": "Maintenance Policy Comments",
+         "type": "string",
+         "default": ""
+      },
       "name":{
          "description":"Maintenance Policy Name",
          "type":"string",

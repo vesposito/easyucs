@@ -5,6 +5,11 @@
    "description": "EasyUCS ucs system config compute_connection_policies section JSON schema",
    "type": "object",
    "properties": {
+      "comment": {
+         "description": "Compute Connection Policy Comments",
+         "type": "string",
+         "default": ""
+      },
       "name": {
          "description": "Compute Connection Policy Name",
          "type": "string",

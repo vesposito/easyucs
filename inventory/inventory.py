@@ -16,8 +16,9 @@ from inventory.ucs.neighbor import UcsSystemLanNeighbor, UcsSystemSanNeighbor
 from inventory.ucs.gpu import UcsImcGpu
 from inventory.ucs.psu import UcsSystemPsu
 from inventory.ucs.storage import UcsSystemStorageController, UcsImcStorageControllerNvmeDrive,\
-    UcsSystemStorageControllerNvmeDrive
+    UcsSystemStorageControllerNvmeDrive, UcsImcStorageRaidBattery
 
+from ucscsdk.ucscexception import UcscException
 from ucsmsdk.ucsexception import UcsException
 from imcsdk.imcexception import ImcException
 
@@ -68,17 +69,17 @@ class GenericUcsInventory(GenericInventory):
         self.sdk_objects = {}
 
     def _fetch_sdk_objects(self):
-        # List of SDK objects to fetch that are common to UCS System & IMC
+        # List of SDK objects to fetch that are common to UCS System, IMC & UCS Central
         sdk_objects_to_fetch = ["adaptorExtEthIf", "adaptorUnit", "computeRackUnit", "equipmentChassis",
-                                "equipmentLocatorLed", "equipmentPsu", "equipmentRackEnclosure",
-                                "equipmentSystemIOController", "equipmentTpm", "memoryArray", "memoryUnit",
-                                "mgmtController", "mgmtIf", "processorUnit", "storageController", "storageEnclosure",
-                                "storageFlexFlashController", "storageLocalDisk", "storageRaidBattery"]
+                                "equipmentLocatorLed", "equipmentPsu", "equipmentSystemIOController", "memoryArray",
+                                "memoryUnit", "mgmtController", "mgmtIf", "processorUnit", "storageController",
+                                "storageEnclosure", "storageFlexFlashController", "storageLocalDisk",
+                                "storageRaidBattery"]
         self.logger(level="debug", message="Fetching common UCS SDK objects for inventory")
         for sdk_object_name in sdk_objects_to_fetch:
             try:
                 self.sdk_objects[sdk_object_name] = self.handle.query_classid(sdk_object_name)
-            except (UcsException, ImcException) as err:
+            except (UcsException, ImcException, UcscException) as err:
                 if err.error_code == "ERR-xml-parse-error" and "no class named " + sdk_object_name in err.error_descr:
                     self.logger(level="debug", message="No UCS class named " + sdk_object_name)
                 else:
@@ -149,6 +150,10 @@ class GenericUcsInventory(GenericInventory):
                                 # Also filter equipmentPsu that have an ID of 0
                                 if object_class is UcsSystemPsu and sdk_object.id == "0":
                                     continue
+                                # Also filter storageRaidBattery objects for M.2 MSTOR-RAID controllers
+                                if object_class is UcsImcStorageRaidBattery and "storage-SATA-MSTOR-RAID" \
+                                        in sdk_object.dn:
+                                    continue
 
                                 filtered_sdk_objects_list.append(sdk_object)
                             # Handle the case of LAN/SAN Neighbor objects for which we use fiPortDn attribute
@@ -201,7 +206,19 @@ class UcsSystemInventory(GenericUcsInventory):
                                                  {"color": "darkkhaki", "template_name": "", "template_org": ""},
                                                  {"color": "blueviolet", "template_name": "", "template_org": ""},
                                                  {"color": "chartreuse", "template_name": "", "template_org": ""},
-                                                 {"color": "darkcyan", "template_name": "", "template_org": ""}]
+                                                 {"color": "darkcyan", "template_name": "", "template_org": ""},
+                                                 {"color": "deepskyblue", "template_name": "", "template_org": ""},
+                                                 {"color": "darkgreen", "template_name": "", "template_org": ""},
+                                                 {"color": "indianred", "template_name": "", "template_org": ""},
+                                                 {"color": "magenta", "template_name": "", "template_org": ""},
+                                                 {"color": "cadetblue", "template_name": "", "template_org": ""},
+                                                 {"color": "hotpink", "template_name": "", "template_org": ""},
+                                                 {"color": "yellowgreen", "template_name": "", "template_org": ""},
+                                                 {"color": "darkseagreen", "template_name": "", "template_org": ""},
+                                                 {"color": "skyblue", "template_name": "", "template_org": ""},
+                                                 {"color": "mediumpurple", "template_name": "", "template_org": ""},
+                                                 {"color": "azure", "template_name": "", "template_org": ""},
+                                                 {"color": "bisque", "template_name": "", "template_org": ""}]
 
         GenericUcsInventory.__init__(self, parent=parent)
 
@@ -212,13 +229,14 @@ class UcsSystemInventory(GenericUcsInventory):
     def _fetch_sdk_objects(self):
         GenericUcsInventory._fetch_sdk_objects(self)
 
-        # List of SDK objects to fetch that are only available in UCS System
+        # List of SDK objects to fetch that are specific to UCS System
         sdk_objects_to_fetch = ["computeBlade", "equipmentFex", "equipmentFruVariant", "equipmentIOCard",
-                                "equipmentSwitchCard", "equipmentSwitchIOCard", "equipmentXcvr", "etherPIo",
-                                "etherServerIntFIo", "etherSwitchIntFIo", "fcPIo", "firmwareRunning", "graphicsCard",
-                                "lsServer", "mgmtConnection", "moInvKv", "networkElement", "networkLanNeighborEntry",
-                                "networkLldpNeighborEntry", "networkSanNeighborEntry", "storageFlexFlashCard",
-                                "storageNvmeStats"]
+                                "equipmentRackEnclosure", "equipmentSwitchCard", "equipmentSwitchIOCard",
+                                "equipmentTpm", "equipmentXcvr", "etherPIo", "etherServerIntFIo", "etherSwitchIntFIo",
+                                "fcPIo", "firmwareRunning", "graphicsCard", "licenseFeature", "licenseFile",
+                                "licenseInstance", "licenseServerHostId", "lsServer", "mgmtConnection", "moInvKv",
+                                "networkElement", "networkLanNeighborEntry", "networkLldpNeighborEntry",
+                                "networkSanNeighborEntry", "storageFlexFlashCard", "storageNvmeStats"]
         self.logger(level="debug", message="Fetching UCS System SDK objects for inventory")
         for sdk_object_name in sdk_objects_to_fetch:
             try:
@@ -374,17 +392,17 @@ class UcsImcInventory(GenericUcsInventory):
     def _fetch_sdk_objects(self):
         GenericUcsInventory._fetch_sdk_objects(self)
 
-        # List of SDK objects to fetch that are only available in IMC
-        sdk_objects_to_fetch = ["adaptorConnectorInfo", "computeServerNode", "equipmentSharedIOModule",
-                                "ioControllerNVMePhysicalDrive", "networkAdapterEthIf", "networkAdapterUnit",
-                                "pciEquipSlot", "storageControllerNVMe", "storageEnclosureDisk",
-                                "storageFlexFlashControllerProps", "storageFlexFlashPhysicalDrive",
-                                "storageLocalDiskProps", "storageNVMePhysicalDrive"]
+        # List of SDK objects to fetch that are specific to IMC
+        sdk_objects_to_fetch = ["adaptorConnectorInfo", "computeServerNode", "equipmentRackEnclosure",
+                                "equipmentSharedIOModule", "equipmentTpm", "ioControllerNVMePhysicalDrive",
+                                "networkAdapterEthIf", "networkAdapterUnit", "pciEquipSlot", "storageControllerNVMe",
+                                "storageEnclosureDisk", "storageFlexFlashControllerProps",
+                                "storageFlexFlashPhysicalDrive", "storageLocalDiskProps", "storageNVMePhysicalDrive"]
         self.logger(level="debug", message="Fetching UCS IMC SDK objects for inventory")
         for sdk_object_name in sdk_objects_to_fetch:
             try:
                 self.sdk_objects[sdk_object_name] = self.handle.query_classid(sdk_object_name)
-            except (UcsException, ImcException) as err:
+            except ImcException as err:
                 if err.error_code == "ERR-xml-parse-error" and "no class named " + sdk_object_name in err.error_descr:
                     self.logger(level="debug", message="No UCS IMC class named " + sdk_object_name)
                 else:
@@ -406,6 +424,51 @@ class UcsImcInventory(GenericUcsInventory):
 
             self.logger(level="debug", message="Catalog has " + str(len(self.sdk_objects["catalog"])) + " objects")
 
-        except (UcsException, ImcException) as err:
+        except ImcException as err:
             self.logger(level="error",
                         message="Error while trying to fetch UCS IMC catalog classes: " + str(err))
+
+
+class UcsCentralInventory(GenericUcsInventory):
+    def __init__(self, parent=None):
+        self.domains = []
+        GenericUcsInventory.__init__(self, parent=parent)
+
+        # List of attributes to be exported in an inventory export
+        self.export_list = ["domains"]
+
+    def _fetch_sdk_objects(self):
+        GenericUcsInventory._fetch_sdk_objects(self)
+
+        # List of SDK objects to fetch that are specific to UCS Central
+        sdk_objects_to_fetch = ["computeBlade", "computeSystem", "equipmentFex", "equipmentFruVariant",
+                                "equipmentIOCard", "equipmentSwitchCard", "equipmentSwitchIOCard", "equipmentXcvr",
+                                "etherPIo", "etherServerIntFIo", "etherSwitchIntFIo", "fcPIo", "firmwareRunning",
+                                "graphicsCard", "licenseFeature", "licenseFile", "licenseInstance",
+                                "licenseServerHostId", "lsServer", "mgmtConnection", "networkElement",
+                                "storageFlexFlashCard", "storageNvmeStats"]
+        self.logger(level="debug", message="Fetching UCS Central SDK objects for inventory")
+        for sdk_object_name in sdk_objects_to_fetch:
+            try:
+                self.sdk_objects[sdk_object_name] = self.handle.query_classid(sdk_object_name)
+            except UcscException as err:
+                if err.error_code == "ERR-xml-parse-error" and "no class named " + sdk_object_name in err.error_descr:
+                    self.logger(level="debug", message="No UCS class named " + sdk_object_name)
+                else:
+                    self.logger(level="error", message="Error while trying to fetch UCS class " + sdk_object_name +
+                                                       ": " + str(err))
+            except ConnectionRefusedError:
+                self.logger(level="error", message="Error while communicating with UCS class " + sdk_object_name +
+                                                   ": Connection refused")
+            except urllib.error.URLError:
+                self.logger(level="error", message="Timeout error while fetching UCS class " + sdk_object_name)
+
+        # Catalog SDK objects
+        try:
+            self.sdk_objects["catalog"] = self.handle.query_children(in_dn="capabilities")
+            self.sdk_objects["equipmentManufacturingDef"] = self.handle.query_classid(
+                "equipmentManufacturingDef")
+            self.sdk_objects["equipmentLocalDiskDef"] = self.handle.query_classid("equipmentLocalDiskDef")
+        except UcscException as err:
+            self.logger(level="error",
+                        message="Error while trying to fetch UCS Central catalog classes: " + str(err))

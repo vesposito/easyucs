@@ -5,6 +5,11 @@
    "description":"EasyUCS ucs system orgs config uuid_pools section JSON schema",
    "type":"object",
    "properties":{
+      "comment": {
+         "description": "UUID Suffix Pool Comments",
+         "type": "string",
+         "default": ""
+      },
       "name":{
          "description":"UUID Suffix Pool Name",
          "type":"string",

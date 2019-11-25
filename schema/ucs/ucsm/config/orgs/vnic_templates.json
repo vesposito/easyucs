@@ -5,6 +5,11 @@
    "description": "EasyUCS ucs system config orgs vnic_templates section JSON schema",
    "type": "object",
    "properties": {
+      "comment": {
+         "description": "vNIC Template Comments",
+         "type": "string",
+         "default": ""
+      },
       "name": {
          "description": "vNIC Template Name",
          "type": "string",

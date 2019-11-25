@@ -5,20 +5,25 @@
    "description": "EasyUCS ucs system config orgs storage_connection_policies section JSON schema",
    "type": "object",
    "properties": {
+      "comment": {
+         "description": "Storage Connection Policy Comments",
+         "type": "string",
+         "default": ""
+      },
       "name": {
-         "description": "SAN Connectivity Policy Name",
+         "description": "Storage Connection Policy Name",
          "type": "string",
          "default": "",
          "pattern": "^[\\-\\.:_a-zA-Z0-9]{1,16}$"
       },
       "descr": {
-         "description": "Description of SAN Connectivity Policy",
+         "description": "Description of Storage Connection Policy",
          "type": "string",
          "default": "",
          "pattern": "^[ !#$%&\\(\\)\\*\\+,\\-\\./:;\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{0,256}$"
       },
       "zoning_type": {
-         "description": "SAN Connectivity Policy - Zoning Type",
+         "description": "Storage Connection Policy - Zoning Type",
          "type": "string",
          "default": "single_initiator_single_target",
          "enum": [
@@ -30,25 +35,25 @@
          ]
       },
       "fc_target_endpoints": {
-         "description": "SAN Connectivity Policy - FC Target Endpoints",
+         "description": "Storage Connection Policy - FC Target Endpoints",
          "type": "array",
          "items": {
             "type": "object",
             "properties": {
                "wwpn": {
-                  "description": "SAN Connectivity Policy - FC Target Endpoint - WWPN",
+                  "description": "Storage Connection Policy - FC Target Endpoint - WWPN",
                   "type": "string",
                   "default": "00:00:00:00:00:00:00:00",
                   "pattern": "^(([A-Fa-f0-9][A-Fa-f0-9]:){7}[A-Fa-f0-9][A-Fa-f0-9])|0$"
                },
                "descr": {
-                  "description": "SAN Connectivity Policy - FC Target Endpoint - Description",
+                  "description": "Storage Connection Policy - FC Target Endpoint - Description",
                   "type": "string",
                   "default": "",
                   "pattern": "^[ !#$%&\\(\\)\\*\\+,\\-\\./:;\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{0,256}$"
                },
                "path": {
-                  "description": "SAN Connectivity Policy - FC Target Endpoint - Path",
+                  "description": "Storage Connection Policy - FC Target Endpoint - Path",
                   "type": "string",
                   "default": "A",
                   "enum":  [
@@ -57,7 +62,7 @@
                   ]
                },
                "vsan": {
-                  "description": "SAN Connectivity Policy - FC Target Endpoint - VSAN",
+                  "description": "Storage Connection Policy - FC Target Endpoint - VSAN",
                   "type": "string",
                   "default": "",
                   "pattern": "^[\\-\\.:_a-zA-Z0-9]{0,32}$"

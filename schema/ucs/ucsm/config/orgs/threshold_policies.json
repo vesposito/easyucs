@@ -5,6 +5,11 @@
    "description": "EasyUCS ucs system config orgs threshold_policies section JSON schema",
    "type": "object",
    "properties": {
+      "comment": {
+         "description": "Threshold Policy Comments",
+         "type": "string",
+         "default": ""
+      },
       "name": {
          "description": "Threshold Policy Name",
          "type": "string",

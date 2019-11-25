@@ -5,6 +5,11 @@
    "description": "EasyUCS ucs system config orgs server_pool_policy_qualifications section JSON schema",
    "type": "object",
    "properties": {
+      "comment": {
+         "description": "Server Pool Policy Qualification Comments",
+         "type": "string",
+         "default": ""
+      },
       "name": {
          "description": "Server Pool Policy Qualification Name",
          "type": "string",

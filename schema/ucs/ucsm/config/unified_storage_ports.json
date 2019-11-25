@@ -5,6 +5,11 @@
    "description":"EasyUCS ucs system config unified_storage_ports section JSON schema",
    "type":"object",
    "properties":{
+      "comment": {
+         "description": "Unified Storage Port Comments",
+         "type": "string",
+         "default": ""
+      },
       "fabric":{
          "description":"Fabric ID of Unified Storage Port (\"A\" or \"B\")",
          "type":"string",

@@ -5,6 +5,11 @@
    "description":"EasyUCS ucs system config ucs_central section JSON schema",
    "type":"object",
    "properties":{
+      "comment": {
+         "description": "UCS Central Comments",
+         "type": "string",
+         "default": ""
+      },
       "ip_address":{
          "description":"UCS Central IP address / Hostname",
          "type":"string",

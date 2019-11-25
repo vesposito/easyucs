@@ -5,6 +5,11 @@
    "description": "EasyUCS ucs system config orgs network_control_policies section JSON schema",
    "type": "object",
    "properties": {
+      "comment": {
+         "description": "Network Control Policy Comments",
+         "type": "string",
+         "default": ""
+      },
       "name": {
          "description": "Network Control Policy Name",
          "type": "string",

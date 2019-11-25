@@ -5,6 +5,11 @@
    "description": "EasyUCS ucs system config orgs server_pools section JSON schema",
    "type": "object",
    "properties": {
+      "comment": {
+         "description": "Server Pool Comments",
+         "type": "string",
+         "default": ""
+      },
       "name": {
          "description": "Server Pool Name",
          "type": "string",

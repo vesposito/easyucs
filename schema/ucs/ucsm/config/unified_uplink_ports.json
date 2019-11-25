@@ -5,6 +5,11 @@
    "description":"EasyUCS ucs system config unified_uplink_ports section JSON schema",
    "type":"object",
    "properties":{
+      "comment": {
+         "description": "Unified Uplink Port Comments",
+         "type": "string",
+         "default": ""
+      },
       "fabric":{
          "description":"Fabric ID of Unified Uplink Port (\"A\" or \"B\")",
          "type":"string",

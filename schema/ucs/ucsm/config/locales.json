@@ -5,6 +5,11 @@
    "description":"EasyUCS ucs system config locales section JSON schema",
    "type":"object",
    "properties":{
+      "comment": {
+         "description": "Locale Comments",
+         "type": "string",
+         "default": ""
+      },
       "name":{
          "description":"Locale Name",
          "type":"string",

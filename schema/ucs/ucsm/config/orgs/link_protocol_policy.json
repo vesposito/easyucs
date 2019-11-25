@@ -5,6 +5,11 @@
    "description":"EasyUCS ucs system config orgs link_protocol_policy section JSON schema",
    "type":"object",
    "properties": {
+      "comment": {
+         "description": "Link Protocol Policy Comments",
+         "type": "string",
+         "default": ""
+      },
       "message_interval":{
          "description":"Message Interval (in seconds)",
          "type":"string",

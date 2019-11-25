@@ -328,6 +328,10 @@ class FiUcsReportSection(GenericReportSection):
             self.content_list.append(GemUcsReportSection(order_id=self.report.get_current_order_id(), parent=self,
                                                          title=_("Expansion Modules"), fi=fi))
 
+        if fi.licenses:
+            self.content_list.append(LicensesUcsReportSection(order_id=self.report.get_current_order_id(), parent=self,
+                                                              title=_("Port Licenses"), fi=fi))
+
 
 class GemUcsReportSection(GenericReportSection):
     def __init__(self, order_id, parent, title, fi):
@@ -337,6 +341,17 @@ class GemUcsReportSection(GenericReportSection):
             self.content_list.append(
                 GemSectionInfoUcsReportTable(order_id=self.report.get_current_order_id(), parent=self,
                                              gem=fi.expansion_modules, centered=True))
+
+
+class LicensesUcsReportSection(GenericReportSection):
+    def __init__(self, order_id, parent, title, fi):
+        GenericReportSection.__init__(self, order_id=order_id, parent=parent, title=title)
+
+        if self.report.size == "full":
+            self.content_list.append(
+                LicensesSectionInfoUcsReportTable(order_id=self.report.get_current_order_id(), parent=self,
+                                                  fi=fi, centered=True))
+
 
 
 class FexUcsReportSection(GenericReportSection):

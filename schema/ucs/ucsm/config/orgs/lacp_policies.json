@@ -5,6 +5,11 @@
    "description": "EasyUCS ucs system config orgs lacp_policies section JSON schema",
    "type": "object",
    "properties": {
+      "comment": {
+         "description": "LACP Policy Comments",
+         "type": "string",
+         "default": ""
+      },
       "name": {
          "description": "LACP Policy Name",
          "type": "string",

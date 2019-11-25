@@ -5,6 +5,11 @@
    "description":"EasyUCS ucs system config san_unified_ports section JSON schema",
    "type":"object",
    "properties":{
+      "comment": {
+         "description": "SAN Unified Port Comments",
+         "type": "string",
+         "default": ""
+      },
       "fabric":{
          "description":"Fabric ID of SAN Unified Port range (\"A\" or \"B\")",
          "type":"string",

@@ -8,16 +8,21 @@
       {
          "$comment": "Automatic Disk Group Configuration",
          "properties":{
+            "comment": {
+               "description": "Automatic Disk Group Policy Comments",
+               "type": "string",
+               "default": ""
+            },
             "name":{
-               "description":"Disk Group Policy - Name",
+               "description":"Automatic Disk Group Policy Name",
                "type":"string"
             },
             "descr":{
-               "description":"Disk Group Policy - Description",
+               "description":"Automatic Disk Group Policy Description",
                "type":"string"
             },
             "raid_level":{
-               "description":"Disk Group Policy - Raid Level",
+               "description":"Automatic Disk Group Policy - RAID Level",
                "type":"string",
                "default":"mirror",
                "enum":[
@@ -34,7 +39,7 @@
                ]
             },
             "strip_size":{
-               "description":"Disk Group Policy - Description",
+               "description":"Automatic Disk Group Policy - Strip Size",
                "type":"string",
                "default":"platform-default",
                "enum":[
@@ -51,7 +56,7 @@
                ]
             },
             "access_policy":{
-               "description":"Disk Group Policy - Access Policy",
+               "description":"Automatic Disk Group Policy - Access Policy",
                "type":"string",
                "default":"platform-default",
                "enum":[
@@ -65,7 +70,7 @@
                ]
             },
             "read_policy":{
-               "description":"Disk Group Policy - Read Policy",
+               "description":"Automatic Disk Group Policy - Read Policy",
                "type":"string",
                "default":"platform-default",
                "enum":[
@@ -76,7 +81,7 @@
                ]
             },
             "write_cache_policy":{
-               "description":"Disk Group Policy - Write Cache Policy",
+               "description":"Automatic Disk Group Policy - Write Cache Policy",
                "type":"string",
                "default":"platform-default",
                "enum":[
@@ -88,7 +93,7 @@
                ]
             },
             "io_policy":{
-               "description":"Disk Group Policy - IO Policy",
+               "description":"Automatic Disk Group Policy - IO Policy",
                "type":"string",
                "default":"platform-default",
                "enum":[
@@ -99,7 +104,7 @@
                ]
             },
             "drive_cache":{
-               "description":"Disk Group Policy - Drive Cache",
+               "description":"Automatic Disk Group Policy - Drive Cache",
                "type":"string",
                "default":"platform-default",
                "enum":[
@@ -111,7 +116,7 @@
                ]
             },
             "security":{
-               "description":"Disk Group Policy - Security",
+               "description":"Automatic Disk Group Policy - Security",
                "type":"string",
                "default":"no",
                "enum":[
@@ -122,13 +127,13 @@
                ]
             },
             "number_of_drives":{
-               "description":"Disk Group Policy - Number of Drives",
+               "description":"Automatic Disk Group Policy - Number of Drives",
                "type":"string",
                "default":"unspecified",
                "pattern":"^[0-9]$|^[1-6][0-9]$|^unspecified$"
             },
             "drive_type":{
-               "description":"Disk Group Policy - Drive Type",
+               "description":"Automatic Disk Group Policy - Drive Type",
                "type":"string",
                "default":"unspecified",
                "enum":[
@@ -138,25 +143,25 @@
                ]
             },
             "number_of_dedicated_hot_spares":{
-               "description":"Disk Group Policy - Number of Dedicated Hot Spares",
+               "description":"Automatic Disk Group Policy - Number of Dedicated Hot Spares",
                "type":"string",
                "default":"unspecified",
                "pattern":"^[0-9]$|^[1-6][0-9]$|^unspecified$"
             },
             "number_of_global_hot_spares":{
-               "description":"Disk Group Policy - Number of Global Hot Spares",
+               "description":"Automatic Disk Group Policy - Number of Global Hot Spares",
                "type":"string",
                "default":"unspecified",
                "pattern":"^[0-9]$|^[1-6][0-9]$|^unspecified$"
             },
             "min_drive_size":{
-               "description":"Disk Group Policy - Min Drive Size (GB)",
+               "description":"Automatic Disk Group Policy - Min Drive Size (GB)",
                "type":"string",
                "default":"unspecified",
                "pattern":"^[0-9]$|^[1-9][0-9]$|^[1-9][0-9][0-9]$|^[1-9][0-9][0-9][0-9]$|^10[0-1][0-9][0-9]$|^102[0-3][0-9]$|^10240$|^unspecified$"
             },
             "use_remaining_disks":{
-               "description":"Disk Group Policy - Use Remaining Disks",
+               "description":"Automatic Disk Group Policy - Use Remaining Disks",
                "type":"string",
                "default":"no",
                "enum":[
@@ -167,7 +172,7 @@
                ]
             },
             "use_jbod_disks":{
-               "description":"Disk Group Policy - Use JBOD Disks",
+               "description":"Automatic Disk Group Policy - Use JBOD Disks",
                "type":"string",
                "default":"no",
                "enum":[
@@ -184,16 +189,21 @@
       {
          "$comment": "Manual Disk Group Configuration",
          "properties":{
+            "comment": {
+               "description": "Manual Disk Group Policy Comments",
+               "type": "string",
+               "default": ""
+            },
             "name":{
-               "description":"Disk Group Policy - Name",
+               "description":"Manual Disk Group Policy Name",
                "type":"string"
             },
             "descr":{
-               "description":"Disk Group Policy - Description",
+               "description":"Manual Disk Group Policy Description",
                "type":"string"
             },
             "raid_level":{
-               "description":"Disk Group Policy - Raid Level",
+               "description":"Manual Disk Group Policy - Raid Level",
                "type":"string",
                "default":"mirror",
                "enum":[
@@ -210,7 +220,7 @@
                ]
             },
             "strip_size":{
-               "description":"Disk Group Policy - Description",
+               "description":"Manual Disk Group Policy - Strip Size",
                "type":"string",
                "default":"platform-default",
                "enum":[
@@ -227,7 +237,7 @@
                ]
             },
             "access_policy":{
-               "description":"Disk Group Policy - Access Policy",
+               "description":"Manual Disk Group Policy - Access Policy",
                "type":"string",
                "default":"platform-default",
                "enum":[
@@ -241,7 +251,7 @@
                ]
             },
             "read_policy":{
-               "description":"Disk Group Policy - Read Policy",
+               "description":"Manual Disk Group Policy - Read Policy",
                "type":"string",
                "default":"platform-default",
                "enum":[
@@ -252,7 +262,7 @@
                ]
             },
             "write_cache_policy":{
-               "description":"Disk Group Policy - Write Cache Policy",
+               "description":"Manual Disk Group Policy - Write Cache Policy",
                "type":"string",
                "default":"platform-default",
                "enum":[
@@ -264,7 +274,7 @@
                ]
             },
             "io_policy":{
-               "description":"Disk Group Policy - IO Policy",
+               "description":"Manual Disk Group Policy - IO Policy",
                "type":"string",
                "default":"platform-default",
                "enum":[
@@ -275,7 +285,7 @@
                ]
             },
             "drive_cache":{
-               "description":"Disk Group Policy - Drive Cache",
+               "description":"Manual Disk Group Policy - Drive Cache",
                "type":"string",
                "default":"platform-default",
                "enum":[
@@ -287,7 +297,7 @@
                ]
             },
             "security":{
-               "description":"Disk Group Policy - Security",
+               "description":"Manual Disk Group Policy - Security",
                "type":"string",
                "default":"no",
                "enum":[
@@ -298,10 +308,10 @@
                ]
             },
             "manual_disk_group_configuration":{
-               "description":"Disk Group Policy - Manual Disk Group Configuration",
+               "description":"Manual Disk Group Policy - Manual Disk Group Configuration",
                "type":"array",
                "items":{
-                  "description":"Disk Group Policy - Local Disk Configuration Reference",
+                  "description":"Manual Disk Group Policy - Local Disk Configuration Reference",
                   "type":"object",
                   "properties":{
                      "slot_number":{

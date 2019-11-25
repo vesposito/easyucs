@@ -404,3 +404,189 @@ class UcsImcInventoryObject(GenericUcsInventoryObject):
             if hasattr(self._pid_catalog, "pid"):
                 if self._pid_catalog.pid not in ["N/A", "UNKNOWN"]:
                     return self._pid_catalog.pid
+
+
+class UcsCentralInventoryObject(GenericUcsInventoryObject):
+    def __init__(self, parent=None, ucs_sdk_object=None):
+        GenericUcsInventoryObject.__init__(self, parent=parent, ucs_sdk_object=ucs_sdk_object)
+
+        if self._inventory.load_from == "live":
+            self._cap_provider = self._find_cap_provider()
+            self._equipment_manufacturing_def = self._find_equipment_manufacturing_def()
+            self._variant_type = self.get_attribute(ucs_sdk_object=ucs_sdk_object, attribute_name="variant_type")
+            self._equipment_fru_variant = self._find_equipment_fru_variant()
+            self.firmware_package_version = None
+            self.firmware_version = None
+            self.name = None
+            self.part_number = None
+            self.sku = None
+            self.vid = self.get_attribute(ucs_sdk_object=ucs_sdk_object, attribute_name="vid")
+            self._get_manufacturing_details_from_catalog()
+            self._get_firmware_version_running()
+
+        elif self._inventory.load_from == "file" and isinstance(ucs_sdk_object, dict):
+            for attribute in ["firmware_package_version", "firmware_version", "name", "part_number", "sku", "vid"]:
+                setattr(self, attribute, None)
+                if attribute in ucs_sdk_object:
+                    setattr(self, attribute, self.get_attribute(ucs_sdk_object=ucs_sdk_object,
+                                                                attribute_name=attribute))
+
+    def _find_cap_provider(self):
+        # We check if we already have fetched the list of catalog objects
+        if self._inventory.sdk_objects["catalog"] is not None and hasattr(self, "_UCS_SDK_CATALOG_OBJECT_NAME")\
+                and hasattr(self, "model") and hasattr(self, "vendor") and hasattr(self, "revision"):
+            # We return None if the "model" attribute is None as this probably indicates an improperly discovered object
+            if self.model is None:
+                return None
+
+            # We trim the list of catalog objects to only those corresponding the current object
+            catalog_object_type = self._UCS_SDK_CATALOG_OBJECT_NAME[:1].upper() + self._UCS_SDK_CATALOG_OBJECT_NAME[1:]
+            object_cap_provider_list = [object_cap_provider for object_cap_provider
+                                        in self._inventory.sdk_objects["catalog"]
+                                        if object_cap_provider._class_id == catalog_object_type
+                                        and self.model == object_cap_provider.model
+                                        and self.vendor == object_cap_provider.vendor
+                                        and self.revision == object_cap_provider.revision]
+
+            if len(object_cap_provider_list) == 0:
+                # We could not find a single corresponding CapProvider object
+                self.logger(level="debug",
+                            message="Could not find the appropriate catalog element for object with DN " +
+                                    str(self.dn) + " of model \"" + str(self.model) + "\"")
+                return None
+
+            if len(object_cap_provider_list) == 1:
+                # We have only found one corresponding CapProvider object - Returning it
+                return object_cap_provider_list[0]
+
+            if len(object_cap_provider_list) > 1:
+                # We still found multiple CapProvider objects corresponding to this object
+                self.logger(level="debug",
+                            message="Found multiple catalog elements for object with DN " + str(self.dn) +
+                                    " of model \"" + str(self.model) + "\"")
+                return None
+
+        return None
+
+    def _find_equipment_fru_variant(self):
+        # We check if we already have found the CapProvider object
+        if self._cap_provider is None:
+            return None
+
+        # We check if we have a variant type
+        if self._variant_type is None:
+            return None
+
+        # We check if we already have fetched the list of equipmentFruVariant catalog objects
+        if "equipmentFruVariant" in self._inventory.sdk_objects.keys():
+            if self._inventory.sdk_objects["equipmentFruVariant"] is not None:
+                # We have the CapProvider object - Looking for the matching equipmentFruVariant object
+                equipment_fru_variant_list = [equipment_fru_variant for equipment_fru_variant in
+                                              self._inventory.sdk_objects["equipmentFruVariant"] if
+                                              self._cap_provider.dn in equipment_fru_variant.dn and
+                                              equipment_fru_variant.type == self._variant_type]
+                if (len(equipment_fru_variant_list)) != 1:
+                    # We avoid logging for Storage PCH devices since they don't have an equipmentFruVariant
+                    if "storage-PCH" in self.dn:
+                        return None
+                    if hasattr(self, "model"):
+                        if any(x in self.model for x in ["Lewisburg", "Patsburg", "Wellsburg"]):
+                            return None
+
+                    self.logger(
+                        level="debug",
+                        message="Could not find the appropriate catalog FRU variant for object with DN " +
+                                str(self.dn) + " of model \"" + str(self.model) + "\"")
+                    return None
+                else:
+                    # We return the equipmentFruVariant found
+                    return equipment_fru_variant_list[0]
+        return None
+
+    def _find_equipment_manufacturing_def(self):
+        # We check if we already have found the CapProvider object
+        if self._cap_provider is None:
+            return None
+
+        # We check if we already have fetched the list of equipmentManufacturingDef catalog objects
+        if "equipmentManufacturingDef" in self._inventory.sdk_objects.keys():
+            if self._inventory.sdk_objects["equipmentManufacturingDef"] is not None:
+                # We have the CapProvider object - Looking for the matching equipmentManufacturingDef object
+                equipment_manufacturing_def_list = [equipment_manufacturing_def for equipment_manufacturing_def in
+                                                    self._inventory.sdk_objects["equipmentManufacturingDef"] if
+                                                    self._cap_provider.dn in equipment_manufacturing_def.dn]
+                if (len(equipment_manufacturing_def_list)) != 1:
+                    # We avoid logging for Storage PCH devices since they don't have an equipmentManufacturingDef
+                    if "storage-PCH" in self.dn:
+                        return None
+                    if hasattr(self, "model"):
+                        if any(x in self.model for x in ["Lewisburg", "Patsburg", "Wellsburg"]):
+                            return None
+
+                    self.logger(
+                        level="debug",
+                        message="Could not find the appropriate catalog manufacturing detail for object with DN " +
+                                str(self.dn) + " of model \"" + str(self.model) + "\"")
+                    return None
+                else:
+                    # We return the equipmentManufacturingDef found
+                    return equipment_manufacturing_def_list[0]
+        return None
+
+    def _get_firmware_version_running(self):
+        # We verify that we have the required suffix in the object class
+        if not hasattr(self, "_UCS_SDK_FIRMWARE_RUNNING_SUFFIX"):
+            return False
+
+        # We check if we already have fetched the list of firmwareRunning objects
+        if "firmwareRunning" in self._inventory.sdk_objects.keys():
+            if self._inventory.sdk_objects["firmwareRunning"] is not None:
+                # Looking for the matching firmwareRunning object
+                firmware_running_list = [firmware_running for firmware_running in
+                                         self._inventory.sdk_objects["firmwareRunning"] if self.dn +
+                                         self._UCS_SDK_FIRMWARE_RUNNING_SUFFIX == firmware_running.dn]
+                if (len(firmware_running_list)) != 1:
+                    return False
+                else:
+                    # We fetch the object's firmware version
+                    if hasattr(firmware_running_list[0], "version"):
+                        if firmware_running_list[0].version != "":
+                            self.firmware_version = firmware_running_list[0].version
+
+                    # We fetch the object's firmware package version
+                    if hasattr(firmware_running_list[0], "package_version"):
+                        if firmware_running_list[0].package_version != "":
+                            self.firmware_package_version = firmware_running_list[0].package_version
+                    return True
+        return False
+
+    def _get_manufacturing_details_from_catalog(self):
+        # We check if we already have found the equipmentManufacturingDef object
+        if self._equipment_manufacturing_def is None:
+            return False
+
+        # We fetch the object's name
+        if hasattr(self._equipment_manufacturing_def, "name"):
+            if self._equipment_manufacturing_def.name != "":
+                self.name = self._equipment_manufacturing_def.name
+
+        # We fetch the object's part number
+        if hasattr(self._equipment_manufacturing_def, "part_number"):
+            if self._equipment_manufacturing_def.part_number != "":
+                self.part_number = self._equipment_manufacturing_def.part_number
+
+        if self._equipment_fru_variant is not None:
+            # We use the equipmentFruVariant PID for retrieving the object's SKU
+            if hasattr(self._equipment_fru_variant, "pid"):
+                if self._equipment_fru_variant.pid not in ["", "N/A", "NA"]:
+                    self.sku = self._equipment_fru_variant.pid
+        else:
+            # We fetch the object's SKU or if the field is empty, its PID (if not empty as well)
+            if hasattr(self._equipment_manufacturing_def, "sku"):
+                if self._equipment_manufacturing_def.sku not in ["", "N/A", "NA"]:
+                    self.sku = self._equipment_manufacturing_def.sku
+            elif hasattr(self._equipment_manufacturing_def, "pid"):
+                if self._equipment_manufacturing_def.pid not in ["", "N/A", "NA"]:
+                    self.sku = self._equipment_manufacturing_def.pid
+
+        return True

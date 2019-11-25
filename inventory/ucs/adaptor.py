@@ -319,7 +319,7 @@ class UcsImcNetworkAdapter(UcsAdaptor, UcsImcInventoryObject):
             self.short_name = self._get_model_short_name()
 
         elif self._inventory.load_from == "file":
-            for attribute in ["option_rom_status", "short_name", "vendor", "version"]:
+            for attribute in ["option_rom_status", "short_name", "type", "vendor", "version"]:
                 setattr(self, attribute, None)
                 if attribute in network_adapter_unit:
                     setattr(self, attribute, self.get_attribute(ucs_sdk_object=network_adapter_unit,

@@ -85,7 +85,10 @@ class UcsSystemLanUplinkPort(UcsSystemConfigObject):
             if fabric_eth_lan_ep is not None:
                 self.fabric = fabric_eth_lan_ep.switch_id
                 self.slot_id = fabric_eth_lan_ep.slot_id
-                self.aggr_id = fabric_eth_lan_ep.aggr_port_id if int(fabric_eth_lan_ep.aggr_port_id) else None
+                if fabric_eth_lan_ep.aggr_port_id:
+                    self.aggr_id = fabric_eth_lan_ep.aggr_port_id if int(fabric_eth_lan_ep.aggr_port_id) else None
+                else:
+                    self.aggr_id = None
                 if self.aggr_id:
                     self.aggr_id = fabric_eth_lan_ep.port_id
                     self.port_id = fabric_eth_lan_ep.aggr_port_id
@@ -312,7 +315,10 @@ class UcsSystemServerPort(UcsSystemConfigObject):
             if fabric_dce_sw_srv_ep is not None:
                 self.fabric = fabric_dce_sw_srv_ep.switch_id
                 self.slot_id = fabric_dce_sw_srv_ep.slot_id
-                self.aggr_id = fabric_dce_sw_srv_ep.aggr_port_id if int(fabric_dce_sw_srv_ep.aggr_port_id) else None
+                if fabric_dce_sw_srv_ep.aggr_port_id:
+                    self.aggr_id = fabric_dce_sw_srv_ep.aggr_port_id if int(fabric_dce_sw_srv_ep.aggr_port_id) else None
+                else:
+                    self.aggr_id = None
                 if self.aggr_id:
                     self.aggr_id = fabric_dce_sw_srv_ep.port_id
                     self.port_id = fabric_dce_sw_srv_ep.aggr_port_id
@@ -466,8 +472,11 @@ class UcsSystemLanPortChannel(UcsSystemConfigObject):
 
                             interface.update({"slot_id": interface_pc_ep.slot_id})
                             interface.update({"admin_state": interface_pc_ep.admin_state})
-                            interface["aggr_id"] =\
-                                interface_pc_ep.aggr_port_id if int(interface_pc_ep.aggr_port_id) else None
+                            if interface_pc_ep.aggr_port_id:
+                                interface["aggr_id"] =\
+                                    interface_pc_ep.aggr_port_id if int(interface_pc_ep.aggr_port_id) else None
+                            else:
+                                interface["aggr_id"] = None
                             if interface["aggr_id"]:
                                 interface.update({"aggr_id": interface_pc_ep.port_id})
                                 interface.update({"port_id": interface_pc_ep.aggr_port_id})

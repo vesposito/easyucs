@@ -5,6 +5,11 @@
    "description": "EasyUCS ucs system config orgs vmedia_policies section JSON schema",
    "type": "object",
    "properties": {
+      "comment": {
+         "description": "vMedia Policy Comments",
+         "type": "string",
+         "default": ""
+      },
       "name": {
          "description": "vMedia Policy Name",
          "type": "string",

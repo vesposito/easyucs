@@ -5,6 +5,11 @@
    "description": "EasyUCS ucs system config orgs disk_zoning_policies section JSON schema",
    "type": "object",
    "properties": {
+      "comment": {
+         "description": "Disk Zoning Policy Comments",
+         "type": "string",
+         "default": ""
+      },
       "name": {
          "description": "Disk Zoning Policy Name",
          "type": "string",

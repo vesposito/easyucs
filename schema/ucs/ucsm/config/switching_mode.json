@@ -5,6 +5,11 @@
    "description":"EasyUCS ucs system config switching_mode section JSON schema",
    "type":"object",
    "properties":{
+      "comment": {
+         "description": "Switching Mode Comments",
+         "type": "string",
+         "default": ""
+      },
       "ethernet_mode":{
          "description":"Ethernet Switching Mode",
          "type":"string",

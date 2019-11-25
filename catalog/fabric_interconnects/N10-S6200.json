@@ -1,0 +1,294 @@
+{
+  "model_short_name": "6140XP",
+  "rear_file_name":"N10-S6200_rear.png",
+  "front_file_name":"N10-S6200_front.png",
+  "rear_file_size":[2862,273],
+  "front_file_size":[2862,273],
+  "expansion_modules_slots":[
+    {
+      "id":2,
+      "coord":[1760,36]
+    },
+    {
+      "id":3,
+      "coord":[1760,284]
+    }
+  ],
+  "expansion_modules_models":[
+    {
+      "name":"N10-E0060",
+      "description":"6-port 8Gb FC/Expansion module/UCS 6100 Series"
+    },
+    {
+      "name":"N10-E0080",
+      "description":"8-port 4Gb FC/Expansion module/UCS 6100 Series"
+    },
+    {
+      "name":"N10-E0440",
+      "description":"4-port 10 GE/4-port 4Gb FC/Expansion module/UCS 6100 Series"
+    },
+    {
+      "name":"N10-E0600",
+      "description":"6-port 10 GE/Expansion module/UCS 6100 Series"
+    },
+    {
+      "name":"N10-SBLKE",
+      "type":"blank",
+      "description":"Expansion module slot blanking panel for UCS 6100 Series"
+    }
+  ],
+  "psus_slots":[
+    {
+      "id":1,
+      "coord":[186,7]
+    },
+    {
+      "id":2,
+      "coord":[186,273]
+    }
+  ],
+  "psus_models":[
+    {
+      "name": "N10-PAC2-750W",
+      "description": "750W PSU for UCS 6140XP/100-240VAC"
+    },
+    {
+      "name": "N10-S2BLKP",
+      "type": "blank",
+      "description": "Power supply unit blanking panel for UCS 6140XP"
+    }
+  ],
+  "rear_ports":{
+    "1":{
+      "port_coord":[658,65],
+      "port_type":"sfp+",
+      "port_size":[83,54]
+    },
+    "2":{
+      "port_coord":[658,169],
+      "port_type":"sfp+",
+      "port_size":[83,54]
+    },
+    "3":{
+      "port_coord":[658,321],
+      "port_type":"sfp+",
+      "port_size":[83,54]
+    },
+    "4":{
+      "port_coord":[658,425],
+      "port_type":"sfp+",
+      "port_size":[83,54]
+    },
+    "5":{
+      "port_coord":[746,65],
+      "port_type":"sfp+",
+      "port_size":[83,54]
+    },
+    "6":{
+      "port_coord":[746,169],
+      "port_type":"sfp+",
+      "port_size":[83,54]
+    },
+    "7":{
+      "port_coord":[746,321],
+      "port_type":"sfp+",
+      "port_size":[83,54]
+    },
+    "8":{
+      "port_coord":[746,425],
+      "port_type":"sfp+",
+      "port_size":[83,54]
+    },
+    "9":{
+      "port_coord":[834,65],
+      "port_type":"sfp+",
+      "port_size":[83,54]
+    },
+    "10":{
+      "port_coord":[834,169],
+      "port_type":"sfp+",
+      "port_size":[83,54]
+    },
+    "11":{
+      "port_coord":[834,321],
+      "port_type":"sfp+",
+      "port_size":[83,54]
+    },
+    "12":{
+      "port_coord":[834,425],
+      "port_type":"sfp+",
+      "port_size":[83,54]
+    },
+    "13":{
+      "port_coord":[922,65],
+      "port_type":"sfp+",
+      "port_size":[83,54]
+    },
+    "14":{
+      "port_coord":[922,169],
+      "port_type":"sfp+",
+      "port_size":[83,54]
+    },
+    "15":{
+      "port_coord":[922,321],
+      "port_type":"sfp+",
+      "port_size":[83,54]
+    },
+    "16":{
+      "port_coord":[922,425],
+      "port_type":"sfp+",
+      "port_size":[83,54]
+    },
+    "17":{
+      "port_coord":[1099,65],
+      "port_type":"sfp+",
+      "port_size":[83,54]
+    },
+    "18":{
+      "port_coord":[1099,169],
+      "port_type":"sfp+",
+      "port_size":[83,54]
+    },
+    "19":{
+      "port_coord":[1099,321],
+      "port_type":"sfp+",
+      "port_size":[83,54]
+    },
+    "20":{
+      "port_coord":[1099,425],
+      "port_type":"sfp+",
+      "port_size":[83,54]
+    },
+    "21":{
+      "port_coord":[1187,65],
+      "port_type":"sfp+",
+      "port_size":[83,54]
+    },
+    "22":{
+      "port_coord":[1187,169],
+      "port_type":"sfp+",
+      "port_size":[83,54]
+    },
+    "23":{
+      "port_coord":[1187,321],
+      "port_type":"sfp+",
+      "port_size":[83,54]
+    },
+    "24":{
+      "port_coord":[1187,425],
+      "port_type":"sfp+",
+      "port_size":[83,54]
+    },
+    "25":{
+      "port_coord":[1275,65],
+      "port_type":"sfp+",
+      "port_size":[83,54]
+    },
+    "26":{
+      "port_coord":[1275,169],
+      "port_type":"sfp+",
+      "port_size":[83,54]
+    },
+    "27":{
+      "port_coord":[1275,321],
+      "port_type":"sfp+",
+      "port_size":[83,54]
+    },
+    "28":{
+      "port_coord":[1275,425],
+      "port_type":"sfp+",
+      "port_size":[83,54]
+    },
+    "29":{
+      "port_coord":[1363,65],
+      "port_type":"sfp+",
+      "port_size":[83,54]
+    },
+    "30":{
+      "port_coord":[1363,169],
+      "port_type":"sfp+",
+      "port_size":[83,54]
+    },
+    "31":{
+      "port_coord":[1363,321],
+      "port_type":"sfp+",
+      "port_size":[83,54]
+    },
+    "32":{
+      "port_coord":[1363,425],
+      "port_type":"sfp+",
+      "port_size":[83,54]
+    },
+    "33":{
+      "port_coord":[1540,65],
+      "port_type":"sfp+",
+      "port_size":[83,54]
+    },
+    "34":{
+      "port_coord":[1540,169],
+      "port_type":"sfp+",
+      "port_size":[83,54]
+    },
+    "35":{
+      "port_coord":[1540,319],
+      "port_type":"sfp+",
+      "port_size":[83,54]
+    },
+    "36":{
+      "port_coord":[1540,423],
+      "port_type":"sfp+",
+      "port_size":[83,54]
+    },
+    "37":{
+      "port_coord":[1628,65],
+      "port_type":"sfp+",
+      "port_size":[83,54]
+    },
+    "38":{
+      "port_coord":[1628,169],
+      "port_type":"sfp+",
+      "port_size":[83,54]
+    },
+    "39":{
+      "port_coord":[1628,319],
+      "port_type":"sfp+",
+      "port_size":[83,54]
+    },
+    "40":{
+      "port_coord":[1628,423],
+      "port_type":"sfp+",
+      "port_size":[83,54]
+    }
+  },
+  "spec_sheet_url": "https://www.cisco.com/c/dam/en/us/products/collateral/servers-unified-computing/ucs-6100-series-fabric-interconnects/spec_sheet_c17-665945.pdf",
+  "data_sheet_url": "https://www.cisco.com/c/en/us/products/collateral/servers-unified-computing/ucs-5100-series-blade-server-chassis/data_sheet_c78-524724.html",
+  "specs": {
+    "descr": "The Cisco UCS 6140XP 40-Port Fabric Interconnect is a Two-Rack-Units (2RU) 10 Gigabit Ethernet, FCoE, and Fibre Channel switch offering up to 1.04 Tbps throughput and up to 56 ports. The switch has 40 fixed ports and 2 expansion slots of 6 to 8 ports that can support either 10 Gigabit Ethernet or 1/2/4/8-Gbps Fibre Channel. All Ethernet ports are capable of supporting FCoE.",
+    "form_factor": "2RU",
+    "throughput": {
+      "gbps": 1040,
+      "mpps": 773.8
+    },
+    "latency": "3.2 µs",
+    "power_typical": 480,
+    "power_maximum": 750,
+    "heat_dissipation": 2561,
+    "dimensions": {
+      "centimeters": {
+        "height": 8.8,
+        "width": 43.9,
+        "depth": 76.2
+      },
+      "inches": {
+        "height": 3.47,
+        "width": 17.3,
+        "depth": 30
+      },
+      "rack_units": 2
+    },
+    "weight": {
+      "lb": 50,
+      "kg": 22.68
+    }
+  }
+}

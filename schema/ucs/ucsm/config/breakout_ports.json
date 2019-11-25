@@ -5,6 +5,11 @@
    "description":"EasyUCS ucs system config breakout_ports section JSON schema",
    "type":"object",
    "properties":{
+      "comment": {
+         "description": "Breakout Port Comments",
+         "type": "string",
+         "default": ""
+      },
       "fabric":{
          "description":"Fabric ID of Breakout Port (\"A\" or \"B\")",
          "type":"string",

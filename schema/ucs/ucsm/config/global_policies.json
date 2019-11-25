@@ -5,6 +5,11 @@
    "description":"EasyUCS ucs system config global_policies section JSON schema",
    "type":"object",
    "properties":{
+      "comment": {
+         "description": "Global Policies Comments",
+         "type": "string",
+         "default": ""
+      },
       "chassis_discovery_policy":{
          "description":"Chassis/FEX Discovery Policy",
          "type":"array",

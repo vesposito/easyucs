@@ -115,10 +115,8 @@ class UcsSystemServiceProfileConfigPlot(UcsSystemConfigPlot):
         self.draw_service_profile_dependencies()
 
     def draw_service_profile_dependencies(self):
-
         """
         Draws Service Profile dependencies using the specified config
-        :param uuid: The UUID of the config to be used. If not specified, the most recent config will be used
         :return: True if draw is successful, False otherwise
         """
 
@@ -139,11 +137,11 @@ class UcsSystemServiceProfileConfigPlot(UcsSystemConfigPlot):
             return False
 
         service_profile_list = []
-        # Searching for all Service Profile (template or not) that are not from a template in all orgs
+        # Searching for all Service Profiles (template or not) that are not from a template in all orgs
         for org in self.config.orgs:
             parse_org(org, service_profile_list)
 
-        # Parsing all service profile and draw plot
+        # Parsing all service profiles and draw plot
         for service_profile in service_profile_list:
             G = nx.Graph()
             sp_options_dict = self.get_service_profile_plot_options()

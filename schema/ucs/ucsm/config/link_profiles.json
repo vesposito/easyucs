@@ -5,6 +5,11 @@
    "description":"EasyUCS ucs system config link_profiles section JSON schema",
    "type":"object",
    "properties":{
+      "comment": {
+         "description": "Link Profile Comments",
+         "type": "string",
+         "default": ""
+      },
       "name":{
          "description":"Link Profile Name",
          "type":"string",

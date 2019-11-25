@@ -5,6 +5,11 @@
    "description": "EasyUCS ucs system config orgs bios_policies section JSON schema",
    "type": "object",
    "properties": {
+      "comment": {
+         "description": "BIOS Policy Comments",
+         "type": "string",
+         "default": ""
+      },
       "name": {
          "description": "BIOS Policy Name",
          "type": "string",

@@ -5,6 +5,11 @@
    "description": "EasyUCS ucs system config orgs qos_policies section JSON schema",
    "type": "object",
    "properties": {
+      "comment": {
+         "description": "QoS Policy Comments",
+         "type": "string",
+         "default": ""
+      },
       "name": {
          "description": "QoS Policy Name",
          "type": "string",

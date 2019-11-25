@@ -35,6 +35,8 @@ class UcsSystemDrawAdaptor(GenericUcsDrawEquipment):
     def _get_picture(self):
         if "SIOC" in self._parent.pci_slot:
             self.width = self.parent_draw.json_file["pcie_slots"][0]["width"]
+            if "orientation" in self.parent_draw.json_file["pcie_slots"][0]:
+                self.orientation = self.parent_draw.json_file["pcie_slots"][0]["orientation"]
         elif self._parent.pci_slot not in ["MLOM", "OCP"]:  # not MLOM or OCP
             for slot in self.parent_draw.json_file["pcie_slots"]:
                 if slot["id"] == int(self._parent.pci_slot):
@@ -53,7 +55,7 @@ class UcsSystemDrawAdaptor(GenericUcsDrawEquipment):
                 self.picture = Image.open("catalog/adaptors/img/" + file_name, 'r')
             except FileNotFoundError:
                 self.logger(level="error",
-                            message="Image file " "catalog/power_supplies/img/" + file_name + " not found")
+                            message="Image file " "catalog/adaptors/img/" + file_name + " not found")
                 return False
 
             if self.picture and self.orientation:

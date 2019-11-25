@@ -5,6 +5,11 @@
    "description": "EasyUCS ucs system config orgs ip_pools section JSON schema",
    "type": "object",
    "properties": {
+      "comment": {
+         "description": "IP Pool Comments",
+         "type": "string",
+         "default": ""
+      },
       "name": {
          "description": "IP Pool Name",
          "type": "string",

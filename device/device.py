@@ -23,7 +23,7 @@ from ucscsdk.ucschandle import UcscHandle
 from ucscsdk.ucscmeta import VersionMeta as UcscVersionMeta
 
 from config.manager import UcsImcConfigManager, UcsSystemConfigManager, UcsCentralConfigManager
-from inventory.manager import UcsImcInventoryManager, UcsSystemInventoryManager
+from inventory.manager import UcsImcInventoryManager, UcsSystemInventoryManager, UcsCentralInventoryManager
 from report.report import UcsImcReport, UcsSystemReport
 import export
 import common
@@ -249,7 +249,7 @@ class GenericDevice:
         pass
 
     def generate_report(self, inventory=None, config=None, language="en", output_format="docx", page_layout="a4",
-                        filename=None):
+                        directory=None, filename=None, size="full"):
         pass
 
     def generate_config_plots(self, config=None, directory=None):
@@ -2336,7 +2336,7 @@ class UcsCentral(GenericUcsDevice):
         self.device_type_short = "ucsc"
         self.version_min_required = UcscVersion(self.UCS_CENTRAL_MIN_REQUIRED_VERSION)
         self.config_manager = UcsCentralConfigManager(parent=self)
-        # self.inventory_manager = UcsCentralInventoryManager(parent=self)
+        self.inventory_manager = UcsCentralInventoryManager(parent=self)
         self._set_sdk_version()
         self._set_device_name_and_version()
 

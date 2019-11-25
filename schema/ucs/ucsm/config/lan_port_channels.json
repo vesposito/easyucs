@@ -5,6 +5,11 @@
    "description":"EasyUCS ucs system config lan_port_channels section JSON schema",
    "type":"object",
    "properties":{
+      "comment": {
+         "description": "LAN Port-Channel Comments",
+         "type": "string",
+         "default": ""
+      },
       "name":{
          "description":"Name of LAN Port-Channel",
          "type":"string",

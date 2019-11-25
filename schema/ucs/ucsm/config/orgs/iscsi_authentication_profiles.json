@@ -5,6 +5,11 @@
    "description": "EasyUCS ucs system config iscsi_authentication_profiles section JSON schema",
    "type": "object",
    "properties": {
+      "comment": {
+         "description": "iSCSI Authentication Profile Comments",
+         "type": "string",
+         "default": ""
+      },
       "name": {
          "description": "iSCSI Authentication Profile Name",
          "type": "string",

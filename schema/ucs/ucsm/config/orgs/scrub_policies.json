@@ -5,6 +5,11 @@
    "description":"EasyUCS ucs system config orgs scrub_policies section JSON schema",
    "type":"object",
    "properties": {
+      "comment": {
+         "description": "Scrub Policy Comments",
+         "type": "string",
+         "default": ""
+      },
       "name":{
          "description":"Scrub Policy Name",
          "type":"string",

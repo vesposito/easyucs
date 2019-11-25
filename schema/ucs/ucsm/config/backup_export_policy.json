@@ -5,6 +5,11 @@
    "description":"EasyUCS ucs system config backup_export_policy section JSON schema",
    "type":"object",
    "properties":{
+      "comment": {
+         "description": "Backup Export Policy Comments",
+         "type": "string",
+         "default": ""
+      },
       "full_state":{
          "description":"Full State Backup Policy list",
          "type":"array",

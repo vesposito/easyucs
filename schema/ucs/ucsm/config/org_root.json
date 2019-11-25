@@ -5,6 +5,11 @@
    "description": "EasyUCS ucs system config orgs section (org-root) JSON schema",
    "type": "object",
    "properties": {
+      "comment": {
+         "description": "Root Organization Comments",
+         "type": "string",
+         "default": ""
+      },
       "name": {
          "description": "Root Organization Name",
          "type": "string",

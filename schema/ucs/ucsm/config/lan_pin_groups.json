@@ -5,6 +5,11 @@
    "description":"EasyUCS ucs system config lan_pin_groups section JSON schema",
    "type":"object",
    "properties":{
+      "comment": {
+         "description": "LAN Pin Group Comments",
+         "type": "string",
+         "default": ""
+      },
       "name":{
          "description":"Name of LAN Pin Group",
          "type":"string",

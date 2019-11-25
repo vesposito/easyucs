@@ -5,6 +5,11 @@
    "description":"EasyUCS ucs system config management_interfaces section JSON schema",
    "type":"object",
    "properties":{
+      "comment": {
+         "description": "Management Interface Comments",
+         "type": "string",
+         "default": ""
+      },
       "fabric":{
          "description":"Management Interface Fabric ID",
          "type":"string",

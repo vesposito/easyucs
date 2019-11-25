@@ -5,6 +5,11 @@
    "description": "EasyUCS ucs system config kvm_management_policies section JSON schema",
    "type": "object",
    "properties": {
+      "comment": {
+         "description": "KVM Management Policy Comments",
+         "type": "string",
+         "default": ""
+      },
       "name": {
          "description": "KVM Management Policy Name",
          "type": "string",

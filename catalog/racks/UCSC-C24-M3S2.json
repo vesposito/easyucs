@@ -135,133 +135,155 @@
       "orientation":"vertical",
       "coord":[271, 34],
       "size":[459,103]
-    },{
+    },
+    {
       "id":3,
       "format":"sff",
       "orientation":"vertical",
       "coord":[378, 34],
       "size":[459,103]
-    },{
+    },
+    {
       "id":4,
       "format":"sff",
       "orientation":"vertical",
       "coord":[483, 34],
       "size":[459,103]
-    },{
+    },
+    {
       "id":5,
       "format":"sff",
       "orientation":"vertical",
       "coord":[589, 34],
       "size":[459,103]
-    },{
+    },
+    {
       "id":6,
       "format":"sff",
       "orientation":"vertical",
       "coord":[694, 34],
       "size":[459,103]
-    },{
+    },
+    {
       "id":7,
       "format":"sff",
       "orientation":"vertical",
       "coord":[800, 34],
       "size":[459,103]
-    },{
+    },
+    {
       "id":8,
       "format":"sff",
       "orientation":"vertical",
       "coord":[906, 34],
       "size":[459,103]
-    },{
+    },
+    {
       "id":9,
       "format":"sff",
       "orientation":"vertical",
       "coord":[1012, 34],
       "size":[459,103]
-    },{
+    },
+    {
       "id":10,
       "format":"sff",
       "orientation":"vertical",
       "coord":[1117, 34],
       "size":[459,103]
-    },{
+    },
+    {
       "id":11,
       "format":"sff",
       "orientation":"vertical",
       "coord":[1224, 34],
       "size":[459,103]
-    },{
+    },
+    {
       "id":12,
       "format":"sff",
       "orientation":"vertical",
       "coord":[1329, 34],
       "size":[459,103]
-    },{
+    },
+    {
       "id":13,
       "format":"sff",
       "orientation":"vertical",
       "coord":[1435, 34],
       "size":[459,103]
-    },{
+    },
+    {
       "id":14,
       "format":"sff",
       "orientation":"vertical",
       "coord":[1541, 34],
       "size":[459,103]
-    },{
+    },
+    {
       "id":15,
       "format":"sff",
       "orientation":"vertical",
       "coord":[1646, 34],
       "size":[459,103]
-    },{
+    },
+    {
       "id":16,
       "format":"sff",
       "orientation":"vertical",
       "coord":[1752, 34],
       "size":[459,103]
-    },{
+    },
+    {
       "id":17,
       "format":"sff",
       "orientation":"vertical",
       "coord":[1858, 34],
       "size":[459,103]
-    },{
+    },
+    {
       "id":18,
       "format":"sff",
       "orientation":"vertical",
       "coord":[1963, 34],
       "size":[459,103]
-    },{
+    },
+    {
       "id":19,
       "format":"sff",
       "orientation":"vertical",
       "coord":[2070, 34],
       "size":[459,103]
-    },{
+    },
+    {
       "id":20,
       "format":"sff",
       "orientation":"vertical",
       "coord":[2175, 34],
       "size":[459,103]
-    },{
+    },
+    {
       "id":21,
       "format":"sff",
       "orientation":"vertical",
       "coord":[2281, 34],
       "size":[459,103]
-    },{
+    },
+    {
       "id":22,
       "format":"sff",
       "orientation":"vertical",
       "coord":[2387, 34],
       "size":[459,103]
-    },{
+    },
+    {
       "id":23,
       "format":"sff",
       "orientation":"vertical",
       "coord":[2493, 34],
       "size":[459,103]
-    },{
+    },
+    {
       "id":24,
       "format":"sff",
       "orientation":"vertical",

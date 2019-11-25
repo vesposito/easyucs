@@ -5,6 +5,11 @@
    "description":"EasyUCS ucs system config vlan_groups section JSON schema",
    "type":"object",
    "properties":{
+      "comment": {
+         "description": "VLAN Group Comments",
+         "type": "string",
+         "default": ""
+      },
       "name":{
          "description":"VLAN Group Name",
          "type":"string",

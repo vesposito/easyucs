@@ -5,6 +5,11 @@
    "description":"EasyUCS ucs system config fcoe_uplink_ports section JSON schema",
    "type":"object",
    "properties":{
+      "comment": {
+         "description": "FCoE Uplink Port Comments",
+         "type": "string",
+         "default": ""
+      },
       "fabric":{
          "description":"Fabric ID of FCoE Uplink Port (\"A\" or \"B\")",
          "type":"string",

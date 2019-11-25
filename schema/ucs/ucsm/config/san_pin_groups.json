@@ -5,6 +5,11 @@
    "description":"EasyUCS ucs system config san_pin_groups section JSON schema",
    "type":"object",
    "properties":{
+      "comment": {
+         "description": "SAN Pin Group Comments",
+         "type": "string",
+         "default": ""
+      },
       "name":{
          "description":"Name of SAN Pin Group",
          "type":"string",

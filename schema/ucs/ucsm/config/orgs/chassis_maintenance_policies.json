@@ -5,6 +5,11 @@
    "description": "EasyUCS ucs system config chassis_maintenance_policies section JSON schema",
    "type": "object",
    "properties": {
+      "comment": {
+         "description": "Chassis Maintenance Policy Comments",
+         "type": "string",
+         "default": ""
+      },
       "name": {
          "description": "Chassis Maintenance Policy Name",
          "type": "string",

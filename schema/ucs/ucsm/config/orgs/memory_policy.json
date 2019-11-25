@@ -5,6 +5,11 @@
    "description":"EasyUCS ucs system config orgs memory_policy section JSON schema",
    "type":"object",
    "properties": {
+      "comment": {
+         "description": "Memory Policy Comments",
+         "type": "string",
+         "default": ""
+      },
       "blacklisting":{
          "description":"Blacklisting",
          "type":"string",

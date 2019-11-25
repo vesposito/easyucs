@@ -974,7 +974,8 @@ class UcsSystemStorageControllerNvmeDrive(UcsStorageNvmeDrive, UcsSystemInventor
                 self.logger(level="debug",
                             message="Could not find the corresponding storageNvmeStats for object with DN " +
                                     self.dn + " of model \"" + self.model + "\" with ID " + self.id)
-                self.logger(level="info", message="NVMe stats of disk with id " + self.id + " are not available.")
+                self.logger(level="info", message="NVMe stats of disk with id " + self.id + " for server " +
+                                                  self._parent.id + " are not available.")
                 return False
             else:
                 return storage_nvme_stats_list[0]
@@ -1066,8 +1067,6 @@ class UcsImcStorageNvmeDrive(UcsStorageNvmeDrive, UcsImcInventoryObject):
     _UCS_SDK_CATALOG_IDENTIFY_ATTRIBUTE = "slot"
     _UCS_SDK_OBJECT_IDENTIFY_ATTRIBUTE = "id"
 
-    # TODO: productName attribute not supported by current imcsdk
-
     def __init__(self, parent=None, storage_nvme_physical_drive=None):
         UcsStorageNvmeDrive.__init__(self, parent=parent, ucs_sdk_object=storage_nvme_physical_drive)
 
@@ -1076,13 +1075,12 @@ class UcsImcStorageNvmeDrive(UcsStorageNvmeDrive, UcsImcInventoryObject):
         self.firmware_version = self.get_attribute(ucs_sdk_object=storage_nvme_physical_drive,
                                                    attribute_name="firmware_version")
         self.id = self.get_attribute(ucs_sdk_object=storage_nvme_physical_drive, attribute_name="id")
-        self.model = self.get_attribute(ucs_sdk_object=storage_nvme_physical_drive, attribute_name="productName",
+        self.model = self.get_attribute(ucs_sdk_object=storage_nvme_physical_drive, attribute_name="product_name",
                                         attribute_secondary_name="model")
         self.serial = self.get_attribute(ucs_sdk_object=storage_nvme_physical_drive, attribute_name="serial")
         self.temperature = self.get_attribute(ucs_sdk_object=storage_nvme_physical_drive,
                                               attribute_name="pd_chip_temp_celsius",
-                                              attribute_secondary_name="temperature",
-                                              attribute_type="float")
+                                              attribute_secondary_name="temperature")
         self.vendor = self.get_attribute(ucs_sdk_object=storage_nvme_physical_drive, attribute_name="vendor")
 
         UcsImcInventoryObject.__init__(self, parent=parent, ucs_sdk_object=storage_nvme_physical_drive)
@@ -1143,22 +1141,20 @@ class UcsImcStorageNvmeDrive(UcsStorageNvmeDrive, UcsImcInventoryObject):
 class UcsImcSiocStorageNvmeDrive(UcsStorageNvmeDrive, UcsImcInventoryObject):
     _UCS_SDK_OBJECT_NAME = "ioControllerNVMePhysicalDrive"
 
-    #TODO: Currently not supported by imcsdk - will have to change the attributes using "_" instead of caps
     #TODO: Get the corresponding pidCatalog item to fetch SKU
 
     def __init__(self, parent=None, io_controller_nvme_physical_drive=None):
         UcsStorageNvmeDrive.__init__(self, parent=parent, ucs_sdk_object=io_controller_nvme_physical_drive)
 
-        self.health = self.get_attribute(ucs_sdk_object=io_controller_nvme_physical_drive, attribute_name="pdStatus",
+        self.health = self.get_attribute(ucs_sdk_object=io_controller_nvme_physical_drive, attribute_name="pd_status",
                                          attribute_secondary_name="health")
         self.firmware_version = self.get_attribute(ucs_sdk_object=io_controller_nvme_physical_drive,
-                                                   attribute_name="firmwareVersion",
-                                                   attribute_secondary_name="firmware_version")
+                                                   attribute_name="firmware_version")
         self.id = self.get_attribute(ucs_sdk_object=io_controller_nvme_physical_drive, attribute_name="id")
         self.model = self.get_attribute(ucs_sdk_object=io_controller_nvme_physical_drive, attribute_name="model")
         self.serial = self.get_attribute(ucs_sdk_object=io_controller_nvme_physical_drive, attribute_name="serial")
         self.temperature = self.get_attribute(ucs_sdk_object=io_controller_nvme_physical_drive,
-                                              attribute_name="pdChipTempCelsius",
+                                              attribute_name="pd_chip_temp_celsius",
                                               attribute_secondary_name="temperature")
         self.vendor = self.get_attribute(ucs_sdk_object=io_controller_nvme_physical_drive, attribute_name="vendor")
 

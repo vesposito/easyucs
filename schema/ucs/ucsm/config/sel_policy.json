@@ -5,6 +5,11 @@
    "description":"EasyUCS ucs system config sel_policy section JSON schema",
    "type":"object",
    "properties":{
+      "comment": {
+         "description": "SEL Policy Comments",
+         "type": "string",
+         "default": ""
+      },
       "description":{
          "description":"SEL Policy description",
          "type":"string"

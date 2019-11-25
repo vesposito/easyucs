@@ -5,6 +5,11 @@
    "description": "EasyUCS ucs central config domain_groups section JSON schema",
    "type": "object",
    "properties": {
+      "comment": {
+         "description": "Domain Group Comments",
+         "type": "string",
+         "default": ""
+      },
       "name": {
          "description": "Domain Group Name",
          "type": "string",

@@ -5,6 +5,11 @@
    "description": "EasyUCS ucs system config orgs boot_policies section JSON schema",
    "type": "object",
    "properties": {
+      "comment": {
+         "description": "Boot Policy Comments",
+         "type": "string",
+         "default": ""
+      },
       "name": {
          "description": "Boot Policy Name",
          "type": "string",

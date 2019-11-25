@@ -5,6 +5,11 @@
    "description":"EasyUCS ucs system config timezone_mgmt section JSON schema",
    "type":"object",
    "properties":{
+      "comment": {
+         "description": "Timezone Management Comments",
+         "type": "string",
+         "default": ""
+      },
       "zone":{
          "description":"Time Zone",
          "type":"string",

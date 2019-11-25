@@ -5,36 +5,41 @@
    "description":"EasyUCS ucs system config system section JSON schema",
    "type":"object",
    "properties":{
+      "comment": {
+         "description": "UCS System Comments",
+         "type": "string",
+         "default": ""
+      },
       "name":{
-         "description":"UCS system name",
+         "description":"UCS System Name",
          "type":"string"
       },
       "virtual_ip":{
-         "description":"UCS system virtual IPv4 address",
+         "description":"UCS System Virtual IPv4 Address",
          "type":"string",
          "format":"ipv4"
       },
       "virtual_ipv6":{
-         "description":"UCS system virtual IPv6 address",
+         "description":"UCS System Virtual IPv6 Address",
          "type":"string",
          "format":"ipv6"
       },
       "domain_name":{
-         "description":"UCS system domain name",
+         "description":"UCS System Domain Name",
          "type":"string"
       },
       "owner":{
-         "description":"UCS system owner",
+         "description":"UCS System Owner",
          "type":"string",
          "default":""
       },
       "site":{
-         "description":"UCS system site",
+         "description":"UCS System Site",
          "type":"string",
          "default":""
       },
       "descr":{
-         "description":"UCS system description",
+         "description":"UCS System Description",
          "type":"string",
          "default":""
       }

@@ -152,6 +152,9 @@ class UcsSystemTransceiver(UcsTransceiver, UcsSystemInventoryObject):
         # Manual entries for FC transceivers
         if self._parent.__class__.__name__ == "UcsSystemFiFcPort":
             if self.type in ["sfp", "unknown"]:
+                if self.model in ["FTLF8524P2BNL-C2"]:
+                    self.sku = "DS-SFP-FC4G-SW"
+                    self.length = "<=380m"
                 if self.model in ["FTLF8528P2BCV-CS", "FTLF8528P3BCV-C1", "SFBR-5780AMZ-CS2", "SFBR-5780APZ-CS2"]:
                     self.sku = "DS-SFP-FC8G-SW"
                     self.length = "<=190m"
@@ -161,6 +164,13 @@ class UcsSystemTransceiver(UcsTransceiver, UcsSystemInventoryObject):
                 if self.model in ["FTLF8532P4BCV-C1", "SFBR-57G5MZ-CS1"]:
                     self.sku = "DS-SFP-FC32G-SW"
                     self.length = "<=100m"
+
+        # Manual entries for unknown Ethernet transceivers
+        if self._parent.__class__.__name__ == "UcsSystemFiEthPort":
+            if self.type in ["unknown"]:
+                if self.model in ["74752-9026"]:
+                    self.sku = "SFP-H10GB-CU3M"
+                    self.length = "3m"
 
 
 class UcsImcTransceiver(UcsTransceiver, UcsImcInventoryObject):

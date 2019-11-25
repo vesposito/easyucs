@@ -5,6 +5,11 @@
    "description": "EasyUCS ucs system config orgs local_disk_config_policies section JSON schema",
    "type": "object",
    "properties": {
+      "comment": {
+         "description": "Local Disk Configuration Policy Comments",
+         "type": "string",
+         "default": ""
+      },
       "name": {
          "description": "Local Disk Configuration Policy Name",
          "type": "string",

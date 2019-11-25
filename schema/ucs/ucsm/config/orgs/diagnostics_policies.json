@@ -5,6 +5,11 @@
    "description":"EasyUCS ucs system config orgs diagnostics_policies section JSON schema",
    "type":"object",
    "properties":{
+      "comment": {
+         "description": "Diagnostics Policy Comments",
+         "type": "string",
+         "default": ""
+      },
       "name":{
          "description":"Diagnostics Policy Name",
          "type":"string",

@@ -5,6 +5,11 @@
    "description": "EasyUCS ucs system config orgs iqn_suffix_pools section JSON schema",
    "type": "object",
    "properties": {
+      "comment": {
+         "description": "IQN Suffix Pool Comments",
+         "type": "string",
+         "default": ""
+      },
       "name": {
          "description": "IQN Suffix Pool Name",
          "type": "string",

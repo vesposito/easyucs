@@ -5,6 +5,11 @@
    "description":"EasyUCS ucs system config san_uplink_ports section JSON schema",
    "type":"object",
    "properties":{
+      "comment": {
+         "description": "SAN Uplink Port Comments",
+         "type": "string",
+         "default": ""
+      },
       "fabric":{
          "description":"Fabric ID of SAN Uplink Port (\"A\" or \"B\")",
          "type":"string",

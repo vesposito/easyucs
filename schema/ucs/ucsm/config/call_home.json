@@ -5,6 +5,11 @@
    "description":"EasyUCS ucs system config call_home section JSON schema",
    "type":"object",
    "properties":{
+      "comment": {
+         "description": "Call Home Comments",
+         "type": "string",
+         "default": ""
+      },
       "mute_at_start":{
          "description":"Mute Call Home Anonymous Reporting popup at UCS Manager start",
          "type":"string",
