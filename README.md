@@ -34,15 +34,41 @@ Python can be used on Windows, Linux/Unix, Mac OS X and more.
 You can download the latest version of *Python 3* on the [official website](https://www.python.org/downloads/).
 
 ### Installing
-EasyUCS can be installed using any of ways below:
+EasyUCS can either be installed locally to a directory or using a Python
+package management tool like `pip`. Outside of testing and development, `pip`
+is the preferred method.
 
-#### From GitHub
-Click *"Clone or Download"* and *"Download ZIP"* on the GitHub website to download the whole project. 
+#### Using Pip
+Pip can be install the current version directly from a link to the GitHub repository, like
+- with Linux or Mac OSX
+```
+pip install https://github.com/vesposito/easyucs.git
+```
+- with Windows
+```
+python -m pip install https://github.com/vesposito/easyucs.git
+```
 
-Uncompress the zip and put the folder on your system. 
+It can also be used to install from a locally downloaded copy of the package. Instructions for downloading manually are in the next section.
+- with Linux or Mac OSX
+```
+pip install path/to/local/copy
+```
 
-#### From Git command line
+- with Windows
+```
+python -m pip install path/to/local/copy
+```
 
+#### Downloading Manually
+
+##### From GitHub
+Click *"Clone or Download"* and *"Download ZIP"* on the GitHub website to download the whole project.
+
+Uncompress the zip and put the folder on your system. Commands under *Running
+EasyUCS* below can be run from the root of the uncompressed folder.
+
+##### From Git command line
 You need to have Git on your system (not necessarily installed by default on all types of system).
 
 Navigate to your desired path where you want EasyUCS to be placed on and clone it through your command-line console,
@@ -51,21 +77,13 @@ Navigate to your desired path where you want EasyUCS to be placed on and clone i
 git clone https://github.com/vesposito/easyucs.git
 ```
 
+Again, commands below can be run from the root of the downloaded repository.
+
 ## Requirements
 
-EasyUCS requires some Python modules dependencies. The file **[requirements.txt](./requirements.txt)** contains all of these requirements.
+EasyUCS requires some Python modules dependencies. The file **[setup.py](./setup.py)** contains these requirements.
 
-Use Python Pip to install all of them.
-
-- for Max OS X, Unix, Linux:
-```
-pip install -r requirements.txt
-```
-
-- for Windows:
-```
-python -m pip install -r requirements.txt
-```
+**If you installed EasyUCS using Pip, this step is already complete.** Otherwise, you will need to install the dependencies either by hand, using Pip manually, or with your operating system package manager.
 
 ## Running EasyUCS
 
@@ -74,48 +92,48 @@ EasyUCS can be used with command line interface or via a Web GUI.
 
 ### Using the Command-Line Interface (CLI)
 
-Push config file config_ucsm.json to UCS system
+Push config file `config_ucsm.json` to UCS system
 ```
-python easyucs.py config push -t ucsm -i 192.168.0.1 -u admin -p password -f configs/config_ucsm.json
-```
-
-Reset UCS IMC and push config file config_cimc.json
-```
-python easyucs.py config push -t cimc -i 192.168.0.2 -u admin -p password -f configs/config_cimc.json -r
+python -m easyucs.easyucs config push -t ucsm -i 192.168.0.1 -u admin -p password -f configs/config_ucsm.json
 ```
 
-Reset UCS system, perform initial setup using DHCP IP addresses 192.168.0.11 & 192.168.0.12 and push config file config_ucsm.json
+Reset UCS IMC and push config file `config_cimc.json`
 ```
-python easyucs.py config push -t ucsm -f configs/config_ucsm.json -r -s 192.168.0.11 192.168.0.12
-```
-
-Fetch config from UCS system and save it to output/configs/config_ucsm.json
-```
-python easyucs.py config fetch -t ucsm -i 192.168.0.1 -u admin -p password -o output/configs/config_ucsm.json
+python -m easyucs.easyucs config push -t cimc -i 192.168.0.2 -u admin -p password -f configs/config_cimc.json -r
 ```
 
-
-Fetch inventory from UCS IMC and save it to output/inventories/inventory_cimc.json
+Reset UCS system, perform initial setup using DHCP IP addresses `192.168.0.11` & `192.168.0.12` and push config file `config_ucsm.json`
 ```
-python easyucs.py inventory fetch -t cimc -i 192.168.0.2 -u admin -p password -o output/inventories/inventory_cimc.json
-```
-
-Create schemas from UCS system and save them to output/schemas folder
-```
-python easyucs.py schemas create -t ucsm -i 192.168.0.1 -u admin -p password -o output/schemas
+python -m easyucs.easyucs config push -t ucsm -f configs/config_ucsm.json -r -s 192.168.0.11 192.168.0.12
 ```
 
-Create report from UCS system and save it to output/reports folder
+Fetch config from UCS system and save it to `output/configs/config_ucsm.json`
 ```
-python easyucs.py report generate -t ucsm -i 192.168.0.1 -u admin -p password -o output/reports
+python -m easyucs.easyucs config fetch -t ucsm -i 192.168.0.1 -u admin -p password -o output/configs/config_ucsm.json
+```
+
+
+Fetch inventory from UCS IMC and save it to `output/inventories/inventory_cimc.json`
+```
+python -m easyucs.easyucs inventory fetch -t cimc -i 192.168.0.2 -u admin -p password -o output/inventories/inventory_cimc.json
+```
+
+Create schemas from UCS system and save them to `output/schemas` folder
+```
+python -m easyucs.easyucs schemas create -t ucsm -i 192.168.0.1 -u admin -p password -o output/schemas
+```
+
+Create report from UCS system and save it to `output/reports` folder
+```
+python -m easyucs.easyucs report generate -t ucsm -i 192.168.0.1 -u admin -p password -o output/reports
 ```
 
 #### Using the Web Graphical User Interface (GUI)
 
-The Web GUI is hosted by your machine, in order to launch it you need to use the file **[easyucs_gui.py](./easyucs_gui.py)**.
+The Web GUI is hosted by your machine, in order to launch it you need to use the **[easyucs_gui module](./easyucs/easyucs_gui.py)**.
 
 ```
-python easyucs_gui.py
+python -m easyucs.easyucs_gui
 ```
 
 

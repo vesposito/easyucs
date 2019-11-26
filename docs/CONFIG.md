@@ -2,7 +2,7 @@
 
 Configuration files can be pushed or fetched to/from a UCS device. They are JSON-formatted files that are meant to be **human-readable** with each section corresponding to a UCS feature.
 
-You can find configuration samples in the **samples** directory. 
+You can find configuration samples in the **samples** directory.
 This directory contains:
 * **best practices** configurations (for BIOS Policies)
 * **CVD** configurations for quick deployment of FlashStack/FlexPod/VersaStack
@@ -14,7 +14,7 @@ This directory contains:
 
 ### Using the Command-Line Interface (CLI)
 
-The file **[easyucs.py](../easyucs.py)** is the main file that you will use. 
+The **[easyucs module](../easyucs/easyucs.py)** is the main module that you will use.
 You can find help at each step by entering the **"-h"** argument.
 
 The tool first needs the scope of action you want to use as argument:
@@ -41,7 +41,7 @@ Action:
 ##### Arguments for a config push 
 
 List of arguments :
-  
+
   - **-h**, --help            | show this help message and exit
   - **-i IP**, --ip IP        | UCS IP address
   - **-u USERNAME**, --username USERNAME
@@ -60,12 +60,12 @@ List of arguments :
   - **-y**, --yes             | Answer yes to all questions
 
 
-###Using the Web Graphical User Interface (GUI)
+### Using the Web Graphical User Interface (GUI)
 
-The Web GUI is hosted by your machine, in order to launch it you need to use the file **[easyucs_gui.py](./easyucs_gui.py)**.
+The Web GUI is hosted by your machine, in order to launch it you need to use the **[easyucs_gui module](../easyucs/easyucs_gui.py)**.
 
 ```
-python easyucs_gui.py
+python -m easyucs.easyucs_gui
 ```
 
 
@@ -80,7 +80,7 @@ The result of this command will be something like:
  * Running on http://127.0.0.1:5000/ (Press CTRL+C to quit)
 ```
 
-It means that the GUI is available on your local machine at the URL http://127.0.0.1:5000/
+It means that the GUI is available on your local machine at the URL `http://127.0.0.1:5000/`
 
 The GUI can be used to deploy configurations on all types of UCS devices.
 
@@ -92,8 +92,8 @@ If the "setup" box is selected you **must** enter the DHCP IP Address(es) that a
 
 ![GUI 1](img/GUI1_850.png)
 
-Next you have to choose the configuration to push on your UCS Device. 
-You can either select a file on your computer or use a "remote" file from the **samples** directory. 
+Next you have to choose the configuration to push on your UCS Device.
+You can either select a file on your computer or use a "remote" file from the **samples** directory.
 Those remote files are JSON transcriptions of some CVDs and Best Practices.
 
 ![GUI 2](img/GUI2_850.png)
@@ -110,16 +110,16 @@ The auto scrolling of this console is also an option.
 
 ### Using the Command-Line Interface (CLI)
 
-The file **[easyucs.py](../easyucs.py)** is the main file that you will use. 
+The **[easyucs module](../easyucs/easyucs.py)** is the main module that you will use.
 You can find help at each step by entering the **"-h"** argument.
 
-It first needs the type of scope of action you want to use as an argument. 
+It first needs the type of scope of action you want to use as an argument.
 The scope of action:
 ```
 Scope:
   Scope of action
 
-  {config,inventory,schemas}  
+  {config,inventory,schemas}
                       EasyUCS scope
     config            config-related actions
     inventory         inventory-related actions
@@ -160,16 +160,16 @@ Each JSON file is structured with two sections : "easyucs" and "config"
 ```json5
 {
    "easyucs":{
-      
+
    },
    "config":{
-      
+
    }
 }
 ```
 ### "easyucs" section
 
-An "easyucs" section is a composed of a "metadata" and a potential "options" sections. 
+An "easyucs" section is a composed of a "metadata" and a potential "options" sections.
 
 #### Metadata
 
@@ -179,7 +179,7 @@ The required items are : ***"device_type", "file_type", "easyucs_version"***
 
 The others are : *"category", "device_name", "device_uuid", "device_version", "hash", "name", "origin", "revision", "subcategory", "timestamp", "url", "uuid"*
 
-Some of these other items are not meant to be written by the user. 
+Some of these other items are not meant to be written by the user.
 
 Example metadata header:
 ```json5
