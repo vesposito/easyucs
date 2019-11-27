@@ -1,0 +1,4 @@
+#!/usr/bin/env python
+
+import runpy
+runpy.run_module('easyucs.easyucs_gui', run_name='__main__')

@@ -12,6 +12,7 @@ setup(name='EasyUCS',
       package_data={
           'easyucs': ['static/**/*', 'templates/**/*'],
           },
+      scripts=findall('easyucs/scripts/'),
       install_requires=[
           'paramiko >= 2.6.0',
           'imcsdk >= 0.9.7',
