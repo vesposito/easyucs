@@ -348,7 +348,7 @@ def init_process(ucs_device, args, config_string):
     ucs_device.print_logger_summary()
 
 
-def main():
+def main(argv=None):
     # Example texts for parser
     example_text = '''Examples:
       To see examples, please type: python easyucs.py {config, inventory, schemas, report} -h'''
@@ -552,7 +552,9 @@ def main():
     parser_report_generate.add_argument('-y', '--yes', dest='yes', action='store_true',
                                        help='Answer yes to all questions')
 
-    args = parser.parse_args()
+    # Parse arguments. If argv is passed, those are used, otherwise sys.argv is
+    # the default.
+    args = parser.parse_args(argv)
 
     json_string = ""
     # Checking arguments compliance for config push
