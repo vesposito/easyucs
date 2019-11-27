@@ -10,7 +10,7 @@ setup(name='EasyUCS',
       url='https://github.com/vesposito/easyucs',
       packages=find_packages(),
       package_data={
-          'easyucs': ['static/**/*', 'templates/**/*'],
+          'easyucs': ['schema/**/*', 'static/**/*', 'templates/**/*'],
           },
       scripts=findall('easyucs/scripts/'),
       install_requires=[
