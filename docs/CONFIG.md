@@ -65,7 +65,7 @@ List of arguments :
 The Web GUI is hosted by your machine, in order to launch it you need to use the **[easyucs_gui module](../easyucs/easyucs_gui.py)**.
 
 ```
-python -m easyucs.easyucs_gui
+easyucs_gui
 ```
 
 

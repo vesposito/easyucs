@@ -77,8 +77,6 @@ Navigate to your desired path where you want EasyUCS to be placed on and clone i
 git clone https://github.com/vesposito/easyucs.git
 ```
 
-Again, commands below can be run from the root of the downloaded repository.
-
 ## Requirements
 
 EasyUCS requires some Python modules dependencies. The file **[setup.py](./setup.py)** contains these requirements.
@@ -89,43 +87,45 @@ EasyUCS requires some Python modules dependencies. The file **[setup.py](./setup
 
 EasyUCS can be used with command line interface or via a Web GUI.
 
+**If you installed EasyUCS into a local directory, substitue `easyucs/scripts/easyucs` or `easyucs/scripts/easyucs_gui` for `easyucs` or `easyucs_gui` respectively.**
+
 
 ### Using the Command-Line Interface (CLI)
 
 Push config file `config_ucsm.json` to UCS system
 ```
-python -m easyucs.easyucs config push -t ucsm -i 192.168.0.1 -u admin -p password -f configs/config_ucsm.json
+easyucs config push -t ucsm -i 192.168.0.1 -u admin -p password -f configs/config_ucsm.json
 ```
 
 Reset UCS IMC and push config file `config_cimc.json`
 ```
-python -m easyucs.easyucs config push -t cimc -i 192.168.0.2 -u admin -p password -f configs/config_cimc.json -r
+easyucs config push -t cimc -i 192.168.0.2 -u admin -p password -f configs/config_cimc.json -r
 ```
 
 Reset UCS system, perform initial setup using DHCP IP addresses `192.168.0.11` & `192.168.0.12` and push config file `config_ucsm.json`
 ```
-python -m easyucs.easyucs config push -t ucsm -f configs/config_ucsm.json -r -s 192.168.0.11 192.168.0.12
+easyucs config push -t ucsm -f configs/config_ucsm.json -r -s 192.168.0.11 192.168.0.12
 ```
 
 Fetch config from UCS system and save it to `output/configs/config_ucsm.json`
 ```
-python -m easyucs.easyucs config fetch -t ucsm -i 192.168.0.1 -u admin -p password -o output/configs/config_ucsm.json
+easyucs config fetch -t ucsm -i 192.168.0.1 -u admin -p password -o output/configs/config_ucsm.json
 ```
 
 
 Fetch inventory from UCS IMC and save it to `output/inventories/inventory_cimc.json`
 ```
-python -m easyucs.easyucs inventory fetch -t cimc -i 192.168.0.2 -u admin -p password -o output/inventories/inventory_cimc.json
+easyucs inventory fetch -t cimc -i 192.168.0.2 -u admin -p password -o output/inventories/inventory_cimc.json
 ```
 
 Create schemas from UCS system and save them to `output/schemas` folder
 ```
-python -m easyucs.easyucs schemas create -t ucsm -i 192.168.0.1 -u admin -p password -o output/schemas
+easyucs schemas create -t ucsm -i 192.168.0.1 -u admin -p password -o output/schemas
 ```
 
 Create report from UCS system and save it to `output/reports` folder
 ```
-python -m easyucs.easyucs report generate -t ucsm -i 192.168.0.1 -u admin -p password -o output/reports
+easyucs report generate -t ucsm -i 192.168.0.1 -u admin -p password -o output/reports
 ```
 
 #### Using the Web Graphical User Interface (GUI)
@@ -133,7 +133,7 @@ python -m easyucs.easyucs report generate -t ucsm -i 192.168.0.1 -u admin -p pas
 The Web GUI is hosted by your machine, in order to launch it you need to use the **[easyucs_gui module](./easyucs/easyucs_gui.py)**.
 
 ```
-python -m easyucs.easyucs_gui
+easyucs_gui
 ```
 
 
