@@ -123,14 +123,7 @@ class GenericDevice:
         elif self._logger_handle_log_level == "info":
             ch.setLevel(logging.INFO)
         ch.setFormatter(formatter)
-
-        if self._logger_handle.hasHandlers():
-            self._logger_handle.handlers = []
-            self._logger_handle.addHandler(ch)
-        else:
-            self._logger_handle.addHandler(ch)
-        # if not self._logger_handle.hasHandlers():
-        #     self._logger_handle.addHandler(ch)
+        self._logger_handle.addHandler(ch)
 
     def logger(self, level='info', message="No message"):
         # Sanity check:
