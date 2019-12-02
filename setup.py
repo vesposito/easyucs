@@ -1,6 +1,17 @@
 #!/usr/bin/env python
 
+import glob
+import os
+import pathlib
 from setuptools import setup, find_packages, findall
+
+def relative_iglob(root, glob_, recursive=None):
+    """Yield setuptools-compatible POSIX paths matching a glob relative to a
+    root.
+    """
+    fullglob = os.path.join(root, glob_)
+    for path in glob.iglob(fullglob, recursive=recursive):
+        yield pathlib.PurePosixPath(path).relative_to(root).as_posix()
 
 setup(name='EasyUCS',
       version='0.9.4',
@@ -10,7 +21,10 @@ setup(name='EasyUCS',
       url='https://github.com/vesposito/easyucs',
       packages=find_packages(),
       package_data={
-          'easyucs': ['schema/**/*', 'static/**/*', 'templates/**/*'],
+          'easyucs':
+              list(relative_iglob('easyucs/', 'schema/**/*', recursive=True)) +
+              list(relative_iglob('easyucs/', 'static/**/*', recursive=True)) +
+              list(relative_iglob('easyucs/', 'templates/**/*', recursive=True)),
           },
       scripts=findall('easyucs/scripts/'),
       install_requires=[
