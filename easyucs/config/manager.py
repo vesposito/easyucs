@@ -2,7 +2,7 @@
 # !/usr/bin/env python
 
 """ manager.py: Easy UCS Deployment Tool """
-from easyucs import __author__, __copyright__,  __version__, __status__
+from easyucs import __author__, __copyright__,  __version__, __status__, EASYUCS_ROOT
 
 
 import json
@@ -1105,13 +1105,14 @@ class UcsSystemConfigManager(GenericUcsConfigManager):
         """
 
         # Open JSON master schema for a UCS System config
-        json_file = open("schema/ucs/ucsm/master.json")
+        master_schema_path = os.path.join(EASYUCS_ROOT, "schema/ucs/ucsm/master.json")
+        json_file = open(master_schema_path)
         json_string = json_file.read()
         json_file.close()
         json_schema = json.loads(json_string)
 
         schema_path = 'file:///{0}/'.format(
-            os.path.dirname(os.path.abspath("schema/ucs/ucsm/master.json")).replace("\\", "/"))
+            os.path.dirname(os.path.abspath(master_schema_path)).replace("\\", "/"))
         resolver = jsonschema.RefResolver(schema_path, json_schema)
         format_checker = jsonschema.FormatChecker()
 
@@ -1588,13 +1589,14 @@ class UcsImcConfigManager(GenericUcsConfigManager):
         """
 
         # Open JSON master schema for a UCS CIMC config
-        json_file = open("schema/ucs/cimc/master.json")
+        master_schema_path = os.path.join(EASYUCS_ROOT, "schema/ucs/cimc/master.json")
+        json_file = open(master_schema_path)
         json_string = json_file.read()
         json_file.close()
         json_schema = json.loads(json_string)
 
         schema_path = 'file:///{0}/'.format(
-            os.path.dirname(os.path.abspath("schema/ucs/cimc/master.json")).replace("\\", "/"))
+            os.path.dirname(os.path.abspath(master_schema_path)).replace("\\", "/"))
         resolver = jsonschema.RefResolver(schema_path, json_schema)
         format_checker = jsonschema.FormatChecker()
 
@@ -1837,13 +1839,14 @@ class UcsCentralConfigManager(GenericUcsConfigManager):
         """
 
         # Open JSON master schema for a UCS Central config
-        json_file = open("schema/ucs/ucsc/master.json")
+        master_schema_path = os.path.join(EASYUCS_ROOT, "schema/ucs/ucsc/master.json")
+        json_file = open(master_schema_path)
         json_string = json_file.read()
         json_file.close()
         json_schema = json.loads(json_string)
 
         schema_path = 'file:///{0}/'.format(
-            os.path.dirname(os.path.abspath("schema/ucs/ucsc/master.json")).replace("\\", "/"))
+            os.path.dirname(os.path.abspath(master_schema_path)).replace("\\", "/"))
         resolver = jsonschema.RefResolver(schema_path, json_schema)
         format_checker = jsonschema.FormatChecker()
 
