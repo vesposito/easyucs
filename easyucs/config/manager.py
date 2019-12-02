@@ -1106,10 +1106,8 @@ class UcsSystemConfigManager(GenericUcsConfigManager):
 
         # Open JSON master schema for a UCS System config
         master_schema_path = os.path.join(EASYUCS_ROOT, "schema/ucs/ucsm/master.json")
-        json_file = open(master_schema_path)
-        json_string = json_file.read()
-        json_file.close()
-        json_schema = json.loads(json_string)
+        with open(master_schema_path) as json_file:
+            json_schema = json.load(json_file)
 
         schema_path = 'file:///{0}/'.format(
             os.path.dirname(os.path.abspath(master_schema_path)).replace("\\", "/"))
@@ -1590,10 +1588,8 @@ class UcsImcConfigManager(GenericUcsConfigManager):
 
         # Open JSON master schema for a UCS CIMC config
         master_schema_path = os.path.join(EASYUCS_ROOT, "schema/ucs/cimc/master.json")
-        json_file = open(master_schema_path)
-        json_string = json_file.read()
-        json_file.close()
-        json_schema = json.loads(json_string)
+        with open(master_schema_path) as json_file:
+            json_schema = json.load(json_file)
 
         schema_path = 'file:///{0}/'.format(
             os.path.dirname(os.path.abspath(master_schema_path)).replace("\\", "/"))
@@ -1840,10 +1836,8 @@ class UcsCentralConfigManager(GenericUcsConfigManager):
 
         # Open JSON master schema for a UCS Central config
         master_schema_path = os.path.join(EASYUCS_ROOT, "schema/ucs/ucsc/master.json")
-        json_file = open(master_schema_path)
-        json_string = json_file.read()
-        json_file.close()
-        json_schema = json.loads(json_string)
+        with open(master_schema_path) as json_file:
+            json_schema = json.load(json_file)
 
         schema_path = 'file:///{0}/'.format(
             os.path.dirname(os.path.abspath(master_schema_path)).replace("\\", "/"))
