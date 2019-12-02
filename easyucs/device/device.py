@@ -111,7 +111,11 @@ class GenericDevice:
         # create file handler for log if a file is needed
         if self._log_file_path:
             fh = logging.FileHandler(self._log_file_path)
-            fh.setLevel(logging.DEBUG)
+            fh.setLevel(logging.WARNING)
+            if self._logger_handle_log_level == "debug":
+                fh.setLevel(logging.DEBUG)
+            elif self._logger_handle_log_level == "info":
+                fh.setLevel(logging.INFO)
             fh.setFormatter(formatter)
             self._logger_handle.addHandler(fh)
 
