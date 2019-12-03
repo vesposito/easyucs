@@ -16,7 +16,7 @@ The following schemas are generated:
 
 ### Using the Command-Line Interface (CLI)
 
-The file **[easyucs.py](../easyucs.py)** is the main file that you will use. 
+The **[easyucs module](../easyucs.py)** is the main module that you will use.
 You can find help at each step by entering the **"-h"** argument.
 
 It first needs the type of scope of action you want to use as an argument.

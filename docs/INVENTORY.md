@@ -7,10 +7,10 @@ Inventory files can be fetched from a UCS device. They are JSON-formatted files 
 
 ### Using the Command-Line Interface (CLI)
 
-The file **[easyucs.py](../easyucs.py)** is the main file that you will use. 
+The **[easyucs module](../easyucs/easyucs.py)** is the main module that you will use.
 You can have find help at each step by entering the **"-h"** argument.
 
-It first needs the type of scope of action you want to use as an argument. 
+It first needs the type of scope of action you want to use as an argument.
 The scope of action:
 ```
 Scope:
