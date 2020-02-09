@@ -128,6 +128,17 @@ python easyucs_gui.py
 
 ## Versioning
 
+#### 0.9.5
+
+* Add support for UCSM 4.0(4) specific features (M.2 HWRAID, Persistent Memory Policies, Alternate KVM Port)
+* Add support for configuring up to 16 Unified Ports on FI 6454
+* Add support for VSANs on UCS Central
+* Add preliminary support for upcoming FI 64108
+* Reorganization of device, config and inventory folders to clean up files
+* Bump up requirements packages versions
+* Miscelaneous bug fixes and improvements (including fix for missing dependency on tkinter package)
+
+
 #### 0.9.4
 
 * Add support for "comment" field in all sections of a configuration file for easily add comments to specific items of a configuration
