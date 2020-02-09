@@ -64,8 +64,18 @@
          },
          "minItems":1
       },
+      "vsans":{
+         "description":"EasyUCS config/domain_groups/vsans section",
+         "type":"array",
+         "items":{
+            "description":"EasyUCS config/domain_groups/vsans element",
+            "type":"object",
+            "$ref":"domain_groups/vsans.json"
+         },
+         "minItems":1
+      },
       "ip_pools": {
-         "description": "EasyUCS config/orgs/ip_pools section",
+         "description": "EasyUCS config/domain_groups/ip_pools section",
          "type": "array",
          "items": {
             "description:": "EasyUCS config/orgs/ip_pools element",

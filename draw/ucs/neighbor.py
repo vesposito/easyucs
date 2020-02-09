@@ -5,7 +5,7 @@
 from __init__ import __author__, __copyright__,  __version__, __status__
 
 
-from PIL import Image, ImageDraw, ImageTk, ImageFont
+from PIL import Image, ImageDraw, ImageFont
 from draw.object import GenericUcsDrawObject
 from draw.wire import UcsSystemDrawWire
 import copy

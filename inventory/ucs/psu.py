@@ -2,10 +2,8 @@
 # !/usr/bin/env python
 
 """ psu.py: Easy UCS Deployment Tool """
-from __init__ import __author__, __copyright__,  __version__, __status__
 
-
-from inventory.object import GenericUcsInventoryObject, UcsImcInventoryObject, UcsSystemInventoryObject
+from inventory.ucs.object import GenericUcsInventoryObject, UcsImcInventoryObject, UcsSystemInventoryObject
 
 
 class UcsPsu(GenericUcsInventoryObject):

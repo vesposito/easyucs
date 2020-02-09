@@ -19,7 +19,7 @@ from ucsmsdk.mometa.lstorage.LstorageRemote import LstorageRemote
 from ucsmsdk.mometa.lstorage.LstorageSecurity import LstorageSecurity
 from ucsmsdk.mometa.lstorage.LstorageVirtualDriveDef import LstorageVirtualDriveDef
 
-from config.object import UcsSystemConfigObject
+from config.ucs.object import UcsSystemConfigObject
 
 
 class UcsSystemDiskGroupPolicy(UcsSystemConfigObject):

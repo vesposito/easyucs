@@ -186,6 +186,11 @@ from ucsmsdk.mometa.lsboot.LsbootUsbInternalImage import LsbootUsbInternalImage
 from ucsmsdk.mometa.lsboot.LsbootVirtualMedia import LsbootVirtualMedia
 from ucsmsdk.mometa.lsmaint.LsmaintMaintPolicy import LsmaintMaintPolicy
 from ucsmsdk.mometa.lstorage.LstorageProfileBinding import LstorageProfileBinding
+from ucsmsdk.mometa.memory.MemoryPersistentMemoryPolicy import MemoryPersistentMemoryPolicy
+from ucsmsdk.mometa.memory.MemoryPersistentMemoryGoal import MemoryPersistentMemoryGoal
+from ucsmsdk.mometa.memory.MemoryPersistentMemorySecurity import MemoryPersistentMemorySecurity
+from ucsmsdk.mometa.memory.MemoryPersistentMemoryLocalSecurity import MemoryPersistentMemoryLocalSecurity
+from ucsmsdk.mometa.memory.MemoryPersistentMemoryLogicalNamespace import MemoryPersistentMemoryLogicalNamespace
 from ucsmsdk.mometa.memory.MemoryQual import MemoryQual
 from ucsmsdk.mometa.mgmt.MgmtInterface import MgmtInterface
 from ucsmsdk.mometa.mgmt.MgmtVnet import MgmtVnet
@@ -234,7 +239,7 @@ from ucsmsdk.ucscoremeta import UcsVersion
 from ucsmsdk.ucsexception import UcsException
 from ucsmsdk.ucsmethodfactory import ls_instantiate_n_named_template, ls_instantiate_template
 
-from config.object import UcsSystemConfigObject
+from config.ucs.object import UcsSystemConfigObject
 
 
 class UcsSystemUuidPool(UcsSystemConfigObject):
@@ -1218,12 +1223,14 @@ class UcsSystemKvmManagementPolicy(UcsSystemConfigObject):
         UcsSystemConfigObject.__init__(self, parent=parent)
         self.name = None
         self.descr = None
+        self.kvm_port = None
         self.vmedia_encryption = None
 
         if self._config.load_from == "live":
             if compute_kvm_mgmt_policy is not None:
                 self.name = compute_kvm_mgmt_policy.name
                 self.descr = compute_kvm_mgmt_policy.descr
+                self.kvm_port = compute_kvm_mgmt_policy.kvm_port
                 self.vmedia_encryption = compute_kvm_mgmt_policy.vmedia_encryption
 
         elif self._config.load_from == "file":
@@ -1249,6 +1256,7 @@ class UcsSystemKvmManagementPolicy(UcsSystemConfigObject):
             return False
 
         mo_compute_kvm_mgmt_policy = ComputeKvmMgmtPolicy(parent_mo_or_dn=parent_mo, name=self.name, descr=self.descr,
+                                                          kvm_port=self.kvm_port,
                                                           vmedia_encryption=self.vmedia_encryption)
 
         self._handle.add_mo(mo=mo_compute_kvm_mgmt_policy, modify_present=True)
@@ -4591,6 +4599,112 @@ class UcsSystemDiagnosticsPolicy(UcsSystemConfigObject):
                            pattern=test["pattern"])
 
         self._handle.add_mo(mo=mo_diag_run_policy, modify_present=True)
+        if commit:
+            if self.commit(detail=self.name) != True:
+                return False
+        return True
+
+class UcsSystemPersistentMemoryPolicy(UcsSystemConfigObject):
+    _CONFIG_NAME = "Persistent Memory Policy"
+    _UCS_SDK_OBJECT_NAME = "memoryPersistentMemoryPolicy"
+
+    def __init__(self, parent=None, json_content=None, compute_qual=None):
+        UcsSystemConfigObject.__init__(self, parent=parent)
+        self.name = None
+        self.secure_passphrase = None
+        self.deployed_secure_passphrase = None
+        self.goal_socket_id = None
+        self.goal_memory_mode = None
+        self.goal_persistent_memory_type = None
+        self.namespaces = []
+        self.descr = None
+
+        if self._config.load_from == "live":
+            if compute_qual is not None:
+                self.name = compute_qual.name
+                self.descr = compute_qual.descr
+
+                if "memoryPersistentMemoryLocalSecurity" in self._parent._config.sdk_objects:
+                    for local_sec in self._config.sdk_objects["memoryPersistentMemoryLocalSecurity"]:
+                        if self._parent._dn:
+                            if self._parent._dn + "/pmemory-policy-" + self.name + "/" in local_sec.dn:
+                                self.secure_passphrase = local_sec.secure_passphrase
+                                self.deployed_secure_passphrase = local_sec.deployed_secure_passphrase
+
+                if "memoryPersistentMemoryGoal" in self._parent._config.sdk_objects:
+                    for goal in self._config.sdk_objects["memoryPersistentMemoryGoal"]:
+                        if self._parent._dn:
+                            if self._parent._dn + "/pmemory-policy-" + self.name + "/" in goal.dn:
+                                self.goal_socket_id = goal.socket_id
+                                self.goal_memory_mode = goal.memory_mode_percentage
+                                self.goal_persistent_memory_type = goal.persistent_memory_type
+
+                if "memoryPersistentMemoryLogicalNamespace" in self._parent._config.sdk_objects:
+                    for namespace in self._config.sdk_objects["memoryPersistentMemoryLogicalNamespace"]:
+                        if self._parent._dn:
+                            if self._parent._dn + "/pmemory-policy-" + self.name + "/" in namespace.dn:
+                                namespace_dict = {}
+                                namespace_dict.update({"name": namespace.name})
+                                namespace_dict.update({"socket_id": namespace.socket_id})
+                                namespace_dict.update({"socket_local_dimm_number": namespace.socket_local_dimm_number})
+                                namespace_dict.update({"mode": namespace.mode})
+                                namespace_dict.update({"capacity": namespace.capacity})
+                                self.namespaces.append(namespace_dict)
+
+        elif self._config.load_from == "file":
+            if json_content is not None:
+                if not self.get_attributes_from_json(json_content=json_content):
+                    self.logger(level="error",
+                                message="Unable to get attributes from JSON content for " + self._CONFIG_NAME)
+
+                # We need to set all values that are not present in the config file to None
+                for element in self.namespaces:
+                    for value in ["name", "socket_id", "socket_local_dimm_number", "mode", "capacity"]:
+                        if value not in element:
+                            element[value] = None
+
+        self.clean_object()
+
+    def push_object(self, commit=True):
+        if commit:
+            self.logger(message="Pushing " + self._CONFIG_NAME + " configuration: " + str(self.name))
+        else:
+            self.logger(message="Adding to the handle " + self._CONFIG_NAME + " configuration: " +
+                                self.name + ", waiting for a commit")
+
+        if hasattr(self._parent, '_dn'):
+            parent_mo = self._parent._dn
+        else:
+            self.logger(level="error",
+                        message="Impossible to find the parent dn of " + self._CONFIG_NAME + " : " + str(
+                            self.name))
+            return False
+
+        mo_memory_persistent_memory_policy = MemoryPersistentMemoryPolicy(parent_mo_or_dn=parent_mo,
+                                                                          name=self.name,
+                                                                          descr=self.descr)
+        mo_memory_persistent_pemory_security = MemoryPersistentMemorySecurity(parent_mo_or_dn=
+                                                                              mo_memory_persistent_memory_policy)
+        MemoryPersistentMemoryLocalSecurity(parent_mo_or_dn=mo_memory_persistent_pemory_security,
+                                            deployed_secure_passphrase=self.deployed_secure_passphrase,
+                                            secure_passphrase=self.secure_passphrase)
+        if self.goal_socket_id:
+            MemoryPersistentMemoryGoal(parent_mo_or_dn=mo_memory_persistent_memory_policy,
+                                       memory_mode_percentage=self.goal_memory_mode,
+                                       persistent_memory_type=self.goal_persistent_memory_type,
+                                       socket_id=self.goal_socket_id)
+
+        if self.namespaces:
+            for namespace in self.namespaces:
+                MemoryPersistentMemoryLogicalNamespace(parent_mo_or_dn=mo_memory_persistent_memory_policy,
+                                                       capacity=namespace["capacity"],
+                                                       mode=namespace["mode"],
+                                                       name=namespace["name"],
+                                                       socket_id=namespace["socket_id"],
+                                                       socket_local_dimm_number=
+                                                       namespace["socket_local_dimm_number"])
+
+        self._handle.add_mo(mo=mo_memory_persistent_memory_policy, modify_present=True)
         if commit:
             if self.commit(detail=self.name) != True:
                 return False

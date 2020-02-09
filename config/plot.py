@@ -2,27 +2,26 @@
 # !/usr/bin/env python
 
 """ plot.py: Easy UCS Deployment Tool """
-from __init__ import __author__, __copyright__,  __version__, __status__
 
-import math
-import networkx as nx
-import matplotlib.pyplot as plt
-from PIL import Image
-import os
 import json
+import math
+import os
 
-from config.ucs.servers import UcsSystemServiceProfile, UcsSystemBiosPolicy, UcsSystemBootPolicy, \
+import matplotlib.pyplot as plt
+import networkx as nx
+from PIL import Image
+
+from config.ucs.ucsm.servers import UcsSystemServiceProfile, UcsSystemBiosPolicy, UcsSystemBootPolicy, \
     UcsSystemMaintenancePolicy, UcsSystemLocalDiskConfPolicy, UcsSystemVnicVhbaPlacementPolicy, UcsSystemVmediaPolicy, \
     UcsSystemSerialOverLanPolicy, UcsSystemThresholdPolicy,UcsSystemPowerControlPolicy,UcsSystemScrubPolicy,\
     UcsSystemKvmManagementPolicy, UcsSystemGraphicsCardPolicy, UcsSystemPowerSyncPolicy, UcsSystemIpmiAccessProfile, \
     UcsSystemUuidPool, UcsSystemServerPool, UcsSystemHostFirmwarePackage
-from config.ucs.lan import UcsSystemLanConnectivityPolicy, UcsSystemDynamicVnicConnectionPolicy
-from config.ucs.san import UcsSystemSanConnectivityPolicy, UcsSystemWwnnPool
-from config.ucs.storage import UcsSystemStorageProfile
+from config.ucs.ucsm.lan import UcsSystemLanConnectivityPolicy, UcsSystemDynamicVnicConnectionPolicy
+from config.ucs.ucsm.san import UcsSystemSanConnectivityPolicy, UcsSystemWwnnPool
+from config.ucs.ucsm.storage import UcsSystemStorageProfile
 
 # All shapes : https://matplotlib.org/api/markers_api.html
 # Color examples : https://matplotlib.org/examples/color/named_colors.html
-
 
 
 class UcsSystemConfigPlot():
@@ -294,7 +293,7 @@ class UcsSystemServiceProfileConfigPlot(UcsSystemConfigPlot):
 
     @staticmethod
     def get_service_profile_plot_options():
-        filename = "./config/service_profile_plot_options.json"
+        filename = "./config/ucs/service_profile_plot_options.json"
         if os.path.isfile(filename):
             json_file = open(filename)
             service_profile_plot_options = json.loads(json_file.read())

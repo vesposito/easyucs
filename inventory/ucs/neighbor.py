@@ -2,11 +2,9 @@
 # !/usr/bin/env python
 
 """ neighbor.py: Easy UCS Deployment Tool """
-from __init__ import __author__, __copyright__,  __version__, __status__
 
-
-from inventory.object import UcsSystemInventoryObject
 from draw.ucs.neighbor import UcsSystemDrawNeighbor
+from inventory.ucs.object import UcsSystemInventoryObject
 
 
 class UcsSystemNeighborEntry(UcsSystemInventoryObject):

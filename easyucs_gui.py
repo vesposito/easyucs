@@ -2,16 +2,16 @@
 # !/usr/bin/env python
 
 """ easyucs_gui.py: Easy UCS Deployment Tool """
-from __init__ import __author__, __copyright__,  __version__, __status__
 
-from device.device import UcsImc, UcsSystem, BlindUcs, GenericUcsDevice
-from easyucs import create_ucs_device, init_process
+import json
+import os
+from argparse import Namespace
 
 from flask import Flask, request, abort, jsonify
 from flask.templating import render_template
-from argparse import Namespace
 
-import json, os
+from device.ucs.device import UcsSystem
+from easyucs import create_ucs_device, init_process
 
 app = Flask(__name__)
 

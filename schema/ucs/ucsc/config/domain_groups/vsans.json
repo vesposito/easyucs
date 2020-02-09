@@ -1,0 +1,57 @@
+{
+   "id":"ucs_central_config_domain_groups_vsans#",
+   "$schema":"http://json-schema.org/draft-07/schema#",
+   "title":"EasyUCS ucs central config domain_groups vsans section",
+   "description":"EasyUCS ucs central config domain_groups vsans section JSON schema",
+   "type":"object",
+   "properties":{
+      "comment": {
+         "description": "VSAN Comments",
+         "type": "string",
+         "default": ""
+      },
+      "name":{
+         "description":"VSAN Name",
+         "type":"string",
+         "default":"",
+         "pattern":"^[\\-\\.:_a-zA-Z0-9]{1,32}$"
+      },
+      "id":{
+         "description":"VSAN ID",
+         "type":"string",
+         "pattern":"^[1-9]$|^[1-9][0-9]$|^[1-9][0-9][0-9]$|^[1-3][0-9][0-9][0-9]$|^40[0-8][0-9]$|^409[0-3]$"
+      },
+      "fcoe_vlan_id":{
+         "description":"FCoE VLAN ID for this VSAN",
+         "type":"string",
+         "pattern":"^[1-9]$|^[1-9][0-9]$|^[1-9][0-9][0-9]$|^[1-3][0-9][0-9][0-9]$|^40[0-2][0-9]$|^404[8-9]$|^40[5-8][0-9]$|^409[0-3]$"
+      },
+      "fabric":{
+         "description":"VSAN Fabric",
+         "type":"string",
+         "enum":[
+            "a",
+            "A",
+            "b",
+            "B",
+            "dual"
+         ]
+      },
+      "zoning":{
+         "description":"VSAN FC Zoning Admin State",
+         "type":"string",
+         "default":"disabled",
+         "enum":[
+            "disabled",
+            "enabled"
+         ]
+      }
+   },
+   "additionalProperties":false,
+   "required":[
+      "name",
+      "id",
+      "fabric",
+      "fcoe_vlan_id"
+   ]
+}

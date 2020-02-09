@@ -2,21 +2,19 @@
 # !/usr/bin/env python
 
 """ chassis.py: Easy UCS Deployment Tool """
-from __init__ import __author__, __copyright__,  __version__, __status__
-
 
 import json
 
-from inventory.object import GenericUcsInventoryObject, UcsImcInventoryObject, UcsSystemInventoryObject
+from draw.ucs.chassis import UcsSystemDrawChassisFront, UcsSystemDrawChassisRear, UcsImcDrawChassisFront, \
+    UcsImcDrawChassisRear
 from inventory.ucs.blade import UcsSystemBlade
 from inventory.ucs.fabric import UcsSystemFi
-from inventory.ucs.server_node import UcsImcServerNode
-from inventory.ucs.storage import UcsImcStorageEnclosure, UcsSystemStorageEnclosure, UcsImcStorageLocalDisk,\
-    UcsImcSiocStorageNvmeDrive
+from inventory.ucs.object import GenericUcsInventoryObject, UcsImcInventoryObject, UcsSystemInventoryObject
 from inventory.ucs.port import UcsSystemIomPort, UcsSystemSiocPort
 from inventory.ucs.psu import UcsImcPsu, UcsSystemPsu
-from draw.ucs.chassis import UcsSystemDrawChassisFront, UcsSystemDrawChassisRear, UcsImcDrawChassisFront,\
-    UcsImcDrawChassisRear
+from inventory.ucs.server_node import UcsImcServerNode
+from inventory.ucs.storage import UcsImcStorageEnclosure, UcsSystemStorageEnclosure, UcsImcStorageLocalDisk, \
+    UcsImcSiocStorageNvmeDrive
 
 
 class UcsChassis(GenericUcsInventoryObject):

@@ -12,7 +12,7 @@ from draw.ucs.psu import GenericUcsDrawPsu
 from draw.ucs.port import UcsSystemDrawPort
 from draw.wire import UcsSystemDrawWire
 from draw.ucs.storage import GenericUcsDrawStorageEnclosure
-from PIL import Image, ImageDraw, ImageTk, ImageFont
+from PIL import Image, ImageDraw, ImageFont
 import copy
 
 

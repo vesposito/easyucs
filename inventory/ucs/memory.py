@@ -2,10 +2,8 @@
 # !/usr/bin/env python
 
 """ memory.py: Easy UCS Deployment Tool """
-from __init__ import __author__, __copyright__,  __version__, __status__
 
-
-from inventory.object import GenericUcsInventoryObject, UcsImcInventoryObject, UcsSystemInventoryObject
+from inventory.ucs.object import GenericUcsInventoryObject, UcsImcInventoryObject, UcsSystemInventoryObject
 
 
 class UcsMemoryArray(GenericUcsInventoryObject):
@@ -132,6 +130,13 @@ class UcsSystemMemoryUnit(UcsMemoryUnit, UcsSystemInventoryObject):
         self.revision = self.get_attribute(ucs_sdk_object=memory_unit, attribute_name="revision")
 
         UcsSystemInventoryObject.__init__(self, parent=parent, ucs_sdk_object=memory_unit)
+
+        # Manually fixing type "Other" for memory units in some servers
+        if self.type in ["Other"]:
+            if hasattr(self._parent._parent, "model"):
+                if self._parent._parent.model is not None:
+                    if self._parent._parent.model in ["N20-B6625-1"]:
+                        self.type = "DDR3"
 
 
 class UcsImcMemoryUnit(UcsMemoryUnit, UcsImcInventoryObject):

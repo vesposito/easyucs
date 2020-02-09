@@ -38,8 +38,9 @@ from ucsmsdk.mometa.vnic.VnicFcNode import VnicFcNode
 from ucsmsdk.mometa.vnic.VnicSanConnPolicy import VnicSanConnPolicy
 from ucsmsdk.mometa.vnic.VnicSanConnTempl import VnicSanConnTempl
 from ucsmsdk.mometa.vnic.VnicVhbaBehPolicy import VnicVhbaBehPolicy
+from ucsmsdk.ucscoremeta import UcsVersion
 
-from config.object import UcsSystemConfigObject
+from config.ucs.object import UcsSystemConfigObject
 
 
 class UcsSystemFcoeUplinkPort(UcsSystemConfigObject):
@@ -875,6 +876,7 @@ class UcsSystemSanPinGroup(UcsSystemConfigObject):
 
 class UcsSystemSanUnifiedPort(UcsSystemConfigObject):
     _CONFIG_NAME = "SAN Unified Ports"
+    UCS_SYSTEM_MIN_VERSION_FOR_16_UNIFIED_PORTS = "4.0(4a)"
 
     def __init__(self, parent=None, json_content=None, fabric=None):
         UcsSystemConfigObject.__init__(self, parent=parent)
@@ -975,10 +977,23 @@ class UcsSystemSanUnifiedPort(UcsSystemConfigObject):
                 if self.slot_id != "1":
                     self.logger("error", "Incorrect values for slot_id in fabric " + self.fabric)
                     return False
-                if self.port_id_end not in ["4", "8"] or self.port_id_start != "1"\
-                        or int(self.port_id_start) >= int(self.port_id_end):
-                    self.logger("error", "Incorrect values for port_id start or end in fabric " + self.fabric)
-                    return False
+
+                # We handle the case of FI 6454 running version below 4.0(4a), which only supports 8 Unified Ports
+                min_version_for_16_unified_ports = UcsVersion(self.UCS_SYSTEM_MIN_VERSION_FOR_16_UNIFIED_PORTS)
+                if self._config.parent.parent.version.__le__(min_version_for_16_unified_ports):
+                    self.logger(level="debug",
+                                message="Running a version that supports up to 8 Unified Ports only on FI 6454")
+                    if self.port_id_end not in ["4", "8"] or self.port_id_start != "1" \
+                            or int(self.port_id_start) >= int(self.port_id_end):
+                        self.logger("error", "Incorrect values for port_id start or end in fabric " + self.fabric)
+                        return False
+                else:
+                    self.logger(level="debug",
+                                message="Running a version that supports up to 16 Unified Ports on FI 6454")
+                    if self.port_id_end not in ["4", "8", "12", "16"] or self.port_id_start != "1" \
+                            or int(self.port_id_start) >= int(self.port_id_end):
+                        self.logger("error", "Incorrect values for port_id start or end in fabric " + self.fabric)
+                        return False
 
             elif self._device.fi_a_model == "UCS-FI-M-6324":
                 self.logger("debug", "Trying to set Unified Ports on FI model " + self._device.fi_a_model)

@@ -2,21 +2,18 @@
 # !/usr/bin/env python
 
 """ chassis.py: Easy UCS Deployment Tool """
-from __init__ import __author__, __copyright__,  __version__, __status__
-
 
 import json
 
-from inventory.object import GenericUcsInventoryObject, UcsSystemInventoryObject
 from inventory.ucs.adaptor import UcsSystemAdaptor
 from inventory.ucs.cpu import UcsSystemCpu
 from inventory.ucs.gpu import UcsSystemGpu
 from inventory.ucs.memory import UcsSystemMemoryArray
 from inventory.ucs.mgmt import UcsSystemMgmtInterface
-from inventory.ucs.storage import UcsSystemStorageController, UcsSystemStorageControllerNvmeDrive,\
-    UcsSystemStorageFlexFlashController, UcsSystemStorageEnclosure
+from inventory.ucs.object import GenericUcsInventoryObject, UcsSystemInventoryObject
+from inventory.ucs.storage import UcsSystemStorageController, UcsSystemStorageControllerNvmeDrive, \
+    UcsSystemStorageFlexFlashController
 from inventory.ucs.tpm import UcsSystemTpm
-from inventory.ucs.psu import UcsSystemPsu
 
 
 class UcsBlade(GenericUcsInventoryObject):

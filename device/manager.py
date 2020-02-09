@@ -2,17 +2,15 @@
 # !/usr/bin/env python
 
 """ manager.py: Easy UCS Deployment Tool """
-from __init__ import __author__, __copyright__,  __version__, __status__
-
 
 import json
 import os
 import shutil
 import uuid
 
-from device.device import GenericDevice, UcsSystem, UcsImc, UcsCentral
-
 import export
+from device.device import GenericDevice
+from device.ucs.device import UcsSystem, UcsImc, UcsCentral
 
 
 class DeviceManager:

@@ -12,7 +12,7 @@ from draw.ucs.adaptor import UcsSystemDrawAdaptor
 from draw.ucs.mgmt import UcsSystemDrawMgmtInterface
 from draw.ucs.cpu_module import UcsSystemDrawCpuModule
 from draw.wire import UcsSystemDrawWire
-from PIL import Image, ImageDraw, ImageTk, ImageFont
+from PIL import Image, ImageDraw, ImageFont
 import copy
 
 

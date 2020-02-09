@@ -6,7 +6,7 @@ from __init__ import __author__, __copyright__, __version__, __status__
 
 from netaddr import EUI, IPAddress
 
-from config.object import GenericUcsConfigObject, UcsCentralConfigObject
+from config.ucs.object import GenericUcsConfigObject, UcsCentralConfigObject
 
 import common
 

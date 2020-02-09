@@ -8,7 +8,7 @@ from __init__ import __author__, __copyright__,  __version__, __status__
 from draw.object import GenericUcsDrawEquipment
 from draw.ucs.storage import UcsSystemDrawStorageController, UcsSystemDrawStorageLocalDisk
 
-from PIL import Image, ImageDraw, ImageTk, ImageFont
+from PIL import Image, ImageDraw, ImageFont
 import json
 
 

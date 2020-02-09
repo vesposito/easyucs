@@ -6,7 +6,7 @@ from __init__ import __author__, __copyright__,  __version__, __status__
 
 
 from draw.object import GenericUcsDrawEquipment
-from PIL import Image, ImageDraw, ImageTk, ImageFont
+from PIL import Image, ImageDraw, ImageFont
 from draw.ucs.port import UcsSystemDrawPort
 
 

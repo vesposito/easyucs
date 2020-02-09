@@ -24,6 +24,16 @@
          "default": "",
          "pattern": "^[ !#$%&\\(\\)\\*\\+,\\-\\./:;\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{0,256}$"
       },
+      "ip_pools": {
+         "description": "EasyUCS config/orgs/ip_pools section",
+         "type": "array",
+         "items": {
+            "description:": "EasyUCS config/orgs/ip_pools element",
+            "type": "object",
+            "$ref": "orgs/ip_pools.json"
+         },
+         "minItems": 1
+      },
       "orgs": {
          "description": "EasyUCS config/orgs/orgs section",
          "type": "array",
@@ -71,16 +81,6 @@
             "description:": "EasyUCS config/orgs/wwpn_pools element",
             "type": "object",
             "$ref": "orgs/wwpn_pools.json"
-         },
-         "minItems": 1
-      },
-      "ip_pools": {
-         "description": "EasyUCS config/orgs/ip_pools section",
-         "type": "array",
-         "items": {
-            "description:": "EasyUCS config/orgs/ip_pools element",
-            "type": "object",
-            "$ref": "orgs/ip_pools.json"
          },
          "minItems": 1
       }

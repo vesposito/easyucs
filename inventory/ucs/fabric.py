@@ -2,12 +2,12 @@
 # !/usr/bin/env python
 
 """ fabric.py: Easy UCS Deployment Tool """
-from __init__ import __author__, __copyright__,  __version__, __status__
 
 import json
 
-from draw.ucs.fabric import UcsSystemDrawFexFront, UcsSystemDrawFexRear, UcsSystemDrawFiRear, UcsSystemDrawFiFront ,UcsSystemDrawGem
-from inventory.object import GenericUcsInventoryObject, UcsSystemInventoryObject
+from draw.ucs.fabric import UcsSystemDrawFexFront, UcsSystemDrawFexRear, UcsSystemDrawFiRear, UcsSystemDrawFiFront, \
+    UcsSystemDrawGem
+from inventory.ucs.object import GenericUcsInventoryObject, UcsSystemInventoryObject
 from inventory.ucs.port import UcsSystemFexFabricPort, UcsSystemFexHostPort, UcsSystemFiEthPort, UcsSystemFiFcPort
 from inventory.ucs.psu import UcsSystemPsu
 

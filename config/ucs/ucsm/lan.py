@@ -2,7 +2,6 @@
 # !/usr/bin/env python
 
 """ lan.py: Easy UCS Deployment Tool """
-from __init__ import __author__, __copyright__,  __version__, __status__
 
 import time
 
@@ -61,8 +60,8 @@ from ucsmsdk.mometa.vnic.VnicVmqConPolicyRef import VnicVmqConPolicyRef
 from ucsmsdk.mometa.vnic.VnicVnicBehPolicy import VnicVnicBehPolicy
 
 import common
-from config.object import UcsSystemConfigObject
-from config.ucs.san import UcsSystemFcoeStoragePort, UcsSystemFcoeUplinkPort
+from config.ucs.object import UcsSystemConfigObject
+from config.ucs.ucsm.san import UcsSystemFcoeStoragePort, UcsSystemFcoeUplinkPort
 
 
 class UcsSystemLanUplinkPort(UcsSystemConfigObject):
@@ -1118,7 +1117,7 @@ class UcsSystemVlanGroup(UcsSystemConfigObject):
             for port in self.lan_uplink_ports:
                 if port["fabric"]:
                     port["fabric"] = port["fabric"].upper()
-                if "aggr_id" in port:
+                if port["aggr_id"]:
                     mo_fabric_sub_group = FabricSubGroup(parent_mo_or_dn=mo_fabric_net_group,
                                                          aggr_port_id=port["port_id"], slot_id=port["slot_id"])
                     FabricEthVlanPortEp(parent_mo_or_dn=mo_fabric_sub_group, port_id=port["aggr_id"],
@@ -1142,7 +1141,7 @@ class UcsSystemVlanGroup(UcsSystemConfigObject):
                 self._handle.add_mo(mo=mo_fabric_net_group, modify_present=True)
 
                 if commit:
-                    self.commit(detail="lan_port_channel: " + port["fabric"] + "/pc-" + port["pc_id"])
+                    self.commit(detail="lan_port_channel: " + port_channel["fabric"] + "/pc-" + port_channel["pc_id"])
 
         if self.org_permissions:
             for organization in self.org_permissions:

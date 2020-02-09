@@ -106,7 +106,8 @@ def generate_json_metadata_header(file_type=None, inventory=None, config=None, d
         json_metadata_header["device_name"] = inventory.parent.parent.name
         if hasattr(inventory.parent.parent.version, "version"):
             json_metadata_header["device_version"] = inventory.parent.parent.version.version
-        json_metadata_header["intersight_status"] = inventory.parent.parent.intersight_status
+        if hasattr(inventory.parent.parent, "intersight_status"):
+            json_metadata_header["intersight_status"] = inventory.parent.parent.intersight_status
     elif file_type is "config":
         json_metadata_header["uuid"] = str(config.uuid)
         json_metadata_header["timestamp"] = config.timestamp
@@ -116,14 +117,16 @@ def generate_json_metadata_header(file_type=None, inventory=None, config=None, d
         json_metadata_header["device_name"] = config.parent.parent.name
         if hasattr(config.parent.parent.version, "version"):
             json_metadata_header["device_version"] = config.parent.parent.version.version
-        json_metadata_header["intersight_status"] = config.parent.parent.intersight_status
+        if hasattr(config.parent.parent, "intersight_status"):
+            json_metadata_header["intersight_status"] = config.parent.parent.intersight_status
     elif file_type is "device":
         json_metadata_header["device_uuid"] = str(device.uuid)
         json_metadata_header["device_type"] = device.device_type_short
         json_metadata_header["device_name"] = device.name
         if hasattr(device.version, "version"):
             json_metadata_header["device_version"] = device.version.version
-        json_metadata_header["intersight_status"] = device.intersight_status
+        if hasattr(device, "intersight_status"):
+            json_metadata_header["intersight_status"] = device.intersight_status
 
     return json_metadata_header
 

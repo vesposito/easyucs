@@ -5,7 +5,7 @@
 from __init__ import __author__, __copyright__,  __version__, __status__
 
 
-from config.object import GenericUcsConfigObject, UcsImcConfigObject, UcsSystemConfigObject
+from config.ucs.object import GenericUcsConfigObject, UcsImcConfigObject, UcsSystemConfigObject
 
 from ucsmsdk.mometa.cpmaint.CpmaintMaintPolicy import CpmaintMaintPolicy
 from ucsmsdk.mometa.equipment.EquipmentBinding import EquipmentBinding
@@ -19,6 +19,9 @@ from ucsmsdk.mometa.lstorage.LstorageDiskZoningPolicy import LstorageDiskZoningP
 from ucsmsdk.mometa.lstorage.LstorageSasExpanderConfigPolicy import LstorageSasExpanderConfigPolicy
 from ucsmsdk.ucsbasetype import DnSet, Dn
 from ucsmsdk.ucsmethodfactory import equipment_instantiate_n_named_template, equipment_instantiate_template
+from ucsmsdk.ucsexception import UcsException
+
+import urllib
 
 
 class UcsSystemChassisMaintenancePolicy(UcsSystemConfigObject):
@@ -225,8 +228,8 @@ class UcsSystemDiskZoningPolicy(UcsSystemConfigObject):
                                 # disk.update({"disk_slot_range_stop": disk_slot.id.split("-")[1]})
                                 if "lstorageControllerRef" in self._parent._config.sdk_objects:
                                     for controller_ref in self._config.sdk_objects["lstorageControllerRef"]:
-                                        if self._parent._dn + "/disk-zoning-policy-" + self.name + "/" \
-                                                in controller_ref.dn:
+                                        if self._parent._dn + "/disk-zoning-policy-" + self.name + "/disk-slot-" + \
+                                                disk_slot.id + "/" in controller_ref.dn:
                                             disk.update({"controller": controller_ref.controller_id})
                                             disk.update({"server": controller_ref.server_id})
                                 self.disks_zoned.append(disk)
@@ -477,9 +480,9 @@ class UcsSystemChassisProfile(UcsSystemConfigObject):
                                          chassis_dn="sys/chassis-" + self.chassis_assignment_id,
                                          restrict_migration=self.restrict_migration)
 
-                    self._handle.add_mo(mo=mo_equipment_chassis_profile, modify_present=True)
-                    if self.commit(detail=self.name) != True:
-                        return False
+                        self._handle.add_mo(mo=mo_equipment_chassis_profile, modify_present=True)
+                        if self.commit(detail=self.name) != True:
+                            return False
 
                     return True
 

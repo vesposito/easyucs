@@ -357,6 +357,16 @@
          },
          "minItems": 1
       },
+      "persistent_memory_policies": {
+         "description": "EasyUCS config/orgs/persistent_memory_policies section",
+         "type": "array",
+         "items": {
+            "description:": "EasyUCS config/orgs/persistent_memory_policies element",
+            "type": "object",
+            "$ref": "orgs/persistent_memory_policies.json"
+         },
+         "minItems": 1
+      },
       "power_control_policies": {
          "description": "EasyUCS config/orgs/power_control_policies section",
          "type": "array",

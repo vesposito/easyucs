@@ -2,50 +2,33 @@
 # !/usr/bin/env python
 
 """ admin.py: Easy UCS Deployment Tool """
-from __init__ import __author__, __copyright__,  __version__, __status__
-
 
 import hashlib
-import sys
 import time
-import traceback
-import urllib
 
-from config.object import GenericUcsConfigObject, UcsImcConfigObject, UcsSystemConfigObject
+from config.ucs.object import UcsSystemConfigObject
 
-from config.ucs.lan import UcsSystemIpPool, UcsSystemMacPool, UcsSystemVnicTemplate, UcsSystemQosPolicy,\
+from config.ucs.ucsm.lan import UcsSystemIpPool, UcsSystemMacPool, UcsSystemVnicTemplate, UcsSystemQosPolicy,\
     UcsSystemNetworkControlPolicy, UcsSystemMulticastPolicy, UcsSystemLinkProtocolPolicy,\
     UcsSystemLanConnectivityPolicy, UcsSystemLacpPolicy, UcsSystemFlowControlPolicy, UcsSystemDefaultVnicBehavior,\
     UcsSystemDynamicVnicConnectionPolicy
-from config.ucs.servers import UcsSystemUuidPool, UcsSystemServerPool, UcsSystemServerPoolPolicy,\
+from config.ucs.ucsm.servers import UcsSystemUuidPool, UcsSystemServerPool, UcsSystemServerPoolPolicy,\
     UcsSystemPowerControlPolicy, UcsSystemMaintenancePolicy, UcsSystemGraphicsCardPolicy,\
     UcsSystemLocalDiskConfPolicy, UcsSystemServerPoolPolicyQualifications, UcsSystemPowerSyncPolicy,\
     UcsSystemHostFirmwarePackage, UcsSystemIpmiAccessProfile, UcsSystemKvmManagementPolicy, UcsSystemScrubPolicy,\
     UcsSystemSerialOverLanPolicy, UcsSystemBootPolicy, UcsSystemVnicVhbaPlacementPolicy, UcsSystemBiosPolicy,\
     UcsSystemIscsiAuthenticationProfile, UcsSystemVmediaPolicy, UcsSystemEthernetAdapterPolicy,\
     UcsSystemFibreChannelAdapterPolicy, UcsSystemIscsiAdapterPolicy, UcsSystemServiceProfile,\
-    UcsSystemMemoryPolicy, UcsSystemThresholdPolicy, UcsSystemDiagnosticsPolicy
-from config.ucs.san import UcsSystemWwpnPool, UcsSystemWwnnPool, UcsSystemWwxnPool, UcsSystemVhbaTemplate,\
+    UcsSystemMemoryPolicy, UcsSystemThresholdPolicy, UcsSystemDiagnosticsPolicy, UcsSystemPersistentMemoryPolicy
+from config.ucs.ucsm.san import UcsSystemWwpnPool, UcsSystemWwnnPool, UcsSystemWwxnPool, UcsSystemVhbaTemplate,\
     UcsSystemSanConnectivityPolicy, UcsSystemStorageConnectionPolicy, UcsSystemDefaultVhbaBehavior, \
     UcsSystemIqnSuffixPool
-from config.ucs.storage import UcsSystemDiskGroupPolicy, UcsSystemStorageProfile
-from config.ucs.chassis import UcsSystemChassisMaintenancePolicy, UcsSystemComputeConnectionPolicy,\
+from config.ucs.ucsm.storage import UcsSystemDiskGroupPolicy, UcsSystemStorageProfile
+from config.ucs.ucsm.chassis import UcsSystemChassisMaintenancePolicy, UcsSystemComputeConnectionPolicy,\
     UcsSystemChassisFirmwarePackage, UcsSystemDiskZoningPolicy, UcsSystemChassisProfile, \
     UcsSystemSasExpanderConfigurationPolicy
 
 import common
-
-from imcsdk.mometa.aaa.AaaUser import AaaUser as ImcAaaUser
-from imcsdk.mometa.aaa.AaaUserPasswordExpiration import AaaUserPasswordExpiration as ImcAaaUserPasswordExpiration
-from imcsdk.mometa.aaa.AaaUserPolicy import AaaUserPolicy as ImcAaaUserPolicy
-from imcsdk.mometa.comm.CommNtpProvider import CommNtpProvider as ImcCommNtpProvider
-from imcsdk.mometa.mgmt.MgmtIf import MgmtIf
-from imcsdk.mometa.top.TopSystem import TopSystem as ImcTopSystem
-from imcsdk.mometa.compute.ComputeRackUnit import ComputeRackUnit
-from imcsdk.mometa.ip.IpBlocking import IpBlocking
-from imcsdk.mometa.ip.IpFiltering import IpFiltering
-
-from ucsmsdk.ucsexception import UcsException
 
 from ucsmsdk.mometa.aaa.AaaLdapEp import AaaLdapEp
 from ucsmsdk.mometa.aaa.AaaLdapGroup import AaaLdapGroup
@@ -56,7 +39,6 @@ from ucsmsdk.mometa.aaa.AaaOrg import AaaOrg
 from ucsmsdk.mometa.aaa.AaaPreLoginBanner import AaaPreLoginBanner
 from ucsmsdk.mometa.aaa.AaaProviderGroup import AaaProviderGroup
 from ucsmsdk.mometa.aaa.AaaProviderRef import AaaProviderRef
-from ucsmsdk.mometa.aaa.AaaPwdProfile import AaaPwdProfile
 from ucsmsdk.mometa.aaa.AaaPwdProfile import AaaPwdProfile
 from ucsmsdk.mometa.aaa.AaaRadiusEp import AaaRadiusEp
 from ucsmsdk.mometa.aaa.AaaRadiusProvider import AaaRadiusProvider
@@ -485,6 +467,9 @@ class UcsSystemOrg(UcsSystemConfigObject):
         self.diagnostics_policies = \
             self._get_generic_element(json_content=json_content, object_class=UcsSystemDiagnosticsPolicy,
                                       name_to_fetch="diagnostics_policies")
+        self.persistent_memory_policies = \
+            self._get_generic_element(json_content=json_content, object_class=UcsSystemPersistentMemoryPolicy,
+                                      name_to_fetch="persistent_memory_policies")
 
         self.clean_object()
 
@@ -525,7 +510,7 @@ class UcsSystemOrg(UcsSystemConfigObject):
                                     'compute_connection_policies', 'disk_zoning_policies',
                                     'sas_expander_configuration_policies', 'disk_group_policies', 'storage_profiles',
                                     'graphics_card_policies', 'kvm_management_policies', 'memory_policy',
-                                    'threshold_policies', 'iscsi_authentication_profiles']
+                                    'threshold_policies', 'iscsi_authentication_profiles', 'persistent_memory_policies']
 
         for config_object in objects_to_push_in_order:
             if getattr(self, config_object) is not None:

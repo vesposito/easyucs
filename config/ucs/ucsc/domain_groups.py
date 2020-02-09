@@ -6,17 +6,18 @@ from __init__ import __author__, __copyright__, __version__, __status__
 
 import copy
 
-from config.object import GenericUcsConfigObject, UcsCentralConfigObject
+from config.ucs.object import GenericUcsConfigObject, UcsCentralConfigObject
 from config.ucs.ucsc.orgs import UcsCentralIpPool
 
 import common
 
-from ucscsdk.mometa.org.OrgDomainGroup import OrgDomainGroup
-from ucscsdk.mometa.fabric.FabricVlan import FabricVlan
-from ucscsdk.mometa.fabric.FabricVlanReq import FabricVlanReq
 from ucscsdk.mometa.fabric.FabricNetGroup import FabricNetGroup
 from ucscsdk.mometa.fabric.FabricNetGroupReq import FabricNetGroupReq
 from ucscsdk.mometa.fabric.FabricPooledVlan import FabricPooledVlan
+from ucscsdk.mometa.fabric.FabricVlan import FabricVlan
+from ucscsdk.mometa.fabric.FabricVlanReq import FabricVlanReq
+from ucscsdk.mometa.fabric.FabricVsan import FabricVsan
+from ucscsdk.mometa.org.OrgDomainGroup import OrgDomainGroup
 
 from ucscsdk.ucscexception import UcscException
 
@@ -62,6 +63,9 @@ class UcsCentralDomainGroup(UcsCentralConfigObject):
         self.ip_pools = \
             self._get_generic_element(json_content=json_content, object_class=UcsCentralIpPool,
                                       name_to_fetch="ip_pools")
+        self.vsans = \
+            self._get_generic_element(json_content=json_content, object_class=UcsCentralVsan,
+                                      name_to_fetch="vsans")
 
         self.clean_object()
 
@@ -84,7 +88,7 @@ class UcsCentralDomainGroup(UcsCentralConfigObject):
                 return False
 
         # We push all subconfig elements, in a specific optimized order to reduce number of reboots
-        objects_to_push_in_order = ['vlan_groups', 'ip_pools', 'domain_groups']
+        objects_to_push_in_order = ['vlan_groups', 'ip_pools', 'vsans', 'domain_groups']
 
         # The VLANs and Appliance VLANs are not pushed with the rest
         vlan_list = None
@@ -390,4 +394,64 @@ class UcsCentralVlanGroup(UcsCentralConfigObject):
                 if commit:
                     self.commit(detail="Org permission: " + organization)
 
+        return True
+
+
+class UcsCentralVsan(UcsCentralConfigObject):
+    _CONFIG_NAME = "VSAN"
+    _UCS_SDK_OBJECT_NAME = "fabricVsan"
+
+    def __init__(self, parent=None, json_content=None, fabric_vsan=None):
+        UcsCentralConfigObject.__init__(self, parent=parent)
+        self.fabric = None
+        self.fcoe_vlan_id = None
+        self.id = None
+        self.name = None
+        self.zoning = None
+
+        if self._config.load_from == "live":
+            if fabric_vsan is not None:
+                self.fcoe_vlan_id = fabric_vsan.fcoe_vlan
+                self.id = fabric_vsan.id
+                self.name = fabric_vsan.name
+                self.zoning = fabric_vsan.zoning_state
+
+                if fabric_vsan.switch_id not in ["NONE", "dual"]:
+                    self.fabric = fabric_vsan.switch_id
+                else:
+                    self.fabric = "dual"
+
+        elif self._config.load_from == "file":
+            if json_content is not None:
+                if not self.get_attributes_from_json(json_content=json_content):
+                    self.logger(level="error",
+                                message="Unable to get attributes from JSON content for " + self._CONFIG_NAME)
+
+        self.clean_object()
+
+    def push_object(self, commit=True):
+        if commit:
+            self.logger(message="Pushing " + self._CONFIG_NAME + " configuration: " + self.name + ' (' + self.id + ')')
+        else:
+            self.logger(message="Adding to the handle " + self._CONFIG_NAME + " configuration: " + self.name +
+                                ' (' + self.id + ')' + ", waiting for a commit")
+
+        if hasattr(self._parent, '_dn'):
+            parent_mo = self._parent._dn
+        else:
+            self.logger(level="error",
+                        message="Impossible to find the parent dn of " + self._CONFIG_NAME + " : " + str(self.name))
+            return False
+
+        dn_subpath = "/fabric/san"
+        if self.fabric is not None and self.fabric not in ["NONE", "dual"]:
+            dn_subpath = "/fabric/san/" + self.fabric
+
+        mo_fabric_vsan = FabricVsan(parent_mo_or_dn=parent_mo + dn_subpath, name=self.name, id=self.id,
+                                    zoning_state=self.zoning, fcoe_vlan=self.fcoe_vlan_id)
+
+        self._handle.add_mo(mo=mo_fabric_vsan, modify_present=True)
+        if commit:
+            if self.commit(detail=self.name + " (" + self.id + ")") != True:
+                return False
         return True

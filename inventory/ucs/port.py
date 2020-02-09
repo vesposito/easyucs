@@ -2,11 +2,9 @@
 # !/usr/bin/env python
 
 """ port.py: Easy UCS Deployment Tool """
-from __init__ import __author__, __copyright__,  __version__, __status__
 
-
-from inventory.object import GenericUcsInventoryObject, UcsImcInventoryObject, UcsSystemInventoryObject
 from inventory.ucs.neighbor import UcsSystemLanNeighborEntry, UcsSystemSanNeighborEntry
+from inventory.ucs.object import GenericUcsInventoryObject, UcsImcInventoryObject, UcsSystemInventoryObject
 from inventory.ucs.transceiver import UcsImcTransceiver, UcsSystemTransceiver
 
 

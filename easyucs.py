@@ -2,20 +2,17 @@
 # !/usr/bin/env python
 
 """ easyucs.py: Easy UCS Deployment Tool """
-from __init__ import __author__, __copyright__,  __version__, __status__
 
-
+import argparse
 import os
 import sys
-import argparse
 import time
-
-import common
-from device.device import UcsImc, UcsSystem, BlindUcs, GenericUcsDevice, UcsCentral
 
 from imcsdk.imchandle import ImcHandle
 from ucsmsdk.ucshandle import UcsHandle
-from pathlib import Path
+
+import common
+from device.ucs.device import UcsImc, UcsSystem, UcsCentral, BlindUcs
 
 # from hcl.hcl import UcsSystemHclCheck
 

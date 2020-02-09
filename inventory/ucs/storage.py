@@ -2,12 +2,11 @@
 # !/usr/bin/env python
 
 """ storage.py: Easy UCS Deployment Tool """
-from __init__ import __author__, __copyright__,  __version__, __status__
-
 
 import math
 import re
-from inventory.object import GenericUcsInventoryObject, UcsImcInventoryObject, UcsSystemInventoryObject
+
+from inventory.ucs.object import GenericUcsInventoryObject, UcsImcInventoryObject, UcsSystemInventoryObject
 
 
 class UcsStorageController(GenericUcsInventoryObject):
@@ -974,8 +973,13 @@ class UcsSystemStorageControllerNvmeDrive(UcsStorageNvmeDrive, UcsSystemInventor
                 self.logger(level="debug",
                             message="Could not find the corresponding storageNvmeStats for object with DN " +
                                     self.dn + " of model \"" + self.model + "\" with ID " + self.id)
-                self.logger(level="info", message="NVMe stats of disk with id " + self.id + " for server " +
-                                                  self._parent.id + " are not available.")
+                if hasattr(self._parent, "id"):
+                    self.logger(level="info", message="NVMe stats of disk with id " + self.id + " for server " +
+                                                      self._parent.id + " are not available.")
+                else:
+                    self.logger(level="info", message="NVMe stats of disk with id " + self.id + " for server " +
+                                                      self._parent.dn + " are not available.")
+
                 return False
             else:
                 return storage_nvme_stats_list[0]

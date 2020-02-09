@@ -1,4 +1,4 @@
-# EasyUCS
+# EasyUCS [![published](https://static.production.devnetcloud.com/codeexchange/assets/images/devnet-published.svg)](https://developer.cisco.com/codeexchange/github/repo/vesposito/easyucs)
 
 EasyUCS is a toolbox to help deploy and manage Cisco UCS devices.
 
@@ -171,7 +171,7 @@ Initial release
 
 ## Authors
 
-* **Marc Abu El Ghait** - *Initial work* - [github account link](https://github.com/marc-aeg)
+* **Marc Abu El Ghait** - *Initial work* - [github account link](https://github.com/mabuelgh)
 * **Franck Bonneau** - *Initial work* - [github account link](https://github.com/Franck-Bonneau)
 * **Vincent Esposito** - *Initial work* - [github account link](https://github.com/vesposito)
 

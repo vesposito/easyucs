@@ -2,11 +2,10 @@
 # !/usr/bin/env python
 
 """ adaptor.py: Easy UCS Deployment Tool """
-from __init__ import __author__, __copyright__,  __version__, __status__
 
 import json
 
-from inventory.object import GenericUcsInventoryObject, UcsImcInventoryObject, UcsSystemInventoryObject
+from inventory.ucs.object import GenericUcsInventoryObject, UcsImcInventoryObject, UcsSystemInventoryObject
 from inventory.ucs.port import UcsImcAdaptorPort, UcsImcNetworkAdapterPort, UcsSystemAdaptorPort
 
 

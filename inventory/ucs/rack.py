@@ -2,22 +2,23 @@
 # !/usr/bin/env python
 
 """ rack.py: Easy UCS Deployment Tool """
-from __init__ import __author__, __copyright__,  __version__, __status__
 
 import json
 
-from inventory.object import GenericUcsInventoryObject, UcsImcInventoryObject, UcsSystemInventoryObject
+from draw.ucs.rack import UcsSystemDrawRackFront, UcsSystemDrawRackRear, UcsImcDrawRackFront, UcsImcDrawRackRear, \
+    UcsSystemDrawRackEnclosureFront, UcsSystemDrawRackEnclosureRear, UcsImcDrawRackEnclosureFront, \
+    UcsImcDrawRackEnclosureRear
 from inventory.ucs.adaptor import UcsImcAdaptor, UcsImcNetworkAdapter, UcsSystemAdaptor
 from inventory.ucs.cpu import UcsImcCpu, UcsSystemCpu
 from inventory.ucs.gpu import UcsImcGpu, UcsSystemGpu
 from inventory.ucs.memory import UcsImcMemoryArray, UcsSystemMemoryArray
 from inventory.ucs.mgmt import UcsImcMgmtInterface, UcsSystemMgmtInterface
+from inventory.ucs.object import GenericUcsInventoryObject, UcsImcInventoryObject, UcsSystemInventoryObject
 from inventory.ucs.psu import UcsImcPsu, UcsSystemPsu
-from inventory.ucs.storage import UcsImcStorageController, UcsImcStorageFlexFlashController,\
-    UcsImcStorageControllerNvmeDrive, UcsImcStorageNvmeDrive, UcsSystemStorageController,\
+from inventory.ucs.storage import UcsImcStorageController, UcsImcStorageFlexFlashController, \
+    UcsImcStorageControllerNvmeDrive, UcsImcStorageNvmeDrive, UcsSystemStorageController, \
     UcsSystemStorageControllerNvmeDrive, UcsSystemStorageFlexFlashController
 from inventory.ucs.tpm import UcsImcTpm, UcsSystemTpm
-from draw.ucs.rack import UcsSystemDrawRackFront, UcsSystemDrawRackRear, UcsImcDrawRackFront, UcsImcDrawRackRear, UcsSystemDrawRackEnclosureFront, UcsSystemDrawRackEnclosureRear, UcsImcDrawRackEnclosureFront, UcsImcDrawRackEnclosureRear
 
 
 class UcsRack(GenericUcsInventoryObject):

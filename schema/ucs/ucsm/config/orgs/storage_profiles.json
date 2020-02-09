@@ -170,7 +170,7 @@
                   "pattern":"^[\\-\\.:_a-zA-Z0-9]{1,10}$"
                },
                "raid_level":{
-                  "description":"Storage Profile - LUN Set - Raid Level",
+                  "description":"Storage Profile - LUN Set - RAID Level",
                   "type":"string",
                   "default":"stripe",
                   "enum":[
@@ -280,7 +280,7 @@
                   "pattern":"^[\\-\\.:_a-zA-Z0-9]{1,16}$"
                },
                "raid_level":{
-                  "description":"Storage Profile - Controller Definition - Raid Level",
+                  "description":"Storage Profile - Controller Definition - RAID Level",
                   "type":"string",
                   "default":"any-configuration",
                   "enum":[

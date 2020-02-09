@@ -2,19 +2,17 @@
 # !/usr/bin/env python
 
 """ chassis.py: Easy UCS Deployment Tool """
-from __init__ import __author__, __copyright__,  __version__, __status__
 
 import json
 
-from inventory.object import GenericUcsInventoryObject, UcsImcInventoryObject
 from inventory.ucs.adaptor import UcsImcAdaptor, UcsImcNetworkAdapter
 from inventory.ucs.cpu import UcsImcCpu
 from inventory.ucs.gpu import UcsImcGpu
 from inventory.ucs.memory import UcsImcMemoryArray
 from inventory.ucs.mgmt import UcsImcMgmtInterface
+from inventory.ucs.object import GenericUcsInventoryObject, UcsImcInventoryObject
 from inventory.ucs.storage import UcsImcStorageController, UcsImcStorageFlexFlashController
 from inventory.ucs.tpm import UcsImcTpm
-from inventory.ucs.psu import UcsImcPsu
 
 
 class UcsServerNode(GenericUcsInventoryObject):

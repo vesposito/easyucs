@@ -19,6 +19,14 @@
     }
   ],
   "psus_models":[
+    {
+      "name":"UCS-PSU-6332-AC",
+      "description":"UCS 6332/6454 power supply/100-240VAC (650 W)"
+    },
+    {
+      "name":"UCS-PSU-6332-DC",
+      "description":"UCS 6332/6454 power supply/-48VDC (930 W)"
+    }
   ],
   "rear_ports":{
     "1":{
@@ -292,19 +300,19 @@
       "port_size":[111,56]
     }
   },
-  "spec_sheet_url": "https://www.cisco.com/c/dam/en/us/products/collateral/servers-unified-computing/ucs-b-series-blade-servers/ucs-6454-fab-int-specsheet.pdf",
+  "spec_sheet_url": "https://www.cisco.com/c/dam/en/us/products/collateral/servers-unified-computing/ucs-b-series-blade-servers/6400-specsheet.pdf",
   "data_sheet_url": "https://www.cisco.com/c/en/us/products/collateral/servers-unified-computing/datasheet-c78-741116.html",
   "specs": {
     "descr": "The Cisco UCS 6454 54-Port Fabric Interconnect is a One-Rack-Unit (1RU) 10/25/40/100 Gigabit Ethernet, FCoE and Fibre Channel switch offering up to 3.82 Tbps throughput and up to 54 ports. The switch has 28 10/25-Gbps Ethernet ports, 4 1/10/25-Gbps Ethernet ports, 6 40/100-Gbps Ethernet uplink ports and 16 unified ports that can support 10/25-Gbps Ethernet or 8/16/32-Gbps Fibre Channel. All Ethernet ports are capable of supporting FCoE.",
     "form_factor": "1RU",
     "throughput": {
       "gbps": 3824,
-      "mpps": 4200
+      "mpps": 1200
     },
     "latency": "<1 µs",
     "power_typical": 260,
-    "power_maximum": 400,
-    "power_maximum_dc": 380,
+    "power_maximum": 650,
+    "power_maximum_dc": 930,
     "dimensions": {
       "centimeters": {
         "height": 4.4,
@@ -319,8 +327,8 @@
       "rack_units": 1
     },
     "weight": {
-      "lb": 23.24,
-      "kg": 10.5
+      "lb": 22.24,
+      "kg": 10.10
     }
   }
 }

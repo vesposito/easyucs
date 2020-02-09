@@ -2,14 +2,10 @@
 # !/usr/bin/env python
 
 """ domain.py: Easy UCS Deployment Tool """
-from __init__ import __author__, __copyright__,  __version__, __status__
 
-
-import json
-
-from inventory.object import GenericUcsInventoryObject, UcsCentralInventoryObject
 from inventory.ucs.chassis import UcsSystemChassis
 from inventory.ucs.fabric import UcsSystemFex, UcsSystemFi
+from inventory.ucs.object import GenericUcsInventoryObject, UcsCentralInventoryObject
 from inventory.ucs.rack import UcsSystemRack
 
 

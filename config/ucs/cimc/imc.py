@@ -10,7 +10,7 @@ import time
 import traceback
 import urllib
 
-from config.object import GenericUcsConfigObject, UcsImcConfigObject, UcsSystemConfigObject
+from config.ucs.object import GenericUcsConfigObject, UcsImcConfigObject, UcsSystemConfigObject
 
 import common
 
