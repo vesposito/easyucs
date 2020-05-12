@@ -73,6 +73,7 @@ from ucsmsdk.mometa.comm.CommSnmpUser import CommSnmpUser
 from ucsmsdk.mometa.comm.CommSsh import CommSsh
 from ucsmsdk.mometa.comm.CommTelnet import CommTelnet
 from ucsmsdk.mometa.comm.CommWebSvcLimits import CommWebSvcLimits
+from ucsmsdk.mometa.compute.ComputeFanPolicy import ComputeFanPolicy
 from ucsmsdk.mometa.compute.ComputeChassisDiscPolicy import ComputeChassisDiscPolicy
 from ucsmsdk.mometa.compute.ComputeHwChangeDiscPolicy import ComputeHwChangeDiscPolicy
 from ucsmsdk.mometa.compute.ComputePortDiscPolicy import ComputePortDiscPolicy
@@ -82,6 +83,7 @@ from ucsmsdk.mometa.compute.ComputeServerMgmtPolicy import ComputeServerMgmtPoli
 from ucsmsdk.mometa.fabric.FabricFcSan import FabricFcSan
 from ucsmsdk.mometa.fabric.FabricLanCloud import FabricLanCloud
 from ucsmsdk.mometa.fabric.FabricOrgVlanPolicy import FabricOrgVlanPolicy
+from ucsmsdk.mometa.fabric.FabricReservedVlan import FabricReservedVlan
 from ucsmsdk.mometa.fabric.FabricSanCloud import FabricSanCloud
 from ucsmsdk.mometa.firmware.FirmwareAck import FirmwareAck
 from ucsmsdk.mometa.firmware.FirmwareAutoSyncPolicy import FirmwareAutoSyncPolicy
@@ -940,8 +942,10 @@ class UcsSystemGlobalPolicies(UcsSystemConfigObject):
         self.rack_server_discovery_policy = []
         self.rack_management_connection_policy = None
         self.power_policy = None
+        self.fan_control_policy = None
         self.mac_address_table_aging = None
         self.vlan_port_count_optimization = None
+        self.reserved_vlan_start_id = None
         self.org_permissions = None
         self.inband_profile_vlan_group = None
         self.inband_profile_network = None
@@ -983,9 +987,20 @@ class UcsSystemGlobalPolicies(UcsSystemConfigObject):
             if "computePsuPolicy" in self._config.sdk_objects:
                 self.power_policy = self._config.sdk_objects["computePsuPolicy"][0].redundancy
 
+            if "computeFanPolicy" in self._config.sdk_objects:
+                self.fan_control_policy = self._config.sdk_objects["computeFanPolicy"][0].speed
+                if self.fan_control_policy == "Balanced":
+                    self.fan_control_policy = "balanced"
+                elif self.fan_control_policy == "Low Power":
+                    self.fan_control_policy = "low-power"
+
             if "fabricLanCloud" in self._config.sdk_objects:
                 self.mac_address_table_aging = self._config.sdk_objects["fabricLanCloud"][0].mac_aging
                 self.vlan_port_count_optimization = self._config.sdk_objects["fabricLanCloud"][0].vlan_compression
+
+            if "fabricReservedVlan" in self._config.sdk_objects:
+                if self._config.sdk_objects["fabricReservedVlan"]:
+                    self.reserved_vlan_start_id = self._config.sdk_objects["fabricReservedVlan"][0].start_id
 
             if "fabricOrgVlanPolicy" in self._config.sdk_objects:
                 self.org_permissions = self._config.sdk_objects["fabricOrgVlanPolicy"][0].admin_state
@@ -1095,6 +1110,17 @@ class UcsSystemGlobalPolicies(UcsSystemConfigObject):
                 if self.commit("Power Policy") != True:
                     return False
 
+        if self.fan_control_policy:
+            if self.fan_control_policy == "balanced":
+                speed = "Balanced"
+            elif self.fan_control_policy == "low-power":
+                speed = "Low Power"
+            mo_compute_fan_policy = ComputeFanPolicy(parent_mo_or_dn=parent_mo_root, speed=self.fan_control_policy)
+            self._handle.add_mo(mo_compute_fan_policy, modify_present=True)
+            if commit:
+                if self.commit("Fan Control Policy") != True:
+                    return False
+
         if self.mac_address_table_aging:
             mo_fabric_lan_cloud = FabricLanCloud(parent_mo_or_dn=parent_mo_fabric,
                                                  mac_aging=self.mac_address_table_aging)
@@ -1110,6 +1136,16 @@ class UcsSystemGlobalPolicies(UcsSystemConfigObject):
             if commit:
                 if self.commit("VLAN Port Count Optimization") != True:
                     return False
+
+        # TODO: Support modifying Reserved VLAN IDs by handling associated required reboot
+        if self.reserved_vlan_start_id:
+            self.logger(level="warning", message="Configuring Reserved VLAN Start ID is not supported yet by EasyUCS")
+        #     mo_fabric_reserved_vlan = FabricReservedVlan(parent_mo_or_dn=parent_mo_lan,
+        #                                                  start_id=self.reserved_vlan_start_id)
+        #     self._handle.add_mo(mo_fabric_reserved_vlan, modify_present=True)
+        #     if commit:
+        #         if self.commit("Reserved VLANs") != True:
+        #             return False
 
         if self.org_permissions:
             mo_fabric_org_vlan_policy = FabricOrgVlanPolicy(parent_mo_or_dn=parent_mo_root,

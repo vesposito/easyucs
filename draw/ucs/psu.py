@@ -24,6 +24,9 @@ class GenericUcsDrawPsu(GenericUcsDrawEquipment):
 
         # self.save_image(self._device_target + "__" + self._parent.id)
 
+        # We drop the picture in order to save on memory
+        self.picture = None
+
     def _get_picture(self):
         if hasattr(self._parent, 'sku'):
             file_name = self._parent.sku
@@ -36,11 +39,12 @@ class GenericUcsDrawPsu(GenericUcsDrawEquipment):
         try:
             if file_name:
                 self.picture = Image.open("catalog/power_supplies/img/" + str(file_name) + ".png", 'r')
+                self.picture_size = tuple(self.picture.size)
             else:
                 return False
         except FileNotFoundError:
             self.logger(level="error",
-                        message="Image file " "catalog/power_supplies/img/" + str(file_name) + " not found")
+                        message="Image file " "catalog/power_supplies/img/" + str(file_name) + ".png not found")
             return False
 
     def _get_json_file(self):

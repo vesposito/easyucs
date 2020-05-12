@@ -4,31 +4,31 @@
    "title":"EasyUCS ucs system config orgs lan_connectivity_policies section",
    "description":"EasyUCS ucs system config orgs lan_connectivity_policies section JSON schema",
    "type":"object",
-   "oneOf":[
-      {
-         "properties":{
-            "comment": {
-               "description": "LAN Connectivity Policy Comments",
-               "type": "string",
-               "default": ""
-            },
-            "name":{
-               "description":"LAN Connectivity Policy Name",
-               "type":"string",
-               "default":"",
-               "pattern":"^[\\-\\.:_a-zA-Z0-9]{1,16}$"
-            },
-            "descr":{
-               "description":"Description of LAN Connectivity Policy",
-               "type":"string",
-               "default":"",
-               "pattern":"^[ !#$%&\\(\\)\\*\\+,\\-\\./:;\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{0,256}$"
-            },
-            "vnics":{
-               "description":"LAN Connectivity Policy - vNICs",
-               "type":"array",
-               "items":{
-                  "type":"object",
+   "properties":{
+      "comment": {
+         "description": "LAN Connectivity Policy Comments",
+         "type": "string",
+         "default": ""
+      },
+      "name":{
+         "description":"LAN Connectivity Policy Name",
+         "type":"string",
+         "default":"",
+         "pattern":"^[\\-\\.:_a-zA-Z0-9]{1,16}$"
+      },
+      "descr":{
+         "description":"Description of LAN Connectivity Policy",
+         "type":"string",
+         "default":"",
+         "pattern":"^[ !#$%&\\(\\)\\*\\+,\\-\\./:;\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{0,256}$"
+      },
+      "vnics":{
+         "description":"LAN Connectivity Policy - vNICs",
+         "type":"array",
+         "items":{
+            "type":"object",
+            "oneOf": [
+               {
                   "properties":{
                      "name":{
                         "description":"LAN Connectivity Policy - vNIC - Name",
@@ -60,81 +60,7 @@
                      "name"
                   ]
                },
-               "minItems":1
-            },
-            "iscsi_vnics":{
-               "description":"LAN Connectivity Policy - iSCSI vNICs",
-               "type":"array",
-               "items":{
-                  "type":"object",
-                  "properties":{
-                     "name":{
-                        "description":"LAN Connectivity Policy - iSCSI vNIC - Name",
-                        "type":"string",
-                        "default":"",
-                        "pattern":"^[\\-\\.:_a-zA-Z0-9]{1,16}$"
-                     },
-                     "overlay_vnic":{
-                        "description":"LAN Connectivity Policy - iSCSI vNIC - Overlay vNIC",
-                        "type":"string",
-                        "default":"",
-                        "pattern":"^[\\-\\.:_a-zA-Z0-9]{0,16}$"
-                     },
-                     "iscsi_adapter_policy":{
-                        "description":"LAN Connectivity Policy - iSCSI vNIC - iSCSI Adapter Policy",
-                        "type":"string",
-                        "default":"",
-                        "pattern":"^[\\-\\.:_a-zA-Z0-9]{0,16}$"
-                     },
-                     "mac_address_pool":{
-                        "description":"LAN Connectivity Policy - iSCSI vNIC - MAC Address Assignment",
-                        "type":"string",
-                        "default":""
-                     },
-                     "vlan":{
-                        "description":"LAN Connectivity Policy - iSCSI vNIC - VLAN",
-                        "type":"string",
-                        "default":"",
-                        "pattern":"^[\\-\\.:_a-zA-Z0-9]{0,16}$"
-                     }
-                  },
-                  "additionalProperties":false,
-                  "required":[
-                     "name"
-                  ]
-               },
-               "minItems":1
-            }
-         },
-         "additionalProperties":false,
-         "required":[
-            "name"
-         ]
-      },
-      {
-         "properties":{
-            "comment": {
-               "description": "LAN Connectivity Policy Comments",
-               "type": "string",
-               "default": ""
-            },
-            "name":{
-               "description":"LAN Connectivity Policy Name",
-               "type":"string",
-               "default":"",
-               "pattern":"^[\\-\\.:_a-zA-Z0-9]{1,16}$"
-            },
-            "descr":{
-               "description":"Description of LAN Connectivity Policy",
-               "type":"string",
-               "default":"",
-               "pattern":"^[ !#$%&\\(\\)\\*\\+,\\-\\./:;\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{0,256}$"
-            },
-            "vnics":{
-               "description":"LAN Connectivity Policy - vNICs",
-               "type":"array",
-               "items":{
-                  "type":"object",
+               {
                   "properties":{
                      "name":{
                         "description":"LAN Connectivity Policy - vNIC - Name",
@@ -251,57 +177,57 @@
                   "required":[
                      "name"
                   ]
-               },
-               "minItems":1
-            },
-            "iscsi_vnics":{
-               "description":"LAN Connectivity Policy - iSCSI vNICs",
-               "type":"array",
-               "items":{
-                  "type":"object",
-                  "properties":{
-                     "name":{
-                        "description":"LAN Connectivity Policy - iSCSI vNIC - Name",
-                        "type":"string",
-                        "default":"",
-                        "pattern":"^[\\-\\.:_a-zA-Z0-9]{1,16}$"
-                     },
-                     "overlay_vnic":{
-                        "description":"LAN Connectivity Policy - iSCSI vNIC - Overlay vNIC",
-                        "type":"string",
-                        "default":"",
-                        "pattern":"^[\\-\\.:_a-zA-Z0-9]{0,16}$"
-                     },
-                     "iscsi_adapter_policy":{
-                        "description":"LAN Connectivity Policy - iSCSI vNIC - iSCSI Adapter Policy",
-                        "type":"string",
-                        "default":"",
-                        "pattern":"^[\\-\\.:_a-zA-Z0-9]{0,16}$"
-                     },
-                     "mac_address_pool":{
-                        "description":"LAN Connectivity Policy - iSCSI vNIC - MAC Address Assignment",
-                        "type":"string",
-                        "default":""
-                     },
-                     "vlan":{
-                        "description":"LAN Connectivity Policy - iSCSI vNIC - VLAN",
-                        "type":"string",
-                        "default":"",
-                        "pattern":"^[\\-\\.:_a-zA-Z0-9]{0,16}$"
-                     }
-                  },
-                  "additionalProperties":false,
-                  "required":[
-                     "name"
-                  ]
-               },
-               "minItems":1
-            }
+               }
+            ]
          },
-         "additionalProperties":false,
-         "required":[
-            "name"
-         ]
+         "minItems":1
+      },
+      "iscsi_vnics":{
+         "description":"LAN Connectivity Policy - iSCSI vNICs",
+         "type":"array",
+         "items":{
+            "type":"object",
+            "properties":{
+               "name":{
+                  "description":"LAN Connectivity Policy - iSCSI vNIC - Name",
+                  "type":"string",
+                  "default":"",
+                  "pattern":"^[\\-\\.:_a-zA-Z0-9]{1,16}$"
+               },
+               "overlay_vnic":{
+                  "description":"LAN Connectivity Policy - iSCSI vNIC - Overlay vNIC",
+                  "type":"string",
+                  "default":"",
+                  "pattern":"^[\\-\\.:_a-zA-Z0-9]{0,16}$"
+               },
+               "iscsi_adapter_policy":{
+                  "description":"LAN Connectivity Policy - iSCSI vNIC - iSCSI Adapter Policy",
+                  "type":"string",
+                  "default":"",
+                  "pattern":"^[\\-\\.:_a-zA-Z0-9]{0,16}$"
+               },
+               "mac_address_pool":{
+                  "description":"LAN Connectivity Policy - iSCSI vNIC - MAC Address Assignment",
+                  "type":"string",
+                  "default":""
+               },
+               "vlan":{
+                  "description":"LAN Connectivity Policy - iSCSI vNIC - VLAN",
+                  "type":"string",
+                  "default":"",
+                  "pattern":"^[\\-\\.:_a-zA-Z0-9]{0,16}$"
+               }
+            },
+            "additionalProperties":false,
+            "required":[
+               "name"
+            ]
+         },
+         "minItems":1
       }
+   },
+   "additionalProperties":false,
+   "required":[
+      "name"
    ]
 }

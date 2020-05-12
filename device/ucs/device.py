@@ -1460,7 +1460,7 @@ class UcsSystem(GenericUcsDevice):
                     minor = res_minor.group(1)
 
                 mr = ""
-                regex_mr = "\((\d).*"
+                regex_mr = r"\((\d).*"
                 res_mr = re.search(regex_mr, self.version.version)
                 if res_mr is not None:
                     mr = res_mr.group(1)

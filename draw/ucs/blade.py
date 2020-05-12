@@ -37,6 +37,9 @@ class GenericUcsDrawBlade(GenericUcsDrawEquipment):
 
         self.fill_blanks()
 
+        # We drop the picture in order to save on memory
+        self.picture = None
+
         # self.save_image(self._device_target + "__" + self._parent.id)
 
     def _get_picture_offset(self):

@@ -42,6 +42,9 @@ class GenericUcsConfig(GenericConfig):
                                                    ": Connection refused")
             except urllib.error.URLError:
                 self.logger(level="error", message="Timeout error while fetching UCS class " + sdk_object_name)
+            except Exception as err:
+                self.logger(level="error",
+                            message="Error while fetching UCS class " + sdk_object_name + ": " + str(err))
 
     def get_config_objects_under_dn(self, dn=None, object_class=None, parent=None):
         if dn is not None and object_class is not None and parent is not None:
@@ -409,23 +412,24 @@ class UcsSystemConfig(GenericUcsConfig):
                                 'commCimcWebService', 'commCimxml', 'commDateTime', 'commDns', 'commDnsProvider',
                                 'commHttp', 'commHttps', 'commShellSvcLimits', 'commSnmp', 'commSnmpTrap',
                                 'commSnmpUser', 'commSsh', 'commTelnet', 'commWebSvcLimits', 'computeChassisDiscPolicy',
-                                'computeChassisQual', 'computeGraphicsCardPolicy', 'computeHwChangeDiscPolicy',
-                                'computeKvmMgmtPolicy', 'computeMemoryConfigPolicy', 'computePhysicalQual',
-                                'computePool', 'computePooledRackUnit', 'computePooledSlot', 'computePoolingPolicy',
-                                'computePortDiscPolicy', 'computePowerSyncPolicy', 'computePsuPolicy', 'computeQual',
-                                'computeRackQual', 'computeScrubPolicy', 'computeServerDiscPolicy',
-                                'computeServerMgmtPolicy', 'computeSlotQual', 'cpmaintMaintPolicy', 'diagMemoryTest',
-                                'diagRunPolicy', 'dpsecMac', 'epqosDefinition', 'epqosEgress', 'equipmentBinding',
-                                'equipmentChassisProfile', 'equipmentComputeConnPolicy', 'etherPIo', 'fabricBreakout',
-                                'fabricDceSwSrvEp', 'fabricDceSwSrvPcEp', 'fabricEthEstcEp', 'fabricEthEstcPc',
-                                'fabricEthEstcPcEp', 'fabricEthLanEp', 'fabricEthLanPc', 'fabricEthLanPcEp',
-                                'fabricEthLinkProfile', 'fabricEthTargetEp', 'fabricEthVlanPc', 'fabricEthVlanPortEp',
-                                'fabricFcEndpoint', 'fabricFcEstcEp', 'fabricFcSan', 'fabricFcSanEp', 'fabricFcSanPc',
-                                'fabricFcSanPcEp', 'fabricFcUserZone', 'fabricFcVsanPc', 'fabricFcVsanPortEp',
-                                'fabricFcZoneProfile', 'fabricFcoeEstcEp', 'fabricFcoeSanEp', 'fabricFcoeSanPc',
-                                'fabricFcoeSanPcEp', 'fabricFcoeVsanPortEp', 'fabricLacpPolicy', 'fabricLanCloud',
-                                'fabricLanPinGroup', 'fabricLanPinTarget', 'fabricMulticastPolicy', 'fabricNetGroup',
-                                'fabricNetGroupRef', 'fabricOrgVlanPolicy', 'fabricPooledVlan', 'fabricSanCloud',
+                                'computeChassisQual', 'computeFanPolicy', 'computeGraphicsCardPolicy',
+                                'computeHwChangeDiscPolicy', 'computeKvmMgmtPolicy', 'computeMemoryConfigPolicy',
+                                'computePhysicalQual', 'computePool', 'computePooledRackUnit', 'computePooledSlot',
+                                'computePoolingPolicy', 'computePortDiscPolicy', 'computePowerSyncPolicy',
+                                'computePsuPolicy', 'computeQual', 'computeRackQual', 'computeScrubPolicy',
+                                'computeServerDiscPolicy', 'computeServerMgmtPolicy', 'computeSlotQual',
+                                'cpmaintMaintPolicy', 'diagMemoryTest', 'diagRunPolicy', 'dpsecMac', 'epqosDefinition',
+                                'epqosEgress', 'equipmentBinding', 'equipmentChassisProfile',
+                                'equipmentComputeConnPolicy', 'etherPIo', 'fabricBreakout', 'fabricDceSwSrvEp',
+                                'fabricDceSwSrvPcEp', 'fabricEthEstcEp', 'fabricEthEstcPc', 'fabricEthEstcPcEp',
+                                'fabricEthLanEp', 'fabricEthLanPc', 'fabricEthLanPcEp', 'fabricEthLinkProfile',
+                                'fabricEthTargetEp', 'fabricEthVlanPc', 'fabricEthVlanPortEp', 'fabricFcEndpoint',
+                                'fabricFcEstcEp', 'fabricFcSan', 'fabricFcSanEp', 'fabricFcSanPc', 'fabricFcSanPcEp',
+                                'fabricFcUserZone', 'fabricFcVsanPc', 'fabricFcVsanPortEp', 'fabricFcZoneProfile',
+                                'fabricFcoeEstcEp', 'fabricFcoeSanEp', 'fabricFcoeSanPc', 'fabricFcoeSanPcEp',
+                                'fabricFcoeVsanPortEp', 'fabricLacpPolicy', 'fabricLanCloud', 'fabricLanPinGroup',
+                                'fabricLanPinTarget', 'fabricMulticastPolicy', 'fabricNetGroup', 'fabricNetGroupRef',
+                                'fabricOrgVlanPolicy', 'fabricPooledVlan', 'fabricReservedVlan', 'fabricSanCloud',
                                 'fabricSanPinGroup', 'fabricSanPinTarget', 'fabricUdldLinkPolicy', 'fabricUdldPolicy',
                                 'fabricVCon', 'fabricVConProfile', 'fabricVlan', 'fabricVlanGroupReq', 'fabricVlanReq',
                                 'fabricVsan', 'fcPIo', 'fcpoolBlock', 'fcpoolInitiators', 'firmwareAutoSyncPolicy',
@@ -491,6 +495,9 @@ class UcsSystemConfig(GenericUcsConfig):
             except http.client.RemoteDisconnected:
                 self.logger(level="error", message="Connection closed while fetching UCS class " + sdk_object_name)
                 failed_to_fetch.append(sdk_object_name)
+            except Exception as err:
+                self.logger(level="error",
+                            message="Error while fetching UCS class " + sdk_object_name + ": " + str(err))
 
         # We retry all SDK objects that failed to fetch properly
         if failed_to_fetch:
@@ -626,6 +633,9 @@ class UcsImcConfig(GenericUcsConfig):
             except xml.etree.ElementTree.ParseError as err:
                 self.logger(level="error", message="Error while trying to fetch UCS IMC class " + sdk_object_name +
                                                    ": " + str(err))
+            except Exception as err:
+                self.logger(level="error",
+                            message="Error while fetching UCS class " + sdk_object_name + ": " + str(err))
 
         # We retry all SDK objects that failed to fetch properly
         if failed_to_fetch:
@@ -703,6 +713,9 @@ class UcsCentralConfig(GenericUcsConfig):
                 except urllib.error.URLError:
                     self.logger(level="error", message="Timeout error while fetching UCS Central class " +
                                                        sdk_object_name)
+                except Exception as err:
+                    self.logger(level="error",
+                                message="Error while fetching UCS class " + sdk_object_name + ": " + str(err))
 
         # In case we still have SDK objects that failed to fetch, we list them in a warning message
         if failed_to_fetch:

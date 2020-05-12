@@ -33,6 +33,7 @@ class GenericUcsDrawStorageEnclosure:
                 self.parent_draw.paste_layer(disk.picture, disk.picture_offset)
             # else:
             #     self.parent_draw.paste_layer(disk.picture, disk.picture_offset)
+            disk.picture = None
 
 
 class UcsSystemDrawStorageController:
@@ -76,6 +77,7 @@ class UcsSystemDrawStorageController:
                     self.parent_draw.parent_draw.paste_layer(disk.picture, disk.picture_offset)
                 else:
                     self.parent_draw.paste_layer(disk.picture, disk.picture_offset)
+                disk.picture = None
 
     def fill_blanks(self):
         if "disks_slots" in self.parent_draw.json_file:
@@ -210,6 +212,7 @@ class UcsSystemDrawStorageLocalDisk(GenericUcsDrawEquipment):
             self.picture_offset = None
 
         # self.save_image(self._device_target + "__" + self._parent.id)
+        # self.picture = None
 
     def _get_json_file(self):
         pass
@@ -217,8 +220,9 @@ class UcsSystemDrawStorageLocalDisk(GenericUcsDrawEquipment):
     def _get_picture(self):
         try:
             self.picture = Image.open("catalog/drives/img/" + self.format + ".png", 'r')
+            self.picture_size = tuple(self.picture.size)
         except FileNotFoundError:
-            self.logger(level="error", message="Image file " + "catalog/drives/img/" + self.format + " not found")
+            self.logger(level="error", message="Image file " + "catalog/drives/img/" + self.format + ".png not found")
 
     def _get_picture_offset(self):
         if hasattr(self.parent_draw, "parent_draw"):

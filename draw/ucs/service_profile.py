@@ -94,7 +94,11 @@ class UcsSystemDrawInfraServiceProfile(UcsSystemDrawInfraEquipment):
             equipment.picture_offset = self._get_picture_offset(order, equipment)
             equipment.draw = self.draw
             equipment.background = self.background
+            # As we drop the picture before, we need to recreate it and drop it again after pasting the layer
+            equipment._get_picture()
             self.paste_layer(equipment.picture, equipment.picture_offset)
+            equipment.picture = None
+
             if "Chassis" in equipment.__class__.__name__:
                 equip_type = "chassis"
                 if "blades_slots" in equipment.json_file:
@@ -133,6 +137,9 @@ class UcsSystemDrawInfraServiceProfile(UcsSystemDrawInfraEquipment):
             type = "rack_enclosure"
         self._file_name = self._device_target + "_infra_service_profile_" + type + '_' + str(self.page)
 
+        # We drop the picture in order to save on memory
+        self.picture = None
+
     def _get_picture_offset(self, order, equipment):
         # trunc will be 0 for all equipment on line 1, 1 for all equip on line 2, ....
         trunc = int(order / self.max_in_a_row)
@@ -148,7 +155,7 @@ class UcsSystemDrawInfraServiceProfile(UcsSystemDrawInfraEquipment):
         # truncation of the order by the max in a row
         # y = trunc * round(self.canvas_height / self.number_of_row)
         y = trunc * round(self.canvas_height / self.number_of_row) + \
-            round(self.canvas_height / self.number_of_row / 2) - round(equipment.picture.size[1] / 2)
+            round(self.canvas_height / self.number_of_row / 2) - round(equipment.picture_size[1] / 2)
 
         return x, y
 
@@ -156,32 +163,32 @@ class UcsSystemDrawInfraServiceProfile(UcsSystemDrawInfraEquipment):
         max = 0
         if self.chassis_list:
             for chassis in self.chassis_list:
-                if chassis.picture.size[1] > max:
-                    max = chassis.picture.size[1]
+                if chassis.picture_size[1] > max:
+                    max = chassis.picture_size[1]
         elif self.rack_list:
             for rack in self.rack_list:
-                if rack.picture.size[1] > max:
-                    max = rack.picture.size[1]
+                if rack.picture_size[1] > max:
+                    max = rack.picture_size[1]
         elif self.rack_enclosure_list:
             for rack in self.rack_enclosure_list:
-                if rack.picture.size[1] > max:
-                    max = rack.picture.size[1]
+                if rack.picture_size[1] > max:
+                    max = rack.picture_size[1]
         return max
 
     def _max_width(self):
         max = 0
         if self.chassis_list:
             for chassis in self.chassis_list:
-                if chassis.picture.size[0] > max:
-                    max = chassis.picture.size[0]
+                if chassis.picture_size[0] > max:
+                    max = chassis.picture_size[0]
         elif self.rack_list:
             for rack in self.rack_list:
-                if rack.picture.size[0] > max:
-                    max = rack.picture.size[0]
+                if rack.picture_size[0] > max:
+                    max = rack.picture_size[0]
         elif self.rack_enclosure_list:
             for rack in self.rack_enclosure_list:
-                if rack.picture.size[0] > max:
-                    max = rack.picture.size[0]
+                if rack.picture_size[0] > max:
+                    max = rack.picture_size[0]
         return max
 
     def _max_length_sp_name(self):
@@ -196,7 +203,7 @@ class UcsSystemDrawInfraServiceProfile(UcsSystemDrawInfraEquipment):
                             name = blade._parent.service_profile_name
                             if len(name) > len(max_name):
                                 max_name = name
-                            length = blade.picture.size[0]
+                            length = blade.picture_size[0]
                             if length < min_length_equipment:
                                 min_length_equipment = length
                 elif "Enclosure" in equipment.__class__.__name__:
@@ -205,7 +212,7 @@ class UcsSystemDrawInfraServiceProfile(UcsSystemDrawInfraEquipment):
                             name = server_node._parent.service_profile_name
                             if len(name) > len(max_name):
                                 max_name = name
-                            length = server_node.picture.size[0]
+                            length = server_node.picture_size[0]
                             if length < min_length_equipment:
                                 min_length_equipment = length
                 else:
@@ -213,7 +220,7 @@ class UcsSystemDrawInfraServiceProfile(UcsSystemDrawInfraEquipment):
                         name = equipment._parent.service_profile_name
                         if len(name) > len(max_name):
                             max_name = name
-                        length = equipment.picture.size[0]
+                        length = equipment.picture_size[0]
                         if length < min_length_equipment:
                             min_length_equipment = length
 
@@ -302,18 +309,18 @@ class UcsSystemDrawInfraServiceProfile(UcsSystemDrawInfraEquipment):
             if sp_template_name:
                 self.sp_template_used.append(sp_template_org + sp_template_name)
                 cover_color = self.determine_color_service_profile(sp_template_name, sp_template_org)
-            cover = self.generate_cover(cover_color, equipment.picture.size)
+            cover = self.generate_cover(cover_color, equipment.picture_size)
             self.paste_layer(cover, equipment.picture_offset)
 
             if service_profile_name:
                 w, h = self.draw.textsize(service_profile_name, font=font_name)
                 w_org, h_org = self.draw.textsize(service_profile_org, font=font_org)
                 # Draw service profile name info
-                self.draw.text((equipment.picture_offset[0] + equipment.picture.size[0] / 2 - w / 2,
-                                equipment.picture_offset[1] + equipment.picture.size[1] / 2 - h / 2),
+                self.draw.text((equipment.picture_offset[0] + equipment.picture_size[0] / 2 - w / 2,
+                                equipment.picture_offset[1] + equipment.picture_size[1] / 2 - h / 2),
                                service_profile_name, fill=fill_color, font=font_name)
                 # Draw service profile org info
-                self.draw.text((equipment.picture_offset[0] + equipment.picture.size[0] / 2 - w_org / 2,
+                self.draw.text((equipment.picture_offset[0] + equipment.picture_size[0] / 2 - w_org / 2,
                                 equipment.picture_offset[1] + h_org / 8),
                                service_profile_org, fill=fill_color, font=font_org)
             if equipment._parent.user_label:
@@ -321,7 +328,7 @@ class UcsSystemDrawInfraServiceProfile(UcsSystemDrawInfraEquipment):
             else:
                 rack_info = "Rack #" + equipment._parent.id
             w, h = self.draw.textsize(rack_info, font=font_org)
-            self.draw.text((equipment.picture_offset[0] + equipment.picture.size[0]/2 - w/2,
+            self.draw.text((equipment.picture_offset[0] + equipment.picture_size[0]/2 - w/2,
                             equipment.picture_offset[1] - h - 5), rack_info,
                            fill=fill_color, font=font_org)
 
@@ -337,18 +344,18 @@ class UcsSystemDrawInfraServiceProfile(UcsSystemDrawInfraEquipment):
                     if sp_template_name:
                         self.sp_template_used.append(sp_template_org + sp_template_name)
                         cover_color = self.determine_color_service_profile(sp_template_name, sp_template_org)
-                    cover = self.generate_cover(cover_color, server_node.picture.size)
+                    cover = self.generate_cover(cover_color, server_node.picture_size)
                     self.paste_layer(cover, server_node.picture_offset)
 
                     if service_profile_name:
                         w, h = self.draw.textsize(service_profile_name, font=font_name)
                         w_org, h_org = self.draw.textsize(service_profile_org, font=font_org)
                         # Draw service profile name info
-                        self.draw.text((server_node.picture_offset[0] + server_node.picture.size[0] / 2 - w / 2,
-                                        server_node.picture_offset[1] + server_node.picture.size[1] / 2 - h / 2),
+                        self.draw.text((server_node.picture_offset[0] + server_node.picture_size[0] / 2 - w / 2,
+                                        server_node.picture_offset[1] + server_node.picture_size[1] / 2 - h / 2),
                                        service_profile_name, fill=fill_color, font=font_name)
                         # Draw service profile org info
-                        self.draw.text((server_node.picture_offset[0] + server_node.picture.size[0] / 2 - w_org / 2,
+                        self.draw.text((server_node.picture_offset[0] + server_node.picture_size[0] / 2 - w_org / 2,
                                         server_node.picture_offset[1] + h_org / 8),
                                        service_profile_org, fill=fill_color, font=font_org)
                     # if equipment._parent.user_label:
@@ -356,7 +363,7 @@ class UcsSystemDrawInfraServiceProfile(UcsSystemDrawInfraEquipment):
                     # else:
                     #     chassis_info = "Chassis #" + equipment._parent.id
                     # w, h = self.draw.textsize(chassis_info, font=font_org)
-                    # self.draw.text((equipment.picture_offset[0] + equipment.picture.size[0]/2 - w/2,
+                    # self.draw.text((equipment.picture_offset[0] + equipment.picture_size[0]/2 - w/2,
                     #                 equipment.picture_offset[1] - h - 5), chassis_info,
                     #                fill=fill_color, font=font_org)
 
@@ -373,18 +380,18 @@ class UcsSystemDrawInfraServiceProfile(UcsSystemDrawInfraEquipment):
                     if sp_template_name:
                         self.sp_template_used.append(sp_template_org + sp_template_name)
                         cover_color = self.determine_color_service_profile(sp_template_name, sp_template_org)
-                    cover = self.generate_cover(cover_color, blade.picture.size)
+                    cover = self.generate_cover(cover_color, blade.picture_size)
                     self.paste_layer(cover, blade.picture_offset)
 
                     if service_profile_name:
                         w, h = self.draw.textsize(service_profile_name, font=font_name)
                         w_org, h_org = self.draw.textsize(service_profile_org, font=font_org)
                         # Draw service profile name info
-                        self.draw.text((blade.picture_offset[0] + blade.picture.size[0] / 2 - w / 2,
-                                        blade.picture_offset[1] + blade.picture.size[1] / 2 - h / 2),
+                        self.draw.text((blade.picture_offset[0] + blade.picture_size[0] / 2 - w / 2,
+                                        blade.picture_offset[1] + blade.picture_size[1] / 2 - h / 2),
                                        service_profile_name, fill=fill_color, font=font_name)
                         # Draw service profile org info
-                        self.draw.text((blade.picture_offset[0] + blade.picture.size[0] / 2 - w_org / 2,
+                        self.draw.text((blade.picture_offset[0] + blade.picture_size[0] / 2 - w_org / 2,
                                         blade.picture_offset[1] + h_org / 8),
                                        service_profile_org, fill=fill_color, font=font_org)
                     if equipment._parent.user_label:
@@ -392,7 +399,7 @@ class UcsSystemDrawInfraServiceProfile(UcsSystemDrawInfraEquipment):
                     else:
                         chassis_info = "Chassis #" + equipment._parent.id
                     w, h = self.draw.textsize(chassis_info, font=font_org)
-                    self.draw.text((equipment.picture_offset[0] + equipment.picture.size[0]/2 - w/2,
+                    self.draw.text((equipment.picture_offset[0] + equipment.picture_size[0]/2 - w/2,
                                     equipment.picture_offset[1] - h - 5), chassis_info,
                                    fill=fill_color, font=font_org)
 

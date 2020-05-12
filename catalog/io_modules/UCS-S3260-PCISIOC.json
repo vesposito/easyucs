@@ -7,7 +7,6 @@
     {
       "id":1,
       "width":"half",
-      "orientation":"reverse",
       "coord":[100, 55]
     }
   ],

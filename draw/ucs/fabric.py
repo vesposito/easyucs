@@ -41,8 +41,11 @@ class UcsSystemDrawFiRear(GenericUcsDrawEquipment):
             if not self.color_ports:
                 self._file_name = self._device_target + "_fi_" + self._parent.id + "_rear_clear"
 
-        if color_ports:
+        if color_ports and not parent_draw:
             self.clear_version = UcsSystemDrawFiRear(parent=parent, parent_draw=parent_draw, color_ports=False)
+
+        # We drop the picture in order to save on memory
+        self.picture = None
 
     def _get_picture_offset(self):
         img_w, img_h = self.picture.size
@@ -70,7 +73,7 @@ class UcsSystemDrawFiRear(GenericUcsDrawEquipment):
             gem_list.append(UcsSystemDrawGem(parent=gem, parent_draw=self))
         # gem_list = remove_not_completed_in_list(gem_list)
         # We only keep the gem that have been fully created -> picture
-        gem_list = [gem for gem in gem_list if gem.picture]
+        gem_list = [gem for gem in gem_list if gem.picture_size]
         return gem_list
 
     def draw_ports(self, call_from_infra=None):
@@ -199,6 +202,9 @@ class UcsSystemDrawFiFront(GenericUcsDrawEquipment):
 
         self._file_name = self._device_target + "_fi_" + self._parent.id + "_front"
 
+        # We drop the picture in order to save on memory
+        self.picture = None
+
     def get_power_supplies(self):
         psu_list = []
         for psu in self._parent.power_supplies:
@@ -219,6 +225,9 @@ class UcsSystemDrawGem(GenericUcsDrawEquipment):
 
         if self.parent_draw.color_ports:
             self.draw_ports()
+
+        # We drop the picture in order to save on memory
+        self.picture = None
 
     def _get_picture_offset(self):
         for slot in self.parent_draw.json_file["expansion_modules_slots"]:
@@ -325,6 +334,9 @@ class UcsSystemDrawFexRear(GenericUcsDrawEquipment):
         if color_ports:
             self.clear_version = UcsSystemDrawFexRear(parent=parent, color_ports=False)
 
+        # We drop the picture in order to save on memory
+        self.picture = None
+
     def draw_ports(self):
         # Draws color-coded rectangles on top of base ports
         for port in self._parent.host_ports:
@@ -404,6 +416,9 @@ class UcsSystemDrawFexFront(GenericUcsDrawEquipment):
             self.power_supplies = self.get_power_supplies()
 
         self._file_name = self._device_target + "_fex_" + self._parent.id + "_front"
+
+        # We drop the picture in order to save on memory
+        self.picture = None
 
     def get_power_supplies(self):
         psu_list = []

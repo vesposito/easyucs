@@ -29,6 +29,7 @@ class UcsServerNode(GenericUcsInventoryObject):
 
         self.cpus = self._get_cpus()
         self.gpus = self._get_gpus()
+        self.io_expanders = self._get_io_expanders()
         self.memory_arrays = self._get_memory_arrays()
         self.mgmt_interfaces = self._get_mgmt_interfaces()
         self.storage_flexflash_controllers = self._get_storage_flexflash_controllers()
@@ -41,6 +42,9 @@ class UcsServerNode(GenericUcsInventoryObject):
         return []
 
     def _get_gpus(self):
+        return []
+
+    def _get_io_expanders(self):
         return []
 
     def _get_memory_arrays(self):
@@ -164,6 +168,15 @@ class UcsImcServerNode(UcsServerNode, UcsImcInventoryObject):
             return self._inventory.get_inventory_objects_under_dn(dn=self.dn, object_class=UcsImcGpu, parent=self)
         elif self._inventory.load_from == "file" and "gpus" in self._ucs_sdk_object:
             return [UcsImcGpu(self, gpu) for gpu in self._ucs_sdk_object["gpus"]]
+        else:
+            return []
+
+    def _get_io_expanders(self):
+        if self._inventory.load_from == "live":
+            return self._inventory.get_inventory_objects_under_dn(dn=self.dn, object_class=UcsImcIoExpander,
+                                                                  parent=self)
+        elif self._inventory.load_from == "file" and "io_expanders" in self._ucs_sdk_object:
+            return [UcsImcIoExpander(self, ioe) for ioe in self._ucs_sdk_object["io_expanders"]]
         else:
             return []
 
@@ -315,3 +328,15 @@ class UcsImcServerNode(UcsServerNode, UcsImcInventoryObject):
             return [UcsImcTpm(self, tpm) for tpm in self._ucs_sdk_object["tpms"]]
         else:
             return []
+
+
+class UcsImcIoExpander(UcsImcInventoryObject):
+    _UCS_SDK_OBJECT_NAME = "ioExpander"
+
+    def __init__(self, parent=None, io_expander=None):
+        UcsImcInventoryObject.__init__(self, parent=parent, ucs_sdk_object=io_expander)
+
+        self.revision = self.get_attribute(ucs_sdk_object=io_expander, attribute_name="revision")
+        self.model = self.get_attribute(ucs_sdk_object=io_expander, attribute_name="model")
+        self.serial = self.get_attribute(ucs_sdk_object=io_expander, attribute_name="serial")
+        self.vendor = self.get_attribute(ucs_sdk_object=io_expander, attribute_name="vendor")

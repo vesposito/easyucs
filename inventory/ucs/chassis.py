@@ -545,6 +545,10 @@ class UcsSystemSioc(UcsSioc, UcsSystemInventoryObject):
 
         UcsSystemInventoryObject.__init__(self, parent=parent, ucs_sdk_object=equipment_system_io_controller)
 
+        # Fix unknown SKU for UCS-S3260-PCISIOC
+        if not self.sku and self.model:
+            self.sku = self.model
+
     def _get_ports(self):
         if self._inventory.load_from == "live":
             return self._inventory.get_inventory_objects_under_dn(dn=self.dn, object_class=UcsSystemSiocPort,

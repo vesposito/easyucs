@@ -24,6 +24,7 @@ class GenericDrawObject:
         self._output_directory = "temp"
 
         self.picture = None
+        self.picture_size = None
         self.json_file = None
 
         self.canvas_color = (255, 255, 255, 255)  # white
@@ -33,6 +34,7 @@ class GenericDrawObject:
         # Rotate objects
         if obj.__class__.__name__ == "UcsSystemDrawFiRear":
             obj.picture = obj.picture.rotate(90, expand=1)
+            obj.picture_size = tuple(obj.picture.size)
             obj.json_file['rear_file_size'] = obj.json_file['rear_file_size'][1], obj.json_file['rear_file_size'][0]
             for port in obj.json_file['rear_ports']:
                 obj.json_file['rear_ports'][port]['port_coord'] = obj.json_file['rear_ports'][port]['port_coord'][1], \
@@ -119,6 +121,7 @@ class GenericDrawObject:
             return False
         try:
             self.picture = Image.open(folder_path + "img/" + file_name, 'r')
+            self.picture_size = tuple(self.picture.size)
         except FileNotFoundError:
             self.logger(level="error", message="Image file " + folder_path + "img/" + file_name + " not found")
             return False
@@ -456,8 +459,8 @@ class GenericUcsDrawEquipment(GenericUcsDrawObject):
         self._get_json_file()
         self._get_picture()
         if self.picture:
-            self.canvas_width = self.picture.size[0]
-            self.canvas_height = self.picture.size[1]
+            self.canvas_width = self.picture_size[0]
+            self.canvas_height = self.picture_size[1]
             self.picture_offset = self._get_picture_offset()
         else:
             self.canvas_width = 0

@@ -920,8 +920,8 @@ class UcsSystemLanPinGroup(UcsSystemConfigObject):
                                 interface["slot_id"] = None
                                 interface["port_id"] = None
                                 if "aggr-port" in interface_ep_pc.ep_dn:
-                                    interface.update({"port_id": interface_ep_pc.ep_dn.split('/')[4].split('-')[4]})
-                                    interface.update({"aggr_id": interface_ep_pc.ep_dn.split('/')[3].split('-')[4]})
+                                    interface.update({"port_id": interface_ep_pc.ep_dn.split('/')[3].split('-')[4]})
+                                    interface.update({"aggr_id": interface_ep_pc.ep_dn.split('/')[4].split('-')[4]})
                                     interface.update({"slot_id": interface_ep_pc.ep_dn.split('/')[3].split('-')[1]})
                                 else:
                                     interface.update({"port_id": interface_ep_pc.ep_dn.split('/')[3].split('-')[4]})

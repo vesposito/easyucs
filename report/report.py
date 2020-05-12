@@ -43,7 +43,9 @@ class GenericReport:
         if self.output_format == "docx":
             # Open an empty word as a template for some style setting
             # The template layout is letter by default
-            self.document = Document('./report/template.docx')
+            template_ref = open("./report/template.docx", "rb")
+            self.document = Document(template_ref)
+            template_ref.close()
             if self.page_layout.lower() == "a4".lower():
                 section = self.document.sections[0]
                 section.page_height = Mm(297)

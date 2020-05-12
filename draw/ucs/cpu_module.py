@@ -23,6 +23,9 @@ class UcsSystemDrawCpuModule(GenericUcsDrawEquipment):
 
         self.parent_draw.paste_layer(self.picture, self.picture_offset)
 
+        # We drop the picture in order to save on memory
+        self.picture = None
+
     def _get_picture(self):
         folder_path = self._find_folder_path()
         if folder_path is None:
@@ -33,8 +36,9 @@ class UcsSystemDrawCpuModule(GenericUcsDrawEquipment):
 
         try:
             self.picture = Image.open(folder_path + "img/" + file_name + ".png", 'r')
+            self.picture_size = tuple(self.picture.size)
         except FileNotFoundError:
-            self.logger(level="error", message="Image file " + folder_path + "img/" + file_name + " not found")
+            self.logger(level="error", message="Image file " + folder_path + "img/" + file_name + ".png not found")
             return False
         return True
 

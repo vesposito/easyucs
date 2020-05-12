@@ -2002,6 +2002,9 @@ class UcsSystemBiosPolicy(UcsSystemConfigObject):
                                     if bios_token_name:
                                         if bios_token_settings_child.is_assigned == "yes":
                                             bios_token_value = bios_token_settings_child.settings_mo_rn
+                                            if bios_token_value in ["Integer", "Float"]:
+                                                # Handle new BIOS Token values introduced in UCSM 4.1
+                                                bios_token_value = bios_token_settings_child.bios_ret_setting_name
                                             setattr(self, bios_token_name, bios_token_value)
                                             # Since we have found the right BIOS Token value, we exit the for loop
                                             continue
@@ -3027,6 +3030,7 @@ class UcsSystemVmediaPolicy(UcsSystemConfigObject):
                                 user.update({"hostname": cimcvmedia.remote_ip_address})
                                 user.update({"authentication_protocol": cimcvmedia.auth_option})
                                 user.update({"remap_on_eject": cimcvmedia.remap_on_eject})
+                                user.update({"writable": cimcvmedia.writable})
                                 self.vmedia_mounts.append(user)
 
         elif self._config.load_from == "file":
@@ -3039,7 +3043,7 @@ class UcsSystemVmediaPolicy(UcsSystemConfigObject):
                 for element in self.vmedia_mounts:
                     for value in ["device_type", "password", "username", "descr", "protocol", "name", "remote_file",
                                   "remote_path", "hostname", "image_name_variable", "authentication_protocol",
-                                  "remap_on_eject"]:
+                                  "remap_on_eject", "writable"]:
                         if value not in element:
                             element[value] = None
 
@@ -3104,11 +3108,16 @@ class UcsSystemVmediaPolicy(UcsSystemConfigObject):
             if "authentication_protocol" in media:
                 authentication_protocol = media['authentication_protocol']
 
+            writable = None
+            if protocol in ["cifs", "nfs"] and device_type in ["hdd"]:
+                if 'writable' in media:
+                    writable = media['writable']
+
             CimcvmediaConfigMountEntry(parent_mo_or_dn=mo_cimcvmedia_mount_config_policy, mapping_name=media_name,
                                        device_type=device_type, image_file_name=file_name, image_name_variable=inv,
                                        image_path=file_path, mount_protocol=protocol, user_id=username, password=pwd,
                                        remote_ip_address=hostname, description=descr, remap_on_eject=remap_on_eject,
-                                       auth_option=authentication_protocol)
+                                       auth_option=authentication_protocol, writable=writable)
 
         self._handle.add_mo(mo=mo_cimcvmedia_mount_config_policy, modify_present=True)
         if commit:
@@ -4603,6 +4612,7 @@ class UcsSystemDiagnosticsPolicy(UcsSystemConfigObject):
             if self.commit(detail=self.name) != True:
                 return False
         return True
+
 
 class UcsSystemPersistentMemoryPolicy(UcsSystemConfigObject):
     _CONFIG_NAME = "Persistent Memory Policy"

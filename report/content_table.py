@@ -743,6 +743,20 @@ class LicensesSectionInfoUcsReportTable(GenericReportTable):
                                     column_number=len(rows[1]), centered=centered, cells_list=rows)
 
 
+class VlanPortCountSectionInfoUcsReportTable(GenericReportTable):
+    def __init__(self, order_id, parent, fi, centered=False):
+        rows = [[_("Actual Limit"), _("VLAN Compression State"), _("Max Limit"), _("Total VLAN Port Count"),
+                 _("Access VLAN Port Count"), _("Border VLAN Port Count"), _("Usage (%)")]]
+
+        port_count = fi.vlan_port_count
+        rows.append([port_count["limit"], port_count["vlan_compression_state"], port_count["limit_with_compression"],
+                     port_count["total_vlan_port_count"], port_count["access_vlan_port_count"],
+                     port_count["border_vlan_port_count"], port_count["usage_percent"]])
+
+        GenericReportTable.__init__(self, order_id=order_id, parent=parent, row_number=len(rows),
+                                    column_number=len(rows[1]), centered=centered, cells_list=rows)
+
+
 class GemSectionInfoUcsReportTable(GenericReportTable):
     def __init__(self, order_id, parent, gem, centered=False):
         rows = [[_("ID"),_("SKU"), _("Model"), _("Serial Number")]]
@@ -928,8 +942,14 @@ class RackUnitsSectionInfoUcsReportTable(GenericReportTable):
                     rows.append([rack.id, rack.short_name, rack.serial, rack.memory_total_marketing,
                                  str(len(rack.cpus)), cores, adaptor_sum, len(rack.gpus), drives, sd_cards])
 
+        # In case there are no racks, this prevents an IndexError exception
+        if len(rows) == 1:
+            column_number = 0
+        else:
+            column_number = len(rows[1])
+
         GenericReportTable.__init__(self,order_id=order_id, parent=parent, row_number=len(rows),
-                                    column_number=len(rows[1]), centered=centered, cells_list=rows, font_size=9)
+                                    column_number=column_number, centered=centered, cells_list=rows, font_size=9)
 
 
 class UcsReportRackConnectivityTable(GenericReportTable):
@@ -1005,8 +1025,14 @@ class UcsReportRackConnectivityTable(GenericReportTable):
                                                          transceiver_sn,
                                                          transceiver_length])
 
+        # In case all racks are not connected, this prevents an IndexError exception
+        if len(rows) == 1:
+            column_number = 0
+        else:
+            column_number = len(rows[1])
+
         GenericReportTable.__init__(self, order_id=order_id, parent=parent, row_number=len(rows),
-                                        column_number=len(rows[1]), centered=centered, cells_list=rows, autofit=autofit)
+                                    column_number=column_number, centered=centered, cells_list=rows, autofit=autofit)
 
 
 class UcsReportChassisConnectivityTable(GenericReportTable):
@@ -1394,8 +1420,14 @@ class FiPortsUcsReportTable(GenericReportTable):
                 rows.append([fi_id, fi_port, fi_port_role, fi_port_speed, transceiver_type, transceiver_sn,
                              transceiver_length])
 
+        # In case all ports are not configured, this prevents an IndexError exception
+        if len(rows) == 1:
+            column_number = 0
+        else:
+            column_number = len(rows[1])
+
         GenericReportTable.__init__(self, order_id=order_id, parent=parent, row_number=len(rows),
-                                    column_number=len(rows[1]), centered=centered, cells_list=rows, autofit=autofit,
+                                    column_number=column_number, centered=centered, cells_list=rows, autofit=autofit,
                                     font_size=8)
 
 

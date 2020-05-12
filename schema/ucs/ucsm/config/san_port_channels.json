@@ -67,7 +67,7 @@
                "port_id":{
                   "description":"Port ID of Interface member of SAN Port-Channel",
                   "type":"string",
-                  "pattern":"^[1-9]$|^[1-4][0-9]$|^5[0-4]$"
+                  "pattern":"^[1-9]$|^[1-9][0-9]$|^10[0-8]$"
                },
                "user_label":{
                   "description":"User Label of Interface member of SAN Port-Channel",

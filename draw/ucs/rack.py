@@ -88,7 +88,7 @@ class GenericDrawRackFront(GenericUcsDrawObject):
         for cpu in self._parent.cpus:
             if int(cpu.id) % 2:  # We have one CPU Module for two CPUs
                 cpu_module_list.append(UcsSystemDrawCpuModule(cpu, self))
-        cpu_module_list = [cpu for cpu in cpu_module_list if cpu.picture]
+        cpu_module_list = [cpu for cpu in cpu_module_list if cpu.picture_size]
         return cpu_module_list
 
     def get_nvme_disks(self):
@@ -127,6 +127,9 @@ class UcsSystemDrawRackFront(GenericDrawRackFront, GenericUcsDrawEquipment):
         self.fill_blanks()
 
         self._file_name = self._device_target + "_rack_" + self._parent.id + "_front"
+
+        # We drop the picture in order to save on memory
+        self.picture = None
 
 
 class UcsImcDrawRackFront(GenericDrawRackFront, GenericUcsDrawEquipment):
@@ -177,7 +180,7 @@ class GenericDrawRackRear(GenericUcsDrawObject):
         # psu_list = remove_not_supported_in_list(psu_list)
         # psu_list = remove_not_completed_in_list(psu_list)
         # We only keep the PSU that have been fully created -> picture
-        psu_list = [psu for psu in psu_list if psu.picture]
+        psu_list = [psu for psu in psu_list if psu.picture_size]
         return psu_list
 
     def get_mgmt_if_list(self):
@@ -195,7 +198,7 @@ class GenericDrawRackRear(GenericUcsDrawObject):
         # adaptor_list = remove_not_supported_in_list(adaptor_list)
         # adaptor_list = remove_not_completed_in_list(adaptor_list)
         # We only keep the adaptor that have been fully created -> picture
-        adaptor_list = [adaptor for adaptor in adaptor_list if adaptor.picture]
+        adaptor_list = [adaptor for adaptor in adaptor_list if adaptor.picture_size]
         return [e for e in adaptor_list if hasattr(e, "_parent")]
 
     def get_nvme_disks(self):
@@ -324,9 +327,8 @@ class GenericDrawRackRear(GenericUcsDrawObject):
                         used_slot = []
                         potential_slot = []
                         unused_slot = []
-                        for disk in self.disk_slots_used:
-                            disk_id = int(disk._parent.id)
-                            used_slot.append(disk_id)
+                        for disk_used in self.disk_slots_used:
+                            used_slot.append(disk_used)
                         for disk in self.json_file["disks_slots_rear"]:
                             potential_slot.append(disk["id"])
                         for blank_id in set(potential_slot) - set(used_slot):
@@ -390,6 +392,9 @@ class UcsSystemDrawRackRear(GenericDrawRackRear, GenericUcsDrawEquipment):
         if self.color_ports:
             self.clear_version = UcsSystemDrawRackRear(parent=parent, color_ports=False)
 
+        # We drop the picture in order to save on memory
+        self.picture = None
+
 
 class UcsImcDrawRackRear(GenericDrawRackRear, GenericUcsDrawEquipment):
     def __init__(self, parent=None):
@@ -448,13 +453,13 @@ class UcsSystemDrawInfraRack(UcsSystemDrawInfraEquipment):
 
         # Canvas settings
         if self.fex_presence:
-            # self.canvas_width = self.fi_a.picture.size[0] * 2 + self.rack.picture.size[0] + self.fex_a.picture.size[0] * 2 + 200  # arbitrary
-            self.canvas_width = self.rack.picture.size[0] + self.valid_fex.picture.size[0] * 2 + 100  # arbitrary
-            self.canvas_height = self.fi_a.picture.size[1] + self.rack.picture.size[1] + \
-                                 self.valid_fex.picture.size[1] + 400  # arbitrary
+            # self.canvas_width = self.fi_a.picture_size[0] * 2 + self.rack.picture_size[0] + self.fex_a.picture_size[0] * 2 + 200  # arbitrary
+            self.canvas_width = self.rack.picture_size[0] + self.valid_fex.picture_size[0] * 2 + 100  # arbitrary
+            self.canvas_height = self.fi_a.picture_size[1] + self.rack.picture_size[1] + \
+                                 self.valid_fex.picture_size[1] + 400  # arbitrary
         else:
-            self.canvas_width = self.fi_a.picture.size[0] * 2 + self.rack.picture.size[0] + 100  # arbitrary
-            self.canvas_height = self.fi_a.picture.size[1] + self.rack.picture.size[1] + 100  # arbitrary
+            self.canvas_width = self.fi_a.picture_size[0] * 2 + self.rack.picture_size[0] + 100  # arbitrary
+            self.canvas_height = self.fi_a.picture_size[1] + self.rack.picture_size[1] + 100  # arbitrary
         self.canvas_color = (255, 255, 255, 255)  # white
 
         self.rack_offset = self._get_picture_offset("rack")
@@ -471,15 +476,33 @@ class UcsSystemDrawInfraRack(UcsSystemDrawInfraEquipment):
         self.draw = self._create_draw()
 
         # Paste layers
+        # As we drop the picture before, we need to recreate it and drop it again after pasting the layer
+        self.rack._get_picture()
         self.paste_layer(self.rack.picture, self.rack_offset)
+        self.rack.picture = None
+
+        self.fi_a._get_picture()
+        if self.fi_a._parent.sku == "UCS-FI-M-6324":
+            # We only need to rotate the picture as the other parameters are already rotated (json_file, picture_size)
+            self.fi_a.picture = self.fi_a.rotate_object(picture=self.fi_a.picture)
         self.paste_layer(self.fi_a.picture, self.fi_a_offset)
+        self.fi_a.picture = None
+
         if self.fi_b:
+            self.fi_b._get_picture()
+            if self.fi_b._parent.sku == "UCS-FI-M-6324":
+                self.fi_b.picture = self.fi_b.rotate_object(picture=self.fi_b.picture)
             self.paste_layer(self.fi_b.picture, self.fi_b_offset)
+            self.fi_b.picture = None
         if self.fex_presence:
             if self.fex_a:
+                self.fex_a._get_picture()
                 self.paste_layer(self.fex_a.picture, self.fex_a_offset)
+                self.fex_a.picture = None
             if self.fex_b:
+                self.fex_b._get_picture()
                 self.paste_layer(self.fex_b.picture, self.fex_b_offset)
+                self.fex_b.picture = None
 
         # Draw ports and expansion
         self.fi_a.draw = self.draw
@@ -523,6 +546,11 @@ class UcsSystemDrawInfraRack(UcsSystemDrawInfraEquipment):
         self.rack.mgmt_if_list = self.rack.get_mgmt_if_list()
         if any(x in self.rack._parent.sku for x in ["C240-M5", "HX240C-M5", "HXAF240C-M5"]):
             self.rack.storage_controller_list = self.rack.get_storage_controllers()
+        if hasattr(self.rack._parent, "nvme_drives") and "disks_slots_rear" in self.rack.json_file:
+            self.rack.disk_slots_used = []
+            self.rack.nvme_disks = self.rack.get_nvme_disks()
+            for disk in self.rack.nvme_disks:
+                self.rack.paste_layer(disk.picture, disk.picture_offset)
         self.rack.fill_blanks()
 
         self.wires = []
@@ -550,6 +578,9 @@ class UcsSystemDrawInfraRack(UcsSystemDrawInfraEquipment):
             self.logger(level="warning", message="Infra of rack #" + self.rack._parent.id +
                                                  " not saved because no connection between the FI and the rack")
 
+        # We drop the picture in order to save on memory
+        self.picture = None
+
     def _get_fex_infra_presence(self):
         # Used to know if a FEX need to be used for this infra
         for adaptor in self.rack.adaptor_list:
@@ -563,7 +594,20 @@ class UcsSystemDrawInfraRack(UcsSystemDrawInfraEquipment):
     def _get_fex(self, list):
         fex_id_list = []
         for mgmt_if in self.rack._parent.mgmt_interfaces:
-            fex_id_list.append(str(mgmt_if.peer["fex"]))
+            if hasattr(mgmt_if, "peer"):
+                if mgmt_if.peer:
+                    if "fex" in mgmt_if.peer.keys():
+                        fex_id_list.append(str(mgmt_if.peer["fex"]))
+
+        # Handle case where adaptor is connected to FEX, but management interface is not
+        if not fex_id_list:
+            for adaptor in self.rack._parent.adaptors:
+                for adapt_port in adaptor.ports:
+                    if hasattr(adapt_port, "peer"):
+                        if adapt_port.peer:
+                            if "fex" in adapt_port.peer.keys():
+                                fex_id_list.append(str(adapt_port.peer["fex"]))
+
         fex_list = [None, None]
         for id in fex_id_list:
             for fex in list:
@@ -585,22 +629,22 @@ class UcsSystemDrawInfraRack(UcsSystemDrawInfraEquipment):
 
     def _get_picture_offset(self, type):
         if type == "rack":
-            return round(self.canvas_width / 2 - self.rack.picture.size[0] / 2), self.canvas_height - \
-                       self.rack.picture.size[1]
+            return round(self.canvas_width / 2 - self.rack.picture_size[0] / 2), self.canvas_height - \
+                       self.rack.picture_size[1]
 
         if type == "fi_a":
             return 0, 0
 
         if type == "fi_b":
-            return self.canvas_width - self.fi_b.picture.size[0], 0
+            return self.canvas_width - self.fi_b.picture_size[0], 0
 
         if type == "fex_a":
-            # return self.fi_a.picture.size[0] + 50, self.fi_a.picture.size[1] + 100
-            return 0, self.fi_a.picture.size[1] + 400
+            # return self.fi_a.picture_size[0] + 50, self.fi_a.picture_size[1] + 100
+            return 0, self.fi_a.picture_size[1] + 400
 
         if type == "fex_b":
-            # return self.canvas_width - self.fex_b.picture.size[0] - self.fi_a.picture.size[0] - 50, self.fi_a.picture.size[1] + 100
-            return self.canvas_width - self.fex_b.picture.size[0], self.fi_a.picture.size[1] + 400
+            # return self.canvas_width - self.fex_b.picture_size[0] - self.fi_a.picture_size[0] - 50, self.fi_a.picture_size[1] + 100
+            return self.canvas_width - self.fex_b.picture_size[0], self.fi_a.picture_size[1] + 400
 
     def draw_rack_info(self):
         fill_color = "black"
@@ -619,13 +663,13 @@ class UcsSystemDrawInfraRack(UcsSystemDrawInfraEquipment):
                 msg = "Fex #" + self.fex_a._parent.id
                 w, h = self.draw.textsize(msg, font=font_title)
                 # 16 px space between text and equipment
-                self.draw.text((self.fex_a.picture.size[0] - w, self.fex_a_offset[1] - (font_size + 16)), msg,
+                self.draw.text((self.fex_a.picture_size[0] - w, self.fex_a_offset[1] - (font_size + 16)), msg,
                                fill=fill_color, font=font_title)
             if self.fex_b:
                 msg = "Fex #" + self.fex_b._parent.id
                 w, h = self.draw.textsize(msg, font=font_title)
                 # 16 px space between text and equipment
-                self.draw.text((self.canvas_width - self.fex_b.picture.size[0],
+                self.draw.text((self.canvas_width - self.fex_b.picture_size[0],
                                 self.fex_b_offset[1] - (font_size + 16)), msg, fill=fill_color, font=font_title)
 
     def set_wire(self):
@@ -1120,7 +1164,6 @@ class UcsImcDrawRackEnclosureFront(GenericDrawRackEnclosureFront):
             self.paste_layer(img, (self.picture_offset[0], self.picture_offset[1]))
 
 
-
 class GenericDrawRackEnclosureRear(GenericUcsDrawEquipment):
     def __init__(self, parent=None, color_ports=True, orientation="rear"):
         self.color_ports = color_ports
@@ -1154,7 +1197,7 @@ class GenericDrawRackEnclosureRear(GenericUcsDrawEquipment):
         # psu_list = remove_not_supported_in_list(psu_list)
         # psu_list = remove_not_completed_in_list(psu_list)
         # We only keep the PSU that have been fully created -> picture
-        psu_list = [psu for psu in psu_list if psu.picture]
+        psu_list = [psu for psu in psu_list if psu.picture_size]
         return psu_list
 
     def fill_blanks(self):
@@ -1402,7 +1445,7 @@ class UcsSystemDrawServerNodeRear(GenericUcsDrawEquipment):
         # adaptor_list = remove_not_supported_in_list(adaptor_list)
         # adaptor_list = remove_not_completed_in_list(adaptor_list)
         # We only keep the adaptor that have been fully created -> picture
-        adaptor_list = [adaptor for adaptor in adaptor_list if adaptor.picture]
+        adaptor_list = [adaptor for adaptor in adaptor_list if adaptor.picture_size]
         return [e for e in adaptor_list if hasattr(e, "_parent")]
 
     def _get_picture_offset(self):
@@ -1443,13 +1486,13 @@ class UcsSystemDrawInfraRackEnclosure(UcsSystemDrawInfraEquipment):
 
         # Canvas settings
         if self.fex_presence:
-            # self.canvas_width = self.fi_a.picture.size[0] * 2 + self.rack.picture.size[0] + self.fex_a.picture.size[0] * 2 + 200  # arbitrary
-            self.canvas_width = self.rack_enclosure.picture.size[0] + self.valid_fex.picture.size[0] * 2 + 100  # arbitrary
-            self.canvas_height = self.fi_a.picture.size[1] + self.rack_enclosure.picture.size[1] + \
-                                 self.valid_fex.picture.size[1] + 400  # arbitrary
+            # self.canvas_width = self.fi_a.picture_size[0] * 2 + self.rack.picture_size[0] + self.fex_a.picture_size[0] * 2 + 200  # arbitrary
+            self.canvas_width = self.rack_enclosure.picture_size[0] + self.valid_fex.picture_size[0] * 2 + 100  # arbitrary
+            self.canvas_height = self.fi_a.picture_size[1] + self.rack_enclosure.picture_size[1] + \
+                                 self.valid_fex.picture_size[1] + 400  # arbitrary
         else:
-            self.canvas_width = self.fi_a.picture.size[0] * 2 + self.rack_enclosure.picture.size[0] + 100  # arbitrary
-            self.canvas_height = self.fi_a.picture.size[1] + self.rack_enclosure.picture.size[1] + 100  # arbitrary
+            self.canvas_width = self.fi_a.picture_size[0] * 2 + self.rack_enclosure.picture_size[0] + 100  # arbitrary
+            self.canvas_height = self.fi_a.picture_size[1] + self.rack_enclosure.picture_size[1] + 100  # arbitrary
         self.canvas_color = (255, 255, 255, 255)  # white
 
         self.rack_offset = self._get_picture_offset("rack")
@@ -1466,15 +1509,28 @@ class UcsSystemDrawInfraRackEnclosure(UcsSystemDrawInfraEquipment):
         self.draw = self._create_draw()
 
         # Paste layers
+        # As we drop the picture before, we need to recreate it and drop it again after pasting the layer
+        self.rack_enclosure._get_picture()
         self.paste_layer(self.rack_enclosure.picture, self.rack_offset)
+        self.rack_enclosure.picture = None
+
+        self.fi_a._get_picture()
         self.paste_layer(self.fi_a.picture, self.fi_a_offset)
+        self.fi_a.picture = None
+
         if self.fi_b:
+            self.fi_b._get_picture()
             self.paste_layer(self.fi_b.picture, self.fi_b_offset)
+            self.fi_b.picture = None
         if self.fex_presence:
             if self.fex_a:
+                self.fex_a._get_picture()
                 self.paste_layer(self.fex_a.picture, self.fex_a_offset)
+                self.fex_a.picture = None
             if self.fex_b:
+                self.fex_b._get_picture()
                 self.paste_layer(self.fex_b.picture, self.fex_b_offset)
+                self.fex_b.picture = None
 
         # Draw ports and expansion
         self.fi_a.draw = self.draw
@@ -1542,6 +1598,9 @@ class UcsSystemDrawInfraRackEnclosure(UcsSystemDrawInfraEquipment):
             self.logger(level="warning", message="Infra of rack enclosure #" + self.rack_enclosure._parent.id +
                                                  " not saved because no connection between the FI and the rack")
 
+        # We drop the picture in order to save on memory
+        self.picture = None
+
     def _get_fex_infra_presence(self):
         # Used to know if a FEX need to be used for this infra
         for server_node in self.rack_enclosure.server_nodes_list:
@@ -1581,22 +1640,22 @@ class UcsSystemDrawInfraRackEnclosure(UcsSystemDrawInfraEquipment):
 
     def _get_picture_offset(self, type):
         if type == "rack":
-            return round(self.canvas_width / 2 - self.rack_enclosure.picture.size[0] / 2), self.canvas_height - \
-                   self.rack_enclosure.picture.size[1]
+            return round(self.canvas_width / 2 - self.rack_enclosure.picture_size[0] / 2), self.canvas_height - \
+                   self.rack_enclosure.picture_size[1]
 
         if type == "fi_a":
             return 0, 0
 
         if type == "fi_b":
-            return self.canvas_width - self.fi_b.picture.size[0], 0
+            return self.canvas_width - self.fi_b.picture_size[0], 0
 
         if type == "fex_a":
-            # return self.fi_a.picture.size[0] + 50, self.fi_a.picture.size[1] + 100
-            return 0, self.fi_a.picture.size[1] + 400
+            # return self.fi_a.picture_size[0] + 50, self.fi_a.picture_size[1] + 100
+            return 0, self.fi_a.picture_size[1] + 400
 
         if type == "fex_b":
-            # return self.canvas_width - self.fex_b.picture.size[0] - self.fi_a.picture.size[0] - 50, self.fi_a.picture.size[1] + 100
-            return self.canvas_width - self.fex_b.picture.size[0], self.fi_a.picture.size[1] + 400
+            # return self.canvas_width - self.fex_b.picture_size[0] - self.fi_a.picture_size[0] - 50, self.fi_a.picture_size[1] + 100
+            return self.canvas_width - self.fex_b.picture_size[0], self.fi_a.picture_size[1] + 400
 
     def draw_rack_info(self):
         fill_color = "black"
@@ -1615,13 +1674,13 @@ class UcsSystemDrawInfraRackEnclosure(UcsSystemDrawInfraEquipment):
                 msg = "Fex #" + self.fex_a._parent.id
                 w, h = self.draw.textsize(msg, font=font_title)
                 # 16 px space between text and equipment
-                self.draw.text((self.fex_a.picture.size[0] - w, self.fex_a_offset[1] - (font_size + 16)), msg,
+                self.draw.text((self.fex_a.picture_size[0] - w, self.fex_a_offset[1] - (font_size + 16)), msg,
                                fill=fill_color, font=font_title)
             if self.fex_b:
                 msg = "Fex #" + self.fex_b._parent.id
                 w, h = self.draw.textsize(msg, font=font_title)
                 # 16 px space between text and equipment
-                self.draw.text((self.canvas_width - self.fex_b.picture.size[0],
+                self.draw.text((self.canvas_width - self.fex_b.picture_size[0],
                                 self.fex_b_offset[1] - (font_size + 16)), msg, fill=fill_color, font=font_title)
 
     def set_wire(self):

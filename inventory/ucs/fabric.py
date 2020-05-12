@@ -204,6 +204,7 @@ class UcsSystemFi(UcsFi, UcsSystemInventoryObject):
         self.licenses = []
         self.locator_led_status = None
         self.short_name = None
+        self.vlan_port_count = None
 
         # UCS Mini Fabric Interconnect is a bit different - The CapProvider object needs to be changed
         if self.model == "UCS-FI-M-6324":
@@ -214,10 +215,11 @@ class UcsSystemFi(UcsFi, UcsSystemInventoryObject):
         if self._inventory.load_from == "live":
             self.license_host_id = self._get_license_host_id()
             self._get_licenses()
+            self._get_vlan_port_count()
             self.locator_led_status = self._determine_locator_led_status()
             self.short_name = self._get_model_short_name()
         elif self._inventory.load_from == "file":
-            for attribute in ["license_host_id", "licenses", "locator_led_status", "short_name"]:
+            for attribute in ["license_host_id", "licenses", "locator_led_status", "short_name", "vlan_port_count"]:
                 setattr(self, attribute, None)
                 if attribute in network_element:
                     setattr(self, attribute, self.get_attribute(ucs_sdk_object=network_element,
@@ -283,6 +285,38 @@ class UcsSystemFi(UcsFi, UcsSystemInventoryObject):
             return [UcsSystemPsu(self, psu) for psu in self._ucs_sdk_object["power_supplies"]]
         else:
             return []
+
+    def _get_vlan_port_count(self):
+        if self._inventory.load_from == "live":
+            if "swVlanPortNs" in self._inventory.sdk_objects:
+                if self._inventory.sdk_objects["swVlanPortNs"] is not None:
+                    self.vlan_port_count = {}
+                    for vlan_port_count_instance in self._inventory.sdk_objects["swVlanPortNs"]:
+                        if vlan_port_count_instance.switch_id == self.id:
+                            self.vlan_port_count["access_vlan_port_count"] = \
+                                vlan_port_count_instance.access_vlan_port_count
+                            self.vlan_port_count["border_vlan_port_count"] = \
+                                vlan_port_count_instance.border_vlan_port_count
+                            self.vlan_port_count["compressed_optimization_sets"] = \
+                                vlan_port_count_instance.compressed_optimization_sets
+                            self.vlan_port_count["limit"] = vlan_port_count_instance.limit
+                            self.vlan_port_count["limit_with_compression"] = \
+                                vlan_port_count_instance.vlan_comp_on_limit
+                            self.vlan_port_count["total_optimization_sets"] = \
+                                vlan_port_count_instance.total_optimization_sets
+                            self.vlan_port_count["total_vlan_port_count"] = \
+                                vlan_port_count_instance.total_vlan_port_count
+                            try:
+                                self.vlan_port_count["usage_percent"] = \
+                                    str(round(int(vlan_port_count_instance.total_vlan_port_count) /
+                                              int(vlan_port_count_instance.limit) * 100, 2))
+                            except TypeError:
+                                # For releases < 2.2.3a that do not have a value for the total_vlan_port_count attribute
+                                self.vlan_port_count["usage_percent"] = None
+                            self.vlan_port_count["vlan_compression_state"] = "disabled"
+                            if vlan_port_count_instance.vlan_comp_on_limit == vlan_port_count_instance.limit:
+                                if self.model not in ["N10-S6100", "N10-S6200", "UCS-FI-M-6324"]:
+                                    self.vlan_port_count["vlan_compression_state"] = "enabled"
 
 
 class UcsSystemGem(UcsGem, UcsSystemInventoryObject):

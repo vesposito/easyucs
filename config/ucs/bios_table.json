@@ -1,5 +1,10 @@
 {
    "usb_idle_power_optimizing": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "USB Idle Power Optimizing",
       "target_name": "USBIdlePowerOptimize",
       "feature_group": "USB System Idle Power Optimizing Setting",
@@ -16,6 +21,11 @@
       ]
    },
    "trusted_execution_technology": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "Trusted Execution Technology(TXT)",
       "target_name": "TXTSupport",
       "feature_group": "Intel Trusted Execution Technology",
@@ -32,6 +42,11 @@
       ]
    },
    "integrated_graphics_aperture_size": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "Integrated Graphics Aperture Size",
       "target_name": "IGDAperture",
       "feature_group": "Integrated Graphics Aperture Size",
@@ -56,6 +71,11 @@
       ]
    },
    "intel_virtualization_technology": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "Intel Virtualization Technology",
       "target_name": "IntelVT",
       "feature_group": "Intel Virtualization Technology",
@@ -72,6 +92,11 @@
       ]
    },
    "os_boot_watchdog_timer_timeout": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "OS Boot Watchdog Timer Timeout",
       "target_name": "OSBootWatchdogTimerTimeout",
       "feature_group": "OS Boot Watchdog Timer Timeout",
@@ -92,6 +117,11 @@
       ]
    },
    "power_technology": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "Power Technology",
       "target_name": "CPUPowerManagement",
       "feature_group": "Processor Energy Configuration",
@@ -112,6 +142,11 @@
       ]
    },
    "energy_performance": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "Energy Performance",
       "target_name": "CpuEngPerfBias",
       "feature_group": "Processor Energy Configuration",
@@ -136,11 +171,17 @@
       ]
    },
    "memory_ras_configuration": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "Memory RAS configuration",
       "target_name": "SelectMemoryRAS",
       "feature_group": "SelectMemory RAS configuration",
       "available_in_legacy_mode": true,
       "values": [
+         "Partial-Mirror-mode-1LM",
          "Maximum-Performance",
          "Mirror-Mode-1LM",
          "ADDDC-Sparing",
@@ -150,6 +191,7 @@
          "Platform Default"
       ],
       "legacy_values": [
+         "partial-mirror-mode-1lm",
          "maximum-performance",
          "mirror-mode-1lm",
          "adddc-sparing",
@@ -160,6 +202,11 @@
       ]
    },
    "cdn_control": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "CDN Control",
       "target_name": "cdnEnable",
       "feature_group": "Consistent Device Name Control",
@@ -176,6 +223,11 @@
       ]
    },
    "os_boot_watchdog_timer_policy": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "OS Boot Watchdog Timer Policy",
       "target_name": "OSBootWatchdogTimerPolicy",
       "feature_group": "OS Boot Watchdog Timer Policy",
@@ -192,6 +244,11 @@
       ]
    },
    "cpu_hardware_power_management": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "CPU Hardware Power Management",
       "target_name": "CpuHWPM",
       "feature_group": "CPU Hardware Power Management",
@@ -212,6 +269,11 @@
       ]
    },
    "enhanced_intel_speedstep_tech": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "Enhanced Intel SpeedStep Tech",
       "target_name": "EnhancedIntelSpeedStep",
       "feature_group": "Enhanced Intel SpeedStep Tech",
@@ -228,6 +290,11 @@
       ]
    },
    "pcie_10g_lom_2_link": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "PCIe 10G LOM 2 Link",
       "target_name": "PcieLOM2Link",
       "feature_group": "PCI LOM Ports Configuration",
@@ -244,6 +311,11 @@
       ]
    },
    "usb_front_panel_access_lock": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "USB Front Panel Access Lock",
       "target_name": "USBFrontPanelLock",
       "feature_group": "USB Front Panel Access Lock",
@@ -260,6 +332,11 @@
       ]
    },
    "sas_raid_module": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "SAS RAID module",
       "target_name": "ConfigSASRaidModule",
       "feature_group": "Intel entry SAS RAID module",
@@ -276,6 +353,11 @@
       ]
    },
    "sas_raid": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "SAS RAID",
       "target_name": "IntelSASRaidConfig",
       "feature_group": "Intel entry SAS RAID module",
@@ -292,6 +374,11 @@
       ]
    },
    "redirection_after_bios_post": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "Redirection After BIOS POST",
       "target_name": "RedirectionAfterPOST",
       "feature_group": "Redirection After BIOS POST",
@@ -308,6 +395,11 @@
       ]
    },
    "memory_mapped_io_above_4gb": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "Memory mapped IO above 4GB",
       "target_name": "MemoryMappedIOAbove4GB",
       "feature_group": "Memory mapped IO above 4GB",
@@ -324,6 +416,11 @@
       ]
    },
    "qpi_link_frequency_select": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "QPI Link Frequency Select",
       "target_name": "QPILinkFrequency",
       "feature_group": "QPI Link Frequency Select",
@@ -346,6 +443,11 @@
       ]
    },
    "intel_hyperthreading_tech": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "Intel HyperThreading Tech",
       "target_name": "IntelHyperThread",
       "feature_group": "Intel HyperThreading Tech",
@@ -362,6 +464,11 @@
       ]
    },
    "max_variable_mtrr_setting": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "Max Variable MTRR Setting",
       "target_name": "ProcessorMtrr",
       "feature_group": "Max Variable MTRR Setting",
@@ -378,6 +485,11 @@
       ]
    },
    "energy_performance_tuning": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "Energy Performance Tuning",
       "target_name": "PwrPerfTuning",
       "feature_group": "Energy Performance Tuning",
@@ -394,6 +506,11 @@
       ]
    },
    "adjacent_cache_line_prefetcher": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "Adjacent Cache Line Prefetcher",
       "target_name": "AdjacentCacheLinePrefetch",
       "feature_group": "Processor Prefetch Config",
@@ -410,6 +527,11 @@
       ]
    },
    "dcu_streamer_prefetch": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "DCU Streamer Prefetch",
       "target_name": "DcuStreamerPrefetch",
       "feature_group": "Processor Prefetch Config",
@@ -426,6 +548,11 @@
       ]
    },
    "hardware_prefetcher": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "Hardware Prefetcher",
       "target_name": "HardwarePrefetch",
       "feature_group": "Processor Prefetch Config",
@@ -442,6 +569,11 @@
       ]
    },
    "dcu_ip_prefetcher": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "DCU IP Prefetcher",
       "target_name": "DcuIpPrefetch",
       "feature_group": "Processor Prefetch Config",
@@ -458,6 +590,11 @@
       ]
    },
    "pcie_slot_mlom_optionrom": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "PCIe Slot MLOM OptionROM",
       "target_name": "PcieSlotMLOMOptionROM",
       "feature_group": "PCI Slot OptionROM Enable",
@@ -478,6 +615,11 @@
       ]
    },
    "pcie_slot_sas_optionrom": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "PCIe Slot SAS OptionROM",
       "target_name": "PcieSlotSASOptionROM",
       "feature_group": "PCI Slot OptionROM Enable",
@@ -498,6 +640,11 @@
       ]
    },
    "pcie_slot_hba_optionrom": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "PCIe Slot HBA OptionROM",
       "target_name": "PcieSlotHBAOptionROM",
       "feature_group": "PCI Slot OptionROM Enable",
@@ -518,6 +665,11 @@
       ]
    },
    "slot_10_state": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "Slot 10 state",
       "target_name": "PcieSlot10OptionROM",
       "feature_group": "PCI Slot OptionROM Enable",
@@ -538,6 +690,11 @@
       ]
    },
    "pcie_slot_n2_optionrom": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "PCIe Slot N2 OptionROM",
       "target_name": "PcieSlotN2OptionROM",
       "feature_group": "PCI Slot OptionROM Enable",
@@ -558,6 +715,11 @@
       ]
    },
    "pcie_slot_n1_optionrom": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "PCIe Slot N1 OptionROM",
       "target_name": "PcieSlotN1OptionROM",
       "feature_group": "PCI Slot OptionROM Enable",
@@ -578,6 +740,11 @@
       ]
    },
    "slot_5_state": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "Slot 5 state",
       "target_name": "PcieSlot5OptionROM",
       "feature_group": "PCI Slot OptionROM Enable",
@@ -598,6 +765,11 @@
       ]
    },
    "slot_4_state": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "Slot 4 state",
       "target_name": "PcieSlot4OptionROM",
       "feature_group": "PCI Slot OptionROM Enable",
@@ -618,6 +790,11 @@
       ]
    },
    "slot_7_state": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "Slot 7 state",
       "target_name": "PcieSlot7OptionROM",
       "feature_group": "PCI Slot OptionROM Enable",
@@ -638,6 +815,11 @@
       ]
    },
    "slot_6_state": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "Slot 6 state",
       "target_name": "PcieSlot6OptionROM",
       "feature_group": "PCI Slot OptionROM Enable",
@@ -658,6 +840,11 @@
       ]
    },
    "slot_1_state": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "Slot 1 state",
       "target_name": "PcieSlot1OptionROM",
       "feature_group": "PCI Slot OptionROM Enable",
@@ -678,6 +865,11 @@
       ]
    },
    "slot_3_state": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "Slot 3 state",
       "target_name": "PcieSlot3OptionROM",
       "feature_group": "PCI Slot OptionROM Enable",
@@ -698,6 +890,11 @@
       ]
    },
    "slot_2_state": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "Slot 2 state",
       "target_name": "PcieSlot2OptionROM",
       "feature_group": "PCI Slot OptionROM Enable",
@@ -718,6 +915,11 @@
       ]
    },
    "slot_9_state": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "Slot 9 state",
       "target_name": "PcieSlot9OptionROM",
       "feature_group": "PCI Slot OptionROM Enable",
@@ -738,6 +940,11 @@
       ]
    },
    "slot_8_state": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "Slot 8 state",
       "target_name": "PcieSlot8OptionROM",
       "feature_group": "PCI Slot OptionROM Enable",
@@ -758,6 +965,11 @@
       ]
    },
    "uefi_os_use_legacy_video": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "UEFI OS use legacy video",
       "target_name": "EFIOSUseLegacyVideo",
       "feature_group": "UEFI OS use legacy video",
@@ -774,6 +986,11 @@
       ]
    },
    "channel_interleaving": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "Channel Interleaving",
       "target_name": "ChannelInterLeave",
       "feature_group": "Interleave Configuration",
@@ -796,6 +1013,11 @@
       ]
    },
    "memory_interleaving": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "Memory Interleaving",
       "target_name": "MemoryInterLeave",
       "feature_group": "Interleave Configuration",
@@ -816,6 +1038,11 @@
       ]
    },
    "rank_interleaving": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "Rank Interleaving",
       "target_name": "RankInterLeave",
       "feature_group": "Interleave Configuration",
@@ -838,6 +1065,11 @@
       ]
    },
    "frequency_floor_override": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "Frequency Floor Override",
       "target_name": "CpuFreqFloor",
       "feature_group": "Frequency Floor Override",
@@ -854,6 +1086,11 @@
       ]
    },
    "intel_vtd_coherency_support": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "Intel VTD coherency support",
       "target_name": "CoherencySupport",
       "feature_group": "Intel VT for directed IO",
@@ -870,6 +1107,11 @@
       ]
    },
    "intel_vtd_interrupt_remapping": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "Intel VTD interrupt Remapping",
       "target_name": "InterruptRemap",
       "feature_group": "Intel VT for directed IO",
@@ -886,6 +1128,11 @@
       ]
    },
    "intel_vtd_pass_through_dma_support": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "Intel VTD pass through DMA support",
       "target_name": "PassThroughDMA",
       "feature_group": "Intel VT for directed IO",
@@ -902,6 +1149,11 @@
       ]
    },
    "intel_vt_for_directed_io": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "Intel VT for directed IO",
       "target_name": "IntelVTD",
       "feature_group": "Intel VT for directed IO",
@@ -918,6 +1170,11 @@
       ]
    },
    "intel_vtd_ats_support": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "Intel VTD ATS support",
       "target_name": "ATS",
       "feature_group": "Intel VT for directed IO",
@@ -934,6 +1191,11 @@
       ]
    },
    "maximum_memory_below_4gb": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "Maximum memory below 4GB",
       "target_name": "MaxMemoryBelow4GB",
       "feature_group": "Maximum memory below 4GB",
@@ -950,6 +1212,11 @@
       ]
    },
    "resume_on_ac_power_loss": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "Resume on AC power loss",
       "target_name": "ResumeOnACPowerLoss",
       "feature_group": "Resume on AC power loss",
@@ -968,6 +1235,11 @@
       ]
    },
    "trusted_platform_module": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "Trusted Platform Module(TPM)",
       "target_name": "TPMControl",
       "feature_group": "Trusted Platform Module",
@@ -984,6 +1256,11 @@
       ]
    },
    "out_of_band_management": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "Out of Band Management",
       "target_name": "comSpcrEnable",
       "feature_group": "Out of Band Management",
@@ -1000,6 +1277,11 @@
       ]
    },
    "os_boot_watchdog_timer": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "OS Boot Watchdog Timer",
       "target_name": "OSBootWatchdogTimer",
       "feature_group": "OS Boot Watchdog Timer",
@@ -1016,6 +1298,11 @@
       ]
    },
    "workload_configuration": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "Workload Configuration",
       "target_name": "WorkLdConfig",
       "feature_group": "Workload Configuration",
@@ -1032,6 +1319,11 @@
       ]
    },
    "ddr3_voltage_selection": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "DDR3 Voltage Selection",
       "target_name": "Ddr3VoltageSelection",
       "feature_group": "DDR3 Voltage Selection",
@@ -1048,6 +1340,11 @@
       ]
    },
    "usb_port_sd_card": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "USB Port SD Card",
       "target_name": "UsbPortSdCard",
       "feature_group": "USB port configuration",
@@ -1064,6 +1361,11 @@
       ]
    },
    "usb_port_vmedia": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "USB Port VMedia",
       "target_name": "UsbPortVMedia",
       "feature_group": "USB port configuration",
@@ -1080,6 +1382,11 @@
       ]
    },
    "usb_port_front": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "USB Port Front",
       "target_name": "UsbPortFront",
       "feature_group": "USB port configuration",
@@ -1096,6 +1403,11 @@
       ]
    },
    "usb_port_rear": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "USB Port Rear",
       "target_name": "UsbPortRear",
       "feature_group": "USB port configuration",
@@ -1112,6 +1424,11 @@
       ]
    },
    "port_60_64_emulation": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "Port 60/64 Emulation",
       "target_name": "UsbEmul6064",
       "feature_group": "USB port configuration",
@@ -1128,6 +1445,11 @@
       ]
    },
    "usb_port_internal": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "USB Port Internal",
       "target_name": "UsbPortInt",
       "feature_group": "USB port configuration",
@@ -1144,6 +1466,11 @@
       ]
    },
    "usb_port_kvm": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "USB Port KVM",
       "target_name": "UsbPortKVM",
       "feature_group": "USB port configuration",
@@ -1160,6 +1487,11 @@
       ]
    },
    "intel_turbo_boost_tech": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "Intel Turbo Boost Tech",
       "target_name": "IntelTurboBoostTech",
       "feature_group": "Intel Turbo Boost Tech",
@@ -1176,6 +1508,11 @@
       ]
    },
    "package_c_state_limit": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "Package C State Limit",
       "target_name": "PackageCstateLimit",
       "feature_group": "Package C State Limit",
@@ -1212,6 +1549,11 @@
       ]
    },
    "dram_clock_throttling": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "DRAM Clock Throttling",
       "target_name": "DRAMClockThrottling",
       "feature_group": "DRAM Clock Throttling",
@@ -1232,6 +1574,11 @@
       ]
    },
    "p_state_coordination": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "P STATE Coordination",
       "target_name": "PsdCoordType",
       "feature_group": "P STATE Coordination",
@@ -1250,6 +1597,11 @@
       ]
    },
    "core_multi_processing": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "Core Multi Processing",
       "target_name": "CoreMultiProcessing",
       "feature_group": "Core MultiProcessing",
@@ -1320,6 +1672,11 @@
       ]
    },
    "serial_port_a_enable": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "Serial port A enable",
       "target_name": "Serial-PortA",
       "feature_group": "Serial port A enable",
@@ -1336,6 +1693,11 @@
       ]
    },
    "front_panel_lockout": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "Front panel lockout",
       "target_name": "FrontPanelLock",
       "feature_group": "Front panel lockout",
@@ -1352,6 +1714,11 @@
       ]
    },
    "processor_c3_report": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "Processor C3 Report",
       "target_name": "ProcessorC3Report",
       "feature_group": "Processor C3 Report",
@@ -1372,6 +1739,11 @@
       ]
    },
    "execute_disable_bit": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "Execute Disable Bit",
       "target_name": "ExecuteDisable",
       "feature_group": "Execute Disable Bit",
@@ -1388,6 +1760,11 @@
       ]
    },
    "processor_c6_report": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "Processor C6 Report",
       "target_name": "ProcessorC6Report",
       "feature_group": "Processor C6 Report",
@@ -1404,6 +1781,11 @@
       ]
    },
    "processor_c7_report": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "Processor C7 Report",
       "target_name": "ProcessorC7Report",
       "feature_group": "Processor C7 Report",
@@ -1424,6 +1806,11 @@
       ]
    },
    "direct_cache_access": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "Direct Cache Access",
       "target_name": "DirectCacheAccess",
       "feature_group": "Direct Cache Access",
@@ -1442,6 +1829,11 @@
       ]
    },
    "integrated_graphics_control": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "Integrated Graphics Control",
       "target_name": "IGDSupport",
       "feature_group": "Integrated Graphics",
@@ -1458,6 +1850,11 @@
       ]
    },
    "putty_keypad": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "Putty KeyPad",
       "target_name": "PuttyFunctionKeyPad",
       "feature_group": "Console redirection",
@@ -1482,6 +1879,11 @@
       ]
    },
    "legacy_os_redirection": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "Legacy OS redirection",
       "target_name": "LegacyOSRedir",
       "feature_group": "Console redirection",
@@ -1502,6 +1904,11 @@
       ]
    },
    "console_redirection": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "Console redirection",
       "target_name": "ConsoleRedir",
       "feature_group": "Console redirection",
@@ -1526,6 +1933,11 @@
       ]
    },
    "terminal_type": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "Terminal type",
       "target_name": "TerminalType",
       "feature_group": "Console redirection",
@@ -1546,6 +1958,11 @@
       ]
    },
    "flow_control": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "Flow Control",
       "target_name": "FlowCtrl",
       "feature_group": "Console redirection",
@@ -1562,6 +1979,11 @@
       ]
    },
    "baud_rate": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "Baud rate",
       "target_name": "BaudRate",
       "feature_group": "Console redirection",
@@ -1584,6 +2006,11 @@
       ]
    },
    "pcie_slot_10_link_speed": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "PCIe Slot 10 Link Speed",
       "target_name": "PcieSlot10LinkSpeed",
       "feature_group": "PCI Slot Link Speed",
@@ -1606,6 +2033,11 @@
       ]
    },
    "pcie_slot_2_link_speed": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "PCIe Slot 2 Link Speed",
       "target_name": "PcieSlot2LinkSpeed",
       "feature_group": "PCI Slot Link Speed",
@@ -1628,6 +2060,11 @@
       ]
    },
    "pcie_slot_3_link_speed": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "PCIe Slot 3 Link Speed",
       "target_name": "PcieSlot3LinkSpeed",
       "feature_group": "PCI Slot Link Speed",
@@ -1650,6 +2087,11 @@
       ]
    },
    "pcie_slot_1_link_speed": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "PCIe Slot 1 Link Speed",
       "target_name": "PcieSlot1LinkSpeed",
       "feature_group": "PCI Slot Link Speed",
@@ -1672,6 +2114,11 @@
       ]
    },
    "pcie_slot_6_link_speed": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "PCIe Slot 6 Link Speed",
       "target_name": "PcieSlot6LinkSpeed",
       "feature_group": "PCI Slot Link Speed",
@@ -1694,6 +2141,11 @@
       ]
    },
    "pcie_slot_7_link_speed": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "PCIe Slot 7 Link Speed",
       "target_name": "PcieSlot7LinkSpeed",
       "feature_group": "PCI Slot Link Speed",
@@ -1716,6 +2168,11 @@
       ]
    },
    "pcie_slot_4_link_speed": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "PCIe Slot 4 Link Speed",
       "target_name": "PcieSlot4LinkSpeed",
       "feature_group": "PCI Slot Link Speed",
@@ -1738,6 +2195,11 @@
       ]
    },
    "pcie_slot_5_link_speed": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "PCIe Slot 5 Link Speed",
       "target_name": "PcieSlot5LinkSpeed",
       "feature_group": "PCI Slot Link Speed",
@@ -1760,6 +2222,11 @@
       ]
    },
    "pcie_slot_8_link_speed": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "PCIe Slot 8 Link Speed",
       "target_name": "PcieSlot8LinkSpeed",
       "feature_group": "PCI Slot Link Speed",
@@ -1782,6 +2249,11 @@
       ]
    },
    "pcie_slot_9_link_speed": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "PCIe Slot 9 Link Speed",
       "target_name": "PcieSlot9LinkSpeed",
       "feature_group": "PCI Slot Link Speed",
@@ -1804,6 +2276,11 @@
       ]
    },
    "bme_dma_mitigation": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "BME DMA Mitigation",
       "target_name": "BmeDmaMitigation",
       "feature_group": "BME DMA Mitigation",
@@ -1820,6 +2297,11 @@
       ]
    },
    "assert_nmi_on_perr": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "Assert NMI on PERR",
       "target_name": "AssertNMIOnPERR",
       "feature_group": "Assert NMI on PERR",
@@ -1836,6 +2318,11 @@
       ]
    },
    "assert_nmi_on_serr": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "Assert NMI on SERR",
       "target_name": "AssertNMIOnSERR",
       "feature_group": "Assert NMI on SERR",
@@ -1852,6 +2339,11 @@
       ]
    },
    "ioeslot2_optionrom": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "IOESlot2 OptionROM",
       "target_name": "IOESlot2OptionROM",
       "feature_group": "IOESlot2 OptionROM",
@@ -1872,6 +2364,11 @@
       ]
    },
    "ioeslot1_optionrom": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "IOESlot1 OptionROM",
       "target_name": "IOESlot1OptionROM",
       "feature_group": "IOESlot1 OptionROM",
@@ -1892,6 +2389,11 @@
       ]
    },
    "ioenvme2_optionrom": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "IOENVMe2 OptionROM",
       "target_name": "IOENVMe2OptionROM",
       "feature_group": "IOENVMe2 OptionROM",
@@ -1912,6 +2414,11 @@
       ]
    },
    "ioenvme1_optionrom": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "IOENVMe1 OptionROM",
       "target_name": "IOENVMe1OptionROM",
       "feature_group": "IOENVMe1 OptionROM",
@@ -1932,6 +2439,11 @@
       ]
    },
    "ioemezz1_optionrom": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "IOEMezz1 OptionROM",
       "target_name": "IOEMezz1OptionROM",
       "feature_group": "IOEMezz1 OptionROM",
@@ -1952,6 +2464,11 @@
       ]
    },
    "boot_option_retry": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "Boot option retry",
       "target_name": "BootOptionRetry",
       "feature_group": "Boot option retry",
@@ -1968,6 +2485,11 @@
       ]
    },
    "xhci_mode": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "xHCI Mode",
       "target_name": "PchUsb30Mode",
       "feature_group": "USB Configuration",
@@ -1984,6 +2506,11 @@
       ]
    },
    "dram_refresh_rate": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "DRAM Refresh Rate",
       "target_name": "DramRefreshRate",
       "feature_group": "Dram Refresh Rate",
@@ -2006,6 +2533,11 @@
       ]
    },
    "processor_c_state": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "Processor C State",
       "target_name": "ProcessorCstate",
       "feature_group": "Processor C State",
@@ -2022,6 +2554,11 @@
       ]
    },
    "sbnvme1_optionrom": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "SBNVMe1 OptionROM",
       "target_name": "SBNVMe1OptionROM",
       "feature_group": "SBNVMe1 OptionROM",
@@ -2042,6 +2579,11 @@
       ]
    },
    "sbmezz1_optionrom": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "SBMezz1 OptionROM",
       "target_name": "SBMezz1OptionROM",
       "feature_group": "SBMezz1 OptionROM",
@@ -2062,6 +2604,11 @@
       ]
    },
    "onboard_graphics": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "Onboard Graphics",
       "target_name": "OnboardGraphics",
       "feature_group": "Onboard Graphics",
@@ -2078,6 +2625,11 @@
       ]
    },
    "post_error_pause": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "POST error pause",
       "target_name": "POSTErrorPause",
       "feature_group": "POST error pause",
@@ -2094,6 +2646,11 @@
       ]
    },
    "all_usb_devices": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "All USB Devices",
       "target_name": "AllUsbDevices",
       "feature_group": "All USB Devices",
@@ -2110,6 +2667,11 @@
       ]
    },
    "make_device_non_bootable": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "Make Device Non Bootable",
       "target_name": "MakeUSBDeviceNonBootable",
       "feature_group": "USB Boot Config",
@@ -2126,6 +2688,11 @@
       ]
    },
    "legacy_usb_support": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "Legacy USB Support",
       "target_name": "UsbLegacySupport",
       "feature_group": "USB Boot Config",
@@ -2144,6 +2711,11 @@
       ]
    },
    "onboard_scu_storage_support": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "Onboard SCU Storage Support",
       "target_name": "DisableSCU",
       "feature_group": "Onboard Storage",
@@ -2160,6 +2732,11 @@
       ]
    },
    "cpu_performance": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "CPU Performance",
       "target_name": "CPUPerformance",
       "feature_group": "CPU Performance",
@@ -2180,6 +2757,11 @@
       ]
    },
    "sioc2_optionrom": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "SIOC2 OptionROM",
       "target_name": "SIOC2OptionROM",
       "feature_group": "SIOC2 OptionROM",
@@ -2200,6 +2782,11 @@
       ]
    },
    "sioc1_optionrom": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "SIOC1 OptionROM",
       "target_name": "SIOC1OptionROM",
       "feature_group": "SIOC1 OptionROM",
@@ -2220,6 +2807,11 @@
       ]
    },
    "acpi10_support": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "ACPI10 Support",
       "target_name": "ACPI10Support",
       "feature_group": "ACPI10 Support",
@@ -2236,6 +2828,11 @@
       ]
    },
    "lv_ddr_mode": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "LV DDR Mode",
       "target_name": "LvDDRMode",
       "feature_group": "LvDIMM Support",
@@ -2254,6 +2851,11 @@
       ]
    },
    "patrol_scrub": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "Patrol Scrub",
       "target_name": "PatrolScrub",
       "feature_group": "Scrub Policies",
@@ -2270,6 +2872,11 @@
       ]
    },
    "demand_scrub": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "Demand Scrub",
       "target_name": "DemandScrub",
       "feature_group": "Scrub Policies",
@@ -2286,6 +2893,11 @@
       ]
    },
    "qpi_snoop_mode": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "QPI Snoop Mode",
       "target_name": "QpiSnoopMode",
       "feature_group": "QPI Snoop Mode",
@@ -2308,6 +2920,11 @@
       ]
    },
    "mirroring_mode": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "Mirroring Mode",
       "target_name": "MirroringMode",
       "feature_group": "Mirroring Mode",
@@ -2324,6 +2941,11 @@
       ]
    },
    "numa_optimized": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "NUMA optimized",
       "target_name": "NUMAOptimize",
       "feature_group": "NUMA optimized",
@@ -2340,6 +2962,11 @@
       ]
    },
    "processor_cmci": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "Processor CMCI",
       "target_name": "ProcessorCMCI",
       "feature_group": "Processor CMCI",
@@ -2356,6 +2983,11 @@
       ]
    },
    "local_x2_apic": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "Local X2 Apic",
       "target_name": "LocalX2Apic",
       "feature_group": "Local X2 Apic",
@@ -2378,6 +3010,11 @@
       ]
    },
    "processor_c1e": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "Processor C1E",
       "target_name": "ProcessorC1E",
       "feature_group": "Processor C1E",
@@ -2394,6 +3031,11 @@
       ]
    },
    "vga_priority": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "VGA Priority",
       "target_name": "VgaPriority",
       "feature_group": "VGA Priority",
@@ -2412,6 +3054,11 @@
       ]
    },
    "aspm_support": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "ASPM Support",
       "target_name": "AspmSupport",
       "feature_group": "ASPM Support",
@@ -2430,6 +3077,11 @@
       ]
    },
    "sparing_mode": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "Sparing Mode",
       "target_name": "SparingMode",
       "feature_group": "Sparing Mode",
@@ -2446,6 +3098,11 @@
       ]
    },
    "frb_2_timer": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "FRB-2 Timer",
       "target_name": "FRB-2",
       "feature_group": "FRB 2 Timer",
@@ -2462,6 +3119,11 @@
       ]
    },
    "pciromclp": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "PCIROMCLP",
       "target_name": "PCIROMCLP",
       "feature_group": "PCI ROM CLP",
@@ -2478,6 +3140,11 @@
       ]
    },
    "quiet_boot": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "Quiet Boot",
       "target_name": "QuietBoot",
       "feature_group": "Quiet Boot",
@@ -2494,6 +3161,11 @@
       ]
    },
    "altitude": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "Altitude",
       "target_name": "Altitude",
       "feature_group": "Altitude",
@@ -2516,6 +3188,11 @@
       ]
    },
    "processoreppprofile": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "ProcessorEppProfile",
       "target_name": "EPPProfile",
       "feature_group": "Processor Energy Configuration",
@@ -2536,6 +3213,11 @@
       ]
    },
    "enhanced_powercapping": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "Enhanced PowerCapping",
       "target_name": "EnhancedPowerCapping",
       "feature_group": "Enhanced PowerCapping Support",
@@ -2552,6 +3234,11 @@
       ]
    },
    "optionrom_launch_optimization": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "OptionROM Launch Optimization",
       "target_name": "CiscoOpromLaunchOptimization",
       "feature_group": "OptionROM Launch Optimization",
@@ -2568,6 +3255,11 @@
       ]
    },
    "xpt_prefetch": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "XPT Prefetch",
       "target_name": "XPTPrefetch",
       "feature_group": "Processor Prefetch Config",
@@ -2586,6 +3278,11 @@
       ]
    },
    "upi_prefetch": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "UPI Prefetch",
       "target_name": "KTIPrefetch",
       "feature_group": "Processor Prefetch Config",
@@ -2602,6 +3299,11 @@
       ]
    },
    "llc_prefetch": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "LLC Prefetch",
       "target_name": "LLCPrefetch",
       "feature_group": "Processor Prefetch Config",
@@ -2618,6 +3320,11 @@
       ]
    },
    "pcie_slot_rear_nvme1_optionrom": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "PCIe Slot  Rear Nvme1 OptionRom",
       "target_name": "PcieSlotRearNvme1OptionRom",
       "feature_group": "PCI Slot OptionROM Enable",
@@ -2638,6 +3345,11 @@
       ]
    },
    "pcie_slot_rear_nvme3_optionrom": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "PCIe Slot  Rear Nvme3 OptionRom",
       "target_name": "PcieSlotRearNvme3OptionRom",
       "feature_group": "PCI Slot OptionROM Enable",
@@ -2658,6 +3370,11 @@
       ]
    },
    "pcie_slot_rear_nvme2_optionrom": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "PCIe Slot  Rear Nvme2 OptionRom",
       "target_name": "PcieSlotRearNvme2OptionRom",
       "feature_group": "PCI Slot OptionROM Enable",
@@ -2678,6 +3395,11 @@
       ]
    },
    "pcie_slot_rear_nvme5_optionrom": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "PCIe Slot  Rear Nvme5 OptionRom",
       "target_name": "PcieSlotRearNvme5OptionRom",
       "feature_group": "PCI Slot OptionROM Enable",
@@ -2698,6 +3420,11 @@
       ]
    },
    "pcie_slot_rear_nvme4_optionrom": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "PCIe Slot  Rear Nvme4 OptionRom",
       "target_name": "PcieSlotRearNvme4OptionRom",
       "feature_group": "PCI Slot OptionROM Enable",
@@ -2718,6 +3445,11 @@
       ]
    },
    "pcie_slot_rear_nvme7_optionrom": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "PCIe Slot  Rear Nvme7 OptionRom",
       "target_name": "PcieSlotRearNvme7OptionRom",
       "feature_group": "PCI Slot OptionROM Enable",
@@ -2738,6 +3470,11 @@
       ]
    },
    "pcie_slot_rear_nvme6_optionrom": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "PCIe Slot  Rear Nvme6 OptionRom",
       "target_name": "PcieSlotRearNvme6OptionRom",
       "feature_group": "PCI Slot OptionROM Enable",
@@ -2758,6 +3495,11 @@
       ]
    },
    "pcie_slot_rear_nvme8_optionrom": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "PCIe Slot  Rear Nvme8 OptionRom",
       "target_name": "PcieSlotRearNvme8OptionRom",
       "feature_group": "PCI Slot OptionROM Enable",
@@ -2778,6 +3520,11 @@
       ]
    },
    "pcie_slot_mraid_optionrom": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "PCIe Slot MRAID OptionROM",
       "target_name": "PcieSlotMRAIDOptionROM",
       "feature_group": "PCI Slot OptionROM Enable",
@@ -2798,6 +3545,11 @@
       ]
    },
    "pcie_slot_gpu6_optionrom": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "PCIe Slot GPU6 OptionROM",
       "target_name": "PcieSlotGPU6OptionROM",
       "feature_group": "PCI Slot OptionROM Enable",
@@ -2814,6 +3566,11 @@
       ]
    },
    "pcie_slot_gpu7_optionrom": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "PCIe Slot GPU7 OptionROM",
       "target_name": "PcieSlotGPU7OptionROM",
       "feature_group": "PCI Slot OptionROM Enable",
@@ -2830,6 +3587,11 @@
       ]
    },
    "pcie_slot_gpu4_optionrom": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "PCIe Slot GPU4 OptionROM",
       "target_name": "PcieSlotGPU4OptionROM",
       "feature_group": "PCI Slot OptionROM Enable",
@@ -2846,6 +3608,11 @@
       ]
    },
    "pcie_slot_gpu5_optionrom": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "PCIe Slot GPU5 OptionROM",
       "target_name": "PcieSlotGPU5OptionROM",
       "feature_group": "PCI Slot OptionROM Enable",
@@ -2862,6 +3629,11 @@
       ]
    },
    "pcie_slot_gpu2_optionrom": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "PCIe Slot GPU2 OptionROM",
       "target_name": "PcieSlotGPU2OptionROM",
       "feature_group": "PCI Slot OptionROM Enable",
@@ -2878,6 +3650,11 @@
       ]
    },
    "pcie_slot_gpu3_optionrom": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "PCIe Slot GPU3 OptionROM",
       "target_name": "PcieSlotGPU3OptionROM",
       "feature_group": "PCI Slot OptionROM Enable",
@@ -2894,6 +3671,11 @@
       ]
    },
    "pcie_slot_gpu1_optionrom": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "PCIe Slot GPU1 OptionROM",
       "target_name": "PcieSlotGPU1OptionROM",
       "feature_group": "PCI Slot OptionROM Enable",
@@ -2910,6 +3692,11 @@
       ]
    },
    "pcie_slot_raid_optionrom": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "PCIe Slot RAID OptionROM",
       "target_name": "PcieSlotRAIDOptionROM",
       "feature_group": "PCI Slot OptionROM Enable",
@@ -2930,6 +3717,11 @@
       ]
    },
    "pcie_slot_gpu8_optionrom": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "PCIe Slot GPU8 OptionROM",
       "target_name": "PcieSlotGPU8OptionROM",
       "feature_group": "PCI Slot OptionROM Enable",
@@ -2946,6 +3738,11 @@
       ]
    },
    "pcie_slot_n19_optionrom": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "PCIe Slot N19 OptionROM",
       "target_name": "PcieSlotN19OptionROM",
       "feature_group": "PCI Slot OptionROM Enable",
@@ -2966,6 +3763,11 @@
       ]
    },
    "pcie_slot_n18_optionrom": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "PCIe Slot N18 OptionROM",
       "target_name": "PcieSlotN18OptionROM",
       "feature_group": "PCI Slot OptionROM Enable",
@@ -2986,6 +3788,11 @@
       ]
    },
    "pcie_slot_n13_optionrom": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "PCIe Slot N13 OptionROM",
       "target_name": "PcieSlotN13OptionROM",
       "feature_group": "PCI Slot OptionROM Enable",
@@ -3006,6 +3813,11 @@
       ]
    },
    "pcie_slot_n20_optionrom": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "PCIe Slot N20 OptionROM",
       "target_name": "PcieSlotN20OptionROM",
       "feature_group": "PCI Slot OptionROM Enable",
@@ -3026,6 +3838,11 @@
       ]
    },
    "pcie_slot_n12_optionrom": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "PCIe Slot N12 OptionROM",
       "target_name": "PcieSlotN12OptionROM",
       "feature_group": "PCI Slot OptionROM Enable",
@@ -3046,6 +3863,11 @@
       ]
    },
    "pcie_slot_n21_optionrom": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "PCIe Slot N21 OptionROM",
       "target_name": "PcieSlotN21OptionROM",
       "feature_group": "PCI Slot OptionROM Enable",
@@ -3066,6 +3888,11 @@
       ]
    },
    "pcie_slot_n22_optionrom": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "PCIe Slot N22 OptionROM",
       "target_name": "PcieSlotN22OptionROM",
       "feature_group": "PCI Slot OptionROM Enable",
@@ -3086,6 +3913,11 @@
       ]
    },
    "pcie_slot_n11_optionrom": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "PCIe Slot N11 OptionROM",
       "target_name": "PcieSlotN11OptionROM",
       "feature_group": "PCI Slot OptionROM Enable",
@@ -3106,6 +3938,11 @@
       ]
    },
    "pcie_slot_n23_optionrom": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "PCIe Slot N23 OptionROM",
       "target_name": "PcieSlotN23OptionROM",
       "feature_group": "PCI Slot OptionROM Enable",
@@ -3126,6 +3963,11 @@
       ]
    },
    "pcie_slot_n10_optionrom": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "PCIe Slot N10 OptionROM",
       "target_name": "PcieSlotN10OptionROM",
       "feature_group": "PCI Slot OptionROM Enable",
@@ -3146,6 +3988,11 @@
       ]
    },
    "pcie_slot_n17_optionrom": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "PCIe Slot N17 OptionROM",
       "target_name": "PcieSlotN17OptionROM",
       "feature_group": "PCI Slot OptionROM Enable",
@@ -3166,6 +4013,11 @@
       ]
    },
    "pcie_slot_n24_optionrom": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "PCIe Slot N24 OptionROM",
       "target_name": "PcieSlotN24OptionROM",
       "feature_group": "PCI Slot OptionROM Enable",
@@ -3186,6 +4038,11 @@
       ]
    },
    "pcie_slot_n16_optionrom": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "PCIe Slot N16 OptionROM",
       "target_name": "PcieSlotN16OptionROM",
       "feature_group": "PCI Slot OptionROM Enable",
@@ -3206,6 +4063,11 @@
       ]
    },
    "pcie_slot_n15_optionrom": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "PCIe Slot N15 OptionROM",
       "target_name": "PcieSlotN15OptionROM",
       "feature_group": "PCI Slot OptionROM Enable",
@@ -3226,6 +4088,11 @@
       ]
    },
    "pcie_slot_n14_optionrom": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "PCIe Slot N14 OptionROM",
       "target_name": "PcieSlotN14OptionROM",
       "feature_group": "PCI Slot OptionROM Enable",
@@ -3246,6 +4113,11 @@
       ]
    },
    "slot_14_state": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "Slot 14 state",
       "target_name": "PcieSlot14OptionROM",
       "feature_group": "PCI Slot OptionROM Enable",
@@ -3266,6 +4138,11 @@
       ]
    },
    "pcie_slot_n8_optionrom": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "PCIe Slot N8 OptionROM",
       "target_name": "PcieSlotN8OptionROM",
       "feature_group": "PCI Slot OptionROM Enable",
@@ -3286,6 +4163,11 @@
       ]
    },
    "pcie_slot_n9_optionrom": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "PCIe Slot N9 OptionROM",
       "target_name": "PcieSlotN9OptionROM",
       "feature_group": "PCI Slot OptionROM Enable",
@@ -3306,6 +4188,11 @@
       ]
    },
    "slot_11_state": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "Slot 11 state",
       "target_name": "PcieSlot11OptionROM",
       "feature_group": "PCI Slot OptionROM Enable",
@@ -3326,6 +4213,11 @@
       ]
    },
    "slot_12_state": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "Slot 12 state",
       "target_name": "PcieSlot12OptionROM",
       "feature_group": "PCI Slot OptionROM Enable",
@@ -3346,6 +4238,11 @@
       ]
    },
    "slot_13_state": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "Slot 13 state",
       "target_name": "PcieSlot13OptionROM",
       "feature_group": "PCI Slot OptionROM Enable",
@@ -3366,6 +4263,11 @@
       ]
    },
    "pcie_slot_n3_optionrom": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "PCIe Slot N3 OptionROM",
       "target_name": "PcieSlotN3OptionROM",
       "feature_group": "PCI Slot OptionROM Enable",
@@ -3386,6 +4288,11 @@
       ]
    },
    "pcie_slot_n6_optionrom": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "PCIe Slot N6 OptionROM",
       "target_name": "PcieSlotN6OptionROM",
       "feature_group": "PCI Slot OptionROM Enable",
@@ -3406,6 +4313,11 @@
       ]
    },
    "pcie_slot_n7_optionrom": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "PCIe Slot N7 OptionROM",
       "target_name": "PcieSlotN7OptionROM",
       "feature_group": "PCI Slot OptionROM Enable",
@@ -3426,6 +4338,11 @@
       ]
    },
    "pcie_slot_n4_optionrom": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "PCIe Slot N4 OptionROM",
       "target_name": "PcieSlotN4OptionROM",
       "feature_group": "PCI Slot OptionROM Enable",
@@ -3446,6 +4363,11 @@
       ]
    },
    "pcie_slot_n5_optionrom": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "PCIe Slot N5 OptionROM",
       "target_name": "PcieSlotN5OptionROM",
       "feature_group": "PCI Slot OptionROM Enable",
@@ -3466,6 +4388,11 @@
       ]
    },
    "siocnvme1_optionrom": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "SIOCNvme1 OptionROM",
       "target_name": "SIOCNvme1OptionROM",
       "feature_group": "PCI Slot OptionROM Enable",
@@ -3486,6 +4413,11 @@
       ]
    },
    "siocnvme2_optionrom": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "SIOCNvme2 OptionROM",
       "target_name": "SIOCNvme2OptionROM",
       "feature_group": "PCI Slot OptionROM Enable",
@@ -3506,6 +4438,11 @@
       ]
    },
    "sbmezz2_optionrom": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "SBMezz2 OptionROM",
       "target_name": "SBMezz2OptionROM",
       "feature_group": "PCI Slot OptionROM Enable",
@@ -3526,6 +4463,11 @@
       ]
    },
    "sbnvme2_optionrom": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "SBNVMe2 OptionROM",
       "target_name": "SBNVMe2OptionROM",
       "feature_group": "PCI Slot OptionROM Enable",
@@ -3546,6 +4488,11 @@
       ]
    },
    "imc_inteleave": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "IMC Inteleave",
       "target_name": "IMCInterleave",
       "feature_group": "Interleave Configuration",
@@ -3564,6 +4511,11 @@
       ]
    },
    "sub_numa_clustering": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "Sub NUMA Clustering",
       "target_name": "SNC",
       "feature_group": "Interleave Configuration",
@@ -3580,6 +4532,11 @@
       ]
    },
    "adaptive_memory_training": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "Adaptive Memory Training",
       "target_name": "CiscoAdaptiveMemTraining",
       "feature_group": "Adaptive Memory Training",
@@ -3596,6 +4553,11 @@
       ]
    },
    "energy_efficient_turbo": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "Energy Efficient Turbo",
       "target_name": "EnergyEfficientTurbo",
       "feature_group": "Intel Turbo Boost Tech",
@@ -3612,6 +4574,11 @@
       ]
    },
    "lom_port_2_optionrom": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "LOM Port 2 OptionRom",
       "target_name": "LomOpromControlPort1",
       "feature_group": "Onboard LOM Option ROM",
@@ -3628,6 +4595,11 @@
       ]
    },
    "lom_port_1_optionrom": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "LOM Port 1 OptionRom",
       "target_name": "LomOpromControlPort0",
       "feature_group": "Onboard LOM Option ROM",
@@ -3644,6 +4616,11 @@
       ]
    },
    "all_onboard_lom": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "All Onboard LOM",
       "target_name": "AllLomPortControl",
       "feature_group": "Onboard LOM Option ROM",
@@ -3660,6 +4637,11 @@
       ]
    },
    "sblom1_optionrom": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "SBLom1 OptionROM",
       "target_name": "SBLom1OptionROM",
       "feature_group": "Onboard LOM Option ROM",
@@ -3680,6 +4662,11 @@
       ]
    },
    "cdn_support_for_loms": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "CDN Support for LOMs",
       "target_name": "CdnSupport",
       "feature_group": "Onboard LOM Option ROM",
@@ -3696,6 +4683,11 @@
       ]
    },
    "pcie_slot_12_link_speed": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "PCIe Slot 12 Link Speed",
       "target_name": "PcieSlot12LinkSpeed",
       "feature_group": "PCI Slot Link Speed",
@@ -3718,6 +4710,11 @@
       ]
    },
    "pcie_slot_11_link_speed": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "PCIe Slot 11 Link Speed",
       "target_name": "PcieSlot11LinkSpeed",
       "feature_group": "PCI Slot Link Speed",
@@ -3740,6 +4737,11 @@
       ]
    },
    "siocnvme2_linkspeed": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "SIOCNVMe2 LinkSpeed",
       "target_name": "SIOCNVMe2LinkSpeed",
       "feature_group": "PCI Slot Link Speed",
@@ -3762,6 +4764,11 @@
       ]
    },
    "siocnvme1_linkspeed": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "SIOCNVMe1 LinkSpeed",
       "target_name": "SIOCNVMe1LinkSpeed",
       "feature_group": "PCI Slot Link Speed",
@@ -3784,6 +4791,11 @@
       ]
    },
    "ioemezz1_linkspeed": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "IOEMezz1 LinkSpeed",
       "target_name": "IOEMezz1LinkSpeed",
       "feature_group": "PCI Slot Link Speed",
@@ -3806,6 +4818,11 @@
       ]
    },
    "ioenvme2_linkspeed": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "IOENVMe2 LinkSpeed",
       "target_name": "IOENVMe2LinkSpeed",
       "feature_group": "PCI Slot Link Speed",
@@ -3828,6 +4845,11 @@
       ]
    },
    "ioenvme1_linkspeed": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "IOENVMe1 LinkSpeed",
       "target_name": "IOENVMe1LinkSpeed",
       "feature_group": "PCI Slot Link Speed",
@@ -3850,6 +4872,11 @@
       ]
    },
    "ioeslot2_linkspeed": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "IOESlot2 LinkSpeed",
       "target_name": "IOESlot2LinkSpeed",
       "feature_group": "PCI Slot Link Speed",
@@ -3872,6 +4899,11 @@
       ]
    },
    "ioeslot1_linkspeed": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "IOESlot1 LinkSpeed",
       "target_name": "IOESlot1LinkSpeed",
       "feature_group": "PCI Slot Link Speed",
@@ -3894,6 +4926,11 @@
       ]
    },
    "sbmezz1_linkspeed": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "SBMezz1 LinkSpeed",
       "target_name": "SBMezz1LinkSpeed",
       "feature_group": "PCI Slot Link Speed",
@@ -3916,6 +4953,11 @@
       ]
    },
    "sbmezz2_linkspeed": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "SBMezz2 LinkSpeed",
       "target_name": "SBMezz2LinkSpeed",
       "feature_group": "PCI Slot Link Speed",
@@ -3938,6 +4980,11 @@
       ]
    },
    "sbnvme1_linkspeed": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "SBNVMe1 LinkSpeed",
       "target_name": "SBNVMe1LinkSpeed",
       "feature_group": "PCI Slot Link Speed",
@@ -3960,6 +5007,11 @@
       ]
    },
    "sbnvme2_linkspeed": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "SBNVMe2 LinkSpeed",
       "target_name": "SBNVMe2LinkSpeed",
       "feature_group": "PCI Slot Link Speed",
@@ -3982,6 +5034,11 @@
       ]
    },
    "sioc2_linkspeed": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "SIOC2 LinkSpeed",
       "target_name": "SIOC2LinkSpeed",
       "feature_group": "PCI Slot Link Speed",
@@ -4004,6 +5061,11 @@
       ]
    },
    "sioc1_linkspeed": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "SIOC1 LinkSpeed",
       "target_name": "SIOC1LinkSpeed",
       "feature_group": "PCI Slot Link Speed",
@@ -4026,6 +5088,11 @@
       ]
    },
    "front_nvme2_link_speed": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "Front NVME2 Link Speed",
       "target_name": "PcieSlotFrontNvme2LinkSpeed",
       "feature_group": "PCI Slot LINK Speed",
@@ -4048,6 +5115,11 @@
       ]
    },
    "front_nvme1_link_speed": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "Front NVME1 Link Speed",
       "target_name": "PcieSlotFrontNvme1LinkSpeed",
       "feature_group": "PCI Slot LINK Speed",
@@ -4070,6 +5142,11 @@
       ]
    },
    "rear_nvme2_link_speed": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "Rear NVME2 Link Speed",
       "target_name": "PcieSlotRearNvme2LinkSpeed",
       "feature_group": "PCI Slot LINK Speed",
@@ -4092,6 +5169,11 @@
       ]
    },
    "rear_nvme1_link_speed": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "Rear NVME1 Link Speed",
       "target_name": "PcieSlotRearNvme1LinkSpeed",
       "feature_group": "PCI Slot LINK Speed",
@@ -4114,6 +5196,11 @@
       ]
    },
    "mraid_link_speed": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "MRAID Link Speed",
       "target_name": "PcieSlotMRAIDLinkSpeed",
       "feature_group": "PCI Slot LINK Speed",
@@ -4136,6 +5223,11 @@
       ]
    },
    "mlom_link_speed": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "MLOM Link Speed",
       "target_name": "PcieSlotMLOMLinkSpeed",
       "feature_group": "PCI Slot LINK Speed",
@@ -4158,6 +5250,11 @@
       ]
    },
    "raid_link_speed": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "RAID Link Speed",
       "target_name": "PcieSlotRAIDLinkSpeed",
       "feature_group": "PCI Slot LINK Speed",
@@ -4180,6 +5277,11 @@
       ]
    },
    "hba_link_speed": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "HBA Link Speed",
       "target_name": "PcieSlotHBALinkSpeed",
       "feature_group": "PCI Slot LINK Speed",
@@ -4202,6 +5304,11 @@
       ]
    },
    "power_on_password": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "Power On Password",
       "target_name": "PowerOnPassword",
       "feature_group": "PCI Slot LINK Speed",
@@ -4218,6 +5325,11 @@
       ]
    },
    "bios_techlog_level": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "BIOS Techlog Level",
       "target_name": "CiscoDebugLevel",
       "feature_group": "BIOS Techlog Level",
@@ -4236,6 +5348,11 @@
       ]
    },
    "number_of_retries": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "Number of Retries",
       "target_name": "BORNumRetry",
       "feature_group": "Boot option retry",
@@ -4254,6 +5371,11 @@
       ]
    },
    "cool_down_time_": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "Cool Down Time (sec)",
       "target_name": "BORCoolDown",
       "feature_group": "Boot option retry",
@@ -4272,6 +5394,11 @@
       ]
    },
    "autonomous_core_c_state": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "Autonomous Core C-state",
       "target_name": "AutoCCState",
       "feature_group": "Processor C State",
@@ -4288,6 +5415,11 @@
       ]
    },
    "boot_performance_mode": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "Boot Performance Mode",
       "target_name": "BootPerformanceMode",
       "feature_group": "CPU Performance",
@@ -4306,6 +5438,11 @@
       ]
    },
    "vmd_enable": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "VMD Enable",
       "target_name": "VMDEnable",
       "feature_group": "VMD Enablement",
@@ -4322,6 +5459,11 @@
       ]
    },
    "p_sata_mode": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "P-SATA mode",
       "target_name": "pSATA",
       "feature_group": "PCH SATA Mode",
@@ -4340,6 +5482,11 @@
       ]
    },
    "chipselect_interleaving": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "Chipselect Interleaving",
       "target_name": "CbsCmnMemMapBankInterleaveDdr4",
       "feature_group": "Processor",
@@ -4356,6 +5503,11 @@
       ]
    },
    "bank_group_swap": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "Bank Group Swap",
       "target_name": "CbsCmnMemCtrlBankGroupSwapDdr4",
       "feature_group": "Processor",
@@ -4374,6 +5526,11 @@
       ]
    },
    "l2_stream_hw_prefetcher": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "L2 Stream HW Prefetcher",
       "target_name": "CbsCmnCpuL2StreamHwPrefetcher",
       "feature_group": "Processor",
@@ -4392,6 +5549,11 @@
       ]
    },
    "l1_stream_hw_prefetcher": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "L1 Stream HW Prefetcher",
       "target_name": "CbsCmnCpuL1StreamHwPrefetcher",
       "feature_group": "Processor",
@@ -4410,6 +5572,11 @@
       ]
    },
    "global_c_state_control": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "Global C-state Control",
       "target_name": "CbsCmnCpuGlobalCstateCtrl",
       "feature_group": "Processor",
@@ -4428,6 +5595,11 @@
       ]
    },
    "downcore_control": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "Downcore control",
       "target_name": "CbsCmnCpuGenDowncoreCtrl",
       "feature_group": "Processor",
@@ -4454,6 +5626,11 @@
       ]
    },
    "determinism_slider": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "Determinism Slider",
       "target_name": "CbsCmnDeterminismSlider",
       "feature_group": "Processor",
@@ -4472,6 +5649,11 @@
       ]
    },
    "amd_memory_interleaving_size": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "AMD Memory Interleaving Size",
       "target_name": "CbsDfCmnMemIntlvSize",
       "feature_group": "Processor",
@@ -4494,6 +5676,11 @@
       ]
    },
    "amd_memory_interleaving": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "AMD Memory Interleaving",
       "target_name": "CbsDfCmnMemIntlv",
       "feature_group": "Processor",
@@ -4516,6 +5703,11 @@
       ]
    },
    "iommu": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "IOMMU",
       "target_name": "CbsCmnGnbNbIOMMU",
       "feature_group": "Processor",
@@ -4534,6 +5726,11 @@
       ]
    },
    "core_performance_boost": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "Core Performance Boost",
       "target_name": "CbsCmnCpuCpb",
       "feature_group": "Processor",
@@ -4550,6 +5747,11 @@
       ]
    },
    "svm_mode": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "SVM Mode",
       "target_name": "SvmMode",
       "feature_group": "Processor",
@@ -4566,6 +5768,11 @@
       ]
    },
    "smt_mode": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "SMT Mode",
       "target_name": "SmtMode",
       "feature_group": "Processor",
@@ -4582,6 +5789,11 @@
       ]
    },
    "smee": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "SMEE",
       "target_name": "SMEE",
       "feature_group": "Processor",
@@ -4598,6 +5810,11 @@
       ]
    },
    "ipv6_pxe_support": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "IPV6 PXE Support",
       "target_name": "IPV6PXE",
       "feature_group": "PXE BOOT",
@@ -4614,6 +5831,11 @@
       ]
    },
    "dcpmm_firmware_downgrade": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "DCPMM Firmware Downgrade",
       "target_name": "DCPMMFirmwareDowngrade",
       "feature_group": "DCPMM Firmware Downgrade Configuration",
@@ -4630,6 +5852,11 @@
       ]
    },
    "intel_speed_select": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "Intel Speed Select",
       "target_name": "IntelSpeedSelect",
       "feature_group": "IntelSpeedSelect Configuration",
@@ -4648,6 +5875,11 @@
       ]
    },
    "acs_control_slot_14": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "ACS Control SLOT-14",
       "target_name": "ACSCtlSlot14",
       "feature_group": "Access Control Services",
@@ -4664,6 +5896,11 @@
       ]
    },
    "acs_control_slot_13": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "ACS Control SLOT-13",
       "target_name": "ACSCtlSlot13",
       "feature_group": "Access Control Services",
@@ -4680,6 +5917,11 @@
       ]
    },
    "acs_control_slot_12": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "ACS Control SLOT-12",
       "target_name": "ACSCtlSlot12",
       "feature_group": "Access Control Services",
@@ -4696,6 +5938,11 @@
       ]
    },
    "acs_control_slot_11": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "ACS Control SLOT-11",
       "target_name": "ACSCtlSlot11",
       "feature_group": "Access Control Services",
@@ -4712,6 +5959,11 @@
       ]
    },
    "acs_control_gpu_8": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "ACS Control GPU-8",
       "target_name": "ACSCtlGpu8",
       "feature_group": "Access Control Services",
@@ -4728,6 +5980,11 @@
       ]
    },
    "acs_control_gpu_7": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "ACS Control GPU-7",
       "target_name": "ACSCtlGpu7",
       "feature_group": "Access Control Services",
@@ -4744,6 +6001,11 @@
       ]
    },
    "acs_control_gpu_6": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "ACS Control GPU-6",
       "target_name": "ACSCtlGpu6",
       "feature_group": "Access Control Services",
@@ -4760,6 +6022,11 @@
       ]
    },
    "acs_control_gpu_5": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "ACS Control GPU-5",
       "target_name": "ACSCtlGpu5",
       "feature_group": "Access Control Services",
@@ -4776,6 +6043,11 @@
       ]
    },
    "acs_control_gpu_4": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "ACS Control GPU-4",
       "target_name": "ACSCtlGpu4",
       "feature_group": "Access Control Services",
@@ -4792,6 +6064,11 @@
       ]
    },
    "acs_control_gpu_3": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "ACS Control GPU-3",
       "target_name": "ACSCtlGpu3",
       "feature_group": "Access Control Services",
@@ -4808,6 +6085,11 @@
       ]
    },
    "acs_control_gpu_2": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "ACS Control GPU-2",
       "target_name": "ACSCtlGpu2",
       "feature_group": "Access Control Services",
@@ -4824,6 +6106,11 @@
       ]
    },
    "acs_control_gpu_1": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "ACS Control GPU-1",
       "target_name": "ACSCtlGpu1",
       "feature_group": "Access Control Services",
@@ -4840,6 +6127,11 @@
       ]
    },
    "configurable_tdp_control": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
       "param_name": "Configurable TDP Control",
       "target_name": "CbsCmncTDPCtl",
       "feature_group": "Processor",
@@ -4852,6 +6144,227 @@
       "legacy_values": [
          "manual",
          "auto",
+         "platform-default"
+      ]
+   },
+   "partial_memory_mirror_mode": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
+      "param_name": "Partial Memory Mirror Mode",
+      "target_name": "PartialMirrorModeConfig",
+      "feature_group": "SelectMemory RAS configuration",
+      "available_in_legacy_mode": false,
+      "values": [
+         "Value-in-GB",
+         "Percentage",
+         "Disabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "value-in-gb",
+         "percentage",
+         "disabled",
+         "platform-default"
+      ]
+   },
+   "partial_mirror_percentage": {
+      "type": "float",
+      "maximum": "50.00",
+      "minimum": "0.00",
+      "step": "0.01",
+      "unit": "Percentage",
+      "param_name": "Partial Mirror percentage",
+      "target_name": "PartialMirrorPercent",
+      "feature_group": "SelectMemory RAS configuration",
+      "available_in_legacy_mode": false,
+      "values": [
+         "Float",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "float",
+         "platform-default"
+      ]
+   },
+   "partial_mirror4_size_in_gb": {
+      "type": "integer",
+      "maximum": "65535",
+      "minimum": "0",
+      "step": "1",
+      "unit": "GB",
+      "param_name": "Partial Mirror4 Size in GB",
+      "target_name": "PartialMirrorValue4",
+      "feature_group": "SelectMemory RAS configuration",
+      "available_in_legacy_mode": false,
+      "values": [
+         "Integer",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "integer",
+         "platform-default"
+      ]
+   },
+   "partial_mirror3_size_in_gb": {
+      "type": "integer",
+      "maximum": "65535",
+      "minimum": "0",
+      "step": "1",
+      "unit": "GB",
+      "param_name": "Partial Mirror3 Size in GB",
+      "target_name": "PartialMirrorValue3",
+      "feature_group": "SelectMemory RAS configuration",
+      "available_in_legacy_mode": false,
+      "values": [
+         "Integer",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "integer",
+         "platform-default"
+      ]
+   },
+   "partial_mirror2_size_in_gb": {
+      "type": "integer",
+      "maximum": "65535",
+      "minimum": "0",
+      "step": "1",
+      "unit": "GB",
+      "param_name": "Partial Mirror2 Size in GB",
+      "target_name": "PartialMirrorValue2",
+      "feature_group": "SelectMemory RAS configuration",
+      "available_in_legacy_mode": false,
+      "values": [
+         "Integer",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "integer",
+         "platform-default"
+      ]
+   },
+   "partial_mirror1_size_in_gb": {
+      "type": "integer",
+      "maximum": "65535",
+      "minimum": "0",
+      "step": "1",
+      "unit": "GB",
+      "param_name": "Partial Mirror1 Size in GB",
+      "target_name": "PartialMirrorValue1",
+      "feature_group": "SelectMemory RAS configuration",
+      "available_in_legacy_mode": false,
+      "values": [
+         "Integer",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "integer",
+         "platform-default"
+      ]
+   },
+   "memory_size_limit_in_gb": {
+      "type": "integer",
+      "maximum": "65535",
+      "minimum": "0",
+      "step": "1",
+      "unit": "GB",
+      "param_name": "Memory Size Limit in GB",
+      "target_name": "MemorySizeLimit",
+      "feature_group": "SelectMemory RAS configuration",
+      "available_in_legacy_mode": false,
+      "values": [
+         "Integer",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "integer",
+         "platform-default"
+      ]
+   },
+   "pcie_ras_enablement": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
+      "param_name": "PCIe RAS Enablement",
+      "target_name": "PCIeRASSupport",
+      "feature_group": "PCIe RAS Support",
+      "available_in_legacy_mode": false,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "select_ppr_type_configuration": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
+      "param_name": "Select PPR type configuration",
+      "target_name": "SelectPprType",
+      "feature_group": "Select PPR Type",
+      "available_in_legacy_mode": false,
+      "values": [
+         "Disabled",
+         "Hard-PPR",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "hard-ppr",
+         "platform-default"
+      ]
+   },
+   "network_stack": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
+      "param_name": "Network Stack",
+      "target_name": "NetworkStack",
+      "feature_group": "PXE BOOT",
+      "available_in_legacy_mode": false,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "platform-default"
+      ]
+   },
+   "ipv4_pxe_support": {
+      "type": "enum",
+      "maximum": null,
+      "minimum": null,
+      "step": null,
+      "unit": null,
+      "param_name": "IPV4 PXE Support",
+      "target_name": "IPV4PXE",
+      "feature_group": "PXE BOOT",
+      "available_in_legacy_mode": false,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ],
+      "legacy_values": [
+         "disabled",
+         "enabled",
          "platform-default"
       ]
    }

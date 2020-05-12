@@ -50,6 +50,9 @@ class GenericUcsInventory(GenericInventory):
                                                    ": Connection refused")
             except urllib.error.URLError:
                 self.logger(level="error", message="Timeout error while fetching UCS class " + sdk_object_name)
+            except Exception as err:
+                self.logger(level="error",
+                            message="Error while fetching UCS class " + sdk_object_name + ": " + str(err))
 
     def get_inventory_objects_under_dn(self, dn=None, object_class=None, parent=None):
         if dn is not None and object_class is not None and parent is not None:
@@ -196,7 +199,8 @@ class UcsSystemInventory(GenericUcsInventory):
                                 "fcPIo", "firmwareRunning", "graphicsCard", "licenseFeature", "licenseFile",
                                 "licenseInstance", "licenseServerHostId", "lsServer", "mgmtConnection", "moInvKv",
                                 "networkElement", "networkLanNeighborEntry", "networkLldpNeighborEntry",
-                                "networkSanNeighborEntry", "storageFlexFlashCard", "storageNvmeStats"]
+                                "networkSanNeighborEntry", "storageFlexFlashCard", "storageNvmeStats",
+                                "storageSsdHealthStats", "swVlanPortNs"]
         self.logger(level="debug", message="Fetching UCS System SDK objects for inventory")
         for sdk_object_name in sdk_objects_to_fetch:
             try:
@@ -212,6 +216,9 @@ class UcsSystemInventory(GenericUcsInventory):
                                                    ": Connection refused")
             except urllib.error.URLError:
                 self.logger(level="error", message="Timeout error while fetching UCS class " + sdk_object_name)
+            except Exception as err:
+                self.logger(level="error",
+                            message="Error while fetching UCS class " + sdk_object_name + ": " + str(err))
 
         # Catalog SDK objects
         try:
@@ -355,8 +362,8 @@ class UcsImcInventory(GenericUcsInventory):
         # List of SDK objects to fetch that are specific to IMC
         sdk_objects_to_fetch = ["adaptorConnectorInfo", "computeServerNode", "equipmentRackEnclosure",
                                 "equipmentSharedIOModule", "equipmentTpm", "ioControllerNVMePhysicalDrive",
-                                "networkAdapterEthIf", "networkAdapterUnit", "pciEquipSlot", "storageControllerNVMe",
-                                "storageEnclosureDisk", "storageFlexFlashControllerProps",
+                                "ioExpander", "networkAdapterEthIf", "networkAdapterUnit", "pciEquipSlot",
+                                "storageControllerNVMe", "storageEnclosureDisk", "storageFlexFlashControllerProps",
                                 "storageFlexFlashPhysicalDrive", "storageLocalDiskProps", "storageNVMePhysicalDrive"]
         self.logger(level="debug", message="Fetching UCS IMC SDK objects for inventory")
         for sdk_object_name in sdk_objects_to_fetch:
@@ -372,6 +379,9 @@ class UcsImcInventory(GenericUcsInventory):
             except xml.etree.ElementTree.ParseError as err:
                 self.logger(level="error", message="Error while trying to fetch UCS IMC class " + sdk_object_name +
                                                    ": " + str(err))
+            except Exception as err:
+                self.logger(level="error",
+                            message="Error while fetching UCS class " + sdk_object_name + ": " + str(err))
 
         # Catalog SDK objects
         try:
@@ -422,6 +432,9 @@ class UcsCentralInventory(GenericUcsInventory):
                                                    ": Connection refused")
             except urllib.error.URLError:
                 self.logger(level="error", message="Timeout error while fetching UCS class " + sdk_object_name)
+            except Exception as err:
+                self.logger(level="error",
+                            message="Error while fetching UCS class " + sdk_object_name + ": " + str(err))
 
         # Catalog SDK objects
         try:

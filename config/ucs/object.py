@@ -54,7 +54,14 @@ class GenericUcsConfigObject(GenericConfigObject):
                 # self.logger(level="debug",
                 #             message="In " + self._CONFIG_NAME + ", key '" + key + "' with value " +
                 #                     (getattr(self, key) if getattr(self, key) != "" else "''") + " cleaned")
-                setattr(self, key, None)
+                if key not in ["name", "descr"]:
+                    # We do not clean a "None" value for the name or descr attributes since a policy can be called
+                    # "None" or "NA" or have a description with such a value
+                    setattr(self, key, None)
+                else:
+                    # We only clean an empty "" value for the name or descr attributes
+                    if getattr(self, key) in [""]:
+                        setattr(self, key, None)
 
             elif getattr(self, key).__class__.__name__ == "list":
                 for item in getattr(self, key):

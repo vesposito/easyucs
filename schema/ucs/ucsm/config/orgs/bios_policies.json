@@ -1376,6 +1376,19 @@
             "platform-default"
          ]
       },
+      "ipv4_pxe_support": {
+         "description": "BIOS Policy - PXE BOOT - IPV4 PXE Support",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "Disabled",
+            "Enabled",
+            "Platform Default",
+            "disabled",
+            "enabled",
+            "platform-default"
+         ]
+      },
       "ipv6_pxe_support": {
          "description": "BIOS Policy - PXE BOOT - IPV6 PXE Support",
          "type": "string",
@@ -1600,6 +1613,7 @@
             "Maximum-Performance",
             "Mirror-Mode-1LM",
             "Mirroring",
+            "Partial-Mirror-mode-1LM",
             "Platform Default",
             "Sparing",
             "adddc-sparing",
@@ -1607,9 +1621,16 @@
             "maximum-performance",
             "mirror-mode-1lm",
             "mirroring",
+            "partial-mirror-mode-1lm",
             "platform-default",
             "sparing"
          ]
+      },
+      "memory_size_limit_in_gb": {
+         "description": "BIOS Policy - SelectMemory RAS configuration - Memory Size Limit in GB",
+         "type": "string",
+         "default": "platform-default",
+         "pattern": "platform-default|^[0-9]$|^[1-9][0-9]$|^[1-9][0-9][0-9]$|^[1-9][0-9][0-9][0-9]$|^[1-5][0-9][0-9][0-9][0-9]$|^6[0-4][0-9][0-9][0-9]$|^65[0-4][0-9][0-9]$|^655[0-2][0-9]$|^6553[0-5]$"
       },
       "mirroring_mode": {
          "description": "BIOS Policy - Mirroring Mode - Mirroring Mode",
@@ -1659,6 +1680,19 @@
             "gen1",
             "gen2",
             "gen3",
+            "platform-default"
+         ]
+      },
+      "network_stack": {
+         "description": "BIOS Policy - PXE BOOT - Network Stack",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "Disabled",
+            "Enabled",
+            "Platform Default",
+            "disabled",
+            "enabled",
             "platform-default"
          ]
       },
@@ -1842,6 +1876,51 @@
             "platform-default"
          ]
       },
+      "partial_memory_mirror_mode": {
+         "description": "BIOS Policy - SelectMemory RAS configuration - Partial Memory Mirror Mode",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "Disabled",
+            "Percentage",
+            "Platform Default",
+            "Value-in-GB",
+            "disabled",
+            "percentage",
+            "platform-default",
+            "value-in-gb"
+         ]
+      },
+      "partial_mirror1_size_in_gb": {
+         "description": "BIOS Policy - SelectMemory RAS configuration - Partial Mirror1 Size in GB",
+         "type": "string",
+         "default": "platform-default",
+         "pattern": "platform-default|^[0-9]$|^[1-9][0-9]$|^[1-9][0-9][0-9]$|^[1-9][0-9][0-9][0-9]$|^[1-5][0-9][0-9][0-9][0-9]$|^6[0-4][0-9][0-9][0-9]$|^65[0-4][0-9][0-9]$|^655[0-2][0-9]$|^6553[0-5]$"
+      },
+      "partial_mirror2_size_in_gb": {
+         "description": "BIOS Policy - SelectMemory RAS configuration - Partial Mirror2 Size in GB",
+         "type": "string",
+         "default": "platform-default",
+         "pattern": "platform-default|^[0-9]$|^[1-9][0-9]$|^[1-9][0-9][0-9]$|^[1-9][0-9][0-9][0-9]$|^[1-5][0-9][0-9][0-9][0-9]$|^6[0-4][0-9][0-9][0-9]$|^65[0-4][0-9][0-9]$|^655[0-2][0-9]$|^6553[0-5]$"
+      },
+      "partial_mirror3_size_in_gb": {
+         "description": "BIOS Policy - SelectMemory RAS configuration - Partial Mirror3 Size in GB",
+         "type": "string",
+         "default": "platform-default",
+         "pattern": "platform-default|^[0-9]$|^[1-9][0-9]$|^[1-9][0-9][0-9]$|^[1-9][0-9][0-9][0-9]$|^[1-5][0-9][0-9][0-9][0-9]$|^6[0-4][0-9][0-9][0-9]$|^65[0-4][0-9][0-9]$|^655[0-2][0-9]$|^6553[0-5]$"
+      },
+      "partial_mirror4_size_in_gb": {
+         "description": "BIOS Policy - SelectMemory RAS configuration - Partial Mirror4 Size in GB",
+         "type": "string",
+         "default": "platform-default",
+         "pattern": "platform-default|^[0-9]$|^[1-9][0-9]$|^[1-9][0-9][0-9]$|^[1-9][0-9][0-9][0-9]$|^[1-5][0-9][0-9][0-9][0-9]$|^6[0-4][0-9][0-9][0-9]$|^65[0-4][0-9][0-9]$|^655[0-2][0-9]$|^6553[0-5]$"
+      },
+      "partial_mirror_percentage": {
+         "description": "BIOS Policy - SelectMemory RAS configuration - Partial Mirror percentage",
+         "type": "string",
+         "default": "platform-default",
+         "pattern": "platform-default|^[0-9].[0-9][0-9]$|^[1-4][0-9].[0-9][0-9]$|^50.00$"
+      },
       "patrol_scrub": {
          "description": "BIOS Policy - Scrub Policies - Patrol Scrub",
          "type": "string",
@@ -1857,6 +1936,19 @@
       },
       "pcie_10g_lom_2_link": {
          "description": "BIOS Policy - PCI LOM Ports Configuration - PCIe 10G LOM 2 Link",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "Disabled",
+            "Enabled",
+            "Platform Default",
+            "disabled",
+            "enabled",
+            "platform-default"
+         ]
+      },
+      "pcie_ras_enablement": {
+         "description": "BIOS Policy - PCIe RAS Support - PCIe RAS Enablement",
          "type": "string",
          "default": "platform-default",
          "enum": [
@@ -3362,6 +3454,19 @@
             "legacy-only",
             "platform-default",
             "uefi-only"
+         ]
+      },
+      "select_ppr_type_configuration": {
+         "description": "BIOS Policy - Select PPR Type - Select PPR type configuration",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "Disabled",
+            "Hard-PPR",
+            "Platform Default",
+            "disabled",
+            "hard-ppr",
+            "platform-default"
          ]
       },
       "serial_port_a_enable": {

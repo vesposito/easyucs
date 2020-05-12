@@ -30,7 +30,12 @@ class UcsSystemDrawAdaptor(GenericUcsDrawEquipment):
         self.parent_draw.paste_layer(self.picture, self.picture_offset)
         if "UcsImc" not in parent.__class__.__name__:
             if self.parent_draw.color_ports:
-                self.draw_ports()
+                if self._parent.sku not in ["UCSC-PCIE-C25Q-04"]:  #TODO Workaround until fixed on inventory as the port of the PCIe card are not correct and appears as active even when should not
+                    self.draw_ports()
+                # self.draw_ports()
+
+        # We drop the picture in order to save on memory
+        self.picture = None
 
     def _get_picture(self):
         if "SIOC" in self._parent.pci_slot:
@@ -53,6 +58,7 @@ class UcsSystemDrawAdaptor(GenericUcsDrawEquipment):
 
             try:
                 self.picture = Image.open("catalog/adaptors/img/" + file_name, 'r')
+                self.picture_size = tuple(self.picture.size)
             except FileNotFoundError:
                 self.logger(level="error",
                             message="Image file " "catalog/adaptors/img/" + file_name + " not found")
@@ -66,6 +72,7 @@ class UcsSystemDrawAdaptor(GenericUcsDrawEquipment):
                     self.picture = self.rotate_object(picture=self.picture)
                     self.picture = self.rotate_object(picture=self.picture)
                     self.picture = self.rotate_object(picture=self.picture)
+                self.picture_size = tuple(self.picture.size)
         else:
             return False
 
@@ -112,10 +119,10 @@ class UcsSystemDrawAdaptor(GenericUcsDrawEquipment):
             coord_y = port_info['port_coord'][1]
 
             if self.orientation == "reverse":
-                coord_x = self.picture.size[0] - coord_x - port_size_x
-                coord_y = self.picture.size[1] - coord_y - port_size_y
+                coord_x = self.picture_size[0] - coord_x - port_size_x
+                coord_y = self.picture_size[1] - coord_y - port_size_y
             if self.orientation == "vertical":
-                coord_x = self.picture.size[0] - coord_y - port_size_y
+                coord_x = self.picture_size[0] - coord_y - port_size_y
                 coord_y = port_info['port_coord'][0]
                 port_size_x = port_info['port_size'][1]
                 port_size_y = port_info['port_size'][0]

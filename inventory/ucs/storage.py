@@ -278,6 +278,8 @@ class UcsImcStorageEnclosureDisk(UcsStorageEnclosureDisk, UcsImcInventoryObject)
                     self.size = int(float(self.size.split(" ")[0]) * 1048576)
                 elif "GB" in self.size:
                     self.size = int(float(self.size.split(" ")[0]) * 1024)
+                elif self.size == "N/A":
+                    self.size = None
                 else:
                     self.logger(level="debug",
                                 message="Not sure about the size attribute of disk " + self.id + ": " + self.size)
@@ -321,8 +323,7 @@ class UcsImcStorageEnclosureDisk(UcsStorageEnclosureDisk, UcsImcInventoryObject)
                                        self.serial == storage_local_disk.drive_serial_number]
             if (len(storage_local_disk_list)) != 1:
                 self.logger(level="debug",
-                            message="Could not find the corresponding storageLocalDisk for object with DN " +
-                                    self.dn + " of model \"" + self.model + "\" with ID " + self.id)
+                            message="Could not find the corresponding storageLocalDisk for object with DN " + self.dn)
                 self.logger(level="info", message="Details of disk with id " + self.id +
                                                   " are not available. Has disk been assigned to a server node?")
                 return False
@@ -594,6 +595,10 @@ class UcsSystemStorageLocalDisk(UcsStorageLocalDisk, UcsSystemInventoryObject):
             self.locator_led_status = self._determine_locator_led_status()
             self.size_marketing = None
             self.rotational_speed_marketing = None
+            self.life_left_in_percent = None
+            self.power_cycle_count = None
+            self.power_on_hours = None
+            self.wear_status_in_days = None
 
             if self._find_drive_specs_from_catalog():
                 self.size_marketing = int((self.block_size_catalog * self.number_of_blocks_catalog) / 1000000000)
@@ -626,8 +631,14 @@ class UcsSystemStorageLocalDisk(UcsStorageLocalDisk, UcsSystemInventoryObject):
                 self.size_marketing = "100GB"
             elif self.size_marketing == "118GB":
                 self.size_marketing = "120GB"
+            elif self.size_marketing == "398GB":
+                self.size_marketing = "400GB"
+            elif self.size_marketing == "958GB":
+                self.size_marketing = "960GB"
             elif self.size_marketing == "998GB":
                 self.size_marketing = "1TB"
+            elif self.size_marketing == "7.7TB":
+                self.size_marketing = "7.6TB"
 
             if self.rotational_speed is not None:
                 self.rotational_speed_marketing = self.rotational_speed
@@ -646,7 +657,7 @@ class UcsSystemStorageLocalDisk(UcsStorageLocalDisk, UcsSystemInventoryObject):
                 # Handle catalog issues
                 elif self.rotational_speed_marketing in [10, 10025, 10520]:
                     self.rotational_speed_marketing = "10K"
-                elif self.rotational_speed_marketing == 7202:
+                elif self.rotational_speed_marketing in [7202, 72000]:
                     self.rotational_speed_marketing = "7.2K"
 
             # Manual adjustments for catalog SKU with double values like "UCS-SD100G0KA2-G/UCS-SD100G0KA2-S"
@@ -690,10 +701,41 @@ class UcsSystemStorageLocalDisk(UcsStorageLocalDisk, UcsSystemInventoryObject):
                     else:
                         self.sku = "UCS-SD300G0KA2-E"
 
+            # Manual adjustment of size for wrong catalog entry
+            if self.sku in ["UCS-HD1T7KS2-E", "A03-D1TBSATA"]:
+                self.size_marketing = "1TB"
+
+            ssd_stats = None
+            if self.drive_state == "SSD":
+                ssd_stats = self._find_corresponding_storage_ssd_stats()
+            if ssd_stats:
+                self.life_left_in_percent = ssd_stats.percentage_life_left
+                self.power_cycle_count = ssd_stats.power_cycle_count
+                self.power_on_hours = ssd_stats.power_on_hours
+                self.wear_status_in_days = ssd_stats.wear_status_in_days
+
+                if self.life_left_in_percent not in [None, "N/A"]:
+                    self.life_left_in_percent = int(self.life_left_in_percent)
+                elif self.life_left_in_percent == "N/A":
+                    self.life_left_in_percent = None
+                if self.power_cycle_count not in [None, "N/A"]:
+                    self.power_cycle_count = int(self.power_cycle_count)
+                elif self.power_cycle_count == "N/A":
+                    self.power_cycle_count = None
+                if self.power_on_hours not in [None, "N/A"]:
+                    self.power_on_hours = int(self.power_on_hours)
+                elif self.power_on_hours == "N/A":
+                    self.power_on_hours = None
+                if self.wear_status_in_days not in [None, "N/A"]:
+                    self.wear_status_in_days = int(self.wear_status_in_days)
+                elif self.wear_status_in_days == "N/A":
+                    self.wear_status_in_days = None
+
         elif self._inventory.load_from == "file":
-            for attribute in ["block_size_catalog", "cache_size", "capacity_catalog", "locator_led_status",
-                              "number_of_blocks_catalog", "rotational_speed", "rotational_speed_marketing",
-                              "self_encrypting_drive", "size_marketing"]:
+            for attribute in ["block_size_catalog", "cache_size", "capacity_catalog", "life_left_in_percent",
+                              "locator_led_status", "number_of_blocks_catalog", "power_cycle_count", "power_on_hours",
+                              "rotational_speed", "rotational_speed_marketing", "self_encrypting_drive",
+                              "size_marketing", "wear_status_in_days"]:
                 setattr(self, attribute, None)
                 if attribute in storage_local_disk:
                     setattr(self, attribute, self.get_attribute(ucs_sdk_object=storage_local_disk,
@@ -724,6 +766,35 @@ class UcsSystemStorageLocalDisk(UcsStorageLocalDisk, UcsSystemInventoryObject):
                 self.rotational_speed = int(float(equipment_local_disk_def_list[0].rotational_speed))
                 self.self_encrypting_drive = equipment_local_disk_def_list[0].self_encrypting_drive
                 return True
+
+        return False
+
+    def _find_corresponding_storage_ssd_stats(self):
+        if "storageSsdHealthStats" not in self._inventory.sdk_objects.keys():
+            return False
+
+        # We check if we already have fetched the list of storageSsdHealthStats objects
+        if self._inventory.sdk_objects["storageSsdHealthStats"] is not None:
+
+            # We need to find the matching storageSsdHealthStats object
+            storage_ssd_stats_list = [storage_ssd_stats for storage_ssd_stats in
+                                      self._inventory.sdk_objects["storageSsdHealthStats"] if
+                                      self.dn + "/ssd-health-stats" in storage_ssd_stats.dn]
+            if (len(storage_ssd_stats_list)) != 1:
+                self.logger(level="debug",
+                            message="Could not find the corresponding storageSsdHealthStats for object with DN " +
+                                    self.dn + " of model \"" + self.model + "\" with ID " + self.id)
+                if hasattr(self._parent, "id") and hasattr(self._parent._parent, "id"):
+                    self.logger(level="info", message="SSD stats of disk with id " + self.id + " for controller " +
+                                                      self._parent.id + " of server " + self._parent._parent.id +
+                                                      " are not available.")
+                else:
+                    self.logger(level="info", message="SSD stats of disk with id " + self.id + " for controller " +
+                                                      self._parent.dn + " are not available.")
+
+                return False
+            else:
+                return storage_ssd_stats_list[0]
 
         return False
 
@@ -767,6 +838,11 @@ class UcsImcStorageLocalDisk(UcsStorageLocalDisk, UcsImcInventoryObject):
         UcsImcInventoryObject.__init__(self, parent=parent, ucs_sdk_object=storage_local_disk)
 
         if self._inventory.load_from == "live":
+            self.life_left_in_percent = None
+            self.power_cycle_count = None
+            self.power_on_hours = None
+            self.wear_status_in_days = None
+
             self._find_drive_specs()
 
             # We check if we already have fetched the PID Catalog object
@@ -814,12 +890,19 @@ class UcsImcStorageLocalDisk(UcsStorageLocalDisk, UcsImcInventoryObject):
                 self.size_marketing = "100GB"
             elif self.size_marketing == "118GB":
                 self.size_marketing = "120GB"
+            elif self.size_marketing == "398GB":
+                self.size_marketing = "400GB"
+            elif self.size_marketing == "958GB":
+                self.size_marketing = "960GB"
             elif self.size_marketing == "998GB":
                 self.size_marketing = "1TB"
+            elif self.size_marketing == "7.7TB":
+                self.size_marketing = "7.6TB"
 
         elif self._inventory.load_from == "file":
-            for attribute in ["block_size", "bootable", "number_of_blocks", "rotational_speed_marketing",
-                              "size_marketing", "size_raw"]:
+            for attribute in ["block_size", "bootable", "life_left_in_percent", "number_of_blocks", "power_cycle_count",
+                              "power_on_hours", "rotational_speed_marketing", "size_marketing", "size_raw",
+                              "wear_status_in_days"]:
                 setattr(self, attribute, None)
                 if attribute in storage_local_disk:
                     setattr(self, attribute, self.get_attribute(ucs_sdk_object=storage_local_disk,
@@ -846,6 +929,15 @@ class UcsImcStorageLocalDisk(UcsStorageLocalDisk, UcsImcInventoryObject):
                 self.bootable = storage_local_disk_props_list[0].boot_drive
                 self.number_of_blocks = int(storage_local_disk_props_list[0].block_count)
                 self.size_raw = int(storage_local_disk_props_list[0].raw_size.split(" ")[0])
+
+                if storage_local_disk_props_list[0].percentage_life_left not in [None, "0", "N/A", "Not Available"]:
+                    self.life_left_in_percent = int(storage_local_disk_props_list[0].percentage_life_left)
+                if storage_local_disk_props_list[0].power_cycle_count not in [None, "0", "N/A", "Not Available"]:
+                    self.power_cycle_count = int(storage_local_disk_props_list[0].power_cycle_count)
+                if storage_local_disk_props_list[0].power_on_hours not in [None, "0", "N/A", "Not Available"]:
+                    self.power_on_hours = int(storage_local_disk_props_list[0].power_on_hours)
+                if storage_local_disk_props_list[0].wear_status_in_days not in [None, "0", "N/A", "Not Available"]:
+                    self.wear_status_in_days = int(storage_local_disk_props_list[0].wear_status_in_days)
                 return True
 
         return False

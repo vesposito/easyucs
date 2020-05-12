@@ -120,7 +120,7 @@
                "port_id":{
                   "description":"Port ID of Interface member of Appliance Port-Channel",
                   "type":"string",
-                  "pattern":"^[1-9]$|^[1-4][0-9]$|^5[0-4]$"
+                  "pattern":"^[1-9]$|^[1-9][0-9]$|^10[0-8]$"
                },
                "aggr_id":{
                   "description":"Aggregate ID of Interface member of Appliance Port-Channel (for Breakout Ports)",

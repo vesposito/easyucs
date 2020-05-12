@@ -15,16 +15,17 @@ class UcsSystemDrawNeighbor:
     def __init__(self, parent, parent_draw):
         self._parent = parent
         self.parent_draw = parent_draw
-        self.picture = self.__get_picture()
-        self.picture_offset = self.__get_picture_offset()
+        self.picture = self._get_picture()
+        self.picture_size = tuple(self.picture.size)
+        self.picture_offset = self._get_picture_offset()
 
-    def __get_picture(self):
+    def _get_picture(self):
         file_name = "generic"
         if self._parent.device_type != "unknown":
             file_name = self._parent.device_type
         return Image.open("catalog/misc/icons/" + file_name + ".png", 'r')
 
-    def __get_picture_offset(self):
+    def _get_picture_offset(self):
         return 0, 0
 
 
@@ -39,9 +40,9 @@ class UcsSystemDrawInfraNeighbors(GenericUcsDrawObject):
         self.canvas_color = (255, 255, 255, 255)  # white
         # spacing between equipments, H for height, W for width
         # 70 px is the space for text
-        self.canvas_height = 70 + self._max_height_neighbor() + self.fi_a.picture.size[1] + SPACING_H
+        self.canvas_height = 70 + self._max_height_neighbor() + self.fi_a.picture_size[1] + SPACING_H
         self.canvas_width = (max((self._max_width_neighbor() + SPACING_W) * len(self.neighbors),
-                                 (self.fi_a.picture.size[0] * 2 + SPACING_W)))
+                                 (self.fi_a.picture_size[0] * 2 + SPACING_W)))
 
         self.background = self._create_background(self.canvas_width, self.canvas_height, self.canvas_color)
         self.draw = self._create_draw()
@@ -51,8 +52,19 @@ class UcsSystemDrawInfraNeighbors(GenericUcsDrawObject):
         self.fi_a.picture_offset = self._get_picture_offset("fi_a")
         self.fi_b.picture_offset = self._get_picture_offset("fi_b")
 
+        # As we drop the picture before, we need to recreate it and drop it again after pasting the layer
+        self.fi_a._get_picture()
+        if self.fi_a._parent.sku == "UCS-FI-M-6324":
+            # We only need to rotate the picture as the other parameters are already rotated (json_file, picture_size)
+            self.fi_a.picture = self.fi_a.rotate_object(picture=self.fi_a.picture)
         self.paste_layer(self.fi_a.picture, self.fi_a.picture_offset)
+        self.fi_a.picture = None
+
+        self.fi_b._get_picture()
+        if self.fi_b._parent.sku == "UCS-FI-M-6324":
+            self.fi_b.picture = self.fi_b.rotate_object(picture=self.fi_b.picture)
         self.paste_layer(self.fi_b.picture, self.fi_b.picture_offset)
+        self.fi_b.picture = None
 
         for key, neighbor in self.neighbors_dict.items():
             neighbor.picture_offset = self._get_picture_offset("neighbor", key, neighbor)
@@ -75,7 +87,10 @@ class UcsSystemDrawInfraNeighbors(GenericUcsDrawObject):
         self.set_wire()
 
         for key, neighbor in self.neighbors_dict.items():
+            # As we drop the picture before, we need to recreate it and drop it again after pasting the layer
+            neighbor._get_picture()
             self.paste_layer(neighbor.picture, neighbor.picture_offset)
+            neighbor.picture = None
 
         self.port_color_list = self.fi_a.legend_items
         if self.fi_b:
@@ -112,35 +127,35 @@ class UcsSystemDrawInfraNeighbors(GenericUcsDrawObject):
         if type == "neighbor" and order is not None:
             # 70 px is the space for text
             return order * round(self.canvas_width / len(self.neighbors)) + round(
-                self.canvas_width / len(self.neighbors) / 2) - round(neighbor.picture.size[0] / 2), \
-                   70 + self._max_height_neighbor() - neighbor.picture.size[1]
+                self.canvas_width / len(self.neighbors) / 2) - round(neighbor.picture_size[0] / 2), \
+                   70 + self._max_height_neighbor() - neighbor.picture_size[1]
         if type == "fi_a":
-            return round(self.canvas_width / 2) - self.fi_a.picture.size[0] - round(SPACING_W / 2),\
-                   self.canvas_height - self.fi_a.picture.size[1]
+            return round(self.canvas_width / 2) - self.fi_a.picture_size[0] - round(SPACING_W / 2),\
+                   self.canvas_height - self.fi_a.picture_size[1]
         if type == "fi_b":
             return round(self.canvas_width / 2) + SPACING_W - round(SPACING_W / 2),\
-                   self.canvas_height - self.fi_b.picture.size[1]
+                   self.canvas_height - self.fi_b.picture_size[1]
 
     def _max_height_neighbor(self):
         max = 0
         for neighbor in self.neighbors:
-            if neighbor.picture.size[1] > max:
-                max = neighbor.picture.size[1]
+            if neighbor.picture_size[1] > max:
+                max = neighbor.picture_size[1]
         return max
 
     def _max_width_neighbor(self):
         max = 0
         for neighbor in self.neighbors:
-            if neighbor.picture.size[0] > max:
-                max = neighbor.picture.size[0]
+            if neighbor.picture_size[0] > max:
+                max = neighbor.picture_size[0]
         return max
 
     def set_wire(self):
         for key, neighbor in self.neighbors_dict.items():
             for peer_port in neighbor._parent.peer_ports:
                 # 70 px from the bottom of the device
-                point_neighbor = neighbor.picture_offset[0] + round(neighbor.picture.size[0] / 2), \
-                                 neighbor.picture_offset[1] + neighbor.picture.size[1] - 70
+                point_neighbor = neighbor.picture_offset[0] + round(neighbor.picture_size[0] / 2), \
+                                 neighbor.picture_offset[1] + neighbor.picture_size[1] - 70
                 for draw_fi_port in self.fi_a.ports:
                     if draw_fi_port.port == peer_port:
                         point_fi = draw_fi_port.coord[0] + round(draw_fi_port.size[0] / 2), \
@@ -178,7 +193,7 @@ class UcsSystemDrawInfraNeighborsLan(UcsSystemDrawInfraNeighbors):
             msg = neighbor._parent.system_name
             w, h = self.draw.textsize(msg, font=font_title)
             # 70 px is the space for text, 16 px space between text and equipment
-            self.draw.text((neighbor.picture_offset[0] + neighbor.picture.size[0] / 2 - w/2,
+            self.draw.text((neighbor.picture_offset[0] + neighbor.picture_size[0] / 2 - w/2,
                             neighbor.picture_offset[1] - (font_size + 16)), msg, fill=fill_color, font=font_title)
 
     def sort_neighbors(self):
@@ -220,7 +235,7 @@ class UcsSystemDrawInfraNeighborsSan(UcsSystemDrawInfraNeighbors):
             msg = neighbor._parent.fabric_nwwn
             w, h = self.draw.textsize(msg, font=font_title)
             # 70 px is the space for text, 16 px space between text and equipment
-            self.draw.text((neighbor.picture_offset[0] + neighbor.picture.size[0] / 2 - w / 2,
+            self.draw.text((neighbor.picture_offset[0] + neighbor.picture_size[0] / 2 - w / 2,
                             neighbor.picture_offset[1] - (font_size + 16)),
                            msg, fill=fill_color, font=font_title)
 

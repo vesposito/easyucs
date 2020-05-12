@@ -34,10 +34,10 @@ class UcsSystemPsu(UcsPsu, UcsSystemInventoryObject):
             if self.sku == "NXK-PAC-400W ":
                 self.sku = "NXK-PAC-400W"
 
-        # Small fix for when FEX PSU is not present in UCS catalog
+        # Small fix for when PSU is not present in UCS catalog
         if hasattr(self, "sku"):
             if not self.sku:
-                if self.model in ["N2200-PAC-400W", "N2200-PAC-400W-B"]:
+                if self.model in ["N2200-PAC-400W", "N2200-PAC-400W-B", "NXA-PAC-1200W-PE"]:
                     self.sku = self.model
 
 

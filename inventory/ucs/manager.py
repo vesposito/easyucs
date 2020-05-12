@@ -57,8 +57,8 @@ class UcsSystemInventoryManager(GenericUcsInventoryManager):
             chassis_front_draw_list.append(chassis._draw_front)
             chassis_rear_draw_list.append(chassis._draw_rear)
         # We only keep the chassis that have been fully created -> json file and picture
-        chassis_front_draw_list = [chassis for chassis in chassis_front_draw_list if chassis.picture]
-        chassis_rear_draw_list = [chassis for chassis in chassis_rear_draw_list if chassis.picture]
+        chassis_front_draw_list = [chassis for chassis in chassis_front_draw_list if chassis.picture_size]
+        chassis_rear_draw_list = [chassis for chassis in chassis_rear_draw_list if chassis.picture_size]
 
         rack_front_draw_list = []
         rack_rear_draw_list = []
@@ -67,8 +67,8 @@ class UcsSystemInventoryManager(GenericUcsInventoryManager):
             rack_front_draw_list.append(rack._draw_front)
             rack_rear_draw_list.append(rack._draw_rear)
         # We only keep the racks that have been fully created -> json file and picture
-        rack_front_draw_list = [rack for rack in rack_front_draw_list if rack.picture]
-        rack_rear_draw_list = [rack for rack in rack_rear_draw_list if rack.picture]
+        rack_front_draw_list = [rack for rack in rack_front_draw_list if rack.picture_size]
+        rack_rear_draw_list = [rack for rack in rack_rear_draw_list if rack.picture_size]
 
         rack_enclosure_front_draw_list = []
         rack_enclosure_rear_draw_list = []
@@ -77,27 +77,30 @@ class UcsSystemInventoryManager(GenericUcsInventoryManager):
             rack_enclosure_front_draw_list.append(rack_enclosure._draw_front)
             rack_enclosure_rear_draw_list.append(rack_enclosure._draw_rear)
         # We only keep the racks that have been fully created -> json file and picture
-        rack_enclosure_front_draw_list = [rack_enclosure for rack_enclosure in rack_enclosure_front_draw_list if rack_enclosure.picture]
-        rack_enclosure_rear_draw_list = [rack_enclosure for rack_enclosure in rack_enclosure_rear_draw_list if rack_enclosure.picture]
+        rack_enclosure_front_draw_list = [rack_enclosure for rack_enclosure in rack_enclosure_front_draw_list if rack_enclosure.picture_size]
+        rack_enclosure_rear_draw_list = [rack_enclosure for rack_enclosure in rack_enclosure_rear_draw_list if rack_enclosure.picture_size]
 
         fi_rear_draw_list = []
         for fi in inventory.fabric_interconnects:
             fi._generate_draw()
             fi_rear_draw_list.append(fi._draw_rear)
         # We only keep the FI that have been fully created -> json file and picture
-        fi_rear_draw_list = [fi for fi in fi_rear_draw_list if fi.picture]
+        fi_rear_draw_list = [fi for fi in fi_rear_draw_list if fi.picture_size]
 
         rotated_fi_draw_list = []
         for fi in fi_rear_draw_list:
             if fi._parent.sku == "UCS-FI-M-6324":
+                # As we drop the picture before, we need to recreate it and drop it again
+                fi._get_picture()
                 rotated_fi_draw_list.append(fi.rotate_object(fi))
+                fi.picture = None
 
         fex_rear_draw_list = []
         for fex in inventory.fabric_extenders:
             fex._generate_draw()
             fex_rear_draw_list.append(fex._draw_rear)
         # We only keep the FEX that have been fully created -> json file and picture
-        fex_rear_draw_list = [fex for fex in fex_rear_draw_list if fex.picture]
+        fex_rear_draw_list = [fex for fex in fex_rear_draw_list if fex.picture_size]
 
         lan_neighbor_draw_list = []
         san_neighbor_draw_list = []

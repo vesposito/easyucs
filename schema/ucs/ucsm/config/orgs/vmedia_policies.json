@@ -116,6 +116,18 @@
                "remap_on_eject": {
                   "description": "vMedia Policy - vMedia Mount Remap on Eject",
                   "type": "string",
+                  "default": "no",
+                  "enum": [
+                     "false",
+                     "no",
+                     "true",
+                     "yes"
+                  ]
+               },
+               "writable": {
+                  "description": "vMedia Policy - vMedia Writable",
+                  "type": "string",
+                  "default": "no",
                   "enum": [
                      "false",
                      "no",

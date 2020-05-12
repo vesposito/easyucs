@@ -36,6 +36,9 @@ class UcsSystemDrawChassisFront(GenericUcsDrawEquipment):
 
         self._file_name = self._device_target + "_chassis_" + self._parent.id + "_front"
 
+        # We drop the picture in order to save on memory
+        self.picture = None
+
     def get_blades(self):
         blade_list = []
         for blade in self._parent.blades:
@@ -43,7 +46,7 @@ class UcsSystemDrawChassisFront(GenericUcsDrawEquipment):
             # blade_list = remove_not_completed_in_list(blade_list)
         # blade_list = remove_not_supported_in_list(blade_list)
         # We only keep the blades that have been fully created -> picture
-        blade_list = [blade for blade in blade_list if blade.picture]
+        blade_list = [blade for blade in blade_list if blade.picture_size]
         return blade_list
 
     def get_power_supplies(self):
@@ -54,7 +57,7 @@ class UcsSystemDrawChassisFront(GenericUcsDrawEquipment):
                 # psu_list = remove_not_completed_in_list(psu_list)
             # psu_list = remove_not_supported_in_list(psu_list)
         # We only keep the PSU that have been fully created -> picture
-        psu_list = [psu for psu in psu_list if psu.picture]
+        psu_list = [psu for psu in psu_list if psu.picture_size]
         return psu_list
 
     def fill_blanks(self):  # Fill blade slot
@@ -171,6 +174,8 @@ class UcsSystemDrawChassisRear(GenericUcsDrawEquipment):
 
         if self.color_ports:
             self.clear_version = UcsSystemDrawChassisRear(parent=parent, color_ports=False)
+        # We drop the picture in order to save on memory
+        self.picture = None
 
     def get_storage_enclosures(self):
         storage_enclosure_list = []
@@ -346,7 +351,7 @@ class UcsSystemDrawChassisRear(GenericUcsDrawEquipment):
         # blade_list = remove_not_supported_in_list(blade_list)
         # blade_list = remove_not_completed_in_list(blade_list)
         # We only keep the blades that have been fully created -> picture
-        blade_list = [blade for blade in blade_list if blade.picture]
+        blade_list = [blade for blade in blade_list if blade.picture_size]
         return blade_list
 
     def get_fi_list(self):
@@ -354,11 +359,11 @@ class UcsSystemDrawChassisRear(GenericUcsDrawEquipment):
 
         fi_list = []
         for fi in self._parent.fabric_interconnects:
-            fi_list.append(UcsSystemDrawFiRear(fi, self))
+            fi_list.append(UcsSystemDrawFiRear(parent=fi, parent_draw=self, color_ports=self.color_ports))
         # fi_list = remove_not_supported_in_list(fi_list)
         # fi_list = remove_not_completed_in_list(fi_list)
         # We only keep the FI that have been fully created -> picture
-        fi_list = [fi for fi in fi_list if fi.picture]
+        fi_list = [fi for fi in fi_list if fi.picture_size]
         return fi_list
 
     def get_iom_list(self):
@@ -368,7 +373,7 @@ class UcsSystemDrawChassisRear(GenericUcsDrawEquipment):
         # iom_list = remove_not_supported_in_list(iom_list)
         # iom_list = remove_not_completed_in_list(iom_list)
         # We only keep the iom that have been fully created -> picture
-        iom_list = [iom for iom in iom_list if iom.picture]
+        iom_list = [iom for iom in iom_list if iom.picture_size]
         return iom_list
 
     def get_power_supplies(self):
@@ -379,17 +384,17 @@ class UcsSystemDrawChassisRear(GenericUcsDrawEquipment):
         # psu_list = remove_not_supported_in_list(psu_list)
         # psu_list = remove_not_completed_in_list(psu_list)
         # We only keep the PSU that have been fully created -> picture
-        psu_list = [psu for psu in psu_list if psu.picture]
+        psu_list = [psu for psu in psu_list if psu.picture_size]
         return psu_list
 
     def get_sioc_list(self):
         sioc_list = []
         for sioc in self._parent.system_io_controllers:
-            sioc_list.append(GenericUcsDrawSioc(sioc, self))
+            sioc_list.append(GenericUcsDrawSioc(sioc, self, color_ports=self.color_ports))
         # sioc_list = remove_not_supported_in_list(sioc_list)
         # sioc_list = remove_not_completed_in_list(sioc_list)
         # We only keep the sioc that have been fully created -> picture
-        sioc_list = [sioc for sioc in sioc_list if sioc.picture]
+        sioc_list = [sioc for sioc in sioc_list if sioc.picture_size]
         return sioc_list
 
 
@@ -405,6 +410,9 @@ class UcsSystemDrawIom(GenericUcsDrawEquipment):
 
         if self.parent_draw.color_ports:
             self.draw_ports()
+
+        # We drop the picture in order to save on memory
+        self.picture = None
 
         # TODO : Should not work on UCS-S3260-PCISIOC
 
@@ -459,8 +467,9 @@ class UcsSystemDrawIom(GenericUcsDrawEquipment):
 
 
 class GenericUcsDrawSioc(GenericUcsDrawEquipment):
-    def __init__(self, parent=None, parent_draw=None):
+    def __init__(self, parent=None, parent_draw=None, color_ports=None):
         self.parent_draw = parent_draw
+        self.color_ports = color_ports
         GenericUcsDrawEquipment.__init__(self, parent=parent)
         if not self.picture:
             return
@@ -482,6 +491,9 @@ class GenericUcsDrawSioc(GenericUcsDrawEquipment):
             if self.parent_draw.color_ports:
                 self.draw_ports()
 
+        # We drop the picture in order to save on memory
+        self.picture = None
+
     def _get_picture_offset(self):
         for slot in self.parent_draw.json_file["system_io_controllers_slots"]:
             if slot["id"] == int(self._parent.id):
@@ -495,7 +507,22 @@ class GenericUcsDrawSioc(GenericUcsDrawEquipment):
                 port_id = port.port_id
                 rectangle_width = self.WIDTH_PORT_RECTANGLE_DEFAULT
 
-                if port.is_breakout:  # for aggr ports
+                if self._parent.sku in ["UCS-S3260-PCISIOC"]:
+                    if self.adaptor_list[0]._parent.sku in ["UCSC-PCIE-C100-04"]:
+                        if port_id == "3": #TODO Workaround until fixed on inventory, not the right port id in the ports of the SIOC
+                            port_id = "2"
+
+                    if self.adaptor_list[0]._parent.sku in ["UCSC-PCIE-C25Q-04"]:
+                        port.is_breakout = False #TODO Workaround until fixed on inventory, appears as breakout in the ports of the SIOC even when not breakout
+
+                    else:  ## TODO add more PCIe exception
+                        continue
+
+                    port_info = self.adaptor_list[0].json_file["rear_ports_half"]["x/" + port_id]
+                    port_info["port_coord"] = port_info["port_coord"][0] + self.json_file["pcie_slots"][0]["coord"][0], \
+                                              port_info["port_coord"][1] + self.json_file["pcie_slots"][0]["coord"][1]
+
+                elif port.is_breakout:  # for aggr ports
                     if port_id in ["1", "2", "3", "4"]:
                         port_info = dict(self.json_file["rear_ports"]["1"])
                     if port_id in ["5", "6", "7", "8"]:
@@ -559,12 +586,20 @@ class GenericUcsDrawSioc(GenericUcsDrawEquipment):
             elif hasattr(self._parent._parent, "blades"):
                 for blade in self._parent._parent.blades:
                     for adaptor in blade.adaptors:
+                        # For IMC SIOCs
                         if hasattr(adaptor, "id"):
                             if "SIOC" in adaptor.id:
+                                # Adaptor ID appears as "SIOCx" ex. SIOC1
                                 if adaptor.id[-1] == self._parent.id:
                                     adaptor_list.append(UcsSystemDrawAdaptor(parent=adaptor, parent_draw=self))
+                        # For UCSM SIOCs
+                        if hasattr(adaptor, "pci_slot"):
+                            if "SIOC" in adaptor.pci_slot:
+                                # PCI Slot appears as "SIOCx" ex. SIOC1
+                                if adaptor.pci_slot[-1] == self._parent.id:
+                                    adaptor_list.append(UcsSystemDrawAdaptor(parent=adaptor, parent_draw=self))
 
-        adaptor_list = [adaptor for adaptor in adaptor_list if adaptor.picture]
+        adaptor_list = [adaptor for adaptor in adaptor_list if adaptor.picture_size]
         return [e for e in adaptor_list if hasattr(e, "_parent")]
 
 
@@ -590,13 +625,13 @@ class UcsSystemDrawInfraChassis(UcsSystemDrawInfraEquipment):
 
         # Canvas settings
         if self.fex_presence:
-            # self.canvas_width = self.fi_a.picture.size[0] * 2 + self.chassis.picture.size[0] + self.fex_a.picture.size[0] * 2 + 200  # arbitrary
-            self.canvas_width = self.chassis.picture.size[0] + self.fex_a.picture.size[0] * 2 + 100  # arbitrary
-            self.canvas_height = self.fi_a.picture.size[1] + self.chassis.picture.size[1] + \
-                                 self.fex_a.picture.size[1] + 400  # arbitrary
+            # self.canvas_width = self.fi_a.picture_size[0] * 2 + self.chassis.picture_size[0] + self.fex_a.picture_size[0] * 2 + 200  # arbitrary
+            self.canvas_width = self.chassis.picture_size[0] + self.fex_a.picture_size[0] * 2 + 100  # arbitrary
+            self.canvas_height = self.fi_a.picture_size[1] + self.chassis.picture_size[1] + \
+                                 self.fex_a.picture_size[1] + 400  # arbitrary
         else:
-            self.canvas_width = self.fi_a.picture.size[0] * 2 + self.chassis.picture.size[0] + 100  # arbitrary
-            self.canvas_height = self.fi_a.picture.size[1] + self.chassis.picture.size[1] + 100  # arbitrary
+            self.canvas_width = self.fi_a.picture_size[0] * 2 + self.chassis.picture_size[0] + 100  # arbitrary
+            self.canvas_height = self.fi_a.picture_size[1] + self.chassis.picture_size[1] + 100  # arbitrary
 
         self.chassis_offset = self._get_picture_offset("chassis")
         self.fi_a_offset = self._get_picture_offset("fi_a")
@@ -610,13 +645,31 @@ class UcsSystemDrawInfraChassis(UcsSystemDrawInfraEquipment):
         self.draw = self._create_draw()
 
         # Paste layers
+        # As we drop the picture before, we need to recreate it and drop it again after pasting the layer
+        self.chassis._get_picture()
         self.paste_layer(self.chassis.picture, self.chassis_offset)
+        self.chassis.picture = None
+
+        self.fi_a._get_picture()
+        if self.fi_a._parent.sku == "UCS-FI-M-6324":
+            # We only need to rotate the picture as the other parameters are already rotated (json_file, picture_size)
+            self.fi_a.picture = self.fi_a.rotate_object(picture=self.fi_a.picture)
         self.paste_layer(self.fi_a.picture, self.fi_a_offset)
+        self.fi_a.picture = None
+
         if self.fi_b:
+            self.fi_b._get_picture()
+            if self.fi_b._parent.sku == "UCS-FI-M-6324":
+                self.fi_b.picture = self.fi_b.rotate_object(picture=self.fi_b.picture)
             self.paste_layer(self.fi_b.picture, self.fi_b_offset)
+            self.fi_b.picture = None
         if self.fex_presence:
+            self.fex_a._get_picture()
             self.paste_layer(self.fex_a.picture, self.fex_a_offset)
+            self.fex_a.picture = None
+            self.fex_b._get_picture()
             self.paste_layer(self.fex_b.picture, self.fex_b_offset)
+            self.fex_b.picture = None
 
         # Draw ports and expansion
         self.fi_a.draw = self.draw
@@ -693,6 +746,9 @@ class UcsSystemDrawInfraChassis(UcsSystemDrawInfraEquipment):
             self.logger(level="warning", message="Infra of chassis #" + self.chassis._parent.id +
                                                  " not saved because no connection between the FI and the chassis")
 
+        # We drop the picture in order to save on memory
+        self.picture = None
+
     def _get_fex_infra_presence(self):
         # Used to know if a FEX need to be used for this infra
         if hasattr(self.chassis, 'iom_list'):  # if the chassis has IOM
@@ -733,22 +789,22 @@ class UcsSystemDrawInfraChassis(UcsSystemDrawInfraEquipment):
 
     def _get_picture_offset(self, type):
         if type == "chassis":
-            return round(self.canvas_width / 2 - self.chassis.picture.size[0] / 2), \
-                   self.canvas_height - self.chassis.picture.size[1]
+            return round(self.canvas_width / 2 - self.chassis.picture_size[0] / 2), \
+                   self.canvas_height - self.chassis.picture_size[1]
 
         if type == "fi_a":
             return 0, 0
 
         if type == "fi_b":
-            return self.canvas_width - self.fi_b.picture.size[0], 0
+            return self.canvas_width - self.fi_b.picture_size[0], 0
 
         if type == "fex_a":
-            # return self.fi_a.picture.size[0] + 50, self.fi_a.picture.size[1] + 100
-            return 0, self.fi_a.picture.size[1] + 400
+            # return self.fi_a.picture_size[0] + 50, self.fi_a.picture_size[1] + 100
+            return 0, self.fi_a.picture_size[1] + 400
 
         if type == "fex_b":
-            # return self.canvas_width - self.fex_b.picture.size[0] - self.fi_a.picture.size[0] - 50, self.fi_a.picture.size[1] + 100
-            return self.canvas_width - self.fex_b.picture.size[0], self.fi_a.picture.size[1] + 400
+            # return self.canvas_width - self.fex_b.picture_size[0] - self.fi_a.picture_size[0] - 50, self.fi_a.picture_size[1] + 100
+            return self.canvas_width - self.fex_b.picture_size[0], self.fi_a.picture_size[1] + 400
 
     def draw_chassis_info(self):
         fill_color = "black"
@@ -1102,7 +1158,7 @@ class UcsImcDrawChassisFront(GenericUcsDrawEquipment):
             # blade_list = remove_not_completed_in_list(blade_list)
         # blade_list = remove_not_supported_in_list(blade_list)
         # We only keep the blades that have been fully created -> picture
-        server_nodes = [server_node for server_node in server_nodes_list if server_node.picture]
+        server_nodes = [server_node for server_node in server_nodes_list if server_node.picture_size]
         return server_nodes
 
     def get_power_supplies(self):
@@ -1113,7 +1169,7 @@ class UcsImcDrawChassisFront(GenericUcsDrawEquipment):
                 # psu_list = remove_not_completed_in_list(psu_list)
             # psu_list = remove_not_supported_in_list(psu_list)
         # We only keep the PSU that have been fully created -> picture
-        psu_list = [psu for psu in psu_list if psu.picture]
+        psu_list = [psu for psu in psu_list if psu.picture_size]
         return psu_list
 
     def fill_blanks(self):  # Fill blade slot
@@ -1374,7 +1430,7 @@ class UcsImcDrawChassisRear(GenericUcsDrawEquipment):
         # blade_list = remove_not_supported_in_list(blade_list)
         # blade_list = remove_not_completed_in_list(blade_list)
         # We only keep the blades that have been fully created -> picture
-        server_nodes = [server_node for server_node in server_nodes_list if server_node.picture]
+        server_nodes = [server_node for server_node in server_nodes_list if server_node.picture_size]
         return server_nodes
 
     def get_power_supplies(self):
@@ -1385,7 +1441,7 @@ class UcsImcDrawChassisRear(GenericUcsDrawEquipment):
         # psu_list = remove_not_supported_in_list(psu_list)
         # psu_list = remove_not_completed_in_list(psu_list)
         # We only keep the PSU that have been fully created -> picture
-        psu_list = [psu for psu in psu_list if psu.picture]
+        psu_list = [psu for psu in psu_list if psu.picture_size]
         return psu_list
 
     def get_sioc_list(self):
@@ -1395,5 +1451,5 @@ class UcsImcDrawChassisRear(GenericUcsDrawEquipment):
         # sioc_list = remove_not_supported_in_list(sioc_list)
         # sioc_list = remove_not_completed_in_list(sioc_list)
         # We only keep the sioc that have been fully created -> picture
-        sioc_list = [sioc for sioc in sioc_list if sioc.picture]
+        sioc_list = [sioc for sioc in sioc_list if sioc.picture_size]
         return sioc_list

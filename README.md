@@ -128,6 +128,17 @@ python easyucs_gui.py
 
 ## Versioning
 
+#### 0.9.6
+
+* Add support for UCSM 4.1(1) specific features (FI 64108 & Unified Ports, Fan Control Policy, new BIOS Tokens, Writable vMedia Mount)
+* Add support for fetching Reserved VLAN Start ID for FI 6400 (push is planned for a future release)
+* Add VLAN Port Count information in inventory and report
+* Add IMC S3260 I/O Expander in inventory
+* Add SSD stats in inventory when available
+* Memory consumption optimization for schemas generation
+* Multiple bug fixes and improvements
+
+
 #### 0.9.5
 
 * Add support for UCSM 4.0(4) specific features (M.2 HWRAID, Persistent Memory Policies, Alternate KVM Port)
@@ -136,7 +147,7 @@ python easyucs_gui.py
 * Add preliminary support for upcoming FI 64108
 * Reorganization of device, config and inventory folders to clean up files
 * Bump up requirements packages versions
-* Miscelaneous bug fixes and improvements (including fix for missing dependency on tkinter package)
+* Miscellaneous bug fixes and improvements (including fix for missing dependency on tkinter package)
 
 
 #### 0.9.4

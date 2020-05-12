@@ -332,6 +332,10 @@ class FiUcsReportSection(GenericReportSection):
             self.content_list.append(LicensesUcsReportSection(order_id=self.report.get_current_order_id(), parent=self,
                                                               title=_("Port Licenses"), fi=fi))
 
+        if fi.vlan_port_count:
+            self.content_list.append(VlanPortCountUcsReportSection(order_id=self.report.get_current_order_id(),
+                                                                   parent=self, title=_("VLAN Port Count"), fi=fi))
+
 
 class GemUcsReportSection(GenericReportSection):
     def __init__(self, order_id, parent, title, fi):
@@ -352,6 +356,15 @@ class LicensesUcsReportSection(GenericReportSection):
                 LicensesSectionInfoUcsReportTable(order_id=self.report.get_current_order_id(), parent=self,
                                                   fi=fi, centered=True))
 
+
+class VlanPortCountUcsReportSection(GenericReportSection):
+    def __init__(self, order_id, parent, title, fi):
+        GenericReportSection.__init__(self, order_id=order_id, parent=parent, title=title)
+
+        if self.report.size == "full":
+            self.content_list.append(
+                VlanPortCountSectionInfoUcsReportTable(order_id=self.report.get_current_order_id(), parent=self,
+                                                       fi=fi, centered=True))
 
 
 class FexUcsReportSection(GenericReportSection):
