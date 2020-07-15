@@ -3,7 +3,7 @@
 EasyUCS can generate infrastructure & equipment report from a live device.
 
 
-## Schemas creation
+## Report generation
 
 ### Using the Command-Line Interface (CLI)
 
@@ -16,12 +16,13 @@ The scope of action:
 Scope:
   Scope of action
 
-  {config,inventory,schemas,report}
+  {config,inventory,schemas,report,device}
                         EasyUCS scope
     config              config-related actions
     inventory           inventory-related actions
     schemas             schemas-related actions
     report              report-related actions
+    device              device-related actions
 ```
 
 The second argument is the type of action:

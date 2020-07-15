@@ -1,0 +1,160 @@
+{
+   "id": "ucs_central_config_domain_groups_snmp#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS ucs central config domain_groups snmp section",
+   "description": "EasyUCS ucs central config domain_groups snmp section JSON schema",
+   "type": "object",
+   "properties": {
+      "comment": {
+         "description": "SNMP Comments",
+         "type": "string",
+         "default": ""
+      },
+      "state": {
+         "description": "SNMP Service Admin State",
+         "type": "string",
+         "default": "enabled",
+         "enum": [
+            "enabled",
+            "disabled"
+         ]
+      },
+      "community": {
+         "description": "SNMP Service Community/Username",
+         "type": "string",
+         "default": "public",
+         "pattern": "^[!#$%\\)\\*\\+,\\-\\./:<=\\[\\]\\^_\\{\\}~a-zA-Z0-9]{0,32}$"
+      },
+      "contact": {
+         "description": "SNMP Service System Contact",
+         "type": "string",
+         "default": ""
+      },
+      "location": {
+         "description": "SNMP Service System Location",
+         "type": "string",
+         "default": ""
+      },
+      "snmp_traps": {
+         "description": "SNMP Traps List",
+         "type": "array",
+         "items": {
+            "type": "object",
+            "description": "SNMP Trap Destination",
+            "properties": {
+               "hostname": {
+                  "description": "SNMP Trap Destination IP/Hostname",
+                  "type": "string",
+                  "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.-]{0,63}$|^([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}$|^([0-9a-fA-F]{1,4}:){1,7}:$|^([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}$|^([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}$|^([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}$|^([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}$|^([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}$|^[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})$|^:((:[0-9a-fA-F]{1,4}){1,7}|:)$"
+               },
+               "community": {
+                  "description": "SNMP Trap Community/Username",
+                  "type": "string",
+                  "pattern": "^[!#$%\\)\\*\\+,\\-\\./:<=\\[\\]\\^_\\{\\}~a-zA-Z0-9]{0,32}$"
+               },
+               "port": {
+                  "description": "SNMP Trap UDP Port",
+                  "type": "string",
+                  "default": "162",
+                  "pattern": "^[1-9]$|^[1-9][0-9]$|^[1-9][0-9][0-9]$|^[1-9][0-9][0-9][0-9]$|^[1-5][0-9][0-9][0-9][0-9]$|^6[0-4][0-9][0-9][0-9]$|^65[0-4][0-9][0-9]$|^655[0-2][0-9]$|^6553[0-5]$"
+               },
+               "version": {
+                  "description": "SNMP Trap Version",
+                  "type": "string",
+                  "default": "v3",
+                  "enum": [
+                     "v1",
+                     "v2c",
+                     "v3"
+                  ]
+               },
+               "notification_type": {
+                  "description": "SNMP Trap Notification Type",
+                  "type": "string",
+                  "default": "traps",
+                  "enum": [
+                     "informs",
+                     "traps"
+                  ]
+               },
+               "v3privilege": {
+                  "description": "SNMP Trap SNMPv3 Privilege",
+                  "type": "string",
+                  "default": "noauth",
+                  "enum": [
+                     "auth",
+                     "noauth",
+                     "priv"
+                  ]
+               }
+            },
+            "additionalProperties": false,
+            "required": [
+               "hostname",
+               "community"
+            ]
+         },
+         "minItems": 1
+      },
+      "snmp_users": {
+         "description": "SNMP Users",
+         "type": "array",
+         "items": {
+            "type": "object",
+            "description": "SNMP User",
+            "properties": {
+               "name": {
+                  "description": "SNMP User Name",
+                  "type": "string",
+                  "pattern": "^[a-zA-Z][a-zA-Z0-9_.@-]{0,31}$"
+               },
+               "descr": {
+                  "description": "SNMP User Description",
+                  "type": "string",
+                  "pattern": "^[!#$%&\\(\\)\\*\\+,\\-\\./:;\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{0,256}$"
+               },
+               "auth_type": {
+                  "description": "SNMP User Authentication Type",
+                  "type": "string",
+                  "default": "md5",
+                  "enum": [
+                     "md5",
+                     "sha"
+                  ]
+               },
+               "use_aes": {
+                  "description": "Use AES-128 encryption for SNMP User?",
+                  "type": "string",
+                  "default": "no",
+                  "enum": [
+                     "yes",
+                     "true",
+                     "no",
+                     "false"
+                  ]
+               },
+               "password": {
+                  "description": "SNMP User Password",
+                  "type": "string",
+                  "pattern": "^[!\"\"#%&'\\(\\)\\*\\+,\\-\\./:;<>@\\[\\\\\\]\\^_`\\{\\|\\}~a-zA-Z0-9]{0,80}$"
+               },
+               "privacy_password": {
+                  "description": "SNMP User Privacy Password",
+                  "type": "string",
+                  "pattern": "^[!\"\"#%&'\\(\\)\\*\\+,\\-\\./:;<>@\\[\\\\\\]\\^_`\\{\\|\\}~a-zA-Z0-9]{0,80}$"
+               }
+            },
+            "additionalProperties": false,
+            "required": [
+               "name",
+               "password"
+            ]
+         },
+         "minItems": 1
+      }
+   },
+   "additionalProperties": false,
+   "required": [
+      "state"
+   ]
+}

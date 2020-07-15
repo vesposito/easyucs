@@ -1,0 +1,159 @@
+{
+   "id": "ucs_central_config_domain_groups_equipment_policies#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS ucs central config domain_groups equipment_policies section",
+   "description": "EasyUCS ucs central config domain_groups equipment_policies section JSON schema",
+   "type": "object",
+   "properties": {
+      "comment": {
+         "description": "Equipment Policies Comments",
+         "type": "string",
+         "default": ""
+      },
+      "rack_management_connection_policy":{
+         "description":"Rack Management Connection Policy",
+         "type":"string",
+         "default":"auto-acknowledged",
+         "enum":[
+            "auto-acknowledged",
+            "user-acknowledged"
+         ]
+      },
+      "mac_address_table_aging":{
+         "description":"MAC Address Table Aging Time",
+         "type":"string",
+         "default":"mode-default"
+      },
+      "vlan_port_count_optimization":{
+         "description":"VLAN Port Count Optimization",
+         "type":"string",
+         "default":"disabled",
+         "enum": [
+            "enabled",
+            "disabled"
+         ]
+      },
+      "firmware_auto_sync_server_policy":{
+         "description":"Firmware Auto-Sync Server Policy",
+         "type":"string",
+         "default":"No Actions",
+         "enum":[
+            "No Actions",
+            "User Acknowledge"
+         ]
+      },
+      "info_policy":{
+         "description":"Info Policy",
+         "type":"string",
+         "default":"disabled",
+         "enum":[
+            "disabled",
+            "enabled"
+         ]
+      },
+      "chassis_discovery_policy":{
+         "description":"Chassis/FEX Discovery Policy",
+         "type":"array",
+         "items":{
+            "properties":{
+               "action_link":{
+                  "description":"Number of links for new Chassis/FEX discovered",
+                  "type":"string",
+                  "default":"1",
+                  "enum":[
+                     "1",
+                     "2",
+                     "4",
+                     "8",
+                     "immediate",
+                     "platform-max",
+                     "user-acknowledged"
+                  ]
+               },
+               "link_grouping_preference":{
+                  "description":"Link Grouping mode for new Chassis/FEX discovered",
+                  "type":"string",
+                  "default":"none",
+                  "enum":[
+                     "none",
+                     "port-channel"
+                  ]
+               },
+               "multicast_hardware_hash":{
+                  "description":"Multicast Hardware Hash Admin State",
+                  "type":"string",
+                  "default":"disabled",
+                  "enum":[
+                     "disabled",
+                     "enabled"
+                  ]
+               },
+               "backplane_speed_preference": {
+                  "description": "Backplane Speed Preference",
+                  "type": "string",
+                  "default": "40G",
+                  "enum": [
+                     "40G",
+                     "4x10G"
+                  ]
+               }
+            },
+            "additionalProperties":false
+         }
+      },
+      "power_redundancy_policy":{
+         "description":"Power Redundancy Policy",
+         "type":"string",
+         "default":"non-redundant",
+         "enum":[
+            "grid",
+            "n+1",
+            "non-redundant"
+         ]
+      },
+      "power_allocation_method":{
+         "description":"Power Allocation Method Policy",
+         "type":"string",
+         "default":"intelligent-policy-driven",
+         "enum":[
+            "intelligent-policy-driven",
+            "manual-per-blade"
+         ]
+      },
+      "power_profiling_policy":{
+         "description":"Power Profiling Policy",
+         "type":"string",
+         "default":"no",
+         "enum":[
+            "false",
+            "no",
+            "true",
+            "yes"
+         ]
+      },
+      "rack_server_discovery_policy":{
+         "description":"Rack Server Discovery Policy",
+         "type":"array",
+         "items":{
+            "properties":{
+               "action":{
+                  "description":"How UCS Manager reacts when adding a new server",
+                  "type":"string",
+                  "default":"immediate",
+                  "enum":[
+                     "diag",
+                     "immediate",
+                     "user-acknowledged"
+                  ]
+               },
+               "scrub_policy":{
+                  "description":"Scrub Policy to run on a newly discovered server",
+                  "type":"string"
+               }
+            },
+            "additionalProperties":false
+         }
+      }
+   },
+   "additionalProperties": false
+}

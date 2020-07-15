@@ -1,0 +1,79 @@
+{
+   "id": "ucs_central_config_roles#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS ucs central config roles section",
+   "description": "EasyUCS ucs central config roles section JSON schema",
+   "type": "object",
+   "properties": {
+      "comment": {
+         "description": "Role Comments",
+         "type": "string",
+         "default": ""
+      },
+      "name": {
+         "description": "Role Name",
+         "type": "string",
+         "pattern": "^[\\-\\.:_a-zA-Z0-9]{1,16}$"
+      },
+      "privileges": {
+         "description": "Role Privileges List",
+         "type": "array",
+         "default": [
+            "read-only"
+         ],
+         "items": {
+            "description": "Role Privilege",
+            "type": "string",
+            "enum": [
+               "aaa",
+               "admin",
+               "domain-group-management",
+               "ext-lan-config",
+               "ext-lan-policy",
+               "ext-lan-qos",
+               "ext-lan-security",
+               "ext-san-config",
+               "ext-san-policy",
+               "ext-san-qos",
+               "ext-san-security",
+               "fault",
+               "kvm",
+               "operations",
+               "org-management",
+               "pod-config",
+               "pod-policy",
+               "pod-qos",
+               "pod-security",
+               "power-mgmt",
+               "pn-equipment",
+               "pn-maintenance",
+               "pn-policy",
+               "pn-security",
+               "ls-compute",
+               "ls-config",
+               "ls-config-policy",
+               "ls-ext-access",
+               "ls-network",
+               "ls-network-policy",
+               "ls-qos",
+               "ls-qos-policy",
+               "ls-security",
+               "ls-security-policy",
+               "ls-server",
+               "ls-server-oper",
+               "ls-server-policy",
+               "ls-storage",
+               "ls-storage-policy",
+               "read-only",
+               "stats-management",
+               "tag"
+            ]
+         },
+         "minItems": 1
+      }
+   },
+   "required": [
+      "name"
+   ],
+   "additionalProperties": false
+}

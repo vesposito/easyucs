@@ -341,6 +341,41 @@ def init_process(ucs_device, args, config_string):
         ucs_device.generate_report(filename="report_" + ucs_device.target, directory=directory,
                                    page_layout=args.layout)
 
+    elif args.scope == "device" and args.action == "regenerate_certificate":
+        # Regenerating self-signed certificate of UCS Device if expired
+        if not ucs_device.connect(bypass_version_checks=bypass_version_checks):
+            ucs_device.logger(level="error", message="Impossible to connect to UCS device")
+            exit()
+
+        ucs_device.set_task_progression(10)
+        if ucs_device.is_default_keyring_certificate_expired():
+            ucs_device.set_task_progression(25)
+            ucs_device.regenerate_default_keyring_certificate()
+        else:
+            if not args.yes:
+                if not common.query_yes_no("Default keyring certificate is still valid. " +
+                                           "Are you sure you want to regenerate it on " + ucs_device.name + "?"):
+                    # User declined regenerate certificate query
+                    ucs_device.logger(level="warning", message="The default keyring certificate is still valid. " +
+                                                               "Skipping regenerate operation.")
+                    exit()
+
+            ucs_device.regenerate_default_keyring_certificate()
+
+    elif args.scope == "device" and args.action == "clear_sel_logs":
+        # Clears SEL Logs of all discovered servers of UCS Device
+        if not ucs_device.connect(bypass_version_checks=bypass_version_checks):
+            ucs_device.logger(level="error", message="Impossible to connect to UCS device")
+            exit()
+
+        ucs_device.set_task_progression(10)
+        ucs_device.clear_sel_logs()
+
+    elif args.scope == "device" and args.action == "clear_user_sessions":
+        # Clears all user sessions of UCS Device
+        ucs_device.set_task_progression(10)
+        ucs_device.clear_user_sessions()
+
     ucs_device.set_task_progression(100)
     ucs_device.print_logger_summary()
 
@@ -348,7 +383,7 @@ def init_process(ucs_device, args, config_string):
 def main():
     # Example texts for parser
     example_text = '''Examples:
-      To see examples, please type: python easyucs.py {config, inventory, schemas, report} -h'''
+      To see examples, please type: python easyucs.py {config, inventory, schemas, report, device} -h'''
 
     example_config_text = '''Examples:
       python easyucs.py config fetch -t ucsm -i 192.168.0.1 -u admin -p password -o configs/config_ucsm.json
@@ -388,18 +423,46 @@ def main():
             fetch inventory from UCS IMC and save it to inventories/inventory_cimc.json'''
 
     example_schemas_create_text = '''Examples:
-          python easyucs.py schemas create -t ucsm -i 192.168.0.1 -u admin -p password -o schemas
-                create schemas from UCS system and save them to schemas folder
+      python easyucs.py schemas create -t ucsm -i 192.168.0.1 -u admin -p password -o schemas
+            create schemas from UCS system and save them to schemas folder
 
-          python easyucs.py schemas create -t cimc -i 192.168.0.2 -u admin -p password -o schemas
-                create schemas from UCS IMC and save them to schemas folder'''
+      python easyucs.py schemas create -t cimc -i 192.168.0.2 -u admin -p password -o schemas
+            create schemas from UCS IMC and save them to schemas folder'''
 
     example_report_generate_text = '''Examples:
-              python easyucs.py report generate -t ucsm -i 192.168.0.1 -u admin -p password -o reports/report.docx
-                    create schemas and report.docx from UCS system and save it to reports/
+      python easyucs.py report generate -t ucsm -i 192.168.0.1 -u admin -p password -o reports/report.docx
+            create schemas and report.docx from UCS system and save it to reports/
 
-              python easyucs.py report generate -t cimc -i 192.168.0.2 -u admin -p password -o reports/report.docx
-                    create schemas and report.docx from UCS IMC and save it to reports/'''
+      python easyucs.py report generate -t cimc -i 192.168.0.2 -u admin -p password -o reports/report.docx
+            create schemas and report.docx from UCS IMC and save it to reports/'''
+
+    example_device_text = '''Examples:
+      python easyucs.py device regenerate_certificate -t ucsm -i 192.168.0.1 -u admin -p password
+            regenerate self-signed certificate of UCS system
+
+      python easyucs.py device clear_sel_logs -t ucsm -i 192.168.0.1 -u admin -p password
+            clear SEL Logs of all discovered servers of UCS system'''
+
+    example_device_regenerate_certificate_text = '''Examples:
+      python easyucs.py device regenerate_certificate -t ucsm -i 192.168.0.1 -u admin -p password
+            regenerate self-signed certificate of UCS system if it has expired'''
+
+    example_device_clear_sel_logs_text = '''Examples:
+      python easyucs.py device clear_sel_logs -t ucsm -i 192.168.0.1 -u admin -p password
+            clear SEL Logs of all discovered servers of UCS system
+            
+      python easyucs.py device clear_sel_logs -t cimc -i 192.168.0.2 -u admin -p password
+            clear SEL Log of UCS IMC device'''
+
+    example_device_clear_user_sessions_text = '''Examples:
+      python easyucs.py device clear_user_sessions -t ucsm -i 192.168.0.1 -u admin -p password
+            clear all user sessions of UCS System
+    
+      python easyucs.py device clear_user_sessions -t cimc -i 192.168.0.2 -u admin -p password
+            clear all user sessions of UCS IMC
+      
+      python easyucs.py device clear_user_sessions -t ucsc -i 192.168.0.3 -u admin -p password
+            clear all user sessions of UCS Central'''
 
     # Create the main parser
     parser = argparse.ArgumentParser(prog='easyucs.py', description='EasyUCS Command-Line Interface',
@@ -411,18 +474,16 @@ def main():
     # Create the parsers for the "config" & inventory scopes
     parser_config = subparsers.add_parser('config', help='config-related actions', epilog=example_config_text,
                                           formatter_class=argparse.RawDescriptionHelpFormatter)
-    subparsers_config = parser_config.add_subparsers(dest='action', title='Action',
-                                                     help='Config actions')
+    subparsers_config = parser_config.add_subparsers(dest='action', title='Action', help='Config actions')
     subparsers_config.required = True  # Not set directly in above line to avoid issue if running Python < 3.7
 
     parser_inventory = subparsers.add_parser('inventory', help='inventory-related actions',
                                              epilog=example_inventory_fetch_text,
                                              formatter_class=argparse.RawDescriptionHelpFormatter)
-    subparsers_inventory = parser_inventory.add_subparsers(dest='action', title='Action',
-                                                           help='Inventory actions')
+    subparsers_inventory = parser_inventory.add_subparsers(dest='action', title='Action', help='Inventory actions')
     subparsers_inventory.required = True  # Not set directly in above line to avoid issue if running Python < 3.7
 
-    # Create the parsers for the "schemas" scopes
+    # Create the parsers for the "schemas" scope
     parser_schemas = subparsers.add_parser('schemas', help='schemas-related actions',
                                            epilog=example_schemas_create_text,
                                            formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -430,13 +491,19 @@ def main():
                                                        help='Schemas actions')
     subparsers_schemas.required = True  # Not set directly in above line to avoid issue if running Python < 3.7
 
-    # Create the parsers for the "report" scopes
+    # Create the parsers for the "report" scope
     parser_report = subparsers.add_parser('report', help='report-related actions',
-                                           epilog=example_report_generate_text,
-                                           formatter_class=argparse.RawDescriptionHelpFormatter)
-    subparsers_report = parser_report.add_subparsers(dest='action', title='Action',
-                                                       help='Report actions')
+                                          epilog=example_report_generate_text,
+                                          formatter_class=argparse.RawDescriptionHelpFormatter)
+    subparsers_report = parser_report.add_subparsers(dest='action', title='Action', help='Report actions')
     subparsers_report.required = True  # Not set directly in above line to avoid issue if running Python < 3.7
+
+    # Create the parsers for the "device" scope
+    parser_device = subparsers.add_parser('device', help='device-related actions',
+                                          epilog=example_device_text,
+                                          formatter_class=argparse.RawDescriptionHelpFormatter)
+    subparsers_device = parser_device.add_subparsers(dest='action', title='Action', help='Device actions')
+    subparsers_device.required = True  # Not set directly in above line to avoid issue if running Python < 3.7
 
     # Create the parsers for the "fetch" & "push" actions of config
     parser_config_fetch = subparsers_config.add_parser('fetch', help='Fetch a config from a UCS device',
@@ -487,7 +554,7 @@ def main():
                                         help='UCS Account Password',
                                         required=True)
     parser_inventory_fetch.add_argument('-t', '--ucstype', dest='ucstype', action='store', choices=['ucsm', 'cimc'],
-                                        help='UCS system type ("ucsm" or "cimc")')
+                                        help='UCS device type ("ucsm" or "cimc")')
 
     parser_inventory_fetch.add_argument('-v', '--verbose', dest='log', action='store_true', help='Print debug log')
     parser_inventory_fetch.add_argument('-l', '--logfile', dest='logfile', action='store', help='Print log in a file')
@@ -510,7 +577,7 @@ def main():
                                        help='UCS Account Password',
                                        required=True)
     parser_schemas_create.add_argument('-t', '--ucstype', dest='ucstype', action='store', choices=['ucsm', 'cimc'],
-                                       help='UCS system type ("ucsm" or "cimc")')
+                                       help='UCS device type ("ucsm" or "cimc")')
 
     parser_schemas_create.add_argument('-v', '--verbose', dest='log', action='store_true', help='Print debug log')
     parser_schemas_create.add_argument('-l', '--logfile', dest='logfile', action='store', help='Print log in a file')
@@ -523,7 +590,7 @@ def main():
     parser_schemas_create.add_argument('-y', '--yes', dest='yes', action='store_true',
                                        help='Answer yes to all questions')
 
-    # Create the parsers for the "create" action of schemas
+    # Create the parsers for the "generate" action of report
     parser_report_generate = subparsers_report.add_parser('generate', help='Generate report of an UCS device',
                                                           epilog=example_report_generate_text,
                                                           formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -535,7 +602,7 @@ def main():
                                        help='UCS Account Password',
                                        required=True)
     parser_report_generate.add_argument('-t', '--ucstype', dest='ucstype', action='store', choices=['ucsm', 'cimc'],
-                                       help='UCS system type ("ucsm" or "cimc")')
+                                       help='UCS device type ("ucsm" or "cimc")')
 
     parser_report_generate.add_argument('-s', '--layoutsize', dest='layout', action='store', choices=['a4', 'letter'],
                                         help='Report layout size ("a4" or "letter")')
@@ -548,6 +615,78 @@ def main():
                                        required=True)
     parser_report_generate.add_argument('-y', '--yes', dest='yes', action='store_true',
                                        help='Answer yes to all questions')
+
+    # Create the parsers for the "regenerate_certificate" action of device
+    parser_device_regen_cert = subparsers_device.add_parser('regenerate_certificate',
+                                                            help='Regenerate self-signed certificate of an UCS system',
+                                                            epilog=example_device_regenerate_certificate_text,
+                                                            formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser_device_regen_cert.add_argument('-i', '--ip', dest='ip', action='store', help='UCS IP address', required=True)
+    parser_device_regen_cert.add_argument('-u', '--username', dest='username', action='store',
+                                          help='UCS Account Username',
+                                          required=True)
+    parser_device_regen_cert.add_argument('-p', '--password', dest='password', action='store',
+                                          help='UCS Account Password',
+                                          required=True)
+    parser_device_regen_cert.add_argument('-t', '--ucstype', dest='ucstype', action='store', choices=['ucsm'],
+                                          help='UCS device type ("ucsm" only)')
+
+    parser_device_regen_cert.add_argument('-v', '--verbose', dest='log', action='store_true', help='Print debug log')
+    parser_device_regen_cert.add_argument('-l', '--logfile', dest='logfile', action='store', help='Print log in a file')
+
+    parser_device_regen_cert.add_argument('-y', '--yes', dest='yes', action='store_true',
+                                          help='Answer yes to all questions')
+
+    # Create the parsers for the "clear_sel_logs" action of device
+    parser_device_clear_sel_logs = subparsers_device.add_parser('clear_sel_logs',
+                                                                help='Clears all SEL logs of an UCS device',
+                                                                epilog=example_device_clear_sel_logs_text,
+                                                                formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser_device_clear_sel_logs.add_argument('-i', '--ip', dest='ip', action='store', help='UCS IP address',
+                                              required=True)
+    parser_device_clear_sel_logs.add_argument('-u', '--username', dest='username', action='store',
+                                              help='UCS Account Username',
+                                              required=True)
+    parser_device_clear_sel_logs.add_argument('-p', '--password', dest='password', action='store',
+                                              help='UCS Account Password',
+                                              required=True)
+    parser_device_clear_sel_logs.add_argument('-t', '--ucstype', dest='ucstype', action='store',
+                                              choices=['ucsm', 'cimc'],
+                                              help='UCS device type ("ucsm" or "cimc")')
+
+    parser_device_clear_sel_logs.add_argument('-v', '--verbose', dest='log', action='store_true',
+                                              help='Print debug log')
+    parser_device_clear_sel_logs.add_argument('-l', '--logfile', dest='logfile', action='store',
+                                              help='Print log in a file')
+
+    parser_device_clear_sel_logs.add_argument('-y', '--yes', dest='yes', action='store_true',
+                                              help='Answer yes to all questions')
+
+    # Create the parsers for the "clear_user_sessions" action of device
+    parser_device_clear_user_sessions = \
+        subparsers_device.add_parser('clear_user_sessions',
+                                     help='Clears all user sessions of an UCS device',
+                                     epilog=example_device_clear_user_sessions_text,
+                                     formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser_device_clear_user_sessions.add_argument('-i', '--ip', dest='ip', action='store', help='UCS IP address',
+                                                   required=True)
+    parser_device_clear_user_sessions.add_argument('-u', '--username', dest='username', action='store',
+                                                   help='UCS Account Username',
+                                                   required=True)
+    parser_device_clear_user_sessions.add_argument('-p', '--password', dest='password', action='store',
+                                                   help='UCS Account Password',
+                                                   required=True)
+    parser_device_clear_user_sessions.add_argument('-t', '--ucstype', dest='ucstype', action='store',
+                                                   choices=['ucsm', 'cimc', 'ucsc'],
+                                                   help='UCS device type ("ucsm", "cimc" or "ucsc")')
+
+    parser_device_clear_user_sessions.add_argument('-v', '--verbose', dest='log', action='store_true',
+                                                   help='Print debug log')
+    parser_device_clear_user_sessions.add_argument('-l', '--logfile', dest='logfile', action='store',
+                                                   help='Print log in a file')
+
+    parser_device_clear_user_sessions.add_argument('-y', '--yes', dest='yes', action='store_true',
+                                                   help='Answer yes to all questions')
 
     args = parser.parse_args()
 

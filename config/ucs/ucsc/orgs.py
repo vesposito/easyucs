@@ -10,6 +10,10 @@ from config.ucs.object import GenericUcsConfigObject, UcsCentralConfigObject
 
 import common
 
+from ucscsdk.mometa.compute.ComputeOwnerQual import ComputeOwnerQual
+from ucscsdk.mometa.compute.ComputeSiteQual import ComputeSiteQual
+from ucscsdk.mometa.compute.ComputeSystemAddrQual import ComputeSystemAddrQual
+from ucscsdk.mometa.compute.ComputeSystemQual import ComputeSystemQual
 from ucscsdk.mometa.org.OrgOrg import OrgOrg
 from ucscsdk.mometa.macpool.MacpoolPool import MacpoolPool
 from ucscsdk.mometa.macpool.MacpoolBlock import MacpoolBlock
@@ -22,6 +26,101 @@ from ucscsdk.mometa.ippool.IppoolBlock import IppoolBlock
 from ucscsdk.mometa.ippool.IppoolIpV6Block import IppoolIpV6Block
 
 from ucscsdk.ucscexception import UcscException
+
+
+class UcsCentralDomainGroupQualificationPolicy(UcsCentralConfigObject):
+    _CONFIG_NAME = "Domain Group Qualification Policy"
+    _UCS_SDK_OBJECT_NAME = "computeSystemQual"
+
+    def __init__(self, parent=None, json_content=None, compute_system_qual=None):
+        UcsCentralConfigObject.__init__(self, parent=parent)
+        self.descr = None
+        self.ip_address_qualifiers = []
+        self.name = None
+        self.owner_qualifiers = []
+        self.site_qualifiers = []
+
+        if self._config.load_from == "live":
+            if compute_system_qual is not None:
+                self.name = compute_system_qual.name
+                self.descr = compute_system_qual.descr
+
+                if "computeOwnerQual" in self._parent._config.sdk_objects:
+                    for compute_owner_qual in self._config.sdk_objects["computeOwnerQual"]:
+                        if "org-root/system-qualifier-" + self.name + "/owner-" in compute_owner_qual.dn:
+                            owner_qualifier = {}
+                            owner_qualifier.update({"name": compute_owner_qual.name})
+                            owner_qualifier.update({"owner_name": compute_owner_qual.regex})
+                            self.owner_qualifiers.append(owner_qualifier)
+
+                if "computeSiteQual" in self._parent._config.sdk_objects:
+                    for compute_site_qual in self._config.sdk_objects["computeSiteQual"]:
+                        if "org-root/system-qualifier-" + self.name + "/site-" in compute_site_qual.dn:
+                            site_qualifier = {}
+                            site_qualifier.update({"name": compute_site_qual.name})
+                            site_qualifier.update({"site_name": compute_site_qual.regex})
+                            self.site_qualifiers.append(site_qualifier)
+
+                if "computeSystemAddrQual" in self._parent._config.sdk_objects:
+                    for compute_system_addr_qual in self._config.sdk_objects["computeSystemAddrQual"]:
+                        if "org-root/system-qualifier-" + self.name + "/ip-from-" in compute_system_addr_qual.dn:
+                            ip_addr_qualifier = {}
+                            ip_addr_qualifier.update({"from": compute_system_addr_qual.min_addr})
+                            ip_addr_qualifier.update({"to": compute_system_addr_qual.max_addr})
+                            self.ip_address_qualifiers.append(ip_addr_qualifier)
+
+        elif self._config.load_from == "file":
+            if json_content is not None:
+                if not self.get_attributes_from_json(json_content=json_content):
+                    self.logger(level="error",
+                                message="Unable to get attributes from JSON content for " + self._CONFIG_NAME)
+
+                for element in self.owner_qualifiers:
+                    for value in ["name", "owner_name"]:
+                        if value not in element:
+                            element[value] = None
+
+                for element in self.site_qualifiers:
+                    for value in ["name", "site_name"]:
+                        if value not in element:
+                            element[value] = None
+
+                for element in self.ip_address_qualifiers:
+                    for value in ["from", "to"]:
+                        if value not in element:
+                            element[value] = None
+
+        self.clean_object()
+
+    def push_object(self, commit=True):
+        if commit:
+            self.logger(message="Pushing " + self._CONFIG_NAME + " configuration: " + str(self.name))
+        else:
+            self.logger(message="Adding to the handle " + self._CONFIG_NAME + " configuration: " + str(self.name) +
+                                ", waiting for a commit")
+
+        mo_compute_system_qual = ComputeSystemQual(parent_mo_or_dn="org-root", descr=self.descr, name=self.name)
+
+        if self.owner_qualifiers:
+            for owner_qualifier in self.owner_qualifiers:
+                ComputeOwnerQual(parent_mo_or_dn=mo_compute_system_qual, name=owner_qualifier["name"],
+                                 regex=owner_qualifier["owner_name"])
+
+        if self.site_qualifiers:
+            for site_qualifier in self.site_qualifiers:
+                ComputeSiteQual(parent_mo_or_dn=mo_compute_system_qual, name=site_qualifier["name"],
+                                regex=site_qualifier["site_name"])
+
+        if self.ip_address_qualifiers:
+            for ip_addr_qualifier in self.ip_address_qualifiers:
+                ComputeSystemAddrQual(parent_mo_or_dn=mo_compute_system_qual, min_addr=ip_addr_qualifier["from"],
+                                      max_addr=ip_addr_qualifier["to"])
+
+        self._handle.add_mo(mo=mo_compute_system_qual, modify_present=True)
+        if commit:
+            if self.commit(detail=self.name) != True:
+                return False
+        return True
 
 
 class UcsCentralOrg(UcsCentralConfigObject):
@@ -52,6 +151,13 @@ class UcsCentralOrg(UcsCentralConfigObject):
 
         self.orgs = \
             self._get_generic_element(json_content=json_content, object_class=UcsCentralOrg, name_to_fetch="orgs")
+
+        if self._dn == "org-root":
+            # The following objects can only exist in the root org
+            self.domain_group_qualification_policies = \
+                self._get_generic_element(json_content=json_content,
+                                          object_class=UcsCentralDomainGroupQualificationPolicy,
+                                          name_to_fetch="domain_group_qualification_policies")
 
         self.mac_pools = \
             self._get_generic_element(json_content=json_content, object_class=UcsCentralMacPool,
@@ -90,7 +196,8 @@ class UcsCentralOrg(UcsCentralConfigObject):
                 return False
 
         # We push all subconfig elements, in a specific optimized order to reduce number of reboots
-        objects_to_push_in_order = ['mac_pools', 'uuid_pools', 'wwnn_pools', 'wwpn_pools', 'ip_pools', 'orgs']
+        objects_to_push_in_order = ['domain_group_qualification_policies', 'mac_pools', 'uuid_pools', 'wwnn_pools',
+                                    'wwpn_pools', 'ip_pools', 'orgs']
 
         for config_object in objects_to_push_in_order:
             if getattr(self, config_object) is not None:

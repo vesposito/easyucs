@@ -32,7 +32,10 @@ class UcsCpu(GenericUcsInventoryObject):
                 res_amd = re.search(regex_amd, self.model)
                 if res_amd is not None:
                     self.model_short_name = res_amd.group(1)
-                self.family_name = "AMD EPYC E7 Series processors"
+                if self.model_short_name[-1] == "1":
+                    self.family_name = "AMD EPYC 7001 Series processors"
+                elif self.model_short_name[-1] == "2":
+                    self.family_name = "AMD EPYC 7002 Series processors"
 
             else:
                 # We have an Intel processor. Getting its model short name

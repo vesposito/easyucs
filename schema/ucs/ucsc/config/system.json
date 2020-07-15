@@ -1,0 +1,40 @@
+{
+   "id": "ucs_central_config_system#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS ucs central config system section",
+   "description": "EasyUCS ucs central config system section JSON schema",
+   "type": "object",
+   "properties": {
+      "comment": {
+         "description": "System Comments",
+         "type": "string",
+         "default": ""
+      },
+      "name": {
+         "description": "UCS Central System Name",
+         "type": "string",
+         "default": "",
+         "pattern": "^[a-zA-Z][a-zA-Z0-9-]{0,29}$"
+      },
+      "descr": {
+         "description": "UCS Central System Description",
+         "type": "string",
+         "default": "",
+         "pattern": "^[ !#$%&\\(\\)\\*\\+,\\-\\./:;\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{0,256}$"
+      },
+      "mode": {
+         "description": "UCS Central System Mode",
+         "type": "string",
+         "default": "stand-alone",
+         "enum": [
+            "cluster",
+            "stand-alone",
+            "unspecified"
+         ]
+      }
+   },
+   "required": [
+      "name"
+   ],
+   "additionalProperties": false
+}

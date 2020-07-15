@@ -1,0 +1,114 @@
+{
+   "id": "ucs_central_config_domain_groups_remote_access#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS ucs central config domain_groups remote_access section",
+   "description": "EasyUCS ucs central config domain_groups remote_access section JSON schema",
+   "type": "object",
+   "properties": {
+      "comment": {
+         "description": "Remote Access Comments",
+         "type": "string",
+         "default": ""
+      },
+      "http": {
+         "description": "Remote Access HTTP",
+         "type": "array",
+         "items": {
+            "description": "Remote Access HTTP",
+            "type": "object",
+            "properties": {
+               "state": {
+                  "description": "Remote Access HTTP State",
+                  "type": "string",
+                  "default": "enabled",
+                  "enum": [
+                     "disabled",
+                     "enabled"
+                  ]
+               },
+               "https_redirect": {
+                  "description": "Remote Access HTTPS Redirect State",
+                  "type": "string",
+                  "default": "enabled",
+                  "enum": [
+                     "disabled",
+                     "enabled"
+                  ]
+               }
+            },
+            "additionalProperties": false
+         },
+         "minItems": 1,
+         "maxItems": 1
+      },
+      "telnet": {
+         "description": "Remote Access Telnet Admin State",
+         "type": "string",
+         "default": "disabled",
+         "enum": [
+            "disabled",
+            "enabled"
+         ]
+      },
+      "cim_xml": {
+         "description": "Remote Access CIM XML Admin State",
+         "type": "string",
+         "default": "disabled",
+         "enum": [
+            "disabled",
+            "enabled"
+         ]
+      },
+      "web_sessions": {
+         "description": "Remote Access Web Sessions",
+         "type": "array",
+         "items": {
+            "description": "Remote Access Web Sessions",
+            "type": "object",
+            "properties": {
+               "maximum_sessions": {
+                  "description": "Remote Access Maximum Web Sessions",
+                  "type": "string",
+                  "default": "256",
+                  "pattern":"^[1-9]$|^[1-9][0-9]$|^1[0-9][0-9]$|^2[0-4][0-9]$|^25[0-6]$"
+               },
+               "maximum_sessions_per_user": {
+                  "description": "Remote Access Maximum Web Sessions Per User",
+                  "type": "string",
+                  "default": "32",
+                  "pattern":"^[1-9]$|^[1-9][0-9]$|^1[0-9][0-9]$|^2[0-4][0-9]$|^25[0-6]$"
+               }
+            },
+            "additionalProperties": false
+         },
+         "minItems": 1,
+         "maxItems": 1
+      },
+      "shell_sessions": {
+         "description": "Remote Access Shell Sessions",
+         "type": "array",
+         "items": {
+            "description": "Remote Access Shell Sessions",
+            "type": "object",
+            "properties": {
+               "maximum_sessions": {
+                  "description": "Remote Access Maximum Shell Sessions",
+                  "type": "string",
+                  "default": "32",
+                  "pattern":"^[1-9]$|^[1-2][0-9]$|^3[0-2]$"
+               },
+               "maximum_sessions_per_user": {
+                  "description": "Remote Access Maximum Shell Sessions Per User",
+                  "type": "string",
+                  "default": "32",
+                  "pattern":"^[1-9]$|^[1-2][0-9]$|^3[0-2]$"
+               }
+            },
+            "additionalProperties": false
+         },
+         "minItems": 1,
+         "maxItems": 1
+      }
+   },
+   "additionalProperties": false
+}

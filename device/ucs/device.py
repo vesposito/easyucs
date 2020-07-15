@@ -17,6 +17,7 @@ from imcsdk.imchandle import ImcHandle
 from imcsdk.imcmeta import VersionMeta as ImcVersionMeta
 from imcsdk.mometa.comm.CommSsh import CommSsh as imcsdk_CommSsh
 from ucscsdk.ucsccoremeta import UcscVersion
+from ucscsdk.ucscexception import UcscException
 from ucscsdk.ucschandle import UcscHandle
 from ucscsdk.ucscmeta import VersionMeta as UcscVersionMeta
 from ucsmsdk.mometa.comm.CommSsh import CommSsh as ucsmsdk_CommSsh
@@ -29,7 +30,7 @@ import common
 from config.ucs.manager import UcsImcConfigManager, UcsSystemConfigManager, UcsCentralConfigManager
 from device.device import GenericDevice
 from inventory.ucs.manager import UcsImcInventoryManager, UcsSystemInventoryManager, UcsCentralInventoryManager
-from report.report import UcsImcReport, UcsSystemReport
+from report.ucs.report import UcsImcReport, UcsSystemReport
 
 
 class GenericUcsDevice(GenericDevice):
@@ -244,11 +245,6 @@ class UcsSystem(GenericUcsDevice):
         if page_layout is None:
             page_layout = "a4"
 
-        self.logger(message="Generating report for device " + self.target + " using config: " + str(config.uuid)
-                    + " and inventory: " + str(inventory.uuid))
-        self.logger(level="debug",
-                    message="Generating report in " + output_format + " format with layout " + page_layout.upper() +
-                            " in " + language.upper())
         UcsSystemReport(device=self, inventory=inventory, config=config, language=language, output_format=output_format,
                         page_layout=page_layout, directory=directory, filename=filename, size=size)
 
@@ -548,13 +544,11 @@ class UcsSystem(GenericUcsDevice):
                     return False
 
             # Send configuration to FI A
-            try:
-                r_fi_a = requests.post(url_fi_a, data=payload_fi_a, verify=False)
-                self.logger(message="Sent initial configuration to FI A")
-                self.set_task_progression(30)
-            except ConnectionRefusedError as err:
-                self.logger(level="error", message="Failed to send initial configuration to FI A: " + str(err))
+            if not self.post_requests(url_fi_a, payload_fi_a,
+                                               error_message="send initial configuration to FI A"):
                 return False
+            self.logger(message="Sent initial configuration to FI A")
+            self.set_task_progression(30)
 
             # Wait until FI A has processed configuration - needed for FI B to recognize that its peer is configured
             self.logger(message="Waiting up to 120 seconds for FI A configuration to be processed")
@@ -563,19 +557,15 @@ class UcsSystem(GenericUcsDevice):
                 return False
 
             # Send password of FI A to FI B - Step 1
-            try:
-                r_fi_b_step_1 = requests.post(url_fi_b_step_1, data=payload_fi_b_step_1, verify=False)
-            except ConnectionRefusedError as err:
-                self.logger(level="error", message="Failed to send initial configuration to FI B - Step 1: " + str(err))
+            if not self.post_requests(url_fi_b_step_1, payload_fi_b_step_1,
+                                               error_message="send initial configuration to FI B - Step 1"):
                 return False
 
             # Send local IP address to FI B - Step 2
-            try:
-                r_fi_b_step_2 = requests.post(url_fi_b_step_2, data=payload_fi_b_step_2, verify=False)
-                self.logger(message="Sent initial configuration to FI B")
-            except ConnectionRefusedError as err:
-                self.logger(level="error", message="Failed to send initial configuration to FI B - Step 2: " + str(err))
+            if not self.post_requests(url_fi_b_step_2, payload_fi_b_step_2,
+                                               error_message="send initial configuration to FI B - Step 2"):
                 return False
+            self.logger(message="Sent initial configuration to FI B")
 
         # if stand-alone mode
         else:
@@ -645,13 +635,12 @@ class UcsSystem(GenericUcsDevice):
                     return False
 
             # Send configuration to FI A
-            try:
-                r_fi_a = requests.post(url_fi_a, data=payload_fi_a, verify=False)
-                self.logger(message="Sent initial configuration to FI")
-                self.set_task_progression(30)
-            except ConnectionRefusedError as err:
-                self.logger(level="error", message="Failed to send initial configuration to FI: " + str(err))
+            if not self.post_requests(url_fi_a, payload_fi_a,
+                                      error_message="send initial configuration to FI"):
                 return False
+            self.logger(message="Sent initial configuration to FI")
+            self.set_task_progression(30)
+
 
         self.set_task_progression(35)
         return True
@@ -884,7 +873,7 @@ class UcsSystem(GenericUcsDevice):
             self.logger(level="error", message="Error while Regenerating Default Keyring Certificate: " + str(err))
             return False
 
-    def check_if_default_keyring_certificate_expired(self):
+    def is_default_keyring_certificate_expired(self):
         """
         Checks if default keyring certificate is expired.
         :return: True if expired, False otherwise
@@ -968,23 +957,22 @@ class UcsSystem(GenericUcsDevice):
             client.connect(self.handle.ip, port=22, username=self.username, password=self.password, banner_timeout=30)
 
         except paramiko.AuthenticationException:
-            self.logger(level="error", message="Authentication failed when connecting to UCS " + self.handle.ip)
+            self.logger(level="error", message="Authentication failed when connecting to UCS System " + self.handle.ip)
             return False
 
         except paramiko.ssh_exception.NoValidConnectionsError as err:
             self.logger(level="error",
-                        message="Error while connecting to UCS IMC " + self.handle.ip + ": " + err.strerror)
+                        message="Error while connecting to UCS System " + self.handle.ip + ": " + err.strerror)
             return False
 
         except TypeError as err:
             self.logger(level="debug",
-                        message="Error while connecting to Fabric Interconnect " + self.habnle.ip + ": " + str(err))
+                        message="Error while connecting to UCS System " + self.handle.ip + ": " + str(err))
             self.logger(level="error",
-                        message="Error while connecting to Fabric Interconnect " + self.handle.ip +
-                                ". Please try again.")
+                        message="Error while connecting to UCS System " + self.handle.ip + ". Please try again.")
             return False
 
-        # Erasing configuration of IMC
+        # Clearing all user sessions of UCS System
         try:
             self.logger(message="Clearing all user sessions")
             channel = client.invoke_shell()
@@ -1006,16 +994,17 @@ class UcsSystem(GenericUcsDevice):
                 buff += resp.decode("utf-8")
 
             self.logger(level="debug", message="\tSending confirmation")
-            channel.send('y\n')
+            channel.send('yes\n')
             self.logger(message="All user sessions cleared")
             time.sleep(5)
 
         except paramiko.ChannelException as err:
-            self.logger(level="error", message="Communication failed with UCS IMC " + self.handle.ip + ": " + str(err))
+            self.logger(level="error",
+                        message="Communication failed with UCS System " + self.handle.ip + ": " + str(err))
             return False
 
         except (paramiko.buffered_pipe.PipeTimeout, socket.timeout):
-            self.logger(level="error", message="Timeout while communicating with UCS IMC " + self.handle.ip)
+            self.logger(level="error", message="Timeout while communicating with UCS System " + self.handle.ip)
             return False
 
         return True
@@ -1100,8 +1089,9 @@ class UcsSystem(GenericUcsDevice):
 
         if not self.is_connected():
             self.connect()
-        self.logger(level="info", message="Clearing all SEL Logs of all discovered servers before reset")
+        self.logger(level="info", message="Clearing all System Event Logs of all discovered servers")
         all_logs = self.handle.query_classid("sysdebugMEpLog")
+        return_code = True
         for log in all_logs:
             try:
                 self.logger(level="debug", message="Clearing SEL Log: " + log.dn)
@@ -1112,19 +1102,25 @@ class UcsSystem(GenericUcsDevice):
             except UcsException as err:
                 self.logger(level="error",
                             message="Error while clearing SEL Logs in " + log.dn + " : " + err.error_descr)
+                return_code = False
             except urllib.error.URLError:
                 self.logger(level="error",
                             message="Timeout Error while clearing SEL Logs in " + log.dn)
+                return_code = False
             except Exception as err:
                 self.logger(level="error", message="Error while clearing SEL Logs in " + log.dn + ": " + str(err))
-        return True
+                return_code = False
+
+        if return_code:
+            self.logger(level="info", message="Successfully cleared all System Event Logs of all discovered servers")
+        return return_code
 
     def set_drives_status(self, status=None):
         #TODO : Not used until all status conditions and behaviour are decided
         """
         Set all the drives to the status specified.
         If jbod specified: all the unconfigured-good drives will be set to jbod
-        If unconfigured-good specified: all the jbod drives will be set to jbod
+        If unconfigured-good specified: all the jbod drives will be set to unconfigured-good
 
         :param status: jbod or unconfigured-good
         :return: True, False otherwise
@@ -1215,6 +1211,34 @@ class UcsSystem(GenericUcsDevice):
 
         self.logger(level="error", message="Unable to fetch " + target + " after " + str(retries) + " attempts")
         return []
+
+    def post_requests(self, request_url=None, request_payload=None, retries=3, error_message=""):
+        """
+        Uses the post of Requestes and add a retry function
+
+        :param request_url: ex. "https://10.0.0.1/cgi-bin/initial_setup_new.cgi"
+        :param request_payload:
+        :param retries: Number of retries
+        :param error_message: ex. "send initial configuration to FI B"
+        :return:
+        """
+
+        for i in range(retries):
+            if i:
+                self.logger(level="warning", message="Retrying to do a request to " + error_message)
+            try:
+                req = requests.post(request_url, request_payload, verify=False)
+                return req
+            except (ConnectionRefusedError, ValueError, requests.exceptions.ChunkedEncodingError) as err:
+                self.logger(level="debug",
+                            message="Failed to " + error_message + " : " + str(err))
+            except Exception as err:
+                self.logger(level="debug",
+                            message="Failed to " + error_message + " : " + str(err))
+            time.sleep(self.push_interval_after_fail)
+
+        self.logger(level="error", message="Unable to " + error_message + " after " + str(retries) + " attempts")
+        return False
 
     def wait_for_fsm_complete(self, ucs_sdk_object_class=None, timeout=300):
         """
@@ -1765,6 +1789,120 @@ class UcsImc(GenericUcsDevice):
 
         return True
 
+    def clear_user_sessions(self, check_ssh=False):
+        """
+        Clear all user sessions
+        :param check_ssh: Check with the live system if SSH is enabled. False by default because the system might be
+        crowded with sessions and it might be impossible to check
+        :return: True if is successful, False otherwise
+        """
+
+        if check_ssh:
+            # Verifying that SSH Service is enabled before trying to connect with Paramiko
+            if not self.is_connected():
+                self.connect()
+            self.logger(level="debug", message="Verifying that SSH service is enabled on UCS")
+            try:
+                ssh = self.handle.query_dn("sys/svc-ext/ssh-svc")
+                ssh_admin_state = ssh.admin_state
+
+            except Exception:
+                self.logger(level="error", message="Unable to get SSH service state on UCS")
+                return False
+
+            try:
+                if ssh_admin_state != "enabled":
+                    self.logger(level="warning", message="SSH service is disabled on UCS. Enabling it")
+
+                    mo_ssh = imcsdk_CommSsh(parent_mo_or_dn="sys/svc-ext", admin_state="enabled")
+                    self.handle.set_mo(mo_ssh)
+                    self.handle.commit()
+                    self.logger(level="debug", message="SSH service is enabled on UCS")
+                    time.sleep(5)
+
+            except Exception:
+                self.logger(level="error", message="Unable to set SSH service admin state to 'enabled'")
+                return False
+
+        # Establishing connection to UCS
+        try:
+            client = paramiko.SSHClient()
+            client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+            client.connect(self.handle.ip, port=22, username=self.username, password=self.password, banner_timeout=30)
+
+        except paramiko.AuthenticationException:
+            self.logger(level="error", message="Authentication failed when connecting to UCS IMC " + self.handle.ip)
+            return False
+
+        except paramiko.ssh_exception.NoValidConnectionsError as err:
+            self.logger(level="error",
+                        message="Error while connecting to UCS IMC " + self.handle.ip + ": " + err.strerror)
+            return False
+
+        except TypeError as err:
+            self.logger(level="debug",
+                        message="Error while connecting to UCS IMC " + self.handle.ip + ": " + str(err))
+            self.logger(level="error",
+                        message="Error while connecting to UCS IMC " + self.handle.ip + ". Please try again.")
+            return False
+
+        # Clearing all user sessions of UCS System
+        try:
+            self.logger(message="Clearing all user sessions")
+            channel = client.invoke_shell()
+            channel.settimeout(20)
+
+            self.logger(level="debug", message="\tSending 'show user-session | grep yes'")
+            channel.send('show user-session | grep yes\n')
+
+            buff = ""
+            while not buff.endswith("# "):
+                resp = channel.recv(9999)
+                buff += resp.decode("utf-8")
+
+            # Identifying the session numbers to terminate
+            sessions_numbers_list = []
+            for line in buff.splitlines():
+                # We only keep lines that contain session entries for xmlapi and CLI
+                if not any(x in line for x in ["xmlapi", "CLI"]):
+                    continue
+                regex_session = r'^(\d+)'
+                res_session = re.search(regex_session, line)
+                if res_session is not None:
+                    sessions_numbers_list.append(res_session.group(0))
+
+            if sessions_numbers_list:
+                self.logger(level="debug",
+                            message="There are " + str(len(sessions_numbers_list)) + " sessions to terminate")
+                for session_number in sessions_numbers_list:
+                    self.logger(level="debug", message="\tSending 'scope user-session " + session_number + "'")
+                    channel.send('scope user-session ' + session_number + '\n')
+
+                    self.logger(level="debug", message="\tSending terminate")
+                    channel.send('terminate\n')
+
+                    self.logger(level="debug", message="\tSending top")
+                    channel.send('top\n')
+
+                self.logger(message="All user sessions cleared")
+                time.sleep(5)
+            else:
+                self.logger(message="No user sessions to clear!")
+
+            # Properly disconnect from SSH
+            client.close()
+
+        except paramiko.ChannelException as err:
+            self.logger(level="error",
+                        message="Communication failed with UCS IMC " + self.handle.ip + ": " + str(err))
+            return False
+
+        except (paramiko.buffered_pipe.PipeTimeout, socket.timeout):
+            self.logger(level="error", message="Timeout while communicating with UCS IMC " + self.handle.ip)
+            return False
+
+        return True
+
     def erase_virtual_drives(self):
         # Removing Drive Security on the Storage Controllers
         from imcsdk.mometa.self.SelfEncryptStorageController import SelfEncryptStorageController
@@ -1870,11 +2008,16 @@ class UcsImc(GenericUcsDevice):
                 except ImcException as err:
                     self.logger(level="error",
                                 message="Error while clearing SEL Logs in " + log.dn + " : " + err.error_descr)
+                    return False
                 except urllib.error.URLError:
                     self.logger(level="error",
                                 message="Timeout Error while clearing SEL Logs in " + log.dn)
+                    return False
                 except Exception as err:
                     self.logger(level="error", message="Error while clearing SEL Logs in " + log.dn + ": " + str(err))
+                    return False
+
+        self.logger(level="info", message="Successfully cleared System Event Logs")
         return True
 
     def set_drives_status(self, status=None):
@@ -2020,11 +2163,6 @@ class UcsImc(GenericUcsDevice):
         if page_layout is None:
             page_layout = "a4"
 
-        self.logger(message="Generating report for device " + self.target + " using config: " + str(config.uuid)
-                            + " and inventory: " + str(inventory.uuid))
-        self.logger(level="debug",
-                    message="Generating report in " + output_format + " format with layout " + page_layout.upper() +
-                            " in " + language.upper())
         UcsImcReport(device=self, inventory=inventory, config=config, language=language, output_format=output_format,
                      page_layout=page_layout, directory=directory, filename=filename, size=size)
 
@@ -2072,6 +2210,114 @@ class UcsCentral(GenericUcsDevice):
         self.inventory_manager = UcsCentralInventoryManager(parent=self)
         self._set_sdk_version()
         self._set_device_name_and_version()
+
+    def clear_user_sessions(self):
+        """
+        Clear all user sessions
+        :return: True if is successful, False otherwise
+        """
+
+        # Establishing connection to UCS
+        try:
+            client = paramiko.SSHClient()
+            client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+            client.connect(self.handle.ip, port=22, username=self.username, password=self.password, banner_timeout=30)
+
+        except paramiko.AuthenticationException:
+            self.logger(level="error", message="Authentication failed when connecting to UCS Central " + self.handle.ip)
+            return False
+
+        except paramiko.ssh_exception.NoValidConnectionsError as err:
+            self.logger(level="error",
+                        message="Error while connecting to UCS Central " + self.handle.ip + ": " + err.strerror)
+            return False
+
+        except TypeError as err:
+            self.logger(level="debug",
+                        message="Error while connecting to UCS Central " + self.handle.ip + ": " + str(err))
+            self.logger(level="error",
+                        message="Error while connecting to UCS Central " + self.handle.ip + ". Please try again.")
+            return False
+
+        # Clearing all user sessions of UCS Central
+        try:
+            self.logger(message="Clearing all user sessions")
+            channel = client.invoke_shell()
+            channel.settimeout(20)
+
+            self.logger(level="debug", message="\tSending 'scope security'")
+            channel.send('scope security\n')
+
+            buff = ""
+            while not buff.endswith("security # "):
+                resp = channel.recv(9999)
+                buff += resp.decode("utf-8")
+            buff = ""
+
+            self.logger(level="debug", message="\tSending 'clear-user-sessions all'")
+            channel.send('clear-user-sessions all\n')
+            while not buff.endswith("yes/no):"):
+                resp = channel.recv(9999)
+                buff += resp.decode("utf-8")
+
+            self.logger(level="debug", message="\tSending confirmation")
+            channel.send('yes\n')
+            self.logger(message="All user sessions cleared")
+            time.sleep(5)
+
+        except paramiko.ChannelException as err:
+            self.logger(level="error",
+                        message="Communication failed with UCS Central " + self.handle.ip + ": " + str(err))
+            return False
+
+        except (paramiko.buffered_pipe.PipeTimeout, socket.timeout):
+            self.logger(level="error", message="Timeout while communicating with UCS Central " + self.handle.ip)
+            return False
+
+        return True
+
+    def query(self, mode="", target=None, filter_str=None, retries=3):
+        """
+        Uses the query of the handle and add a retry function
+
+        :param mode: "dn" or "classid"
+        :param target:
+        :param filter_str:
+        :param retries:
+        :return:
+        """
+
+        if not mode:
+            self.logger(level="error", message="A mode of query must be filled")
+            return []
+        if not target:
+            self.logger(level="error", message="A target of query must be filled")
+            return []
+        if mode not in ["classid", "dn"]:
+            self.logger(level="error", message="The mode query must be 'classid' or 'dn'")
+            return []
+        for i in range(retries):
+            if i:
+                self.logger(level="warning", message="Retrying to fetch " + target)
+            try:
+                if not self.is_connected():
+                    self.connect()
+                if mode == "classid":
+                    classid_list = self.handle.query_classid(class_id=target, filter_str=filter_str)
+                    return classid_list
+                elif mode == "dn":
+                    dn_list = self.handle.query_dn(dn=target)
+                    return dn_list
+            except ConnectionRefusedError as err:
+                self.logger(level="debug", message="Error while querying UCS Central: " + str(err))
+            except UcscException as err:
+                self.logger(level="debug", message="Unable to fetch " + target + ": " + err.error_descr)
+            except urllib.error.URLError:
+                self.logger(level="debug", message="Timeout error while fetching " + target)
+            time.sleep(self.push_interval_after_fail)
+
+        self.logger(level="error", message="Unable to fetch " + target + " after " + str(retries) + " attempts")
+        return []
 
     def _set_sdk_version(self):
         """

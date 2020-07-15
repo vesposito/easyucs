@@ -10,8 +10,9 @@ It can :
     - UCS Central
 * perform the initial setup of an "out of the box" UCS device (UCSM or CIMC)
 * reset the configuration of an UCS device before configuring it
-* fetch a configuration and export it in JSON format
+* [fetch a configuration](docs/CONFIG.md) and export it in JSON format
 * [fetch an inventory](docs/INVENTORY.md) and export it in JSON format
+* [perform maintenance actions](docs/ACTIONS.md) on a UCS device (regenerate self-signed certificate, clear user sessions, clear SEL logs)
 * create pictures of equipment and infrastructure [schemas](docs/SCHEMAS.md)
 * create [Technical Architecture Documentation (TAD)](docs/REPORT.md) in Word format
 
@@ -27,7 +28,7 @@ Minimum versions of UCS devices :
 * UCS IMC: ***3.0(1c)*** or above
 * UCS Central: ***2.0(1a)*** or above
 
-This tool requires ***Python 3.x*** to work. *Python 2.x* is not supported.
+This tool requires ***Python 3.6+*** to work. *Python 2.x* is not supported.
 
 Python can be used on Windows, Linux/Unix, Mac OS X and more.
 
@@ -79,21 +80,25 @@ Push config file config_ucsm.json to UCS system
 python easyucs.py config push -t ucsm -i 192.168.0.1 -u admin -p password -f configs/config_ucsm.json
 ```
 
-Reset UCS IMC and push config file config_cimc.json
+Push config file config_cimc.json to UCS IMC
 ```
-python easyucs.py config push -t cimc -i 192.168.0.2 -u admin -p password -f configs/config_cimc.json -r
+python easyucs.py config push -t cimc -i 192.168.0.2 -u admin -p password -f configs/config_cimc.json
+```
+
+Perform initial setup of UCS system using DHCP IP addresses 192.168.0.11 & 192.168.0.12 and push config file config_ucsm.json
+```
+python easyucs.py config push -t ucsm -f configs/config_ucsm.json -r -s 192.168.0.11 192.168.0.12
 ```
 
 Reset UCS system, perform initial setup using DHCP IP addresses 192.168.0.11 & 192.168.0.12 and push config file config_ucsm.json
 ```
-python easyucs.py config push -t ucsm -f configs/config_ucsm.json -r -s 192.168.0.11 192.168.0.12
+python easyucs.py config push -t ucsm -i 192.168.0.1 -u admin -p password -f configs/config_ucsm.json -r -s 192.168.0.11 192.168.0.12
 ```
 
 Fetch config from UCS system and save it to output/configs/config_ucsm.json
 ```
 python easyucs.py config fetch -t ucsm -i 192.168.0.1 -u admin -p password -o output/configs/config_ucsm.json
 ```
-
 
 Fetch inventory from UCS IMC and save it to output/inventories/inventory_cimc.json
 ```
@@ -105,9 +110,19 @@ Create schemas from UCS system and save them to output/schemas folder
 python easyucs.py schemas create -t ucsm -i 192.168.0.1 -u admin -p password -o output/schemas
 ```
 
-Create report from UCS system and save it to output/reports folder
+Create report from UCS system and save it to output/reports folder (also creates schemas)
 ```
 python easyucs.py report generate -t ucsm -i 192.168.0.1 -u admin -p password -o output/reports
+```
+
+Regenerate expired Self-signed Certificate of UCS system
+```
+python easyucs.py device regenerate_certificate -t ucsm -i 192.168.0.1 -u admin -p password
+```
+
+Clear SEL Logs of all discovered servers of UCS system
+```
+python easyucs.py device clear_sel_logs -t ucsm -i 192.168.0.1 -u admin -p password
 ```
 
 #### Using the Web Graphical User Interface (GUI)
@@ -127,6 +142,22 @@ python easyucs_gui.py
 
 
 ## Versioning
+
+#### 0.9.7
+
+* Add device actions in CLI ("regenerate_certificate", "clear_sel_logs", "clear_user_sessions")
+* Add "Policies" section in UCSM report with Server Policies (Boot, BIOS, Local Disk Config, Scrub, etc.)
+* Add support for System Profile & Policies settings in UCS Central config (Interfaces, DNS, Date&Time, Remote Access, Syslog)
+* Add support for System Profile & Policies settings in Domain Groups in UCS Central config (DNS, Date&Time, Remote Access, Equipment Policies, Syslog)
+* Add support for User Settings in UCS Central config (Password Profile, Local Users, Roles & Locales)
+* Add support for User Settings in Domain Groups in UCS Central config (Roles & Locales)
+* Add support for SNMP settings in UCS Central config & Domain Groups
+* Add support for Syslog & Global Fault Policy settings in UCSM config
+* Add support for Azure Stack environments
+* Add support for C4200 in UCSM report
+* Add inventory of HBA adapters in IMC inventory
+* Major reorganization of report code
+* Multiple bug fixes and improvements
 
 #### 0.9.6
 

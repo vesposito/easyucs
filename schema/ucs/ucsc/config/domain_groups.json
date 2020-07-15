@@ -22,6 +22,25 @@
          "default": "",
          "pattern": "^[ !#$%&\\(\\)\\*\\+,\\-\\./:;\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{0,256}$"
       },
+      "domains": {
+         "description": "Domain Group Domains",
+         "type": "array",
+         "items": {
+            "description": "Domain Group Domain",
+            "type": "string"
+         },
+         "minItems": 1
+      },
+      "qualification_policies": {
+         "description": "Domain Group Qualification Policies",
+         "type": "array",
+         "items": {
+            "description": "Domain Group Qualification Policy",
+            "type": "string",
+            "pattern": "^[\\-\\.:_a-zA-Z0-9]{1,16}$"
+         },
+         "minItems": 1
+      },
       "domain_groups": {
          "description": "EasyUCS config/domain_groups/domain_groups section",
          "type": "array",
@@ -32,53 +51,139 @@
          },
          "minItems": 1
       },
-      "appliance_vlans":{
-         "description":"EasyUCS config/domain_groups/appliance_vlans section",
-         "type":"array",
-         "items":{
-            "description":"EasyUCS config/domain_groups/appliance_vlans element",
-            "type":"object",
-            "$ref":"domain_groups/appliance_vlans.json"
+      "appliance_vlans": {
+         "description": "EasyUCS config/domain_groups/appliance_vlans section",
+         "type": "array",
+         "items": {
+            "description": "EasyUCS config/domain_groups/appliance_vlans element",
+            "type": "object",
+            "$ref": "domain_groups/appliance_vlans.json"
          },
-         "minItems":1
+         "minItems": 1
       },
-      "vlan_groups":{
-         "description":"EasyUCS config/domain_groups/vlan_groups section",
-         "type":"array",
-         "items":{
-            "description":"EasyUCS config/domain_groups/vlan_groups element",
-            "type":"object",
-            "$ref":"domain_groups/vlan_groups.json"
+      "date_time": {
+         "description": "EasyUCS config/domain_groups/date_time section",
+         "type": "array",
+         "items": {
+            "description": "EasyUCS config/domain_groups/date_time element",
+            "type": "object",
+            "$ref": "date_time.json"
          },
-         "minItems":1
+         "minItems": 1,
+         "maxItems": 1
       },
-      "vlans":{
-         "description":"EasyUCS config/domain_groups/vlans section",
-         "type":"array",
-         "items":{
-            "description":"EasyUCS config/domain_groups/vlans element",
-            "type":"object",
-            "$ref":"domain_groups/vlans.json"
+      "dns": {
+         "description": "EasyUCS config/domain_groups/dns section",
+         "type": "array",
+         "items": {
+            "description": "EasyUCS config/domain_groups/dns element",
+            "type": "object",
+            "$ref": "dns.json"
          },
-         "minItems":1
+         "minItems": 1,
+         "maxItems": 1
       },
-      "vsans":{
-         "description":"EasyUCS config/domain_groups/vsans section",
-         "type":"array",
-         "items":{
-            "description":"EasyUCS config/domain_groups/vsans element",
-            "type":"object",
-            "$ref":"domain_groups/vsans.json"
+      "equipment_policies": {
+         "description": "EasyUCS config/domain_groups/equipment_policies section",
+         "type": "array",
+         "items": {
+            "description:": "EasyUCS config/domain_groups/equipment_policies element",
+            "type": "object",
+            "$ref": "domain_groups/equipment_policies.json"
          },
-         "minItems":1
+         "minItems": 1,
+         "maxItems": 1
       },
       "ip_pools": {
          "description": "EasyUCS config/domain_groups/ip_pools section",
          "type": "array",
          "items": {
-            "description:": "EasyUCS config/orgs/ip_pools element",
+            "description:": "EasyUCS config/domain_groups/ip_pools element",
             "type": "object",
             "$ref": "orgs/ip_pools.json"
+         },
+         "minItems": 1
+      },
+      "locales": {
+         "description": "EasyUCS config/domain_groups/locales section",
+         "type": "array",
+         "items": {
+            "description": "EasyUCS config/domain_groups/locales element",
+            "type": "object",
+            "$ref": "domain_groups/locales.json"
+         },
+         "minItems": 1
+      },
+      "remote_access": {
+         "description": "EasyUCS config/domain_groups/remote_access section",
+         "type": "array",
+         "items": {
+            "description:": "EasyUCS config/domain_groups/remote_access element",
+            "type": "object",
+            "$ref": "domain_groups/remote_access.json"
+         },
+         "minItems": 1,
+         "maxItems": 1
+      },
+      "roles": {
+         "description": "EasyUCS config/domain_groups/roles section",
+         "type": "array",
+         "items": {
+            "description": "EasyUCS config/domain_groups/roles element",
+            "type": "object",
+            "$ref": "domain_groups/roles.json"
+         },
+         "minItems": 1
+      },
+      "snmp": {
+         "description": "EasyUCS config/domain_groups/snmp section",
+         "type": "array",
+         "items": {
+            "description": "EasyUCS config/domain_groups/snmp element",
+            "type": "object",
+            "$ref": "snmp.json"
+         },
+         "minItems": 1,
+         "maxItems": 1
+      },
+      "syslog": {
+         "description": "EasyUCS config/domain_groups/syslog section",
+         "type": "array",
+         "items": {
+            "description": "EasyUCS config/domain_groups/syslog element",
+            "type": "object",
+            "$ref": "domain_groups/syslog.json"
+         },
+         "minItems": 1,
+         "maxItems": 1
+      },
+      "vlan_groups": {
+         "description": "EasyUCS config/domain_groups/vlan_groups section",
+         "type": "array",
+         "items": {
+            "description": "EasyUCS config/domain_groups/vlan_groups element",
+            "type": "object",
+            "$ref": "domain_groups/vlan_groups.json"
+         },
+         "minItems": 1
+      },
+      "vlans": {
+         "description": "EasyUCS config/domain_groups/vlans section",
+         "type": "array",
+         "items": {
+            "description": "EasyUCS config/domain_groups/vlans element",
+            "type": "object",
+            "$ref": "domain_groups/vlans.json"
+         },
+         "minItems": 1
+      },
+      "vsans": {
+         "description": "EasyUCS config/domain_groups/vsans section",
+         "type": "array",
+         "items": {
+            "description": "EasyUCS config/domain_groups/vsans element",
+            "type": "object",
+            "$ref": "domain_groups/vsans.json"
          },
          "minItems": 1
       }

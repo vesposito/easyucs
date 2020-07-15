@@ -185,8 +185,12 @@ class UcsImcStorageEnclosure(UcsStorageEnclosure, UcsImcInventoryObject):
     def __init__(self, parent=None, storage_enclosure=None):
         UcsStorageEnclosure.__init__(self, parent=parent, storage_enclosure=storage_enclosure)
 
-        self.descr = self.get_attribute(ucs_sdk_object=storage_enclosure, attribute_name="description",
-                                        attribute_secondary_name="descr")
+        # We do this specific check because we create the Rear SSD enclosure for S3260 manually
+        if storage_enclosure:
+            self.descr = self.get_attribute(ucs_sdk_object=storage_enclosure, attribute_name="description",
+                                            attribute_secondary_name="descr")
+        else:
+            self.descr = None
 
         UcsImcInventoryObject.__init__(self, parent=parent, ucs_sdk_object=storage_enclosure)
 
@@ -633,6 +637,8 @@ class UcsSystemStorageLocalDisk(UcsStorageLocalDisk, UcsSystemInventoryObject):
                 self.size_marketing = "120GB"
             elif self.size_marketing == "398GB":
                 self.size_marketing = "400GB"
+            elif self.size_marketing == "801GB":
+                self.size_marketing = "800GB"
             elif self.size_marketing == "958GB":
                 self.size_marketing = "960GB"
             elif self.size_marketing == "998GB":
@@ -701,9 +707,11 @@ class UcsSystemStorageLocalDisk(UcsStorageLocalDisk, UcsSystemInventoryObject):
                     else:
                         self.sku = "UCS-SD300G0KA2-E"
 
-            # Manual adjustment of size for wrong catalog entry
+            # Manual adjustment of size for wrong catalog entries
             if self.sku in ["UCS-HD1T7KS2-E", "A03-D1TBSATA"]:
                 self.size_marketing = "1TB"
+            elif self.sku in ["UCS-SD480GSAS-EV"]:
+                self.size_marketing = "480GB"
 
             ssd_stats = None
             if self.drive_state == "SSD":
@@ -892,6 +900,8 @@ class UcsImcStorageLocalDisk(UcsStorageLocalDisk, UcsImcInventoryObject):
                 self.size_marketing = "120GB"
             elif self.size_marketing == "398GB":
                 self.size_marketing = "400GB"
+            elif self.size_marketing == "801GB":
+                self.size_marketing = "800GB"
             elif self.size_marketing == "958GB":
                 self.size_marketing = "960GB"
             elif self.size_marketing == "998GB":
@@ -977,7 +987,7 @@ class UcsSystemStorageControllerNvmeDrive(UcsStorageNvmeDrive, UcsSystemInventor
             self.capacity_catalog = None
             self.connection_protocol = None
             self.drive_state = None
-            self.drive_type = None
+            self.drive_type = "SSD"
             self.firmware_version = None
             self.life_left_in_days = None
             self.link_speed = None
@@ -1023,6 +1033,50 @@ class UcsSystemStorageControllerNvmeDrive(UcsStorageNvmeDrive, UcsSystemInventor
                 self.size = disks[0].size
                 self.size_marketing = disks[0].size_marketing
                 self.size_raw = disks[0].size_raw
+            else:
+                embedded_storage = self._find_corresponding_storage_embedded_storage()
+                if embedded_storage:
+                    self.block_size = int(embedded_storage.block_size)
+                    if embedded_storage.physical_block_size != "unknown":
+                        self.block_size_physical = int(embedded_storage.physical_block_size)
+                    self.connection_protocol = embedded_storage.connection_protocol
+                    self.number_of_blocks = int(embedded_storage.number_of_blocks)
+                    self.operability = embedded_storage.operability
+                    self.size = int(embedded_storage.size)
+
+                    if self.block_size is not None and self.number_of_blocks is not None:
+                        self.size_marketing = int((self.block_size * self.number_of_blocks) / 1000000000)
+
+                    # Properly format size_marketing so that it fits the display on disk drives for the pictures
+                    if self.size_marketing is not None:
+                        if self.size_marketing < 1000:
+                            self.size_marketing = str(int(self.size_marketing)) + "GB"
+                        elif self.size_marketing >= 1000:
+                            if (self.size_marketing / 1000).is_integer():
+                                self.size_marketing = str(int(self.size_marketing / 1000)) + "TB"
+                            else:
+                                if str(round(self.size_marketing / 1000, ndigits=1))[-2:] == ".0":
+                                    self.size_marketing = str(int(self.size_marketing / 1000)) + "TB"
+                                else:
+                                    self.size_marketing = str(round(self.size_marketing / 1000, ndigits=1)) + "TB"
+
+                    # Manual adjustment for wrong round up of some drives
+                    if self.size_marketing == "147GB":
+                        self.size_marketing = "146GB"
+                    elif self.size_marketing == "98GB":
+                        self.size_marketing = "100GB"
+                    elif self.size_marketing == "118GB":
+                        self.size_marketing = "120GB"
+                    elif self.size_marketing == "398GB":
+                        self.size_marketing = "400GB"
+                    elif self.size_marketing == "801GB":
+                        self.size_marketing = "800GB"
+                    elif self.size_marketing == "958GB":
+                        self.size_marketing = "960GB"
+                    elif self.size_marketing == "998GB":
+                        self.size_marketing = "1TB"
+                    elif self.size_marketing == "7.7TB":
+                        self.size_marketing = "7.6TB"
 
             nvme_stats = self._find_corresponding_storage_nvme_stats()
             if nvme_stats:
@@ -1049,6 +1103,27 @@ class UcsSystemStorageControllerNvmeDrive(UcsStorageNvmeDrive, UcsSystemInventor
                 if attribute in storage_controller:
                     setattr(self, attribute, self.get_attribute(ucs_sdk_object=storage_controller,
                                                                 attribute_name=attribute))
+
+    def _find_corresponding_storage_embedded_storage(self):
+        if "storageEmbeddedStorage" not in self._inventory.sdk_objects.keys():
+            return False
+
+        # We check if we already have fetched the list of storageEmbeddedStorage objects
+        if self._inventory.sdk_objects["storageEmbeddedStorage"] is not None:
+
+            # We need to find the matching storageEmbeddedStorage object
+            storage_embedded_storage_list = [storage_embedded_storage for storage_embedded_storage in
+                                             self._inventory.sdk_objects["storageEmbeddedStorage"] if
+                                             self.dn + "/embedded-storage" == storage_embedded_storage.dn]
+            if (len(storage_embedded_storage_list)) != 1:
+                self.logger(level="debug",
+                            message="Could not find the corresponding storageEmbeddedStorage for object with DN " +
+                                    self.dn + " of model \"" + self.model + "\" with ID " + self.id)
+                return False
+            else:
+                return storage_embedded_storage_list[0]
+
+        return False
 
     def _find_corresponding_storage_nvme_stats(self):
         if "storageNvmeStats" not in self._inventory.sdk_objects.keys():

@@ -1,0 +1,29 @@
+{
+   "id": "ucs_central_config_date_time#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS ucs central config date_time section",
+   "description": "EasyUCS ucs central config date_time section JSON schema",
+   "type": "object",
+   "properties": {
+      "comment": {
+         "description": "Date & Time Comments",
+         "type": "string",
+         "default": ""
+      },
+      "timezone": {
+         "description": "Time Zone",
+         "type": "string",
+         "default": ""
+      },
+      "ntp_servers": {
+         "description": "NTP servers list",
+         "type": "array",
+         "items": {
+            "description": "NTP server",
+            "type": "string"
+         },
+         "minItems": 1
+      }
+   },
+   "additionalProperties": false
+}

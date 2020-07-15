@@ -3,7 +3,7 @@
 EasyUCS can generate infrastructure & equipment schemas from a live device.
 
 The following schemas are generated:
-* Front & rear view of chassis including i/o modules and blades
+* Front & rear view of chassis including I/O modules and blades
 * Front & rear view of rack servers including adapters
 * Front & rear view of fabric interconnects & fabric extenders
 * Infrastructure view of each chassis & rack server with its physical connectivity to the fabric interconnects
@@ -25,12 +25,13 @@ The scope of action:
 Scope:
   Scope of action
 
-  {config,inventory,schemas,report}
+  {config,inventory,schemas,report,device}
                         EasyUCS scope
     config              config-related actions
     inventory           inventory-related actions
     schemas             schemas-related actions
     report              report-related actions
+    device              device-related actions
 ```
 
 The second argument is the type of action:

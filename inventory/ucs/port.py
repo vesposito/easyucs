@@ -130,10 +130,11 @@ class UcsSystemAdaptorPort(UcsAdaptorPort, UcsSystemInventoryObject):
             self._peer_dn = self.get_attribute(ucs_sdk_object=adaptor_ext_eth_if, attribute_name="peer_dn")
             self.peer = self._get_peer_port()
 
-            if adaptor_ext_eth_if.aggr_port_id is not None:
-                if adaptor_ext_eth_if.aggr_port_id != '0':
-                    self.aggr_port_id = adaptor_ext_eth_if.aggr_port_id
-                    self.is_breakout = True
+            if hasattr(adaptor_ext_eth_if, "aggr_port_id"):
+                if adaptor_ext_eth_if.aggr_port_id is not None:
+                    if adaptor_ext_eth_if.aggr_port_id != '0':
+                        self.aggr_port_id = adaptor_ext_eth_if.aggr_port_id
+                        self.is_breakout = True
 
             if adaptor_ext_eth_if.ep_dn != "":
                 self.is_port_channel_member = True
@@ -155,6 +156,15 @@ class UcsSystemAdaptorPort(UcsAdaptorPort, UcsSystemInventoryObject):
                     self._ucs_sdk_object["transceivers"]]
         else:
             return []
+
+
+class UcsSystemNicAdaptorPort(UcsSystemAdaptorPort):
+    # This class is used for adaptor ports that are not VIC - in this case UCSM does not present adaptorExtEthIf
+    # We simply map a UcsSystemNicAdaptorPort to a UcsSystemAdaptorPort as all attributes are the same
+    _UCS_SDK_OBJECT_NAME = "adaptorHostEthIf"
+
+    def __init__(self, parent=None, adaptor_host_eth_if=None):
+        UcsSystemAdaptorPort.__init__(self, parent=parent, adaptor_ext_eth_if=adaptor_host_eth_if)
 
 
 class UcsSystemIomPort(UcsPort, UcsSystemInventoryObject):

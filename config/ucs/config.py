@@ -25,7 +25,7 @@ class GenericUcsConfig(GenericConfig):
         self.sdk_objects = {}
 
     def _fetch_sdk_objects(self):
-        # List of SDK objects to fetch that are common to UCS System & IMC
+        # List of SDK objects to fetch that are common to UCS System, Central & IMC
         sdk_objects_to_fetch = ["aaaUser", "commNtpProvider", "topSystem"]
         self.logger(level="debug", message="Fetching common UCS SDK objects for config")
         for sdk_object_name in sdk_objects_to_fetch:
@@ -106,6 +106,23 @@ class GenericUcsConfig(GenericConfig):
                             # We instantiate a Config Object for each corresponding SDK object
                             easyucs_objects_list.append(object_class(parent, None, sdk_object))
                         return easyucs_objects_list
+
+            elif hasattr(object_class, "_UCS_SDK_OBJECTS_NAMES"):
+                # Specific case for complex EasyUCS objects in UCS Central (e.g. Domain Group Remote Access)
+                # that are made of multiple SDK objects
+                filtered_sdk_objects_list = []
+                for ucs_sdk_object_name in object_class._UCS_SDK_OBJECTS_NAMES:
+                    if ucs_sdk_object_name in self.sdk_objects.keys():
+                        if self.sdk_objects[ucs_sdk_object_name] is not None:
+                            # We filter out SDK objects that are not under this Dn
+                            for sdk_object in self.sdk_objects[ucs_sdk_object_name]:
+                                if sdk_object.dn.startswith(dn + '/'):
+                                    if "/" not in sdk_object.dn[len(dn + "/"):]:
+                                        filtered_sdk_objects_list.append(sdk_object)
+
+                if filtered_sdk_objects_list:
+                    # We instantiate a single Config Object
+                    return [object_class(parent, None, None)]
         return []
 
     def refresh_config_handle(self):
@@ -157,6 +174,7 @@ class UcsSystemConfig(GenericUcsConfig):
         self.call_home = []
         self.communication_services = []
         self.dns = []
+        self.global_fault_policy = []
         self.fc_zone_profiles = []
         self.fcoe_port_channels = []
         self.fcoe_storage_ports = []
@@ -187,6 +205,7 @@ class UcsSystemConfig(GenericUcsConfig):
         self.slow_drain_timers = []
         self.storage_vsans = []
         self.switching_mode = []
+        self.syslog = []
         self.system = []
         self.tacacs = []
         self.timezone_mgmt = []
@@ -202,17 +221,16 @@ class UcsSystemConfig(GenericUcsConfig):
         # List of attributes to be exported in a config export
         self.export_list = ['appliance_network_control_policies', 'appliance_port_channels', 'appliance_ports',
                             'appliance_vlans', 'backup_export_policy', 'breakout_ports', 'call_home',
-                            'communication_services', 'dns', 'fcoe_port_channels', 'fcoe_storage_ports',
-                            'fcoe_uplink_ports', 'global_policies', 'lan_pin_groups',
-                            'lan_port_channels', 'lan_uplink_ports', 'ldap', 'link_profiles', 'local_users',
-                            'local_users_properties', 'locales', 'management_interfaces', 'orgs',
+                            'communication_services', 'dns', 'fc_zone_profiles', 'fcoe_port_channels',
+                            'fcoe_storage_ports', 'fcoe_uplink_ports', 'global_fault_policy', 'global_policies',
+                            'lan_pin_groups', 'lan_port_channels', 'lan_uplink_ports', 'ldap', 'link_profiles',
+                            'local_users', 'local_users_properties', 'locales', 'management_interfaces', 'orgs',
                             'port_auto_discovery_policy', 'pre_login_banner', 'qos_system_class',
                             'radius', 'roles', 'san_pin_groups', 'san_port_channels', 'san_storage_ports',
                             'san_unified_ports', 'san_uplink_ports', 'sel_policy', 'server_ports', 'slow_drain_timers',
-                            'storage_vsans', 'switching_mode', 'system', 'tacacs', 'timezone_mgmt', 'ucs_central',
-                            'fc_zone_profiles',
-                            'udld_link_policies', 'unified_storage_ports', 'unified_uplink_ports', 'vlan_groups',
-                            'vlans', 'vsans']
+                            'storage_vsans', 'switching_mode', 'syslog', 'system', 'tacacs', 'timezone_mgmt',
+                            'ucs_central', 'udld_link_policies', 'unified_storage_ports', 'unified_uplink_ports',
+                            'vlan_groups', 'vlans', 'vsans']
 
     def check_if_ports_config_requires_reboot(self):
         """
@@ -411,29 +429,31 @@ class UcsSystemConfig(GenericUcsConfig):
                                 'callhomeSource', 'cimcvmediaConfigMountEntry', 'cimcvmediaMountConfigPolicy',
                                 'commCimcWebService', 'commCimxml', 'commDateTime', 'commDns', 'commDnsProvider',
                                 'commHttp', 'commHttps', 'commShellSvcLimits', 'commSnmp', 'commSnmpTrap',
-                                'commSnmpUser', 'commSsh', 'commTelnet', 'commWebSvcLimits', 'computeChassisDiscPolicy',
-                                'computeChassisQual', 'computeFanPolicy', 'computeGraphicsCardPolicy',
-                                'computeHwChangeDiscPolicy', 'computeKvmMgmtPolicy', 'computeMemoryConfigPolicy',
-                                'computePhysicalQual', 'computePool', 'computePooledRackUnit', 'computePooledSlot',
-                                'computePoolingPolicy', 'computePortDiscPolicy', 'computePowerSyncPolicy',
-                                'computePsuPolicy', 'computeQual', 'computeRackQual', 'computeScrubPolicy',
-                                'computeServerDiscPolicy', 'computeServerMgmtPolicy', 'computeSlotQual',
-                                'cpmaintMaintPolicy', 'diagMemoryTest', 'diagRunPolicy', 'dpsecMac', 'epqosDefinition',
-                                'epqosEgress', 'equipmentBinding', 'equipmentChassisProfile',
-                                'equipmentComputeConnPolicy', 'etherPIo', 'fabricBreakout', 'fabricDceSwSrvEp',
-                                'fabricDceSwSrvPcEp', 'fabricEthEstcEp', 'fabricEthEstcPc', 'fabricEthEstcPcEp',
-                                'fabricEthLanEp', 'fabricEthLanPc', 'fabricEthLanPcEp', 'fabricEthLinkProfile',
-                                'fabricEthTargetEp', 'fabricEthVlanPc', 'fabricEthVlanPortEp', 'fabricFcEndpoint',
-                                'fabricFcEstcEp', 'fabricFcSan', 'fabricFcSanEp', 'fabricFcSanPc', 'fabricFcSanPcEp',
-                                'fabricFcUserZone', 'fabricFcVsanPc', 'fabricFcVsanPortEp', 'fabricFcZoneProfile',
-                                'fabricFcoeEstcEp', 'fabricFcoeSanEp', 'fabricFcoeSanPc', 'fabricFcoeSanPcEp',
-                                'fabricFcoeVsanPortEp', 'fabricLacpPolicy', 'fabricLanCloud', 'fabricLanPinGroup',
-                                'fabricLanPinTarget', 'fabricMulticastPolicy', 'fabricNetGroup', 'fabricNetGroupRef',
-                                'fabricOrgVlanPolicy', 'fabricPooledVlan', 'fabricReservedVlan', 'fabricSanCloud',
-                                'fabricSanPinGroup', 'fabricSanPinTarget', 'fabricUdldLinkPolicy', 'fabricUdldPolicy',
-                                'fabricVCon', 'fabricVConProfile', 'fabricVlan', 'fabricVlanGroupReq', 'fabricVlanReq',
-                                'fabricVsan', 'fcPIo', 'fcpoolBlock', 'fcpoolInitiators', 'firmwareAutoSyncPolicy',
-                                'firmwareChassisPack', 'firmwareComputeHostPack', 'firmwareExcludeChassisComponent',
+                                'commSnmpUser', 'commSsh', 'commSyslog', 'commSyslogClient', 'commSyslogConsole',
+                                'commSyslogMonitor', 'commSyslogSource', 'commSyslogFile', 'commTelnet',
+                                'commWebSvcLimits', 'computeChassisDiscPolicy', 'computeChassisQual',
+                                'computeFanPolicy', 'computeGraphicsCardPolicy', 'computeHwChangeDiscPolicy',
+                                'computeKvmMgmtPolicy', 'computeMemoryConfigPolicy', 'computePhysicalQual',
+                                'computePool', 'computePooledRackUnit', 'computePooledSlot', 'computePoolingPolicy',
+                                'computePortDiscPolicy', 'computePowerSyncPolicy', 'computePsuPolicy', 'computeQual',
+                                'computeRackQual', 'computeScrubPolicy', 'computeServerDiscPolicy',
+                                'computeServerMgmtPolicy', 'computeSlotQual', 'cpmaintMaintPolicy', 'diagMemoryTest',
+                                'diagRunPolicy', 'dpsecMac', 'epqosDefinition', 'epqosEgress', 'equipmentBinding',
+                                'equipmentChassisProfile', 'equipmentComputeConnPolicy', 'etherPIo', 'fabricBreakout',
+                                'fabricDceSwSrvEp', 'fabricDceSwSrvPcEp', 'fabricEthEstcEp', 'fabricEthEstcPc',
+                                'fabricEthEstcPcEp', 'fabricEthLanEp', 'fabricEthLanPc', 'fabricEthLanPcEp',
+                                'fabricEthLinkProfile', 'fabricEthTargetEp', 'fabricEthVlanPc', 'fabricEthVlanPortEp',
+                                'fabricFcEndpoint', 'fabricFcEstcEp', 'fabricFcSan', 'fabricFcSanEp', 'fabricFcSanPc',
+                                'fabricFcSanPcEp', 'fabricFcUserZone', 'fabricFcVsanPc', 'fabricFcVsanPortEp',
+                                'fabricFcZoneProfile', 'fabricFcoeEstcEp', 'fabricFcoeSanEp', 'fabricFcoeSanPc',
+                                'fabricFcoeSanPcEp', 'fabricFcoeVsanPortEp', 'fabricLacpPolicy', 'fabricLanCloud',
+                                'fabricLanPinGroup', 'fabricLanPinTarget', 'fabricMulticastPolicy', 'fabricNetGroup',
+                                'fabricNetGroupRef', 'fabricOrgVlanPolicy', 'fabricPooledVlan', 'fabricReservedVlan',
+                                'fabricSanCloud', 'fabricSanPinGroup', 'fabricSanPinTarget', 'fabricUdldLinkPolicy',
+                                'fabricUdldPolicy', 'fabricVCon', 'fabricVConProfile', 'fabricVlan',
+                                'fabricVlanGroupReq', 'fabricVlanReq', 'fabricVsan', 'faultPolicy', 'fcPIo',
+                                'fcpoolBlock', 'fcpoolInitiators', 'firmwareAutoSyncPolicy', 'firmwareChassisPack',
+                                'firmwareComputeHostPack', 'firmwareExcludeChassisComponent',
                                 'firmwareExcludeServerComponent', 'firmwarePackItem', 'flowctrlItem', 'ippoolBlock',
                                 'ippoolIpV6Block', 'ippoolPool', 'iqnpoolBlock', 'iqnpoolPool', 'iscsiAuthProfile',
                                 'lsBinding', 'lsPower', 'lsRequirement', 'lsServer', 'lsServerExtension',
@@ -454,7 +474,8 @@ class UcsSystemConfig(GenericUcsConfig):
                                 'macpoolPool', 'memoryPersistentMemoryPolicy', 'memoryPersistentMemoryGoal',
                                 'memoryPersistentMemoryLocalSecurity', 'memoryPersistentMemoryLogicalNamespace',
                                 'memoryQual', 'mgmtBackupExportExtPolicy', 'mgmtBackupPolicy',
-                                'mgmtCfgExportPolicy', 'mgmtIPv6IfAddr', 'mgmtInbandProfile', 'networkElement',
+                                'mgmtCfgExportPolicy', 'mgmtIPv6IfAddr', 'mgmtInbandProfile', 'mgmtVnet',
+                                'networkElement',
                                 'nwctrlDefinition', 'orgOrg', 'policyCommunication', 'policyConfigBackup',
                                 'policyControlEp', 'policyDateTime', 'policyDns', 'policyEquipment', 'policyFault',
                                 'policyInfraFirmware', 'policyMEp', 'policyMonitoring', 'policyPortConfig',
@@ -661,13 +682,24 @@ class UcsImcConfig(GenericUcsConfig):
 
 class UcsCentralConfig(GenericUcsConfig):
     def __init__(self, parent=None):
-        self.orgs = []
+        self.date_time = []
+        self.dns = []
         self.domain_groups = []
+        self.local_users = []
+        self.locales = []
+        self.management_interfaces = []
+        self.orgs = []
+        self.password_profile = []
+        self.roles = []
+        self.snmp = []
+        self.syslog = []
+        self.system = []
 
         GenericUcsConfig.__init__(self, parent=parent)
 
         # List of attributes to be exported in a config export
-        self.export_list = ['orgs', 'domain_groups']
+        self.export_list = ['date_time', 'dns', 'domain_groups', 'local_users', 'locales', 'management_interfaces',
+                            'orgs', 'password_profile', 'roles', 'snmp', 'syslog', 'system']
 
     def _fetch_sdk_objects(self):
         GenericUcsConfig._fetch_sdk_objects(self)
@@ -676,7 +708,17 @@ class UcsCentralConfig(GenericUcsConfig):
         sdk_objects_to_fetch = ['orgOrg', 'macpoolPool', 'macpoolBlock', 'fcpoolInitiators', 'fcpoolBlock',
                                 'uuidpoolPool', 'uuidpoolBlock', 'orgDomainGroup', 'fabricVlanReq', 'fabricVlan',
                                 'fabricNetGroup', 'fabricPooledVlan', 'fabricNetGroupReq', 'fabricVsan', 'ippoolPool',
-                                'ippoolBlock', 'ippoolIpV6Block']
+                                'ippoolBlock', 'ippoolIpV6Block', 'networkElement', 'mgmtIPv6IfAddr', 'commDateTime',
+                                'commNtpProvider', 'commDnsProvider', 'commDns', 'commHttp', 'commTelnet', 'commCimxml',
+                                'commWebSvcLimits', 'commShellSvcLimits', 'computeChassisDiscPolicy',
+                                'computeServerDiscPolicy', 'computeServerMgmtPolicy', 'fabricLanCloudPolicy',
+                                'firmwareAutoSyncPolicy', 'topInfoSyncPolicy', 'computePsuPolicy', 'powerMgmtPolicy',
+                                'commSyslogConsole', 'commSyslogMonitor', 'commSyslogFile', 'commSyslogClient',
+                                'commSyslog', 'commSyslogSource', 'computeSystemQual', 'computeOwnerQual',
+                                'computeSiteQual', 'computeSystemAddrQual', 'orgDomainGroupPolicy',
+                                'computeGroupMembership', 'aaaRole', 'aaaLocale', 'aaaOrg', 'aaaDomainGroup', 'aaaUser',
+                                'aaaSshAuth', 'aaaUserLocale', 'aaaUserRole', 'aaaPwdProfile', 'commSnmp',
+                                'commSnmpTrap', 'commSnmpUser']
 
         self.logger(level="debug", message="Fetching UCS Central SDK objects for config")
         failed_to_fetch = []

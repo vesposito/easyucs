@@ -137,6 +137,17 @@
          },
          "minItems":1
       },
+      "global_fault_policy":{
+         "description":"EasyUCS config/global_fault_policy section",
+         "type":"array",
+         "items":{
+            "description":"EasyUCS config/global_fault_policy element",
+            "type":"object",
+            "$ref":"config/global_fault_policy.json"
+         },
+         "minItems":1,
+         "maxItems":1
+      },
       "global_policies":{
          "description":"EasyUCS config/global_policies section",
          "type":"array",
@@ -387,6 +398,17 @@
             "description":"EasyUCS config/switching_mode element",
             "type":"object",
             "$ref":"config/switching_mode.json"
+         },
+         "minItems":1,
+         "maxItems":1
+      },
+      "syslog":{
+         "description":"EasyUCS config/syslog section",
+         "type":"array",
+         "items":{
+            "description":"EasyUCS config/syslog element",
+            "type":"object",
+            "$ref":"config/syslog.json"
          },
          "minItems":1,
          "maxItems":1

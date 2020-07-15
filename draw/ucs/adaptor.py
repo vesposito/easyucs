@@ -32,6 +32,8 @@ class UcsSystemDrawAdaptor(GenericUcsDrawEquipment):
             if self.parent_draw.color_ports:
                 if self._parent.sku not in ["UCSC-PCIE-C25Q-04"]:  #TODO Workaround until fixed on inventory as the port of the PCIe card are not correct and appears as active even when should not
                     self.draw_ports()
+                elif "Rack" in self._parent._parent.__class__.__name__:  #TODO Workaround until above problem fixed
+                    self.draw_ports()
                 # self.draw_ports()
 
         # We drop the picture in order to save on memory

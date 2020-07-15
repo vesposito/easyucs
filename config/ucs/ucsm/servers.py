@@ -632,6 +632,7 @@ class UcsSystemLocalDiskConfPolicy(UcsSystemConfigObject):
         self.protect_configuration = None
         self.flexflash_state = None
         self.flexflash_raid_reporting_state = None
+        self.flexflash_removable_state = None
 
         if self._config.load_from == "live":
             if storage_local_disk_config_policy is not None:
@@ -641,6 +642,7 @@ class UcsSystemLocalDiskConfPolicy(UcsSystemConfigObject):
                 self.protect_configuration = storage_local_disk_config_policy.protect_config
                 self.flexflash_state = storage_local_disk_config_policy.flex_flash_state
                 self.flexflash_raid_reporting_state = storage_local_disk_config_policy.flex_flash_raid_reporting_state
+                self.flexflash_removable_state = storage_local_disk_config_policy.flex_flash_removable_state
 
         elif self._config.load_from == "file":
             if json_content is not None:
@@ -691,7 +693,8 @@ class UcsSystemLocalDiskConfPolicy(UcsSystemConfigObject):
             StorageLocalDiskConfigPolicy(parent_mo_or_dn=parent_mo, name=self.name, mode=mode, descr=self.descr,
                                          protect_config=self.protect_configuration,
                                          flex_flash_raid_reporting_state=self.flexflash_raid_reporting_state,
-                                         flex_flash_state=self.flexflash_state)
+                                         flex_flash_state=self.flexflash_state,
+                                         flex_flash_removable_state=self.flexflash_removable_state)
 
         self._handle.add_mo(mo=mo_storage_local_disk_config_policy, modify_present=True)
         if commit:
@@ -1276,6 +1279,7 @@ class UcsSystemScrubPolicy(UcsSystemConfigObject):
         self.disk_scrub = None
         self.flexflash_scrub = None
         self.bios_settings_scrub = None
+        self.persistent_memory_scrub = None
         self.descr = None
 
         if self._config.load_from == "live":
@@ -1285,6 +1289,7 @@ class UcsSystemScrubPolicy(UcsSystemConfigObject):
                 self.disk_scrub = compute_scrub_policy.disk_scrub
                 self.flexflash_scrub = compute_scrub_policy.flex_flash_scrub
                 self.bios_settings_scrub = compute_scrub_policy.bios_settings_scrub
+                self.persistent_memory_scrub = compute_scrub_policy.persistent_memory_scrub
 
         elif self._config.load_from == "file":
             if json_content is not None:
@@ -1312,6 +1317,7 @@ class UcsSystemScrubPolicy(UcsSystemConfigObject):
                                                      disk_scrub=self.disk_scrub,
                                                      bios_settings_scrub=self.bios_settings_scrub,
                                                      flex_flash_scrub=self.flexflash_scrub,
+                                                     persistent_memory_scrub=self.persistent_memory_scrub,
                                                      descr=self.descr)
 
         self._handle.add_mo(mo=mo_compute_scrub_policy, modify_present=True)
@@ -1475,6 +1481,9 @@ class UcsSystemBootPolicy(UcsSystemConfigObject):
                                         image = {}
                                         image.update({"name": boot_iscsi_img.i_scsi_vnic_name})
                                         image.update({"type": boot_iscsi_img.type})
+                                        image.update({"boot_loader_name": None})
+                                        image.update({"boot_loader_path": None})
+                                        image.update({"boot_loader_description": None})
                                         if "lsbootUEFIBootParam" in self._parent._config.sdk_objects:
                                             for boot_iscsi_img_boot_param in \
                                                     self._config.sdk_objects["lsbootIScsiImagePath"]:
@@ -1517,6 +1526,9 @@ class UcsSystemBootPolicy(UcsSystemConfigObject):
                                         lun = {}
                                         lun.update({"type": image_path.type})
                                         lun.update({"name": image_path.lun_name})
+                                        lun.update({"boot_loader_name": None})
+                                        lun.update({"boot_loader_path": None})
+                                        lun.update({"boot_loader_description": None})
                                         if "lsbootUEFIBootParam" in self._parent._config.sdk_objects:
                                             for boot_disk_img_boot_param \
                                                     in self._config.sdk_objects["lsbootUEFIBootParam"]:
@@ -1607,6 +1619,9 @@ class UcsSystemBootPolicy(UcsSystemConfigObject):
                                         disk = {}
                                         disk.update({"type": image_path.type})
                                         disk.update({"slot_number": image_path.slot_number})
+                                        disk.update({"boot_loader_name": None})
+                                        disk.update({"boot_loader_path": None})
+                                        disk.update({"boot_loader_description": None})
                                         if "lsbootUEFIBootParam" in self._parent._config.sdk_objects:
                                             for boot_disk_img_boot_param \
                                                     in self._config.sdk_objects["lsbootUEFIBootParam"]:
@@ -1646,7 +1661,9 @@ class UcsSystemBootPolicy(UcsSystemConfigObject):
                                                         image_path.update({"type": target.type})
                                                         image_path.update({"lun": target.lun})
                                                         image_path.update({"wwpn": target.wwn})
-                                                        image["targets"].append(image_path)
+                                                        image_path.update({"boot_loader_name": None})
+                                                        image_path.update({"boot_loader_path": None})
+                                                        image_path.update({"boot_loader_description": None})
                                                         if "lsbootUEFIBootParam" in self._parent._config.sdk_objects:
                                                             for boot_san_img_boot_param in \
                                                                     self._config.sdk_objects["lsbootUEFIBootParam"]:
@@ -1662,6 +1679,7 @@ class UcsSystemBootPolicy(UcsSystemConfigObject):
                                                                     image_path.update({
                                                                         "boot_loader_description":
                                                                             boot_san_img_boot_param.boot_description})
+                                                        image["targets"].append(image_path)
                                             device["vhbas"].append(image)
                                 if device:
                                     self.boot_order.append(device)
@@ -1839,10 +1857,11 @@ class UcsSystemBootPolicy(UcsSystemConfigObject):
                         mo_boot_iscsi_image = LsbootIScsiImagePath(parent_mo_or_dn=mo_boot_iscsi,
                                                                    type=vnic["type"],
                                                                    i_scsi_vnic_name=vnic["name"])
-                        LsbootUEFIBootParam(parent_mo_or_dn=mo_boot_iscsi_image,
-                                            boot_loader_path=vnic["boot_loader_path"],
-                                            boot_loader_name=vnic["boot_loader_name"],
-                                            boot_description=vnic["boot_loader_description"])
+                        if vnic["boot_loader_path"] or vnic["boot_loader_name"] or vnic["boot_loader_description"]:
+                            LsbootUEFIBootParam(parent_mo_or_dn=mo_boot_iscsi_image,
+                                                boot_loader_path=vnic["boot_loader_path"],
+                                                boot_loader_name=vnic["boot_loader_name"],
+                                                boot_description=vnic["boot_loader_description"])
             elif device['device_type'] == "efi_shell":
                 LsbootEFIShell(parent_mo_or_dn=mo_ls_boot_policy, order=device['order'])
             elif device['device_type'] == "san":
@@ -3599,6 +3618,7 @@ class UcsSystemServiceProfile(UcsSystemConfigObject):
         # vNIC/vHBA Placement
         self.placement_policy = None
         self.placement = []
+        self.specific_placement = []
         # vMedia Policy
         self.vmedia_policy = None
         # Server Boot Order
@@ -3618,6 +3638,7 @@ class UcsSystemServiceProfile(UcsSystemConfigObject):
         self.ipmi_access_profile = None
         self.serial_over_lan_policy = None
         self.outband_ipv4_pool = None
+        self.inband_network = None
         self.inband_ipv6_pool = None
         self.inband_ipv4_pool = None
         self.threshold_policy = None
@@ -3705,6 +3726,12 @@ class UcsSystemServiceProfile(UcsSystemConfigObject):
                             if self._parent._dn:
                                 if self._parent._dn + "/ls-" + self.name + "/" in profile.dn:
                                     self.storage_profile = profile.storage_profile_name
+
+                    if "mgmtVnet" in self._parent._config.sdk_objects:
+                        for vnet in self._config.sdk_objects["mgmtVnet"]:
+                            if self._parent._dn:
+                                if self._parent._dn + "/ls-" + self.name + "/" in vnet.dn:
+                                    self.inband_network = vnet.name
 
                     if "vnicIpV4MgmtPooledAddr" in self._parent._config.sdk_objects:
                         for pool in self._config.sdk_objects["vnicIpV4MgmtPooledAddr"]:
@@ -3818,6 +3845,7 @@ class UcsSystemServiceProfile(UcsSystemConfigObject):
                                     vnic = {}
                                     vnic.update({"name": vnic_iscsi.name})
                                     vnic.update({"adapter_policy": vnic_iscsi.adaptor_profile_name})
+                                    vnic.update({"overlay_vnic": vnic_iscsi.vnic_name})
                                     if vnic_iscsi.addr != "derived":
                                         vnic.update({"mac_address": vnic_iscsi.addr})
                                     elif not vnic_iscsi.ident_pool_name and vnic_iscsi.addr == "derived":
@@ -3877,6 +3905,29 @@ class UcsSystemServiceProfile(UcsSystemConfigObject):
                                         place.update({"vhba": vcon.vnic_name})
                                     self.placement.append(place)
 
+                    if "fabricVCon" in self._parent._config.sdk_objects:
+                        for vcon in self._config.sdk_objects["fabricVCon"]:
+                            if self._parent._dn:
+                                if self._parent._dn + "/ls-" + self.name + "/" in vcon.dn:
+                                    if vcon.inst_type == "manual":
+                                        for vnic in self._config.sdk_objects["vnicEther"]:
+                                            if self._parent._dn:
+                                                if self._parent._dn + "/ls-" + self.name + "/" in vnic.dn:
+                                                    if vnic.admin_vcon == vcon.id:
+                                                        place = {}
+                                                        place.update({"vcon": vcon.id})
+                                                        place.update({"vnic": vnic.name})
+                                                        self.specific_placement.append(place)
+                                                        continue
+                                        for vnic in self._config.sdk_objects["vnicFc"]:
+                                            if self._parent._dn:
+                                                if self._parent._dn + "/ls-" + self.name + "/" in vnic.dn:
+                                                    if vnic.admin_vcon == vcon.id:
+                                                        place = {}
+                                                        place.update({"vcon": vcon.id})
+                                                        place.update({"vhba": vnic.name})
+                                                        self.specific_placement.append(place)
+
                     if "storageIniGroup" in self._parent._config.sdk_objects:
                         for initiator_group in self._config.sdk_objects["storageIniGroup"]:
                             if self._parent._dn:
@@ -3904,9 +3955,8 @@ class UcsSystemServiceProfile(UcsSystemConfigObject):
                                     boot_param.update({"iscsi_vnic_name": mo.name})
                                     boot_param.update({"authentication_profile": mo.auth_profile_name})
                                     boot_param.update({"iqn_pool": mo.iqn_ident_pool_name})
-                                    if mo.initiator_name != "derived":
+                                    if mo.initiator_name != "derived" and not boot_param["iqn_pool"]:
                                         boot_param.update({"iqn": mo.initiator_name})
-                                    boot_param.update({"iqn": mo.iqn_ident_pool_name})
                                     if "vnicIPv4PooledIscsiAddr" in self._parent._config.sdk_objects:
                                         for mo_ip_pool in self._config.sdk_objects["vnicIPv4PooledIscsiAddr"]:
                                             if mo.dn in mo_ip_pool.dn:
@@ -3952,12 +4002,17 @@ class UcsSystemServiceProfile(UcsSystemConfigObject):
                             element[value] = None
 
                 for element in self.iscsi_vnics:
-                    for value in ["name", "vlan", "mac_address_pool", "adapter_policy", "mac_address"]:
+                    for value in ["name", "vlan", "mac_address_pool", "adapter_policy", "mac_address", "overlay_vnic"]:
                         if value not in element:
                             element[value] = None
                 
                 for element in self.placement:
                     for value in ["vcon", "vnic", "vhba", "order"]:
+                        if value not in element:
+                            element[value] = None
+
+                for element in self.specific_placement:
+                    for value in ["vcon", "vnic", "vhba"]:
                         if value not in element:
                             element[value] = None
                 
@@ -3980,6 +4035,8 @@ class UcsSystemServiceProfile(UcsSystemConfigObject):
                             for subvalue in ["name", "port", "lun_id", "authentication_profile", "ip_address"]:
                                 if subvalue not in subelement:
                                     subelement[subvalue] = None
+                    else:
+                        element["iscsi_static_targets"] = []
 
         self.clean_object()
 
@@ -4061,12 +4118,12 @@ class UcsSystemServiceProfile(UcsSystemConfigObject):
                         lan_conn_policy_name=self.lan_connectivity_policy)
 
         # Add Inband Management IP Address
-        if self.inband_ipv4_pool or self.inband_ipv6_pool:
+        if self.inband_ipv4_pool or self.inband_ipv6_pool or self.inband_network:
             mo_mgmt_int = MgmtInterface(parent_mo_or_dn=mo_ls_server,
                                         ip_v4_state="pooled",
                                         ip_v6_state="pooled",
                                         mode="in-band")
-            mo_vnet = MgmtVnet(parent_mo_or_dn=mo_mgmt_int, id="1")
+            mo_vnet = MgmtVnet(parent_mo_or_dn=mo_mgmt_int, id="1", name=self.inband_network)
             VnicIpV4MgmtPooledAddr(parent_mo_or_dn=mo_vnet, name=self.inband_ipv4_pool)
             VnicIpV6MgmtPooledAddr(parent_mo_or_dn=mo_vnet, name=self.inband_ipv6_pool)
 
@@ -4096,17 +4153,25 @@ class UcsSystemServiceProfile(UcsSystemConfigObject):
                 return False
 
         if self.iscsi_initiator_name or self.iscsi_vnics:
-            VnicIScsiNode(parent_mo_or_dn=mo_ls_server, iqn_ident_pool_name=self.iscsi_initiator_name)
+            mo_node = VnicIScsiNode(parent_mo_or_dn=mo_ls_server, iqn_ident_pool_name=self.iscsi_initiator_name)
             for iscsi_vnic in self.iscsi_vnics:
                 mac_address_pool = iscsi_vnic['mac_address_pool']
                 mac_address = iscsi_vnic["mac_address"]
-
+                if mac_address == "hardware-default":
+                    mac_address = None
                 mo_vnic_iscsi = VnicIScsi(parent_mo_or_dn=mo_ls_server,
                                           adaptor_profile_name=iscsi_vnic["adapter_policy"],
                                           ident_pool_name=mac_address_pool,
                                           addr=mac_address,
-                                          name=iscsi_vnic['name'])
+                                          name=iscsi_vnic['name'],
+                                          vnic_name=iscsi_vnic["overlay_vnic"])
                 VnicVlan(parent_mo_or_dn=mo_vnic_iscsi, vlan_name=iscsi_vnic["vlan"])
+                self._handle.add_mo(mo=mo_vnic_iscsi, modify_present=True)
+
+            self._handle.add_mo(mo=mo_node, modify_present=True)
+            if commit:
+                if self.commit(detail="iSCSI vNIC " + iscsi_vnic['name'] + " of service profile " + mo_ls_server.name) != True:
+                    return False
 
         for vnic in self.vnics:
             if vnic['fabric']:
@@ -4178,6 +4243,49 @@ class UcsSystemServiceProfile(UcsSystemConfigObject):
                 if self.commit(detail=vhba['name']) != True:
                     return False
 
+        specific_placement = False
+        for place in self.specific_placement:
+            if "vcon" in place:
+                if place["vcon"] and not specific_placement:
+                    specific_placement = True
+                    # We first need to modify the fabric v con to put them in manual placement
+                    FabricVCon(parent_mo_or_dn=mo_ls_server, id="1", inst_type="manual")
+                    FabricVCon(parent_mo_or_dn=mo_ls_server, id="2", inst_type="manual")
+                    FabricVCon(parent_mo_or_dn=mo_ls_server, id="3", inst_type="manual")
+                    FabricVCon(parent_mo_or_dn=mo_ls_server, id="4", inst_type="manual")
+
+                    self._handle.add_mo(mo=mo_ls_server, modify_present=True)
+        if commit and specific_placement:
+            if self.commit(detail="Manual specific placement") != True:
+                return False
+        for place in self.specific_placement:
+            # Then, we set the placement
+            if "vcon" in place:
+                if place["vcon"]:
+                    if ("vhba" in place) or ("vnic" in place):
+                        if 'vhba' in place:
+                            if place["vhba"]:
+                                mo_vnic = VnicFc(parent_mo_or_dn=mo_ls_server, admin_vcon=place["vcon"], name=place["vhba"],
+                                       order=place["vcon"],)
+                                mo_vcon = LsVConAssign(parent_mo_or_dn=mo_ls_server, admin_vcon=place["vcon"], order=place["vcon"],
+                                                    transport="fc", vnic_name=place["vhba"])
+                                self._handle.add_mo(mo=mo_vnic, modify_present=True)
+                                self._handle.add_mo(mo=mo_vcon, modify_present=True)
+                                if commit:
+                                    if self.commit(detail="Manual specific placement of " + place["vhba"]) != True:
+                                        return False
+                        if 'vnic' in place:
+                            if place["vnic"]:
+                                mo_vnic = VnicEther(parent_mo_or_dn=mo_ls_server, admin_vcon=place["vcon"], name=place["vnic"],
+                                       order=place["vcon"],)
+                                mo_vcon = LsVConAssign(parent_mo_or_dn=mo_ls_server, admin_vcon=place["vcon"], order=place["vcon"],
+                                                    transport="ethernet", vnic_name=place["vnic"])
+                                self._handle.add_mo(mo=mo_vnic, modify_present=True)
+                                self._handle.add_mo(mo=mo_vcon, modify_present=True)
+                                if commit:
+                                    if self.commit(detail="Manual specific placement of " + place["vnic"]) != True:
+                                        return False
+
         for place in self.placement:
             if ("vhba" in place) or ("vnic" in place):
                 transport = ""
@@ -4220,8 +4328,8 @@ class UcsSystemServiceProfile(UcsSystemConfigObject):
                 mo_iscsi_boot_vnic = VnicIScsiBootVnic(parent_mo_or_dn=mo_iscsi_boot_params,
                                                        name=iscsi_boot_parameter["iscsi_vnic_name"]
                                                        )
-                # mo_ipv4_if = VnicIPv4If(parent_mo_or_dn=mo_iscsi_boot_vnic)
-                # mo_ipv4_dhcp = VnicIPv4Dhcp(parent_mo_or_dn=mo_ipv4_if)
+                mo_ipv4_if = VnicIPv4If(parent_mo_or_dn=mo_iscsi_boot_vnic)
+                mo_ipv4_dhcp = VnicIPv4Dhcp(parent_mo_or_dn=mo_ipv4_if)
                 VnicIScsiAutoTargetIf(parent_mo_or_dn=mo_iscsi_boot_vnic,
                                       dhcp_vendor_id=iscsi_boot_parameter["dhcp_vendor_id"])
             else:

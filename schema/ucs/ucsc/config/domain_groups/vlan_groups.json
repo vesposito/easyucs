@@ -1,32 +1,32 @@
 {
-   "id":"ucs_central_config_domain_groups_vlan_groups#",
-   "$schema":"http://json-schema.org/draft-07/schema#",
-   "title":"EasyUCS ucs central config domain_groups vlan_groups section",
-   "description":"EasyUCS ucs central config domain_groups vlan_groups section JSON schema",
-   "type":"object",
-   "properties":{
+   "id": "ucs_central_config_domain_groups_vlan_groups#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS ucs central config domain_groups vlan_groups section",
+   "description": "EasyUCS ucs central config domain_groups vlan_groups section JSON schema",
+   "type": "object",
+   "properties": {
       "comment": {
          "description": "VLAN Group Comments",
          "type": "string",
          "default": ""
       },
-      "name":{
-         "description":"VLAN Group Name",
-         "type":"string",
-         "default":""
+      "name": {
+         "description": "VLAN Group Name",
+         "type": "string",
+         "default": ""
       },
-      "native_vlan":{
-         "description":"VLAN Group Native VLAN Name",
-         "type":"string"
+      "native_vlan": {
+         "description": "VLAN Group Native VLAN Name",
+         "type": "string"
       },
-      "vlans":{
-         "description":"VLAN Group VLANs List",
-         "type":"array",
-         "items":{
-            "description":"VLAN Group VLAN Member Name",
-            "type":"string"
+      "vlans": {
+         "description": "VLAN Group VLANs List",
+         "type": "array",
+         "items": {
+            "description": "VLAN Group VLAN Member Name",
+            "type": "string"
          },
-         "minItems":1
+         "minItems": 1
       },
       "org_permissions": {
          "description": "Organizations assigned to the VLAN Group",
@@ -40,8 +40,8 @@
          "minItems": 1
       }
    },
-   "additionalProperties":false,
-   "required":[
+   "additionalProperties": false,
+   "required": [
       "name"
    ]
 }

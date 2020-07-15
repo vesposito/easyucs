@@ -582,12 +582,18 @@ class UcsSystemDrawInfraRack(UcsSystemDrawInfraEquipment):
         self.picture = None
 
     def _get_fex_infra_presence(self):
-        # Used to know if a FEX need to be used for this infra
+        # Used to know if a FEX needs to be used for this infra - for connecting network adapters
         for adaptor in self.rack.adaptor_list:
             for adapt_port in adaptor.ports:
                 # Search for peer information
                 if hasattr(adapt_port, "peer"):
                     if "fex" in adapt_port.peer:
+                        return True
+        # Used to know if a FEX needs to be used for this infra - for connecting rack servers LOM management ports
+        for mgmt_if in self.rack._parent.mgmt_interfaces:
+            if hasattr(mgmt_if, "peer"):
+                if mgmt_if.peer:
+                    if "fex" in mgmt_if.peer:
                         return True
         return False
 
@@ -812,23 +818,23 @@ class UcsSystemDrawInfraRack(UcsSystemDrawInfraEquipment):
                                     if fabric == "a":
                                         if int(adaptor._parent.id) % 2:
                                             if int(adapt_port.id) % 2:
-                                                step = self.WIRE_DISTANCE_SHORT + round(adapt_port.size[1]/2)
+                                                step = self.WIRE_DISTANCE_SHORT + round(adapt_port.size[1] / 2)
                                             else:
                                                 step = self.WIRE_DISTANCE_LONG + round(adapt_port.size[1] / 2)
                                         else:
                                             if int(adapt_port.id) % 2:
-                                                step = self.WIRE_DISTANCE_SHORT + round(adapt_port.size[1]/2)
+                                                step = self.WIRE_DISTANCE_SHORT + round(adapt_port.size[1] / 2)
                                             else:
                                                 step = self.WIRE_DISTANCE_LONG + round(adapt_port.size[1] / 2)
                                     if fabric == "b":
                                         if int(adaptor._parent.id) % 2:
                                             if int(adapt_port.id) % 2:
-                                                step = - self.WIRE_DISTANCE_LONG - round(adapt_port.size[1]/2)
+                                                step = - self.WIRE_DISTANCE_LONG - round(adapt_port.size[1] / 2)
                                             else:
                                                 step = - self.WIRE_DISTANCE_SHORT - round(adapt_port.size[1] / 2)
                                         else:
                                             if int(adapt_port.id) % 2:
-                                                step = - self.WIRE_DISTANCE_LONG - round(adapt_port.size[1]/2)
+                                                step = - self.WIRE_DISTANCE_LONG - round(adapt_port.size[1] / 2)
                                             else:
                                                 step = - self.WIRE_DISTANCE_SHORT - round(adapt_port.size[1] / 2)
                                 # for all the non quad port cards
@@ -1044,7 +1050,7 @@ class UcsSystemDrawInfraRack(UcsSystemDrawInfraEquipment):
 
                     wire_width = self.WIDTH_WIRE
 
-                    if mgmt_port.peer['fex'] == '1':
+                    if str(mgmt_port.peer['fex']) == '1':
                         fex = self.fex_a
                         fabric = "a"
                     else:
@@ -1610,6 +1616,10 @@ class UcsSystemDrawInfraRackEnclosure(UcsSystemDrawInfraEquipment):
                     if hasattr(adapt_port, "peer"):
                         if "fex" in adapt_port.peer:
                             return True
+            for mgmt_if in server_node._parent.mgmt_interfaces:
+                if hasattr(mgmt_if, "peer"):
+                    if "fex" in mgmt_if.peer:
+                        return True
         return False
 
     def _get_fex(self, list):
@@ -2059,7 +2069,7 @@ class UcsSystemDrawInfraRackEnclosure(UcsSystemDrawInfraEquipment):
 
                         wire_width = self.WIDTH_WIRE
 
-                        if mgmt_port.peer['fex'] == '1':
+                        if str(mgmt_port.peer['fex']) == '1':
                             fex = self.fex_a
                             fabric = "a"
                         else:

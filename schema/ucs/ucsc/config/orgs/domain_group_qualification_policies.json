@@ -1,0 +1,110 @@
+{
+   "id": "ucs_central_config_domain_group_qualification_policies#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS ucs central config orgs domain_group_qualification_policies section",
+   "description": "EasyUCS ucs central config orgs domain_group_qualification_policies section JSON schema",
+   "type": "object",
+   "properties": {
+      "comment": {
+         "description": "Domain Group Qualification Policy Comments",
+         "type": "string",
+         "default": ""
+      },
+      "name": {
+         "description": "Domain Group Qualification Policy Name",
+         "type": "string",
+         "default": "",
+         "pattern": "^[\\-\\.:_a-zA-Z0-9]{1,16}$"
+      },
+      "descr": {
+         "description": "Description of Domain Group Qualification Policy",
+         "type": "string",
+         "default": "",
+         "pattern": "^[ !#$%&\\(\\)\\*\\+,\\-\\./:;\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{0,256}$"
+      },
+      "ip_address_qualifiers": {
+         "description": "IP Address Qualifiers of Domain Group Qualification Policy",
+         "type": "array",
+         "items": {
+            "type": "object",
+            "description": "IP Address Qualifier of Domain Group Qualification Policy",
+            "properties": {
+               "from": {
+                  "description": "First IP Address of IP Address Qualifier",
+                  "type": "string",
+                  "format": "ipv4"
+               },
+               "to": {
+                  "description": "Last IP Address of IP Address Qualifier",
+                  "type": "string",
+                  "format": "ipv4"
+               }
+            },
+            "additionalProperties": false,
+            "required": [
+               "from",
+               "to"
+            ]
+         },
+         "minItems": 1
+      },
+      "owner_qualifiers": {
+         "description": "Owner Qualifiers of Domain Group Qualification Policy",
+         "type": "array",
+         "items": {
+            "type": "object",
+            "description": "Owner Qualifier of Domain Group Qualification Policy",
+            "properties": {
+               "name": {
+                  "description": "Name of Owner Qualifier",
+                  "type": "string",
+                  "default": "",
+                  "pattern": "^[\\-\\.:_a-zA-Z0-9]{1,16}$"
+               },
+               "owner_name": {
+                  "description": "Owner Name of Owner Qualifier (Regular Expression)",
+                  "type": "string",
+                  "default": ""
+               }
+            },
+            "additionalProperties": false,
+            "required": [
+               "name",
+               "owner_name"
+            ]
+         },
+         "minItems": 1
+      },
+      "site_qualifiers": {
+         "description": "Site Qualifiers of Domain Group Qualification Policy",
+         "type": "array",
+         "items": {
+            "type": "object",
+            "description": "Site Qualifier of Domain Group Qualification Policy",
+            "properties": {
+               "name": {
+                  "description": "Name of Site Qualifier",
+                  "type": "string",
+                  "default": "",
+                  "pattern": "^[\\-\\.:_a-zA-Z0-9]{1,16}$"
+               },
+               "site_name": {
+                  "description": "Site Name of Site Qualifier (Regular Expression)",
+                  "type": "string",
+                  "default": ""
+               }
+            },
+            "additionalProperties": false,
+            "required": [
+               "name",
+               "site_name"
+            ]
+         },
+         "minItems": 1
+      }
+   },
+   "additionalProperties": false,
+   "required": [
+      "name"
+   ]
+}

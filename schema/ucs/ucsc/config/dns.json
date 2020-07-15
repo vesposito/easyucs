@@ -1,0 +1,29 @@
+{
+   "id": "ucs_central_config_dns#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS ucs central config dns section",
+   "description": "EasyUCS ucs central config dns section JSON schema",
+   "type": "object",
+   "properties": {
+      "comment": {
+         "description": "DNS Comments",
+         "type": "string",
+         "default": ""
+      },
+      "domain_name": {
+         "description": "UCS Central Domain Name",
+         "type": "string",
+         "default": ""
+      },
+      "dns_servers": {
+         "description": "DNS servers list",
+         "type": "array",
+         "items": {
+            "description": "DNS server",
+            "type": "string"
+         },
+         "minItems": 1
+      }
+   },
+   "additionalProperties": false
+}

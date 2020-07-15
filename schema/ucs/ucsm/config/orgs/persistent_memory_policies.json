@@ -20,7 +20,7 @@
          "description":"Description of Persistent Memory Policy",
          "type":"string",
          "default":"",
-         "pattern":"^[!#$%&\\(\\)\\*\\+,\\-\\./:;\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{0,256}$"
+         "pattern":"^[ !#$%&\\(\\)\\*\\+,\\-\\./:;\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{0,256}$"
       },
       "secure_passphrase":{
          "description":"Secure Passphrase of Persistent Memory Policy",

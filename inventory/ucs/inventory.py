@@ -12,6 +12,7 @@ from ucscsdk.ucscexception import UcscException
 from ucsmsdk.ucsexception import UcsException
 
 from inventory.inventory import GenericInventory
+from inventory.ucs.adaptor import UcsImcHbaAdapter
 from inventory.ucs.chassis import UcsImcSioc
 from inventory.ucs.gpu import UcsImcGpu
 from inventory.ucs.neighbor import UcsSystemLanNeighbor, UcsSystemSanNeighbor
@@ -30,11 +31,11 @@ class GenericUcsInventory(GenericInventory):
 
     def _fetch_sdk_objects(self):
         # List of SDK objects to fetch that are common to UCS System, IMC & UCS Central
-        sdk_objects_to_fetch = ["adaptorExtEthIf", "adaptorUnit", "computeRackUnit", "equipmentChassis",
-                                "equipmentLocatorLed", "equipmentPsu", "equipmentSystemIOController", "memoryArray",
-                                "memoryUnit", "mgmtController", "mgmtIf", "processorUnit", "storageController",
-                                "storageEnclosure", "storageFlexFlashController", "storageLocalDisk",
-                                "storageRaidBattery"]
+        sdk_objects_to_fetch = ["adaptorExtEthIf", "adaptorHostEthIf", "adaptorUnit", "computeRackUnit",
+                                "equipmentChassis", "equipmentLocatorLed", "equipmentPsu",
+                                "equipmentSystemIOController", "memoryArray", "memoryUnit", "mgmtController", "mgmtIf",
+                                "processorUnit", "storageController", "storageEnclosure", "storageFlexFlashController",
+                                "storageLocalDisk", "storageRaidBattery"]
         self.logger(level="debug", message="Fetching common UCS SDK objects for inventory")
         for sdk_object_name in sdk_objects_to_fetch:
             try:
@@ -116,6 +117,11 @@ class GenericUcsInventory(GenericInventory):
                                 # Also filter storageRaidBattery objects for M.2 MSTOR-RAID controllers
                                 if object_class is UcsImcStorageRaidBattery and "storage-SATA-MSTOR-RAID" \
                                         in sdk_object.dn:
+                                    continue
+                                # Filter only HBA adapters for UcsImcHbaAdapter objects
+                                if object_class is UcsImcHbaAdapter and "HBA" not in sdk_object.model:
+                                    continue
+                                if object_class is UcsImcHbaAdapter and "SAS HBA" in sdk_object.model:
                                     continue
 
                                 filtered_sdk_objects_list.append(sdk_object)
@@ -199,8 +205,8 @@ class UcsSystemInventory(GenericUcsInventory):
                                 "fcPIo", "firmwareRunning", "graphicsCard", "licenseFeature", "licenseFile",
                                 "licenseInstance", "licenseServerHostId", "lsServer", "mgmtConnection", "moInvKv",
                                 "networkElement", "networkLanNeighborEntry", "networkLldpNeighborEntry",
-                                "networkSanNeighborEntry", "storageFlexFlashCard", "storageNvmeStats",
-                                "storageSsdHealthStats", "swVlanPortNs"]
+                                "networkSanNeighborEntry", "storageEmbeddedStorage", "storageFlexFlashCard",
+                                "storageNvmeStats", "storageSsdHealthStats", "swVlanPortNs"]
         self.logger(level="debug", message="Fetching UCS System SDK objects for inventory")
         for sdk_object_name in sdk_objects_to_fetch:
             try:

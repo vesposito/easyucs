@@ -920,8 +920,8 @@ class UcsSystemLanPinGroup(UcsSystemConfigObject):
                                 interface["slot_id"] = None
                                 interface["port_id"] = None
                                 if "aggr-port" in interface_ep_pc.ep_dn:
-                                    interface.update({"port_id": interface_ep_pc.ep_dn.split('/')[3].split('-')[4]})
-                                    interface.update({"aggr_id": interface_ep_pc.ep_dn.split('/')[4].split('-')[4]})
+                                    interface.update({"port_id": interface_ep_pc.ep_dn.split('/')[4].split('-')[4]})
+                                    interface.update({"aggr_id": interface_ep_pc.ep_dn.split('/')[3].split('-')[4]})
                                     interface.update({"slot_id": interface_ep_pc.ep_dn.split('/')[3].split('-')[1]})
                                 else:
                                     interface.update({"port_id": interface_ep_pc.ep_dn.split('/')[3].split('-')[4]})
@@ -1497,7 +1497,23 @@ class UcsSystemUnifiedUplinkPort(UcsSystemLanUplinkPort, UcsSystemFcoeUplinkPort
             if fabric_eth_lan_ep is not None:
                 UcsSystemLanUplinkPort.__init__(self, parent=parent, fabric_eth_lan_ep=fabric_eth_lan_ep)
             else:
-                self.logger('error', "Impossible to find fabricEthLanEp")
+                # Trying to see if LAN Uplink port is part of a LAN Port-Channel
+                if "fabricEthLanPcEp" in self._config.sdk_objects:
+                    fabric_eth_lan_pc_ep = None
+                    for port in self._config.sdk_objects["fabricEthLanPcEp"]:
+                        if self.aggr_id and self.aggr_id == port.port_id and self.fabric == port.switch_id \
+                                and self.slot_id == port.slot_id and self.port_id == port.aggr_port_id:
+                            fabric_eth_lan_pc_ep = port
+                        elif self.fabric == port.switch_id and self.slot_id == port.slot_id \
+                                and self.port_id == port.port_id:
+                            fabric_eth_lan_pc_ep = port
+
+                if fabric_eth_lan_pc_ep is None:
+                    # We only warn if we have found neither a corresponding fabricEthLanEp nor a fabricEthLanPcEp
+                    self.logger('error', "Impossible to find fabricEthLanEp")
+
+                # Otherwise we simply ignore the port if it is part of a LAN Port-Channel, since its extra attributes
+                # will be fetched in the appropriate Port-Channel section
 
             # FCoE Uplink Port
             if "fabricFcoeSanEp" in self._config.sdk_objects:
@@ -1513,7 +1529,23 @@ class UcsSystemUnifiedUplinkPort(UcsSystemLanUplinkPort, UcsSystemFcoeUplinkPort
             if fabric_fcoe_san_ep is not None:
                 UcsSystemFcoeUplinkPort.__init__(self, parent=parent, fabric_fcoe_san_ep=fabric_fcoe_san_ep)
             else:
-                self.logger('error', "Impossible to find fabricFcoeSanEp")
+                # Trying to see if FCoE Uplink port is part of a FCoE Port-Channel
+                if "fabricFcoeSanPcEp" in self._config.sdk_objects:
+                    fabric_fcoe_san_pc_ep = None
+                    for port in self._config.sdk_objects["fabricFcoeSanPcEp"]:
+                        if self.aggr_id and self.aggr_id == port.port_id and self.fabric == port.switch_id \
+                                and self.slot_id == port.slot_id and self.port_id == port.aggr_port_id:
+                            fabric_fcoe_san_pc_ep = port
+                        elif self.fabric == port.switch_id and self.slot_id == port.slot_id \
+                                and self.port_id == port.port_id:
+                            fabric_fcoe_san_pc_ep = port
+
+                if fabric_fcoe_san_pc_ep is None:
+                    # We only warn if we have found neither a corresponding fabricFcoeSanEp nor a fabricFcoeSanPcEp
+                    self.logger('error', "Impossible to find fabricFcoeSanEp")
+
+                # Otherwise we simply ignore the port if it is part of a FCoE Port-Channel, since its extra attributes
+                # will be fetched in the appropriate Port-Channel section
 
         elif self._config.load_from == "file":
             if json_content is not None:

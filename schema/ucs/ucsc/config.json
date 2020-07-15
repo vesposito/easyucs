@@ -5,16 +5,27 @@
    "description": "EasyUCS ucsc config section JSON schema",
    "type": "object",
    "properties": {
-      "orgs": {
-         "description": "EasyUCS config/orgs section",
+      "date_time": {
+         "description": "EasyUCS config/date_time section",
          "type": "array",
          "items": {
-            "description": "EasyUCS config/org_root element",
+            "description": "EasyUCS config/date_time element",
             "type": "object",
-            "$ref": "config/org_root.json"
+            "$ref": "config/date_time.json"
          },
-         "minItems":1,
-         "maxItems":1
+         "minItems": 1,
+         "maxItems": 1
+      },
+      "dns": {
+         "description": "EasyUCS config/dns section",
+         "type": "array",
+         "items": {
+            "description": "EasyUCS DNS server",
+            "type": "object",
+            "$ref": "config/dns.json"
+         },
+         "minItems": 1,
+         "maxItems": 1
       },
       "domain_groups": {
          "description": "EasyUCS config/domain_groups section",
@@ -24,9 +35,105 @@
             "type": "object",
             "$ref": "config/domain_group_root.json"
          },
-         "minItems":1,
-         "maxItems":1
+         "minItems": 1,
+         "maxItems": 1
+      },
+      "local_users": {
+         "description": "EasyUCS config/local_users section",
+         "type": "array",
+         "items": {
+            "description": "EasyUCS config/local_users element",
+            "type": "object",
+            "$ref": "config/local_users.json"
+         },
+         "minItems": 1
+      },
+      "locales": {
+         "description": "EasyUCS config/locales section",
+         "type": "array",
+         "items": {
+            "description": "EasyUCS config/locales element",
+            "type": "object",
+            "$ref": "config/locales.json"
+         },
+         "minItems": 1
+      },
+      "management_interfaces": {
+         "description": "EasyUCS config/management_interfaces section",
+         "type": "array",
+         "items": {
+            "description": "EasyUCS config/management_interfaces element",
+            "type": "object",
+            "$ref": "config/management_interfaces.json"
+         },
+         "minItems": 1,
+         "maxItems": 2
+      },
+      "orgs": {
+         "description": "EasyUCS config/orgs section",
+         "type": "array",
+         "items": {
+            "description": "EasyUCS config/org_root element",
+            "type": "object",
+            "$ref": "config/org_root.json"
+         },
+         "minItems": 1,
+         "maxItems": 1
+      },
+      "password_profile": {
+         "description": "EasyUCS config/password_profile section",
+         "type": "array",
+         "items": {
+            "description": "EasyUCS config/password_profile element",
+            "type": "object",
+            "$ref": "config/password_profile.json"
+         },
+         "minItems": 1,
+         "maxItems": 1
+      },
+      "roles": {
+         "description": "EasyUCS config/roles section",
+         "type": "array",
+         "items": {
+            "description": "EasyUCS config/roles element",
+            "type": "object",
+            "$ref": "config/roles.json"
+         },
+         "minItems": 1
+      },
+      "snmp": {
+         "description": "EasyUCS config/snmp section",
+         "type": "array",
+         "items": {
+            "description": "EasyUCS config/snmp element",
+            "type": "object",
+            "$ref": "config/snmp.json"
+         },
+         "minItems": 1,
+         "maxItems": 1
+      },
+      "syslog": {
+         "description": "EasyUCS config/syslog section",
+         "type": "array",
+         "items": {
+            "description": "EasyUCS config/syslog element",
+            "type": "object",
+            "$ref": "config/syslog.json"
+         },
+         "minItems": 1,
+         "maxItems": 1
+      },
+      "system": {
+         "description": "EasyUCS config/system section",
+         "type": "array",
+         "items": {
+            "description": "EasyUCS config/system element",
+            "type": "object",
+            "$ref": "config/system.json"
+         },
+         "minItems": 1,
+         "maxItems": 1
       }
    },
-   "additionalProperties": true
+   "additionalProperties": false
 }

@@ -71,6 +71,11 @@ from ucsmsdk.mometa.comm.CommSnmp import CommSnmp
 from ucsmsdk.mometa.comm.CommSnmpTrap import CommSnmpTrap
 from ucsmsdk.mometa.comm.CommSnmpUser import CommSnmpUser
 from ucsmsdk.mometa.comm.CommSsh import CommSsh
+from ucsmsdk.mometa.comm.CommSyslogClient import CommSyslogClient
+from ucsmsdk.mometa.comm.CommSyslogConsole import CommSyslogConsole
+from ucsmsdk.mometa.comm.CommSyslogFile import CommSyslogFile
+from ucsmsdk.mometa.comm.CommSyslogMonitor import CommSyslogMonitor
+from ucsmsdk.mometa.comm.CommSyslogSource import CommSyslogSource
 from ucsmsdk.mometa.comm.CommTelnet import CommTelnet
 from ucsmsdk.mometa.comm.CommWebSvcLimits import CommWebSvcLimits
 from ucsmsdk.mometa.compute.ComputeFanPolicy import ComputeFanPolicy
@@ -85,6 +90,7 @@ from ucsmsdk.mometa.fabric.FabricLanCloud import FabricLanCloud
 from ucsmsdk.mometa.fabric.FabricOrgVlanPolicy import FabricOrgVlanPolicy
 from ucsmsdk.mometa.fabric.FabricReservedVlan import FabricReservedVlan
 from ucsmsdk.mometa.fabric.FabricSanCloud import FabricSanCloud
+from ucsmsdk.mometa.fault.FaultPolicy import FaultPolicy
 from ucsmsdk.mometa.firmware.FirmwareAck import FirmwareAck
 from ucsmsdk.mometa.firmware.FirmwareAutoSyncPolicy import FirmwareAutoSyncPolicy
 from ucsmsdk.mometa.mgmt.MgmtBackupExportExtPolicy import MgmtBackupExportExtPolicy
@@ -1024,11 +1030,11 @@ class UcsSystemGlobalPolicies(UcsSystemConfigObject):
                 self.hardware_change_discovery_policy = self._config.sdk_objects["computeHwChangeDiscPolicy"][0].action
 
             if "fabricFcSan" in self._config.sdk_objects:
-                    for fi in self._config.sdk_objects["fabricFcSan"]:
-                        if fi.id == "A":
-                            self.fabric_a_fc_uplink_trunking = fi.uplink_trunking
-                        elif fi.id == "B":
-                            self.fabric_b_fc_uplink_trunking = fi.uplink_trunking
+                for fi in self._config.sdk_objects["fabricFcSan"]:
+                    if fi.id == "A":
+                        self.fabric_a_fc_uplink_trunking = fi.uplink_trunking
+                    elif fi.id == "B":
+                        self.fabric_b_fc_uplink_trunking = fi.uplink_trunking
 
         elif self._config.load_from == "file":
             if json_content is not None:
@@ -1115,7 +1121,7 @@ class UcsSystemGlobalPolicies(UcsSystemConfigObject):
                 speed = "Balanced"
             elif self.fan_control_policy == "low-power":
                 speed = "Low Power"
-            mo_compute_fan_policy = ComputeFanPolicy(parent_mo_or_dn=parent_mo_root, speed=self.fan_control_policy)
+            mo_compute_fan_policy = ComputeFanPolicy(parent_mo_or_dn=parent_mo_root, speed=speed)
             self._handle.add_mo(mo_compute_fan_policy, modify_present=True)
             if commit:
                 if self.commit("Fan Control Policy") != True:
@@ -1213,6 +1219,7 @@ class UcsSystemGlobalPolicies(UcsSystemConfigObject):
             if commit:
                 if self.commit("Hardware Change Discovery Policy") != True:
                     return False
+
         if self.fabric_a_fc_uplink_trunking or self.fabric_b_fc_uplink_trunking:
             if self.fabric_a_fc_uplink_trunking:
                 mo_fabric_a_fc_san = FabricFcSan(parent_mo_or_dn=parent_mo_san, id="A",
@@ -1229,6 +1236,237 @@ class UcsSystemGlobalPolicies(UcsSystemConfigObject):
                     if self.commit("FC Uplink Trunking") != True:
                         return False
 
+        return True
+
+
+class UcsSystemFaultPolicy(UcsSystemConfigObject):
+    _CONFIG_NAME = "Global Fault Policy"
+
+    def __init__(self, parent=None, json_content=None):
+        UcsSystemConfigObject.__init__(self, parent=parent)
+        self.flapping_interval = None
+        self.clear_action = None
+        self.clear_interval = None
+        self.retention_interval = None
+        self.baseline_expiration_interval = None
+
+        if self._config.load_from == "live":
+            if "faultPolicy" in self._config.sdk_objects:
+                self.flapping_interval = self._config.sdk_objects["faultPolicy"][0].flap_interval
+                self.clear_action = self._config.sdk_objects["faultPolicy"][0].clear_action
+                self.clear_interval = self._config.sdk_objects["faultPolicy"][0].clear_interval
+                self.retention_interval = self._config.sdk_objects["faultPolicy"][0].retention_interval
+                self.baseline_expiration_interval = \
+                    self._config.sdk_objects["faultPolicy"][0].pinning_expiration_interval
+
+        elif self._config.load_from == "file":
+            if json_content is not None:
+                if not self.get_attributes_from_json(json_content=json_content):
+                    self.logger(level="error",
+                                message="Unable to get attributes from JSON content for " + self._CONFIG_NAME)
+
+        self.clean_object()
+
+    def push_object(self, commit=True):
+        if commit:
+            self.logger(message="Pushing " + self._CONFIG_NAME + " configuration")
+        else:
+            self.logger(message="Adding to the handle " + self._CONFIG_NAME + " configuration" +
+                                ", waiting for a commit")
+
+        parent_mo = "fault"
+
+        mo_fault_policy = FaultPolicy(parent_mo_or_dn=parent_mo, flap_interval=self.flapping_interval,
+                                      clear_action=self.clear_action, clear_interval=self.clear_interval,
+                                      retention_interval=self.retention_interval,
+                                      pinning_expiration_interval=self.baseline_expiration_interval)
+        self._handle.add_mo(mo=mo_fault_policy, modify_present=True)
+
+        if commit:
+            if self.commit() != True:
+                return False
+        return True
+
+
+class UcsSystemSyslog(UcsSystemConfigObject):
+    _CONFIG_NAME = "Syslog"
+
+    def __init__(self, parent=None, json_content=None):
+        UcsSystemConfigObject.__init__(self, parent=parent)
+        self.local_destinations = []
+        self.local_sources = []
+        self.remote_destinations = []
+
+        if self._config.load_from == "live":
+            # Local destinations
+            if "commSyslogConsole" in self._config.sdk_objects:
+                syslog_list = [syslog for syslog in self._config.sdk_objects["commSyslogConsole"] if
+                               "sys/svc-ext/syslog/" in syslog.dn]
+                if len(syslog_list) == 1:
+                    self.local_destinations.append({"console": [{"admin_state": syslog_list[0].admin_state,
+                                                                 "level": syslog_list[0].severity}]})
+
+            if "commSyslogMonitor" in self._config.sdk_objects:
+                syslog_list = [syslog for syslog in self._config.sdk_objects["commSyslogMonitor"] if
+                               "sys/svc-ext/syslog/" in syslog.dn]
+                if len(syslog_list) == 1:
+                    self.local_destinations.append({"monitor": [{"admin_state": syslog_list[0].admin_state,
+                                                                 "level": syslog_list[0].severity}]})
+
+            if "commSyslogFile" in self._config.sdk_objects:
+                syslog_list = [syslog for syslog in self._config.sdk_objects["commSyslogFile"] if
+                               "sys/svc-ext/syslog/" in syslog.dn]
+                if len(syslog_list) == 1:
+                    self.local_destinations.append({"file": [{"admin_state": syslog_list[0].admin_state,
+                                                              "level": syslog_list[0].severity,
+                                                              "name": syslog_list[0].name,
+                                                              "size": syslog_list[0].size}]})
+
+            # Remote destinations
+            if "commSyslogClient" in self._config.sdk_objects:
+                syslog_list = [syslog for syslog in self._config.sdk_objects["commSyslogClient"] if
+                               "sys/svc-ext/syslog/client-primary" == syslog.dn]
+                if len(syslog_list) == 1:
+                    self.remote_destinations.append({"server1": [{"admin_state": syslog_list[0].admin_state,
+                                                                  "level": syslog_list[0].severity,
+                                                                  "hostname": syslog_list[0].hostname,
+                                                                  "facility": syslog_list[0].forwarding_facility}]})
+
+            if "commSyslogClient" in self._config.sdk_objects:
+                syslog_list = [syslog for syslog in self._config.sdk_objects["commSyslogClient"] if
+                               "sys/svc-ext/syslog/client-secondary" == syslog.dn]
+                if len(syslog_list) == 1:
+                    self.remote_destinations.append({"server2": [{"admin_state": syslog_list[0].admin_state,
+                                                                  "level": syslog_list[0].severity,
+                                                                  "hostname": syslog_list[0].hostname,
+                                                                  "facility": syslog_list[0].forwarding_facility}]})
+
+            if "commSyslogClient" in self._config.sdk_objects:
+                syslog_list = [syslog for syslog in self._config.sdk_objects["commSyslogClient"] if
+                               "sys/svc-ext/syslog/client-tertiary" == syslog.dn]
+                if len(syslog_list) == 1:
+                    self.remote_destinations.append({"server3": [{"admin_state": syslog_list[0].admin_state,
+                                                                  "level": syslog_list[0].severity,
+                                                                  "hostname": syslog_list[0].hostname,
+                                                                  "facility": syslog_list[0].forwarding_facility}]})
+
+            # Local sources
+            if "commSyslogSource" in self._config.sdk_objects:
+                syslog_list = [syslog for syslog in self._config.sdk_objects["commSyslogSource"] if
+                               "sys/svc-ext/syslog/" in syslog.dn]
+                if len(syslog_list) == 1:
+                    self.local_sources.append({"faults": syslog_list[0].faults,
+                                               "audits": syslog_list[0].audits,
+                                               "events": syslog_list[0].events})
+
+        elif self._config.load_from == "file":
+            if json_content is not None:
+                if not self.get_attributes_from_json(json_content=json_content):
+                    self.logger(level="error",
+                                message="Unable to get attributes from JSON content for " + self._CONFIG_NAME)
+
+                for element in self.local_destinations:
+                    for value in ["console", "monitor", "file"]:
+                        if value not in element:
+                            element[value] = None
+
+                for element in self.remote_destinations:
+                    for value in ["server1", "server2", "server3"]:
+                        if value not in element:
+                            element[value] = None
+
+                for element in self.local_sources:
+                    for value in ["faults", "audits", "events"]:
+                        if value not in element:
+                            element[value] = None
+
+        self.clean_object()
+
+    def push_object(self, commit=True):
+        if commit:
+            self.logger(message="Pushing " + self._CONFIG_NAME + " configuration")
+        else:
+            self.logger(message="Adding to the handle " + self._CONFIG_NAME + " configuration" +
+                                ", waiting for a commit")
+
+        parent_mo = "sys/svc-ext/syslog"
+
+        # Local destinations
+        for local_dest in self.local_destinations:
+            if "console" in local_dest:
+                if local_dest["console"]:
+                    mo_comm_syslog_console = CommSyslogConsole(parent_mo_or_dn=parent_mo,
+                                                               admin_state=local_dest["console"][0]["admin_state"],
+                                                               severity=local_dest["console"][0]["level"])
+                    self._handle.add_mo(mo_comm_syslog_console, modify_present=True)
+
+            if "monitor" in local_dest:
+                if local_dest["monitor"]:
+                    mo_comm_syslog_monitor = CommSyslogMonitor(parent_mo_or_dn=parent_mo,
+                                                               admin_state=local_dest["monitor"][0]["admin_state"],
+                                                               severity=local_dest["monitor"][0]["level"])
+                    self._handle.add_mo(mo_comm_syslog_monitor, modify_present=True)
+
+            if "file" in local_dest:
+                if local_dest["file"]:
+                    mo_comm_syslog_file = CommSyslogFile(parent_mo_or_dn=parent_mo,
+                                                         admin_state=local_dest["file"][0]["admin_state"],
+                                                         severity=local_dest["file"][0]["level"],
+                                                         name=local_dest["file"][0]["name"],
+                                                         size=local_dest["file"][0]["size"])
+                    self._handle.add_mo(mo_comm_syslog_file, modify_present=True)
+
+        # Remote destinations
+        for remote_dest in self.remote_destinations:
+            if "server1" in remote_dest:
+                if remote_dest["server1"]:
+                    mo_comm_syslog_client = CommSyslogClient(parent_mo_or_dn=parent_mo,
+                                                             name="primary",
+                                                             admin_state=remote_dest["server1"][0]["admin_state"],
+                                                             severity=remote_dest["server1"][0]["level"],
+                                                             forwarding_facility=remote_dest["server1"][0]["facility"],
+                                                             hostname=remote_dest["server1"][0]["hostname"])
+                    self._handle.add_mo(mo_comm_syslog_client, modify_present=True)
+
+            if "server2" in remote_dest:
+                if remote_dest["server2"]:
+                    mo_comm_syslog_client = CommSyslogClient(parent_mo_or_dn=parent_mo,
+                                                             name="secondary",
+                                                             admin_state=remote_dest["server2"][0]["admin_state"],
+                                                             severity=remote_dest["server2"][0]["level"],
+                                                             forwarding_facility=remote_dest["server2"][0]["facility"],
+                                                             hostname=remote_dest["server2"][0]["hostname"])
+                    self._handle.add_mo(mo_comm_syslog_client, modify_present=True)
+
+            if "server3" in remote_dest:
+                if remote_dest["server3"]:
+                    mo_comm_syslog_client = CommSyslogClient(parent_mo_or_dn=parent_mo,
+                                                             name="tertiary",
+                                                             admin_state=remote_dest["server3"][0]["admin_state"],
+                                                             severity=remote_dest["server3"][0]["level"],
+                                                             forwarding_facility=remote_dest["server3"][0]["facility"],
+                                                             hostname=remote_dest["server3"][0]["hostname"])
+                    self._handle.add_mo(mo_comm_syslog_client, modify_present=True)
+
+        # Local sources
+        for local_source in self.local_sources:
+            faults = None
+            audits = None
+            events = None
+            if "faults" in local_source:
+                faults = local_source["faults"]
+            if "audits" in local_source:
+                audits = local_source["audits"]
+            if "events" in local_source:
+                events = local_source["events"]
+
+            mo_comm_syslog_source = CommSyslogSource(parent_mo_or_dn=parent_mo, faults=faults, audits=audits,
+                                                     events=events)
+            self._handle.add_mo(mo_comm_syslog_source, modify_present=True)
+
+        if commit:
+            if self.commit() != True:
+                return False
         return True
 
 
@@ -1514,10 +1752,12 @@ class UcsSystemBackupExportPolicy(UcsSystemConfigObject):
                 self.all_configuration[0].update({"descr": all_configuration.descr})
 
             if "mgmtBackupExportExtPolicy" in self._config.sdk_objects:
-                self.reminder = [{}]
-                reminder = self._config.sdk_objects["mgmtBackupExportExtPolicy"][0]
-                self.reminder[0].update({"admin_state": reminder.admin_state})
-                self.reminder[0].update({"remind_me_after": reminder.frequency})
+                # In some condition this policy can be present but empty as it's not possible to modify it
+                if self._config.sdk_objects["mgmtBackupExportExtPolicy"]:
+                    self.reminder = [{}]
+                    reminder = self._config.sdk_objects["mgmtBackupExportExtPolicy"][0]
+                    self.reminder[0].update({"admin_state": reminder.admin_state})
+                    self.reminder[0].update({"remind_me_after": reminder.frequency})
 
         elif self._config.load_from == "file":
             if json_content is not None:

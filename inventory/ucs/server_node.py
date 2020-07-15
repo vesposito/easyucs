@@ -68,8 +68,11 @@ class UcsServerNode(GenericUcsInventoryObject):
                     return blade_catalog["model_short_name"]
 
             except FileNotFoundError:
-                if self.sku_scaled:
-                    self.logger(level="error", message="Blade catalog file " + self.sku_scaled + ".json not found")
+                if hasattr(self, "sku_scaled"):
+                    if self.sku_scaled:
+                        self.logger(level="error", message="Blade catalog file " + self.sku_scaled + ".json not found")
+                    else:
+                        self.logger(level="error", message="Blade catalog file " + self.sku + ".json not found")
                 else:
                     self.logger(level="error", message="Blade catalog file " + self.sku + ".json not found")
                 return None
@@ -340,3 +343,7 @@ class UcsImcIoExpander(UcsImcInventoryObject):
         self.model = self.get_attribute(ucs_sdk_object=io_expander, attribute_name="model")
         self.serial = self.get_attribute(ucs_sdk_object=io_expander, attribute_name="serial")
         self.vendor = self.get_attribute(ucs_sdk_object=io_expander, attribute_name="vendor")
+
+        self.sku = None
+        if self.model:
+            self.sku = self.model

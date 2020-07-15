@@ -24,6 +24,16 @@
          "default": "",
          "pattern": "^[ !#$%&\\(\\)\\*\\+,\\-\\./:;\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{0,256}$"
       },
+      "domain_group_qualification_policies": {
+         "description": "EasyUCS config/orgs/domain_group_qualification_policies section",
+         "type": "array",
+         "items": {
+            "description:": "EasyUCS config/orgs/domain_group_qualification_policies element",
+            "type": "object",
+            "$ref": "orgs/domain_group_qualification_policies.json"
+         },
+         "minItems": 1
+      },
       "ip_pools": {
          "description": "EasyUCS config/orgs/ip_pools section",
          "type": "array",

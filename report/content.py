@@ -2,19 +2,18 @@
 # !/usr/bin/env python
 
 """ content.py: Easy UCS Deployment Tool """
-from __init__ import __author__, __copyright__,  __version__, __status__
 
-
-from docx.shared import Cm, Pt, RGBColor
-from docx.enum.dml import MSO_THEME_COLOR_INDEX
-from matplotlib import colors
 import os.path
 import sys
-from docx.oxml import shared, OxmlElement, ns
+
+from docx.enum.dml import MSO_THEME_COLOR_INDEX
 from docx.opc import constants
+from docx.oxml import shared, OxmlElement, ns
+from docx.shared import Cm, Pt, RGBColor
+from matplotlib import colors
 
 
-class GenericReportElement():
+class GenericReportElement:
     def __init__(self, order_id, parent):
         self.order_id = order_id
         self.parent = parent
@@ -45,7 +44,7 @@ class GenericReportContent(GenericReportElement):
 
 
 class GenericReportHeading(GenericReportContent):
-    def __init__(self, order_id, parent, string, indent=False):
+    def __init__(self, order_id, parent, string="", indent=False):
         GenericReportContent.__init__(self, order_id=order_id, parent=parent)
         self.string = string
         if self.indent:
@@ -54,7 +53,7 @@ class GenericReportHeading(GenericReportContent):
             self.indent = self.__find_indent()
 
     def add_in_word_report(self):
-        #self.logger(level="debug", message="Adding " + self.__class__.__name__ + " in word")
+        # self.logger(level="debug", message="Adding " + self.__class__.__name__ + " in word")
         self.report.document.add_heading(text=self.string, level=self.indent)
 
     def __find_indent(self):
@@ -67,6 +66,33 @@ class GenericReportHeading(GenericReportContent):
             return indent
         else:
             return None
+
+
+class GenericReportImage(GenericReportContent):
+    def __init__(self, order_id, parent, path, centered=False, size=15, spacing_after=10):
+        GenericReportContent.__init__(self, order_id=order_id, parent=parent, centered=centered)
+        self.path = path
+        self.paragraph = None
+        self.size = size
+        self.spacing_after = spacing_after
+
+        self.not_found = None
+
+        if not os.path.exists(self.path):
+            self.logger(level="warning", message="Image : " + self.path + " not found")
+            self.not_found = True
+
+    def add_in_word_report(self):
+        # self.logger(level="debug", message="Adding " + self.__class__.__name__ + " in word")
+        self.paragraph = self.report.document.add_paragraph()
+        self.paragraph.alignment = int(bool(self.centered))
+        self.paragraph.paragraph_format.space_after = Pt(self.spacing_after)
+        if self.not_found:
+            self.paragraph.add_run(_("Picture Not Found"))
+            self.logger(level="warning", message="Picture " + self.path + " not found: Impossible to add "
+                                                                          "it to the report")
+        else:
+            self.paragraph.add_run().add_picture(self.path, width=Cm(self.size))
 
 
 class GenericReportText(GenericReportContent):
@@ -84,7 +110,7 @@ class GenericReportText(GenericReportContent):
         self.hyper_link = hyper_link  # The link of the string
 
     def add_in_word_report(self):
-        #self.logger(level="debug", message="Adding " + self.__class__.__name__ + " in word")
+        # self.logger(level="debug", message="Adding " + self.__class__.__name__ + " in word")
         if self.new_paragraph:
             paragraph = self.report.document.add_paragraph()
         else:
@@ -125,30 +151,49 @@ class GenericReportText(GenericReportContent):
         string.font.color.rgb = RGBColor(int(a * 255), int(b * 255), int(c * 255))
 
 
-class GenericReportImage(GenericReportContent):
-    def __init__(self, order_id, parent, path, centered=False, size=15, spacing_after=10):
-        GenericReportContent.__init__(self, order_id=order_id, parent=parent, centered=centered)
-        self.path = path
-        self.size = size
-        self.spacing_after = spacing_after
-
-        self.not_found = None
-
-        if not os.path.exists(self.path):
-            self.logger(level="warning", message="Image : " + self.path + " not found")
-            self.not_found = True
+class ReportFrontPage(GenericReportElement):
+    def __init__(self, order_id, parent, title, description="", authors=""):
+        GenericReportElement.__init__(self, order_id=order_id, parent=parent)
+        self.authors = authors
+        self.description = description
+        self.paragraph = None
+        self.title = title
 
     def add_in_word_report(self):
-        #self.logger(level="debug", message="Adding " + self.__class__.__name__ + " in word")
+        # self.logger(level="debug", message="Adding " + self.__class__.__name__ + " in word")
+        page_breaks = 26
+        count_break = 0
+        # Add line breaks
+        for i in range(0, int(page_breaks / 2) - 4):
+            self.report.document.add_paragraph()
+            count_break += 1
+
         self.paragraph = self.report.document.add_paragraph()
-        self.paragraph.alignment = int(bool(self.centered))
-        self.paragraph.paragraph_format.space_after = Pt(self.spacing_after)
-        if self.not_found:
-            self.paragraph.add_run(_("Picture Not Found"))
-            self.logger(level="warning", message="Picture " + self.path + " not found: Impossible to add "
-                                                                          "it to the report")
-        else:
-            self.paragraph.add_run().add_picture(self.path, width=Cm(self.size))
+        self.paragraph.alignment = int(bool(True))
+        title = self.paragraph.add_run(self.title)
+        title.bold = True
+        title.font.size = Pt(28)
+        count_break += 1
+
+        self.paragraph = self.report.document.add_paragraph()
+        self.paragraph.alignment = int(bool(True))
+        description = self.paragraph.add_run(self.description)
+        description.italic = True
+        self.paragraph = self.report.document.add_paragraph()
+        count_break += 2
+
+        # Add line breaks, we adjust to write 2 lines before the end of the page
+        for i in range(count_break, page_breaks - 3):
+            self.paragraph = self.report.document.add_paragraph()
+            count_break += 1
+        # alignment = 2 to align right
+        self.paragraph.alignment = 2
+        author = self.paragraph.add_run(self.authors)
+
+        self.report.document.add_page_break()
+        # Add the first header
+        self.paragraph = self.report.document.add_paragraph()
+        # self.report.document.add_heading(self.report.title, level=0)
 
 
 class ReportTableOfContents(GenericReportElement):
@@ -159,7 +204,7 @@ class ReportTableOfContents(GenericReportElement):
         self.title = _("Table of Contents")
 
     def add_in_word_report(self):
-        #self.logger(level="debug", message="Adding " + self.__class__.__name__ + " in word")
+        # self.logger(level="debug", message="Adding " + self.__class__.__name__ + " in word")
         # https://stackoverflow.com/questions/51360649/how-to-update-table-of-contents-in-docx-file-with-python-on-linux
         paragraph = self.report.document.add_paragraph(self.title + ' ')
         paragraph.runs[0].font.size = Pt(18)
@@ -226,47 +271,3 @@ class ReportTableOfContents(GenericReportElement):
                                                  "table of contents automatically. Please go to page 2 of the document "
                                                  "and right-click on the text and click 'update field'")
             return False
-
-
-class ReportFrontPage(GenericReportElement):
-    def __init__(self, order_id, parent, title, description="", authors=""):
-        GenericReportElement.__init__(self, order_id=order_id, parent=parent)
-        self.title = title
-        self.description = description
-        self.authors = authors
-
-    def add_in_word_report(self):
-        #self.logger(level="debug", message="Adding " + self.__class__.__name__ + " in word")
-        page_breaks = 26
-        count_break = 0
-        # Add line breaks
-        for i in range(0, int(page_breaks/2) - 4):
-            self.report.document.add_paragraph()
-            count_break += 1
-
-        self.paragraph = self.report.document.add_paragraph()
-        self.paragraph.alignment = int(bool(True))
-        title = self.paragraph.add_run((self.title))
-        title.bold = True
-        title.font.size = Pt(28)
-        count_break += 1
-
-        self.paragraph = self.report.document.add_paragraph()
-        self.paragraph.alignment = int(bool(True))
-        description = self.paragraph.add_run((self.description))
-        description.italic = True
-        self.paragraph = self.report.document.add_paragraph()
-        count_break += 2
-
-        # Add line breaks, we adjust to write 2 lines before the end of the page
-        for i in range(count_break, page_breaks -3):
-            self.paragraph = self.report.document.add_paragraph()
-            count_break += 1
-        # alignment = 2 to align right
-        self.paragraph.alignment = 2
-        author = self.paragraph.add_run((self.authors))
-
-        self.report.document.add_page_break()
-        # Add the first header
-        self.paragraph = self.report.document.add_paragraph()
-        #self.report.document.add_heading(self.report.title, level=0)

@@ -1,52 +1,52 @@
 {
-   "id":"ucs_central_config_domain_groups_vlans#",
-   "$schema":"http://json-schema.org/draft-07/schema#",
-   "title":"EasyUCS ucs central config domain_groups vlans section",
-   "description":"EasyUCS ucs central config domain_groups vlans section JSON schema",
-   "type":"object",
+   "id": "ucs_central_config_domain_groups_vlans#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS ucs central config domain_groups vlans section",
+   "description": "EasyUCS ucs central config domain_groups vlans section JSON schema",
+   "type": "object",
    "oneOf": [
       {
-         "properties":{
+         "properties": {
             "comment": {
                "description": "VLAN Comments",
                "type": "string",
                "default": ""
             },
-            "name":{
-               "description":"VLAN Name",
-               "type":"string",
-               "default":"",
-               "pattern":"^[\\-\\.:_a-zA-Z0-9]{1,32}$"
+            "name": {
+               "description": "VLAN Name",
+               "type": "string",
+               "default": "",
+               "pattern": "^[\\-\\.:_a-zA-Z0-9]{1,32}$"
             },
-            "id":{
-               "description":"VLAN ID",
-               "type":"string",
-               "pattern":"^[1-9]$|^[1-9][0-9]$|^[1-9][0-9][0-9]$|^[1-3][0-9][0-9][0-9]$|^40[0-2][0-9]$|^404[8-9]$|^40[5-8][0-9]$|^409[0-3]$"
+            "id": {
+               "description": "VLAN ID",
+               "type": "string",
+               "pattern": "^[1-9]$|^[1-9][0-9]$|^[1-9][0-9][0-9]$|^[1-3][0-9][0-9][0-9]$|^40[0-2][0-9]$|^404[8-9]$|^40[5-8][0-9]$|^409[0-3]$"
             },
-            "sharing_type":{
-               "description":"VLAN Sharing Type",
-               "type":"string",
-               "default":"none",
-               "enum":[
+            "sharing_type": {
+               "description": "VLAN Sharing Type",
+               "type": "string",
+               "default": "none",
+               "enum": [
                   "community",
                   "isolated",
                   "none",
                   "primary"
                ]
             },
-            "primary_vlan_name":{
-               "description":"VLAN Primary VLAN Name",
-               "type":"string"
+            "primary_vlan_name": {
+               "description": "VLAN Primary VLAN Name",
+               "type": "string"
             },
-            "multicast_policy_name":{
-               "description":"VLAN Multicast Policy",
-               "type":"string"
+            "multicast_policy_name": {
+               "description": "VLAN Multicast Policy",
+               "type": "string"
             },
-            "native_vlan":{
-               "description":"Set VLAN as Native VLAN",
-               "type":"string",
-               "default":"no",
-               "enum":[
+            "native_vlan": {
+               "description": "Set VLAN as Native VLAN",
+               "type": "string",
+               "default": "no",
+               "enum": [
                   "yes",
                   "no"
                ]
@@ -63,59 +63,59 @@
                "minItems": 1
             }
          },
-         "additionalProperties":false,
-         "required":[
+         "additionalProperties": false,
+         "required": [
             "name",
             "id"
          ]
       },
       {
-         "properties":{
+         "properties": {
             "comment": {
                "description": "VLAN Range Comments",
                "type": "string",
                "default": ""
             },
-            "prefix":{
-               "description":"VLAN Prefix",
-               "type":"string",
-               "default":"",
-               "pattern":"^[\\-\\.:_a-zA-Z0-9]{1,32}$"
+            "prefix": {
+               "description": "VLAN Prefix",
+               "type": "string",
+               "default": "",
+               "pattern": "^[\\-\\.:_a-zA-Z0-9]{1,32}$"
             },
-            "id_from":{
-               "description":"VLAN ID range starting value",
-               "type":"string",
-               "pattern":"^[1-9]$|^[1-9][0-9]$|^[1-9][0-9][0-9]$|^[1-3][0-9][0-9][0-9]$|^40[0-2][0-9]$|^404[8-9]$|^40[5-8][0-9]$|^409[0-3]$"
+            "id_from": {
+               "description": "VLAN ID range starting value",
+               "type": "string",
+               "pattern": "^[1-9]$|^[1-9][0-9]$|^[1-9][0-9][0-9]$|^[1-3][0-9][0-9][0-9]$|^40[0-2][0-9]$|^404[8-9]$|^40[5-8][0-9]$|^409[0-3]$"
             },
-            "id_to":{
-               "description":"VLAN ID range ending value",
-               "type":"string",
-               "pattern":"^[1-9]$|^[1-9][0-9]$|^[1-9][0-9][0-9]$|^[1-3][0-9][0-9][0-9]$|^40[0-2][0-9]$|^404[8-9]$|^40[5-8][0-9]$|^409[0-3]$"
+            "id_to": {
+               "description": "VLAN ID range ending value",
+               "type": "string",
+               "pattern": "^[1-9]$|^[1-9][0-9]$|^[1-9][0-9][0-9]$|^[1-3][0-9][0-9][0-9]$|^40[0-2][0-9]$|^404[8-9]$|^40[5-8][0-9]$|^409[0-3]$"
             },
-            "sharing_type":{
-               "description":"VLAN Sharing Type",
-               "type":"string",
-               "default":"none",
-               "enum":[
+            "sharing_type": {
+               "description": "VLAN Sharing Type",
+               "type": "string",
+               "default": "none",
+               "enum": [
                   "community",
                   "isolated",
                   "none",
                   "primary"
                ]
             },
-            "primary_vlan_name":{
-               "description":"VLAN Primary VLAN Name",
-               "type":"string"
+            "primary_vlan_name": {
+               "description": "VLAN Primary VLAN Name",
+               "type": "string"
             },
-            "multicast_policy_name":{
-               "description":"VLAN Multicast Policy",
-               "type":"string"
+            "multicast_policy_name": {
+               "description": "VLAN Multicast Policy",
+               "type": "string"
             },
-            "native_vlan":{
-               "description":"Set VLAN as Native VLAN",
-               "type":"string",
-               "default":"no",
-               "enum":[
+            "native_vlan": {
+               "description": "Set VLAN as Native VLAN",
+               "type": "string",
+               "default": "no",
+               "enum": [
                   "yes",
                   "no"
                ]
@@ -132,8 +132,8 @@
                "minItems": 1
             }
       },
-         "additionalProperties":false,
-         "required":[
+         "additionalProperties": false,
+         "required": [
             "prefix",
             "id_from",
             "id_to"

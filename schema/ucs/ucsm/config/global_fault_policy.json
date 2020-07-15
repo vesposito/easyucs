@@ -1,0 +1,48 @@
+{
+   "id": "ucs_system_config_global_fault_policy#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS ucs system config global_fault_policy section",
+   "description": "EasyUCS ucs system config global_fault_policy section JSON schema",
+   "type": "object",
+   "properties": {
+      "comment": {
+         "description": "Global Fault Policy Comments",
+         "type": "string",
+         "default": ""
+      },
+      "baseline_expiration_interval": {
+         "description": "Global Fault Policy Baseline Expiration Interval",
+         "type": "string",
+         "default": "01:00:00:00",
+         "pattern": "(([1-9]*[0-9]{2}:)|)([0-1][0-9]|[2][0-3]):([0-5][0-9]):([0-5][0-9])|(([0-5][0-9]):|)([0-5][0-9])"
+      },
+      "clear_action": {
+         "description": "Global Fault Policy Clear Action",
+         "type": "string",
+         "default": "retain",
+         "enum": [
+            "delete",
+            "retain"
+         ]
+      },
+      "clear_interval": {
+         "description": "Global Fault Policy Clear Interval",
+         "type": "string",
+         "default": "00:00:20:00",
+         "pattern": "(([1-9]*[0-9]{2}:)|)([0-1][0-9]|[2][0-3]):([0-5][0-9]):([0-5][0-9])|(([0-5][0-9]):|)([0-5][0-9])"
+      },
+      "flapping_interval": {
+         "description": "Global Fault Policy Flapping Interval (seconds)",
+         "type": "string",
+         "default": "10",
+         "pattern": "^[5-9]$|^[1-9][0-9]$|^[1-9][0-9][0-9]$|^[1-2][0-9][0-9][0-9]$|^3[0-5][0-9][0-9]$|^3600$"
+      },
+      "retention_interval": {
+         "description": "Global Fault Policy Retention Interval",
+         "type": "string",
+         "default": "00:01:00:00",
+         "pattern": "(([1-9]*[0-9]{2}:)|)([0-1][0-9]|[2][0-3]):([0-5][0-9]):([0-5][0-9])|(([0-5][0-9]):|)([0-5][0-9])"
+      }
+   },
+   "additionalProperties": false
+}

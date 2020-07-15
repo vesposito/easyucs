@@ -1,0 +1,391 @@
+{
+   "id": "ucs_central_config_domain_groups_syslog#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS ucs central config domain_groups syslog section",
+   "description": "EasyUCS ucs central config domain_groups syslog section JSON schema",
+   "type": "object",
+   "properties": {
+      "comment": {
+         "description": "Syslog Comments",
+         "type": "string",
+         "default": ""
+      },
+      "local_destinations": {
+         "description": "Syslog Local Destinations",
+         "type": "array",
+         "items": {
+            "type": "object",
+            "description": "Syslog Local Destination",
+            "properties": {
+               "console": {
+                  "description": "Syslog Console",
+                  "type": "array",
+                  "items": {
+                     "type": "object",
+                     "description": "Syslog Console",
+                     "properties": {
+                        "admin_state": {
+                           "type": "string",
+                           "description": "Syslog Console Admin State",
+                           "default": "disabled",
+                           "enum": [
+                              "disabled",
+                              "enabled"
+                           ]
+                        },
+                        "level": {
+                           "type": "string",
+                           "description": "Syslog Console Level",
+                           "default": "critical",
+                           "enum": [
+                              "alerts",
+                              "critical",
+                              "emergencies"
+                           ]
+                        }
+                     },
+                     "additionalProperties": false,
+                     "required": [
+                        "admin_state"
+                     ]
+                  },
+                  "minItems": 1,
+                  "maxItems": 1
+               },
+               "monitor": {
+                  "description": "Syslog Monitor",
+                  "type": "array",
+                  "items": {
+                     "type": "object",
+                     "description": "Syslog Monitor",
+                     "properties": {
+                        "admin_state": {
+                           "type": "string",
+                           "description": "Syslog Monitor Admin State",
+                           "default": "disabled",
+                           "enum": [
+                              "disabled",
+                              "enabled"
+                           ]
+                        },
+                        "level": {
+                           "type": "string",
+                           "description": "Syslog Monitor Level",
+                           "default": "warnings",
+                           "enum": [
+                              "alerts",
+                              "critical",
+                              "debugging",
+                              "emergencies",
+                              "errors",
+                              "information",
+                              "notifications",
+                              "warnings"
+                           ]
+                        }
+                     },
+                     "additionalProperties": false,
+                     "required": [
+                        "admin_state"
+                     ]
+                  },
+                  "minItems": 1,
+                  "maxItems": 1
+               },
+               "file": {
+                  "description": "Syslog File",
+                  "type": "array",
+                  "items": {
+                     "type": "object",
+                     "description": "Syslog File",
+                     "properties": {
+                        "admin_state": {
+                           "type": "string",
+                           "description": "Syslog File Admin State",
+                           "default": "enabled",
+                           "enum": [
+                              "disabled",
+                              "enabled"
+                           ]
+                        },
+                        "level": {
+                           "type": "string",
+                           "description": "Syslog File Level",
+                           "default": "warnings",
+                           "enum": [
+                              "alerts",
+                              "critical",
+                              "debugging",
+                              "emergencies",
+                              "errors",
+                              "information",
+                              "notifications",
+                              "warnings"
+                           ]
+                        },
+                        "name": {
+                           "type": "string",
+                           "description": "Syslog File Name",
+                           "default": "",
+                           "pattern": "[\\-\\.:_a-zA-Z0-9]{0,16}"
+                        },
+                        "size": {
+                           "type": "string",
+                           "description": "Syslog File Size (in KB)",
+                           "default": "4096",
+                           "pattern": "^[1-9]$|^[0-9][0-9]$|^[0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-3][0-9][0-9][0-9][0-9][0-9][0-9]$|^40[0-9][0-9][0-9][0-9][0-9]$|^41[0-8][0-9][0-9][0-9][0-9]$|^419[0-3][0-9][0-9][0-9]$|^4194[0-2][0-9][0-9]$|^419430[0-4]$"
+                        }
+                     },
+                     "additionalProperties": false,
+                     "required": [
+                        "admin_state"
+                     ]
+                  },
+                  "minItems": 1,
+                  "maxItems": 1
+               }
+            },
+            "additionalProperties": false
+         },
+         "minItems": 1,
+         "maxItems": 3
+      },
+      "remote_destinations": {
+         "description": "Syslog Remote Destinations",
+         "type": "array",
+         "items": {
+            "type": "object",
+            "description": "Syslog Remote Destination",
+            "properties": {
+               "primary_server": {
+                  "description": "Syslog Remote Primary Server",
+                  "type": "array",
+                  "items": {
+                     "type": "object",
+                     "description": "Syslog Remote Primary Server",
+                     "properties": {
+                        "admin_state": {
+                           "type": "string",
+                           "description": "Syslog Remote Primary Server Admin State",
+                           "default": "disabled",
+                           "enum": [
+                              "disabled",
+                              "enabled"
+                           ]
+                        },
+                        "level": {
+                           "type": "string",
+                           "description": "Syslog Remote Primary Server Level",
+                           "default": "warnings",
+                           "enum": [
+                              "alerts",
+                              "critical",
+                              "debugging",
+                              "emergencies",
+                              "errors",
+                              "information",
+                              "notifications",
+                              "warnings"
+                           ]
+                        },
+                        "hostname": {
+                           "type": "string",
+                           "description": "Syslog Remote Primary Server Hostname (or IP address)",
+                           "default": "none",
+                           "pattern": "^$|^[a-zA-Z0-9][a-zA-Z0-9_.-]{0,63}$|^([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}$|^([0-9a-fA-F]{1,4}:){1,7}:$|^([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}$|^([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}$|^([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}$|^([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}$|^([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}$|^[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})$|^:((:[0-9a-fA-F]{1,4}){1,7}|:)$"
+                        },
+                        "facility": {
+                           "type": "string",
+                           "description": "Syslog Remote Primary Server Facility",
+                           "default": "local7",
+                           "enum": [
+                              "local0",
+                              "local1",
+                              "local2",
+                              "local3",
+                              "local4",
+                              "local5",
+                              "local6",
+                              "local7"
+                           ]
+                        }
+                     },
+                     "additionalProperties": false,
+                     "required": [
+                        "admin_state"
+                     ]
+                  },
+                  "minItems": 1,
+                  "maxItems": 1
+               },
+               "secondary_server": {
+                  "description": "Syslog Remote Secondary Server",
+                  "type": "array",
+                  "items": {
+                     "type": "object",
+                     "description": "Syslog Remote Secondary Server",
+                     "properties": {
+                        "admin_state": {
+                           "type": "string",
+                           "description": "Syslog Remote Secondary Server Admin State",
+                           "default": "disabled",
+                           "enum": [
+                              "disabled",
+                              "enabled"
+                           ]
+                        },
+                        "level": {
+                           "type": "string",
+                           "description": "Syslog Remote Secondary Server Level",
+                           "default": "warnings",
+                           "enum": [
+                              "alerts",
+                              "critical",
+                              "debugging",
+                              "emergencies",
+                              "errors",
+                              "information",
+                              "notifications",
+                              "warnings"
+                           ]
+                        },
+                        "hostname": {
+                           "type": "string",
+                           "description": "Syslog Remote Secondary Server Hostname (or IP address)",
+                           "default": "none",
+                           "pattern": "^$|^[a-zA-Z0-9][a-zA-Z0-9_.-]{0,63}$|^([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}$|^([0-9a-fA-F]{1,4}:){1,7}:$|^([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}$|^([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}$|^([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}$|^([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}$|^([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}$|^[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})$|^:((:[0-9a-fA-F]{1,4}){1,7}|:)$"
+                        },
+                        "facility": {
+                           "type": "string",
+                           "description": "Syslog Remote Secondary Server Facility",
+                           "default": "local7",
+                           "enum": [
+                              "local0",
+                              "local1",
+                              "local2",
+                              "local3",
+                              "local4",
+                              "local5",
+                              "local6",
+                              "local7"
+                           ]
+                        }
+                     },
+                     "additionalProperties": false,
+                     "required": [
+                        "admin_state"
+                     ]
+                  },
+                  "minItems": 1,
+                  "maxItems": 1
+               },
+               "tertiary_server": {
+                  "description": "Syslog Remote Tertiary Server",
+                  "type": "array",
+                  "items": {
+                     "type": "object",
+                     "description": "Syslog Remote Tertiary Server",
+                     "properties": {
+                        "admin_state": {
+                           "type": "string",
+                           "description": "Syslog Remote Tertiary Server Admin State",
+                           "default": "disabled",
+                           "enum": [
+                              "disabled",
+                              "enabled"
+                           ]
+                        },
+                        "level": {
+                           "type": "string",
+                           "description": "Syslog Remote Tertiary Server Level",
+                           "default": "warnings",
+                           "enum": [
+                              "alerts",
+                              "critical",
+                              "debugging",
+                              "emergencies",
+                              "errors",
+                              "information",
+                              "notifications",
+                              "warnings"
+                           ]
+                        },
+                        "hostname": {
+                           "type": "string",
+                           "description": "Syslog Remote Tertiary Server Hostname (or IP address)",
+                           "default": "none",
+                           "pattern": "^$|^[a-zA-Z0-9][a-zA-Z0-9_.-]{0,63}$|^([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}$|^([0-9a-fA-F]{1,4}:){1,7}:$|^([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}$|^([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}$|^([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}$|^([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}$|^([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}$|^[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})$|^:((:[0-9a-fA-F]{1,4}){1,7}|:)$"
+                        },
+                        "facility": {
+                           "type": "string",
+                           "description": "Syslog Remote Tertiary Server Facility",
+                           "default": "local7",
+                           "enum": [
+                              "local0",
+                              "local1",
+                              "local2",
+                              "local3",
+                              "local4",
+                              "local5",
+                              "local6",
+                              "local7"
+                           ]
+                        }
+                     },
+                     "additionalProperties": false,
+                     "required": [
+                        "admin_state"
+                     ]
+                  },
+                  "minItems": 1,
+                  "maxItems": 1
+               }
+            },
+            "additionalProperties": false
+         },
+         "minItems": 1,
+         "maxItems": 3
+      },
+      "local_sources": {
+         "description": "Syslog Local Sources",
+         "type": "array",
+         "items": {
+            "type": "object",
+            "description": "Syslog Local Sources",
+            "properties": {
+               "faults": {
+                  "description": "Syslog Local Sources Faults Admin State",
+                  "type": "string",
+                  "default": "enabled",
+                  "enum": [
+                     "disabled",
+                     "enabled"
+                  ]
+               },
+               "audits": {
+                  "description": "Syslog Local Sources Audits Admin State",
+                  "type": "string",
+                  "default": "disabled",
+                  "enum": [
+                     "disabled",
+                     "enabled"
+                  ]
+               },
+               "events": {
+                  "description": "Syslog Local Sources Events Admin State",
+                  "type": "string",
+                  "default": "disabled",
+                  "enum": [
+                     "disabled",
+                     "enabled"
+                  ]
+               }
+            },
+            "additionalProperties": false
+         },
+         "minItems": 1,
+         "maxItems": 1
+      }
+   },
+   "additionalProperties": false
+}

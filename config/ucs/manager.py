@@ -25,7 +25,7 @@ from config.ucs.ucsm.admin import UcsSystemDns, UcsSystemInformation, UcsSystemM
     UcsSystemTimezoneMgmt, UcsSystemLocalUser, UcsSystemRole, UcsSystemLocale, UcsSystemLocalUsersProperties, \
     UcsSystemCommunicationServices, UcsSystemGlobalPolicies, UcsSystemPreLoginBanner, UcsSystemBackupExportPolicy, \
     UcsSystemSelPolicy, UcsSystemSwitchingMode, UcsSystemUcsCentral, UcsSystemRadius, UcsSystemTacacs, UcsSystemLdap, \
-    UcsSystemCallHome, UcsSystemPortAutoDiscoveryPolicy
+    UcsSystemCallHome, UcsSystemPortAutoDiscoveryPolicy, UcsSystemSyslog, UcsSystemFaultPolicy
 from config.ucs.config import UcsImcConfig, UcsSystemConfig, UcsCentralConfig
 from config.ucs.cimc.imc import UcsImcAdminNetwork, UcsImcLocalUser, UcsImcLocalUsersProperties, UcsImcServerProperties, \
     UcsImcTimezoneMgmt, UcsImcIpFilteringProperties, UcsImcIpBlockingProperties, UcsImcPowerPolicies, \
@@ -41,6 +41,9 @@ from config.ucs.ucsm.lan import UcsSystemVlan, UcsSystemApplianceVlan, UcsSystem
 from config.ucs.ucsm.san import UcsSystemVsan, UcsSystemStorageVsan, UcsSystemSanUplinkPort, UcsSystemSanStoragePort, \
     UcsSystemFcoeUplinkPort, UcsSystemFcoeStoragePort, UcsSystemFcoePortChannel, UcsSystemSanPortChannel, \
     UcsSystemSanPinGroup, UcsSystemSanUnifiedPort, UcsSystemFcZoneProfile
+from config.ucs.ucsc.system import UcsCentralDateTimeMgmt, UcsCentralDns, UcsCentralLocalUser, UcsCentralLocale,\
+    UcsCentralManagementInterface, UcsCentralPasswordProfile, UcsCentralRole, UcsCentralSnmp, UcsCentralSyslog,\
+    UcsCentralSystem
 from config.ucs.ucsc.domain_groups import UcsCentralDomainGroup
 from config.ucs.ucsc.orgs import UcsCentralOrg
 
@@ -152,6 +155,8 @@ class UcsSystemConfigManager(GenericUcsConfigManager):
         config.timezone_mgmt.append(UcsSystemTimezoneMgmt(parent=config))
         config.switching_mode.append(UcsSystemSwitchingMode(parent=config))
         config.communication_services.append(UcsSystemCommunicationServices(parent=config))
+        config.global_fault_policy.append(UcsSystemFaultPolicy(parent=config))
+        config.syslog.append(UcsSystemSyslog(parent=config))
         config.radius.append(UcsSystemRadius(parent=config))
         config.tacacs.append(UcsSystemTacacs(parent=config))
         config.ldap.append(UcsSystemLdap(parent=config))
@@ -510,6 +515,10 @@ class UcsSystemConfigManager(GenericUcsConfigManager):
                 banner.push_object()
             if config.communication_services:
                 config.communication_services[0].push_object()
+            if config.global_fault_policy:
+                config.global_fault_policy[0].push_object()
+            if config.syslog:
+                config.syslog[0].push_object()
             for locale in config.locales:
                 locale.push_object()
             for role in config.roles:
@@ -898,6 +907,11 @@ class UcsSystemConfigManager(GenericUcsConfigManager):
         if "communication_services" in config_json:
             config.communication_services.append(
                 UcsSystemCommunicationServices(parent=config, json_content=config_json["communication_services"][0]))
+        if "global_fault_policy" in config_json:
+            config.global_fault_policy.append(
+                UcsSystemFaultPolicy(parent=config, json_content=config_json["global_fault_policy"][0]))
+        if "syslog" in config_json:
+            config.syslog.append(UcsSystemSyslog(parent=config, json_content=config_json["syslog"][0]))
         if "radius" in config_json:
             config.radius.append(UcsSystemRadius(parent=config, json_content=config_json["radius"][0]))
         if "tacacs" in config_json:
@@ -1445,6 +1459,37 @@ class UcsCentralConfigManager(GenericUcsConfigManager):
             return False
 
         # Put in order the items to append
+        if "system" in config_json:
+            config.system.append(UcsCentralSystem(parent=config, json_content=config_json["system"][0]))
+        if "management_interfaces" in config_json:
+            for management_interface_json in config_json["management_interfaces"]:
+                config.management_interfaces.append(
+                    UcsCentralManagementInterface(parent=config, json_content=management_interface_json))
+        if "date_time" in config_json:
+            for date_time in config_json["date_time"]:
+                config.date_time.append(UcsCentralDateTimeMgmt(parent=config, json_content=date_time))
+        if "dns" in config_json:
+            for dns in config_json["dns"]:
+                config.dns.append(UcsCentralDns(parent=config, json_content=dns))
+        if "syslog" in config_json:
+            for syslog in config_json["syslog"]:
+                config.syslog.append(UcsCentralSyslog(parent=config, json_content=syslog))
+        if "snmp" in config_json:
+            for snmp in config_json["snmp"]:
+                config.snmp.append(UcsCentralSnmp(parent=config, json_content=snmp))
+        if "password_profile" in config_json:
+            for password_profile in config_json["password_profile"]:
+                config.password_profile.append(UcsCentralPasswordProfile(parent=config, json_content=password_profile))
+        if "locales" in config_json:
+            for locale in config_json["locales"]:
+                config.locales.append(UcsCentralLocale(parent=config, json_content=locale))
+        if "roles" in config_json:
+            for role in config_json["roles"]:
+                config.roles.append(UcsCentralRole(parent=config, json_content=role))
+        if "local_users" in config_json:
+            for local_user in config_json["local_users"]:
+                config.local_users.append(UcsCentralLocalUser(parent=config, json_content=local_user))
+
         if "orgs" in config_json:
             for org in config_json["orgs"]:
                 if "name" in org:
@@ -1492,6 +1537,27 @@ class UcsCentralConfigManager(GenericUcsConfigManager):
             self.logger(message="Pushing configuration " + str(config.uuid) + " to " + self.parent.target)
 
             # We push all config elements, in a specific optimized order to reduce number of reboots
+            if config.system:
+                config.system[0].push_object()
+            for management_interface in config.management_interfaces:
+                management_interface.push_object()
+            for date_time in config.date_time:
+                date_time.push_object()
+            for dns in config.dns:
+                dns.push_object()
+            for syslog in config.syslog:
+                syslog.push_object()
+            for snmp in config.snmp:
+                snmp.push_object()
+            if config.password_profile:
+                config.password_profile[0].push_object()
+            for locale in config.locales:
+                locale.push_object()
+            for role in config.roles:
+                role.push_object()
+            for local_user in config.local_users:
+                local_user.push_object()
+
             if config.orgs:
                 for org in config.orgs:
                     org.push_object()
@@ -1511,6 +1577,29 @@ class UcsCentralConfigManager(GenericUcsConfigManager):
         self.logger(level="debug", message="Finished fetching UCS SDK objects for config")
 
         # Put in order the items to append
+        config.system.append(UcsCentralSystem(parent=config))
+
+        for network_element in config.sdk_objects["networkElement"]:
+            if network_element.dn.startswith("sys/"):
+                config.management_interfaces.append(UcsCentralManagementInterface(parent=config,
+                                                                                  network_element=network_element))
+
+        config.date_time.append(UcsCentralDateTimeMgmt(parent=config))
+        config.dns.append(UcsCentralDns(parent=config))
+        config.syslog.append(UcsCentralSyslog(parent=config))
+        config.snmp.append(UcsCentralSnmp(parent=config))
+        config.password_profile.append(UcsCentralPasswordProfile(parent=config))
+
+        for aaa_locale in config.sdk_objects['aaaLocale']:
+            if "org-root/deviceprofile-default" in aaa_locale.dn:
+                config.locales.append(UcsCentralLocale(parent=config, aaa_locale=aaa_locale))
+        for aaa_role in config.sdk_objects["aaaRole"]:
+            if "org-root/deviceprofile-default" in aaa_role.dn:
+                config.roles.append(UcsCentralRole(parent=config, aaa_role=aaa_role))
+        for aaa_user in config.sdk_objects["aaaUser"]:
+            if "org-root/deviceprofile-default" in aaa_user.dn:
+                config.local_users.append(UcsCentralLocalUser(parent=config, aaa_user=aaa_user))
+
         for org_org in sorted(config.sdk_objects["orgOrg"], key=lambda org: org.dn):
             if org_org.dn == "org-root":
                 config.orgs.append(UcsCentralOrg(parent=config, org_org=org_org))

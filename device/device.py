@@ -78,13 +78,6 @@ class GenericDevice:
         # Format of the output
         formatter = logging.Formatter('%(asctime)s :: %(levelname)s :: %(message)s')
 
-        # create file handler for log if a file is needed
-        if self._log_file_path:
-            fh = logging.FileHandler(self._log_file_path)
-            fh.setLevel(logging.DEBUG)
-            fh.setFormatter(formatter)
-            self._logger_handle.addHandler(fh)
-
         # create console handler for log
         ch = logging.StreamHandler()
         ch.setLevel(logging.WARNING)
@@ -101,6 +94,13 @@ class GenericDevice:
             self._logger_handle.addHandler(ch)
         # if not self._logger_handle.hasHandlers():
         #     self._logger_handle.addHandler(ch)
+
+        # create file handler for log if a file is needed
+        if self._log_file_path:
+            fh = logging.FileHandler(self._log_file_path)
+            fh.setLevel(logging.DEBUG)
+            fh.setFormatter(formatter)
+            self._logger_handle.addHandler(fh)
 
     def logger(self, level='info', message="No message"):
         # Sanity check:

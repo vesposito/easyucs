@@ -185,6 +185,10 @@
          "description":"Service Profile - Inband Ipv4 Pool",
          "type":"string"
       },
+      "inband_network":{
+         "description":"Service Profile - Inband Network",
+         "type":"string"
+      },
       "threshold_policy":{
          "description":"Service Profile - Threshold Policy",
          "type":"string",
@@ -380,6 +384,11 @@
                   "description":"Service Profile - iSCSI vNIC - Adapter Policy",
                   "type":"string",
                   "pattern":"^[\\-\\.:_a-zA-Z0-9]{0,16}$"
+               },
+               "overlay_vnic":{
+                  "description":"Service Profile - iSCSI vNIC - Overlay vNIC",
+                  "type":"string",
+                  "pattern":"^[\\-\\.:_a-zA-Z0-9]{0,16}$"
                }
             },
             "additionalProperties":false,
@@ -513,6 +522,36 @@
             "additionalProperties":false,
             "required":[
                "name"
+            ]
+         },
+         "minItems":1
+      },
+      "specific_placement":{
+         "description":"Service Profile - Specific Placement",
+         "type":"array",
+         "items":{
+            "description":"Service Profile - Specific Placement",
+            "type":"object",
+            "properties":{
+               "vcon":{
+                  "description":"Service Profile - Placement - vCON",
+                  "type":"string",
+                  "enum": ["1", "2", "3", "4", "any"]
+               },
+               "vnic":{
+                  "description":"Service Profile - Placement - vNIC",
+                  "type":"string",
+                  "pattern":"^[\\-\\.:_a-zA-Z0-9]{1,32}$"
+               },
+               "vhba":{
+                  "description":"Service Profile - Placement - vHBA",
+                  "type":"string",
+                  "pattern":"^[\\-\\.:_a-zA-Z0-9]{1,32}$"
+               }
+            },
+            "additionalProperties":false,
+            "required":[
+               "vcon"
             ]
          },
          "minItems":1

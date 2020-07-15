@@ -99,7 +99,7 @@
                         "description": "Size of IPv4 Address Block",
                         "type": "string",
                         "default": "1",
-                        "pattern":"^[1-9]$|^[1-9][0-9]$|^[1-9][0-9][0-9]$|^10[0-1][0-9]$|^102[0-4]$"
+                        "pattern": "^[1-9]$|^[1-9][0-9]$|^[1-9][0-9][0-9]$|^10[0-1][0-9]$|^102[0-4]$"
                      },
                      "netmask": {
                         "description": "Subnet Mask of Block",
@@ -228,7 +228,7 @@
                         "description": "Size of IPv6 Address Block",
                         "type": "string",
                         "default": "1",
-                        "pattern":"^[1-9]$|^[1-9][0-9]$|^[1-9][0-9][0-9]$|^10[0-1][0-9]$|^102[0-4]$"
+                        "pattern": "^[1-9]$|^[1-9][0-9]$|^[1-9][0-9][0-9]$|^10[0-1][0-9]$|^102[0-4]$"
                      },
                      "prefix": {
                         "description": "IPv6 Prefix of Block",

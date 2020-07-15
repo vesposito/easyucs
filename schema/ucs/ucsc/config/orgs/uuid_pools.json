@@ -1,26 +1,26 @@
 {
-   "id":"ucs_central_config_uuid_pools#",
-   "$schema":"http://json-schema.org/draft-07/schema#",
-   "title":"EasyUCS ucs central config orgs uuid_pools section",
-   "description":"EasyUCS ucs central orgs config uuid_pools section JSON schema",
-   "type":"object",
-   "properties":{
+   "id": "ucs_central_config_uuid_pools#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS ucs central config orgs uuid_pools section",
+   "description": "EasyUCS ucs central orgs config uuid_pools section JSON schema",
+   "type": "object",
+   "properties": {
       "comment": {
          "description": "UUID Suffix Pool Comments",
          "type": "string",
          "default": ""
       },
-      "name":{
-         "description":"UUID Suffix Pool Name",
-         "type":"string",
-         "default":"",
-         "pattern":"^[\\-\\.:_a-zA-Z0-9]{1,32}$"
+      "name": {
+         "description": "UUID Suffix Pool Name",
+         "type": "string",
+         "default": "",
+         "pattern": "^[\\-\\.:_a-zA-Z0-9]{1,32}$"
       },
-      "descr":{
-         "description":"Description of UUID Suffix Pool",
-         "type":"string",
-         "default":"",
-         "pattern":"^[ !#$%&\\(\\)\\*\\+,\\-\\./:;\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{0,256}$"
+      "descr": {
+         "description": "Description of UUID Suffix Pool",
+         "type": "string",
+         "default": "",
+         "pattern": "^[ !#$%&\\(\\)\\*\\+,\\-\\./:;\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{0,256}$"
       },
       "prefix": {
          "description": "UUID Pool Prefix",
@@ -28,25 +28,25 @@
          "default": "derived",
          "pattern": "(([0-9a-fA-F]){8}\\-([0-9a-fA-F]){4}\\-([0-9a-fA-F]){4})|0|derived"
       },
-      "uuid_blocks":{
-         "description":"Blocks of UUID Suffixes in UUID Suffix Pool",
-         "type":"array",
-         "items":{
-            "type":"object",
+      "uuid_blocks": {
+         "description": "Blocks of UUID Suffixes in UUID Suffix Pool",
+         "type": "array",
+         "items": {
+            "type": "object",
             "oneOf": [
                {
-                  "properties":{
-                     "from":{
-                        "description":"First UUID Suffix of Block",
-                        "type":"string",
-                        "default":"0000-000000000001",
-                        "pattern":"(([0-9a-fA-F]){4}\\-([0-9a-fA-F]){12})|0"
+                  "properties": {
+                     "from": {
+                        "description": "First UUID Suffix of Block",
+                        "type": "string",
+                        "default": "0000-000000000001",
+                        "pattern": "(([0-9a-fA-F]){4}\\-([0-9a-fA-F]){12})|0"
                      },
-                     "to":{
-                        "description":"Last UUID Suffix of Block",
-                        "type":"string",
-                        "default":"0000-000000000001",
-                        "pattern":"(([0-9a-fA-F]){4}\\-([0-9a-fA-F]){12})|0"
+                     "to": {
+                        "description": "Last UUID Suffix of Block",
+                        "type": "string",
+                        "default": "0000-000000000001",
+                        "pattern": "(([0-9a-fA-F]){4}\\-([0-9a-fA-F]){12})|0"
                      },
                      "id_range_access_control": {
                         "description": "ID Range Access Control of UUID Suffix Block",
@@ -54,25 +54,25 @@
                         "pattern": "^[\\-\\.:_a-zA-Z0-9]{0,16}$"
                      }
                   },
-                  "additionalProperties":false,
+                  "additionalProperties": false,
                   "required": [
                      "from",
                      "to"
                   ]
                },
                {
-                  "properties":{
-                     "from":{
-                        "description":"First UUID Suffix of Block",
-                        "type":"string",
-                        "default":"0000-000000000001",
-                        "pattern":"(([0-9a-fA-F]){4}\\-([0-9a-fA-F]){12})|0"
+                  "properties": {
+                     "from": {
+                        "description": "First UUID Suffix of Block",
+                        "type": "string",
+                        "default": "0000-000000000001",
+                        "pattern": "(([0-9a-fA-F]){4}\\-([0-9a-fA-F]){12})|0"
                      },
-                     "size":{
-                        "description":"Size of UUID Suffix Block",
-                        "type":"string",
-                        "default":"1",
-                        "pattern":"^[1-9]$|^[1-9][0-9]$|^[1-9][0-9][0-9]$|^10[0-1][0-9]$|^102[0-4]$"
+                     "size": {
+                        "description": "Size of UUID Suffix Block",
+                        "type": "string",
+                        "default": "1",
+                        "pattern": "^[1-9]$|^[1-9][0-9]$|^[1-9][0-9][0-9]$|^10[0-1][0-9]$|^102[0-4]$"
                      },
                      "id_range_access_control": {
                         "description": "ID Range Access Control of UUID Suffix Block",
@@ -80,7 +80,7 @@
                         "pattern": "^[\\-\\.:_a-zA-Z0-9]{0,16}$"
                      }
                   },
-                  "additionalProperties":false,
+                  "additionalProperties": false,
                   "required": [
                      "from",
                      "size"
@@ -88,11 +88,11 @@
                }
             ]
          },
-         "minItems":1
+         "minItems": 1
       }
    },
-   "additionalProperties":false,
-   "required":[
+   "additionalProperties": false,
+   "required": [
       "name"
    ]
 }

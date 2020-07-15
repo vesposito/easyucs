@@ -8,7 +8,7 @@ import json
 from draw.ucs.rack import UcsSystemDrawRackFront, UcsSystemDrawRackRear, UcsImcDrawRackFront, UcsImcDrawRackRear, \
     UcsSystemDrawRackEnclosureFront, UcsSystemDrawRackEnclosureRear, UcsImcDrawRackEnclosureFront, \
     UcsImcDrawRackEnclosureRear
-from inventory.ucs.adaptor import UcsImcAdaptor, UcsImcNetworkAdapter, UcsSystemAdaptor
+from inventory.ucs.adaptor import UcsImcAdaptor, UcsImcHbaAdapter, UcsImcNetworkAdapter, UcsSystemAdaptor
 from inventory.ucs.cpu import UcsImcCpu, UcsSystemCpu
 from inventory.ucs.gpu import UcsImcGpu, UcsSystemGpu
 from inventory.ucs.memory import UcsImcMemoryArray, UcsSystemMemoryArray
@@ -353,9 +353,9 @@ class UcsSystemRack(UcsRack, UcsSystemInventoryObject):
                             adaptor.driver_name_ethernet = current_driver["name"]
                             adaptor.driver_version_ethernet = current_driver["version"]
                             self.logger(level="debug",
-                                        message="Found Ethernet VIC driver (" + current_driver["name"] + ") version " +
-                                                current_driver["version"] + " for adaptor " + adaptor.id +
-                                                " of rack-unit " + self.id)
+                                        message="Found Ethernet VIC driver (" + str(current_driver["name"]) +
+                                                ") version " + str(current_driver["version"]) + " for adaptor " +
+                                                str(adaptor.id) + " of rack-unit " + str(self.id))
 
                 # UCS VIC Fibre Channel driver
                 if current_driver["name"] in ["fnic", "nfnic"]:
@@ -385,9 +385,9 @@ class UcsSystemRack(UcsRack, UcsSystemInventoryObject):
                             adaptor.driver_name_fibre_channel = current_driver["name"]
                             adaptor.driver_version_fibre_channel = current_driver["version"]
                             self.logger(level="debug",
-                                        message="Found Fibre Channel VIC driver (" + current_driver["name"] +
-                                                ") version " + current_driver["version"] + " for adaptor " +
-                                                adaptor.id + " of rack-unit " + self.id)
+                                        message="Found Fibre Channel VIC driver (" + str(current_driver["name"]) +
+                                                ") version " + str(current_driver["version"]) + " for adaptor " +
+                                                str(adaptor.id) + " of rack-unit " + str(self.id))
 
                 # Avago/LSI MegaRAID SAS driver
                 if current_driver["name"] in ["lsi_mr3", "megaraid_sas"]:
@@ -399,9 +399,10 @@ class UcsSystemRack(UcsRack, UcsSystemInventoryObject):
                             storage_controller.driver_name = current_driver["name"]
                             storage_controller.driver_version = current_driver["version"]
                             self.logger(level="debug",
-                                        message="Found Storage controller driver (" + current_driver["name"] +
-                                                ") version " + current_driver["version"] + " for storage controller " +
-                                                storage_controller.id + " of rack-unit " + self.id)
+                                        message="Found Storage controller driver (" + str(current_driver["name"]) +
+                                                ") version " + str(current_driver["version"]) +
+                                                " for storage controller " + str(storage_controller.id) +
+                                                " of rack-unit " + str(self.id))
 
             return True
         else:
@@ -515,7 +516,7 @@ class UcsImcRack(UcsRack, UcsImcInventoryObject):
         # Since we don't have a catalog item for finding the SKU, we set it manually here
         self.sku = self.model
 
-        self.adaptors = self._get_adaptors() + self._get_network_adapters()
+        self.adaptors = self._get_adaptors() + self._get_network_adapters() + self._get_hba_adapters()
 
         if self._inventory.load_from == "live":
             self.short_name = self._get_model_short_name()
@@ -549,6 +550,16 @@ class UcsImcRack(UcsRack, UcsImcInventoryObject):
             return self._inventory.get_inventory_objects_under_dn(dn=self.dn, object_class=UcsImcGpu, parent=self)
         elif self._inventory.load_from == "file" and "gpus" in self._ucs_sdk_object:
             return [UcsImcGpu(self, gpu) for gpu in self._ucs_sdk_object["gpus"]]
+        else:
+            return []
+
+    def _get_hba_adapters(self):
+        if self._inventory.load_from == "live":
+            return self._inventory.get_inventory_objects_under_dn(dn=self.dn, object_class=UcsImcHbaAdapter,
+                                                                  parent=self)
+        elif self._inventory.load_from == "file" and "adaptors" in self._ucs_sdk_object:
+            return [UcsImcHbaAdapter(self, pci_equip_slot) for pci_equip_slot in self._ucs_sdk_object["adaptors"]
+                    if pci_equip_slot["type"] in ["hba"]]
         else:
             return []
 

@@ -48,6 +48,15 @@
             "no",
             "yes"
          ]
+      },
+      "persistent_memory_scrub": {
+         "description": "Scrub Policy - Persistent Memory Scrub",
+         "type": "string",
+         "default": "no",
+         "enum": [
+            "no",
+            "yes"
+         ]
       }
    },
    "additionalProperties":false,

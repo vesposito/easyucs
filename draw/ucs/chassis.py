@@ -974,17 +974,56 @@ class UcsSystemDrawInfraChassis(UcsSystemDrawInfraEquipment):
                                 # draw_wire(self.draw, point_fi, point_chassis, wire_color, wire_width)
                                 # self.wires.append(EasyUcsDrawWire(self.draw, (point_fi, point_chassis), wire_width,
                                 #                                   easyucs_fi_port=port.port))
-                                if fabric == "a":
-                                    if int(io_detail.id) % 2:
-                                        # if (int(adapt_port.port.port_id) % 2) :
-                                        step = self.WIRE_DISTANCE_SHORT + round(io_port.size[1] / 2)
-                                    else:
-                                        step = self.WIRE_DISTANCE_LONG + round(io_port.size[1] / 2)
-                                if fabric == "b":
-                                    if int(io_detail.id) % 2:
-                                        step = - self.WIRE_DISTANCE_LONG - round(io_port.size[1] / 2)
-                                    else:
-                                        step = - self.WIRE_DISTANCE_SHORT - round(io_port.size[1] / 2)
+
+                                # Check if a card of a quad port on a SIOC
+                                inline_sioc_ports = False
+                                if len(io.ports) > 2:
+                                    y_coord = io.ports[0].coord[1]
+                                    inline_sioc_ports = True
+                                    for port in io.ports:
+                                        if port.coord[1] == y_coord and inline_sioc_ports == True:
+                                            inline_sioc_ports = True
+                                        else:
+                                            inline_sioc_ports = False
+
+                                # When a card is a quad port we had to create 8 different "step"
+                                if "-C25Q-04" in io_port._parent._parent.sku or inline_sioc_ports:
+                                    wire_width = self.WIDTH_WIRE_BREAKOUT
+                                    if fabric == "a":
+                                        if int(io._parent.id) % 2:
+                                            if int(io_port.id) % 2:
+                                                step = self.WIRE_DISTANCE_SHORT + round(io_port.size[1] / 2)
+                                            else:
+                                                step = self.WIRE_DISTANCE_LONG + round(io_port.size[1] / 4)
+                                        else:
+                                            if int(io_port.id) % 2:
+                                                step = self.WIRE_DISTANCE_SHORT + round(io_port.size[1] / 4)
+                                            else:
+                                                step = self.WIRE_DISTANCE_LONG + round(io_port.size[1] / 2)
+                                    if fabric == "b":
+                                        if int(io._parent.id) % 2:
+                                            if int(io_port.id) % 2:
+                                                step = - self.WIRE_DISTANCE_LONG - round(io_port.size[1] / 4)
+                                            else:
+                                                step = - self.WIRE_DISTANCE_SHORT - round(io_port.size[1] / 2)
+                                        else:
+                                            if int(io_port.id) % 2:
+                                                step = - self.WIRE_DISTANCE_LONG - round(io_port.size[1] / 2)
+                                            else:
+                                                step = - self.WIRE_DISTANCE_SHORT - round(io_port.size[1] / 4)
+                                # for all the non quad port cards
+                                else:
+                                    if fabric == "a":
+                                        if int(io_detail.id) % 2:
+                                            # if (int(adapt_port.port.port_id) % 2) :
+                                            step = self.WIRE_DISTANCE_SHORT + round(io_port.size[1] / 2)
+                                        else:
+                                            step = self.WIRE_DISTANCE_LONG + round(io_port.size[1] / 2)
+                                    if fabric == "b":
+                                        if int(io_detail.id) % 2:
+                                            step = - self.WIRE_DISTANCE_LONG - round(io_port.size[1] / 2)
+                                        else:
+                                            step = - self.WIRE_DISTANCE_SHORT - round(io_port.size[1] / 2)
                                 target = point_chassis[0], point_chassis[1] + step
                                 self.wires.append(UcsSystemDrawWire(self, (point_fi, point_chassis), wire_width,
                                                                     extra_points=[target],
