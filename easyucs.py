@@ -430,10 +430,10 @@ def main():
             create schemas from UCS IMC and save them to schemas folder'''
 
     example_report_generate_text = '''Examples:
-      python easyucs.py report generate -t ucsm -i 192.168.0.1 -u admin -p password -o reports/report.docx
+      python easyucs.py report generate -t ucsm -i 192.168.0.1 -u admin -p password -o reports
             create schemas and report.docx from UCS system and save it to reports/
 
-      python easyucs.py report generate -t cimc -i 192.168.0.2 -u admin -p password -o reports/report.docx
+      python easyucs.py report generate -t cimc -i 192.168.0.2 -u admin -p password -o reports
             create schemas and report.docx from UCS IMC and save it to reports/'''
 
     example_device_text = '''Examples:
