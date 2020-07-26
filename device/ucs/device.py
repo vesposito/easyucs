@@ -1461,7 +1461,11 @@ class UcsSystem(GenericUcsDevice):
                         self.intersight_status = cloud_device_connector[0].claim_state
                         if self.intersight_status == "none":
                             self.intersight_status = "unknown"
-                except UcsException:
+                except UcsException as err:
+                    if hasattr(err, "error_descr"):
+                        if err.error_descr == 'XML PARSING ERROR: no class named cloudDeviceConnectorEp':
+                            self.logger(level="warning", message="The Intersight claim status can't be determined "
+                                                                 "on this version of UCS Manager")
                     self.logger(level="debug", message="Unable to determine Intersight claim status")
 
         self.name = self.handle.ucs

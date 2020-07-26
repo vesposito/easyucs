@@ -2,6 +2,7 @@
 # !/usr/bin/env python
 
 """ easyucs.py: Easy UCS Deployment Tool """
+from __init__ import __author__, __copyright__,  __version__, __status__
 
 import argparse
 import os
@@ -464,6 +465,8 @@ def main():
       python easyucs.py device clear_user_sessions -t ucsc -i 192.168.0.3 -u admin -p password
             clear all user sessions of UCS Central'''
 
+    # Introduction message
+    print("\n" + "EasyUCS " + __version__ + " created by " + __author__ + ", " + __copyright__ + "\n")
     # Create the main parser
     parser = argparse.ArgumentParser(prog='easyucs.py', description='EasyUCS Command-Line Interface',
                                      epilog=example_text,

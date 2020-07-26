@@ -87,7 +87,7 @@ python easyucs.py config push -t cimc -i 192.168.0.2 -u admin -p password -f con
 
 Perform initial setup of UCS system using DHCP IP addresses 192.168.0.11 & 192.168.0.12 and push config file config_ucsm.json
 ```
-python easyucs.py config push -t ucsm -f configs/config_ucsm.json -r -s 192.168.0.11 192.168.0.12
+python easyucs.py config push -t ucsm -f configs/config_ucsm.json -s 192.168.0.11 192.168.0.12
 ```
 
 Reset UCS system, perform initial setup using DHCP IP addresses 192.168.0.11 & 192.168.0.12 and push config file config_ucsm.json

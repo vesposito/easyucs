@@ -158,6 +158,8 @@ class UcsCentralOrg(UcsCentralConfigObject):
                 self._get_generic_element(json_content=json_content,
                                           object_class=UcsCentralDomainGroupQualificationPolicy,
                                           name_to_fetch="domain_group_qualification_policies")
+        else:
+            self.domain_group_qualification_policies = None
 
         self.mac_pools = \
             self._get_generic_element(json_content=json_content, object_class=UcsCentralMacPool,
