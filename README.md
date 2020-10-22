@@ -125,6 +125,11 @@ Clear SEL Logs of all discovered servers of UCS system
 python easyucs.py device clear_sel_logs -t ucsm -i 192.168.0.1 -u admin -p password
 ```
 
+Clear Intersight Device Connector claim status for UCS system
+```
+python easyucs.py device clear_intersight_claim_status -t ucsm -i 192.168.0.1 -u admin -p password
+```
+
 #### Using the Web Graphical User Interface (GUI)
 
 The Web GUI is hosted by your machine, in order to launch it you need to use the file **[easyucs_gui.py](./easyucs_gui.py)**.
@@ -142,6 +147,13 @@ python easyucs_gui.py
 
 
 ## Versioning
+
+#### 0.9.7.2
+
+* Add support for Intersight Device Connector in inventory & config for UCSM & IMC
+* Add Device Connector section in UCSM & IMC report
+* Add support for clearing Intersight Claim Status for UCSM & IMC Device Connector
+* Miscellaneous bug fixes
 
 #### 0.9.7
 
