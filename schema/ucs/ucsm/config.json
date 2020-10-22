@@ -88,6 +88,17 @@
          "minItems":1,
          "maxItems":1
       },
+      "device_connector":{
+         "description":"EasyUCS config/device_connector section",
+         "type":"array",
+         "items":{
+            "description":"EasyUCS config/device_connector element",
+            "type":"object",
+            "$ref":"config/device_connector.json"
+         },
+         "minItems":1,
+         "maxItems":1
+      },
       "dns":{
          "description":"EasyUCS config/dns section",
          "type":"array",

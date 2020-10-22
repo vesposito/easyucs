@@ -1169,6 +1169,47 @@ class UcsSystem(GenericUcsDevice):
             return False
         return True
 
+    def clear_intersight_claim_status(self):
+        """
+        Clear Intersight Claim Status
+        :return: True if successful, False otherwise
+        """
+        import urllib3
+
+        if not self.is_connected():
+            self.connect()
+        self.logger(level="info", message="Clearing Intersight Claim Status")
+
+        uri = "https://" + self.target + "/connector/DeviceConnections"
+        login_cookie = self.handle.cookie
+
+        # Disable warning at each request
+        urllib3.disable_warnings()
+
+        if login_cookie:
+            auth_header = {'ucsmcookie': "ucsm-cookie=%s" % login_cookie}
+            try:
+                import json
+                data = '{"CloudDns":"svc.intersight.com","ForceResetIdentity":true,"ResetIdentity":true}'
+                response = requests.put(uri, verify=False, headers=auth_header, data=data)
+                if response.json():
+                    self.disconnect()
+                    if response.status_code == 200:
+                        self.logger(message="Intersight Claim Status cleared")
+                        return True
+                    else:
+                        self.logger(message="Something went wrong when clearing Intersight Claim Status, error " +
+                                            str(response.status_code))
+                        return False
+
+            except Exception as err:
+                print(err)
+                self.logger(level="error", message="Couldn't request the device connector informations to the API")
+        else:
+            self.logger(level="error",
+                        message="No login cookie, no request can be made to find device connector informations")
+        return False
+
     def query(self, mode="", target=None, filter_str=None, retries=3):
         """
         Uses the query of the handle and add a retry function
@@ -1191,7 +1232,7 @@ class UcsSystem(GenericUcsDevice):
             return []
         for i in range(retries):
             if i:
-                self.logger(level="warning", message="Retrying to fetch " + target)
+                self.logger(level="warning", message="Retrying to fetch " + target + " (attempt " + str(i + 1) + ")")
             try:
                 if not self.is_connected():
                     self.connect()
@@ -1214,7 +1255,7 @@ class UcsSystem(GenericUcsDevice):
 
     def post_requests(self, request_url=None, request_payload=None, retries=3, error_message=""):
         """
-        Uses the post of Requestes and add a retry function
+        Performs an HTTP POST (using Requests) of the specified payload to the specified URL, with a retry mechanism
 
         :param request_url: ex. "https://10.0.0.1/cgi-bin/initial_setup_new.cgi"
         :param request_payload:
@@ -1464,9 +1505,9 @@ class UcsSystem(GenericUcsDevice):
                 except UcsException as err:
                     if hasattr(err, "error_descr"):
                         if err.error_descr == 'XML PARSING ERROR: no class named cloudDeviceConnectorEp':
-                            self.logger(level="warning", message="The Intersight claim status can't be determined "
-                                                                 "on this version of UCS Manager")
-                    self.logger(level="debug", message="Unable to determine Intersight claim status")
+                            self.logger(level="debug",
+                                        message="No class named cloudDeviceConnectorEp on this version of UCS Manager")
+                    self.logger(level="debug", message="Unable to determine Intersight claim status through UCSM API")
 
         self.name = self.handle.ucs
         self.version = self.handle.version
@@ -2068,6 +2109,48 @@ class UcsImc(GenericUcsDevice):
             return False
         return True
 
+    def clear_intersight_claim_status(self):
+        """
+        Clear Intersight Claim Status
+        :return: True if successful, False otherwise
+        """
+        import urllib3
+
+        if not self.is_connected():
+            self.connect()
+        self.logger(level="info", message="Clearing Intersight Claim Status")
+
+        uri = "https://" + self.target + "/connector/DeviceConnections"
+        login_cookie = self.handle.cookie
+
+        # Disable warning at each request
+        urllib3.disable_warnings()
+
+        if login_cookie:
+            auth_header = {'ucsmcookie': "ucsm-cookie=%s" % login_cookie}
+            try:
+                import json
+                data = '{"CloudDns":"svc.intersight.com","ForceResetIdentity":true,"ResetIdentity":true}'
+                response = requests.put(uri, verify=False, headers=auth_header, data=data)
+                if response.json():
+                    self.disconnect()
+                    if response.status_code == 200:
+                        self.logger(message="Intersight Claim Status cleared.")
+                        return True
+                    else:
+                        self.logger(message="Something went wrong when clearing Intersight Claim Status, error " +
+                                            str(response.status_code))
+                        return False
+
+
+            except Exception as err:
+                print(err)
+                self.logger(level="error", message="Couldn't request the device connector informations to the API")
+        else:
+            self.logger(level="error",
+                        message="No login cookie, no request can be made to find device connector informations")
+        return False
+
     def query(self, mode="", target=None, retries=3):
         """
         Uses the query of the handle and add a retry function
@@ -2089,7 +2172,7 @@ class UcsImc(GenericUcsDevice):
 
         for i in range(retries):
             if i:
-                self.logger(level="warning", message="Retrying to fetch " + target)
+                self.logger(level="warning", message="Retrying to fetch " + target + " (attempt " + str(i + 1) + ")")
             try:
                 if not self.is_connected():
                     self.connect()
@@ -2302,7 +2385,7 @@ class UcsCentral(GenericUcsDevice):
             return []
         for i in range(retries):
             if i:
-                self.logger(level="warning", message="Retrying to fetch " + target)
+                self.logger(level="warning", message="Retrying to fetch " + target + " (attempt " + str(i + 1) + ")")
             try:
                 if not self.is_connected():
                     self.connect()

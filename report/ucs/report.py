@@ -11,7 +11,7 @@ from report.report import GenericReport
 from report.ucs.architecture import UcsSystemArchitectureReportSection
 from report.ucs.configuration import UcsSystemConfigurationReportSection
 from report.ucs.inventory import UcsSystemInventoryReportSection, UcsImcInventoryReportSection
-from report.ucs.overview import UcsSystemOverviewReportSection
+from report.ucs.overview import UcsImcOverviewReportSection, UcsSystemOverviewReportSection
 
 
 class UcsGenericReport(GenericReport):
@@ -73,6 +73,8 @@ class UcsImcReport(UcsGenericReport):
                                   output_format=output_format, page_layout=page_layout,
                                   directory=directory, filename=filename, size=size)
 
+        self.element_list.append(
+            UcsImcOverviewReportSection(order_id=self.get_current_order_id(), parent=self))
         self.element_list.append(
             UcsImcInventoryReportSection(order_id=self.get_current_order_id(), parent=self))
 

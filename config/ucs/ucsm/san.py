@@ -1016,7 +1016,7 @@ class UcsSystemSanUnifiedPort(UcsSystemConfigObject):
                     return False
 
             else:
-                self.logger("error", "Trying to set Unified Ports on unsupported FI model " + self._device.fi_a_model)
+                self.logger("error", "Trying to set Unified Ports on unsupported FI model: " + self._device.fi_a_model)
                 return False
         else:
             self.logger("error", "Error while checking FI's model")

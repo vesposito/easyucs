@@ -15,6 +15,7 @@ from inventory.ucs.domain import UcsCentralDomain
 from inventory.ucs.fabric import UcsSystemFex, UcsSystemFi
 from inventory.ucs.inventory import UcsImcInventory, UcsSystemInventory, UcsCentralInventory
 from inventory.ucs.rack import UcsImcRack, UcsImcRackEnclosure, UcsSystemRack, UcsSystemRackEnclosure
+from inventory.ucs.device_connector import UcsSystemDeviceConnector, UcsImcDeviceConnector
 
 
 class GenericUcsInventoryManager(GenericInventoryManager):
@@ -317,6 +318,10 @@ class UcsSystemInventoryManager(GenericUcsInventoryManager):
         inventory._fetch_sdk_objects()
         self.logger(level="debug", message="Finished fetching UCS SDK objects for inventory")
 
+        # add device connector
+        if True: # todo add condition of version?
+            inventory.device_connector.append(UcsSystemDeviceConnector(parent=inventory))
+
         if "networkElement" in inventory.sdk_objects.keys():
             for network_element in sorted(inventory.sdk_objects["networkElement"], key=lambda fi: fi.dn):
                 inventory.fabric_interconnects.append(UcsSystemFi(parent=inventory, network_element=network_element))
@@ -373,6 +378,11 @@ class UcsSystemInventoryManager(GenericUcsInventoryManager):
             self.logger(level="debug", message="Missing inventory or inventory_json parameter!")
             return False
 
+        if "device_connector" in inventory_json:
+            for device_connector in inventory_json["device_connector"]:
+                inventory.device_connector.append(UcsSystemDeviceConnector(parent=inventory,
+                                                                           device_connector=device_connector))
+
         if "fabric_interconnects" in inventory_json:
             for network_element in inventory_json["fabric_interconnects"]:
                 inventory.fabric_interconnects.append(UcsSystemFi(parent=inventory, network_element=network_element))
@@ -413,6 +423,10 @@ class UcsImcInventoryManager(GenericUcsInventoryManager):
         inventory._fetch_sdk_objects()
         self.logger(level="debug", message="Finished fetching UCS SDK objects for inventory")
 
+        # add device connector
+        if True:  # todo add condition of version?
+            inventory.device_connector.append(UcsImcDeviceConnector(parent=inventory))
+
         if "equipmentRackEnclosure" in inventory.sdk_objects and len(inventory.sdk_objects["equipmentRackEnclosure"]) > 0:
             # Server is a server node inside a rack enclosure
             inventory.rack_enclosures.append(
@@ -445,6 +459,11 @@ class UcsImcInventoryManager(GenericUcsInventoryManager):
         if inventory is None or inventory_json is None:
             self.logger(level="debug", message="Missing inventory or inventory_json parameter!")
             return False
+
+        if "device_connector" in inventory_json:
+            for device_connector in inventory_json["device_connector"]:
+                inventory.device_connector.append(UcsImcDeviceConnector(parent=inventory,
+                                                                           device_connector=device_connector))
 
         if "rack_enclosures" in inventory_json:
             for equipment_rack_enclosure in inventory_json["rack_enclosures"]:

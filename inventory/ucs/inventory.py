@@ -143,6 +143,7 @@ class GenericUcsInventory(GenericInventory):
 class UcsSystemInventory(GenericUcsInventory):
     def __init__(self, parent=None):
         self.chassis = []
+        self.device_connector = []
         self.fabric_extenders = []
         self.fabric_interconnects = []
         self.lan_neighbors = []
@@ -192,7 +193,7 @@ class UcsSystemInventory(GenericUcsInventory):
         GenericUcsInventory.__init__(self, parent=parent)
 
         # List of attributes to be exported in an inventory export
-        self.export_list = ["chassis", "fabric_extenders", "fabric_interconnects", "lan_neighbors", "rack_enclosures",
+        self.export_list = ["chassis", "device_connector", "fabric_extenders", "fabric_interconnects", "lan_neighbors", "rack_enclosures",
                             "rack_units", "san_neighbors"]
 
     def _fetch_sdk_objects(self):
@@ -264,7 +265,7 @@ class UcsSystemInventory(GenericUcsInventory):
                                                          ucs_system_fi_eth_port=port))
 
                         elif lan_neighbor_entry.system_name in lan_neighbors_system_name_list:
-                            # We already have an existing EasyUcsLanNeighbor object for this neighbor entry. Finding it
+                            # We already have an existing UcsSystemLanNeighbor object for this neighbor entry.Finding it
                             for easyucs_lan_neighbor in lan_neighbors_list:
                                 if lan_neighbor_entry.system_name == easyucs_lan_neighbor.system_name:
                                     # We found it - Adding peer information to this neighbor
@@ -286,18 +287,18 @@ class UcsSystemInventory(GenericUcsInventory):
                                         lan_neighbors_group_number[port.pc_id] = lan_neighbors_group_number_counter
                                         lan_neighbors_group_number_counter += 1
                                     lan_neighbors_list.append(
-                                        EasyUcsLanNeighbor(parent=self,
-                                                           ucs_system_lan_neighbor_entry=lan_neighbor_entry,
-                                                           ucs_system_fi_eth_port=port,
-                                                           group_number=lan_neighbors_group_number[port.pc_id]))
+                                        UcsSystemLanNeighbor(parent=self,
+                                                             ucs_system_lan_neighbor_entry=lan_neighbor_entry,
+                                                             ucs_system_fi_eth_port=port,
+                                                             group_number=lan_neighbors_group_number[port.pc_id]))
                                 else:
                                     lan_neighbors_list.append(
-                                        EasyUcsLanNeighbor(parent=self,
-                                                           ucs_system_lan_neighbor_entry=lan_neighbor_entry,
-                                                           ucs_system_fi_eth_port=port))
+                                        UcsSystemLanNeighbor(parent=self,
+                                                             ucs_system_lan_neighbor_entry=lan_neighbor_entry,
+                                                             ucs_system_fi_eth_port=port))
 
                             elif lan_neighbor_entry.system_name in lan_neighbors_system_name_list:
-                                # We already have an existing EasyUcsLanNeighbor object for this neighbor. Finding it
+                                # We already have an existing UcsSystemLanNeighbor object for this neighbor. Finding it
                                 for easyucs_lan_neighbor in lan_neighbors_list:
                                     if lan_neighbor_entry.system_name == easyucs_lan_neighbor.system_name:
                                         # We found it - Adding peer information to this neighbor
@@ -355,12 +356,13 @@ class UcsSystemInventory(GenericUcsInventory):
 class UcsImcInventory(GenericUcsInventory):
     def __init__(self, parent=None):
         self.chassis = []  # Used for chassis models like S3260
+        self.device_connector = []
         self.rack_enclosures = []  # Used for server nodes inside rack enclosures like C4200
         self.rack_units = []
         GenericUcsInventory.__init__(self, parent=parent)
 
         # List of attributes to be exported in an inventory export
-        self.export_list = ["chassis", "rack_enclosures", "rack_units"]
+        self.export_list = ["chassis", "device_connector", "rack_enclosures", "rack_units"]
 
     def _fetch_sdk_objects(self):
         GenericUcsInventory._fetch_sdk_objects(self)

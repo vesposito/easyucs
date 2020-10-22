@@ -180,7 +180,12 @@
                            "enum": [
                               "alerts",
                               "critical",
-                              "emergencies"
+                              "debugging",
+                              "emergencies",
+                              "errors",
+                              "information",
+                              "notifications",
+                              "warnings"
                            ]
                         },
                         "hostname": {
@@ -236,7 +241,12 @@
                            "enum": [
                               "alerts",
                               "critical",
-                              "emergencies"
+                              "debugging",
+                              "emergencies",
+                              "errors",
+                              "information",
+                              "notifications",
+                              "warnings"
                            ]
                         },
                         "hostname": {
@@ -292,7 +302,12 @@
                            "enum": [
                               "alerts",
                               "critical",
-                              "emergencies"
+                              "debugging",
+                              "emergencies",
+                              "errors",
+                              "information",
+                              "notifications",
+                              "warnings"
                            ]
                         },
                         "hostname": {

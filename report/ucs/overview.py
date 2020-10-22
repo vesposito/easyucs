@@ -17,6 +17,11 @@ class UcsSystemOverviewReportSection(UcsReportSection):
         self.content_list.append(
             UcsSystemClusterInfoReportTable(order_id=self.report.get_current_order_id(), parent=self,
                                             config=self.report.config, device=self.report.device, centered=True))
+
+        if self.report.inventory.device_connector:
+            self.content_list.append(
+                UcsIntersightReportSection(order_id=self.report.get_current_order_id(), parent=self))
+
         self.content_list.append(
             UcsSystemCommServicesReportSection(order_id=self.report.get_current_order_id(), parent=self))
 
@@ -101,3 +106,62 @@ class UcsSystemCommServicesReportTable(UcsReportTable):
 
         UcsReportTable.__init__(self, order_id=order_id, parent=parent, row_number=len(rows),
                                 column_number=len(rows[0]), centered=centered, cells_list=rows, autofit=True)
+
+
+class UcsIntersightReportSection(UcsReportSection):
+    def __init__(self, order_id, parent, title=""):
+        if not title:
+            title = _("Intersight Device Connector")
+        UcsReportSection.__init__(self, order_id=order_id, parent=parent, title=title)
+
+        self.content_list.append(
+            UcsIntersightReportTable(order_id=self.report.get_current_order_id(), parent=self,
+                                     inventory=self.report.inventory, device=self.report.device, centered=True))
+
+
+class UcsIntersightReportTable(UcsReportTable):
+    def __init__(self, order_id, parent, inventory, device, centered=False):
+        device_connector = inventory.device_connector[0]
+
+        rows = [[_("Description"), _("Value")], [_("Claim Status"), device_connector.ownership],
+                [_("Intersight URL"), device_connector.intersight_url],
+                [_("Account Name"), device_connector.ownership_name],
+                [_("Claimed By"), device_connector.ownership_user],
+                [_("Device ID"), device_connector.device_id], [_("Device Connector Version"), device_connector.version]]
+
+        UcsReportTable.__init__(self, order_id=order_id, parent=parent, row_number=len(rows),
+                                column_number=len(rows[0]), centered=centered, cells_list=rows)
+
+
+class UcsImcOverviewReportSection(UcsReportSection):
+    def __init__(self, order_id, parent, title=""):
+        if not title:
+            title = _("UCS IMC Overview")
+        UcsReportSection.__init__(self, order_id=order_id, parent=parent, title=title)
+
+        self.content_list.append(
+            UcsImcInfoReportTable(order_id=self.report.get_current_order_id(), parent=self,
+                                  config=self.report.config, device=self.report.device, centered=True))
+
+        if self.report.inventory.device_connector:
+            self.content_list.append(
+                UcsIntersightReportSection(order_id=self.report.get_current_order_id(), parent=self))
+
+
+class UcsImcInfoReportTable(UcsReportTable):
+    def __init__(self, order_id, parent, config, device, centered=False):
+        config_admin_networking = config.admin_networking[0]
+
+        rows = [[_("Description"), _("Value")], [_("System Name"), config_admin_networking.management_hostname],
+                [_("Version"), config.device_version],
+                [_("IP Address"), config_admin_networking.management_ipv4_address],
+                [_("Netmask"), config_admin_networking.management_subnet_mask],
+                [_("Gateway"), config_admin_networking.gateway_ipv4],
+                [_("NIC Mode"), config_admin_networking.nic_mode]]
+        # Server info
+        if config.server_properties:
+            rows.append([_("Asset Tag"), config.server_properties[0].asset_tag])
+        rows.append([_("Intersight Claim Status"), config.intersight_status])
+
+        UcsReportTable.__init__(self, order_id=order_id, parent=parent, row_number=len(rows),
+                                column_number=len(rows[0]), centered=centered, cells_list=rows)

@@ -10,6 +10,7 @@ from argparse import Namespace
 from flask import Flask, request, abort, jsonify
 from flask.templating import render_template
 
+from __init__ import __version__
 from device.ucs.device import UcsSystem
 from easyucs import create_ucs_device, init_process
 
@@ -20,7 +21,7 @@ ucs_device = None
 
 @app.route("/")
 def index():
-    return render_template("html/index.html")
+    return render_template("html/index.html", version=__version__)
 
 
 @app.route('/connect', methods=['POST'])

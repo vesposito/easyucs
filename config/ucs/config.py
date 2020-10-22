@@ -173,6 +173,7 @@ class UcsSystemConfig(GenericUcsConfig):
         self.breakout_ports = []
         self.call_home = []
         self.communication_services = []
+        self.device_connector = []
         self.dns = []
         self.global_fault_policy = []
         self.fc_zone_profiles = []
@@ -221,16 +222,16 @@ class UcsSystemConfig(GenericUcsConfig):
         # List of attributes to be exported in a config export
         self.export_list = ['appliance_network_control_policies', 'appliance_port_channels', 'appliance_ports',
                             'appliance_vlans', 'backup_export_policy', 'breakout_ports', 'call_home',
-                            'communication_services', 'dns', 'fc_zone_profiles', 'fcoe_port_channels',
-                            'fcoe_storage_ports', 'fcoe_uplink_ports', 'global_fault_policy', 'global_policies',
-                            'lan_pin_groups', 'lan_port_channels', 'lan_uplink_ports', 'ldap', 'link_profiles',
-                            'local_users', 'local_users_properties', 'locales', 'management_interfaces', 'orgs',
-                            'port_auto_discovery_policy', 'pre_login_banner', 'qos_system_class',
-                            'radius', 'roles', 'san_pin_groups', 'san_port_channels', 'san_storage_ports',
-                            'san_unified_ports', 'san_uplink_ports', 'sel_policy', 'server_ports', 'slow_drain_timers',
-                            'storage_vsans', 'switching_mode', 'syslog', 'system', 'tacacs', 'timezone_mgmt',
-                            'ucs_central', 'udld_link_policies', 'unified_storage_ports', 'unified_uplink_ports',
-                            'vlan_groups', 'vlans', 'vsans']
+                            'communication_services', 'device_connector', 'dns', 'fc_zone_profiles',
+                            'fcoe_port_channels', 'fcoe_storage_ports', 'fcoe_uplink_ports', 'global_fault_policy',
+                            'global_policies', 'lan_pin_groups', 'lan_port_channels', 'lan_uplink_ports', 'ldap',
+                            'link_profiles', 'local_users', 'local_users_properties', 'locales',
+                            'management_interfaces', 'orgs', 'port_auto_discovery_policy', 'pre_login_banner',
+                            'qos_system_class', 'radius', 'roles', 'san_pin_groups', 'san_port_channels',
+                            'san_storage_ports', 'san_unified_ports', 'san_uplink_ports', 'sel_policy', 'server_ports',
+                            'slow_drain_timers', 'storage_vsans', 'switching_mode', 'syslog', 'system', 'tacacs',
+                            'timezone_mgmt', 'ucs_central', 'udld_link_policies', 'unified_storage_ports',
+                            'unified_uplink_ports', 'vlan_groups', 'vlans', 'vsans']
 
     def check_if_ports_config_requires_reboot(self):
         """

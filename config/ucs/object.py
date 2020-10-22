@@ -105,7 +105,7 @@ class UcsSystemConfigObject(GenericUcsConfigObject):
                 else:
                     self.logger(level="error",
                                 message="Error in configuring " + self._CONFIG_NAME + ": " + err.error_descr)
-            return err
+            return False
 
         except urllib.error.URLError as err:
             if retry:
@@ -116,22 +116,25 @@ class UcsSystemConfigObject(GenericUcsConfigObject):
                 self._handle.commit_buffer_discard()
             if show:
                 self.logger(level="error", message="Error in configuring " + self._CONFIG_NAME + ": " + "Timeout error")
-            return err
+            return False
 
         except Exception as err:
             # We first discard the commit buffer in order to avoid resending the bad buffer content in the next commit
             self._handle.commit_buffer_discard()
             if show:
-                self.logger(level="error", message="Unknown error in configuring " + self._CONFIG_NAME)
-            return err
+                self.logger(level="error",
+                            message="Unknown error in configuring " + self._CONFIG_NAME + ": " + str(err))
+            return False
 
     def retry_commit(self, detail="", show=True):
         for i in range(self._device.push_attempts):
             if detail:
                 self.logger(level="warning",
-                            message="Trying to push again the " + self._CONFIG_NAME + " " + detail + " configuration")
+                            message="Trying to push again the " + self._CONFIG_NAME + " " + detail +
+                                    " configuration (attempt " + str(i + 1) + ")")
             else:
-                self.logger(level="warning", message="Trying to push again the " + self._CONFIG_NAME + " configuration")
+                self.logger(level="warning", message="Trying to push again the " + self._CONFIG_NAME +
+                                                     " configuration (attempt " + str(i + 1) + ")")
             if self._device.is_connected():
                 if self.commit(retry=False, show=False):
                     if show:
@@ -150,7 +153,7 @@ class UcsSystemConfigObject(GenericUcsConfigObject):
         if self._device.push_attempts:
             self.logger(level="error",
                         message="Impossible to push the " + self._CONFIG_NAME +
-                                " configuration even after multiple attempts. Thus, the buffer will be discarded.")
+                                " configuration even after " + str(i + 1) + " attempts. The buffer will be discarded.")
         return False
 
 
@@ -214,7 +217,7 @@ class UcsCentralConfigObject(GenericUcsConfigObject):
                 else:
                     self.logger(level="error",
                                 message="Error in configuring " + self._CONFIG_NAME + ": " + err.error_descr)
-            return err
+            return False
 
         except urllib.error.URLError as err:
             if retry:
@@ -225,22 +228,25 @@ class UcsCentralConfigObject(GenericUcsConfigObject):
                 self._handle.commit_buffer_discard()
             if show:
                 self.logger(level="error", message="Error in configuring " + self._CONFIG_NAME + ": " + "Timeout error")
-            return err
+            return False
 
         except Exception as err:
             # We first discard the commit buffer in order to avoid resending the bad buffer content in the next commit
             self._handle.commit_buffer_discard()
             if show:
-                self.logger(level="error", message="Unknown error in configuring " + self._CONFIG_NAME)
-            return err
+                self.logger(level="error",
+                            message="Unknown error in configuring " + self._CONFIG_NAME + ": " + str(err))
+            return False
 
     def retry_commit(self, detail="", show=True):
         for i in range(self._device.push_attempts):
             if detail:
                 self.logger(level="warning",
-                            message="Trying to push again the " + self._CONFIG_NAME + " " + detail + " configuration")
+                            message="Trying to push again the " + self._CONFIG_NAME + " " + detail +
+                                    " configuration (attempt " + str(i + 1) + ")")
             else:
-                self.logger(level="warning", message="Trying to push again the " + self._CONFIG_NAME + " configuration")
+                self.logger(level="warning", message="Trying to push again the " + self._CONFIG_NAME +
+                                                     " configuration (attempt " + str(i + 1) + ")")
             if self._device.is_connected():
                 if self.commit(retry=False, show=False):
                     if show:
@@ -259,5 +265,5 @@ class UcsCentralConfigObject(GenericUcsConfigObject):
         if self._device.push_attempts:
             self.logger(level="error",
                         message="Impossible to push the " + self._CONFIG_NAME +
-                                " configuration even after multiple attempts. Thus, the buffer will be discarded.")
+                                " configuration even after " + str(i + 1) + " attempts. The buffer will be discarded.")
         return False

@@ -5,6 +5,8 @@
 
 import hashlib
 import time
+import urllib3
+import requests
 
 from config.ucs.object import UcsSystemConfigObject
 
@@ -2816,3 +2818,130 @@ class UcsSystemPortAutoDiscoveryPolicy(UcsSystemConfigObject):
             if self.commit() != True:
                 return False
         return True
+
+class UcsSystemDeviceConnector(UcsSystemConfigObject):
+    _CONFIG_NAME = "Device Connector"
+
+    def __init__(self, parent=None, json_content=None):
+        UcsSystemConfigObject.__init__(self, parent=parent)
+        self._connector_uri = self._parent_having_logger.target + "/connector"
+
+        self.proxy_host = None
+        self.proxy_port = None
+        self.proxy_state = None
+        self.proxy_username = None
+        self.proxy_password = None
+
+        if self._config.load_from == "live":
+            self._cookie = self._parent_having_logger.handle.cookie
+            self._get_http_proxies()
+
+        elif self._config.load_from == "file":
+            if json_content is not None:
+                if not self.get_attributes_from_json(json_content=json_content):
+                    self.logger(level="error",
+                                message="Unable to get attributes from JSON content for " + self._CONFIG_NAME)
+
+        self.clean_object()
+
+    def push_object(self, commit=True):
+        if commit:
+            self.logger(message="Pushing " + self._CONFIG_NAME)
+        else:
+            self.logger(message="Adding to the handle " + self._CONFIG_NAME + " configuration" +
+                                ", waiting for a commit")
+
+        self._cookie = self._parent_having_logger.handle.cookie
+        uri = "https://" + self._parent_having_logger.target + "/connector/HttpProxies"
+        response = self.put_request(uri=uri)
+
+        return True
+
+    def get_request(self, uri):
+        # Disable warning at each request
+        urllib3.disable_warnings()
+
+        # Sanity check
+        if hasattr(self, "_cookie"):
+            if self._cookie:
+                auth_header = {'ucsmcookie': "ucsm-cookie=%s" % self._cookie}
+                try:
+                    response = requests.get(uri, verify=False, headers=auth_header)
+                    return response.json()
+                except Exception as err:
+                    print(err)
+                    self.logger(level="error", message="Couldn't request the device connector informations to the API")
+            else:
+                self.logger(level="error",
+                            message="No login cookie, no request can be made to find device connector informations")
+        else:
+            self.logger(level="error",
+                        message="No login cookie, no request can be made to find device connector informations")
+
+    def _get_http_proxies(self):
+        uri = "https://" + self._connector_uri + "/HttpProxies"
+        response = self.get_request(uri=uri)
+        # Sanity check
+        if not response:
+            return None
+        if isinstance(response, list):
+            if not response[0]:
+                return None
+        else:
+            return None
+
+        try:
+            self.proxy_state = response[0]["ProxyType"].lower()
+            if self.proxy_state == "manual":
+                self.proxy_state = "enabled"
+                self.proxy_host = response[0]["ProxyHost"]
+                self.proxy_port = str(response[0]["ProxyPort"])
+                if "ProxyUsername" in response[0]:
+                    self.proxy_username = response[0]["ProxyUsername"]
+                    self.logger(level="warning", message="Password of " + self._CONFIG_NAME + " Proxy username" +
+                                                         self.proxy_username + " can't be exported")
+        except KeyError as err:
+            self.logger(level="error", message="Could not find key parameter " + str(err))
+
+    def put_request(self, uri):
+        """
+        Do a put request specific for the proxy settings (subject to change to made it generic?)
+        """
+
+        # Disable warning at each request
+        urllib3.disable_warnings()
+
+        # Sanity check
+        if hasattr(self, "_cookie"):
+            if self._cookie:
+                auth_header = {'ucsmcookie': "ucsm-cookie=%s" % self._cookie}
+                try:
+                    proxy_type = ("Manual" if self.proxy_state == "enabled" else self.proxy_state.title())# Disabled
+                    if self.proxy_username and self.proxy_password:
+                        authentication_enabled = "true"
+                    if self.proxy_username == None:
+                        self.proxy_username = ""
+                    if self.proxy_password == None:
+                        self.proxy_password = ""
+
+                    data = '{"HostProperties":{"ProxyHost":"","ProxyPort":""},"AuthProperties":{},"ProxyType":"' + proxy_type + '","ProxyHost":"' + self.proxy_host + '","ProxyPort":' + self.proxy_port + ',"ProxyUsername":"' + self.proxy_username + '","ProxyPassword":"' + self.proxy_password + '"}'
+                    response = requests.put(uri, verify=False, headers=auth_header, data=data)
+                    if response.status_code != 200:
+                        message = "Couldn't push the device connector informations to the API, error " + \
+                                  str(response.status_code)
+                        self.logger(level="error",
+                                    message=message)
+                        return False
+                    return response.json()
+                except Exception as err:
+                    print(err)
+                    self.logger(level="error",
+                                message="Couldn't push the device connector informations to the API")
+            else:
+                self.logger(level="error",
+                            message="No login cookie, no request can be made to find device connector informations")
+        else:
+            self.logger(level="error",
+                        message="No login cookie, no request can be made to find device connector informations")
+
+        return False

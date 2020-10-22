@@ -21,11 +21,12 @@ import common
 from __init__ import __version__
 from config.manager import GenericConfigManager
 from config.plot import UcsSystemOrgConfigPlot, UcsSystemServiceProfileConfigPlot
-from config.ucs.ucsm.admin import UcsSystemDns, UcsSystemInformation, UcsSystemManagementInterface, UcsSystemOrg, \
-    UcsSystemTimezoneMgmt, UcsSystemLocalUser, UcsSystemRole, UcsSystemLocale, UcsSystemLocalUsersProperties, \
-    UcsSystemCommunicationServices, UcsSystemGlobalPolicies, UcsSystemPreLoginBanner, UcsSystemBackupExportPolicy, \
-    UcsSystemSelPolicy, UcsSystemSwitchingMode, UcsSystemUcsCentral, UcsSystemRadius, UcsSystemTacacs, UcsSystemLdap, \
-    UcsSystemCallHome, UcsSystemPortAutoDiscoveryPolicy, UcsSystemSyslog, UcsSystemFaultPolicy
+from config.ucs.ucsm.admin import UcsSystemDeviceConnector, UcsSystemDns, UcsSystemInformation, \
+    UcsSystemManagementInterface, UcsSystemOrg, UcsSystemTimezoneMgmt, UcsSystemLocalUser, UcsSystemRole, \
+    UcsSystemLocale, UcsSystemLocalUsersProperties, UcsSystemCommunicationServices, UcsSystemGlobalPolicies, \
+    UcsSystemPreLoginBanner, UcsSystemBackupExportPolicy, UcsSystemSelPolicy, UcsSystemSwitchingMode, \
+    UcsSystemUcsCentral, UcsSystemRadius, UcsSystemTacacs, UcsSystemLdap, UcsSystemCallHome, \
+    UcsSystemPortAutoDiscoveryPolicy, UcsSystemSyslog, UcsSystemFaultPolicy
 from config.ucs.config import UcsImcConfig, UcsSystemConfig, UcsCentralConfig
 from config.ucs.cimc.imc import UcsImcAdminNetwork, UcsImcLocalUser, UcsImcLocalUsersProperties, UcsImcServerProperties, \
     UcsImcTimezoneMgmt, UcsImcIpFilteringProperties, UcsImcIpBlockingProperties, UcsImcPowerPolicies, \
@@ -155,6 +156,7 @@ class UcsSystemConfigManager(GenericUcsConfigManager):
         config.timezone_mgmt.append(UcsSystemTimezoneMgmt(parent=config))
         config.switching_mode.append(UcsSystemSwitchingMode(parent=config))
         config.communication_services.append(UcsSystemCommunicationServices(parent=config))
+        config.device_connector.append(UcsSystemDeviceConnector(parent=config))
         config.global_fault_policy.append(UcsSystemFaultPolicy(parent=config))
         config.syslog.append(UcsSystemSyslog(parent=config))
         config.radius.append(UcsSystemRadius(parent=config))
@@ -515,6 +517,8 @@ class UcsSystemConfigManager(GenericUcsConfigManager):
                 banner.push_object()
             if config.communication_services:
                 config.communication_services[0].push_object()
+            if config.device_connector:
+                config.device_connector[0].push_object()
             if config.global_fault_policy:
                 config.global_fault_policy[0].push_object()
             if config.syslog:
@@ -907,6 +911,9 @@ class UcsSystemConfigManager(GenericUcsConfigManager):
         if "communication_services" in config_json:
             config.communication_services.append(
                 UcsSystemCommunicationServices(parent=config, json_content=config_json["communication_services"][0]))
+        if "device_connector" in config_json:
+            config.device_connector.append(
+                UcsSystemDeviceConnector(parent=config, json_content=config_json["device_connector"][0]))
         if "global_fault_policy" in config_json:
             config.global_fault_policy.append(
                 UcsSystemFaultPolicy(parent=config, json_content=config_json["global_fault_policy"][0]))
@@ -1541,8 +1548,6 @@ class UcsCentralConfigManager(GenericUcsConfigManager):
                 config.system[0].push_object()
             for management_interface in config.management_interfaces:
                 management_interface.push_object()
-            for date_time in config.date_time:
-                date_time.push_object()
             for dns in config.dns:
                 dns.push_object()
             for syslog in config.syslog:
@@ -1561,6 +1566,10 @@ class UcsCentralConfigManager(GenericUcsConfigManager):
             if config.orgs:
                 for org in config.orgs:
                     org.push_object()
+
+            # We put these objects at the end, since they are likely to cause a disconnect
+            for date_time in config.date_time:
+                date_time.push_object()
 
             self.logger(message="Successfully pushed configuration " + str(config.uuid) + " to " + self.parent.target)
 

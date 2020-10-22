@@ -1,0 +1,42 @@
+{
+   "id":"ucs_system_config_device_connector#",
+   "$schema":"http://json-schema.org/draft-07/schema#",
+   "title":"EasyUCS ucs system config device_connector section",
+   "description":"EasyUCS ucs system config device_connector section JSON schema",
+   "type":"object",
+   "properties":{
+      "comment": {
+         "description": "Diagnostics Policy Comments",
+         "type": "string",
+         "default": ""
+      },
+      "proxy_host":{
+         "description":"Diagnostics Policy Proxy Host",
+         "type":"string",
+         "default": "0.0.0.0",
+         "format": "ipv4"
+      },
+      "proxy_port":{
+         "description":"Description of Proxy Port",
+         "type":"string",
+         "default":""
+      },
+      "proxy_state":{
+         "description":"Description of Proxy State",
+         "type":"string",
+         "default":"disabled",
+         "enum": ["enabled", "disabled"]
+      },
+      "proxy_username":{
+         "description":"Description of Proxy Username",
+         "type":"string",
+         "default":""
+      },
+      "proxy_password":{
+         "description":"Description of Proxy Password",
+         "type":"string",
+         "default":""
+      }
+   },
+   "additionalProperties":false
+}

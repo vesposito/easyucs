@@ -377,6 +377,11 @@ def init_process(ucs_device, args, config_string):
         ucs_device.set_task_progression(10)
         ucs_device.clear_user_sessions()
 
+    elif args.scope == "device" and args.action == "clear_intersight_claim_status":
+        # Clears Intersight Claim Status of UCS Device
+        ucs_device.set_task_progression(10)
+        ucs_device.clear_intersight_claim_status()
+
     ucs_device.set_task_progression(100)
     ucs_device.print_logger_summary()
 
@@ -464,6 +469,13 @@ def main():
       
       python easyucs.py device clear_user_sessions -t ucsc -i 192.168.0.3 -u admin -p password
             clear all user sessions of UCS Central'''
+
+    example_device_clear_intersight_claim_status_text = '''Examples:
+          python easyucs.py device clear_intersight_claim_status -t ucsm -i 192.168.0.1 -u admin -p password
+                clear intersight claim status of UCS System
+          python easyucs.py device clear_intersight_claim_status -t cimc -i 192.168.0.2 -u admin -p password
+                clear intersight claim status of IMC System
+          '''
 
     # Introduction message
     print("\n" + "EasyUCS " + __version__ + " created by " + __author__ + ", " + __copyright__ + "\n")
@@ -689,6 +701,32 @@ def main():
                                                    help='Print log in a file')
 
     parser_device_clear_user_sessions.add_argument('-y', '--yes', dest='yes', action='store_true',
+                                                   help='Answer yes to all questions')
+
+    # Create the parsers for the "clear_intersight_claim_status" action of device
+    parser_device_clear_intersight_claim_status = \
+        subparsers_device.add_parser('clear_intersight_claim_status',
+                                     help='Clears all user sessions of an UCS device',
+                                     epilog=example_device_clear_intersight_claim_status_text,
+                                     formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser_device_clear_intersight_claim_status.add_argument('-i', '--ip', dest='ip', action='store', help='UCS IP address',
+                                                   required=True)
+    parser_device_clear_intersight_claim_status.add_argument('-u', '--username', dest='username', action='store',
+                                                   help='UCS Account Username',
+                                                   required=True)
+    parser_device_clear_intersight_claim_status.add_argument('-p', '--password', dest='password', action='store',
+                                                   help='UCS Account Password',
+                                                   required=True)
+    parser_device_clear_intersight_claim_status.add_argument('-t', '--ucstype', dest='ucstype', action='store',
+                                                   choices=['ucsm', 'cimc', 'ucsc'],
+                                                   help='UCS device type ("ucsm", "cimc" or "ucsc")')
+
+    parser_device_clear_intersight_claim_status.add_argument('-v', '--verbose', dest='log', action='store_true',
+                                                   help='Print debug log')
+    parser_device_clear_intersight_claim_status.add_argument('-l', '--logfile', dest='logfile', action='store',
+                                                   help='Print log in a file')
+
+    parser_device_clear_intersight_claim_status.add_argument('-y', '--yes', dest='yes', action='store_true',
                                                    help='Answer yes to all questions')
 
     args = parser.parse_args()
