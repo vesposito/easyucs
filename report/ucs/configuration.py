@@ -185,9 +185,32 @@ class UcsSystemVlanGroupsReportTable(UcsReportTable):
                  _("Org Permissions")]]
 
         for vlan_group in vlan_groups:
+            lan_up_text = ""
+            if vlan_group.lan_uplink_ports:
+                for lan_up in vlan_group.lan_uplink_ports:
+                    if "aggr_id" in lan_up.keys():
+                        if lan_up["aggr_id"]:
+                            lan_up_text += lan_up["fabric"] + "/" + lan_up["slot_id"] + "/" + lan_up["port_id"] + "/" \
+                                           + lan_up["aggr_id"] + ", "
+                    else:
+                        lan_up_text += lan_up["fabric"] + "/" + lan_up["slot_id"] + "/" + lan_up["port_id"] + ", "
+
+            # We remove the last ", " characters of the string
+            if lan_up_text:
+                lan_up_text = lan_up_text[:-2]
+
+            lan_pc_text = ""
+            if vlan_group.lan_port_channels:
+                for lan_pc in vlan_group.lan_port_channels:
+                    lan_pc_text += lan_pc["fabric"] + "/Po" + lan_pc["pc_id"] + ", "
+
+            # We remove the last ", " characters of the string
+            if lan_pc_text:
+                lan_pc_text = lan_pc_text[:-2]
+
             vlans = str(vlan_group.vlans).replace("[", "").replace("'", "").replace("]", "")
-            lan_up = str(vlan_group.lan_uplink_ports).replace("[", "").replace("'", "").replace("]", "")
-            lan_pc = str(vlan_group.lan_port_channels).replace("[", "").replace("'", "").replace("]", "")
+            lan_up = lan_up_text
+            lan_pc = lan_pc_text
             org_perm = str(vlan_group.org_permissions).replace("[", "").replace("'", "").replace("]", "")
             rows.append([vlan_group.name, vlans, vlan_group.native_vlan, lan_up, lan_pc, org_perm])
 

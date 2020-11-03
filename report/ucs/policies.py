@@ -359,6 +359,7 @@ class UcsSystemMaintenancePolicyReportTable(UcsReportTable):
                 [_("Organization"), maintenance_policy._parent._dn],
                 [_("Reboot Policy"), maintenance_policy.reboot_policy],
                 [_("Soft Shutdown Timer"), soft_shutdown_timer],
+                [_("Storage Config. Deployment Policy"), maintenance_policy.storage_config_deployment_policy],
                 [_("On Next Boot"), maintenance_policy.on_next_boot],
                 [_("Schedule"), maintenance_policy.schedule]]
 

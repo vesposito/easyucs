@@ -3,7 +3,7 @@
 __author__ = "Marc Abu El Ghait, Franck Bonneau and Vincent Esposito"
 __copyright__ = "Copyright 2020, Cisco"
 
-__version__ = "0.9.7.2"
+__version__ = "0.9.7.3"
 __status__ = "Development"
 
 # https://realpython.com/pypi-publish-python-package/

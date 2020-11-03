@@ -5,8 +5,6 @@
 
 import hashlib
 import time
-import urllib3
-import requests
 
 from config.ucs.object import UcsSystemConfigObject
 
@@ -32,6 +30,11 @@ from config.ucs.ucsm.chassis import UcsSystemChassisMaintenancePolicy, UcsSystem
 
 import common
 
+from ucsmsdk.mometa.aaa.AaaAuthRealm import AaaAuthRealm
+from ucsmsdk.mometa.aaa.AaaConsoleAuth import AaaConsoleAuth
+from ucsmsdk.mometa.aaa.AaaDefaultAuth import AaaDefaultAuth
+from ucsmsdk.mometa.aaa.AaaDomain import AaaDomain
+from ucsmsdk.mometa.aaa.AaaDomainAuth import AaaDomainAuth
 from ucsmsdk.mometa.aaa.AaaLdapEp import AaaLdapEp
 from ucsmsdk.mometa.aaa.AaaLdapGroup import AaaLdapGroup
 from ucsmsdk.mometa.aaa.AaaLdapGroupRule import AaaLdapGroupRule
@@ -2596,13 +2599,186 @@ class UcsSystemLdap(UcsSystemConfigObject):
             for group_map in self.group_maps:
                 mo_ldap_group = AaaLdapGroup(parent_mo_or_dn=mo_aaa_ldap_ep, name=group_map["group_dn"])
                 if 'roles' in group_map:
-                    for role in group_map['roles']:
-                        AaaUserRole(parent_mo_or_dn=mo_ldap_group, name=role, descr="")
+                    if group_map['roles']:
+                        for role in group_map['roles']:
+                            AaaUserRole(parent_mo_or_dn=mo_ldap_group, name=role, descr="")
                 if 'locales' in group_map:
-                    for locale in group_map['locales']:
-                        AaaUserLocale(parent_mo_or_dn=mo_ldap_group, name=locale, descr="")
+                    if group_map['locales']:
+                        for locale in group_map['locales']:
+                            AaaUserLocale(parent_mo_or_dn=mo_ldap_group, name=locale, descr="")
 
         self._handle.add_mo(mo_aaa_ldap_ep, modify_present=True)
+
+        if commit:
+            if self.commit() != True:
+                return False
+        return True
+
+
+class UcsSystemAuthentication(UcsSystemConfigObject):
+    _CONFIG_NAME = "Authentication"
+
+    def __init__(self, parent=None, json_content=None):
+        UcsSystemConfigObject.__init__(self, parent=parent)
+        self.native_authentication = []
+        self.authentication_domains = []
+
+        if self._config.load_from == "live":
+            # Native Authentication
+            # Default Authentication
+            if "aaaDefaultAuth" in self._config.sdk_objects:
+                default_auth_list = [default_auth for default_auth in self._config.sdk_objects["aaaDefaultAuth"] if
+                                     "sys/auth-realm/" in default_auth.dn]
+                if len(default_auth_list) == 1:
+                    provider_group = None
+                    two_factor_authentication = None
+                    if default_auth_list[0].realm in ["radius", "tacacs", "ldap"]:
+                        provider_group = default_auth_list[0].provider_group
+                    if default_auth_list[0].realm in ["radius", "tacacs"]:
+                        two_factor_authentication = default_auth_list[0].use2_factor
+                    self.native_authentication.append(
+                        {"default_authentication": [{"realm": default_auth_list[0].realm,
+                                                     "provider_group": provider_group,
+                                                     "web_session_refresh_period": default_auth_list[0].refresh_period,
+                                                     "web_session_timeout": default_auth_list[0].session_timeout,
+                                                     "two_factor_authentication": two_factor_authentication}]})
+
+            # Console Authentication
+            if "aaaConsoleAuth" in self._config.sdk_objects:
+                console_auth_list = [console_auth for console_auth in self._config.sdk_objects["aaaConsoleAuth"]
+                                     if "sys/auth-realm/" in console_auth.dn]
+                if len(console_auth_list) == 1:
+                    provider_group = None
+                    two_factor_authentication = None
+                    if console_auth_list[0].realm in ["radius", "tacacs", "ldap"]:
+                        provider_group = console_auth_list[0].provider_group
+                    if console_auth_list[0].realm in ["radius", "tacacs"]:
+                        two_factor_authentication = console_auth_list[0].use2_factor
+                    self.native_authentication.append(
+                        {"console_authentication": [{"realm": console_auth_list[0].realm,
+                                                     "provider_group": provider_group,
+                                                     "two_factor_authentication": two_factor_authentication}]})
+
+            # Role Policy for Remote Users
+            if "aaaAuthRealm" in self._config.sdk_objects:
+                auth_realm_list = [auth_realm for auth_realm in self._config.sdk_objects["aaaAuthRealm"]
+                                   if auth_realm.dn == "sys/auth-realm"]
+                if len(auth_realm_list) == 1:
+                    self.native_authentication.append(
+                        {"role_policy_for_remote_users": auth_realm_list[0].def_role_policy})
+
+            # Authentication Domains
+            if "aaaDomain" in self._config.sdk_objects:
+                domain_list = [domain for domain in self._config.sdk_objects["aaaDomain"]
+                               if "sys/auth-realm/domain-" in domain.dn]
+                for aaa_domain in domain_list:
+                    name = aaa_domain.name
+                    realm = None
+                    provider_group = None
+                    two_factor_authentication = None
+
+                    # We now need to find the corresponding aaaDomainAuth object
+                    if "aaaDomainAuth" in self._config.sdk_objects:
+                        domain_auth_list = [domain_auth for domain_auth in self._config.sdk_objects["aaaDomainAuth"]
+                                            if domain_auth.dn == "sys/auth-realm/domain-" + name + "/domain-auth"]
+                        if len(domain_auth_list) == 1:
+                            realm = domain_auth_list[0].realm
+                            if domain_auth_list[0].realm in ["radius", "tacacs", "ldap"]:
+                                provider_group = domain_auth_list[0].provider_group
+                            if domain_auth_list[0].realm in ["radius", "tacacs"]:
+                                two_factor_authentication = domain_auth_list[0].use2_factor
+
+                    self.authentication_domains.append(
+                        {"name": name,
+                         "realm": realm,
+                         "web_session_refresh_period": aaa_domain.refresh_period,
+                         "web_session_timeout": aaa_domain.session_timeout,
+                         "provider_group": provider_group,
+                         "two_factor_authentication": two_factor_authentication})
+
+        elif self._config.load_from == "file":
+            if json_content is not None:
+                if not self.get_attributes_from_json(json_content=json_content):
+                    self.logger(level="error",
+                                message="Unable to get attributes from JSON content for " + self._CONFIG_NAME)
+
+                for element in self.native_authentication:
+                    if "default_authentication" in element.keys():
+                        for subelement in element["default_authentication"]:
+                            for value in ["realm", "provider_group", "web_session_refresh_period",
+                                          "web_session_timeout", "two_factor_authentication"]:
+                                if value not in subelement:
+                                    subelement[value] = None
+
+                    if "console_authentication" in element.keys():
+                        for subelement in element["console_authentication"]:
+                            for value in ["realm", "provider_group", "two_factor_authentication"]:
+                                if value not in subelement:
+                                    subelement[value] = None
+
+                    for value in ["role_policy_for_remote_users"]:
+                        if value not in element:
+                            element[value] = None
+
+                for element in self.authentication_domains:
+                    for value in ["name", "realm", "web_session_timeout", "web_session_refresh_period",
+                                  "two_factor_authentication", "provider_group"]:
+                        if value not in element:
+                            element[value] = None
+
+        self.clean_object()
+
+    def push_object(self, commit=True):
+        if commit:
+            self.logger(message="Pushing " + self._CONFIG_NAME)
+        else:
+            self.logger(message="Adding to the handle " + self._CONFIG_NAME + " configuration" +
+                                ", waiting for a commit")
+
+        parent_mo = "sys/auth-realm"
+
+        # Native Authentication
+        for native_auth in self.native_authentication:
+            if "default_authentication" in native_auth:
+                if native_auth["default_authentication"]:
+                    mo_aaa_default_auth = \
+                        AaaDefaultAuth(parent_mo_or_dn=parent_mo,
+                                       realm=native_auth["default_authentication"][0]["realm"],
+                                       provider_group=native_auth["default_authentication"][0]["provider_group"],
+                                       refresh_period=native_auth["default_authentication"][0][
+                                           "web_session_refresh_period"],
+                                       session_timeout=native_auth["default_authentication"][0]["web_session_timeout"],
+                                       use2_factor=native_auth["default_authentication"][0][
+                                           "two_factor_authentication"])
+                    self._handle.add_mo(mo_aaa_default_auth, modify_present=True)
+
+            if "console_authentication" in native_auth:
+                if native_auth["console_authentication"]:
+                    mo_aaa_console_auth = \
+                        AaaConsoleAuth(parent_mo_or_dn=parent_mo,
+                                       realm=native_auth["console_authentication"][0]["realm"],
+                                       provider_group=native_auth["console_authentication"][0]["provider_group"],
+                                       use2_factor=native_auth["console_authentication"][0][
+                                           "two_factor_authentication"])
+                    self._handle.add_mo(mo_aaa_console_auth, modify_present=True)
+
+            if "role_policy_for_remote_users" in native_auth:
+                if native_auth["role_policy_for_remote_users"]:
+                    mo_aaa_auth_realm = AaaAuthRealm(parent_mo_or_dn="sys",
+                                                     def_role_policy=native_auth["role_policy_for_remote_users"])
+                    self._handle.add_mo(mo_aaa_auth_realm, modify_present=True)
+
+        # Authentication Domains
+        for auth_domain in self.authentication_domains:
+            mo_aaa_domain = AaaDomain(parent_mo_or_dn=parent_mo, name=auth_domain["name"],
+                                      refresh_period=auth_domain["web_session_refresh_period"],
+                                      session_timeout=auth_domain["web_session_timeout"])
+            self._handle.add_mo(mo_aaa_domain, modify_present=True)
+
+            mo_aaa_domain_auth = AaaDomainAuth(parent_mo_or_dn=mo_aaa_domain, realm=auth_domain["realm"],
+                                               provider_group=auth_domain["provider_group"],
+                                               use2_factor=auth_domain["two_factor_authentication"])
+            self._handle.add_mo(mo_aaa_domain_auth, modify_present=True)
 
         if commit:
             if self.commit() != True:
@@ -2818,130 +2994,3 @@ class UcsSystemPortAutoDiscoveryPolicy(UcsSystemConfigObject):
             if self.commit() != True:
                 return False
         return True
-
-class UcsSystemDeviceConnector(UcsSystemConfigObject):
-    _CONFIG_NAME = "Device Connector"
-
-    def __init__(self, parent=None, json_content=None):
-        UcsSystemConfigObject.__init__(self, parent=parent)
-        self._connector_uri = self._parent_having_logger.target + "/connector"
-
-        self.proxy_host = None
-        self.proxy_port = None
-        self.proxy_state = None
-        self.proxy_username = None
-        self.proxy_password = None
-
-        if self._config.load_from == "live":
-            self._cookie = self._parent_having_logger.handle.cookie
-            self._get_http_proxies()
-
-        elif self._config.load_from == "file":
-            if json_content is not None:
-                if not self.get_attributes_from_json(json_content=json_content):
-                    self.logger(level="error",
-                                message="Unable to get attributes from JSON content for " + self._CONFIG_NAME)
-
-        self.clean_object()
-
-    def push_object(self, commit=True):
-        if commit:
-            self.logger(message="Pushing " + self._CONFIG_NAME)
-        else:
-            self.logger(message="Adding to the handle " + self._CONFIG_NAME + " configuration" +
-                                ", waiting for a commit")
-
-        self._cookie = self._parent_having_logger.handle.cookie
-        uri = "https://" + self._parent_having_logger.target + "/connector/HttpProxies"
-        response = self.put_request(uri=uri)
-
-        return True
-
-    def get_request(self, uri):
-        # Disable warning at each request
-        urllib3.disable_warnings()
-
-        # Sanity check
-        if hasattr(self, "_cookie"):
-            if self._cookie:
-                auth_header = {'ucsmcookie': "ucsm-cookie=%s" % self._cookie}
-                try:
-                    response = requests.get(uri, verify=False, headers=auth_header)
-                    return response.json()
-                except Exception as err:
-                    print(err)
-                    self.logger(level="error", message="Couldn't request the device connector informations to the API")
-            else:
-                self.logger(level="error",
-                            message="No login cookie, no request can be made to find device connector informations")
-        else:
-            self.logger(level="error",
-                        message="No login cookie, no request can be made to find device connector informations")
-
-    def _get_http_proxies(self):
-        uri = "https://" + self._connector_uri + "/HttpProxies"
-        response = self.get_request(uri=uri)
-        # Sanity check
-        if not response:
-            return None
-        if isinstance(response, list):
-            if not response[0]:
-                return None
-        else:
-            return None
-
-        try:
-            self.proxy_state = response[0]["ProxyType"].lower()
-            if self.proxy_state == "manual":
-                self.proxy_state = "enabled"
-                self.proxy_host = response[0]["ProxyHost"]
-                self.proxy_port = str(response[0]["ProxyPort"])
-                if "ProxyUsername" in response[0]:
-                    self.proxy_username = response[0]["ProxyUsername"]
-                    self.logger(level="warning", message="Password of " + self._CONFIG_NAME + " Proxy username" +
-                                                         self.proxy_username + " can't be exported")
-        except KeyError as err:
-            self.logger(level="error", message="Could not find key parameter " + str(err))
-
-    def put_request(self, uri):
-        """
-        Do a put request specific for the proxy settings (subject to change to made it generic?)
-        """
-
-        # Disable warning at each request
-        urllib3.disable_warnings()
-
-        # Sanity check
-        if hasattr(self, "_cookie"):
-            if self._cookie:
-                auth_header = {'ucsmcookie': "ucsm-cookie=%s" % self._cookie}
-                try:
-                    proxy_type = ("Manual" if self.proxy_state == "enabled" else self.proxy_state.title())# Disabled
-                    if self.proxy_username and self.proxy_password:
-                        authentication_enabled = "true"
-                    if self.proxy_username == None:
-                        self.proxy_username = ""
-                    if self.proxy_password == None:
-                        self.proxy_password = ""
-
-                    data = '{"HostProperties":{"ProxyHost":"","ProxyPort":""},"AuthProperties":{},"ProxyType":"' + proxy_type + '","ProxyHost":"' + self.proxy_host + '","ProxyPort":' + self.proxy_port + ',"ProxyUsername":"' + self.proxy_username + '","ProxyPassword":"' + self.proxy_password + '"}'
-                    response = requests.put(uri, verify=False, headers=auth_header, data=data)
-                    if response.status_code != 200:
-                        message = "Couldn't push the device connector informations to the API, error " + \
-                                  str(response.status_code)
-                        self.logger(level="error",
-                                    message=message)
-                        return False
-                    return response.json()
-                except Exception as err:
-                    print(err)
-                    self.logger(level="error",
-                                message="Couldn't push the device connector informations to the API")
-            else:
-                self.logger(level="error",
-                            message="No login cookie, no request can be made to find device connector informations")
-        else:
-            self.logger(level="error",
-                        message="No login cookie, no request can be made to find device connector informations")
-
-        return False

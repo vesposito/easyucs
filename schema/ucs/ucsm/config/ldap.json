@@ -203,7 +203,8 @@
                   "items":{
                      "type":"string",
                      "description":"Role"
-                  }
+                  },
+                  "minItems": 1
                },
                "locales":{
                   "description":"LDAP Group Map Locales",
@@ -211,7 +212,8 @@
                   "items":{
                      "type":"string",
                      "description":"Locale"
-                  }
+                  },
+                  "minItems": 1
                }
             },
             "additionalProperties":false,

@@ -45,6 +45,17 @@
          },
          "minItems":1
       },
+      "authentication":{
+         "description":"EasyUCS config/authentication section",
+         "type":"array",
+         "items":{
+            "description":"EasyUCS config/authentication element",
+            "type":"object",
+            "$ref":"config/authentication.json"
+         },
+         "minItems":1,
+         "maxItems":1
+      },
       "backup_export_policy":{
          "description":"EasyUCS config/backup_export_policy section",
          "type":"array",

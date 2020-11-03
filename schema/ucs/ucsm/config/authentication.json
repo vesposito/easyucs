@@ -1,0 +1,393 @@
+{
+   "id":"ucs_system_config_authentication#",
+   "$schema":"http://json-schema.org/draft-07/schema#",
+   "title":"EasyUCS ucs system config authentication section",
+   "description":"EasyUCS ucs system config authentication section JSON schema",
+   "type":"object",
+   "properties":{
+      "comment": {
+         "description": "Authentication Comments",
+         "type": "string",
+         "default": ""
+      },
+      "native_authentication":{
+         "description":"Authentication - Native Authentication",
+         "type":"array",
+         "items":{
+            "type":"object",
+            "description":"Authentication Native Authentication",
+            "properties": {
+               "default_authentication": {
+                  "description": "Authentication Default Authentication",
+                  "type": "array",
+                  "items": {
+                     "type": "object",
+                     "description": "Authentication Default Authentication",
+                     "properties":{
+                        "realm":{
+                           "description":"Authentication Native Authentication Realm",
+                           "type":"string",
+                           "default": "local",
+                           "enum": [
+                              "ldap",
+                              "local",
+                              "none",
+                              "radius",
+                              "tacacs"
+                           ]
+                        },
+                        "provider_group":{
+                           "description":"Authentication Native Authentication Provider Group",
+                           "type":"string",
+                           "default": ""
+                        },
+                        "web_session_refresh_period":{
+                           "description":"Authentication Native Authentication Web Session Refresh Period (sec)",
+                           "type":"string",
+                           "default": "600",
+                           "pattern": "^[6-9][0-9]$|^[1-9][0-9][0-9]$|^[1-9][0-9][0-9][0-9]$|^[1-9][0-9][0-9][0-9][0-9]$|^1[0-6][0-9][0-9][0-9][0-9]$|^17[0-1][0-9][0-9][0-9]$|^172[0-7][0-9][0-9]$|^172800$"
+                        },
+                        "web_session_timeout":{
+                           "description":"Authentication Native Authentication Web Session Timeout (sec)",
+                           "type":"string",
+                           "default": "7200",
+                           "pattern": "^[3-9][0-9][0-9]$|^[1-9][0-9][0-9][0-9]$|^[1-9][0-9][0-9][0-9][0-9]$|^1[0-6][0-9][0-9][0-9][0-9]$|^17[0-1][0-9][0-9][0-9]$|^172[0-7][0-9][0-9]$|^172800$"
+                        },
+                        "two_factor_authentication": {
+                           "description": "Authentication Native Authentication Two Factor Authentication",
+                           "type": "string",
+                           "default": "no",
+                           "enum": [
+                              "false",
+                              "no",
+                              "true",
+                              "yes"
+                           ]
+                        }
+                     },
+                     "additionalProperties": false,
+                     "required": [
+                        "realm"
+                     ],
+                     "allOf": [
+                        {
+                           "$comment": "Two factor authentication is not supported with none/local/ldap realms",
+                           "if": {
+                              "properties": {
+                                 "realm": {
+                                    "enum": [
+                                       "ldap",
+                                       "local",
+                                       "none"
+                                    ]
+                                 }
+                              },
+                              "required": [
+                                 "realm"
+                              ]
+                           },
+                           "then": {
+                              "anyOf": [
+                                 {
+                                    "not": {
+                                       "required": [
+                                          "two_factor_authentication"
+                                       ]
+                                    }
+                                 },
+                                 {
+                                    "properties": {
+                                       "two_factor_authentication": {
+                                          "enum": [
+                                             "false",
+                                             "no"
+                                          ]
+                                       }
+                                    },
+                                    "required": [
+                                       "two_factor_authentication"
+                                    ]
+                                 }
+                              ]
+                           }
+                        },
+                        {
+                           "$comment": "Provider group should not be present with none/local realms",
+                           "if": {
+                              "properties": {
+                                 "realm": {
+                                    "enum": [
+                                       "local",
+                                       "none"
+                                    ]
+                                 }
+                              },
+                              "required": [
+                                 "realm"
+                              ]
+                           },
+                           "then": {
+                              "not": {
+                                 "required": [
+                                    "provider_group"
+                                 ]
+                              }
+                           }
+                        }
+                     ]
+                  },
+                  "minItems": 1,
+                  "maxItems": 1
+               },
+               "console_authentication": {
+                  "description": "Authentication Console Authentication",
+                  "type": "array",
+                  "items": {
+                     "type": "object",
+                     "description": "Authentication Console Authentication",
+                     "properties":{
+                        "realm":{
+                           "description":"Authentication Console Authentication Realm",
+                           "type":"string",
+                           "default": "local",
+                           "enum": [
+                              "ldap",
+                              "local",
+                              "none",
+                              "radius",
+                              "tacacs"
+                           ]
+                        },
+                        "provider_group":{
+                           "description":"Authentication Console Authentication Provider Group",
+                           "type":"string",
+                           "default": ""
+                        },
+                        "two_factor_authentication": {
+                           "description": "Authentication Console Authentication Two Factor Authentication",
+                           "type": "string",
+                           "default": "no",
+                           "enum": [
+                              "false",
+                              "no",
+                              "true",
+                              "yes"
+                           ]
+                        }
+                     },
+                     "additionalProperties": false,
+                     "required": [
+                        "realm"
+                     ],
+                     "allOf": [
+                        {
+                           "$comment": "Two factor authentication is not supported with none/local/ldap realms",
+                           "if": {
+                              "properties": {
+                                 "realm": {
+                                    "enum": [
+                                       "ldap",
+                                       "local",
+                                       "none"
+                                    ]
+                                 }
+                              },
+                              "required": [
+                                 "realm"
+                              ]
+                           },
+                           "then": {
+                              "anyOf": [
+                                 {
+                                    "not": {
+                                       "required": [
+                                          "two_factor_authentication"
+                                       ]
+                                    }
+                                 },
+                                 {
+                                    "properties": {
+                                       "two_factor_authentication": {
+                                          "enum": [
+                                             "false",
+                                             "no"
+                                          ]
+                                       }
+                                    },
+                                    "required": [
+                                       "two_factor_authentication"
+                                    ]
+                                 }
+                              ]
+                           }
+                        },
+                        {
+                           "$comment": "Provider group should not be present with none/local realms",
+                           "if": {
+                              "properties": {
+                                 "realm": {
+                                    "enum": [
+                                       "local",
+                                       "none"
+                                    ]
+                                 }
+                              },
+                              "required": [
+                                 "realm"
+                              ]
+                           },
+                           "then": {
+                              "not": {
+                                 "required": [
+                                    "provider_group"
+                                 ]
+                              }
+                           }
+                        }
+                     ]
+                  },
+                  "minItems": 1,
+                  "maxItems": 1
+               },
+               "role_policy_for_remote_users": {
+                  "description": "Authentication Role Policy For Remote Users",
+                  "type": "string",
+                  "default": "no-login",
+                  "enum": [
+                     "assign-default-role",
+                     "no-login"
+                  ]
+               }
+            },
+            "additionalProperties":false
+         },
+         "minItems": 1,
+         "maxItems": 3
+      },
+      "authentication_domains": {
+         "description": "Authentication - Authentication Domains",
+         "type": "array",
+         "items": {
+            "type": "object",
+            "description": "Authentication - Authentication Domain",
+            "properties": {
+               "name": {
+                  "description": "Authentication - Authentication Domain Name",
+                  "type": "string",
+                  "default": "",
+                  "pattern": "^[a-zA-Z0-9_.-]{1,16}$"
+               },
+               "realm": {
+                  "description": "Authentication - Authentication Domain Realm",
+                  "type": "string",
+                  "default": "local",
+                  "enum": [
+                     "ldap",
+                     "local",
+                     "none",
+                     "radius",
+                     "tacacs"
+                  ]
+               },
+               "provider_group":{
+                  "description":"Authentication - Authentication Domain Provider Group",
+                  "type":"string",
+                  "default": ""
+               },
+               "web_session_refresh_period":{
+                  "description":"Authentication - Authentication Domain Web Session Refresh Period (sec)",
+                  "type":"string",
+                  "default": "600",
+                  "pattern": "^[6-9][0-9]$|^[1-9][0-9][0-9]$|^[1-9][0-9][0-9][0-9]$|^[1-9][0-9][0-9][0-9][0-9]$|^1[0-6][0-9][0-9][0-9][0-9]$|^17[0-1][0-9][0-9][0-9]$|^172[0-7][0-9][0-9]$|^172800$"
+               },
+               "web_session_timeout":{
+                  "description":"Authentication - Authentication Domain Web Session Timeout (sec)",
+                  "type":"string",
+                  "default": "7200",
+                  "pattern": "^[3-9][0-9][0-9]$|^[1-9][0-9][0-9][0-9]$|^[1-9][0-9][0-9][0-9][0-9]$|^1[0-6][0-9][0-9][0-9][0-9]$|^17[0-1][0-9][0-9][0-9]$|^172[0-7][0-9][0-9]$|^172800$"
+               },
+               "two_factor_authentication": {
+                  "description": "Authentication - Authentication Domain Two Factor Authentication",
+                  "type": "string",
+                  "default": "no",
+                  "enum": [
+                     "false",
+                     "no",
+                     "true",
+                     "yes"
+                  ]
+               }
+            },
+            "additionalProperties": false,
+            "allOf": [
+               {
+                  "$comment": "Two factor authentication is not supported with none/local/ldap realms",
+                  "if": {
+                     "properties": {
+                        "realm": {
+                           "enum": [
+                              "ldap",
+                              "local",
+                              "none"
+                           ]
+                        }
+                     },
+                     "required": [
+                        "realm"
+                     ]
+                  },
+                  "then": {
+                     "anyOf": [
+                        {
+                           "not": {
+                              "required": [
+                                 "two_factor_authentication"
+                              ]
+                           }
+                        },
+                        {
+                           "properties": {
+                              "two_factor_authentication": {
+                                 "enum": [
+                                    "false",
+                                    "no"
+                                 ]
+                              }
+                           },
+                           "required": [
+                              "two_factor_authentication"
+                           ]
+                        }
+                     ]
+                  }
+               },
+               {
+                  "$comment": "Provider group should not be present with none/local realms",
+                  "if": {
+                     "properties": {
+                        "realm": {
+                           "enum": [
+                              "local",
+                              "none"
+                           ]
+                        }
+                     },
+                     "required": [
+                        "realm"
+                     ]
+                  },
+                  "then": {
+                     "not": {
+                        "required": [
+                           "provider_group"
+                        ]
+                     }
+                  }
+               }
+            ]
+         },
+         "minItems": 1
+      }
+   },
+   "additionalProperties":false
+}

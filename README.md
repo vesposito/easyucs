@@ -148,6 +148,13 @@ python easyucs_gui.py
 
 ## Versioning
 
+### 0.9.7.3
+
+* Add support for Authentication (Native & Authentication Domains) in UCSM config
+* Move Intersight Device Connector config to common structure between UCSM & IMC
+* Add missing "Storage Config. Deployment Policy" attribute in Maintenance Policies in UCSM config
+* Other small bug fixes and improvements
+
 #### 0.9.7.2
 
 * Add support for Intersight Device Connector in inventory & config for UCSM & IMC

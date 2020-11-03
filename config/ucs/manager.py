@@ -21,19 +21,19 @@ import common
 from __init__ import __version__
 from config.manager import GenericConfigManager
 from config.plot import UcsSystemOrgConfigPlot, UcsSystemServiceProfileConfigPlot
-from config.ucs.ucsm.admin import UcsSystemDeviceConnector, UcsSystemDns, UcsSystemInformation, \
-    UcsSystemManagementInterface, UcsSystemOrg, UcsSystemTimezoneMgmt, UcsSystemLocalUser, UcsSystemRole, \
-    UcsSystemLocale, UcsSystemLocalUsersProperties, UcsSystemCommunicationServices, UcsSystemGlobalPolicies, \
-    UcsSystemPreLoginBanner, UcsSystemBackupExportPolicy, UcsSystemSelPolicy, UcsSystemSwitchingMode, \
-    UcsSystemUcsCentral, UcsSystemRadius, UcsSystemTacacs, UcsSystemLdap, UcsSystemCallHome, \
-    UcsSystemPortAutoDiscoveryPolicy, UcsSystemSyslog, UcsSystemFaultPolicy
 from config.ucs.config import UcsImcConfig, UcsSystemConfig, UcsCentralConfig
+from config.ucs.device_connector import UcsDeviceConnector
 from config.ucs.cimc.imc import UcsImcAdminNetwork, UcsImcLocalUser, UcsImcLocalUsersProperties, UcsImcServerProperties, \
     UcsImcTimezoneMgmt, UcsImcIpFilteringProperties, UcsImcIpBlockingProperties, UcsImcPowerPolicies, \
     UcsImcAdapterCard, UcsImcCommunicationsServices, UcsImcChassisInventory, UcsImcPowerCapConfiguration, \
     UcsImcVKvmProperties, UcsImcSecureKeyManagement, UcsImcSnmp, UcsImcSmtpProperties, UcsImcPlatformEventFilter, \
     UcsImcVirtualMedia, UcsImcSerialOverLanProperties, UcsImcBios, UcsImcLdap, UcsImcBootOrder, \
     UcsImcStorageController, UcsImcStorageFlexFlashController, UcsImcDynamicStorageZoning
+from config.ucs.ucsm.admin import UcsSystemDns, UcsSystemInformation,  UcsSystemManagementInterface, UcsSystemOrg,\
+    UcsSystemTimezoneMgmt, UcsSystemLocalUser, UcsSystemRole,  UcsSystemLocale, UcsSystemLocalUsersProperties,\
+    UcsSystemCommunicationServices, UcsSystemGlobalPolicies,  UcsSystemPreLoginBanner, UcsSystemBackupExportPolicy,\
+    UcsSystemSelPolicy, UcsSystemSwitchingMode,  UcsSystemUcsCentral, UcsSystemRadius, UcsSystemTacacs, UcsSystemLdap,\
+    UcsSystemCallHome,  UcsSystemPortAutoDiscoveryPolicy, UcsSystemSyslog, UcsSystemFaultPolicy, UcsSystemAuthentication
 from config.ucs.ucsm.lan import UcsSystemVlan, UcsSystemApplianceVlan, UcsSystemLanUplinkPort, UcsSystemLanPortChannel, \
     UcsSystemServerPort, UcsSystemAppliancePort, UcsSystemAppliancePortChannel, UcsSystemLanPinGroup, \
     UcsSystemVlanGroup, UcsSystemQosSystemClass, UcsSystemUnifiedStoragePort, UcsSystemUnifiedUplinkPort, \
@@ -156,12 +156,13 @@ class UcsSystemConfigManager(GenericUcsConfigManager):
         config.timezone_mgmt.append(UcsSystemTimezoneMgmt(parent=config))
         config.switching_mode.append(UcsSystemSwitchingMode(parent=config))
         config.communication_services.append(UcsSystemCommunicationServices(parent=config))
-        config.device_connector.append(UcsSystemDeviceConnector(parent=config))
+        config.device_connector.append(UcsDeviceConnector(parent=config))
         config.global_fault_policy.append(UcsSystemFaultPolicy(parent=config))
         config.syslog.append(UcsSystemSyslog(parent=config))
         config.radius.append(UcsSystemRadius(parent=config))
         config.tacacs.append(UcsSystemTacacs(parent=config))
         config.ldap.append(UcsSystemLdap(parent=config))
+        config.authentication.append(UcsSystemAuthentication(parent=config))
         config.call_home.append(UcsSystemCallHome(parent=config))
         config.backup_export_policy.append(UcsSystemBackupExportPolicy(parent=config))
         config.global_policies.append(UcsSystemGlobalPolicies(parent=config))
@@ -537,6 +538,8 @@ class UcsSystemConfigManager(GenericUcsConfigManager):
                 config.tacacs[0].push_object()
             if config.ldap:
                 config.ldap[0].push_object()
+            if config.authentication:
+                config.authentication[0].push_object()
 
             self.parent.set_task_progression(60)
 
@@ -913,7 +916,7 @@ class UcsSystemConfigManager(GenericUcsConfigManager):
                 UcsSystemCommunicationServices(parent=config, json_content=config_json["communication_services"][0]))
         if "device_connector" in config_json:
             config.device_connector.append(
-                UcsSystemDeviceConnector(parent=config, json_content=config_json["device_connector"][0]))
+                UcsDeviceConnector(parent=config, json_content=config_json["device_connector"][0]))
         if "global_fault_policy" in config_json:
             config.global_fault_policy.append(
                 UcsSystemFaultPolicy(parent=config, json_content=config_json["global_fault_policy"][0]))
@@ -925,6 +928,9 @@ class UcsSystemConfigManager(GenericUcsConfigManager):
             config.tacacs.append(UcsSystemTacacs(parent=config, json_content=config_json["tacacs"][0]))
         if "ldap" in config_json:
             config.ldap.append(UcsSystemLdap(parent=config, json_content=config_json["ldap"][0]))
+        if "authentication" in config_json:
+            config.authentication.append(
+                UcsSystemAuthentication(parent=config, json_content=config_json["authentication"][0]))
         if "call_home" in config_json:
             config.call_home.append(UcsSystemCallHome(parent=config, json_content=config_json["call_home"][0]))
         if "backup_export_policy" in config_json:
@@ -1051,6 +1057,7 @@ class UcsImcConfigManager(GenericUcsConfigManager):
         for adapter_card in config.sdk_objects["adaptorUnit"]:
             config.adapter_cards.append(UcsImcAdapterCard(parent=config, adaptor_unit=adapter_card))
         config.communications_services.append(UcsImcCommunicationsServices(parent=config))
+        config.device_connector.append(UcsDeviceConnector(parent=config))
         config.chassis_inventory.append(UcsImcChassisInventory(parent=config))
         config.power_cap_configuration.append(UcsImcPowerCapConfiguration(parent=config))
         config.virtual_kvm_properties.append(UcsImcVKvmProperties(parent=config))
@@ -1396,6 +1403,11 @@ class UcsImcConfigManager(GenericUcsConfigManager):
         if "communications_services" in config_json:
             config.communications_services.append(
                 UcsImcCommunicationsServices(parent=config, json_content=config_json["communications_services"][0]))
+
+        if "device_connector" in config_json:
+            config.device_connector.append(
+                UcsDeviceConnector(parent=config, json_content=config_json["device_connector"][0]))
+
         if "chassis_inventory" in config_json:
             config.chassis_inventory.append(
                 UcsImcChassisInventory(parent=config, json_content=config_json["chassis_inventory"][0]))

@@ -518,6 +518,7 @@ class UcsSystemMaintenancePolicy(UcsSystemConfigObject):
         self.schedule = None
         self.on_next_boot = None
         self.reboot_policy = None
+        self.storage_config_deployment_policy = None
 
         if self._config.load_from == "live":
             if lsmaint_maint_policy is not None:
@@ -531,6 +532,7 @@ class UcsSystemMaintenancePolicy(UcsSystemConfigObject):
                 if lsmaint_maint_policy.trigger_config == "on-next-boot":
                     self.on_next_boot = "on"
                 self.reboot_policy = lsmaint_maint_policy.uptime_disr
+                self.storage_config_deployment_policy = lsmaint_maint_policy.data_disr
 
         elif self._config.load_from == "file":
             if json_content is not None:
@@ -564,7 +566,8 @@ class UcsSystemMaintenancePolicy(UcsSystemConfigObject):
 
         mo_lsmaint_maint_policy = LsmaintMaintPolicy(parent_mo_or_dn=parent_mo, name=self.name, descr=self.descr,
                                                      soft_shutdown_timer=timer, sched_name=self.schedule,
-                                                     uptime_disr=self.reboot_policy, trigger_config=trigger)
+                                                     uptime_disr=self.reboot_policy, trigger_config=trigger,
+                                                     data_disr=self.storage_config_deployment_policy)
         self._handle.add_mo(mo=mo_lsmaint_maint_policy, modify_present=True)
         if commit:
             if self.commit(detail=self.name) != True:

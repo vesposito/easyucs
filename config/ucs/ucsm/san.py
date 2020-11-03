@@ -292,6 +292,7 @@ class UcsSystemSanPortChannel(UcsSystemConfigObject):
         if commit:
             self.commit(detail=self.pc_id)
 
+        # Adding interfaces to Port-Channel object
         if self.interfaces:
             for interface in self.interfaces:
                 if interface["aggr_id"]:
@@ -300,14 +301,16 @@ class UcsSystemSanPortChannel(UcsSystemConfigObject):
                                                          slot_id=interface['slot_id'])
                     FabricFcSanPcEp(parent_mo_or_dn=mo_fabric_sub_group, port_id=interface['aggr_id'],
                                     slot_id=interface['slot_id'], admin_state=interface['admin_state'])
+                    detail = interface['slot_id'] + "/" + interface['port_id'] + "/" + interface['aggr_id']
                 else:
                     FabricFcSanPcEp(parent_mo_or_dn=mo_fabric_eth_lan_pc, slot_id=interface['slot_id'],
                                     port_id=interface['port_id'], usr_lbl=interface['user_label'],
                                     admin_state=interface['admin_state'])
+                    detail = interface['slot_id'] + "/" + interface['port_id']
 
                 self._handle.add_mo(mo=mo_fabric_eth_lan_pc, modify_present=True)
                 if commit:
-                    self.commit(detail=self.pc_id)
+                    self.commit(detail="interface: " + detail)
 
         if self.vsan:
             if not self.vsan_fabric:

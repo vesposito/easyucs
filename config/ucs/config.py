@@ -169,6 +169,7 @@ class UcsSystemConfig(GenericUcsConfig):
         self.appliance_port_channels = []
         self.appliance_ports = []
         self.appliance_vlans = []
+        self.authentication = []
         self.backup_export_policy = []
         self.breakout_ports = []
         self.call_home = []
@@ -221,7 +222,7 @@ class UcsSystemConfig(GenericUcsConfig):
 
         # List of attributes to be exported in a config export
         self.export_list = ['appliance_network_control_policies', 'appliance_port_channels', 'appliance_ports',
-                            'appliance_vlans', 'backup_export_policy', 'breakout_ports', 'call_home',
+                            'appliance_vlans', 'authentication', 'backup_export_policy', 'breakout_ports', 'call_home',
                             'communication_services', 'device_connector', 'dns', 'fc_zone_profiles',
                             'fcoe_port_channels', 'fcoe_storage_ports', 'fcoe_uplink_ports', 'global_fault_policy',
                             'global_policies', 'lan_pin_groups', 'lan_port_channels', 'lan_uplink_ports', 'ldap',
@@ -411,7 +412,8 @@ class UcsSystemConfig(GenericUcsConfig):
                                          'biosVfWorkloadConfiguration']
 
         # List of SDK objects to fetch that are only available in UCS System
-        sdk_objects_to_fetch = ['aaaEpAuthProfile', 'aaaEpUser', 'aaaLdapEp', 'aaaLdapGroup', 'aaaLdapGroupRule',
+        sdk_objects_to_fetch = ['aaaAuthRealm', 'aaaConsoleAuth', 'aaaDefaultAuth', 'aaaDomain', 'aaaDomainAuth',
+                                'aaaEpAuthProfile', 'aaaEpUser', 'aaaLdapEp', 'aaaLdapGroup', 'aaaLdapGroupRule',
                                 'aaaLdapProvider', 'aaaLocale', 'aaaOrg', 'aaaPreLoginBanner', 'aaaProviderGroup',
                                 'aaaProviderRef', 'aaaPwdProfile', 'aaaRadiusEp', 'aaaRadiusProvider', 'aaaRole',
                                 'aaaSshAuth', 'aaaTacacsPlusEp', 'aaaTacacsPlusProvider', 'aaaUserEp', 'aaaUserLocale',
@@ -555,6 +557,7 @@ class UcsImcConfig(GenericUcsConfig):
         self.boot_order_properties = []
         self.chassis_inventory = []
         self.communications_services = []
+        self.device_connector = []
         self.dynamic_storage_zoning = []
         self.ip_blocking_properties = []
         self.ip_filtering_properties = []
@@ -578,13 +581,13 @@ class UcsImcConfig(GenericUcsConfig):
 
         # List of attributes to be exported in a config export
         self.export_list = ['adapter_cards', 'admin_networking', 'bios_settings', 'boot_order_properties',
-                            'chassis_inventory', 'communications_services', 'dynamic_storage_zoning',
-                            'ip_blocking_properties', 'ip_filtering_properties', 'ldap_settings', 'local_users',
-                            'local_users_properties', 'platform_event_filters', 'power_cap_configuration',
-                            'power_policies', 'secure_key_management', 'serial_over_lan_properties',
-                            'server_properties', 'smtp_properties', 'snmp', 'storage_controllers',
-                            'storage_flex_flash_controllers', 'timezone_mgmt', 'virtual_kvm_properties',
-                            'virtual_media']
+                            'chassis_inventory', 'communications_services', 'device_connector',
+                            'dynamic_storage_zoning', 'ip_blocking_properties', 'ip_filtering_properties',
+                            'ldap_settings', 'local_users', 'local_users_properties', 'platform_event_filters',
+                            'power_cap_configuration', 'power_policies', 'secure_key_management',
+                            'serial_over_lan_properties', 'server_properties', 'smtp_properties', 'snmp',
+                            'storage_controllers', 'storage_flex_flash_controllers', 'timezone_mgmt',
+                            'virtual_kvm_properties', 'virtual_media']
 
     def _fetch_sdk_objects(self):
         GenericUcsConfig._fetch_sdk_objects(self)

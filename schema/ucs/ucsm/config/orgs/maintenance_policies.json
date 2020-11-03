@@ -61,11 +61,19 @@
          "type":"string",
          "default":"",
          "pattern":"^[\\-\\.:_a-zA-Z0-9]{1,16}$"
+      },
+      "storage_config_deployment_policy": {
+         "description": "Maintenance Policy Storage Config. Deployment Policy",
+         "type": "string",
+         "default": "user-ack",
+         "enum": [
+            "immediate",
+            "user-ack"
+         ]
       }
    },
    "additionalProperties":false,
    "required":[
-      "name",
-      "reboot_policy"
+      "name"
    ]
 }
