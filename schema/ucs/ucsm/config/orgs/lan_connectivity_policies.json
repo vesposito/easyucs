@@ -215,7 +215,7 @@
                   "description":"LAN Connectivity Policy - iSCSI vNIC - VLAN",
                   "type":"string",
                   "default":"",
-                  "pattern":"^[\\-\\.:_a-zA-Z0-9]{0,16}$"
+                  "pattern":"^[\\-\\.:_a-zA-Z0-9]{0,32}$"
                }
             },
             "additionalProperties":false,
