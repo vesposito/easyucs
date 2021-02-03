@@ -1,9 +1,9 @@
 {
   "model_short_name": "VIC P81E",
-  "rear_file_name":"N2XX-ACPCI01.png",
-  "rear_file_name_half":"N2XX-ACPCI01_half.png",
-  "rear_file_size":[593,75],
-  "rear_file_size_half":[389,75],
+  "rear_file_name": "N2XX-ACPCI01.png",
+  "rear_file_name_half": "N2XX-ACPCI01_half.png",
+  "rear_file_size": [593,75],
+  "rear_file_size_half": [389,75],
   "rear_ports": {
     "x/2": {
       "port_coord": [175, 11],

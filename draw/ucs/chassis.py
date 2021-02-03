@@ -853,7 +853,10 @@ class UcsSystemDrawInfraChassis(UcsSystemDrawInfraEquipment):
                             fabric = "b"
                     peer_slot_id = peer["slot"]
                     peer_port_id = peer["port"]
-                    peer_aggr_id = peer["aggr_port"]
+                    if "aggr_port" in peer:
+                        peer_aggr_id = peer["aggr_port"]
+                    else:
+                        peer_aggr_id = None
 
                     wire_width = self.WIDTH_WIRE  # Set the default wire width
 
@@ -1099,7 +1102,10 @@ class UcsSystemDrawInfraChassis(UcsSystemDrawInfraEquipment):
                             fi = self.fi_b
                     peer_slot_id = peer["slot"]
                     peer_port_id = peer["port"]
-                    peer_aggr_id = peer["aggr_port"]
+                    if "aggr_port" in peer:
+                        peer_aggr_id = peer["aggr_port"]
+                    else:
+                        peer_aggr_id = None
                     #  int(not(0)) = 1, impair port are placed at a third of the port size, pair at two third
                     point_fex = fex_port.coord[0] + (1 + int(not (int(fex_port.id) % 2))) * round(fex_port.size[0] / 3), \
                                 fex_port.coord[1] + fex_port.size[1] / 2

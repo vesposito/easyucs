@@ -1,44 +1,79 @@
 {
   "model_short_name": "B460 M4 E7v3",
-  "front_file_name":"UCSB-EX-M4-2A.png",
-  "front_file_size":[2485,608],
-  "disks_slots":[
+  "front_file_name": "UCSB-EX-M4-2A.png",
+  "front_file_size": [2485,608],
+  "disks_slots": [
     {
-      "id":1,
-      "format":"sff",
-      "orientation":"horizontal",
-      "coord":[47, 28],
-      "size":[459,103]
+      "id": 1,
+      "format": "sff",
+      "orientation": "horizontal",
+      "coord": [47, 28],
+      "size": [459,103]
     },
     {
-      "id":2,
-      "format":"sff",
-      "orientation":"horizontal",
-      "coord":[1981, 28],
-      "size":[459,103]
+      "id": 2,
+      "format": "sff",
+      "orientation": "horizontal",
+      "coord": [1981, 28],
+      "size": [459,103]
     },
     {
-      "id":3,
-      "format":"sff",
-      "orientation":"horizontal",
-      "coord":[47, 338],
-      "size":[459,103]
+      "id": 3,
+      "format": "sff",
+      "orientation": "horizontal",
+      "coord": [47, 338],
+      "size": [459,103]
     },
     {
-      "id":4,
-      "format":"sff",
-      "orientation":"horizontal",
-      "coord":[1981, 338],
-      "size":[459,103]
+      "id": 4,
+      "format": "sff",
+      "orientation": "horizontal",
+      "coord": [1981, 338],
+      "size": [459,103]
     }
   ],
-  "disks_models":[
+  "disks_models": [
     {
-      "name":"N20-BBLKD",
-      "type":"blank",
-	  "format":"sff",
-      "description":"UCS 2.5 inch HDD blanking panel"
+      "name": "N20-BBLKD",
+      "type": "blank",
+	  "format": "sff",
+      "description": "UCS 2.5 inch HDD blanking panel"
     }
   ],
-  "spec_sheet_url": "https://www.cisco.com/c/dam/en/us/products/collateral/servers-unified-computing/ucs-b-series-blade-servers/b460m4e7-specsheet.pdf"
+  "imm_compatible": false,
+  "spec_sheet_url": "https://www.cisco.com/c/dam/en/us/products/collateral/servers-unified-computing/ucs-b-series-blade-servers/b460m4e7-specsheet.pdf",
+  "specs": {
+    "form_factor": "double-height-full-width",
+    "chipset": "Intel® C602J chipset (Patsburg)",
+    "cpu": {
+      "sockets": 4,
+      "family_name": {
+        "haswell": "Intel Xeon E7-4800 v3/E7-8800 v3 Series"
+      }
+    },
+    "memory": {
+      "dimm_type": "DDR3",
+      "dimm_slots": 96,
+      "max_speed": 1600,
+      "max_capacity": 6291456,
+      "dcpmm_support": false
+    },
+    "dimensions": {
+      "centimeters": {
+        "height": 10.26,
+        "width": 43.69,
+        "depth": 64.77
+      },
+      "inches": {
+        "height": 4.04,
+        "width": 17.2,
+        "depth": 25.5
+      },
+      "rack_units": 0
+    },
+    "weight": {
+      "lb": 66.14,
+      "kg": 30
+    }
+  }
 }

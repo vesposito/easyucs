@@ -1,7 +1,8 @@
 {
-  "rear_file_name":"UCS-IOM-2304V2.png",
-  "rear_file_size":[216,1200],
-  "__comment":"This IOM has only 4 ports but port '2' can be detected as '5', '3' as '9' and '4' as '13'",
+  "model_short_name": "2304V2",
+  "rear_file_name": "UCS-IOM-2304V2.png",
+  "rear_file_size": [216,1200],
+  "__comment": "This IOM has only 4 ports but port '2' can be detected as '5', '3' as '9' and '4' as '13'",
   "rear_ports": {
     "x/1": {
       "port_coord": [62, 128],
@@ -38,5 +39,6 @@
       "port_type": "qsfp+",
       "port_size": [51, 110]
     }
-  }
+  },
+  "imm_compatible": false
 }

@@ -299,12 +299,12 @@ class GenericConfigManager:
         self.config_list.remove(config_to_remove)
 
         # Delete the config in the repository
-        directory = "repository/" + str(self.parent.uuid) + "/configs/config-" + str(uuid) + ".json"
-
-        if os.path.exists(directory):
-            os.remove(directory)
-        else:
-            print("Config not found in repository. Nothing to delete.")
-            return False
+        # directory = "repository/" + str(self.parent.uuid) + "/configs/config-" + str(uuid) + ".json"
+        #
+        # if os.path.exists(directory):
+        #     os.remove(directory)
+        # else:
+        #     self.logger(level="error", message="Config not found in repository. Nothing to delete.")
+        #     return False
 
         return True

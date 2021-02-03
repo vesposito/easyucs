@@ -31,7 +31,9 @@ class UcsSystemTransceiver(UcsTransceiver, UcsSystemInventoryObject):
         transceiver_types_matrix = {
             # SFP+ 10Gbps Twinax & AOC
             "h10gcu1m": {"sku": "SFP-H10GB-CU1M", "length": "1m"},
+            "h10gcu1-5m": {"sku": "SFP-H10GB-CU1-5M", "length": "1.5m"},
             "h10gcu2m": {"sku": "SFP-H10GB-CU2M", "length": "2m"},
+            "h10gcu2-5m": {"sku": "SFP-H10GB-CU2-5M", "length": "2.5m"},
             "h10gcu3m": {"sku": "SFP-H10GB-CU3M", "length": "3m"},
             "h10gcu5m": {"sku": "SFP-H10GB-CU5M", "length": "5m"},
             "h10gacu7m": {"sku": "SFP-H10GB-ACU7M", "length": "7m"},
@@ -55,6 +57,7 @@ class UcsSystemTransceiver(UcsTransceiver, UcsSystemInventoryObject):
             "h25gcu1m": {"sku": "SFP-H25G-CU1M", "length": "1m"},
             "h25gcu2m": {"sku": "SFP-H25G-CU2M", "length": "2m"},
             "h25gcu3m": {"sku": "SFP-H25G-CU3M", "length": "3m"},
+            "h25gcu4m": {"sku": "SFP-H25G-CU4M", "length": "4m"},
             "h25gcu5m": {"sku": "SFP-H25G-CU5M", "length": "5m"},
             "h25gaoc1m": {"sku": "SFP-25G-AOC1M", "length": "1m"},
             "h25gaoc2m": {"sku": "SFP-25G-AOC2M", "length": "2m"},
@@ -129,6 +132,7 @@ class UcsSystemTransceiver(UcsTransceiver, UcsSystemInventoryObject):
 
             # SFP28 25Gbps transceivers
             "h25gsrs": {"sku": "SFP-25G-SR-S", "length": "<=100m"},
+            "h25glrs": {"sku": "SFP-10/25G-LR-S", "length": "<=10km"},
 
             # QSFP+ 40Gbps transceivers
             "qsfpqsa": {"sku": "CVR-QSFP-SFP10G", "length": "n/a"},

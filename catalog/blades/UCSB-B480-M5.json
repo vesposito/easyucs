@@ -1,44 +1,82 @@
 {
   "model_short_name": "B480 M5",
-  "front_file_name":"UCSB-B480-M5.png",
-  "front_file_size":[2485,304],
-  "disks_slots":[
+  "front_file_name": "UCSB-B480-M5.png",
+  "front_file_size": [2485,304],
+  "disks_slots": [
     {
-      "id":1,
-      "format":"sff",
-      "orientation":"horizontal",
-      "coord":[46, 50],
-      "size":[459,103]
+      "id": 1,
+      "format": "sff",
+      "orientation": "horizontal",
+      "coord": [46, 50],
+      "size": [459,103]
     },
     {
-      "id":2,
-      "format":"sff",
-      "orientation":"horizontal",
-      "coord":[720, 50],
-      "size":[459,103]
-    },
-	{
-      "id":3,
-      "format":"sff",
-      "orientation":"horizontal",
-      "coord":[1311, 50],
-      "size":[459,103]
+      "id": 2,
+      "format": "sff",
+      "orientation": "horizontal",
+      "coord": [720, 50],
+      "size": [459,103]
     },
 	{
-      "id":4,
-      "format":"sff",
-      "orientation":"horizontal",
-      "coord":[1985, 50],
-      "size":[459,103]
+      "id": 3,
+      "format": "sff",
+      "orientation": "horizontal",
+      "coord": [1311, 50],
+      "size": [459,103]
+    },
+	{
+      "id": 4,
+      "format": "sff",
+      "orientation": "horizontal",
+      "coord": [1985, 50],
+      "size": [459,103]
     }
   ],
-  "disks_models":[
+  "disks_models": [
     {
-      "name":"N20-BBLKD",
-      "type":"blank",
-	  "format":"sff",
-      "description":"UCS 2.5 inch HDD blanking panel"
+      "name": "N20-BBLKD",
+      "type": "blank",
+	  "format": "sff",
+      "description": "UCS 2.5 inch HDD blanking panel"
     }
   ],
-  "spec_sheet_url": "https://www.cisco.com/c/dam/en/us/products/collateral/servers-unified-computing/ucs-b-series-blade-servers/b480m5-specsheet.pdf"
+  "imm_compatible": true,
+  "imm_min_required_version": "4.1(2a)",
+  "spec_sheet_url": "https://www.cisco.com/c/dam/en/us/products/collateral/servers-unified-computing/ucs-b-series-blade-servers/b480m5-specsheet.pdf",
+  "data_sheet_url": "https://www.cisco.com/c/en/us/products/collateral/servers-unified-computing/ucs-b-series-blade-servers/datasheet-c78-739280.html",
+  "specs": {
+    "form_factor": "full-width",
+    "chipset": "Intel® C620 series chipset (Lewisburg)",
+    "cpu": {
+      "sockets": 4,
+      "family_name": {
+        "skylake": "Intel Xeon Processor Scalable Family",
+        "cascade_lake": "2nd Gen Intel Xeon Processor Scalable Family"
+      }
+    },
+    "memory": {
+      "dimm_type": "DDR4",
+      "dimm_slots": 48,
+      "max_speed": 2933,
+      "max_capacity": 6291456,
+      "dcpmm_support": true
+    },
+    "dimensions": {
+      "centimeters": {
+        "height": 5,
+        "width": 41.9,
+        "depth": 62
+      },
+      "inches": {
+        "height": 1.95,
+        "width": 16.5,
+        "depth": 24.4
+      },
+      "rack_units": 0
+    },
+    "weight": {
+      "lb": 33.3,
+      "kg": 15.1
+    }
+  }
 }

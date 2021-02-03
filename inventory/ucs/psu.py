@@ -29,10 +29,12 @@ class UcsSystemPsu(UcsPsu, UcsSystemInventoryObject):
 
         UcsSystemInventoryObject.__init__(self, parent=parent, ucs_sdk_object=equipment_psu)
 
-        # Small fix for SKU typo in UCS catalog
+        # Small fix for SKU typos in UCS catalog
         if hasattr(self, "sku"):
             if self.sku == "NXK-PAC-400W ":
                 self.sku = "NXK-PAC-400W"
+            if self.sku == " UCSC-PSUF-1050W ":
+                self.sku = "UCSC-PSUF-1050W"
 
         # Small fix for when PSU is not present in UCS catalog
         if hasattr(self, "sku"):

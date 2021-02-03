@@ -1,7 +1,7 @@
 {
   "model_short_name": "VIC 1497",
-  "rear_file_name":"UCSC-MLOM-C100-04.png",
-  "rear_file_size":[523,94],
+  "rear_file_name": "UCSC-MLOM-C100-04.png",
+  "rear_file_size": [523,94],
   "rear_ports": {
     "x/2": {
       "port_coord": [82, 22],
@@ -14,5 +14,6 @@
       "port_size": [111, 49]
     }
   },
+  "imm_compatible": false,
   "data_sheet_url": "https://www.cisco.com/c/en/us/products/collateral/interfaces-modules/unified-computing-system-adapters/datasheet-c78-741130.pdf"
 }

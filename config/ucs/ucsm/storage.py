@@ -70,16 +70,6 @@ class UcsSystemDiskGroupPolicy(UcsSystemConfigObject):
                                 self.access_policy = lstorage_virtual_drive_def.access_policy
                                 self.drive_cache = lstorage_virtual_drive_def.drive_cache
 
-                if "lstorageLocalDiskConfigRef" in self._parent._config.sdk_objects:
-                    for lstorage_virtual_drive_def in self._config.sdk_objects["lstorageLocalDiskConfigRef"]:
-                        if self._parent._dn:
-                            if self._parent._dn + "/disk-group-config-" + self.name in lstorage_virtual_drive_def.dn:
-                                drive = {}
-                                drive.update({"slot_number": lstorage_virtual_drive_def.slot_num})
-                                drive.update({"role": lstorage_virtual_drive_def.role})
-                                drive.update({"span_id": lstorage_virtual_drive_def.span_id})
-                                self.manual_disk_group_configuration.append(drive)
-
                 if "lstorageDiskGroupQualifier" in self._parent._config.sdk_objects:
                     for lstorage_virtual_drive_def in self._config.sdk_objects["lstorageDiskGroupQualifier"]:
                         if self._parent._dn:
@@ -91,6 +81,16 @@ class UcsSystemDiskGroupPolicy(UcsSystemConfigObject):
                                 self.use_jbod_disks = lstorage_virtual_drive_def.use_jbod_disks
                                 self.min_drive_size = lstorage_virtual_drive_def.min_drive_size
                                 self.number_of_drives = lstorage_virtual_drive_def.num_drives
+
+                elif "lstorageLocalDiskConfigRef" in self._parent._config.sdk_objects:
+                    for lstorage_virtual_drive_def in self._config.sdk_objects["lstorageLocalDiskConfigRef"]:
+                        if self._parent._dn:
+                            if self._parent._dn + "/disk-group-config-" + self.name in lstorage_virtual_drive_def.dn:
+                                drive = {}
+                                drive.update({"slot_number": lstorage_virtual_drive_def.slot_num})
+                                drive.update({"role": lstorage_virtual_drive_def.role})
+                                drive.update({"span_id": lstorage_virtual_drive_def.span_id})
+                                self.manual_disk_group_configuration.append(drive)
 
         elif self._config.load_from == "file":
             if json_content is not None:

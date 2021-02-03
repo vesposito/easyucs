@@ -1,9 +1,9 @@
 {
   "model_short_name": "Broadcom 5709 4x1G",
-  "rear_file_name":"N2XX-ABPCI03-M3.png",
-  "rear_file_name_half":"N2XX-ABPCI03-M3_half.png",
-  "rear_file_size":[593,75],
-  "rear_file_size_half":[389,75],
+  "rear_file_name": "N2XX-ABPCI03-M3.png",
+  "rear_file_name_half": "N2XX-ABPCI03-M3_half.png",
+  "rear_file_size": [593,75],
+  "rear_file_size_half": [389,75],
   "rear_ports": {
 	"x/4": {
       "port_coord": [235, 9],

@@ -1,21 +1,21 @@
 {
   "model_short_name": "PCI SIOC",
   "data_sheet_url": "https://www.cisco.com/c/en/us/products/collateral/servers-unified-computing/ucs-s-series-storage-servers/datasheet-c78-738059.pdf",
-  "rear_file_name":"UCS-S3260-PCISIOC.png",
-  "rear_file_size":[1147,153],
-  "pcie_slots":[
+  "rear_file_name": "UCS-S3260-PCISIOC.png",
+  "rear_file_size": [1147,153],
+  "pcie_slots": [
     {
-      "id":1,
-      "width":"half",
-      "coord":[100, 55]
+      "id": 1,
+      "width": "half",
+      "coord": [100, 55]
     }
   ],
-  "pcie_models":[
+  "pcie_models": [
     {
-      "name":"UCSC-PCIF-01H",
-      "type":"blank",
-      "width":"half",
-      "description":"PCIe Low Profile blanking panel for UCS C-Series Server"
+      "name": "UCSC-PCIF-01H",
+      "type": "blank",
+      "width": "half",
+      "description": "PCIe Low Profile blanking panel for UCS C-Series Server"
     }
   ]
 }

@@ -1,100 +1,100 @@
 {
   "model_short_name": "HX220c M5 All NVMe",
-  "rear_file_name":"UCSC-C220-M5_rear.png",
-  "front_file_name":"HXAF220C-M5SN_front.png",
-  "rear_file_size":[2862,273],
-  "front_file_size":[2862,273],
-  "mlom_slots":[
+  "rear_file_name": "UCSC-C220-M5_rear.png",
+  "front_file_name": "HXAF220C-M5SN_front.png",
+  "rear_file_size": [2862,273],
+  "front_file_size": [2862,273],
+  "mlom_slots": [
     {
-      "id":1,
-      "coord":[242, 155]
+      "id": 1,
+      "coord": [242, 155]
     }
   ],
-  "mlom_models":[
+  "mlom_models": [
     {
-      "name":"UCSC-MLOM-C10T-02",
-      "description":"Cisco UCS VIC1227T VIC MLOM - Dual Port 10GBaseT"
+      "name": "UCSC-MLOM-C10T-02",
+      "description": "Cisco UCS VIC1227T VIC MLOM - Dual Port 10GBaseT"
     },
     {
-      "name":"UCSC-MLOM-CSC-02",
-      "description":"Cisco UCS VIC1227 VIC MLOM - Dual Port 10Gb SFP+"
+      "name": "UCSC-MLOM-CSC-02",
+      "description": "Cisco UCS VIC1227 VIC MLOM - Dual Port 10Gb SFP+"
     },
     {
-      "name":"UCSC-MLOM-IRJ45",
-      "description":"Intel i350 quad-port MLOM NIC"
+      "name": "UCSC-MLOM-IRJ45",
+      "description": "Intel i350 quad-port MLOM NIC"
     },
     {
-      "name":"UCSC-MLOM-C40Q-03",
-      "description":"Cisco VIC 1387 Dual Port 40Gb QSFP CNA MLOM"
+      "name": "UCSC-MLOM-C40Q-03",
+      "description": "Cisco VIC 1387 Dual Port 40Gb QSFP CNA MLOM"
     },
     {
-      "name":"UCSC-MLOM-BLK",
-      "type":"blank",
-      "description":"MLOM Blanking Panel"
+      "name": "UCSC-MLOM-BLK",
+      "type": "blank",
+      "description": "MLOM Blanking Panel"
     }
   ],
-  "pcie_slots":[
+  "pcie_slots": [
     {
-      "id":2,
-      "width":"half",
-      "orientation":"reverse",
-      "coord":[1338, 53]
+      "id": 1,
+      "width": "full",
+      "coord": [655, 40]
     },
     {
-      "id":1,
-      "width":"full",
-      "coord":[655, 40]
+      "id": 2,
+      "width": "half",
+      "orientation": "reverse",
+      "coord": [1338, 53]
     }
   ],
-  "pcie_models":[
+  "pcie_models": [
     {
-      "name":"UCSC-PCIE-CSC-02",
-      "description":"Cisco VIC 1225 Dual Port 10Gb SFP+ CNA"
+      "name": "UCSC-PCIE-CSC-02",
+      "description": "Cisco VIC 1225 Dual Port 10Gb SFP+ CNA"
     },
     {
-      "name":"UCSC-PCIE-C10T-02",
-      "description":"Cisco VIC 1225T Dual Port 10GBaseT Adapter"
+      "name": "UCSC-PCIE-C10T-02",
+      "description": "Cisco VIC 1225T Dual Port 10GBaseT Adapter"
     },
     {
-      "name":"UCSC-PCIE-C40Q-03",
-      "description":"Cisco VIC 1385 Dual Port 40Gb QSFP+ CNA w/RDMA"
+      "name": "UCSC-PCIE-C40Q-03",
+      "description": "Cisco VIC 1385 Dual Port 40Gb QSFP+ CNA w/RDMA"
     },
     {
-      "name":"UCSC-PCIF-01F",
-      "type":"blank",
-      "width":"full",
-      "description":"PCIe Full Height blanking panel for UCS C-Series Server"
+      "name": "UCSC-PCIF-01F",
+      "type": "blank",
+      "width": "full",
+      "description": "PCIe Full Height blanking panel for UCS C-Series Server"
     },
     {
-      "name":"UCSC-PCIF-01H",
-      "type":"blank",
-      "width":"half",
-      "description":"PCIe Low Profile blanking panel for UCS C-Series Server"
+      "name": "UCSC-PCIF-01H",
+      "type": "blank",
+      "width": "half",
+      "description": "PCIe Low Profile blanking panel for UCS C-Series Server"
     }
   ],
-  "psus_slots_rear":[
+  "psus_slots_rear": [
     {
-      "id":1,
-      "coord":[1778,12]
+      "id": 1,
+      "coord": [1778,12]
     },
     {
-      "id":2,
-      "coord":[2237,12]
+      "id": 2,
+      "coord": [2237,12]
     }
   ],
-  "psus_models":[
+  "psus_models": [
     {
-      "name":"UCSC-PSU-BLKP1U",
-      "type":"blank",
-      "description":"Power Supply Blanking Panel for C220 M4 servers"
+      "name": "UCSC-PSU-BLKP1U",
+      "type": "blank",
+      "description": "Power Supply Blanking Panel for C220 M4 servers"
     },
     {
-      "name":"UCSC-PSU1-770W",
-      "description":"Cisco UCS 770W AC Power Supply for Rack Server"
+      "name": "UCSC-PSU1-770W",
+      "description": "Cisco UCS 770W AC Power Supply for Rack Server"
     },
     {
-      "name":"UCSC-PSUV2-1050DC",
-      "description":"Cisco UCS 1050W -48V DC Power Supply for Rack Server"
+      "name": "UCSC-PSUV2-1050DC",
+      "description": "Cisco UCS 1050W -48V DC Power Supply for Rack Server"
     }
   ],
   "lom_ports": {
@@ -109,85 +109,122 @@
       "port_size": [70,40]
     }
   },
-  "disks_slots":[
+  "disks_slots": [
     {
-      "id":1,
-      "format":"sff_m5",
-      "orientation":"horizontal",
-      "coord":[208, 51],
-      "size":[437,97]
+      "id": 1,
+      "format": "sff_m5",
+      "orientation": "horizontal",
+      "coord": [208, 51],
+      "size": [437,97]
     },
     {
-      "id":2,
-      "format":"sff_m5",
-      "orientation":"horizontal",
-      "coord":[678, 51],
-      "size":[437,97]
+      "id": 2,
+      "format": "sff_m5",
+      "orientation": "horizontal",
+      "coord": [678, 51],
+      "size": [437,97]
     },
     {
-      "id":3,
-      "format":"sff_m5",
-      "orientation":"horizontal",
-      "coord":[1148, 51],
-      "size":[437,97]
+      "id": 3,
+      "format": "sff_m5",
+      "orientation": "horizontal",
+      "coord": [1148, 51],
+      "size": [437,97]
     },
     {
-      "id":4,
-      "format":"sff_m5",
-      "orientation":"horizontal",
-      "coord":[1618, 51],
-      "size":[437,97]
+      "id": 4,
+      "format": "sff_m5",
+      "orientation": "horizontal",
+      "coord": [1618, 51],
+      "size": [437,97]
     },
     {
-      "id":5,
-      "format":"sff_m5",
-      "orientation":"horizontal",
-      "coord":[2086, 51],
-      "size":[437,97]
+      "id": 5,
+      "format": "sff_m5",
+      "orientation": "horizontal",
+      "coord": [2086, 51],
+      "size": [437,97]
     },
     {
-      "id":6,
-      "format":"sff_m5",
-      "orientation":"horizontal",
-      "coord":[208, 151],
-      "size":[437,97]
+      "id": 6,
+      "format": "sff_m5",
+      "orientation": "horizontal",
+      "coord": [208, 151],
+      "size": [437,97]
     },
     {
-      "id":7,
-      "format":"sff_m5",
-      "orientation":"horizontal",
-      "coord":[678, 151],
-      "size":[437,97]
+      "id": 7,
+      "format": "sff_m5",
+      "orientation": "horizontal",
+      "coord": [678, 151],
+      "size": [437,97]
     },
     {
-      "id":8,
-      "format":"sff_m5",
-      "orientation":"horizontal",
-      "coord":[1148, 151],
-      "size":[437,97]
+      "id": 8,
+      "format": "sff_m5",
+      "orientation": "horizontal",
+      "coord": [1148, 151],
+      "size": [437,97]
     },
     {
-      "id":9,
-      "format":"sff_m5",
-      "orientation":"horizontal",
-      "coord":[1618, 151],
-      "size":[437,97]
+      "id": 9,
+      "format": "sff_m5",
+      "orientation": "horizontal",
+      "coord": [1618, 151],
+      "size": [437,97]
     },
     {
-      "id":10,
-      "format":"sff_m5",
-      "orientation":"horizontal",
-      "coord":[2086, 151],
-      "size":[437,97]
+      "id": 10,
+      "format": "sff_m5",
+      "orientation": "horizontal",
+      "coord": [2086, 151],
+      "size": [437,97]
     }
   ],
-  "disks_models":[
+  "disks_models": [
     {
-      "name":"UCSC-BBLKD-S2",
-      "type":"blank",
-	  "format":"sff_m5",
-      "description":"C-Series M5 SFF drive blanking panel"
+      "name": "UCSC-BBLKD-S2",
+      "type": "blank",
+	  "format": "sff_m5",
+      "description": "C-Series M5 SFF drive blanking panel"
     }
   ],
-  "spec_sheet_url": "https://www.cisco.com/c/dam/en/us/products/collateral/hyperconverged-infrastructure/hyperflex-hx-series/hxaf-220c-m5-specsheet.pdf"
+  "imm_compatible": false,
+  "spec_sheet_url": "https://www.cisco.com/c/dam/en/us/products/collateral/hyperconverged-infrastructure/hyperflex-hx-series/hxaf220c-m5-specsheet-nvme.pdf",
+  "data_sheet_url": "https://www.cisco.com/c/en/us/products/collateral/hyperconverged-infrastructure/hyperflex-hx-series/data-sheet-le-60102.html",
+  "specs": {
+    "form_factor": "1RU",
+    "chipset": "Intel® C621 series chipset (Lewisburg)",
+    "cpu": {
+      "sockets": 2,
+      "family_name": {
+        "skylake": "Intel Xeon Processor Scalable Family",
+        "cascade_lake": "2nd Gen Intel Xeon Processor Scalable Family"
+      }
+    },
+    "memory": {
+      "dimm_type": "DDR4",
+      "dimm_slots": 24,
+      "max_speed": 2933,
+      "max_capacity": 3145728,
+      "dcpmm_support": true
+    },
+    "dimensions": {
+      "centimeters": {
+        "height": 4.32,
+        "width": 48.2,
+        "depth": 78.7
+      },
+      "inches": {
+        "height": 1.7,
+        "width": 18.98,
+        "depth": 30.98
+      },
+      "rack_units": 1
+    },
+    "weight": {
+      "lb": 37.5,
+      "kg": 17
+    }
+  }
 }

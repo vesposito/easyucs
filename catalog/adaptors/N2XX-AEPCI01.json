@@ -1,9 +1,9 @@
 {
   "model_short_name": "Emulex OCe10102-F 2x10G",
-  "rear_file_name":"N2XX-AEPCI01.png",
-  "rear_file_name_half":"N2XX-AEPCI01_half.png",
-  "rear_file_size":[593,75],
-  "rear_file_size_half":[389,75],
+  "rear_file_name": "N2XX-AEPCI01.png",
+  "rear_file_name_half": "N2XX-AEPCI01_half.png",
+  "rear_file_size": [593,75],
+  "rear_file_size_half": [389,75],
   "rear_ports": {
     "x/1": {
       "port_coord": [260, 11],

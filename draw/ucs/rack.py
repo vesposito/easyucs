@@ -9,6 +9,7 @@ from draw.object import GenericUcsDrawEquipment, UcsSystemDrawInfraEquipment, Ge
 from draw.ucs.psu import GenericUcsDrawPsu
 from draw.ucs.storage import UcsSystemDrawStorageController, UcsSystemDrawStorageLocalDisk
 from draw.ucs.adaptor import UcsSystemDrawAdaptor
+from draw.ucs.riser import GenericUcsDrawPcieRiser
 from draw.ucs.mgmt import UcsSystemDrawMgmtInterface
 from draw.ucs.cpu_module import UcsSystemDrawCpuModule
 from draw.wire import UcsSystemDrawWire
@@ -190,6 +191,15 @@ class GenericDrawRackRear(GenericUcsDrawObject):
         # mgmt_if_list = remove_not_completed_in_list(mgmt_if_list)
         return mgmt_if_list
 
+    def get_pcie_riser_list(self, infra=False):
+        pcie_riser_list = []
+        if self._parent.pcie_risers:
+            for pcie_riser in self._parent.pcie_risers:
+                pcie_riser_list.append(GenericUcsDrawPcieRiser(parent=pcie_riser, parent_draw=self, infra=infra))
+            # We only keep the Riser that have been fully created -> picture
+            pcie_riser_list = [riser for riser in pcie_riser_list if riser.picture_size]
+        return pcie_riser_list
+
     def get_adaptor_list(self):
         adaptor_list = []
         for adaptor in self._parent.adaptors:
@@ -319,6 +329,31 @@ class GenericDrawRackRear(GenericUcsDrawObject):
                                 coord_offset = self.picture_offset[0] + coord[0], self.picture_offset[1] + coord[1]
                                 self.paste_layer(img, coord_offset)
 
+        if "pcie_riser_slots" in self.json_file:
+            # Fill blank for PCIe Riser slot
+            if len(self._parent.pcie_risers)-1 < len(self.json_file["pcie_riser_slots"]):
+                used_slot = []
+                potential_slot = []
+                unused_slot = []
+                for slot in self._parent.pcie_risers:
+                    used_slot.append(int(slot["id"]))
+                for slot in self.json_file["pcie_riser_slots"]:
+                    potential_slot.append(slot["id"])
+                a = list(set(potential_slot) - set(used_slot))
+                for blank_id in set(potential_slot) - set(used_slot):
+                    unused_slot.append(blank_id)
+                for slot_id in unused_slot:
+                    for expansion in self.json_file["pcie_riser_models"]:
+                        if "type" in expansion:
+                            if expansion["type"] == "blank":
+                                blank_name = expansion["name"]
+                                img = Image.open("catalog/pcie_risers/img/" + blank_name + ".png", 'r')
+                                for slot in self.json_file["pcie_riser_slots"]:
+                                    if slot["id"] == int(slot_id):
+                                        coord = slot["coord"]
+                                coord_offset = self.picture_offset[0] + coord[0], self.picture_offset[1] + coord[1]
+                                self.paste_layer(img, coord_offset)
+
         if any(x in self._parent.sku for x in ["C240-M5", "HX240C-M5", "HXAF240C-M5"]):
             if not self.storage_controller_list:
                 if "disks_slots_rear" in self.json_file:
@@ -370,6 +405,7 @@ class UcsSystemDrawRackRear(GenericDrawRackRear, GenericUcsDrawEquipment):
 
         self.disk_slots_used = []
 
+        self.pcie_riser_list = self.get_pcie_riser_list()
         self.adaptor_list = self.get_adaptor_list()
         self.psu_list = self.get_psu_list()
         self.mgmt_if_list = self.get_mgmt_if_list()
@@ -409,6 +445,7 @@ class UcsImcDrawRackRear(GenericDrawRackRear, GenericUcsDrawEquipment):
 
         self.disk_slots_used = []
 
+        self.pcie_riser_list = self.get_pcie_riser_list()
         self.adaptor_list = self.get_adaptor_list()
         self.psu_list = self.get_psu_list()
         # self.mgmt_if_list = self.get_mgmt_if_list()
@@ -541,6 +578,7 @@ class UcsSystemDrawInfraRack(UcsSystemDrawInfraEquipment):
         self.rack.draw = self.draw
         self.rack.background = self.background
         self.rack.picture_offset = self.rack_offset
+        self.rack.pcie_riser_list = self.rack.get_pcie_riser_list(infra=True)
         self.rack.adaptor_list = self.rack.get_adaptor_list()
         self.rack.psu_list = self.rack.get_psu_list()
         self.rack.mgmt_if_list = self.rack.get_mgmt_if_list()
@@ -711,7 +749,10 @@ class UcsSystemDrawInfraRack(UcsSystemDrawInfraEquipment):
                             fabric = "b"
                     peer_slot_id = peer["slot"]
                     peer_port_id = peer["port"]
-                    peer_aggr_id = peer["aggr_port"]
+                    if "aggr_port" in peer:
+                        peer_aggr_id = peer["aggr_port"]
+                    else:
+                        peer_aggr_id = None
 
                     wire_width = self.WIDTH_WIRE  # Set the default wire width
 
@@ -965,7 +1006,10 @@ class UcsSystemDrawInfraRack(UcsSystemDrawInfraEquipment):
                             fi = self.fi_b
                     peer_slot_id = peer["slot"]
                     peer_port_id = peer["port"]
-                    peer_aggr_id = peer["aggr_port"]
+                    if "aggr_port" in peer:
+                        peer_aggr_id = peer["aggr_port"]
+                    else:
+                        peer_aggr_id = None
                     #  int(not(0)) = 1, impair port are placed at a third of the port size, pair at two third
                     point_fex = fex_port.coord[0] + (1 + int(not (int(fex_port.id) % 2))) * round(
                         fex_port.size[0] / 3), fex_port.coord[1] + fex_port.size[1] / 2
@@ -1333,8 +1377,9 @@ class UcsSystemDrawServerNodeFront(GenericUcsDrawEquipment):
         # TODO : Check if this condition still needs to be here
         if (self._parent.sku != "UCSC-C3X60-SVRNB") and (self._parent.sku != "UCSC-C3K-M4SRB"):
             for storage_controller in self._parent.storage_controllers:
-                # We skip M.2 controllers on M5 blades
-                if ("M5" in self._parent.sku) and (storage_controller.type not in ["SAS", "NVME"]):
+                # We skip M.2 controllers on M5 server nodes
+                if any(x in self._parent.sku for x in ["M5", "C125"]) and \
+                        (storage_controller.type not in ["SAS", "NVME"]):
                     continue
                 storage_controller_list.append(UcsSystemDrawStorageController(storage_controller, self))
                 # storage_controller_list = remove_not_completed_in_list(storage_controller_list)
@@ -1727,7 +1772,10 @@ class UcsSystemDrawInfraRackEnclosure(UcsSystemDrawInfraEquipment):
                                 fabric = "b"
                         peer_slot_id = peer["slot"]
                         peer_port_id = peer["port"]
-                        peer_aggr_id = peer["aggr_port"]
+                        if "aggr_port" in peer:
+                            peer_aggr_id = peer["aggr_port"]
+                        else:
+                            peer_aggr_id = None
 
                         wire_width = self.WIDTH_WIRE  # Set the default wire width
 
@@ -1983,7 +2031,10 @@ class UcsSystemDrawInfraRackEnclosure(UcsSystemDrawInfraEquipment):
                             fi = self.fi_b
                     peer_slot_id = peer["slot"]
                     peer_port_id = peer["port"]
-                    peer_aggr_id = peer["aggr_port"]
+                    if "aggr_port" in peer:
+                        peer_aggr_id = peer["aggr_port"]
+                    else:
+                        peer_aggr_id = None
                     #  int(not(0)) = 1, impair port are placed at a third of the port size, pair at two third
                     point_fex = fex_port.coord[0] + (1 + int(not (int(fex_port.id) % 2))) * round(
                         fex_port.size[0] / 3), fex_port.coord[1] + fex_port.size[1] / 2

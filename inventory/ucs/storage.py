@@ -832,10 +832,13 @@ class UcsImcStorageLocalDisk(UcsStorageLocalDisk, UcsImcInventoryObject):
         self.serial = self.get_attribute(ucs_sdk_object=storage_local_disk, attribute_name="drive_serial_number",
                                          attribute_secondary_name="serial")
         if self._inventory.load_from == "live":
-            self.size = int(storage_local_disk.coerced_size.split(" ")[0])
+            if storage_local_disk.coerced_size:
+                self.size = int(storage_local_disk.coerced_size.split(" ")[0])
+            else:
+                self.size = None
             if self.link_speed == "unknown":
                 self.link_speed = None
-            else:
+            elif self.link_speed:
                 self.link_speed = float(self.link_speed.split(" ")[0])
         elif self._inventory.load_from == "file":
             self.size = self.get_attribute(ucs_sdk_object=storage_local_disk, attribute_name="size",
@@ -846,9 +849,13 @@ class UcsImcStorageLocalDisk(UcsStorageLocalDisk, UcsImcInventoryObject):
         UcsImcInventoryObject.__init__(self, parent=parent, ucs_sdk_object=storage_local_disk)
 
         if self._inventory.load_from == "live":
+            self.block_size = None
+            self.bootable = None
             self.life_left_in_percent = None
+            self.number_of_blocks = None
             self.power_cycle_count = None
             self.power_on_hours = None
+            self.size_raw = None
             self.wear_status_in_days = None
 
             self._find_drive_specs()
@@ -935,10 +942,14 @@ class UcsImcStorageLocalDisk(UcsStorageLocalDisk, UcsImcInventoryObject):
                                     " of model \"" + self.model + "\" with ID " + self.id)
                 return False
             else:
-                self.block_size = int(storage_local_disk_props_list[0].block_size)
-                self.bootable = storage_local_disk_props_list[0].boot_drive
-                self.number_of_blocks = int(storage_local_disk_props_list[0].block_count)
-                self.size_raw = int(storage_local_disk_props_list[0].raw_size.split(" ")[0])
+                if storage_local_disk_props_list[0].block_size:
+                    self.block_size = int(storage_local_disk_props_list[0].block_size)
+                if storage_local_disk_props_list[0].boot_drive:
+                    self.bootable = storage_local_disk_props_list[0].boot_drive
+                if storage_local_disk_props_list[0].block_count:
+                    self.number_of_blocks = int(storage_local_disk_props_list[0].block_count)
+                if storage_local_disk_props_list[0].raw_size:
+                    self.size_raw = int(storage_local_disk_props_list[0].raw_size.split(" ")[0])
 
                 if storage_local_disk_props_list[0].percentage_life_left not in [None, "0", "N/A", "Not Available"]:
                     self.life_left_in_percent = int(storage_local_disk_props_list[0].percentage_life_left)

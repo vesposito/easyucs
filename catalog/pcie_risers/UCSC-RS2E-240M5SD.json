@@ -1,0 +1,29 @@
+{
+  "model_short_name": "",
+  "rear_file_name": "UCSC-RS2E-240M5SD.png",
+  "rear_file_size": [622,264],
+  "disks_slots": [
+    {
+      "id": 4,
+      "format": "sff_m5",
+      "orientation": "horizontal",
+      "coord": [161, 26],
+      "size": [459,103]
+    },
+    {
+      "id": 6,
+      "format": "sff_m5",
+      "orientation": "horizontal",
+      "coord": [161, 130],
+      "size": [459,103]
+    }
+  ],
+  "pcie_slots": [
+    {
+      "id": 2,
+      "width": "full",
+      "coord": [28, 266]
+    }
+  ],
+  "data_sheet_url": "https://www.cisco.com/c/en/us/products/collateral/servers-unified-computing/ucs-c-series-rack-servers/data_sheet_c78-558230.pdf"
+}

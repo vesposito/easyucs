@@ -1,67 +1,66 @@
 {
   "model_short_name": "C480 ML M5",
-  "rear_file_name":"UCSC-C480-M5ML_rear.png",
-  "front_file_name":"UCSC-C480-M5ML_front.png",
-  "rear_file_size":[2862,1063],
-  "front_file_size":[2865,1056],
-  "pcie_slots":[
+  "rear_file_name": "UCSC-C480-M5ML_rear.png",
+  "front_file_name": "UCSC-C480-M5ML_front.png",
+  "rear_file_size": [2862,1063],
+  "front_file_size": [2865,1056],
+  "pcie_slots": [
     {
-      "id":11,
-      "width":"full",
-	  "orientation":"vertical",
-      "coord":[230, 60]
+      "id": 11,
+      "width": "full",
+	  "orientation": "vertical",
+      "coord": [230, 60]
     },
     {
-      "id":12,
-      "width":"full",
-	  "orientation":"vertical",
-      "coord":[349, 60]
-    },
-	{
-      "id":13,
-      "width":"full",
-	  "orientation":"vertical",
-      "coord":[2449, 60]
+      "id": 12,
+      "width": "full",
+	  "orientation": "vertical",
+      "coord": [349, 60]
     },
 	{
-      "id":14,
-      "width":"full",
-	  "orientation":"vertical",
-      "coord":[2568, 60]
+      "id": 13,
+      "width": "full",
+	  "orientation": "vertical",
+      "coord": [2449, 60]
+    },
+	{
+      "id": 14,
+      "width": "full",
+	  "orientation": "vertical",
+      "coord": [2568, 60]
     }
   ],
-  "pcie_models":[
-    
+  "pcie_models": [
     {
-      "name":"UCSC-PCIF-01F",
-      "type":"blank",
-      "width":"full",
-      "description":"PCIe Full Height blanking panel for UCS C-Series Server"
+      "name": "UCSC-PCIF-01F",
+      "type": "blank",
+      "width": "full",
+      "description": "PCIe Full Height blanking panel for UCS C-Series Server"
     }
   ],
-  "psus_slots_rear":[
+  "psus_slots_rear": [
     {
-      "id":1,
-      "coord":[884,773]
+      "id": 1,
+      "coord": [884,773]
     },
     {
-      "id":2,
-      "coord":[1340,773]
+      "id": 2,
+      "coord": [1340,773]
     },
     {
-      "id":3,
-      "coord":[1796,773]
+      "id": 3,
+      "coord": [1796,773]
     },
     {
-      "id":4,
-      "coord":[2252,773]
+      "id": 4,
+      "coord": [2252,773]
     }
   ],
-  "psus_models":[
+  "psus_models": [
     {
-      "name":"UCSC-PSU-BLKP1U",
-      "type":"blank",
-      "description":""
+      "name": "UCSC-PSU-BLKP1U",
+      "type": "blank",
+      "description": ""
     }
   ],
   "lom_ports": {
@@ -86,201 +85,238 @@
       "port_size": [77,49]
     }
   },
-  "disks_slots":[
+  "disks_slots": [
     {
-      "id":1,
-      "format":"sff_m5",
-      "orientation":"vertical",
-      "coord":[183, 562],
-      "size":[437,97]
+      "id": 1,
+      "format": "sff_m5",
+      "orientation": "vertical",
+      "coord": [183, 562],
+      "size": [437,97]
     },
     {
-      "id":2,
-      "format":"sff_m5",
-      "orientation":"vertical",
-      "coord":[284, 562],
-      "size":[437,97]
+      "id": 2,
+      "format": "sff_m5",
+      "orientation": "vertical",
+      "coord": [284, 562],
+      "size": [437,97]
     },
     {
-      "id":3,
-      "format":"sff_m5",
-      "orientation":"vertical",
-      "coord":[385, 562],
-      "size":[437,97]
+      "id": 3,
+      "format": "sff_m5",
+      "orientation": "vertical",
+      "coord": [385, 562],
+      "size": [437,97]
     },
     {
-      "id":4,
-      "format":"sff_m5",
-      "orientation":"vertical",
-      "coord":[486, 562],
-      "size":[437,97]
+      "id": 4,
+      "format": "sff_m5",
+      "orientation": "vertical",
+      "coord": [486, 562],
+      "size": [437,97]
     },
     {
-      "id":5,
-      "format":"sff_m5",
-      "orientation":"vertical",
-      "coord":[587, 562],
-      "size":[437,97]
+      "id": 5,
+      "format": "sff_m5",
+      "orientation": "vertical",
+      "coord": [587, 562],
+      "size": [437,97]
     },
     {
-      "id":6,
-      "format":"sff_m5",
-      "orientation":"vertical",
-      "coord":[688, 562],
-      "size":[437,97]
+      "id": 6,
+      "format": "sff_m5",
+      "orientation": "vertical",
+      "coord": [688, 562],
+      "size": [437,97]
     },
     {
-      "id":7,
-      "format":"sff_m5",
-      "orientation":"vertical",
-      "coord":[789, 562],
-      "size":[437,97]
+      "id": 7,
+      "format": "sff_m5",
+      "orientation": "vertical",
+      "coord": [789, 562],
+      "size": [437,97]
     },
     {
-      "id":8,
-      "format":"sff_m5",
-      "orientation":"vertical",
-      "coord":[890, 562],
-      "size":[437,97]
+      "id": 8,
+      "format": "sff_m5",
+      "orientation": "vertical",
+      "coord": [890, 562],
+      "size": [437,97]
     },
     {
-      "id":9,
-      "format":"sff_m5",
-      "orientation":"vertical",
-      "coord":[1018, 562],
-      "size":[437,97]
+      "id": 9,
+      "format": "sff_m5",
+      "orientation": "vertical",
+      "coord": [1018, 562],
+      "size": [437,97]
     },
     {
-      "id":10,
-      "format":"sff_m5",
-      "orientation":"vertical",
-      "coord":[1119, 562],
-      "size":[437,97]
+      "id": 10,
+      "format": "sff_m5",
+      "orientation": "vertical",
+      "coord": [1119, 562],
+      "size": [437,97]
     },
     {
-      "id":11,
-      "format":"sff_m5",
-      "orientation":"vertical",
-      "coord":[1220, 562],
-      "size":[437,97]
+      "id": 11,
+      "format": "sff_m5",
+      "orientation": "vertical",
+      "coord": [1220, 562],
+      "size": [437,97]
     },
 	{
-      "id":12,
-      "format":"sff_m5",
-      "orientation":"vertical",
-      "coord":[1321, 562],
-      "size":[437,97]
+      "id": 12,
+      "format": "sff_m5",
+      "orientation": "vertical",
+      "coord": [1321, 562],
+      "size": [437,97]
     },
 	{
-      "id":13,
-      "format":"sff_m5",
-      "orientation":"vertical",
-      "coord":[1422, 562],
-      "size":[437,97]
+      "id": 13,
+      "format": "sff_m5",
+      "orientation": "vertical",
+      "coord": [1422, 562],
+      "size": [437,97]
     },
     {
-      "id":14,
-      "format":"sff_m5",
-      "orientation":"vertical",
-      "coord":[1523, 562],
-      "size":[437,97]
+      "id": 14,
+      "format": "sff_m5",
+      "orientation": "vertical",
+      "coord": [1523, 562],
+      "size": [437,97]
     },
     {
-      "id":15,
-      "format":"sff_m5",
-      "orientation":"vertical",
-      "coord":[1624, 562],
-      "size":[437,97]
+      "id": 15,
+      "format": "sff_m5",
+      "orientation": "vertical",
+      "coord": [1624, 562],
+      "size": [437,97]
     },
     {
-      "id":16,
-      "format":"sff_m5",
-      "orientation":"vertical",
-      "coord":[1725, 562],
-      "size":[437,97]
+      "id": 16,
+      "format": "sff_m5",
+      "orientation": "vertical",
+      "coord": [1725, 562],
+      "size": [437,97]
     },
     {
-      "id":17,
-      "format":"sff_m5",
-      "orientation":"vertical",
-      "coord":[1853, 562],
-      "size":[437,97]
+      "id": 17,
+      "format": "sff_m5",
+      "orientation": "vertical",
+      "coord": [1853, 562],
+      "size": [437,97]
     },
     {
-      "id":18,
-      "format":"sff_m5",
-      "orientation":"vertical",
-      "coord":[1954, 562],
-      "size":[437,97]
+      "id": 18,
+      "format": "sff_m5",
+      "orientation": "vertical",
+      "coord": [1954, 562],
+      "size": [437,97]
     },
     {
-      "id":19,
-      "format":"sff_m5",
-      "orientation":"vertical",
-      "coord":[2055, 562],
-      "size":[437,97]
+      "id": 19,
+      "format": "sff_m5",
+      "orientation": "vertical",
+      "coord": [2055, 562],
+      "size": [437,97]
     },
     {
-      "id":20,
-      "format":"sff_m5",
-      "orientation":"vertical",
-      "coord":[2156, 562],
-      "size":[437,97]
+      "id": 20,
+      "format": "sff_m5",
+      "orientation": "vertical",
+      "coord": [2156, 562],
+      "size": [437,97]
     },
     {
-      "id":21,
-      "format":"sff_m5",
-      "orientation":"vertical",
-      "coord":[2257, 562],
-      "size":[437,97]
+      "id": 21,
+      "format": "sff_m5",
+      "orientation": "vertical",
+      "coord": [2257, 562],
+      "size": [437,97]
     },
     {
-      "id":22,
-      "format":"sff_m5",
-      "orientation":"vertical",
-      "coord":[2358, 562],
-      "size":[437,97]
+      "id": 22,
+      "format": "sff_m5",
+      "orientation": "vertical",
+      "coord": [2358, 562],
+      "size": [437,97]
     },
     {
-      "id":23,
-      "format":"sff_m5",
-      "orientation":"vertical",
-      "coord":[2459, 562],
-      "size":[437,97]
+      "id": 23,
+      "format": "sff_m5",
+      "orientation": "vertical",
+      "coord": [2459, 562],
+      "size": [437,97]
     },
 	{
-      "id":24,
-      "format":"sff_m5",
-      "orientation":"vertical",
-      "coord":[2560, 562],
-      "size":[437,97]
+      "id": 24,
+      "format": "sff_m5",
+      "orientation": "vertical",
+      "coord": [2560, 562],
+      "size": [437,97]
     }
   ],
-  "disks_models":[
+  "disks_models": [
     {
-      "name":"UCSC-BBLKD-S2",
-      "type":"blank",
-	  "format":"sff_m5",
-      "description":""
+      "name": "UCSC-BBLKD-S2",
+      "type": "blank",
+	  "format": "sff_m5",
+      "description": ""
     }
   ],
-  "cpu_modules_slots":[
+  "cpu_modules_slots": [
 	{
-		"id":1,
-		"coord":[171, 289],
-		"size":[2522,244]
+		"id": 1,
+		"coord": [171, 289],
+		"size": [2522,244]
 	}
   ],
-  "cpu_modules_models":[
+  "cpu_modules_models": [
     {
-      "name":"UCSC-C480-CM-FLR",
-      "type":"blank",
-      "description":"UCS C480 M5 CPU Module Filler"
+      "name": "UCSC-C480-CM-FLR",
+      "type": "blank",
+      "description": "UCS C480 M5 CPU Module Filler"
     },
 	{
-      "name":"UCSC-C480-CM",
-      "description":"UCS C480 M5 CPU Module w/o CPU, mem"
+      "name": "UCSC-C480-CM",
+      "description": "UCS C480 M5 CPU Module w/o CPU, mem"
     }
   ],
-  "spec_sheet_url": "https://www.cisco.com/c/dam/en/us/products/collateral/servers-unified-computing/ucs-c-series-rack-servers/c480m5-specsheet-ml-m5-server.pdf"
+  "imm_compatible": false,
+  "spec_sheet_url": "https://www.cisco.com/c/dam/en/us/products/collateral/servers-unified-computing/ucs-c-series-rack-servers/c480m5-specsheet-ml-m5-server.pdf",
+  "data_sheet_url": "https://www.cisco.com/c/en/us/products/collateral/servers-unified-computing/ucs-c-series-rack-servers/datasheet-c78-741211.html",
+  "specs": {
+    "form_factor": "4RU",
+    "chipset": "Intel® C621 series chipset (Lewisburg)",
+    "cpu": {
+      "sockets": 4,
+      "family_name": {
+        "skylake": "Intel Xeon Processor Scalable Family",
+        "cascade_lake": "2nd Gen Intel Xeon Processor Scalable Family"
+      }
+    },
+    "memory": {
+      "dimm_type": "DDR4",
+      "dimm_slots": 24,
+      "max_speed": 2933,
+      "max_capacity": 3145728,
+      "dcpmm_support": true
+    },
+    "dimensions": {
+      "centimeters": {
+        "height": 17.6,
+        "width": 48.3,
+        "depth": 83
+      },
+      "inches": {
+        "height": 6.9,
+        "width": 19,
+        "depth": 32.7
+      },
+      "rack_units": 4
+    },
+    "weight": {
+      "lb": 146,
+      "kg": 66.3
+    }
+  }
 }

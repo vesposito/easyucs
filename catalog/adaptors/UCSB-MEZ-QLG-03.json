@@ -1,4 +1,5 @@
 {
   "model_short_name": "M73KR-Q",
+  "imm_compatible": false,
   "data_sheet_url": "https://www.cisco.com/c/en/us/products/collateral/servers-unified-computing/ucs-b-series-blade-servers/data_sheet_c78-703587.pdf"
 }

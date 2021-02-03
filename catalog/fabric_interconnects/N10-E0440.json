@@ -1,46 +1,46 @@
 {
-  "rear_file_name":"N10-E0440.png",
-  "rear_file_size":[748,235],
-  "rear_ports":{
-    "1":{
-      "port_coord":[186,31],
-      "port_type":"sfp+",
-      "port_size":[83,54]
+  "rear_file_name": "N10-E0440.png",
+  "rear_file_size": [748,235],
+  "rear_ports": {
+    "1": {
+      "port_coord": [186,31],
+      "port_type": "sfp+",
+      "port_size": [83,54]
     },
-    "2":{
-      "port_coord":[186,134],
-      "port_type":"sfp+",
-      "port_size":[83,54]
+    "2": {
+      "port_coord": [186,134],
+      "port_type": "sfp+",
+      "port_size": [83,54]
     },
-    "3":{
-      "port_coord":[274,31],
-      "port_type":"sfp+",
-      "port_size":[83,54]
+    "3": {
+      "port_coord": [274,31],
+      "port_type": "sfp+",
+      "port_size": [83,54]
     },
-    "4":{
-      "port_coord":[274,134],
-      "port_type":"sfp+",
-      "port_size":[83,54]
+    "4": {
+      "port_coord": [274,134],
+      "port_type": "sfp+",
+      "port_size": [83,54]
     },
-    "fc1":{
-      "port_coord":[449,31],
-      "port_type":"sfp",
-      "port_size":[83,54]
+    "fc1": {
+      "port_coord": [449,31],
+      "port_type": "sfp",
+      "port_size": [83,54]
     },
-    "fc2":{
-      "port_coord":[449,134],
-      "port_type":"sfp",
-      "port_size":[83,54]
+    "fc2": {
+      "port_coord": [449,134],
+      "port_type": "sfp",
+      "port_size": [83,54]
     },
-    "fc3":{
-      "port_coord":[537,31],
-      "port_type":"sfp",
-      "port_size":[83,54]
+    "fc3": {
+      "port_coord": [537,31],
+      "port_type": "sfp",
+      "port_size": [83,54]
     },
-    "fc4":{
-      "port_coord":[537,134],
-      "port_type":"sfp",
-      "port_size":[83,54]
+    "fc4": {
+      "port_coord": [537,134],
+      "port_type": "sfp",
+      "port_size": [83,54]
     }
   }
 }

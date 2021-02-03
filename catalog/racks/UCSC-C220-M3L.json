@@ -1,79 +1,79 @@
 {
   "model_short_name": "C220 M3L",
-  "rear_file_name":"UCSC-C220-M3_rear.png",
-  "front_file_name":"UCSC-C220-M3L_front.png",
-  "rear_file_size":[2862,273],
-  "front_file_size":[2860,273],
-  "pcie_slots":[
+  "rear_file_name": "UCSC-C220-M3_rear.png",
+  "front_file_name": "UCSC-C220-M3L_front.png",
+  "rear_file_size": [2862,273],
+  "front_file_size": [2860,273],
+  "pcie_slots": [
     {
-      "id":2,
-      "width":"half",
-      "orientation":"reverse",
-      "coord":[1473, 55]
+      "id": 1,
+      "width": "full",
+      "coord": [2021, 55]
     },
     {
-      "id":1,
-      "width":"full",
-      "coord":[2021, 55]
+      "id": 2,
+      "width": "half",
+      "orientation": "reverse",
+      "coord": [1473, 55]
     }
   ],
-  "pcie_models":[
+  "pcie_models": [
     {
-      "name":"UCSC-PCIE-CSC-02",
-      "description":"Cisco VIC 1225 Dual Port 10Gb SFP+ CNA"
+      "name": "UCSC-PCIE-CSC-02",
+      "description": "Cisco VIC 1225 Dual Port 10Gb SFP+ CNA"
     },
     {
-      "name":"UCSC-PCIE-C10T-02",
-      "description":"Cisco VIC 1225T Dual Port 10GBaseT Adapter"
+      "name": "UCSC-PCIE-C10T-02",
+      "description": "Cisco VIC 1225T Dual Port 10GBaseT Adapter"
     },
     {
-      "name":"UCSC-PCIE-C40Q-02",
-      "description":"Cisco VIC 1285 Dual Port 40 Gb QSFP CNA"
+      "name": "UCSC-PCIE-C40Q-02",
+      "description": "Cisco VIC 1285 Dual Port 40 Gb QSFP CNA"
     },
     {
-      "name":"UCSC-PCIF-01F",
-      "type":"blank",
-      "width":"full",
-      "description":"PCIe Full Height blanking panel for UCS C-Series Server"
+      "name": "UCSC-PCIF-01F",
+      "type": "blank",
+      "width": "full",
+      "description": "PCIe Full Height blanking panel for UCS C-Series Server"
     },
     {
-      "name":"UCSC-PCIF-01H",
-      "type":"blank",
-      "width":"half",
-      "description":"PCIe Low Profile blanking panel for UCS C-Series Server"
+      "name": "UCSC-PCIF-01H",
+      "type": "blank",
+      "width": "half",
+      "description": "PCIe Low Profile blanking panel for UCS C-Series Server"
     }
   ],
-  "psus_slots_rear":[
+  "psus_slots_rear": [
     {
-      "id":1,
-      "coord":[180,17]
+      "id": 1,
+      "coord": [180,17]
     },
     {
-      "id":2,
-      "coord":[773,17]
+      "id": 2,
+      "coord": [773,17]
     }
   ],
-  "psus_models":[
+  "psus_models": [
     {
-      "name":"UCSC-PSU-BLKP",
-      "type":"blank",
-      "description":"Power supply blanking panel/filler"
+      "name": "UCSC-PSU-BLKP",
+      "type": "blank",
+      "description": "Power supply blanking panel/filler"
     },
     {
-      "name":"UCSC-PSU-450W",
-      "description":"450W power supply for C-series rack servers"
+      "name": "UCSC-PSU-450W",
+      "description": "450W power supply for C-series rack servers"
     },
     {
-      "name":"UCSC-PSU-650W",
-      "description":"650W power supply for C-series rack servers"
+      "name": "UCSC-PSU-650W",
+      "description": "650W power supply for C-series rack servers"
     },
     {
-      "name":"UCSC-PSU-930WDC",
-      "description":"930W -48V DC Common Slot Power Supply for c-series servers"
+      "name": "UCSC-PSU-930WDC",
+      "description": "930W -48V DC Common Slot Power Supply for c-series servers"
     },
     {
-      "name":"UCSC-PSU2V2-930DC",
-      "description":"930W V2 DC Power Supply for 2U C-Series Servers"
+      "name": "UCSC-PSU2V2-930DC",
+      "description": "930W V2 DC Power Supply for 2U C-Series Servers"
     }
   ],
   "lom_ports": {
@@ -88,43 +88,80 @@
       "port_size": [69,40]
     }
   },
-  "disks_slots":[
+  "disks_slots": [
     {
-      "id":1,
-      "format":"lff",
-      "orientation":"horizontal",
-      "coord":[184, 93],
-      "size":[617,157]
+      "id": 1,
+      "format": "lff",
+      "orientation": "horizontal",
+      "coord": [184, 93],
+      "size": [617,157]
     },
     {
-      "id":2,
-      "format":"lff",
-      "orientation":"horizontal",
-      "coord":[812, 93],
-      "size":[617,157]
+      "id": 2,
+      "format": "lff",
+      "orientation": "horizontal",
+      "coord": [812, 93],
+      "size": [617,157]
     },
     {
-      "id":3,
-      "format":"lff",
-      "orientation":"horizontal",
-      "coord":[1437, 93],
-      "size":[617,157]
+      "id": 3,
+      "format": "lff",
+      "orientation": "horizontal",
+      "coord": [1437, 93],
+      "size": [617,157]
     },
     {
-      "id":4,
-      "format":"lff",
-      "orientation":"horizontal",
-      "coord":[2062, 93],
-      "size":[617,157]
+      "id": 4,
+      "format": "lff",
+      "orientation": "horizontal",
+      "coord": [2062, 93],
+      "size": [617,157]
     }
   ],
-  "disks_models":[
+  "disks_models": [
     {
-      "name":"UCSC-BBLKD-L",
-      "type":"blank",
-	  "format":"lff",
-      "description":"UCS 3.5-inch HDD blanking panel"
+      "name": "UCSC-BBLKD-L",
+      "type": "blank",
+	  "format": "lff",
+      "description": "UCS 3.5-inch HDD blanking panel"
     }
   ],
-  "spec_sheet_url": "https://www.cisco.com/c/dam/en/us/products/collateral/servers-unified-computing/ucs-c-series-rack-servers/c220m3-lff-specsheet.pdf"
+  "imm_compatible": false,
+  "spec_sheet_url": "https://www.cisco.com/c/dam/en/us/products/collateral/servers-unified-computing/ucs-c-series-rack-servers/c220m3-lff-specsheet.pdf",
+  "data_sheet_url": "https://www.cisco.com/c/en/us/products/collateral/servers-unified-computing/ucs-c220-m3-rack-server/data_sheet_c78-700626.html",
+  "specs": {
+    "form_factor": "1RU",
+    "chipset": "Intel® C600 series chipset (Patsburg)",
+    "cpu": {
+      "sockets": 2,
+      "family_name": {
+        "sandy_bridge": "Intel Xeon E5-2600 Series",
+        "ivy_bridge": "Intel Xeon E5-2600 v2 Series"
+      }
+    },
+    "memory": {
+      "dimm_type": "DDR3",
+      "dimm_slots": 24,
+      "max_speed": 1866,
+      "max_capacity": 786432,
+      "dcpmm_support": false
+    },
+    "dimensions": {
+      "centimeters": {
+        "height": 4.32,
+        "width": 43,
+        "depth": 75.5
+      },
+      "inches": {
+        "height": 1.7,
+        "width": 16.92,
+        "depth": 29.7
+      },
+      "rack_units": 1
+    },
+    "weight": {
+      "lb": 37.1,
+      "kg": 16.8
+    }
+  }
 }

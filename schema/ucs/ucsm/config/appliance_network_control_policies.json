@@ -57,6 +57,24 @@
             "allow",
             "deny"
          ]
+      },
+      "lldp_transmit": {
+         "description": "Appliance Network Control Policy LLDP Transmit State",
+         "type": "string",
+         "default": "disabled",
+         "enum": [
+            "disabled",
+            "enabled"
+         ]
+      },
+      "lldp_receive": {
+         "description": "Appliance Network Control Policy LLDP Receive State",
+         "type": "string",
+         "default": "disabled",
+         "enum": [
+            "disabled",
+            "enabled"
+         ]
       }
    },
    "additionalProperties":false,

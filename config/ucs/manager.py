@@ -65,45 +65,6 @@ class UcsSystemConfigManager(GenericUcsConfigManager):
         GenericUcsConfigManager.__init__(self, parent=parent)
         self.config_class_name = UcsSystemConfig
 
-    def generate_config_plots(self, config=None):
-        if config is None:
-            config = self.get_latest_config()
-            self.logger(level="debug",
-                        message="No config UUID specified in generate config plots request. Using latest.")
-
-            if config is None:
-                self.logger(level="error", message="No config found. Unable to generate config plots.")
-                return False
-
-        self.logger(level="debug", message="Generating plots for device " + self.parent.target + " using config: " +
-                                           str(config.uuid))
-
-        config.service_profile_plots = UcsSystemServiceProfileConfigPlot(parent=self, config=config)
-        if config.orgs[0].orgs:  # If 'root' is not the only organization
-            config.orgs_plot = UcsSystemOrgConfigPlot(parent=self, config=config)
-
-    def export_config_plots(self, config=None, export_format="png", directory=None):
-        if directory is None:
-            self.logger(level="debug",
-                        message="No directory specified in export config plots request. Using local folder.")
-            directory = "."
-
-        if config is None:
-            config = self.get_latest_config()
-            self.logger(level="debug", message="No config UUID specified in export config plots request. Using latest.")
-
-            if config is None:
-                self.logger(level="error", message="No config found. Unable to export plots.")
-                return False
-
-        if config.service_profile_plots:
-            config.service_profile_plots.export_plots(export_format=export_format, directory=directory)
-        if config.orgs_plot:
-            config.orgs_plot.export_plots(export_format=export_format, directory=directory)
-        if not config.orgs_plot and not config.service_profile_plots:
-            self.logger(level="error", message="No plots found. Unable to export plots.")
-            return False
-
     def check_if_push_config_requires_reboot(self, uuid=None):
         """
         Checks if the specified config will require at least one reboot when pushed to the live system
@@ -142,6 +103,28 @@ class UcsSystemConfigManager(GenericUcsConfigManager):
             self.logger(level="error", message="No config to check for reboot!")
             return False
 
+    def export_config_plots(self, config=None, export_format="png", directory=None):
+        if directory is None:
+            self.logger(level="debug",
+                        message="No directory specified in export config plots request. Using local folder.")
+            directory = "."
+
+        if config is None:
+            config = self.get_latest_config()
+            self.logger(level="debug", message="No config UUID specified in export config plots request. Using latest.")
+
+            if config is None:
+                self.logger(level="error", message="No config found. Unable to export plots.")
+                return False
+
+        if config.service_profile_plots:
+            config.service_profile_plots.export_plots(export_format=export_format, directory=directory)
+        if config.orgs_plot:
+            config.orgs_plot.export_plots(export_format=export_format, directory=directory)
+        if not config.orgs_plot and not config.service_profile_plots:
+            self.logger(level="error", message="No plots found. Unable to export plots.")
+            return False
+
     def fetch_config(self):
         self.logger(message="Fetching config from live device (can take several minutes)")
         config = UcsSystemConfig(parent=self)
@@ -153,7 +136,12 @@ class UcsSystemConfigManager(GenericUcsConfigManager):
         # Put in order the items to append
         config.system.append(UcsSystemInformation(parent=config))
         config.pre_login_banner = UcsSystemPreLoginBanner(parent=config).message
+
         config.timezone_mgmt.append(UcsSystemTimezoneMgmt(parent=config))
+        # In case Timezone Mgmt is empty, we remove it to avoid having an empty object in the config
+        if not config.timezone_mgmt[0].zone and not config.timezone_mgmt[0].ntp:
+            config.timezone_mgmt = []
+
         config.switching_mode.append(UcsSystemSwitchingMode(parent=config))
         config.communication_services.append(UcsSystemCommunicationServices(parent=config))
         config.device_connector.append(UcsDeviceConnector(parent=config))
@@ -283,7 +271,11 @@ class UcsSystemConfigManager(GenericUcsConfigManager):
                                                                                 fabric_eth_estc_pc=fabric_eth_estc_pc))
 
         for fabric_net_group in config.sdk_objects["fabricNetGroup"]:
-            config.vlan_groups.append(UcsSystemVlanGroup(parent=config, fabric_net_group=fabric_net_group))
+            # We skip specific internal VLAN Groups that are used for VLAN Port Count Optimization feature
+            if fabric_net_group.type in ["vlan-compression", "vlan-uncompressed", "vp-compression"]:
+                self.logger(level="debug", message="Skipping internal VLAN Group " + fabric_net_group.name)
+            else:
+                config.vlan_groups.append(UcsSystemVlanGroup(parent=config, fabric_net_group=fabric_net_group))
 
         for fabric_lan_pin_group in config.sdk_objects["fabricLanPinGroup"]:
             config.lan_pin_groups.append(UcsSystemLanPinGroup(parent=config, fabric_lan_pin_group=fabric_lan_pin_group))
@@ -319,6 +311,23 @@ class UcsSystemConfigManager(GenericUcsConfigManager):
         self.config_list.append(config)
         self.logger(message="Finished fetching config with UUID " + str(config.uuid) + " from live device")
         return config.uuid
+
+    def generate_config_plots(self, config=None):
+        if config is None:
+            config = self.get_latest_config()
+            self.logger(level="debug",
+                        message="No config UUID specified in generate config plots request. Using latest.")
+
+            if config is None:
+                self.logger(level="error", message="No config found. Unable to generate config plots.")
+                return False
+
+        self.logger(level="debug", message="Generating plots for device " + self.parent.target + " using config: " +
+                                           str(config.uuid))
+
+        config.service_profile_plots = UcsSystemServiceProfileConfigPlot(parent=self, config=config)
+        if config.orgs[0].orgs:  # If 'root' is not the only organization
+            config.orgs_plot = UcsSystemOrgConfigPlot(parent=self, config=config)
 
     def push_config(self, uuid=None, reset=False, fi_ip_list=[], bypass_version_checks=False):
         """
@@ -808,49 +817,6 @@ class UcsSystemConfigManager(GenericUcsConfigManager):
             self.logger(level="error", message="No config to push!")
             return False
 
-    def _validate_config_from_json(self, config_json=None):
-        """
-        Validates a config using the JSON schema definition
-        :param config_json: JSON content containing config to be validated
-        :return: True if config is valid, False otherwise
-        """
-
-        # Open JSON master schema for a UCS System config
-        json_file = open("schema/ucs/ucsm/master.json")
-        json_string = json_file.read()
-        json_file.close()
-        json_schema = json.loads(json_string)
-
-        schema_path = 'file:///{0}/'.format(
-            os.path.dirname(os.path.abspath("schema/ucs/ucsm/master.json")).replace("\\", "/"))
-        resolver = jsonschema.RefResolver(schema_path, json_schema)
-        format_checker = jsonschema.FormatChecker()
-
-        try:
-            jsonschema.validate(config_json, json_schema, resolver=resolver, format_checker=format_checker)
-        except jsonschema.ValidationError as err:
-            absolute_path = []
-            for path in err.absolute_path:
-                absolute_path.append(path)
-
-            # TODO: Improve error logging by providing a simple explanation when JSON file is not valid
-            self.logger(level="error", message="Invalid config JSON file in " + str(absolute_path))
-            self.logger(level="error", message="Failed to validate config JSON file using schema: " + str(err.message))
-            return False
-        except jsonschema.SchemaError as err:
-            self.logger(level="error", message="Failed to validate config JSON file due to schema error: " + str(err))
-            return False
-
-        # We now validate that the easyucs_version of the file is not greater than the running version of EasyUCS
-        easyucs_version_from_file = config_json["easyucs"]["metadata"][0]["easyucs_version"]
-        if packaging_version.parse(easyucs_version_from_file) > packaging_version.parse(__version__):
-            self.logger(level="error",
-                        message="Failed to validate config JSON file because it has been created using a more " +
-                                "recent version of EasyUCS (" + easyucs_version_from_file + " > " + __version__ + ")")
-            return False
-
-        return True
-    
     def _fill_config_from_json(self, config=None, config_json=None):
         """
         Fills config using parsed JSON config file
@@ -1026,6 +992,49 @@ class UcsSystemConfigManager(GenericUcsConfigManager):
                     else:
                         self.logger(level="error", message="Org 'root' not found. Org 'root' is mandatory." +
                                                            " No org configuration will be fetched")
+
+        return True
+
+    def _validate_config_from_json(self, config_json=None):
+        """
+        Validates a config using the JSON schema definition
+        :param config_json: JSON content containing config to be validated
+        :return: True if config is valid, False otherwise
+        """
+
+        # Open JSON master schema for a UCS System config
+        json_file = open("schema/ucs/ucsm/master.json")
+        json_string = json_file.read()
+        json_file.close()
+        json_schema = json.loads(json_string)
+
+        schema_path = 'file:///{0}/'.format(
+            os.path.dirname(os.path.abspath("schema/ucs/ucsm/master.json")).replace("\\", "/"))
+        resolver = jsonschema.RefResolver(schema_path, json_schema)
+        format_checker = jsonschema.FormatChecker()
+
+        try:
+            jsonschema.validate(config_json, json_schema, resolver=resolver, format_checker=format_checker)
+        except jsonschema.ValidationError as err:
+            absolute_path = []
+            for path in err.absolute_path:
+                absolute_path.append(path)
+
+            # TODO: Improve error logging by providing a simple explanation when JSON file is not valid
+            self.logger(level="error", message="Invalid config JSON file in " + str(absolute_path))
+            self.logger(level="error", message="Failed to validate config JSON file using schema: " + str(err.message))
+            return False
+        except jsonschema.SchemaError as err:
+            self.logger(level="error", message="Failed to validate config JSON file due to schema error: " + str(err))
+            return False
+
+        # We now validate that the easyucs_version of the file is not greater than the running version of EasyUCS
+        easyucs_version_from_file = config_json["easyucs"]["metadata"][0]["easyucs_version"]
+        if packaging_version.parse(easyucs_version_from_file) > packaging_version.parse(__version__):
+            self.logger(level="error",
+                        message="Failed to validate config JSON file because it has been created using a more " +
+                                "recent version of EasyUCS (" + easyucs_version_from_file + " > " + __version__ + ")")
+            return False
 
         return True
 
@@ -1303,53 +1312,6 @@ class UcsImcConfigManager(GenericUcsConfigManager):
             self.parent.disconnect()
             self.parent.set_task_progression(100)
 
-    def _validate_config_from_json(self, config_json=None):
-        """
-        Validates a config using the JSON schema definition
-        :param config_json: JSON content containing config to be validated
-        :return: True if config is valid, False otherwise
-        """
-
-        # Open JSON master schema for a UCS CIMC config
-        json_file = open("schema/ucs/cimc/master.json")
-        json_string = json_file.read()
-        json_file.close()
-        json_schema = json.loads(json_string)
-
-        schema_path = 'file:///{0}/'.format(
-            os.path.dirname(os.path.abspath("schema/ucs/cimc/master.json")).replace("\\", "/"))
-        resolver = jsonschema.RefResolver(schema_path, json_schema)
-        format_checker = jsonschema.FormatChecker()
-
-        try:
-            jsonschema.validate(config_json, json_schema, resolver=resolver, format_checker=format_checker)
-        except jsonschema.ValidationError as err:
-            absolute_path = []
-            while True:
-                try:
-                    value = err.absolute_path.popleft()
-                    if value != 0:
-                        absolute_path.append(value)
-                except IndexError:
-                    break
-            # TODO: Improve error logging by providing a simple explanation when JSON file is not valid
-            self.logger(level="error", message="Invalid config JSON file in " + str(absolute_path))
-            self.logger(level="error", message="Failed to validate config JSON file using schema: " + str(err.message))
-            return False
-        except jsonschema.SchemaError as err:
-            self.logger(level="error", message="Failed to validate config JSON file due to schema error: " + str(err))
-            return False
-
-        # We now validate that the easyucs_version of the file is not greater than the running version of EasyUCS
-        easyucs_version_from_file = config_json["easyucs"]["metadata"][0]["easyucs_version"]
-        if packaging_version.parse(easyucs_version_from_file) > packaging_version.parse(__version__):
-            self.logger(level="error",
-                        message="Failed to validate config JSON file because it has been created using a more " +
-                                "recent version of EasyUCS (" + easyucs_version_from_file + " > " + __version__ + ")")
-            return False
-
-        return True
-
     def _fill_config_from_json(self, config=None, config_json=None):
         """
         Fills config using parsed JSON config file
@@ -1460,11 +1422,163 @@ class UcsImcConfigManager(GenericUcsConfigManager):
 
         return True
 
+    def _validate_config_from_json(self, config_json=None):
+        """
+        Validates a config using the JSON schema definition
+        :param config_json: JSON content containing config to be validated
+        :return: True if config is valid, False otherwise
+        """
+
+        # Open JSON master schema for a UCS CIMC config
+        json_file = open("schema/ucs/cimc/master.json")
+        json_string = json_file.read()
+        json_file.close()
+        json_schema = json.loads(json_string)
+
+        schema_path = 'file:///{0}/'.format(
+            os.path.dirname(os.path.abspath("schema/ucs/cimc/master.json")).replace("\\", "/"))
+        resolver = jsonschema.RefResolver(schema_path, json_schema)
+        format_checker = jsonschema.FormatChecker()
+
+        try:
+            jsonschema.validate(config_json, json_schema, resolver=resolver, format_checker=format_checker)
+        except jsonschema.ValidationError as err:
+            absolute_path = []
+            while True:
+                try:
+                    value = err.absolute_path.popleft()
+                    if value != 0:
+                        absolute_path.append(value)
+                except IndexError:
+                    break
+            # TODO: Improve error logging by providing a simple explanation when JSON file is not valid
+            self.logger(level="error", message="Invalid config JSON file in " + str(absolute_path))
+            self.logger(level="error", message="Failed to validate config JSON file using schema: " + str(err.message))
+            return False
+        except jsonschema.SchemaError as err:
+            self.logger(level="error", message="Failed to validate config JSON file due to schema error: " + str(err))
+            return False
+
+        # We now validate that the easyucs_version of the file is not greater than the running version of EasyUCS
+        easyucs_version_from_file = config_json["easyucs"]["metadata"][0]["easyucs_version"]
+        if packaging_version.parse(easyucs_version_from_file) > packaging_version.parse(__version__):
+            self.logger(level="error",
+                        message="Failed to validate config JSON file because it has been created using a more " +
+                                "recent version of EasyUCS (" + easyucs_version_from_file + " > " + __version__ + ")")
+            return False
+
+        return True
+
 
 class UcsCentralConfigManager(GenericUcsConfigManager):
     def __init__(self, parent=None):
         GenericUcsConfigManager.__init__(self, parent=parent)
         self.config_class_name = UcsCentralConfig
+
+    def fetch_config(self):
+        self.logger(message="Fetching config from live device (can take several minutes)")
+        config = UcsCentralConfig(parent=self)
+        config.origin = "live"
+        config.load_from = "live"
+        config._fetch_sdk_objects()
+        self.logger(level="debug", message="Finished fetching UCS SDK objects for config")
+
+        # Put in order the items to append
+        config.system.append(UcsCentralSystem(parent=config))
+
+        for network_element in config.sdk_objects["networkElement"]:
+            if network_element.dn.startswith("sys/"):
+                config.management_interfaces.append(UcsCentralManagementInterface(parent=config,
+                                                                                  network_element=network_element))
+
+        config.date_time.append(UcsCentralDateTimeMgmt(parent=config))
+        config.dns.append(UcsCentralDns(parent=config))
+        config.syslog.append(UcsCentralSyslog(parent=config))
+        config.snmp.append(UcsCentralSnmp(parent=config))
+        config.password_profile.append(UcsCentralPasswordProfile(parent=config))
+
+        for aaa_locale in config.sdk_objects['aaaLocale']:
+            if "org-root/deviceprofile-default" in aaa_locale.dn:
+                config.locales.append(UcsCentralLocale(parent=config, aaa_locale=aaa_locale))
+        for aaa_role in config.sdk_objects["aaaRole"]:
+            if "org-root/deviceprofile-default" in aaa_role.dn:
+                config.roles.append(UcsCentralRole(parent=config, aaa_role=aaa_role))
+        for aaa_user in config.sdk_objects["aaaUser"]:
+            if "org-root/deviceprofile-default" in aaa_user.dn:
+                config.local_users.append(UcsCentralLocalUser(parent=config, aaa_user=aaa_user))
+
+        for org_org in sorted(config.sdk_objects["orgOrg"], key=lambda org: org.dn):
+            if org_org.dn == "org-root":
+                config.orgs.append(UcsCentralOrg(parent=config, org_org=org_org))
+        for org_domain_group in sorted(config.sdk_objects["orgDomainGroup"], key=lambda org: org.dn):
+            if org_domain_group.dn == "domaingroup-root":
+                config.domain_groups.append(UcsCentralDomainGroup(parent=config, org_domain_group=org_domain_group))
+
+        # Removing the list of SDK objects fetched from the live UCS device
+        config.sdk_objects = None
+        self.config_list.append(config)
+        self.logger(message="Finished fetching config with UUID " + str(config.uuid) + " from live device")
+        return config.uuid
+
+    def push_config(self, uuid=None, bypass_version_checks=False):
+        """
+       Push the specified config to the live system
+       :param uuid: The UUID of the config to be pushed. If not specified, the most recent config will be used
+       :param bypass_version_checks: Whether or not the minimum version checks should be bypassed when connecting
+       :return: True if config push was successful, False otherwise
+       """
+        if uuid is None:
+            self.logger(level="debug", message="No config UUID specified in config push request. Using latest.")
+            config = self.get_latest_config()
+        else:
+            # Find the config that needs to be pushed
+            config_list = [config for config in self.config_list if config.uuid == uuid]
+            if len(config_list) != 1:
+                self.logger(level="error", message="Failed to locate config with UUID " + str(uuid) + " for push")
+                return False
+            else:
+                config = config_list[0]
+        if config:
+            # Pushing configuration to the device
+            # We first make sure we are connected to the device
+            if not self.parent.connect(bypass_version_checks=bypass_version_checks):
+                return False
+            self.parent.set_task_progression(50)
+            self.logger(message="Pushing configuration " + str(config.uuid) + " to " + self.parent.target)
+
+            # We push all config elements, in a specific optimized order to reduce number of reboots
+            if config.system:
+                config.system[0].push_object()
+            for management_interface in config.management_interfaces:
+                management_interface.push_object()
+            for dns in config.dns:
+                dns.push_object()
+            for syslog in config.syslog:
+                syslog.push_object()
+            for snmp in config.snmp:
+                snmp.push_object()
+            if config.password_profile:
+                config.password_profile[0].push_object()
+            for locale in config.locales:
+                locale.push_object()
+            for role in config.roles:
+                role.push_object()
+            for local_user in config.local_users:
+                local_user.push_object()
+
+            if config.orgs:
+                for org in config.orgs:
+                    org.push_object()
+
+            # We put these objects at the end, since they are likely to cause a disconnect
+            for date_time in config.date_time:
+                date_time.push_object()
+
+            self.logger(message="Successfully pushed configuration " + str(config.uuid) + " to " + self.parent.target)
+
+            # We disconnect from the device
+            self.parent.disconnect()
+            self.parent.set_task_progression(100)
 
     def _fill_config_from_json(self, config=None, config_json=None):
         """
@@ -1528,111 +1642,6 @@ class UcsCentralConfigManager(GenericUcsConfigManager):
                                     message="Domain Group 'root' not found. Domain Group 'root' is mandatory. " +
                                             "No domain group configuration will be fetched")
         return True
-
-    def push_config(self, uuid=None, bypass_version_checks=False):
-        """
-       Push the specified config to the live system
-       :param uuid: The UUID of the config to be pushed. If not specified, the most recent config will be used
-       :param bypass_version_checks: Whether or not the minimum version checks should be bypassed when connecting
-       :return: True if config push was successful, False otherwise
-       """
-        if uuid is None:
-            self.logger(level="debug", message="No config UUID specified in config push request. Using latest.")
-            config = self.get_latest_config()
-        else:
-            # Find the config that needs to be pushed
-            config_list = [config for config in self.config_list if config.uuid == uuid]
-            if len(config_list) != 1:
-                self.logger(level="error", message="Failed to locate config with UUID " + str(uuid) + " for push")
-                return False
-            else:
-                config = config_list[0]
-        if config:
-            # Pushing configuration to the device
-            # We first make sure we are connected to the device
-            if not self.parent.connect(bypass_version_checks=bypass_version_checks):
-                return False
-            self.parent.set_task_progression(50)
-            self.logger(message="Pushing configuration " + str(config.uuid) + " to " + self.parent.target)
-
-            # We push all config elements, in a specific optimized order to reduce number of reboots
-            if config.system:
-                config.system[0].push_object()
-            for management_interface in config.management_interfaces:
-                management_interface.push_object()
-            for dns in config.dns:
-                dns.push_object()
-            for syslog in config.syslog:
-                syslog.push_object()
-            for snmp in config.snmp:
-                snmp.push_object()
-            if config.password_profile:
-                config.password_profile[0].push_object()
-            for locale in config.locales:
-                locale.push_object()
-            for role in config.roles:
-                role.push_object()
-            for local_user in config.local_users:
-                local_user.push_object()
-
-            if config.orgs:
-                for org in config.orgs:
-                    org.push_object()
-
-            # We put these objects at the end, since they are likely to cause a disconnect
-            for date_time in config.date_time:
-                date_time.push_object()
-
-            self.logger(message="Successfully pushed configuration " + str(config.uuid) + " to " + self.parent.target)
-
-            # We disconnect from the device
-            self.parent.disconnect()
-            self.parent.set_task_progression(100)
-
-    def fetch_config(self):
-        self.logger(message="Fetching config from live device (can take several minutes)")
-        config = UcsCentralConfig(parent=self)
-        config.origin = "live"
-        config.load_from = "live"
-        config._fetch_sdk_objects()
-        self.logger(level="debug", message="Finished fetching UCS SDK objects for config")
-
-        # Put in order the items to append
-        config.system.append(UcsCentralSystem(parent=config))
-
-        for network_element in config.sdk_objects["networkElement"]:
-            if network_element.dn.startswith("sys/"):
-                config.management_interfaces.append(UcsCentralManagementInterface(parent=config,
-                                                                                  network_element=network_element))
-
-        config.date_time.append(UcsCentralDateTimeMgmt(parent=config))
-        config.dns.append(UcsCentralDns(parent=config))
-        config.syslog.append(UcsCentralSyslog(parent=config))
-        config.snmp.append(UcsCentralSnmp(parent=config))
-        config.password_profile.append(UcsCentralPasswordProfile(parent=config))
-
-        for aaa_locale in config.sdk_objects['aaaLocale']:
-            if "org-root/deviceprofile-default" in aaa_locale.dn:
-                config.locales.append(UcsCentralLocale(parent=config, aaa_locale=aaa_locale))
-        for aaa_role in config.sdk_objects["aaaRole"]:
-            if "org-root/deviceprofile-default" in aaa_role.dn:
-                config.roles.append(UcsCentralRole(parent=config, aaa_role=aaa_role))
-        for aaa_user in config.sdk_objects["aaaUser"]:
-            if "org-root/deviceprofile-default" in aaa_user.dn:
-                config.local_users.append(UcsCentralLocalUser(parent=config, aaa_user=aaa_user))
-
-        for org_org in sorted(config.sdk_objects["orgOrg"], key=lambda org: org.dn):
-            if org_org.dn == "org-root":
-                config.orgs.append(UcsCentralOrg(parent=config, org_org=org_org))
-        for org_domain_group in sorted(config.sdk_objects["orgDomainGroup"], key=lambda org: org.dn):
-            if org_domain_group.dn == "domaingroup-root":
-                config.domain_groups.append(UcsCentralDomainGroup(parent=config, org_domain_group=org_domain_group))
-
-        # Removing the list of SDK objects fetched from the live UCS device
-        config.sdk_objects = None
-        self.config_list.append(config)
-        self.logger(message="Finished fetching config with UUID " + str(config.uuid) + " from live device")
-        return config.uuid
 
     def _validate_config_from_json(self, config_json=None):
         """

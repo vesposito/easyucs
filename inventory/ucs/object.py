@@ -54,7 +54,7 @@ class GenericUcsInventoryObject(GenericInventoryObject):
 
         result = None
 
-        if self._inventory.load_from is "live":
+        if self._inventory.load_from == "live":
             # We are working with an UCS SDK object
             if hasattr(ucs_sdk_object, attribute_name):
                 result = getattr(ucs_sdk_object, attribute_name)
@@ -65,7 +65,7 @@ class GenericUcsInventoryObject(GenericInventoryObject):
                                     ucs_sdk_object.dn))
                 return None
 
-        elif self._inventory.load_from is "file":
+        elif self._inventory.load_from == "file":
             # We are working with a dictionary
             if attribute_secondary_name is not None:
                 if attribute_secondary_name in ucs_sdk_object.keys():
@@ -92,17 +92,17 @@ class GenericUcsInventoryObject(GenericInventoryObject):
         # Depending on the type requested, we return the result using the appropriate conversion
         if attribute_type is None:
             return result
-        elif attribute_type is "int":
+        elif attribute_type == "int":
             try:
                 return int(result)
             except (ValueError, TypeError):
                 return None
-        elif attribute_type is "float":
+        elif attribute_type == "float":
             try:
                 return float(result)
             except (ValueError, TypeError):
                 return None
-        elif attribute_type is "str":
+        elif attribute_type == "str":
             try:
                 return str(result)
             except (ValueError, TypeError):
@@ -263,6 +263,17 @@ class UcsSystemInventoryObject(GenericUcsInventoryObject):
                     if hasattr(firmware_running_list[0], "package_version"):
                         if firmware_running_list[0].package_version != "":
                             self.firmware_package_version = firmware_running_list[0].package_version
+
+                    # In case we could not fetch its package version, try with the firmwareStatus object
+                    if not self.firmware_package_version:
+                        if "firmwareStatus" in self._inventory.sdk_objects.keys():
+                            if self._inventory.sdk_objects["firmwareStatus"] is not None:
+                                # Looking for the matching firmwareStatus object
+                                firmware_status_list = [firmware_status for firmware_status in
+                                                        self._inventory.sdk_objects["firmwareStatus"] if self.dn +
+                                                        "/fw-status" == firmware_status.dn]
+                                if (len(firmware_status_list)) == 1:
+                                    self.firmware_package_version =  firmware_status_list[0].package_version
                     return True
         return False
 

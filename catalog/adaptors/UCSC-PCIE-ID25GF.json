@@ -1,9 +1,9 @@
 {
   "model_short_name": "Intel XXV710 2x25G",
-  "rear_file_name":"UCSC-PCIE-ID25GF.png",
-  "rear_file_name_half":"UCSC-PCIE-ID25GF_half.png",
-  "rear_file_size":[593,75],
-  "rear_file_size_half":[389,75],
+  "rear_file_name": "UCSC-PCIE-ID25GF.png",
+  "rear_file_name_half": "UCSC-PCIE-ID25GF_half.png",
+  "rear_file_size": [593,75],
+  "rear_file_size_half": [389,75],
   "rear_ports": {
     "x/2": {
       "port_coord": [282, 13],

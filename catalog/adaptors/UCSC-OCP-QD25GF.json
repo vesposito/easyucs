@@ -1,7 +1,7 @@
 {
   "model_short_name": "QLogic QL41232HOCU 2x25G",
-  "rear_file_name":"UCSC-OCP-QD25GF.png",
-  "rear_file_size":[475,113],
+  "rear_file_name": "UCSC-OCP-QD25GF.png",
+  "rear_file_size": [475,113],
   "rear_ports": {
     "x/1": {
       "port_coord": [266, 31],

@@ -131,12 +131,59 @@ class UcsSystemMemoryUnit(UcsMemoryUnit, UcsSystemInventoryObject):
 
         UcsSystemInventoryObject.__init__(self, parent=parent, ucs_sdk_object=memory_unit)
 
-        # Manually fixing type "Other" for memory units in some servers
-        if self.type in ["Other"]:
-            if hasattr(self._parent._parent, "model"):
-                if self._parent._parent.model is not None:
-                    if self._parent._parent.model in ["N20-B6625-1"]:
-                        self.type = "DDR3"
+        if self._inventory.load_from == "live":
+            # Manually fixing type "Other" for memory units in some servers
+            if self.type in ["Other"]:
+                if hasattr(self._parent._parent, "model"):
+                    if self._parent._parent.model is not None:
+                        if self._parent._parent.model in ["N20-B6625-1"]:
+                            self.type = "DDR3"
+
+            self.errors_address_parity = None
+            self.errors_ecc_multibit = None
+            self.errors_ecc_singlebit = None
+            self.errors_mismatch = None
+            error_stats = self._find_corresponding_memory_error_stats()
+            if error_stats:
+                self.errors_address_parity = int(error_stats.address_parity_errors)
+                self.errors_ecc_multibit = int(error_stats.ecc_multibit_errors)
+                self.errors_ecc_singlebit = int(error_stats.ecc_singlebit_errors)
+                self.errors_mismatch = int(error_stats.mismatch_errors)
+
+        elif self._inventory.load_from == "file":
+            for attribute in ["errors_address_parity", "errors_ecc_multibit", "errors_ecc_singlebit",
+                              "errors_mismatch"]:
+                setattr(self, attribute, None)
+                if attribute in memory_unit:
+                    setattr(self, attribute, self.get_attribute(ucs_sdk_object=memory_unit, attribute_name=attribute))
+
+    def _find_corresponding_memory_error_stats(self):
+        if "memoryErrorStats" not in self._inventory.sdk_objects.keys():
+            return False
+
+        # We check if we already have fetched the list of memoryErrorStats objects
+        if self._inventory.sdk_objects["memoryErrorStats"] is not None:
+
+            # We need to find the matching memoryErrorStats object
+            memory_error_stats_list = [memory_error_stats for memory_error_stats in
+                                       self._inventory.sdk_objects["memoryErrorStats"] if
+                                       self.dn + "/error-stats" == memory_error_stats.dn]
+            if (len(memory_error_stats_list)) != 1:
+                self.logger(level="debug",
+                            message="Could not find the corresponding memoryErrorStats for object with DN " +
+                                    self.dn + " of model \"" + self.model + "\" with ID " + self.id)
+                if hasattr(self._parent, "id"):
+                    self.logger(level="info", message="Error stats of memory with id " + self.id + " for server " +
+                                                      self._parent.id + " are not available.")
+                else:
+                    self.logger(level="info", message="Error stats of memory with id " + self.id + " for server " +
+                                                      self._parent.dn + " are not available.")
+
+                return False
+            else:
+                return memory_error_stats_list[0]
+
+        return False
 
 
 class UcsImcMemoryUnit(UcsMemoryUnit, UcsImcInventoryObject):

@@ -84,6 +84,29 @@ class UcsRack(GenericUcsInventoryObject):
     def _get_mgmt_interfaces(self):
         return []
 
+    def _get_imm_compatibility(self):
+        """
+        Returns rack server IMM Compatibility status from EasyUCS catalog files
+        """
+        if self.sku is not None:
+            # We use the catalog file to get the rack IMM Compatibility status
+            try:
+                if self.sku in ["UCSC-C125"]:
+                    json_file = open("catalog/server_nodes/" + self.sku + ".json")
+                else:
+                    json_file = open("catalog/racks/" + self.sku + ".json")
+                rack_catalog = json.load(fp=json_file)
+                json_file.close()
+
+                if "imm_compatible" in rack_catalog:
+                    return rack_catalog["imm_compatible"]
+
+            except FileNotFoundError:
+                self.logger(level="error", message="Rack catalog file " + self.sku + ".json not found")
+                return None
+
+        return None
+
     def _get_model_short_name(self):
         """
         Returns rack server short name from EasyUCS catalog files
@@ -156,6 +179,7 @@ class UcsSystemRack(UcsRack, UcsSystemInventoryObject):
 
         UcsSystemInventoryObject.__init__(self, parent=parent, ucs_sdk_object=compute_rack_unit)
 
+        self.imm_compatible = None
         self.locator_led_status = None
         self.mgmt_connection_type = None
         self.os_arch = None
@@ -166,6 +190,7 @@ class UcsSystemRack(UcsRack, UcsSystemInventoryObject):
         self.os_ucs_tool_version = None
         self.os_update_version = None
         self.os_vendor = None
+        self.pcie_risers = None
         self.service_profile_org = None
         self.service_profile_name = None
         self.service_profile_template = None
@@ -174,8 +199,10 @@ class UcsSystemRack(UcsRack, UcsSystemInventoryObject):
         self.short_name = None
         if self._inventory.load_from == "live":
             self.short_name = self._get_model_short_name()
+            self.imm_compatible = self._get_imm_compatibility()
             self.mgmt_connection_type = self._get_mgmt_connection_type()
             self.locator_led_status = self._determine_locator_led_status()
+            self._find_pcie_risers()
             self._get_os_details()
             if self.assigned_to_dn is not None and self.assigned_to_dn != "":
                 self.service_profile_org = self.assigned_to_dn.split("/ls-")[0]
@@ -194,15 +221,45 @@ class UcsSystemRack(UcsRack, UcsSystemInventoryObject):
                 self.assigned_to_dn = None
 
         elif self._inventory.load_from == "file":
-            for attribute in ["locator_led_status", "mgmt_connection_type", "os_arch", "os_kernel_version",
-                              "os_patch_version", "os_release_version", "os_type", "os_ucs_tool_version",
-                              "os_update_version", "os_vendor", "service_profile_org", "service_profile_name",
-                              "service_profile_template", "service_profile_template_org",
-                              "service_profile_template_name", "short_name"]:
+            for attribute in ["imm_compatible", "locator_led_status", "mgmt_connection_type", "os_arch",
+                              "os_kernel_version", "os_patch_version", "os_release_version", "os_type",
+                              "os_ucs_tool_version", "os_update_version", "os_vendor", "pcie_risers",
+                              "service_profile_org", "service_profile_name", "service_profile_template",
+                              "service_profile_template_org", "service_profile_template_name", "short_name"]:
                 setattr(self, attribute, None)
                 if attribute in compute_rack_unit:
                     setattr(self, attribute, self.get_attribute(ucs_sdk_object=compute_rack_unit,
                                                                 attribute_name=attribute))
+
+    def _find_pcie_risers(self):
+        # Since we don't have any object that gives us which PCIe risers are available, we have to guess
+        # We only do this for C240 M5SD, since it is mandatory for the draw operation
+        if self.sku == "UCSC-C240-M5SD":
+            more_than_2_drives = False
+            if self.storage_controllers:
+                for storage_controller in self.storage_controllers:
+                    if storage_controller.disks:
+                        for disk in storage_controller.disks:
+                            if int(disk.id) > 2:
+                                more_than_2_drives = True
+                                continue
+
+            adapters_in_pcie_slot_above_2 = False
+            if self.adaptors:
+                for adaptor in self.adaptors:
+                    if adaptor.pci_slot not in ["MLOM"]:
+                        if int(adaptor.pci_slot) > 2:
+                            adapters_in_pcie_slot_above_2 = True
+                            continue
+
+            # If we have more than 2 drives, the risers are necessarily the "storage" models
+            if more_than_2_drives:
+                self.pcie_risers = [{"id": "1", "sku": "UCSC-RS1C-240M5SD"}, {"id": "2", "sku": "UCSC-RS2E-240M5SD"}]
+            # If we have a PCIe adaptor in slot > 2, the risers are necessarily the "pcie" models
+            if adapters_in_pcie_slot_above_2:
+                self.pcie_risers = [{"id": "1", "sku": "UCSC-RIS-1-240M5"}, {"id": "2", "sku": "UCSC-RIS-2B-240M5"}]
+
+        return False
 
     def _generate_draw(self):
         self._draw_front = UcsSystemDrawRackFront(parent=self)
@@ -511,6 +568,7 @@ class UcsImcRack(UcsRack, UcsImcInventoryObject):
         UcsImcInventoryObject.__init__(self, parent=parent, ucs_sdk_object=compute_rack_unit)
 
         self.locator_led_status = None
+        self.pcie_risers = None
         self.short_name = None
 
         # Since we don't have a catalog item for finding the SKU, we set it manually here
@@ -521,12 +579,60 @@ class UcsImcRack(UcsRack, UcsImcInventoryObject):
         if self._inventory.load_from == "live":
             self.short_name = self._get_model_short_name()
             self.locator_led_status = self._determine_locator_led_status()
+            self._find_pcie_risers()
         elif self._inventory.load_from == "file":
-            for attribute in ["locator_led_status", "short_name"]:
+            for attribute in ["locator_led_status", "pcie_risers", "short_name"]:
                 setattr(self, attribute, None)
                 if attribute in compute_rack_unit:
                     setattr(self, attribute, self.get_attribute(ucs_sdk_object=compute_rack_unit,
                                                                 attribute_name=attribute))
+
+    def _find_pcie_risers(self):
+        m5_pcie_risers_matrix = {
+            "riser1": {"No Riser": "None",
+                       "(2 Slots x8, 1 Slot x16)": "UCSC-PCI-1-C240M5/UCSC-RIS-1-240M5",
+                       "(3 Slots x8)": "UCSC-PCI-1B-240M5/UCSC-RIS-1B-240M5",
+                       "(2 Slots x4, 1 Slot x16)": "UCSC-RS1C-240M5SD"},
+            "riser2": {"No Riser": "None",
+                       "(1 Slot x8, 2 Slots x16)": "UCSC-PCI-2A-240M5/UCSC-RIS-2A-240M5",
+                       "(3 Slots x8, 1 Slot x16)": "UCSC-PCI-2B-240M5/UCSC-RIS-2B-240M5",
+                       "(5 Slots x8)": "UCSC-PCI-2C-240M5/UCSC-RIS-2C-240M5",
+                       "(2 Slots x4, 1 Slot x16, 1 Slot x8)": "UCSC-RS2E-240M5SD"}
+        }
+
+        # We check if we already have fetched the list of systemBoardUnit objects
+        if "systemBoardUnit" in self._inventory.sdk_objects:
+            if self._inventory.sdk_objects["systemBoardUnit"] is not None:
+                if len(self._inventory.sdk_objects["systemBoardUnit"]) == 1:
+                    system_board_unit = self._inventory.sdk_objects["systemBoardUnit"][0]
+                    self.pcie_risers = []
+                    if all(x in self.sku for x in ["C240", "M5"]):
+                        pci_riser1_entry = None
+                        pci_riser2_entry = None
+                        for (key, value) in m5_pcie_risers_matrix["riser1"].items():
+                            if system_board_unit.riser1 == key:
+                                pci_riser1_entry = {"id": "1", "sku": value}
+                                self.pcie_risers.append(pci_riser1_entry)
+                                continue
+                        for (key, value) in m5_pcie_risers_matrix["riser2"].items():
+                            if system_board_unit.riser2 == key:
+                                pci_riser2_entry = {"id": "2", "sku": value}
+                                # Handle specific case of C240-M5SN with particular PID for riser 2
+                                if self.sku == "UCSC-C240-M5SN":
+                                    pci_riser2_entry = {"id": "2", "sku": "UCSC-PCI-2D-240M5/UCSC-RIS-2D-240M5"}
+                                self.pcie_risers.append(pci_riser2_entry)
+                                continue
+
+                        if not pci_riser1_entry:
+                            self.logger(level="warning",
+                                        message="Could not find PCI riser 1 SKU for value: " + system_board_unit.riser1)
+                        if not pci_riser2_entry:
+                            self.logger(level="warning",
+                                        message="Could not find PCI riser 2 SKU for value: " + system_board_unit.riser2)
+
+                        return True
+
+        return False
 
     def _get_adaptors(self):
         if self._inventory.load_from == "live":

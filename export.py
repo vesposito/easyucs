@@ -38,9 +38,15 @@ def export_attributes_json(current_object, output_json):
             for attribute in sorted(vars(current_object)):
                 if not attribute.startswith('_') and not attribute == "dn" \
                         and getattr(current_object, attribute) is not None:
-                    if not isinstance(getattr(current_object, attribute), list):
+                    if isinstance(getattr(current_object, attribute), dict):
+                        # Attribute of EasyUCS object is a dictionary
+                        output_json[attribute] = {}
+                        export_attributes_json(getattr(current_object, attribute), output_json[attribute])
+                    elif not isinstance(getattr(current_object, attribute), list):
+                        # Attribute of EasyUCS object is a regular value
                         output_json[attribute] = getattr(current_object, attribute)
                     else:
+                        # Attribute of EasyUCS object is a list
                         if len(getattr(current_object, attribute)) == 0:
                             continue
                         output_json[attribute] = []
@@ -76,11 +82,11 @@ def generate_json_metadata_header(file_type=None, inventory=None, config=None, d
         return None
     if inventory is None and config is None and device is None:
         return None
-    if file_type is "inventory" and inventory is None:
+    if file_type == "inventory" and inventory is None:
         return None
-    if file_type is "config" and config is None:
+    if file_type == "config" and config is None:
         return None
-    if file_type is "device" and device is None:
+    if file_type == "device" and device is None:
         return None
 
     json_metadata_header = {}
@@ -97,7 +103,7 @@ def generate_json_metadata_header(file_type=None, inventory=None, config=None, d
     if revision is not None:
         json_metadata_header["revision"] = revision
 
-    if file_type is "inventory":
+    if file_type == "inventory":
         json_metadata_header["uuid"] = str(inventory.uuid)
         json_metadata_header["timestamp"] = inventory.timestamp
         json_metadata_header["origin"] = inventory.origin
@@ -108,7 +114,7 @@ def generate_json_metadata_header(file_type=None, inventory=None, config=None, d
             json_metadata_header["device_version"] = inventory.parent.parent.version.version
         if hasattr(inventory.parent.parent, "intersight_status"):
             json_metadata_header["intersight_status"] = inventory.parent.parent.intersight_status
-    elif file_type is "config":
+    elif file_type == "config":
         json_metadata_header["uuid"] = str(config.uuid)
         json_metadata_header["timestamp"] = config.timestamp
         json_metadata_header["origin"] = config.origin
@@ -119,7 +125,7 @@ def generate_json_metadata_header(file_type=None, inventory=None, config=None, d
             json_metadata_header["device_version"] = config.parent.parent.version.version
         if hasattr(config.parent.parent, "intersight_status"):
             json_metadata_header["intersight_status"] = config.parent.parent.intersight_status
-    elif file_type is "device":
+    elif file_type == "device":
         json_metadata_header["device_uuid"] = str(device.uuid)
         json_metadata_header["device_type"] = device.device_type_short
         json_metadata_header["device_name"] = device.name

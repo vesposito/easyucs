@@ -214,6 +214,7 @@ class UcsSystem(GenericUcsDevice):
         :param page_layout: page layout of the report (e.g. a4/letter)
         :param directory: directory where the report should be written
         :param filename: filename of the generated report
+        :param size: the "size" of the report (e.g. full/short)
         :return:
         """
 
@@ -227,8 +228,8 @@ class UcsSystem(GenericUcsDevice):
             directory = "."
 
         if inventory is None:
-            inventory = self.inventory_manager.get_latest_inventory()
             self.logger(level="debug", message="No inventory UUID specified in generate report request. Using latest.")
+            inventory = self.inventory_manager.get_latest_inventory()
 
             if inventory is None:
                 self.logger(level="error", message="No inventory found. Unable to generate report.")

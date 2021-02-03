@@ -2,21 +2,12 @@
   "model_short_name": "HX240c M4",
   "rear_file_name": "UCSC-C240-M4_rear.png",
   "front_file_name": "HX240C-M4SX_front.png",
-  "rear_file_size": [
-    2862,
-    540
-  ],
-  "front_file_size": [
-    2867,
-    509
-  ],
+  "rear_file_size": [2862, 540],
+  "front_file_size": [2867, 509],
   "mlom_slots": [
     {
       "id": 1,
-      "coord": [
-        284,
-        414
-      ]
+      "coord": [284, 414]
     }
   ],
   "mlom_models": [
@@ -44,52 +35,34 @@
   ],
   "pcie_slots": [
     {
-      "id": 3,
+      "id": 1,
       "width": "full",
-      "coord": [
-        451,
-        56
-      ]
+      "coord": [451, 281]
     },
     {
       "id": 2,
       "width": "full",
-      "coord": [
-        451,
-        168
-      ]
+      "coord": [451, 168]
     },
     {
-      "id": 1,
+      "id": 3,
       "width": "full",
-      "coord": [
-        451,
-        281
-      ]
-    },
-    {
-      "id": 6,
-      "width": "full",
-      "coord": [
-        1275,
-        56
-      ]
-    },
-    {
-      "id": 5,
-      "width": "full",
-      "coord": [
-        1275,
-        168
-      ]
+      "coord": [451, 56]
     },
     {
       "id": 4,
       "width": "full",
-      "coord": [
-        1275,
-        281
-      ]
+      "coord": [1275, 281]
+    },
+    {
+      "id": 5,
+      "width": "full",
+      "coord": [1275, 168]
+    },
+    {
+      "id": 6,
+      "width": "full",
+      "coord": [1275, 56]
     }
   ],
   "pcie_models": [
@@ -115,17 +88,11 @@
   "psus_slots_rear": [
     {
       "id": 1,
-      "coord": [
-        2029,
-        24
-      ]
+      "coord": [2029, 24]
     },
     {
       "id": 2,
-      "coord": [
-        2029,
-        284
-      ]
+      "coord": [2029, 284]
     }
   ],
   "psus_models": [
@@ -169,26 +136,14 @@
   ],
   "lom_ports": {
     "1": {
-      "port_coord": [
-        1264,
-        444
-      ],
+      "port_coord": [1264, 444],
       "port_type": "rj45",
-      "port_size": [
-        69,
-        40
-      ]
+      "port_size": [69, 40]
     },
     "2": {
-      "port_coord": [
-        1386,
-        444
-      ],
+      "port_coord": [1386, 444],
       "port_type": "rj45",
-      "port_size": [
-        69,
-        40
-      ]
+      "port_size": [69, 40]
     }
   },
   "disks_slots": [
@@ -196,313 +151,169 @@
       "id": 1,
       "format": "sff",
       "orientation": "vertical",
-      "coord": [
-        165,
-        34
-      ],
-      "size": [
-        459,
-        103
-      ]
+      "coord": [165, 34],
+      "size": [459, 103]
     },
     {
       "id": 2,
       "format": "sff",
       "orientation": "vertical",
-      "coord": [
-        271,
-        34
-      ],
-      "size": [
-        459,
-        103
-      ]
+      "coord": [271, 34],
+      "size": [459, 103]
     },
     {
       "id": 3,
       "format": "sff",
       "orientation": "vertical",
-      "coord": [
-        378,
-        34
-      ],
-      "size": [
-        459,
-        103
-      ]
+      "coord": [378, 34],
+      "size": [459, 103]
     },
     {
       "id": 4,
       "format": "sff",
       "orientation": "vertical",
-      "coord": [
-        483,
-        34
-      ],
-      "size": [
-        459,
-        103
-      ]
+      "coord": [483, 34],
+      "size": [459, 103]
     },
     {
       "id": 5,
       "format": "sff",
       "orientation": "vertical",
-      "coord": [
-        589,
-        34
-      ],
-      "size": [
-        459,
-        103
-      ]
+      "coord": [589, 34],
+      "size": [459, 103]
     },
     {
       "id": 6,
       "format": "sff",
       "orientation": "vertical",
-      "coord": [
-        694,
-        34
-      ],
-      "size": [
-        459,
-        103
-      ]
+      "coord": [694, 34],
+      "size": [459, 103]
     },
     {
       "id": 7,
       "format": "sff",
       "orientation": "vertical",
-      "coord": [
-        800,
-        34
-      ],
-      "size": [
-        459,
-        103
-      ]
+      "coord": [800, 34],
+      "size": [459, 103]
     },
     {
       "id": 8,
       "format": "sff",
       "orientation": "vertical",
-      "coord": [
-        906,
-        34
-      ],
-      "size": [
-        459,
-        103
-      ]
+      "coord": [906, 34],
+      "size": [459, 103]
     },
     {
       "id": 9,
       "format": "sff",
       "orientation": "vertical",
-      "coord": [
-        1012,
-        34
-      ],
-      "size": [
-        459,
-        103
-      ]
+      "coord": [1012, 34],
+      "size": [459, 103]
     },
     {
       "id": 10,
       "format": "sff",
       "orientation": "vertical",
-      "coord": [
-        1117,
-        34
-      ],
-      "size": [
-        459,
-        103
-      ]
+      "coord": [1117, 34],
+      "size": [459, 103]
     },
     {
       "id": 11,
       "format": "sff",
       "orientation": "vertical",
-      "coord": [
-        1224,
-        34
-      ],
-      "size": [
-        459,
-        103
-      ]
+      "coord": [1224, 34],
+      "size": [459, 103]
     },
     {
       "id": 12,
       "format": "sff",
       "orientation": "vertical",
-      "coord": [
-        1329,
-        34
-      ],
-      "size": [
-        459,
-        103
-      ]
+      "coord": [1329, 34],
+      "size": [459, 103]
     },
     {
       "id": 13,
       "format": "sff",
       "orientation": "vertical",
-      "coord": [
-        1435,
-        34
-      ],
-      "size": [
-        459,
-        103
-      ]
+      "coord": [1435, 34],
+      "size": [459, 103]
     },
     {
       "id": 14,
       "format": "sff",
       "orientation": "vertical",
-      "coord": [
-        1541,
-        34
-      ],
-      "size": [
-        459,
-        103
-      ]
+      "coord": [1541, 34],
+      "size": [459, 103]
     },
     {
       "id": 15,
       "format": "sff",
       "orientation": "vertical",
-      "coord": [
-        1646,
-        34
-      ],
-      "size": [
-        459,
-        103
-      ]
+      "coord": [1646, 34],
+      "size": [459, 103]
     },
     {
       "id": 16,
       "format": "sff",
       "orientation": "vertical",
-      "coord": [
-        1752,
-        34
-      ],
-      "size": [
-        459,
-        103
-      ]
+      "coord": [1752, 34],
+      "size": [459, 103]
     },
     {
       "id": 17,
       "format": "sff",
       "orientation": "vertical",
-      "coord": [
-        1858,
-        34
-      ],
-      "size": [
-        459,
-        103
-      ]
+      "coord": [1858, 34],
+      "size": [459, 103]
     },
     {
       "id": 18,
       "format": "sff",
       "orientation": "vertical",
-      "coord": [
-        1963,
-        34
-      ],
-      "size": [
-        459,
-        103
-      ]
+      "coord": [1963, 34],
+      "size": [459, 103]
     },
     {
       "id": 19,
       "format": "sff",
       "orientation": "vertical",
-      "coord": [
-        2070,
-        34
-      ],
-      "size": [
-        459,
-        103
-      ]
+      "coord": [2070, 34],
+      "size": [459, 103]
     },
     {
       "id": 20,
       "format": "sff",
       "orientation": "vertical",
-      "coord": [
-        2175,
-        34
-      ],
-      "size": [
-        459,
-        103
-      ]
+      "coord": [2175, 34],
+      "size": [459, 103]
     },
     {
       "id": 21,
       "format": "sff",
       "orientation": "vertical",
-      "coord": [
-        2281,
-        34
-      ],
-      "size": [
-        459,
-        103
-      ]
+      "coord": [2281, 34],
+      "size": [459, 103]
     },
     {
       "id": 22,
       "format": "sff",
       "orientation": "vertical",
-      "coord": [
-        2387,
-        34
-      ],
-      "size": [
-        459,
-        103
-      ]
+      "coord": [2387, 34],
+      "size": [459, 103]
     },
     {
       "id": 23,
       "format": "sff",
       "orientation": "vertical",
-      "coord": [
-        2493,
-        34
-      ],
-      "size": [
-        459,
-        103
-      ]
+      "coord": [2493, 34],
+      "size": [459, 103]
     },
     {
       "id": 24,
       "format": "sff",
       "orientation": "vertical",
-      "coord": [
-        2599,
-        34
-      ],
-      "size": [
-        459,
-        103
-      ]
+      "coord": [2599, 34],
+      "size": [459, 103]
     }
   ],
   "disks_models": [
@@ -513,5 +324,41 @@
       "description": "UCS 2.5 inch HDD blanking panel"
     }
   ],
-  "spec_sheet_url": "https://www.cisco.com/c/dam/en/us/products/collateral/hyperconverged-infrastructure/hyperflex-hx-series/datasheet-c78-736818.pdf"
+  "imm_compatible": false,
+  "spec_sheet_url": "https://www.cisco.com/c/dam/en/us/products/collateral/hyperconverged-infrastructure/hyperflex-hx-series/datasheet-c78-736818.pdf",
+  "specs": {
+    "form_factor": "2RU",
+    "chipset": "Intel® C610 series chipset (Wellsburg)",
+    "cpu": {
+      "sockets": 2,
+      "family_name": {
+        "haswell": "Intel Xeon E5-2600 v3 Series",
+        "broadwell": "Intel Xeon E5-2600 v4 Series"
+      }
+    },
+    "memory": {
+      "dimm_type": "DDR4",
+      "dimm_slots": 24,
+      "max_speed": 2400,
+      "max_capacity": 1572864,
+      "dcpmm_support": false
+    },
+    "dimensions": {
+      "centimeters": {
+        "height": 8.70,
+        "width": 48.2,
+        "depth": 76.6
+      },
+      "inches": {
+        "height": 3.43,
+        "width": 18.96,
+        "depth": 30.18
+      },
+      "rack_units": 2
+    },
+    "weight": {
+      "lb": 62.7,
+      "kg": 28.4
+    }
+  }
 }

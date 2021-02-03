@@ -1,6 +1,7 @@
 {
-  "rear_file_name":"UCS-IOM-2408.png",
-  "rear_file_size":[216,1200],
+  "model_short_name": "2408",
+  "rear_file_name": "UCS-IOM-2408.png",
+  "rear_file_size": [216,1200],
   "rear_ports": {
     "x/1": {
       "port_coord": [58, 231],
@@ -42,5 +43,7 @@
       "port_type": "sfp28",
       "port_size": [56, 86]
     }
-  }
+  },
+  "imm_compatible": true,
+  "imm_min_required_version": "4.1(2b)"
 }

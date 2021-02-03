@@ -1,9 +1,9 @@
 {
   "model_short_name": "QLogic QLE2672 2x16G",
-  "rear_file_name":"UCSC-PCIE-Q2672.png",
-  "rear_file_name_half":"UCSC-PCIE-Q2672_half.png",
-  "rear_file_size":[593,75],
-  "rear_file_size_half":[389,75],
+  "rear_file_name": "UCSC-PCIE-Q2672.png",
+  "rear_file_name_half": "UCSC-PCIE-Q2672_half.png",
+  "rear_file_size": [593,75],
+  "rear_file_size_half": [389,75],
   "rear_ports": {
     "x/2": {
       "port_coord": [279, 10],

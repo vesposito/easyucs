@@ -44,20 +44,5 @@
          "default":""
       }
    },
-   "required":[
-      "name"
-   ],
-   "anyOf":[
-      {
-         "required":[
-            "virtual_ip"
-         ]
-      },
-      {
-         "required":[
-            "virtual_ipv6"
-         ]
-      }
-   ],
    "additionalProperties":false
 }

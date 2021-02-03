@@ -1,30 +1,67 @@
 {
   "model_short_name": "B250 M2",
-  "front_file_name":"N20-B6625-2.png",
-  "front_file_size":[2485,304],
-  "disks_slots":[
+  "front_file_name": "N20-B6625-2.png",
+  "front_file_size": [2485,304],
+  "disks_slots": [
     {
-      "id":1,
-      "format":"sff",
-      "orientation":"horizontal",
-      "coord":[53, 20],
-      "size":[459,103]
+      "id": 1,
+      "format": "sff",
+      "orientation": "horizontal",
+      "coord": [53, 20],
+      "size": [459,103]
     },
     {
-      "id":2,
-      "format":"sff",
-      "orientation":"horizontal",
-      "coord":[1794, 20],
-      "size":[459,103]
+      "id": 2,
+      "format": "sff",
+      "orientation": "horizontal",
+      "coord": [1794, 20],
+      "size": [459,103]
     }
   ],
-  "disks_models":[
+  "disks_models": [
     {
-      "name":"N20-BBLKD",
-      "type":"blank",
-	  "format":"sff",
-      "description":"UCS 2.5 inch HDD blanking panel"
+      "name": "N20-BBLKD",
+      "type": "blank",
+	  "format": "sff",
+      "description": "UCS 2.5 inch HDD blanking panel"
     }
   ],
-  "spec_sheet_url": "https://www.cisco.com/c/dam/en/us/products/collateral/servers-unified-computing/ucs-5100-series-blade-server-chassis/b250m2_specsheet.pdf"
+  "imm_compatible": false,
+  "spec_sheet_url": "https://www.cisco.com/c/dam/en/us/products/collateral/servers-unified-computing/ucs-5100-series-blade-server-chassis/b250m2_specsheet.pdf",
+  "data_sheet_url": "https://www.cisco.com/c/en/us/products/collateral/servers-unified-computing/ucs-b200-m2-blade-server/data_sheet_c78-588109.html",
+  "specs": {
+    "form_factor": "full-width",
+    "chipset": "Intel® 5500 series chipset (Tylersburg)",
+    "cpu": {
+      "sockets": 2,
+      "family_name": {
+        "nehalem": "Intel Xeon 5500 Series",
+        "westmere": "Intel Xeon 5600 Series"
+      }
+    },
+    "memory": {
+      "dimm_type": "DDR3",
+      "dimm_slots": 48,
+      "max_speed": 1333,
+      "max_capacity": 393216,
+      "dcpmm_support": false
+    },
+    "dimensions": {
+      "centimeters": {
+        "height": 5,
+        "width": 41.9,
+        "depth": 62
+      },
+      "inches": {
+        "height": 1.95,
+        "width": 16.5,
+        "depth": 24.4
+      },
+      "rack_units": 0
+    },
+    "weight": {
+      "lb": 25,
+      "kg": 11.3
+    }
+  }
 }

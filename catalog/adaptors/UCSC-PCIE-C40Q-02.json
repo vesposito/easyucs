@@ -1,9 +1,9 @@
 {
   "model_short_name": "VIC 1285",
-  "rear_file_name":"UCSC-PCIE-C40Q-02.png",
-  "rear_file_name_half":"UCSC-PCIE-C40Q-02_half.png",
-  "rear_file_size":[593,75],
-  "rear_file_size_half":[389,75],
+  "rear_file_name": "UCSC-PCIE-C40Q-02.png",
+  "rear_file_name_half": "UCSC-PCIE-C40Q-02_half.png",
+  "rear_file_size": [593,75],
+  "rear_file_size_half": [389,75],
   "rear_ports": {
     "x/2": {
       "port_coord": [228, 17],
@@ -28,5 +28,6 @@
       "port_size": [111, 49]
     }
   },
+  "imm_compatible": false,
   "data_sheet_url": "https://www.cisco.com/c/en/us/products/collateral/interfaces-modules/unified-computing-system-adapters/datasheet-c78-731601.pdf"
 }

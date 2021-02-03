@@ -1,4 +1,5 @@
 {
   "model_short_name": "VIC 1340",
+  "imm_compatible": false,
   "data_sheet_url": "https://www.cisco.com/c/en/us/products/collateral/interfaces-modules/ucs-virtual-interface-card-1340/datasheet-c78-732517.pdf"
 }

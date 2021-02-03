@@ -1,110 +1,110 @@
 {
   "model_short_name": "C240 M3S",
-  "rear_file_name":"UCSC-C240-M3_rear.png",
-  "front_file_name":"UCSC-C240-M3S_front.png",
-  "rear_file_size":[2862,540],
-  "front_file_size":[2865,509],
-  "pcie_slots":[
+  "rear_file_name": "UCSC-C240-M3_rear.png",
+  "front_file_name": "UCSC-C240-M3S_front.png",
+  "rear_file_size": [2862,540],
+  "front_file_size": [2865,509],
+  "pcie_slots": [
     {
-      "id":1,
-      "width":"full",
-      "coord":[2017, 52]
+      "id": 1,
+      "width": "full",
+      "coord": [2017, 52]
     },
     {
-      "id":2,
-      "width":"full",
-      "coord":[2017, 169]
+      "id": 2,
+      "width": "full",
+      "coord": [2017, 169]
     },
     {
-      "id":3,
-      "width":"full",
-      "coord":[2017, 293]
+      "id": 3,
+      "width": "full",
+      "coord": [2017, 293]
     },
     {
-      "id":4,
-      "width":"half",
-      "orientation":"reverse",
-      "coord":[1475, 175]
+      "id": 4,
+      "width": "half",
+      "orientation": "reverse",
+      "coord": [1475, 175]
     },
     {
-      "id":5,
-      "width":"full",
-      "coord":[823, 148]
+      "id": 5,
+      "width": "full",
+      "coord": [823, 148]
     }
   ],
-  "pcie_models":[
+  "pcie_models": [
     {
-      "name":"UCSC-PCIE-CSC-02",
-      "description":"Cisco VIC 1225 Dual Port 10Gb SFP+ CNA"
+      "name": "UCSC-PCIE-CSC-02",
+      "description": "Cisco VIC 1225 Dual Port 10Gb SFP+ CNA"
     },
     {
-      "name":"UCSC-PCIE-C10T-02",
-      "description":"Cisco VIC 1225T Dual Port 10GBaseT Adapter"
+      "name": "UCSC-PCIE-C10T-02",
+      "description": "Cisco VIC 1225T Dual Port 10GBaseT Adapter"
     },
     {
-      "name":"UCSC-PCIE-C40Q-03",
-      "description":"Cisco VIC 1385 Dual Port 40Gb QSFP+ CNA w/RDMA"
+      "name": "UCSC-PCIE-C40Q-03",
+      "description": "Cisco VIC 1385 Dual Port 40Gb QSFP+ CNA w/RDMA"
     },
     {
-      "name":"UCSC-PCIF-01F",
-      "type":"blank",
-      "width":"full",
-      "description":"PCIe Full Height blanking panel for UCS C-Series Server"
+      "name": "UCSC-PCIF-01F",
+      "type": "blank",
+      "width": "full",
+      "description": "PCIe Full Height blanking panel for UCS C-Series Server"
     },
     {
-      "name":"UCSC-PCIF-01H",
-      "type":"blank",
-      "width":"half",
-      "description":"PCIe Low Profile blanking panel for UCS C-Series Server"
+      "name": "UCSC-PCIF-01H",
+      "type": "blank",
+      "width": "half",
+      "description": "PCIe Low Profile blanking panel for UCS C-Series Server"
     }
   ],
-  "psus_slots_rear":[
+  "psus_slots_rear": [
     {
-      "id":1,
-      "coord":[162,284]
+      "id": 1,
+      "coord": [162,284]
     },
     {
-      "id":2,
-      "coord":[768,284]
+      "id": 2,
+      "coord": [768,284]
     }
   ],
-  "psus_models":[
+  "psus_models": [
     {
-      "name":"UCSC-PSU2V2-1400W",
-      "description":"1400W V2 AC Power Supply (200 - 240V) for 2U & 4U C Series"
+      "name": "UCSC-PSU2V2-1400W",
+      "description": "1400W V2 AC Power Supply (200 - 240V) for 2U & 4U C Series"
     },
     {
-      "name":"UCSC-PSU2V2-1200W",
-      "description":"1200W / 800W V2 AC Power Supply for 2U C-Series Servers"
+      "name": "UCSC-PSU2V2-1200W",
+      "description": "1200W / 800W V2 AC Power Supply for 2U C-Series Servers"
     },
     {
-      "name":"UCSC-PSU-930WDC",
-      "description":"930W -48V DC Common Slot Power Supply for c-series servers"
+      "name": "UCSC-PSU-930WDC",
+      "description": "930W -48V DC Common Slot Power Supply for c-series servers"
     },
     {
-      "name":"UCSC-PSU2V2-930DC",
-      "description":"930 W - 48V V2 DC Power Supply for 2U C-Series Servers"
+      "name": "UCSC-PSU2V2-930DC",
+      "description": "930 W - 48V V2 DC Power Supply for 2U C-Series Servers"
     },
     {
-      "name":"UCSC-PSU2V2-650W",
-      "description":"650W V2 AC Power Supply for 2U C-Series Servers"
+      "name": "UCSC-PSU2V2-650W",
+      "description": "650W V2 AC Power Supply for 2U C-Series Servers"
     },
     {
-      "name":"UCSC-PSU-650W",
-      "description":"650W power supply for C-series rack servers"
+      "name": "UCSC-PSU-650W",
+      "description": "650W power supply for C-series rack servers"
     },
     {
-      "name":"UCSC-PSU2-1200",
-      "description":"1200W 2u Power Supply For UCS"
+      "name": "UCSC-PSU2-1200",
+      "description": "1200W 2u Power Supply For UCS"
     },
     {
-      "name":"UCSC-PSU2-1400W",
-      "description":"1400W AC Power Supply (200 - 240V) 2U & 4U C Series Servers"
+      "name": "UCSC-PSU2-1400W",
+      "description": "1400W AC Power Supply (200 - 240V) 2U & 4U C Series Servers"
     },
     {
-      "name":"UCSC-PSU-BLKP",
-      "type":"blank",
-      "description":"Power supply blanking panel/filler"
+      "name": "UCSC-PSU-BLKP",
+      "type": "blank",
+      "description": "Power supply blanking panel/filler"
     }
   ],
   "lom_ports": {
@@ -129,183 +129,220 @@
       "port_size": [69,40]
     }
   },
-  "disks_slots":[
+  "disks_slots": [
     {
-      "id":1,
-      "format":"sff",
-      "orientation":"vertical",
-      "coord":[165, 34],
-      "size":[459,103]
+      "id": 1,
+      "format": "sff",
+      "orientation": "vertical",
+      "coord": [165, 34],
+      "size": [459,103]
     },
     {
-      "id":2,
-      "format":"sff",
-      "orientation":"vertical",
-      "coord":[271, 34],
-      "size":[459,103]
+      "id": 2,
+      "format": "sff",
+      "orientation": "vertical",
+      "coord": [271, 34],
+      "size": [459,103]
     },
     {
-      "id":3,
-      "format":"sff",
-      "orientation":"vertical",
-      "coord":[378, 34],
-      "size":[459,103]
+      "id": 3,
+      "format": "sff",
+      "orientation": "vertical",
+      "coord": [378, 34],
+      "size": [459,103]
     },
     {
-      "id":4,
-      "format":"sff",
-      "orientation":"vertical",
-      "coord":[483, 34],
-      "size":[459,103]
+      "id": 4,
+      "format": "sff",
+      "orientation": "vertical",
+      "coord": [483, 34],
+      "size": [459,103]
     },
     {
-      "id":5,
-      "format":"sff",
-      "orientation":"vertical",
-      "coord":[589, 34],
-      "size":[459,103]
+      "id": 5,
+      "format": "sff",
+      "orientation": "vertical",
+      "coord": [589, 34],
+      "size": [459,103]
     },
     {
-      "id":6,
-      "format":"sff",
-      "orientation":"vertical",
-      "coord":[694, 34],
-      "size":[459,103]
+      "id": 6,
+      "format": "sff",
+      "orientation": "vertical",
+      "coord": [694, 34],
+      "size": [459,103]
     },
     {
-      "id":7,
-      "format":"sff",
-      "orientation":"vertical",
-      "coord":[800, 34],
-      "size":[459,103]
+      "id": 7,
+      "format": "sff",
+      "orientation": "vertical",
+      "coord": [800, 34],
+      "size": [459,103]
     },
     {
-      "id":8,
-      "format":"sff",
-      "orientation":"vertical",
-      "coord":[906, 34],
-      "size":[459,103]
+      "id": 8,
+      "format": "sff",
+      "orientation": "vertical",
+      "coord": [906, 34],
+      "size": [459,103]
     },
     {
-      "id":9,
-      "format":"sff",
-      "orientation":"vertical",
-      "coord":[1012, 34],
-      "size":[459,103]
+      "id": 9,
+      "format": "sff",
+      "orientation": "vertical",
+      "coord": [1012, 34],
+      "size": [459,103]
     },
     {
-      "id":10,
-      "format":"sff",
-      "orientation":"vertical",
-      "coord":[1117, 34],
-      "size":[459,103]
+      "id": 10,
+      "format": "sff",
+      "orientation": "vertical",
+      "coord": [1117, 34],
+      "size": [459,103]
     },
     {
-      "id":11,
-      "format":"sff",
-      "orientation":"vertical",
-      "coord":[1224, 34],
-      "size":[459,103]
+      "id": 11,
+      "format": "sff",
+      "orientation": "vertical",
+      "coord": [1224, 34],
+      "size": [459,103]
     },
     {
-      "id":12,
-      "format":"sff",
-      "orientation":"vertical",
-      "coord":[1329, 34],
-      "size":[459,103]
+      "id": 12,
+      "format": "sff",
+      "orientation": "vertical",
+      "coord": [1329, 34],
+      "size": [459,103]
     },
     {
-      "id":13,
-      "format":"sff",
-      "orientation":"vertical",
-      "coord":[1435, 34],
-      "size":[459,103]
+      "id": 13,
+      "format": "sff",
+      "orientation": "vertical",
+      "coord": [1435, 34],
+      "size": [459,103]
     },
     {
-      "id":14,
-      "format":"sff",
-      "orientation":"vertical",
-      "coord":[1541, 34],
-      "size":[459,103]
+      "id": 14,
+      "format": "sff",
+      "orientation": "vertical",
+      "coord": [1541, 34],
+      "size": [459,103]
     },
     {
-      "id":15,
-      "format":"sff",
-      "orientation":"vertical",
-      "coord":[1646, 34],
-      "size":[459,103]
+      "id": 15,
+      "format": "sff",
+      "orientation": "vertical",
+      "coord": [1646, 34],
+      "size": [459,103]
     },
     {
-      "id":16,
-      "format":"sff",
-      "orientation":"vertical",
-      "coord":[1752, 34],
-      "size":[459,103]
+      "id": 16,
+      "format": "sff",
+      "orientation": "vertical",
+      "coord": [1752, 34],
+      "size": [459,103]
     },
     {
-      "id":17,
-      "format":"sff",
-      "orientation":"vertical",
-      "coord":[1858, 34],
-      "size":[459,103]
+      "id": 17,
+      "format": "sff",
+      "orientation": "vertical",
+      "coord": [1858, 34],
+      "size": [459,103]
     },
     {
-      "id":18,
-      "format":"sff",
-      "orientation":"vertical",
-      "coord":[1963, 34],
-      "size":[459,103]
+      "id": 18,
+      "format": "sff",
+      "orientation": "vertical",
+      "coord": [1963, 34],
+      "size": [459,103]
     },
     {
-      "id":19,
-      "format":"sff",
-      "orientation":"vertical",
-      "coord":[2070, 34],
-      "size":[459,103]
+      "id": 19,
+      "format": "sff",
+      "orientation": "vertical",
+      "coord": [2070, 34],
+      "size": [459,103]
     },
     {
-      "id":20,
-      "format":"sff",
-      "orientation":"vertical",
-      "coord":[2175, 34],
-      "size":[459,103]
+      "id": 20,
+      "format": "sff",
+      "orientation": "vertical",
+      "coord": [2175, 34],
+      "size": [459,103]
     },
     {
-      "id":21,
-      "format":"sff",
-      "orientation":"vertical",
-      "coord":[2281, 34],
-      "size":[459,103]
+      "id": 21,
+      "format": "sff",
+      "orientation": "vertical",
+      "coord": [2281, 34],
+      "size": [459,103]
     },
     {
-      "id":22,
-      "format":"sff",
-      "orientation":"vertical",
-      "coord":[2387, 34],
-      "size":[459,103]
+      "id": 22,
+      "format": "sff",
+      "orientation": "vertical",
+      "coord": [2387, 34],
+      "size": [459,103]
     },
     {
-      "id":23,
-      "format":"sff",
-      "orientation":"vertical",
-      "coord":[2493, 34],
-      "size":[459,103]
+      "id": 23,
+      "format": "sff",
+      "orientation": "vertical",
+      "coord": [2493, 34],
+      "size": [459,103]
     },
     {
-      "id":24,
-      "format":"sff",
-      "orientation":"vertical",
-      "coord":[2599, 34],
-      "size":[459,103]
+      "id": 24,
+      "format": "sff",
+      "orientation": "vertical",
+      "coord": [2599, 34],
+      "size": [459,103]
     }
   ],
-  "disks_models":[
+  "disks_models": [
     {
-      "name":"N20-BBLKD",
-      "type":"blank",
-	  "format":"sff",
-      "description":"UCS 2.5 inch HDD blanking panel"
+      "name": "N20-BBLKD",
+      "type": "blank",
+	  "format": "sff",
+      "description": "UCS 2.5 inch HDD blanking panel"
     }
   ],
-  "spec_sheet_url": "https://www.cisco.com/c/dam/en/us/products/collateral/servers-unified-computing/ucs-c-series-rack-servers/c240m3-sff-specsheet.pdf"
+  "imm_compatible": false,
+  "spec_sheet_url": "https://www.cisco.com/c/dam/en/us/products/collateral/servers-unified-computing/ucs-c-series-rack-servers/c240m3-sff-specsheet.pdf",
+  "data_sheet_url": "https://www.cisco.com/c/en/us/products/collateral/servers-unified-computing/ucs-c240-m3-rack-server/data_sheet_c78-700629.html",
+  "specs": {
+    "form_factor": "2RU",
+    "chipset": "Intel® C600 series chipset (Patsburg)",
+    "cpu": {
+      "sockets": 2,
+      "family_name": {
+        "sandy_bridge": "Intel Xeon E5-2600 Series",
+        "ivy_bridge": "Intel Xeon E5-2600 v2 Series"
+      }
+    },
+    "memory": {
+      "dimm_type": "DDR3",
+      "dimm_slots": 24,
+      "max_speed": 1866,
+      "max_capacity": 786432,
+      "dcpmm_support": false
+    },
+    "dimensions": {
+      "centimeters": {
+        "height": 8.7,
+        "width": 44.55,
+        "depth": 71.23
+      },
+      "inches": {
+        "height": 3.43,
+        "width": 17.54,
+        "depth": 28.04
+      },
+      "rack_units": 2
+    },
+    "weight": {
+      "lb": 60,
+      "kg": 27.2
+    }
+  }
 }

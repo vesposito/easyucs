@@ -1,7 +1,7 @@
 {
   "model_short_name": "VIC 1227",
-  "rear_file_name":"UCSC-MLOM-CSC-02.png",
-  "rear_file_size":[523,94],
+  "rear_file_name": "UCSC-MLOM-CSC-02.png",
+  "rear_file_size": [523,94],
   "rear_ports": {
     "x/2": {
       "port_coord": [172, 16],
@@ -14,5 +14,6 @@
       "port_size": [82, 55]
     }
   },
+  "imm_compatible": false,
   "data_sheet_url": "https://www.cisco.com/c/en/us/products/collateral/interfaces-modules/unified-computing-system-adapters/datasheet-c78-732515.pdf"
 }

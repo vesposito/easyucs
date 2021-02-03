@@ -60,21 +60,35 @@
                }
             },
             "additionalProperties":false,
-            "oneOf":[
-               {
-                  "required":[
-                     "fabric",
-                     "slot_id",
-                     "port_id"
-                  ]
-               },
-               {
-                  "required":[
-                     "fabric",
+            "required": [
+               "fabric"
+            ],
+            "if": {
+               "anyOf": [
+                  {
+                     "required": [
+                        "slot_id"
+                     ]
+                  },
+                  {
+                     "required": [
+                        "port_id"
+                     ]
+                  },
+                  {
+                     "required": [
+                        "aggr_id"
+                     ]
+                  }
+               ]
+            },
+            "then": {
+               "not": {
+                  "required": [
                      "pc_id"
                   ]
                }
-            ]
+            }
          },
          "minItems":1
       }

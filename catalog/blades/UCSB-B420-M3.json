@@ -1,44 +1,81 @@
 {
   "model_short_name": "B420 M3",
-  "front_file_name":"UCSB-B420-M3.png",
-  "front_file_size":[2485,304],
-  "disks_slots":[
+  "front_file_name": "UCSB-B420-M3.png",
+  "front_file_size": [2485,304],
+  "disks_slots": [
     {
-      "id":1,
-      "format":"sff",
-      "orientation":"horizontal",
-      "coord":[45, 46],
-      "size":[459,103]
+      "id": 1,
+      "format": "sff",
+      "orientation": "horizontal",
+      "coord": [45, 46],
+      "size": [459,103]
     },
     {
-      "id":2,
-      "format":"sff",
-      "orientation":"horizontal",
-      "coord":[729, 46],
-      "size":[459,103]
-    },
-	{
-      "id":3,
-      "format":"sff",
-      "orientation":"horizontal",
-      "coord":[1300, 46],
-      "size":[459,103]
+      "id": 2,
+      "format": "sff",
+      "orientation": "horizontal",
+      "coord": [729, 46],
+      "size": [459,103]
     },
 	{
-      "id":4,
-      "format":"sff",
-      "orientation":"horizontal",
-      "coord":[1975, 46],
-      "size":[459,103]
+      "id": 3,
+      "format": "sff",
+      "orientation": "horizontal",
+      "coord": [1300, 46],
+      "size": [459,103]
+    },
+	{
+      "id": 4,
+      "format": "sff",
+      "orientation": "horizontal",
+      "coord": [1975, 46],
+      "size": [459,103]
     }
   ],
-  "disks_models":[
+  "disks_models": [
     {
-      "name":"N20-BBLKD",
-      "type":"blank",
-	  "format":"sff",
-      "description":"UCS 2.5 inch HDD blanking panel"
+      "name": "N20-BBLKD",
+      "type": "blank",
+	  "format": "sff",
+      "description": "UCS 2.5 inch HDD blanking panel"
     }
   ],
-  "spec_sheet_url": "https://www.cisco.com/c/dam/en/us/products/collateral/servers-unified-computing/ucs-b-series-blade-servers/b420m3_specsheet.pdf"
+  "imm_compatible": false,
+  "spec_sheet_url": "https://www.cisco.com/c/dam/en/us/products/collateral/servers-unified-computing/ucs-b-series-blade-servers/b420m3_specsheet.pdf",
+  "data_sheet_url": "https://www.cisco.com/c/en/us/products/collateral/servers-unified-computing/ucs-b-series-blade-servers/data_sheet_c78-706603.html",
+  "specs": {
+    "form_factor": "full-width",
+    "chipset": "Intel® C600 series chipset (Patsburg)",
+    "cpu": {
+      "sockets": 4,
+      "family_name": {
+        "sandy_bridge": "Intel Xeon E5-4600 Series",
+        "ivy_bridge": "Intel Xeon E5-4600 v2 Series"
+      }
+    },
+    "memory": {
+      "dimm_type": "DDR3",
+      "dimm_slots": 48,
+      "max_speed": 1866,
+      "max_capacity": 1572864,
+      "dcpmm_support": false
+    },
+    "dimensions": {
+      "centimeters": {
+        "height": 5,
+        "width": 41.9,
+        "depth": 62
+      },
+      "inches": {
+        "height": 1.95,
+        "width": 16.5,
+        "depth": 24.4
+      },
+      "rack_units": 0
+    },
+    "weight": {
+      "lb": 34.3,
+      "kg": 15.56
+    }
+  }
 }

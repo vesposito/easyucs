@@ -34,6 +34,26 @@ class UcsChassis(GenericUcsInventoryObject):
     def _generate_draw(self):
         pass
 
+    def _get_imm_compatibility(self):
+        """
+        Returns Chassis IMM Compatibility status from EasyUCS catalog files
+        """
+        if self.sku is not None:
+            # We use the catalog file to get the chassis IMM Compatibility status
+            try:
+                json_file = open("catalog/chassis/" + self.sku + ".json")
+                chassis_catalog = json.load(fp=json_file)
+                json_file.close()
+
+                if "imm_compatible" in chassis_catalog:
+                    return chassis_catalog["imm_compatible"]
+
+            except FileNotFoundError:
+                self.logger(level="error", message="Chassis catalog file " + self.sku + ".json not found")
+                return None
+
+        return None
+
     def _get_model_short_name(self):
         """
         Returns Chassis short name from EasyUCS catalog files
@@ -79,6 +99,46 @@ class UcsIom(GenericUcsInventoryObject):
 
         self.ports = self._get_ports()
 
+    def _get_imm_compatibility(self):
+        """
+        Returns IO Module IMM Compatibility status from EasyUCS catalog files
+        """
+        if self.sku is not None:
+            # We use the catalog file to get the IO Module IMM Compatibility status
+            try:
+                json_file = open("catalog/io_modules/" + self.sku + ".json")
+                iom_catalog = json.load(fp=json_file)
+                json_file.close()
+
+                if "imm_compatible" in iom_catalog:
+                    return iom_catalog["imm_compatible"]
+
+            except FileNotFoundError:
+                self.logger(level="error", message="IO Module catalog file " + self.sku + ".json not found")
+                return None
+
+        return None
+
+    def _get_model_short_name(self):
+        """
+        Returns IO Module short name from EasyUCS catalog files
+        """
+        if self.sku is not None:
+            # We use the catalog file to get the IO Module short name
+            try:
+                json_file = open("catalog/io_modules/" + self.sku + ".json")
+                iom_catalog = json.load(fp=json_file)
+                json_file.close()
+
+                if "model_short_name" in iom_catalog:
+                    return iom_catalog["model_short_name"]
+
+            except FileNotFoundError:
+                self.logger(level="error", message="IO Module catalog file " + self.sku + ".json not found")
+                return None
+
+        return None
+
     def _get_ports(self):
         return []
 
@@ -117,14 +177,16 @@ class UcsSystemChassis(UcsChassis, UcsSystemInventoryObject):
         self.slots_populated = self._calculate_chassis_slots_populated()
         self.slots_free_half = self._calculate_chassis_slots_free_half()
         self.slots_free_full = self._calculate_chassis_slots_free_full()
+        self.imm_compatible = None
         self.locator_led_status = None
         self.short_name = None
 
         if self._inventory.load_from == "live":
             self.locator_led_status = self._determine_locator_led_status()
             self.short_name = self._get_model_short_name()
+            self.imm_compatible = self._get_imm_compatibility()
         elif self._inventory.load_from == "file":
-            for attribute in ["locator_led_status", "short_name"]:
+            for attribute in ["imm_compatible", "locator_led_status", "short_name"]:
                 setattr(self, attribute, None)
                 if attribute in equipment_chassis:
                     setattr(self, attribute, self.get_attribute(ucs_sdk_object=equipment_chassis,
@@ -519,6 +581,20 @@ class UcsSystemIom(UcsIom, UcsSystemInventoryObject):
     def __init__(self, parent=None, equipment_io_card=None):
         UcsIom.__init__(self, parent=parent, equipment_io_card=equipment_io_card)
         UcsSystemInventoryObject.__init__(self, parent=parent, ucs_sdk_object=equipment_io_card)
+
+        self.imm_compatible = None
+        self.short_name = None
+
+        if self._inventory.load_from == "live":
+            self.short_name = self._get_model_short_name()
+            self.imm_compatible = self._get_imm_compatibility()
+
+        elif self._inventory.load_from == "file":
+            for attribute in ["imm_compatible", "short_name"]:
+                setattr(self, attribute, None)
+                if attribute in equipment_io_card:
+                    setattr(self, attribute, self.get_attribute(ucs_sdk_object=equipment_io_card,
+                                                                attribute_name=attribute))
 
     def _get_ports(self):
         if self._inventory.load_from == "live":

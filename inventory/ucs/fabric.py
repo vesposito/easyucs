@@ -38,6 +38,26 @@ class UcsFex(GenericUcsInventoryObject):
     def _get_host_ports(self):
         return []
 
+    def _get_imm_compatibility(self):
+        """
+        Returns Fabric Extender IMM Compatibility status from EasyUCS catalog files
+        """
+        if self.sku is not None:
+            # We use the catalog file to get the FEX IMM Compatibility status
+            try:
+                json_file = open("catalog/fabric_extenders/" + self.sku + ".json")
+                fex_catalog = json.load(fp=json_file)
+                json_file.close()
+
+                if "imm_compatible" in fex_catalog:
+                    return fex_catalog["imm_compatible"]
+
+            except FileNotFoundError:
+                self.logger(level="error", message="Fabric Extender catalog file " + self.sku + ".json not found")
+                return None
+
+        return None
+
     def _get_model_short_name(self):
         """
         Returns Fabric Extender short name from EasyUCS catalog files
@@ -83,6 +103,26 @@ class UcsFi(GenericUcsInventoryObject):
 
     def _get_expansion_modules(self):
         return []
+
+    def _get_imm_compatibility(self):
+        """
+        Returns Fabric Interconnect IMM Compatibility status from EasyUCS catalog files
+        """
+        if self.sku is not None:
+            # We use the catalog file to get the FI IMM Compatibility status
+            try:
+                json_file = open("catalog/fabric_interconnects/" + self.sku + ".json")
+                fi_catalog = json.load(fp=json_file)
+                json_file.close()
+
+                if "imm_compatible" in fi_catalog:
+                    return fi_catalog["imm_compatible"]
+
+            except FileNotFoundError:
+                self.logger(level="error", message="Fabric Interconnect catalog file " + self.sku + ".json not found")
+                return None
+
+        return None
 
     def _get_model_short_name(self):
         """
@@ -139,6 +179,7 @@ class UcsSystemFex(UcsFex, UcsSystemInventoryObject):
     def __init__(self, parent=None, equipment_fex=None):
         UcsFex.__init__(self, parent=parent, equipment_fex=equipment_fex)
 
+        self.imm_compatible = None
         self.short_name = None
 
         UcsSystemInventoryObject.__init__(self, parent=parent, ucs_sdk_object=equipment_fex)
@@ -146,8 +187,17 @@ class UcsSystemFex(UcsFex, UcsSystemInventoryObject):
         if self._inventory.load_from == "live":
             self.locator_led_status = self._determine_locator_led_status()
             self.short_name = self._get_model_short_name()
+            self.imm_compatible = self._get_imm_compatibility()
+
+            # FEXs do not have a firmware package version info in UCSM. Using the parent FI's package version instead
+            if not self.firmware_package_version:
+                if hasattr(self._parent, "fabric_interconnects"):
+                    for fi in self._parent.fabric_interconnects:
+                        if fi.id == self.switch_id:
+                            if hasattr(fi, "firmware_package_version"):
+                                self.firmware_package_version = fi.firmware_package_version
         elif self._inventory.load_from == "file":
-            for attribute in ["locator_led_status", "short_name"]:
+            for attribute in ["imm_compatible", "locator_led_status", "short_name"]:
                 setattr(self, attribute, None)
                 if attribute in equipment_fex:
                     setattr(self, attribute, self.get_attribute(ucs_sdk_object=equipment_fex,
@@ -200,6 +250,7 @@ class UcsSystemFi(UcsFi, UcsSystemInventoryObject):
         self.mac_address = self.get_attribute(ucs_sdk_object=network_element, attribute_name="oob_if_mac",
                                               attribute_secondary_name="mac_address")
 
+        self.imm_compatible = None
         self.license_host_id = None
         self.licenses = []
         self.locator_led_status = None
@@ -218,8 +269,10 @@ class UcsSystemFi(UcsFi, UcsSystemInventoryObject):
             self._get_vlan_port_count()
             self.locator_led_status = self._determine_locator_led_status()
             self.short_name = self._get_model_short_name()
+            self.imm_compatible = self._get_imm_compatibility()
         elif self._inventory.load_from == "file":
-            for attribute in ["license_host_id", "licenses", "locator_led_status", "short_name", "vlan_port_count"]:
+            for attribute in ["imm_compatible", "license_host_id", "licenses", "locator_led_status", "short_name",
+                              "vlan_port_count"]:
                 setattr(self, attribute, None)
                 if attribute in network_element:
                     setattr(self, attribute, self.get_attribute(ucs_sdk_object=network_element,

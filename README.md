@@ -148,6 +148,16 @@ python easyucs_gui.py
 
 ## Versioning
 
+### 0.9.7.4
+
+* Add inventory of PCIe risers for rack servers
+* Cleanup of all catalog files
+* Add flag for Intersight Managed Mode support status per equipment in UCSM inventory
+* Add support for UCS C240 M5SD
+* Add support for BIOS Tokens up to UCSM 4.1(3a)
+* Add inventory of memory errors per DIMM in UCSM inventory
+* Miscellaneous bug fixes and improvements
+
 ### 0.9.7.3
 
 * Add support for Authentication (Native & Authentication Domains) in UCSM config

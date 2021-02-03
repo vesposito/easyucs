@@ -1,9 +1,9 @@
 {
   "model_short_name": "Intel X710-DA4 4x10G",
-  "rear_file_name":"UCSC-PCIE-IQ10GF.png",
-  "rear_file_name_half":"UCSC-PCIE-IQ10GF_half.png",
-  "rear_file_size":[593,75],
-  "rear_file_size_half":[389,75],
+  "rear_file_name": "UCSC-PCIE-IQ10GF.png",
+  "rear_file_name_half": "UCSC-PCIE-IQ10GF_half.png",
+  "rear_file_size": [593,75],
+  "rear_file_size_half": [389,75],
     "rear_ports": {
     "x/1": {
       "port_coord": [164, 11],

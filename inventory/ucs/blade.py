@@ -49,6 +49,32 @@ class UcsBlade(GenericUcsInventoryObject):
     def _get_gpus(self):
         return []
 
+    def _get_imm_compatibility(self):
+        """
+        Returns blade server IMM Compatibility status from EasyUCS catalog files
+        """
+        if self.sku is not None:
+            # We use the catalog file to get the blade IMM Compatibility status
+            try:
+                if self.sku_scaled:
+                    json_file = open("catalog/blades/" + self.sku_scaled + ".json")
+                else:
+                    json_file = open("catalog/blades/" + self.sku + ".json")
+                blade_catalog = json.load(fp=json_file)
+                json_file.close()
+
+                if "imm_compatible" in blade_catalog:
+                    return blade_catalog["imm_compatible"]
+
+            except FileNotFoundError:
+                if self.sku_scaled:
+                    self.logger(level="error", message="Blade catalog file " + self.sku_scaled + ".json not found")
+                else:
+                    self.logger(level="error", message="Blade catalog file " + self.sku + ".json not found")
+                return None
+
+        return None
+
     def _get_memory_arrays(self):
         return []
 
@@ -126,6 +152,7 @@ class UcsSystemBlade(UcsBlade, UcsSystemInventoryObject):
                 memory_total_tb = memory_total_tb.rstrip('0').rstrip('.') if '.' in memory_total_tb else memory_total_tb
                 self.memory_total_marketing = memory_total_tb + " TB"
 
+        self.imm_compatible = None
         self.locator_led_status = None
         self.os_arch = None
         self.os_kernel_version = None
@@ -151,6 +178,7 @@ class UcsSystemBlade(UcsBlade, UcsSystemInventoryObject):
                     self.sku_scaled = self.sku + "A"
 
             self.short_name = self._get_model_short_name()
+            self.imm_compatible = self._get_imm_compatibility()
             self.locator_led_status = self._determine_locator_led_status()
             self._get_os_details()
             if self.assigned_to_dn is not None and self.assigned_to_dn != "":
@@ -170,11 +198,11 @@ class UcsSystemBlade(UcsBlade, UcsSystemInventoryObject):
                 self.assigned_to_dn = None
 
         elif self._inventory.load_from == "file":
-            for attribute in ["locator_led_status", "os_arch", "os_kernel_version", "os_patch_version",
-                              "os_release_version", "os_type", "os_ucs_tool_version", "os_update_version", "os_vendor",
-                              "service_profile_org", "service_profile_name", "service_profile_template",
-                              "service_profile_template_org", "service_profile_template_name", "short_name",
-                              "sku_scaled"]:
+            for attribute in ["imm_compatible", "locator_led_status", "os_arch", "os_kernel_version",
+                              "os_patch_version", "os_release_version", "os_type", "os_ucs_tool_version",
+                              "os_update_version", "os_vendor", "service_profile_org", "service_profile_name",
+                              "service_profile_template", "service_profile_template_org",
+                              "service_profile_template_name", "short_name", "sku_scaled"]:
                 setattr(self, attribute, None)
                 if attribute in compute_blade:
                     setattr(self, attribute, self.get_attribute(ucs_sdk_object=compute_blade,

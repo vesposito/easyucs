@@ -228,6 +228,19 @@
             "platform-default"
          ]
       },
+      "advanced_memory_test": {
+         "description": "BIOS Policy - Advanced Memory Test - Advanced Memory Test",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "Disabled",
+            "Enabled",
+            "Platform Default",
+            "disabled",
+            "enabled",
+            "platform-default"
+         ]
+      },
       "all_onboard_lom": {
          "description": "BIOS Policy - Onboard LOM Option ROM - All Onboard LOM",
          "type": "string",
@@ -521,6 +534,21 @@
             "platform-default"
          ]
       },
+      "configurable_tdp_level": {
+         "description": "BIOS Policy - Configurable TDP Level - Configurable TDP Level",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "Level-1",
+            "Level-2",
+            "Normal",
+            "Platform Default",
+            "level-1",
+            "level-2",
+            "normal",
+            "platform-default"
+         ]
+      },
       "console_redirection": {
          "description": "BIOS Policy - Console redirection - Console redirection",
          "type": "string",
@@ -542,7 +570,7 @@
             "serial-port-b"
          ]
       },
-      "cool_down_time_": {
+      "cool_down_time": {
          "description": "BIOS Policy - Boot option retry - Cool Down Time (sec)",
          "type": "string",
          "default": "platform-default",
@@ -638,6 +666,46 @@
             "high-throughput",
             "hpc",
             "platform-default"
+         ]
+      },
+      "cr_fastgo_config": {
+         "description": "BIOS Policy - CR FastGo Config - CR FastGo Config ",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "Auto",
+            "Default",
+            "Option-1",
+            "Option-2",
+            "Option-3",
+            "Option-4",
+            "Option-5",
+            "Platform Default",
+            "auto",
+            "default",
+            "option-1",
+            "option-2",
+            "option-3",
+            "option-4",
+            "option-5",
+            "platform-default"
+         ]
+      },
+      "cr_qos": {
+         "description": "BIOS Policy - CR QoS - CR Qos",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "Disabled",
+            "Platform Default",
+            "Recipe-1",
+            "Recipe-2",
+            "Recipe-3",
+            "disabled",
+            "platform-default",
+            "recipe-1",
+            "recipe-2",
+            "recipe-3"
          ]
       },
       "dcpmm_firmware_downgrade": {
@@ -790,6 +858,19 @@
             "platform-default"
          ]
       },
+      "dram_sw_thermal_throttling": {
+         "description": "BIOS Policy - Processor - DRAM SW Thermal Throttling",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "Disabled",
+            "Enabled",
+            "Platform Default",
+            "disabled",
+            "enabled",
+            "platform-default"
+         ]
+      },
       "energy_efficient_turbo": {
          "description": "BIOS Policy - Intel Turbo Boost Tech - Energy Efficient Turbo",
          "type": "string",
@@ -865,6 +946,19 @@
       },
       "execute_disable_bit": {
          "description": "BIOS Policy - Execute Disable Bit - Execute Disable Bit",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "Disabled",
+            "Enabled",
+            "Platform Default",
+            "disabled",
+            "enabled",
+            "platform-default"
+         ]
+      },
+      "external_ssc_enable": {
+         "description": "BIOS Policy - External SSC Enable - External SSC Enable",
          "type": "string",
          "default": "platform-default",
          "enum": [
@@ -1376,8 +1470,34 @@
             "platform-default"
          ]
       },
+      "ipv4_http_support": {
+         "description": "BIOS Policy - HTTP BOOT - IPv4 HTTP Support",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "Disabled",
+            "Enabled",
+            "Platform Default",
+            "disabled",
+            "enabled",
+            "platform-default"
+         ]
+      },
       "ipv4_pxe_support": {
-         "description": "BIOS Policy - PXE BOOT - IPV4 PXE Support",
+         "description": "BIOS Policy - PXE BOOT - IPv4 PXE Support",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "Disabled",
+            "Enabled",
+            "Platform Default",
+            "disabled",
+            "enabled",
+            "platform-default"
+         ]
+      },
+      "ipv6_http_support": {
+         "description": "BIOS Policy - HTTP BOOT - IPv6 HTTP Support",
          "type": "string",
          "default": "platform-default",
          "enum": [
@@ -1390,7 +1510,7 @@
          ]
       },
       "ipv6_pxe_support": {
-         "description": "BIOS Policy - PXE BOOT - IPV6 PXE Support",
+         "description": "BIOS Policy - PXE BOOT - IPv6 PXE Support",
          "type": "string",
          "default": "platform-default",
          "enum": [
@@ -1626,11 +1746,37 @@
             "sparing"
          ]
       },
+      "memory_refresh_rate": {
+         "description": "BIOS Policy - Memory Refresh Rate - Memory Refresh Rate",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "1x-Refresh",
+            "1x-refresh",
+            "2x-Refresh",
+            "2x-refresh",
+            "Platform Default",
+            "platform-default"
+         ]
+      },
       "memory_size_limit_in_gb": {
          "description": "BIOS Policy - SelectMemory RAS configuration - Memory Size Limit in GB",
          "type": "string",
          "default": "platform-default",
          "pattern": "platform-default|^[0-9]$|^[1-9][0-9]$|^[1-9][0-9][0-9]$|^[1-9][0-9][0-9][0-9]$|^[1-5][0-9][0-9][0-9][0-9]$|^6[0-4][0-9][0-9][0-9]$|^65[0-4][0-9][0-9]$|^655[0-2][0-9]$|^6553[0-5]$"
+      },
+      "memory_thermal_throttling_mode": {
+         "description": "BIOS Policy - Memory Thermal Throttling Mode - Memory Thermal Throttling Mode",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "CLTT-with-PECI",
+            "Disabled",
+            "Platform Default",
+            "cltt-with-peci",
+            "disabled",
+            "platform-default"
+         ]
       },
       "mirroring_mode": {
          "description": "BIOS Policy - Mirroring Mode - Mirroring Mode",
@@ -1720,6 +1866,250 @@
             "Platform Default",
             "infinite",
             "platform-default"
+         ]
+      },
+      "nvm_performance_setting": {
+         "description": "BIOS Policy - NVM Performance Setting - NVM Performance Setting",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "BW-Optimized",
+            "Balanced-Profile",
+            "Latency-Optimized",
+            "Platform Default",
+            "balanced-profile",
+            "bw-optimized",
+            "latency-optimized",
+            "platform-default"
+         ]
+      },
+      "nvm_snoopy_mode_for_2lm": {
+         "description": "BIOS Policy - Snoopy mode for 2LM - NVM Snoopy mode for 2LM",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "Disabled",
+            "Enabled",
+            "Platform Default",
+            "disabled",
+            "enabled",
+            "platform-default"
+         ]
+      },
+      "nvme_1_link_speed": {
+         "description": "BIOS Policy - PCI Slot LINK Speed - NVME-1 Link Speed",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "Disabled",
+            "Enabled",
+            "GEN1",
+            "GEN2",
+            "GEN3",
+            "Platform Default",
+            "disabled",
+            "enabled",
+            "gen1",
+            "gen2",
+            "gen3",
+            "platform-default"
+         ]
+      },
+      "nvme_1_optionrom": {
+         "description": "BIOS Policy - PCI Slot OptionROM Enable - NVME-1 OptionRom",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "Disabled",
+            "Enabled",
+            "Legacy-Only",
+            "Platform Default",
+            "UEFI-Only",
+            "disabled",
+            "enabled",
+            "legacy-only",
+            "platform-default",
+            "uefi-only"
+         ]
+      },
+      "nvme_2_link_speed": {
+         "description": "BIOS Policy - PCI Slot LINK Speed - NVME-2 Link Speed",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "Disabled",
+            "Enabled",
+            "GEN1",
+            "GEN2",
+            "GEN3",
+            "Platform Default",
+            "disabled",
+            "enabled",
+            "gen1",
+            "gen2",
+            "gen3",
+            "platform-default"
+         ]
+      },
+      "nvme_2_optionrom": {
+         "description": "BIOS Policy - PCI Slot OptionROM Enable - NVME-2 OptionRom",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "Disabled",
+            "Enabled",
+            "Legacy-Only",
+            "Platform Default",
+            "UEFI-Only",
+            "disabled",
+            "enabled",
+            "legacy-only",
+            "platform-default",
+            "uefi-only"
+         ]
+      },
+      "nvme_3_link_speed": {
+         "description": "BIOS Policy - PCI Slot LINK Speed - NVME-3 Link Speed",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "Disabled",
+            "Enabled",
+            "GEN1",
+            "GEN2",
+            "GEN3",
+            "Platform Default",
+            "disabled",
+            "enabled",
+            "gen1",
+            "gen2",
+            "gen3",
+            "platform-default"
+         ]
+      },
+      "nvme_3_optionrom": {
+         "description": "BIOS Policy - PCI Slot OptionROM Enable - NVME-3 OptionRom",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "Disabled",
+            "Enabled",
+            "Legacy-Only",
+            "Platform Default",
+            "UEFI-Only",
+            "disabled",
+            "enabled",
+            "legacy-only",
+            "platform-default",
+            "uefi-only"
+         ]
+      },
+      "nvme_4_link_speed": {
+         "description": "BIOS Policy - PCI Slot LINK Speed - NVME-4 Link Speed",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "Disabled",
+            "Enabled",
+            "GEN1",
+            "GEN2",
+            "GEN3",
+            "Platform Default",
+            "disabled",
+            "enabled",
+            "gen1",
+            "gen2",
+            "gen3",
+            "platform-default"
+         ]
+      },
+      "nvme_4_optionrom": {
+         "description": "BIOS Policy - PCI Slot OptionROM Enable - NVME-4 OptionRom",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "Disabled",
+            "Enabled",
+            "Legacy-Only",
+            "Platform Default",
+            "UEFI-Only",
+            "disabled",
+            "enabled",
+            "legacy-only",
+            "platform-default",
+            "uefi-only"
+         ]
+      },
+      "nvme_5_link_speed": {
+         "description": "BIOS Policy - PCI Slot LINK Speed - NVME-5 Link Speed",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "Disabled",
+            "Enabled",
+            "GEN1",
+            "GEN2",
+            "GEN3",
+            "Platform Default",
+            "disabled",
+            "enabled",
+            "gen1",
+            "gen2",
+            "gen3",
+            "platform-default"
+         ]
+      },
+      "nvme_5_optionrom": {
+         "description": "BIOS Policy - PCI Slot OptionROM Enable - NVME-5 OptionRom",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "Disabled",
+            "Enabled",
+            "Legacy-Only",
+            "Platform Default",
+            "UEFI-Only",
+            "disabled",
+            "enabled",
+            "legacy-only",
+            "platform-default",
+            "uefi-only"
+         ]
+      },
+      "nvme_6_link_speed": {
+         "description": "BIOS Policy - PCI Slot LINK Speed - NVME-6 Link Speed",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "Disabled",
+            "Enabled",
+            "GEN1",
+            "GEN2",
+            "GEN3",
+            "Platform Default",
+            "disabled",
+            "enabled",
+            "gen1",
+            "gen2",
+            "gen3",
+            "platform-default"
+         ]
+      },
+      "nvme_6_optionrom": {
+         "description": "BIOS Policy - PCI Slot OptionROM Enable - NVME-6 OptionRom",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "Disabled",
+            "Enabled",
+            "Legacy-Only",
+            "Platform Default",
+            "UEFI-Only",
+            "disabled",
+            "enabled",
+            "legacy-only",
+            "platform-default",
+            "uefi-only"
          ]
       },
       "onboard_graphics": {
@@ -1876,6 +2266,19 @@
             "platform-default"
          ]
       },
+      "panic_and_high_watermark": {
+         "description": "BIOS Policy - Panic and High Watermark - Panic and High Watermark",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "High",
+            "Low",
+            "Platform Default",
+            "high",
+            "low",
+            "platform-default"
+         ]
+      },
       "partial_memory_mirror_mode": {
          "description": "BIOS Policy - SelectMemory RAS configuration - Partial Memory Mirror Mode",
          "type": "string",
@@ -1945,6 +2348,36 @@
             "disabled",
             "enabled",
             "platform-default"
+         ]
+      },
+      "pcie_ari_support": {
+         "description": "BIOS Policy - PCIe ARI Support - PCIe ARI Support",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "Auto",
+            "Disabled",
+            "Enabled",
+            "Platform Default",
+            "auto",
+            "disabled",
+            "enabled",
+            "platform-default"
+         ]
+      },
+      "pcie_pll_ssc": {
+         "description": "BIOS Policy - PCIe PLL SSC - PCIe PLL SSC",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "Auto",
+            "Disabled",
+            "Platform Default",
+            "ZeroPointFive",
+            "auto",
+            "disabled",
+            "platform-default",
+            "zeropointfive"
          ]
       },
       "pcie_ras_enablement": {
@@ -2341,6 +2774,19 @@
             "legacy-only",
             "platform-default",
             "uefi-only"
+         ]
+      },
+      "pcie_slot_mstor_raid_optionrom": {
+         "description": "BIOS Policy - PCI Slot OptionROM Enable - PCIe Slot MSTOR RAID OptionROM",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "Disabled",
+            "Enabled",
+            "Platform Default",
+            "disabled",
+            "enabled",
+            "platform-default"
          ]
       },
       "pcie_slot_n10_optionrom": {
@@ -3076,6 +3522,19 @@
             "platform-default"
          ]
       },
+      "processor_epp_enable": {
+         "description": "BIOS Policy - Processor Energy Configuration - Processor EPP Enable",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "Disabled",
+            "Enabled",
+            "Platform Default",
+            "disabled",
+            "enabled",
+            "platform-default"
+         ]
+      },
       "processoreppprofile": {
          "description": "BIOS Policy - Processor Energy Configuration - ProcessorEppProfile",
          "type": "string",
@@ -3479,6 +3938,21 @@
             "Platform Default",
             "disabled",
             "enabled",
+            "platform-default"
+         ]
+      },
+      "sev": {
+         "description": "BIOS Policy - Processor - SEV",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "253-ASIDs",
+            "253-asids",
+            "509-ASIDs",
+            "509-asids",
+            "Auto",
+            "Platform Default",
+            "auto",
             "platform-default"
          ]
       },
@@ -3890,6 +4364,19 @@
             "platform-default"
          ]
       },
+      "snoopy_mode_for_ad": {
+         "description": "BIOS Policy - Snoopy mode for AD - Snoopy mode for AD",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "Disabled",
+            "Enabled",
+            "Platform Default",
+            "disabled",
+            "enabled",
+            "platform-default"
+         ]
+      },
       "sparing_mode": {
          "description": "BIOS Policy - Sparing Mode - Sparing Mode",
          "type": "string",
@@ -3972,6 +4459,21 @@
             "platform-default"
          ]
       },
+      "tsme": {
+         "description": "BIOS Policy - Processor - TSME",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "Auto",
+            "Disabled",
+            "Enabled",
+            "Platform Default",
+            "auto",
+            "disabled",
+            "enabled",
+            "platform-default"
+         ]
+      },
       "uefi_os_use_legacy_video": {
          "description": "BIOS Policy - UEFI OS use legacy video - UEFI OS use legacy video",
          "type": "string",
@@ -3983,6 +4485,36 @@
             "disabled",
             "enabled",
             "platform-default"
+         ]
+      },
+      "uncore_frequency_scaling": {
+         "description": "BIOS Policy - Uncore Frequency Scaling - Uncore Frequency Scaling",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "Disabled",
+            "Enabled",
+            "Platform Default",
+            "disabled",
+            "enabled",
+            "platform-default"
+         ]
+      },
+      "upi_link_frequency_select": {
+         "description": "BIOS Policy - Processor Prefetch Config - UPI Link Frequency Select",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "10.4GT-s",
+            "10.4gt-s",
+            "9.6GT-s",
+            "9.6gt-s",
+            "Auto",
+            "Platform Default",
+            "Use-Per-Link-Setting",
+            "auto",
+            "platform-default",
+            "use-per-link-setting"
          ]
       },
       "upi_prefetch": {

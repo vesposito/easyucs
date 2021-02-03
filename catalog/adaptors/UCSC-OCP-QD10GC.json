@@ -1,7 +1,7 @@
 {
   "model_short_name": "QLogic QL41132HORJ 2x10G",
-  "rear_file_name":"UCSC-OCP-QD10GC.png",
-  "rear_file_size":[475,113],
+  "rear_file_name": "UCSC-OCP-QD10GC.png",
+  "rear_file_size": [475,113],
   "rear_ports": {
     "x/1": {
       "port_coord": [248, 42],

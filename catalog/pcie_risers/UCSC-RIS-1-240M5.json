@@ -1,0 +1,18 @@
+{
+  "model_short_name": "",
+  "rear_file_name": "UCSC-RIS-1-240M5.png",
+  "rear_file_size": [622,264],
+  "pcie_slots": [
+    {
+      "id": 3,
+      "width": "full",
+      "coord": [28, 26]
+    },
+    {
+      "id": 2,
+      "width": "full",
+      "coord": [28, 146]
+    }
+  ],
+  "data_sheet_url": "https://www.cisco.com/c/en/us/products/collateral/servers-unified-computing/ucs-c-series-rack-servers/data_sheet_c78-558230.pdf"
+}

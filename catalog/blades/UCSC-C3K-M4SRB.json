@@ -1,5 +1,25 @@
 {
   "model_short_name": "S3260 M4",
   "front_file_name": "UCSC-C3K-M4SRB.png",
-  "front_file_size": [2573, 275]
+  "front_file_size": [2573, 275],
+  "imm_compatible": false,
+  "spec_sheet_url": "https://www.cisco.com/c/dam/en/us/products/collateral/servers-unified-computing/ucs-s-series-storage-servers/s3260-specsheet.pdf",
+  "specs": {
+    "form_factor": "server-node",
+    "chipset": "Intel® C610 series chipset (Wellsburg)",
+    "cpu": {
+      "sockets": 2,
+      "family_name": {
+        "haswell": "Intel Xeon E5-2600 v3 Series",
+        "broadwell": "Intel Xeon E5-2600 v4 Series"
+      }
+    },
+    "memory": {
+      "dimm_type": "DDR4",
+      "dimm_slots": 16,
+      "max_speed": 2400,
+      "max_capacity": 1048576,
+      "dcpmm_support": false
+    }
+  }
 }

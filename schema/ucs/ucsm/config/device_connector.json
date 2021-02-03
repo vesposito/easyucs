@@ -18,8 +18,7 @@
       "proxy_host": {
          "description": "Device Connector Proxy Host",
          "type": "string",
-         "default": "0.0.0.0",
-         "format": "ipv4"
+         "default": "0.0.0.0"
       },
       "proxy_port": {
          "description": "Device Connector Proxy Port",

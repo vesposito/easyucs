@@ -1,7 +1,7 @@
 # coding: utf-8
 # !/usr/bin/env python
 
-""" chassis.py: Easy UCS Deployment Tool """
+""" storage.py: Easy UCS Deployment Tool """
 from __init__ import __author__, __copyright__,  __version__, __status__
 
 
@@ -51,11 +51,17 @@ class UcsSystemDrawStorageController:
             # We handle the rear slot disks present on C240 M5 models
             if "M5" in self.parent_draw._parent.sku:
                 if "Front" in self.parent_draw.__class__.__name__:
-                    if int(disk.id) not in [int(disk['id']) for disk in self.parent_draw.json_file["disks_slots"]]:
+                    if "disks_slots" in self.parent_draw.json_file:
+                        if int(disk.id) not in [int(disk['id']) for disk in self.parent_draw.json_file["disks_slots"]]:
+                            continue
+                    else:
                         continue
-                if "Rear" in self.parent_draw.__class__.__name__ and "disks_slots_rear" in self.parent_draw.json_file:
-                    if int(disk.id) not in [int(disk['id']) for disk in self.parent_draw.json_file["disks_slots_rear"]]:
-                        continue
+                if "Rear" in self.parent_draw.__class__.__name__:
+                    if "disks_slots_rear" in self.parent_draw.json_file:
+                        if int(disk.id) not in [int(disk['id']) for disk in self.parent_draw.json_file["disks_slots_rear"]]:
+                            continue
+                    else:
+                            continue
 
             # We handle the internal slot disks present on C480 M5 models
             if ("DrawRackFront" in self.parent_draw.__class__.__name__) \
@@ -247,7 +253,7 @@ class UcsSystemDrawStorageLocalDisk(GenericUcsDrawEquipment):
         if hasattr(self.parent_draw, "parent_draw"):
             if "DrawRackRear" in self.parent_draw.parent_draw.__class__.__name__:
                 if any(x in self.parent_draw.parent_draw._parent.sku
-                       for x in ["UCSC-C240-M5", "HX240C-M5", "HXAF240C-M5"]):
+                       for x in ["UCSC-C240-M5", "HX240C-M5", "HXAF240C-M5", "UCSC-C240-M5SD"]):
                     for disk in self.parent_draw.parent_draw.json_file["disks_slots_rear"]:
                         if self.id == disk['id']:
                             return disk
@@ -270,22 +276,23 @@ class UcsSystemDrawStorageLocalDisk(GenericUcsDrawEquipment):
                     if self.id == disk['id']:
                         return disk
 
+            elif hasattr(self.parent_draw.parent_draw, "json_file") and not "disks_slots" in self.parent_draw.parent_draw.json_file:
+                return None
+
             elif "disks_slots" in self.parent_draw.json_file:
                 for disk in self.parent_draw.json_file["disks_slots"]:
                     if self.id == disk['id']:
                         return disk
 
             if self._parent._parent._parent.__class__.__name__ in ["UcsSystemChassis", "UcsImcChassis"]:
-                self.parent_draw.parent_draw.logger(level="error",
-                                                    message="Disk with id " + str(self.id) + " of blade server " +
-                                                            self._parent._parent.id +
-                                                            ", no match found in the json file")
+                self.parent_draw.parent_draw.logger(
+                    level="error", message="Disk with id " + str(self.id) + " of blade server " +
+                                           self._parent._parent.id + ", no match found in the json file")
                 return None
             else:
-                self.parent_draw.parent_draw.logger(level="error",
-                                                    message="Disk with id " + str(self.id) + " of rack server " +
-                                                            self._parent._parent.id +
-                                                            ", no match found in the json file")
+                self.parent_draw.parent_draw.logger(
+                    level="error", message="Disk with id " + str(self.id) + " of rack server " +
+                                           self._parent._parent.id + ", no match found in the json file")
                 return None
 
         # For NVME disks (no storage controller as parent)

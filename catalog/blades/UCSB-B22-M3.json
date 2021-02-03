@@ -1,30 +1,67 @@
 {
   "model_short_name": "B22 M3",
-  "front_file_name":"UCSB-B22-M3.png",
-  "front_file_size":[1217,304],
-  "disks_slots":[
+  "front_file_name": "UCSB-B22-M3.png",
+  "front_file_size": [1217,304],
+  "disks_slots": [
     {
-      "id":1,
-      "format":"sff",
-      "orientation":"horizontal",
-      "coord":[50, 30],
-      "size":[459,103]
+      "id": 1,
+      "format": "sff",
+      "orientation": "horizontal",
+      "coord": [50, 30],
+      "size": [459,103]
     },
     {
-      "id":2,
-      "format":"sff",
-      "orientation":"horizontal",
-      "coord":[725, 30],
-      "size":[459,103]
+      "id": 2,
+      "format": "sff",
+      "orientation": "horizontal",
+      "coord": [725, 30],
+      "size": [459,103]
     }
   ],
-  "disks_models":[
+  "disks_models": [
     {
-      "name":"N20-BBLKD",
-      "type":"blank",
-	  "format":"sff",
-      "description":"UCS 2.5 inch HDD blanking panel"
+      "name": "N20-BBLKD",
+      "type": "blank",
+	  "format": "sff",
+      "description": "UCS 2.5 inch HDD blanking panel"
     }
   ],
-  "spec_sheet_url": "https://www.cisco.com/c/dam/en/us/products/collateral/servers-unified-computing/ucs-b-series-blade-servers/b22m3_specsheet.pdf"
+  "imm_compatible": false,
+  "spec_sheet_url": "https://www.cisco.com/c/dam/en/us/products/collateral/servers-unified-computing/ucs-b-series-blade-servers/b22m3_specsheet.pdf",
+  "data_sheet_url": "https://www.cisco.com/c/en/us/products/collateral/servers-unified-computing/ucs-b-series-blade-servers/data_sheet_c78-706100.html",
+  "specs": {
+    "form_factor": "half-width",
+    "chipset": "Intel® C600 series chipset (Patsburg)",
+    "cpu": {
+      "sockets": 2,
+      "family_name": {
+        "sandy_bridge": "Intel Xeon E5-2400 Series",
+        "ivy_bridge": "Intel Xeon E5-2400 v2 Series"
+      }
+    },
+    "memory": {
+      "dimm_type": "DDR3",
+      "dimm_slots": 12,
+      "max_speed": 1600,
+      "max_capacity": 393216,
+      "dcpmm_support": false
+    },
+    "dimensions": {
+      "centimeters": {
+        "height": 5,
+        "width": 20.3,
+        "depth": 62
+      },
+      "inches": {
+        "height": 1.95,
+        "width": 8,
+        "depth": 24.4
+      },
+      "rack_units": 0
+    },
+    "weight": {
+      "lb": 15,
+      "kg": 6.79
+    }
+  }
 }

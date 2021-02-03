@@ -1,44 +1,80 @@
 {
   "model_short_name": "B440 M2",
-  "front_file_name":"B440-BASE-M2.png",
-  "front_file_size":[2485,288],
-  "disks_slots":[
+  "front_file_name": "B440-BASE-M2.png",
+  "front_file_size": [2485,288],
+  "disks_slots": [
     {
-      "id":1,
-      "format":"sff",
-      "orientation":"horizontal",
-      "coord":[32, 20],
-      "size":[459,103]
+      "id": 1,
+      "format": "sff",
+      "orientation": "horizontal",
+      "coord": [32, 20],
+      "size": [459,103]
     },
     {
-      "id":2,
-      "format":"sff",
-      "orientation":"horizontal",
-      "coord":[522, 20],
-      "size":[459,103]
+      "id": 2,
+      "format": "sff",
+      "orientation": "horizontal",
+      "coord": [522, 20],
+      "size": [459,103]
     },
     {
-      "id":3,
-      "format":"sff",
-      "orientation":"horizontal",
-      "coord":[1052, 20],
-      "size":[459,103]
+      "id": 3,
+      "format": "sff",
+      "orientation": "horizontal",
+      "coord": [1052, 20],
+      "size": [459,103]
     },
     {
-      "id":4,
-      "format":"sff",
-      "orientation":"horizontal",
-      "coord":[1542, 20],
-      "size":[459,103]
+      "id": 4,
+      "format": "sff",
+      "orientation": "horizontal",
+      "coord": [1542, 20],
+      "size": [459,103]
     }
   ],
-  "disks_models":[
+  "disks_models": [
     {
-      "name":"N20-BBLKD",
-      "type":"blank",
-	  "format":"sff",
-      "description":"UCS 2.5 inch HDD blanking panel"
+      "name": "N20-BBLKD",
+      "type": "blank",
+	  "format": "sff",
+      "description": "UCS 2.5 inch HDD blanking panel"
     }
   ],
-  "spec_sheet_url": "https://www.cisco.com/c/dam/en/us/products/collateral/servers-unified-computing/ucs-b-series-blade-servers/spec_sheet_c17_662218.pdf"
+  "imm_compatible": false,
+  "spec_sheet_url": "https://www.cisco.com/c/dam/en/us/products/collateral/servers-unified-computing/ucs-b-series-blade-servers/spec_sheet_c17_662218.pdf",
+  "data_sheet_url": "https://www.cisco.com/c/en/us/products/collateral/servers-unified-computing/ucs-b440-m2-high-performance-blade-server/data_sheet_c78-646960.html",
+  "specs": {
+    "form_factor": "full-width",
+    "chipset": "Intel® 7510 chipset (Boxboro)",
+    "cpu": {
+      "sockets": 4,
+      "family_name": {
+        "westmere": "Intel Xeon E7-4800/E7-8800 Series"
+      }
+    },
+    "memory": {
+      "dimm_type": "DDR3",
+      "dimm_slots": 32,
+      "max_speed": 1333,
+      "max_capacity": 1048576,
+      "dcpmm_support": false
+    },
+    "dimensions": {
+      "centimeters": {
+        "height": 5,
+        "width": 41.9,
+        "depth": 62
+      },
+      "inches": {
+        "height": 1.95,
+        "width": 16.5,
+        "depth": 24.4
+      },
+      "rack_units": 0
+    },
+    "weight": {
+      "lb": 34.5,
+      "kg": 15.65
+    }
+  }
 }

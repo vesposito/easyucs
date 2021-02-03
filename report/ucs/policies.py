@@ -123,9 +123,10 @@ class UcsSystemBootPolicyReportSection(UcsReportSection):
             GenericReportText(order_id=self.report.get_current_order_id(), parent=self, string=_("\nBoot Order: "),
                               bolded=True))
 
-        self.content_list.append(
-            UcsSystemBootOrderReportTable(order_id=self.report.get_current_order_id(), parent=self, centered=True,
-                                          boot_policy=boot_policy))
+        if boot_policy.boot_order:
+            self.content_list.append(
+                UcsSystemBootOrderReportTable(order_id=self.report.get_current_order_id(), parent=self, centered=True,
+                                              boot_policy=boot_policy))
 
 
 class UcsSystemBootPolicyReportTable(UcsReportTable):
@@ -155,8 +156,8 @@ class UcsSystemBootOrderReportTable(UcsReportTable):
             if "vnic" in boot_item:
                 if boot_item["vnics"]:
                     for vnic in boot_item["vnics"]:
-                        rows.append( [boot_item["order"], boot_item["device_type"], vnic["name"], vnic["type"],
-                                      vnic["ip_address_type"], None, None, None, None, None, None, None])
+                        rows.append([boot_item["order"], boot_item["device_type"], vnic["name"], vnic["type"],
+                                     vnic["ip_address_type"], None, None, None, None, None, None, None])
                     continue
             if "iscsi_vnics" in boot_item:
                 if boot_item["iscsi_vnics"]:

@@ -3969,6 +3969,10 @@ class UcsSystemServiceProfile(UcsSystemConfigObject):
                                         for mo_if_auto in self._config.sdk_objects["vnicIScsiAutoTargetIf"]:
                                             if mo.dn in mo_if_auto.dn:
                                                 boot_param.update({"dhcp_vendor_id": mo_if_auto.dhcp_vendor_id})
+                                                # Since we have a DHCP Vendor ID for Auto Target Interface, we empty the
+                                                # Initiator IP Address Policy (IQN Pool), as this is mutually exclusive
+                                                if "iqn_pool" in boot_param:
+                                                    boot_param.pop("iqn_pool")
                                     boot_param.update({"iscsi_static_targets": []})
                                     if "vnicIScsiStaticTargetIf" in self._parent._config.sdk_objects:
                                         for mo_if in self._config.sdk_objects["vnicIScsiStaticTargetIf"]:

@@ -1,7 +1,7 @@
 {
   "model_short_name": "QLogic QL45631HOCU 1x100G",
-  "rear_file_name":"UCSC-OCP-QS100GF.png",
-  "rear_file_size":[475,113],
+  "rear_file_name": "UCSC-OCP-QS100GF.png",
+  "rear_file_size": [475,113],
   "rear_ports": {
     "x/1": {
       "port_coord": [345, 32],

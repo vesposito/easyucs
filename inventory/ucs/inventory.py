@@ -18,7 +18,7 @@ from inventory.ucs.gpu import UcsImcGpu
 from inventory.ucs.neighbor import UcsSystemLanNeighbor, UcsSystemSanNeighbor
 from inventory.ucs.psu import UcsSystemPsu
 from inventory.ucs.storage import UcsSystemStorageController, UcsImcStorageControllerNvmeDrive, \
-    UcsSystemStorageControllerNvmeDrive, UcsImcStorageRaidBattery
+    UcsSystemStorageControllerNvmeDrive, UcsImcStorageLocalDisk, UcsImcStorageRaidBattery
 
 
 class GenericUcsInventory(GenericInventory):
@@ -118,6 +118,10 @@ class GenericUcsInventory(GenericInventory):
                                 if object_class is UcsImcStorageRaidBattery and "storage-SATA-MSTOR-RAID" \
                                         in sdk_object.dn:
                                     continue
+                                # Also filter storageLocalDisk objects with driveSlotStatus set to "Absent"
+                                if object_class is UcsImcStorageLocalDisk and hasattr(sdk_object, "driveSlotStatus"):
+                                    if sdk_object.driveSlotStatus in ["Absent"]:
+                                        continue
                                 # Filter only HBA adapters for UcsImcHbaAdapter objects
                                 if object_class is UcsImcHbaAdapter and "HBA" not in sdk_object.model:
                                     continue
@@ -203,11 +207,11 @@ class UcsSystemInventory(GenericUcsInventory):
         sdk_objects_to_fetch = ["computeBlade", "equipmentFex", "equipmentFruVariant", "equipmentIOCard",
                                 "equipmentRackEnclosure", "equipmentSwitchCard", "equipmentSwitchIOCard",
                                 "equipmentTpm", "equipmentXcvr", "etherPIo", "etherServerIntFIo", "etherSwitchIntFIo",
-                                "fcPIo", "firmwareRunning", "graphicsCard", "licenseFeature", "licenseFile",
-                                "licenseInstance", "licenseServerHostId", "lsServer", "mgmtConnection", "moInvKv",
-                                "networkElement", "networkLanNeighborEntry", "networkLldpNeighborEntry",
-                                "networkSanNeighborEntry", "storageEmbeddedStorage", "storageFlexFlashCard",
-                                "storageNvmeStats", "storageSsdHealthStats", "swVlanPortNs"]
+                                "fcPIo", "firmwareRunning", "firmwareStatus", "graphicsCard", "licenseFeature",
+                                "licenseFile", "licenseInstance", "licenseServerHostId", "lsServer", "memoryErrorStats",
+                                "mgmtConnection", "moInvKv", "networkElement", "networkLanNeighborEntry",
+                                "networkLldpNeighborEntry", "networkSanNeighborEntry", "storageEmbeddedStorage",
+                                "storageFlexFlashCard", "storageNvmeStats", "storageSsdHealthStats", "swVlanPortNs"]
         self.logger(level="debug", message="Fetching UCS System SDK objects for inventory")
         for sdk_object_name in sdk_objects_to_fetch:
             try:
@@ -229,6 +233,7 @@ class UcsSystemInventory(GenericUcsInventory):
 
         # Catalog SDK objects
         try:
+            self.logger(level="debug", message="Fetching UCS System SDK catalog objects for inventory")
             self.sdk_objects["catalog"] = self.handle.query_children(in_dn="capabilities")
             self.sdk_objects["equipmentManufacturingDef"] = self.handle.query_classid("equipmentManufacturingDef")
             self.sdk_objects["equipmentLocalDiskDef"] = self.handle.query_classid("equipmentLocalDiskDef")
@@ -372,7 +377,8 @@ class UcsImcInventory(GenericUcsInventory):
                                 "equipmentSharedIOModule", "equipmentTpm", "ioControllerNVMePhysicalDrive",
                                 "ioExpander", "networkAdapterEthIf", "networkAdapterUnit", "pciEquipSlot",
                                 "storageControllerNVMe", "storageEnclosureDisk", "storageFlexFlashControllerProps",
-                                "storageFlexFlashPhysicalDrive", "storageLocalDiskProps", "storageNVMePhysicalDrive"]
+                                "storageFlexFlashPhysicalDrive", "storageLocalDiskProps", "storageNVMePhysicalDrive",
+                                "systemBoardUnit"]
         self.logger(level="debug", message="Fetching UCS IMC SDK objects for inventory")
         for sdk_object_name in sdk_objects_to_fetch:
             try:
@@ -393,6 +399,7 @@ class UcsImcInventory(GenericUcsInventory):
 
         # Catalog SDK objects
         try:
+            self.logger(level="debug", message="Fetching UCS IMC SDK catalog objects for inventory")
             compute_boards = self.handle.query_classid("computeBoard")
             self.logger(level="debug",
                         message="Found " + str(len(compute_boards)) + " computeBoard object(s) for catalog")
@@ -446,6 +453,7 @@ class UcsCentralInventory(GenericUcsInventory):
 
         # Catalog SDK objects
         try:
+            self.logger(level="debug", message="Fetching UCS Central SDK catalog objects for inventory")
             self.sdk_objects["catalog"] = self.handle.query_children(in_dn="capabilities")
             self.sdk_objects["equipmentManufacturingDef"] = self.handle.query_classid(
                 "equipmentManufacturingDef")

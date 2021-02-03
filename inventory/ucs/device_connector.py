@@ -50,10 +50,10 @@ class GenericDeviceConnector(GenericInventoryObject):
 
         result = None
 
-        if self._inventory.load_from is "live":
+        if self._inventory.load_from == "live":
             return None
 
-        elif self._inventory.load_from is "file":
+        elif self._inventory.load_from == "file":
             # We are working with a dictionary
             if attribute_secondary_name is not None:
                 if attribute_secondary_name in ucs_sdk_object.keys():
@@ -80,17 +80,17 @@ class GenericDeviceConnector(GenericInventoryObject):
         # Depending on the type requested, we return the result using the appropriate conversion
         if attribute_type is None:
             return result
-        elif attribute_type is "int":
+        elif attribute_type == "int":
             try:
                 return int(result)
             except (ValueError, TypeError):
                 return None
-        elif attribute_type is "float":
+        elif attribute_type == "float":
             try:
                 return float(result)
             except (ValueError, TypeError):
                 return None
-        elif attribute_type is "str":
+        elif attribute_type == "str":
             try:
                 return str(result)
             except (ValueError, TypeError):

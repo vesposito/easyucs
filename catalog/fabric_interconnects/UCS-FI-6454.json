@@ -1,305 +1,305 @@
 {
   "model_short_name": "6454",
-  "rear_file_name":"UCS-FI-6454_rear.png",
-  "front_file_name":"UCS-FI-6454_front.png",
-  "rear_file_size":[2862,268],
-  "front_file_size":[2862,268],
-  "expansion_modules_slots":[
-  ],
-  "expansion_modules_models":[
-  ],
-  "psus_slots":[
+  "rear_file_name": "UCS-FI-6454_rear.png",
+  "front_file_name": "UCS-FI-6454_front.png",
+  "rear_file_size": [2862,268],
+  "front_file_size": [2862,268],
+  "expansion_modules_slots": [],
+  "expansion_modules_models": [],
+  "psus_slots": [
     {
-      "id":1,
-      "coord":[175,18]
+      "id": 1,
+      "coord": [175,18]
     },
     {
-      "id":2,
-      "coord":[1861,18]
+      "id": 2,
+      "coord": [1861,18]
     }
   ],
-  "psus_models":[
+  "psus_models": [
     {
-      "name":"UCS-PSU-6332-AC",
-      "description":"UCS 6332/6454 power supply/100-240VAC (650 W)"
+      "name": "UCS-PSU-6332-AC",
+      "description": "UCS 6332/6454 power supply/100-240VAC (650 W)"
     },
     {
-      "name":"UCS-PSU-6332-DC",
-      "description":"UCS 6332/6454 power supply/-48VDC (930 W)"
+      "name": "UCS-PSU-6332-DC",
+      "description": "UCS 6332/6454 power supply/-48VDC (930 W)"
     }
   ],
-  "rear_ports":{
-    "1":{
-      "port_coord":[192,50],
-      "port_type":"sfp28",
-      "port_size":[83,54]
+  "rear_ports": {
+    "1": {
+      "port_coord": [192,50],
+      "port_type": "sfp28",
+      "port_size": [83,54]
     },
-    "2":{
-      "port_coord":[192,138],
-      "port_type":"sfp28",
-      "port_size":[83,54]
+    "2": {
+      "port_coord": [192,138],
+      "port_type": "sfp28",
+      "port_size": [83,54]
     },
-    "3":{
-      "port_coord":[277,50],
-      "port_type":"sfp28",
-      "port_size":[83,54]
+    "3": {
+      "port_coord": [277,50],
+      "port_type": "sfp28",
+      "port_size": [83,54]
     },
-    "4":{
-      "port_coord":[277,138],
-      "port_type":"sfp28",
-      "port_size":[83,54]
+    "4": {
+      "port_coord": [277,138],
+      "port_type": "sfp28",
+      "port_size": [83,54]
     },
-    "5":{
-      "port_coord":[363,50],
-      "port_type":"sfp28",
-      "port_size":[83,54]
+    "5": {
+      "port_coord": [363,50],
+      "port_type": "sfp28",
+      "port_size": [83,54]
     },
-    "6":{
-      "port_coord":[363,138],
-      "port_type":"sfp28",
-      "port_size":[83,54]
+    "6": {
+      "port_coord": [363,138],
+      "port_type": "sfp28",
+      "port_size": [83,54]
     },
-    "7":{
-      "port_coord":[448,50],
-      "port_type":"sfp28",
-      "port_size":[83,54]
+    "7": {
+      "port_coord": [448,50],
+      "port_type": "sfp28",
+      "port_size": [83,54]
     },
-    "8":{
-      "port_coord":[448,138],
-      "port_type":"sfp28",
-      "port_size":[83,54]
+    "8": {
+      "port_coord": [448,138],
+      "port_type": "sfp28",
+      "port_size": [83,54]
     },
-    "9":{
-      "port_coord":[533,50],
-      "port_type":"sfp28",
-      "port_size":[83,54]
+    "9": {
+      "port_coord": [533,50],
+      "port_type": "sfp28",
+      "port_size": [83,54]
     },
-    "10":{
-      "port_coord":[533,138],
-      "port_type":"sfp28",
-      "port_size":[83,54]
+    "10": {
+      "port_coord": [533,138],
+      "port_type": "sfp28",
+      "port_size": [83,54]
     },
-    "11":{
-      "port_coord":[619,50],
-      "port_type":"sfp28",
-      "port_size":[83,54]
+    "11": {
+      "port_coord": [619,50],
+      "port_type": "sfp28",
+      "port_size": [83,54]
     },
-    "12":{
-      "port_coord":[619,138],
-      "port_type":"sfp28",
-      "port_size":[83,54]
+    "12": {
+      "port_coord": [619,138],
+      "port_type": "sfp28",
+      "port_size": [83,54]
     },
-    "13":{
-      "port_coord":[704,50],
-      "port_type":"sfp28",
-      "port_size":[83,54]
+    "13": {
+      "port_coord": [704,50],
+      "port_type": "sfp28",
+      "port_size": [83,54]
     },
-    "14":{
-      "port_coord":[704,138],
-      "port_type":"sfp28",
-      "port_size":[83,54]
+    "14": {
+      "port_coord": [704,138],
+      "port_type": "sfp28",
+      "port_size": [83,54]
     },
-    "15":{
-      "port_coord":[789,50],
-      "port_type":"sfp28",
-      "port_size":[83,54]
+    "15": {
+      "port_coord": [789,50],
+      "port_type": "sfp28",
+      "port_size": [83,54]
     },
-    "16":{
-      "port_coord":[789,138],
-      "port_type":"sfp28",
-      "port_size":[83,54]
+    "16": {
+      "port_coord": [789,138],
+      "port_type": "sfp28",
+      "port_size": [83,54]
     },
-    "17":{
-      "port_coord":[892,50],
-      "port_type":"sfp28",
-      "port_size":[83,54]
+    "17": {
+      "port_coord": [892,50],
+      "port_type": "sfp28",
+      "port_size": [83,54]
     },
-    "18":{
-      "port_coord":[892,138],
-      "port_type":"sfp28",
-      "port_size":[83,54]
+    "18": {
+      "port_coord": [892,138],
+      "port_type": "sfp28",
+      "port_size": [83,54]
     },
-    "19":{
-      "port_coord":[977,50],
-      "port_type":"sfp28",
-      "port_size":[83,54]
+    "19": {
+      "port_coord": [977,50],
+      "port_type": "sfp28",
+      "port_size": [83,54]
     },
-    "20":{
-      "port_coord":[977,138],
-      "port_type":"sfp28",
-      "port_size":[83,54]
+    "20": {
+      "port_coord": [977,138],
+      "port_type": "sfp28",
+      "port_size": [83,54]
     },
-    "21":{
-      "port_coord":[1063,50],
-      "port_type":"sfp28",
-      "port_size":[83,54]
+    "21": {
+      "port_coord": [1063,50],
+      "port_type": "sfp28",
+      "port_size": [83,54]
     },
-    "22":{
-      "port_coord":[1063,138],
-      "port_type":"sfp28",
-      "port_size":[83,54]
+    "22": {
+      "port_coord": [1063,138],
+      "port_type": "sfp28",
+      "port_size": [83,54]
     },
-    "23":{
-      "port_coord":[1148,50],
-      "port_type":"sfp28",
-      "port_size":[83,54]
+    "23": {
+      "port_coord": [1148,50],
+      "port_type": "sfp28",
+      "port_size": [83,54]
     },
-    "24":{
-      "port_coord":[1148,138],
-      "port_type":"sfp28",
-      "port_size":[83,54]
+    "24": {
+      "port_coord": [1148,138],
+      "port_type": "sfp28",
+      "port_size": [83,54]
     },
-    "25":{
-      "port_coord":[1234,50],
-      "port_type":"sfp28",
-      "port_size":[83,54]
+    "25": {
+      "port_coord": [1234,50],
+      "port_type": "sfp28",
+      "port_size": [83,54]
     },
-    "26":{
-      "port_coord":[1234,138],
-      "port_type":"sfp28",
-      "port_size":[83,54]
+    "26": {
+      "port_coord": [1234,138],
+      "port_type": "sfp28",
+      "port_size": [83,54]
     },
-    "27":{
-      "port_coord":[1319,50],
-      "port_type":"sfp28",
-      "port_size":[83,54]
+    "27": {
+      "port_coord": [1319,50],
+      "port_type": "sfp28",
+      "port_size": [83,54]
     },
-    "28":{
-      "port_coord":[1319,138],
-      "port_type":"sfp28",
-      "port_size":[83,54]
+    "28": {
+      "port_coord": [1319,138],
+      "port_type": "sfp28",
+      "port_size": [83,54]
     },
-    "29":{
-      "port_coord":[1404,50],
-      "port_type":"sfp28",
-      "port_size":[83,54]
+    "29": {
+      "port_coord": [1404,50],
+      "port_type": "sfp28",
+      "port_size": [83,54]
     },
-    "30":{
-      "port_coord":[1404,138],
-      "port_type":"sfp28",
-      "port_size":[83,54]
+    "30": {
+      "port_coord": [1404,138],
+      "port_type": "sfp28",
+      "port_size": [83,54]
     },
-    "31":{
-      "port_coord":[1490,50],
-      "port_type":"sfp28",
-      "port_size":[83,54]
+    "31": {
+      "port_coord": [1490,50],
+      "port_type": "sfp28",
+      "port_size": [83,54]
     },
-    "32":{
-      "port_coord":[1490,138],
-      "port_type":"sfp28",
-      "port_size":[83,54]
+    "32": {
+      "port_coord": [1490,138],
+      "port_type": "sfp28",
+      "port_size": [83,54]
     },
-    "33":{
-      "port_coord":[1592,50],
-      "port_type":"sfp28",
-      "port_size":[83,54]
+    "33": {
+      "port_coord": [1592,50],
+      "port_type": "sfp28",
+      "port_size": [83,54]
     },
-    "34":{
-      "port_coord":[1592,138],
-      "port_type":"sfp28",
-      "port_size":[83,54]
+    "34": {
+      "port_coord": [1592,138],
+      "port_type": "sfp28",
+      "port_size": [83,54]
     },
-    "35":{
-      "port_coord":[1678,50],
-      "port_type":"sfp28",
-      "port_size":[83,54]
+    "35": {
+      "port_coord": [1678,50],
+      "port_type": "sfp28",
+      "port_size": [83,54]
     },
-    "36":{
-      "port_coord":[1678,138],
-      "port_type":"sfp28",
-      "port_size":[83,54]
+    "36": {
+      "port_coord": [1678,138],
+      "port_type": "sfp28",
+      "port_size": [83,54]
     },
-    "37":{
-      "port_coord":[1763,50],
-      "port_type":"sfp28",
-      "port_size":[83,54]
+    "37": {
+      "port_coord": [1763,50],
+      "port_type": "sfp28",
+      "port_size": [83,54]
     },
-    "38":{
-      "port_coord":[1763,138],
-      "port_type":"sfp28",
-      "port_size":[83,54]
+    "38": {
+      "port_coord": [1763,138],
+      "port_type": "sfp28",
+      "port_size": [83,54]
     },
-    "39":{
-      "port_coord":[1849,50],
-      "port_type":"sfp28",
-      "port_size":[83,54]
+    "39": {
+      "port_coord": [1849,50],
+      "port_type": "sfp28",
+      "port_size": [83,54]
     },
-    "40":{
-      "port_coord":[1849,138],
-      "port_type":"sfp28",
-      "port_size":[83,54]
+    "40": {
+      "port_coord": [1849,138],
+      "port_type": "sfp28",
+      "port_size": [83,54]
     },
-	"41":{
-      "port_coord":[1934,50],
-      "port_type":"sfp28",
-      "port_size":[83,54]
+	"41": {
+      "port_coord": [1934,50],
+      "port_type": "sfp28",
+      "port_size": [83,54]
     },
-	"42":{
-      "port_coord":[1934,138],
-      "port_type":"sfp28",
-      "port_size":[83,54]
+	"42": {
+      "port_coord": [1934,138],
+      "port_type": "sfp28",
+      "port_size": [83,54]
     },
-	"43":{
-      "port_coord":[2019,50],
-      "port_type":"sfp28",
-      "port_size":[83,54]
+	"43": {
+      "port_coord": [2019,50],
+      "port_type": "sfp28",
+      "port_size": [83,54]
     },
-	"44":{
-      "port_coord":[2019,138],
-      "port_type":"sfp28",
-      "port_size":[83,54]
+	"44": {
+      "port_coord": [2019,138],
+      "port_type": "sfp28",
+      "port_size": [83,54]
     },
-	"45":{
-      "port_coord":[2105,50],
-      "port_type":"sfp28",
-      "port_size":[83,54]
+	"45": {
+      "port_coord": [2105,50],
+      "port_type": "sfp28",
+      "port_size": [83,54]
     },
-	"46":{
-      "port_coord":[2105,138],
-      "port_type":"sfp28",
-      "port_size":[83,54]
+	"46": {
+      "port_coord": [2105,138],
+      "port_type": "sfp28",
+      "port_size": [83,54]
     },
-	"47":{
-      "port_coord":[2190,50],
-      "port_type":"sfp28",
-      "port_size":[83,54]
+	"47": {
+      "port_coord": [2190,50],
+      "port_type": "sfp28",
+      "port_size": [83,54]
     },
-	"48":{
-      "port_coord":[2190,138],
-      "port_type":"sfp28",
-      "port_size":[83,54]
+	"48": {
+      "port_coord": [2190,138],
+      "port_type": "sfp28",
+      "port_size": [83,54]
     },
-	"49":{
-      "port_coord":[2294,43],
-      "port_type":"qsfp28",
-      "port_size":[111,56]
+	"49": {
+      "port_coord": [2294,43],
+      "port_type": "qsfp28",
+      "port_size": [111,56]
     },
-	"50":{
-      "port_coord":[2294,144],
-      "port_type":"qsfp28",
-      "port_size":[111,56]
+	"50": {
+      "port_coord": [2294,144],
+      "port_type": "qsfp28",
+      "port_size": [111,56]
     },
-	"51":{
-      "port_coord":[2438,43],
-      "port_type":"qsfp28",
-      "port_size":[111,56]
+	"51": {
+      "port_coord": [2438,43],
+      "port_type": "qsfp28",
+      "port_size": [111,56]
     },
-	"52":{
-      "port_coord":[2438,144],
-      "port_type":"qsfp28",
-      "port_size":[111,56]
+	"52": {
+      "port_coord": [2438,144],
+      "port_type": "qsfp28",
+      "port_size": [111,56]
     },
-	"53":{
-      "port_coord":[2583,43],
-      "port_type":"qsfp28",
-      "port_size":[111,56]
+	"53": {
+      "port_coord": [2583,43],
+      "port_type": "qsfp28",
+      "port_size": [111,56]
     },
-	"54":{
-      "port_coord":[2583,144],
-      "port_type":"qsfp28",
-      "port_size":[111,56]
+	"54": {
+      "port_coord": [2583,144],
+      "port_type": "qsfp28",
+      "port_size": [111,56]
     }
   },
+  "imm_compatible": true,
+  "imm_min_required_version": "4.1(2a)",
   "spec_sheet_url": "https://www.cisco.com/c/dam/en/us/products/collateral/servers-unified-computing/ucs-b-series-blade-servers/6400-specsheet.pdf",
   "data_sheet_url": "https://www.cisco.com/c/en/us/products/collateral/servers-unified-computing/datasheet-c78-741116.html",
   "specs": {

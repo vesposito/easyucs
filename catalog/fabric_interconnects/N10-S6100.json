@@ -1,49 +1,49 @@
 {
   "model_short_name": "6120XP",
-  "rear_file_name":"N10-S6100_rear.png",
-  "front_file_name":"N10-S6100_front.png",
-  "rear_file_size":[2862,273],
-  "front_file_size":[2862,273],
-  "expansion_modules_slots":[
+  "rear_file_name": "N10-S6100_rear.png",
+  "front_file_name": "N10-S6100_front.png",
+  "rear_file_size": [2862,273],
+  "front_file_size": [2862,273],
+  "expansion_modules_slots": [
     {
-      "id":2,
-      "coord":[1626,13]
+      "id": 2,
+      "coord": [1626,13]
     }
   ],
-  "expansion_modules_models":[
+  "expansion_modules_models": [
     {
-      "name":"N10-E0060",
-      "description":"6-port 8Gb FC/Expansion module/UCS 6100 Series"
+      "name": "N10-E0060",
+      "description": "6-port 8Gb FC/Expansion module/UCS 6100 Series"
     },
     {
-      "name":"N10-E0080",
-      "description":"8-port 4Gb FC/Expansion module/UCS 6100 Series"
+      "name": "N10-E0080",
+      "description": "8-port 4Gb FC/Expansion module/UCS 6100 Series"
     },
     {
-      "name":"N10-E0440",
-      "description":"4-port 10 GE/4-port 4Gb FC/Expansion module/UCS 6100 Series"
+      "name": "N10-E0440",
+      "description": "4-port 10 GE/4-port 4Gb FC/Expansion module/UCS 6100 Series"
     },
     {
-      "name":"N10-E0600",
-      "description":"6-port 10 GE/Expansion module/UCS 6100 Series"
+      "name": "N10-E0600",
+      "description": "6-port 10 GE/Expansion module/UCS 6100 Series"
     },
     {
-      "name":"N10-SBLKE",
-      "type":"blank",
-      "description":"Expansion module slot blanking panel for UCS 6100 Series"
+      "name": "N10-SBLKE",
+      "type": "blank",
+      "description": "Expansion module slot blanking panel for UCS 6100 Series"
     }
   ],
-  "psus_slots":[
+  "psus_slots": [
     {
-      "id":1,
-      "coord":[173,9]
+      "id": 1,
+      "coord": [173,9]
     },
     {
-      "id":2,
-      "coord":[639,9]
+      "id": 2,
+      "coord": [639,9]
     }
   ],
-  "psus_models":[
+  "psus_models": [
     {
       "name": "N10-PAC1-550W",
       "description": "550W power supply unit for UCS 6120XP/100-240VAC"
@@ -54,108 +54,109 @@
       "description": "Power supply unit blanking panel for UCS 6120XP"
     }
   ],
-  "rear_ports":{
-    "1":{
-      "port_coord":[601,32],
-      "port_type":"sfp+",
-      "port_size":[83,54]
+  "rear_ports": {
+    "1": {
+      "port_coord": [601,32],
+      "port_type": "sfp+",
+      "port_size": [83,54]
     },
-    "2":{
-      "port_coord":[601,134],
-      "port_type":"sfp+",
-      "port_size":[83,54]
+    "2": {
+      "port_coord": [601,134],
+      "port_type": "sfp+",
+      "port_size": [83,54]
     },
-    "3":{
-      "port_coord":[689,32],
-      "port_type":"sfp+",
-      "port_size":[83,54]
+    "3": {
+      "port_coord": [689,32],
+      "port_type": "sfp+",
+      "port_size": [83,54]
     },
-    "4":{
-      "port_coord":[689,134],
-      "port_type":"sfp+",
-      "port_size":[83,54]
+    "4": {
+      "port_coord": [689,134],
+      "port_type": "sfp+",
+      "port_size": [83,54]
     },
-    "5":{
-      "port_coord":[777,32],
-      "port_type":"sfp+",
-      "port_size":[83,54]
+    "5": {
+      "port_coord": [777,32],
+      "port_type": "sfp+",
+      "port_size": [83,54]
     },
-    "6":{
-      "port_coord":[777,134],
-      "port_type":"sfp+",
-      "port_size":[83,54]
+    "6": {
+      "port_coord": [777,134],
+      "port_type": "sfp+",
+      "port_size": [83,54]
     },
-    "7":{
-      "port_coord":[865,32],
-      "port_type":"sfp+",
-      "port_size":[83,54]
+    "7": {
+      "port_coord": [865,32],
+      "port_type": "sfp+",
+      "port_size": [83,54]
     },
-    "8":{
-      "port_coord":[865,134],
-      "port_type":"sfp+",
-      "port_size":[83,54]
+    "8": {
+      "port_coord": [865,134],
+      "port_type": "sfp+",
+      "port_size": [83,54]
     },
-    "9":{
-      "port_coord":[1011,32],
-      "port_type":"sfp+",
-      "port_size":[83,54]
+    "9": {
+      "port_coord": [1011,32],
+      "port_type": "sfp+",
+      "port_size": [83,54]
     },
-    "10":{
-      "port_coord":[1011,134],
-      "port_type":"sfp+",
-      "port_size":[83,54]
+    "10": {
+      "port_coord": [1011,134],
+      "port_type": "sfp+",
+      "port_size": [83,54]
     },
-    "11":{
-      "port_coord":[1099,32],
-      "port_type":"sfp+",
-      "port_size":[83,54]
+    "11": {
+      "port_coord": [1099,32],
+      "port_type": "sfp+",
+      "port_size": [83,54]
     },
-    "12":{
-      "port_coord":[1099,134],
-      "port_type":"sfp+",
-      "port_size":[83,54]
+    "12": {
+      "port_coord": [1099,134],
+      "port_type": "sfp+",
+      "port_size": [83,54]
     },
-    "13":{
-      "port_coord":[1187,32],
-      "port_type":"sfp+",
-      "port_size":[83,54]
+    "13": {
+      "port_coord": [1187,32],
+      "port_type": "sfp+",
+      "port_size": [83,54]
     },
-    "14":{
-      "port_coord":[1187,134],
-      "port_type":"sfp+",
-      "port_size":[83,54]
+    "14": {
+      "port_coord": [1187,134],
+      "port_type": "sfp+",
+      "port_size": [83,54]
     },
-    "15":{
-      "port_coord":[1275,32],
-      "port_type":"sfp+",
-      "port_size":[83,54]
+    "15": {
+      "port_coord": [1275,32],
+      "port_type": "sfp+",
+      "port_size": [83,54]
     },
-    "16":{
-      "port_coord":[1275,134],
-      "port_type":"sfp+",
-      "port_size":[83,54]
+    "16": {
+      "port_coord": [1275,134],
+      "port_type": "sfp+",
+      "port_size": [83,54]
     },
-    "17":{
-      "port_coord":[1424,32],
-      "port_type":"sfp+",
-      "port_size":[83,54]
+    "17": {
+      "port_coord": [1424,32],
+      "port_type": "sfp+",
+      "port_size": [83,54]
     },
-    "18":{
-      "port_coord":[1424,134],
-      "port_type":"sfp+",
-      "port_size":[83,54]
+    "18": {
+      "port_coord": [1424,134],
+      "port_type": "sfp+",
+      "port_size": [83,54]
     },
-    "19":{
-      "port_coord":[1512,32],
-      "port_type":"sfp+",
-      "port_size":[83,54]
+    "19": {
+      "port_coord": [1512,32],
+      "port_type": "sfp+",
+      "port_size": [83,54]
     },
-    "20":{
-      "port_coord":[1512,134],
-      "port_type":"sfp+",
-      "port_size":[83,54]
+    "20": {
+      "port_coord": [1512,134],
+      "port_type": "sfp+",
+      "port_size": [83,54]
     }
   },
+  "imm_compatible": false,
   "spec_sheet_url": "https://www.cisco.com/c/dam/en/us/products/collateral/servers-unified-computing/ucs-6100-series-fabric-interconnects/spec_sheet_c17-665945.pdf",
   "data_sheet_url": "https://www.cisco.com/c/en/us/products/collateral/servers-unified-computing/ucs-5100-series-blade-server-chassis/data_sheet_c78-524724.html",
   "specs": {

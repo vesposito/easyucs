@@ -1,6 +1,7 @@
 {
-  "rear_file_name":"N20-I6584.png",
-  "rear_file_size":[216,1200],
+  "model_short_name": "2104XP",
+  "rear_file_name": "N20-I6584.png",
+  "rear_file_size": [216,1200],
   "rear_ports": {
     "x/1": {
       "port_coord": [58, 557],
@@ -22,5 +23,6 @@
       "port_type": "sfp+",
       "port_size": [54, 84]
     }
-  }
+  },
+  "imm_compatible": false
 }

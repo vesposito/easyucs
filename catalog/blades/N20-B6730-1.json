@@ -1,30 +1,66 @@
 {
   "model_short_name": "B230 M1",
-  "front_file_name":"N20-B6730-1.png",
-  "front_file_size":[1217,304],
-  "disks_slots":[
+  "front_file_name": "N20-B6730-1.png",
+  "front_file_size": [1217,304],
+  "disks_slots": [
     {
-      "id":1,
-      "format":"sff_7mm",
-      "orientation":"horizontal",
-      "coord":[85, 250],
-      "size":[428,39]
+      "id": 1,
+      "format": "sff_7mm",
+      "orientation": "horizontal",
+      "coord": [85, 250],
+      "size": [428,39]
     },
     {
-      "id":2,
-      "format":"sff_7mm",
-      "orientation":"horizontal",
-      "coord":[588, 250],
-      "size":[428,39]
+      "id": 2,
+      "format": "sff_7mm",
+      "orientation": "horizontal",
+      "coord": [588, 250],
+      "size": [428,39]
     }
   ],
-  "disks_models":[
+  "disks_models": [
     {
-      "name":"N20-BBLKD-7MM",
-      "type":"blank",
-	  "format":"sff_7mm",
-      "description":"UCS 7mm SSD blanking panel"
+      "name": "N20-BBLKD-7MM",
+      "type": "blank",
+	  "format": "sff_7mm",
+      "description": "UCS 7mm SSD blanking panel"
     }
   ],
-  "spec_sheet_url": "https://www.cisco.com/c/dam/en/us/products/collateral/servers-unified-computing/ucs-b-series-blade-servers/spec_sheet_c17-644234.pdf"
+  "imm_compatible": false,
+  "spec_sheet_url": "https://www.cisco.com/c/dam/en/us/products/collateral/servers-unified-computing/ucs-b-series-blade-servers/spec_sheet_c17-644234.pdf",
+  "data_sheet_url": "https://www.cisco.com/c/en/us/products/collateral/servers-unified-computing/ucs-b230-m1-blade-server/data_sheet_c78-616625.html",
+  "specs": {
+    "form_factor": "half-width",
+    "chipset": "Intel® 7500/6500 series chipset (Boxboro)",
+    "cpu": {
+      "sockets": 2,
+      "family_name": {
+        "nehalem": "Intel Xeon 6500/7500 Series"
+      }
+    },
+    "memory": {
+      "dimm_type": "DDR3",
+      "dimm_slots": 32,
+      "max_speed": 1066,
+      "max_capacity": 262144,
+      "dcpmm_support": false
+    },
+    "dimensions": {
+      "centimeters": {
+        "height": 5,
+        "width": 20.3,
+        "depth": 62
+      },
+      "inches": {
+        "height": 1.95,
+        "width": 8,
+        "depth": 24.4
+      },
+      "rack_units": 0
+    },
+    "weight": {
+      "lb": 18,
+      "kg": 8.16
+    }
+  }
 }

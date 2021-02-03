@@ -1,5 +1,25 @@
 {
   "model_short_name": "S3260 M5",
   "front_file_name": "UCS-S3260-M5SRB.png",
-  "front_file_size": [2573, 275]
+  "front_file_size": [2573, 275],
+  "imm_compatible": false,
+  "spec_sheet_url": "https://www.cisco.com/c/dam/en/us/products/collateral/servers-unified-computing/ucs-s-series-storage-servers/s3260-specsheet.pdf",
+  "specs": {
+    "form_factor": "server-node",
+    "chipset": "Intel® C620 series chipset (Lewisburg)",
+    "cpu": {
+      "sockets": 2,
+      "family_name": {
+        "skylake": "Intel Xeon Processor Scalable Family",
+        "cascade_lake": "2nd Gen Intel Xeon Processor Scalable Family"
+      }
+    },
+    "memory": {
+      "dimm_type": "DDR4",
+      "dimm_slots": 14,
+      "max_speed": 2933,
+      "max_capacity": 1572864,
+      "dcpmm_support": true
+    }
+  }
 }

@@ -1,4 +1,5 @@
 {
   "model_short_name": "VIC 1280",
+  "imm_compatible": false,
   "data_sheet_url": "https://www.cisco.com/c/en/us/products/collateral/interfaces-modules/ucs-virtual-interface-card-1280/data_sheet_c78-677682.pdf"
 }

@@ -1,9 +1,9 @@
 {
   "model_short_name": "VIC 1225T",
-  "rear_file_name":"UCSC-PCIE-C10T-02.png",
-  "rear_file_name_half":"UCSC-PCIE-C10T-02_half.png",
-  "rear_file_size":[593,75],
-  "rear_file_size_half":[389,75],
+  "rear_file_name": "UCSC-PCIE-C10T-02.png",
+  "rear_file_name_half": "UCSC-PCIE-C10T-02_half.png",
+  "rear_file_size": [593,75],
+  "rear_file_size_half": [389,75],
   "rear_ports": {
     "x/2": {
       "port_coord": [262, 14],
@@ -28,5 +28,6 @@
       "port_size": [67, 39]
     }
   },
+  "imm_compatible": false,
   "data_sheet_url": "https://www.cisco.com/c/en/us/products/collateral/interfaces-modules/ucs-virtual-interface-card-1225/data_sheet_c78-727604.pdf"
 }

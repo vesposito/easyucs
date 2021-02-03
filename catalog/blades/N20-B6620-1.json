@@ -1,29 +1,64 @@
 {
   "model_short_name": "B200 M1",
-  "front_file_name":"N20-B6620-1.png",
-  "front_file_size":[1217,304],
-  "disks_slots":[
+  "front_file_name": "N20-B6620-1.png",
+  "front_file_size": [1217,304],
+  "disks_slots": [
     {
-      "id":1,
-      "format":"sff",
-      "orientation":"horizontal",
-      "coord":[48, 30],
-      "size":[459,103]
+      "id": 1,
+      "format": "sff",
+      "orientation": "horizontal",
+      "coord": [48, 30],
+      "size": [459,103]
     },
     {
-      "id":2,
-      "format":"sff",
-      "orientation":"horizontal",
-      "coord":[531, 30],
-      "size":[459,103]
+      "id": 2,
+      "format": "sff",
+      "orientation": "horizontal",
+      "coord": [531, 30],
+      "size": [459,103]
     }
   ],
-  "disks_models":[
+  "disks_models": [
     {
-      "name":"N20-BBLKD",
-      "type":"blank",
-	  "format":"sff",
-      "description":"UCS 2.5 inch HDD blanking panel"
+      "name": "N20-BBLKD",
+      "type": "blank",
+	  "format": "sff",
+      "description": "UCS 2.5 inch HDD blanking panel"
     }
-  ]
+  ],
+  "imm_compatible": false,
+  "specs": {
+    "form_factor": "half-width",
+    "chipset": "Intel® 5500 series chipset (Tylersburg)",
+    "cpu": {
+      "sockets": 2,
+      "family_name": {
+        "nehalem": "Intel Xeon 5500 Series"
+      }
+    },
+    "memory": {
+      "dimm_type": "DDR3",
+      "dimm_slots": 12,
+      "max_speed": 1066,
+      "max_capacity": 196608,
+      "dcpmm_support": false
+    },
+    "dimensions": {
+      "centimeters": {
+        "height": 5,
+        "width": 20.3,
+        "depth": 62
+      },
+      "inches": {
+        "height": 1.95,
+        "width": 8,
+        "depth": 24.4
+      },
+      "rack_units": 0
+    },
+    "weight": {
+      "lb": 13.5,
+      "kg": 6.1
+    }
+  }
 }

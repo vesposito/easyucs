@@ -18,6 +18,36 @@ class UcsAdaptor(GenericUcsInventoryObject):
 
         self.ports = self._get_ports()
 
+    def _get_imm_compatibility(self):
+        """
+        Returns adaptor IMM Compatibility from EasyUCS catalog files
+        """
+        if self.sku is not None:
+            # We use the catalog file to get the adaptor IMM Compatibility
+            try:
+                json_file = open("catalog/adaptors/" + self.sku + ".json")
+                adaptor_catalog = json.load(fp=json_file)
+                json_file.close()
+
+                if "imm_compatible" in adaptor_catalog:
+                    return adaptor_catalog["imm_compatible"]
+
+            except FileNotFoundError:
+                # If we are on a S3260 chassis, we look for the catalog file in the io_modules folder
+                try:
+                    json_file = open("catalog/io_modules/" + self.sku + ".json")
+                    adaptor_catalog = json.load(fp=json_file)
+                    json_file.close()
+
+                    if "imm_compatible" in adaptor_catalog:
+                        return adaptor_catalog["imm_compatible"]
+
+                except FileNotFoundError:
+                    self.logger(level="error", message="Adaptor catalog file " + self.sku + ".json not found")
+                    return None
+
+        return None
+
     def _get_model_short_name(self):
         """
         Returns adaptor short name from EasyUCS catalog files
@@ -43,8 +73,6 @@ class UcsAdaptor(GenericUcsInventoryObject):
                         return adaptor_catalog["model_short_name"]
 
                 except FileNotFoundError:
-                    # If we are on a S3260 chassis, we look for the catalog file in the io_modules folder
-
                     self.logger(level="error", message="Adaptor catalog file " + self.sku + ".json not found")
                     return None
 
@@ -198,6 +226,7 @@ class UcsSystemAdaptor(UcsAdaptor, UcsSystemInventoryObject):
 
         UcsSystemInventoryObject.__init__(self, parent=parent, ucs_sdk_object=adaptor_unit)
 
+        self.imm_compatible = None
         self.short_name = None
         if self._inventory.load_from == "live":
             self.driver_name_ethernet = None
@@ -205,9 +234,10 @@ class UcsSystemAdaptor(UcsAdaptor, UcsSystemInventoryObject):
             self.driver_version_ethernet = None
             self.driver_version_fibre_channel = None
             self.short_name = self._get_model_short_name()
+            self.imm_compatible = self._get_imm_compatibility()
         elif self._inventory.load_from == "file":
             for attribute in ["driver_name_ethernet", "driver_name_fibre_channel", "driver_version_ethernet",
-                              "driver_version_fibre_channel", "short_name"]:
+                              "driver_version_fibre_channel", "imm_compatible", "short_name"]:
                 setattr(self, attribute, None)
                 if attribute in adaptor_unit:
                     setattr(self, attribute, self.get_attribute(ucs_sdk_object=adaptor_unit, attribute_name=attribute))

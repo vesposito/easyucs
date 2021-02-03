@@ -2201,6 +2201,8 @@ class UcsSystemApplianceNetworkControlPolicy(UcsSystemConfigObject):
         self.mac_register_mode = None
         self.descr = None
         self.mac_security_forge = None
+        self.lldp_receive = None
+        self.lldp_transmit = None
 
         if self._config.load_from == "live":
             if nwctrl_definition is not None:
@@ -2209,6 +2211,8 @@ class UcsSystemApplianceNetworkControlPolicy(UcsSystemConfigObject):
                 self.action_on_uplink_fail = nwctrl_definition.uplink_fail_action
                 self.mac_register_mode = nwctrl_definition.mac_register_mode
                 self.descr = nwctrl_definition.descr
+                self.lldp_receive = nwctrl_definition.lldp_receive
+                self.lldp_transmit = nwctrl_definition.lldp_transmit
 
                 if "dpsecMac" in self._config.sdk_objects:
                     for dpsec_mac in self._config.sdk_objects["dpsecMac"]:
@@ -2232,8 +2236,10 @@ class UcsSystemApplianceNetworkControlPolicy(UcsSystemConfigObject):
 
         parent_mo = "fabric/eth-estc"
         mo_nwctrl_definition = NwctrlDefinition(parent_mo_or_dn=parent_mo, cdp=self.cdp_admin_state,
-                                                name=self.name, uplink_fail_action=self.action_on_uplink_fail,
-                                                mac_register_mode=self.mac_register_mode, descr=self.descr)
+                                                lldp_receive=self.lldp_receive, name=self.name,
+                                                uplink_fail_action=self.action_on_uplink_fail,
+                                                lddp_transmit=self.lldp_transmit, descr=self.descr,
+                                                mac_register_mode=self.mac_register_mode)
         DpsecMac(parent_mo_or_dn=mo_nwctrl_definition, descr=self.descr, name="", forge=self.mac_security_forge)
 
         self._handle.add_mo(mo=mo_nwctrl_definition, modify_present=True)

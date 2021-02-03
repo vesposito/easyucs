@@ -1,4 +1,6 @@
 {
   "model_short_name": "VIC 1440",
+  "imm_compatible": true,
+  "imm_min_required_version": "4.1(2a)",
   "data_sheet_url": "https://www.cisco.com/c/en/us/products/collateral/interfaces-modules/unified-computing-system-adapters/datasheet-c78-741130.pdf"
 }
