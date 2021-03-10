@@ -171,12 +171,12 @@ class UcsSystemMemoryUnit(UcsMemoryUnit, UcsSystemInventoryObject):
             if (len(memory_error_stats_list)) != 1:
                 self.logger(level="debug",
                             message="Could not find the corresponding memoryErrorStats for object with DN " +
-                                    self.dn + " of model \"" + self.model + "\" with ID " + self.id)
+                                    self.dn + " of model \"" + str(self.model) + "\" with ID " + str(self.id))
                 if hasattr(self._parent, "id"):
-                    self.logger(level="info", message="Error stats of memory with id " + self.id + " for server " +
+                    self.logger(level="info", message="Error stats of memory with id " + str(self.id) + " for server " +
                                                       self._parent.id + " are not available.")
                 else:
-                    self.logger(level="info", message="Error stats of memory with id " + self.id + " for server " +
+                    self.logger(level="info", message="Error stats of memory with id " + str(self.id) + " for server " +
                                                       self._parent.dn + " are not available.")
 
                 return False
