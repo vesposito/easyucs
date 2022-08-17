@@ -564,6 +564,7 @@ class UcsImcConfig(GenericUcsConfig):
         self.ldap_settings = []
         self.local_users = []
         self.local_users_properties = []
+        self.logging_controls = []
         self.platform_event_filters = []
         self.power_cap_configuration = []
         self.power_policies = []
@@ -583,11 +584,11 @@ class UcsImcConfig(GenericUcsConfig):
         self.export_list = ['adapter_cards', 'admin_networking', 'bios_settings', 'boot_order_properties',
                             'chassis_inventory', 'communications_services', 'device_connector',
                             'dynamic_storage_zoning', 'ip_blocking_properties', 'ip_filtering_properties',
-                            'ldap_settings', 'local_users', 'local_users_properties', 'platform_event_filters',
-                            'power_cap_configuration', 'power_policies', 'secure_key_management',
-                            'serial_over_lan_properties', 'server_properties', 'smtp_properties', 'snmp',
-                            'storage_controllers', 'storage_flex_flash_controllers', 'timezone_mgmt',
-                            'virtual_kvm_properties', 'virtual_media']
+                            'ldap_settings', 'local_users', 'local_users_properties', 'logging_controls',
+                            'platform_event_filters', 'power_cap_configuration', 'power_policies',
+                            'secure_key_management', 'serial_over_lan_properties', 'server_properties',
+                            'smtp_properties', 'snmp', 'storage_controllers', 'storage_flex_flash_controllers',
+                            'timezone_mgmt', 'virtual_kvm_properties', 'virtual_media']
 
     def _fetch_sdk_objects(self):
         GenericUcsConfig._fetch_sdk_objects(self)
@@ -623,18 +624,18 @@ class UcsImcConfig(GenericUcsConfig):
                                 'biosVfTPMSupport', 'biosVfUSBEmulation', 'biosVfUSBPortsConfig',
                                 'biosVfUsbXhciSupport', 'biosVfVgaPriority', 'biosVfWorkLoadConfig', 'commHttp',
                                 'commHttps', 'commIpmiLan', 'commKvm', 'commMailAlert', 'commRedfish',
-                                'commSavedVMediaMap', 'commSnmp', 'commSsh', 'commVMedia', 'commVMediaMap',
-                                'computeRackUnit', 'computeServerRef', 'equipmentChassis', 'fanPolicy', 'ipBlocking',
-                                'ipFiltering', 'kmipServerLogin', 'ldapCACertificateManagement', 'lsbootDef',
-                                'lsbootDevPrecision', 'lsbootEfi', 'lsbootHdd', 'lsbootIscsi', 'lsbootLan',
-                                'lsbootNVMe', 'lsbootPchStorage', 'lsbootPxe', 'lsbootSan', 'lsbootSd', 'lsbootStorage',
-                                'lsbootUefiShell', 'lsbootUsb', 'lsbootVMedia', 'lsbootVirtualMedia', 'mailRecipient',
-                                'memoryArray', 'mgmtIf', 'oneTimePrecisionBootDevice', 'platformEventFilters',
-                                'powerBudget', 'selfEncryptStorageController', 'solIf', 'standardPowerProfile',
-                                'storageController', 'storageFlexFlashOperationalProfile',
-                                'storageFlexFlashPhysicalDrive', 'storageFlexFlashVirtualDrive',
-                                'storageFlexFlashController', 'storageLocalDisk', 'storageLocalDiskUsage',
-                                'storageVirtualDrive']
+                                'commSavedVMediaMap', 'commSnmp', 'commSnmpTrap', 'commSnmpUser', 'commSsh',
+                                'commSyslog', 'commSyslogClient', 'commVMedia', 'commVMediaMap', 'computeRackUnit',
+                                'computeServerRef', 'equipmentChassis', 'fanPolicy', 'ipBlocking', 'ipFiltering',
+                                'kmipServerLogin', 'ldapCACertificateManagement', 'lsbootDef', 'lsbootDevPrecision',
+                                'lsbootEfi', 'lsbootHdd', 'lsbootIscsi', 'lsbootLan', 'lsbootNVMe', 'lsbootPchStorage',
+                                'lsbootPxe', 'lsbootSan', 'lsbootSd', 'lsbootStorage', 'lsbootUefiShell', 'lsbootUsb',
+                                'lsbootVMedia', 'lsbootVirtualMedia', 'mailRecipient', 'memoryArray', 'mgmtIf',
+                                'oneTimePrecisionBootDevice', 'platformEventFilters', 'powerBudget',
+                                'selfEncryptStorageController', 'solIf', 'standardPowerProfile', 'storageController',
+                                'storageFlexFlashOperationalProfile', 'storageFlexFlashPhysicalDrive',
+                                'storageFlexFlashVirtualDrive', 'storageFlexFlashController', 'storageLocalDisk',
+                                'storageLocalDiskUsage', 'storageVirtualDrive']
 
         self.logger(level="debug", message="Fetching UCS IMC SDK objects for config")
         failed_to_fetch = []
