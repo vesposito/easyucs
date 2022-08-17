@@ -165,6 +165,10 @@ class UcsImcConfigObject(GenericUcsConfigObject):
         try:
             if mo is not None:
                 self._handle.set_mo(mo=mo)
+                if detail:
+                    self.logger(level="debug", message="Successfully configured " + self._CONFIG_NAME + " - " + detail)
+                else:
+                    self.logger(level="debug", message="Successfully configured " + self._CONFIG_NAME)
                 return True
 
         except ImcException as err:

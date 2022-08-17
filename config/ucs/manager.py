@@ -21,14 +21,14 @@ import common
 from __init__ import __version__
 from config.manager import GenericConfigManager
 from config.plot import UcsSystemOrgConfigPlot, UcsSystemServiceProfileConfigPlot
+from config.ucs.cimc.imc import UcsImcAdapterCard, UcsImcAdminNetwork, UcsImcBios, UcsImcBootOrder, \
+    UcsImcChassisInventory, UcsImcCommunicationsServices, UcsImcDynamicStorageZoning, UcsImcIpBlockingProperties, \
+    UcsImcIpFilteringProperties, UcsImcLdap, UcsImcLocalUser, UcsImcLocalUsersProperties, UcsImcLoggingControls, \
+    UcsImcPlatformEventFilter, UcsImcPowerCapConfiguration, UcsImcPowerPolicies, UcsImcSecureKeyManagement, \
+    UcsImcSerialOverLanProperties, UcsImcServerProperties, UcsImcSmtpProperties, UcsImcSnmp, UcsImcStorageController, \
+    UcsImcStorageFlexFlashController, UcsImcTimezoneMgmt, UcsImcVirtualMedia, UcsImcVKvmProperties
 from config.ucs.config import UcsImcConfig, UcsSystemConfig, UcsCentralConfig
 from config.ucs.device_connector import UcsDeviceConnector
-from config.ucs.cimc.imc import UcsImcAdminNetwork, UcsImcLocalUser, UcsImcLocalUsersProperties, UcsImcServerProperties, \
-    UcsImcTimezoneMgmt, UcsImcIpFilteringProperties, UcsImcIpBlockingProperties, UcsImcPowerPolicies, \
-    UcsImcAdapterCard, UcsImcCommunicationsServices, UcsImcChassisInventory, UcsImcPowerCapConfiguration, \
-    UcsImcVKvmProperties, UcsImcSecureKeyManagement, UcsImcSnmp, UcsImcSmtpProperties, UcsImcPlatformEventFilter, \
-    UcsImcVirtualMedia, UcsImcSerialOverLanProperties, UcsImcBios, UcsImcLdap, UcsImcBootOrder, \
-    UcsImcStorageController, UcsImcStorageFlexFlashController, UcsImcDynamicStorageZoning
 from config.ucs.ucsm.admin import UcsSystemDns, UcsSystemInformation,  UcsSystemManagementInterface, UcsSystemOrg,\
     UcsSystemTimezoneMgmt, UcsSystemLocalUser, UcsSystemRole,  UcsSystemLocale, UcsSystemLocalUsersProperties,\
     UcsSystemCommunicationServices, UcsSystemGlobalPolicies,  UcsSystemPreLoginBanner, UcsSystemBackupExportPolicy,\
@@ -1072,6 +1072,7 @@ class UcsImcConfigManager(GenericUcsConfigManager):
         config.virtual_kvm_properties.append(UcsImcVKvmProperties(parent=config))
         config.secure_key_management.append(UcsImcSecureKeyManagement(parent=config))
         config.snmp.append(UcsImcSnmp(parent=config))
+        config.logging_controls.append(UcsImcLoggingControls(parent=config))
         config.smtp_properties.append(UcsImcSmtpProperties(parent=config))
         for platform_event_filter in config.sdk_objects["platformEventFilters"]:
             config.platform_event_filters.append(UcsImcPlatformEventFilter(parent=config,
@@ -1281,6 +1282,8 @@ class UcsImcConfigManager(GenericUcsConfigManager):
                 config.snmp[0].push_object()
             if config.smtp_properties:
                 config.smtp_properties[0].push_object()
+            if config.logging_controls:
+                config.logging_controls[0].push_object()
             for platform_event_filter in config.platform_event_filters:
                 platform_event_filter.push_object()
             if config.virtual_media:
@@ -1388,6 +1391,9 @@ class UcsImcConfigManager(GenericUcsConfigManager):
         if "smtp_properties" in config_json:
             config.smtp_properties.append(
                 UcsImcSmtpProperties(parent=config, json_content=config_json["smtp_properties"][0]))
+        if "logging_controls" in config_json:
+            config.logging_controls.append(
+                UcsImcLoggingControls(parent=config, json_content=config_json["logging_controls"][0]))
         if "platform_event_filters" in config_json:
             for platform_event in config_json["platform_event_filters"]:
                 config.platform_event_filters.append(UcsImcPlatformEventFilter(parent=config,

@@ -114,8 +114,12 @@ from imcsdk.mometa.comm.CommNtpProvider import CommNtpProvider as ImcCommNtpProv
 from imcsdk.mometa.comm.CommRedfish import CommRedfish
 from imcsdk.mometa.comm.CommSavedVMediaMap import CommSavedVMediaMap
 from imcsdk.mometa.comm.CommSnmp import CommSnmp
+from imcsdk.mometa.comm.CommSnmpTrap import CommSnmpTrap
+from imcsdk.mometa.comm.CommSnmpUser import CommSnmpUser
 from imcsdk.mometa.comm.CommSsh import CommSsh
 from imcsdk.mometa.comm.CommSvcEp import CommSvcEp
+from imcsdk.mometa.comm.CommSyslog import CommSyslog
+from imcsdk.mometa.comm.CommSyslogClient import CommSyslogClient
 from imcsdk.mometa.comm.CommVMedia import CommVMedia
 from imcsdk.mometa.comm.CommVMediaMap import CommVMediaMap
 from imcsdk.mometa.compute.ComputeRackUnit import ComputeRackUnit
@@ -1549,7 +1553,9 @@ class UcsImcSnmp(UcsImcConfigObject):
         self.trap_community_string = None
         self.system_contact = None
         self.system_location = None
-        self.snmp_inpute_engine_id = None
+        self.snmp_input_engine_id = None
+        self.trap_destinations = []
+        self.snmp_users = []
 
         if self._config.load_from == "live":
             if "commSnmp" in self._config.sdk_objects:
@@ -1561,13 +1567,51 @@ class UcsImcSnmp(UcsImcConfigObject):
                     self.trap_community_string = self._config.sdk_objects["commSnmp"][0].trap_community
                     self.system_contact = self._config.sdk_objects["commSnmp"][0].sys_contact
                     self.system_location = self._config.sdk_objects["commSnmp"][0].sys_location
-                    self.snmp_inpute_engine_id = self._config.sdk_objects["commSnmp"][0].engine_id_key
+                    self.snmp_input_engine_id = self._config.sdk_objects["commSnmp"][0].engine_id_key
+
+                    for snmp_trap in self._config.sdk_objects["commSnmpTrap"]:
+                        if snmp_trap.hostname != "0.0.0.0":
+                            trap_dest = {}
+                            trap_dest["id"] = snmp_trap.id
+                            trap_dest["enabled"] = snmp_trap.admin_state
+                            trap_dest["version"] = snmp_trap.version
+                            trap_dest["type"] = snmp_trap.notification_type
+                            trap_dest["port"] = snmp_trap.port
+                            trap_dest["destination_address"] = snmp_trap.hostname
+                            trap_dest["user"] = snmp_trap.user
+                            self.trap_destinations.append(trap_dest)
+
+                    for snmp_user in self._config.sdk_objects["commSnmpUser"]:
+                        if snmp_user.name != "":
+                            user = {}
+                            user["id"] = snmp_user.id
+                            user["user_name"] = snmp_user.name
+                            user["auth_password"] = None
+                            user["security_level"] = snmp_user.security_level
+                            user["auth_type"] = snmp_user.auth
+                            user["privacy_password"] = None
+                            user["privacy_type"] = snmp_user.privacy
+
+                            self.logger(level="warning", message="Auth & Privacy passwords of SNMP User " +
+                                                                 user["user_name"] + " can't be exported")
+                            self.snmp_users.append(user)
 
         elif self._config.load_from == "file":
             if json_content is not None:
                 if not self.get_attributes_from_json(json_content=json_content):
                     self.logger(level="error",
                                 message="Unable to get attributes from JSON content for " + self._CONFIG_NAME)
+
+                for element in self.trap_destinations:
+                    for value in ["destination_address", "enabled", "id", "port", "type", "user",  "version"]:
+                        if value not in element:
+                            element[value] = None
+
+                for element in self.snmp_users:
+                    for value in ["auth_password", "auth_type", "id", "privacy_password", "privacy_type",
+                                  "security_level", "user_name"]:
+                        if value not in element:
+                            element[value] = None
 
         self.clean_object()
 
@@ -1587,12 +1631,38 @@ class UcsImcSnmp(UcsImcConfigObject):
                                 trap_community=self.trap_community_string,
                                 sys_contact=self.system_contact,
                                 sys_location=self.system_location,
-                                engine_id_key=self.snmp_inpute_engine_id
+                                engine_id_key=self.snmp_input_engine_id
                                 )
-
         if commit:
             if self.commit(mo=mo_comm_snmp) != True:
                 return False
+
+        for snmp_user in self.snmp_users:
+            user_mo = CommSnmpUser(parent_mo_or_dn=mo_comm_snmp,
+                                   id=snmp_user["id"],
+                                   name=snmp_user["user_name"],
+                                   auth_pwd=snmp_user["auth_password"],
+                                   security_level=snmp_user["security_level"],
+                                   auth=snmp_user["auth_type"],
+                                   privacy=snmp_user["privacy_type"],
+                                   privacy_pwd=snmp_user["privacy_password"]
+                                   )
+            if commit:
+                self.commit(mo=user_mo, detail="SNMP User ID " + snmp_user["id"])
+
+        for trap_dest in self.trap_destinations:
+            trap_mo = CommSnmpTrap(parent_mo_or_dn=mo_comm_snmp,
+                                   id=trap_dest['id'],
+                                   admin_state=trap_dest['enabled'],
+                                   version=trap_dest['version'],
+                                   notification_type=trap_dest['type'],
+                                   port=trap_dest['port'],
+                                   hostname=trap_dest['destination_address'],
+                                   user=trap_dest['user']
+                                   )
+            if commit:
+                self.commit(mo=trap_mo, detail="SNMP Trap ID " + trap_dest["id"])
+
         return True
 
 
@@ -2673,7 +2743,7 @@ class UcsImcBootOrder(UcsImcConfigObject):
                                 message="Unable to get attributes from JSON content for " + self._CONFIG_NAME)
 
                 for element in self.advanced_boot_devices:
-                    for value in ["type", "name", "state", "order", "lun", "slot", "port"]:
+                    for value in ["type", "name", "state", "order", "lun", "slot", "subtype", "port"]:
                         if value not in element:
                             element[value] = None
                 for element in self.basic_boot_devices:
@@ -3274,5 +3344,76 @@ class UcsImcStorageFlexFlashController(UcsImcConfigObject):
         if commit:
             if self.commit(mo=mo_storage_ope_profile) != True:
                 return False
+
+        return True
+
+
+class UcsImcLoggingControls(UcsImcConfigObject):
+    _CONFIG_NAME = "Faults and Logs - Logging Controls"
+    
+    def __init__(self, parent=None, json_content=None):
+        UcsImcConfigObject.__init__(self, parent=parent)
+        self.local_severity = None
+        self.remote_severity = None
+        self.remote_logging = []
+
+        if self._config.load_from == "live":
+
+            if "commSyslog" in self._config.sdk_objects:
+                self.local_severity = self._config.sdk_objects["commSyslog"][0].local_severity
+                self.remote_severity = self._config.sdk_objects["commSyslog"][0].remote_severity
+
+            if "commSyslogClient" in self._config.sdk_objects:
+                for remote_server in self._config.sdk_objects["commSyslogClient"]:
+                        remote_syslog_server = {}
+                        if remote_server.admin_state in ["enabled", "Enabled"]:
+                            remote_syslog_server["enabled"] = "yes"
+                        else:
+                            remote_syslog_server["enabled"] = "no"
+                        remote_syslog_server["hostname"] = remote_server.hostname
+                        remote_syslog_server["port"] = remote_server.port
+                        remote_syslog_server["protocol"] = remote_server.proto
+                        remote_syslog_server["name"] = remote_server.name
+                        self.remote_logging.append(remote_syslog_server)
+
+        elif self._config.load_from == "file":
+            if json_content is not None:
+                if not self.get_attributes_from_json(json_content=json_content):
+                    self.logger(level="error",
+                                message="Unable to get attributes from JSON content for " + self._CONFIG_NAME)
+
+                for element in self.remote_logging:
+                    for value in ["enabled", "hostname", "port", "protocol", "name"]:
+                        if value not in element:
+                            element[value] = None
+
+        self.clean_object()
+
+    def push_object(self, commit=True):
+        if commit:
+            self.logger(message="Pushing " + self._CONFIG_NAME + " configuration")
+        else:
+            self.logger(message="Adding to the handle " + self._CONFIG_NAME + " configuration" +
+                                ", waiting for a commit")
+
+        parent_mo = "sys/svc-ext"
+        syslog_mo = CommSyslog(parent_mo_or_dn=parent_mo,
+                               local_severity=self.local_severity,
+                               remote_severity=self.remote_severity
+                               )
+        if commit:
+            if self.commit(mo=syslog_mo) != True:
+                return False
+
+        for server in self.remote_logging:
+            if server["enabled"] == "yes":
+                admin_state = "enabled"
+            else:
+                admin_state = "disabled"
+            server_mo = CommSyslogClient(parent_mo_or_dn=syslog_mo, admin_state=admin_state,
+                                         hostname=server["hostname"], port=server["port"], proto=server["protocol"],
+                                         name=server["name"])
+            if commit:
+                self.commit(mo=server_mo, detail="Remote Syslog Server " + server["name"])
 
         return True
