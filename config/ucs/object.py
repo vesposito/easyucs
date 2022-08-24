@@ -42,7 +42,7 @@ class GenericUcsConfigObject(GenericConfigObject):
         """
 
         if self.__class__.__name__ in ["UcsSystemBiosPolicy", "UcsSystemDefaultVhbaBehavior",
-                                       "UcsSystemDefaultVnicBehavior"]:
+                                       "UcsSystemDefaultVnicBehavior", "UcsImcAdminNetwork"]:
             # We do not clean "None" values in a BIOS Policy because some parameters are using the string "None"
             # Default vHBA / vNIC Behavior can also contain the string "None" as the default value for "action"
             str_to_avoid = ["N/A", "", "NA"]

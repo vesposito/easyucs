@@ -1,7 +1,7 @@
 # __init__.py
 
 __author__ = "Marc Abu El Ghait, Franck Bonneau and Vincent Esposito"
-__copyright__ = "Copyright 2016-2021, Cisco"
+__copyright__ = "Copyright 2016-2022, Cisco"
 
 __version__ = "0.9.7.5"
 __status__ = "Development"
