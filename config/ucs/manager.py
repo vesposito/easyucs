@@ -1245,7 +1245,31 @@ class UcsImcConfigManager(GenericUcsConfigManager):
 
             # We push all config elements, in a specific optimized order to reduce number of reboots
             if config.admin_networking:
-                config.admin_networking[0].push_object()
+                old_session_id = self.parent.handle.session_id
+
+                if config.admin_networking[0].push_object():
+                    # We now need to get the new IP address from the configuration
+                    if config.admin_networking[0].management_ipv4_address:
+                        self.parent.target = config.admin_networking[0].management_ipv4_address
+
+                    # We wait for IMC to come back in case IP Add or NIC Mode Changed
+                    self.logger(message="Waiting up to 90 seconds for UCS IMC to come back")
+                    time.sleep(40)
+                    if not self.parent.wait_for_reboot_after_reset(timeout=50, imc_ip=self.parent.target):
+                        self.logger(level="error", message="Could not reconnect to UCS IMC after reset")
+                        return False
+                    # We need to refresh the UCS device handle so that it has the right attributes
+                    self.parent.handle = ImcHandle(ip=self.parent.target, username=self.parent.username,
+                                                   password=self.parent.password)
+
+                    # Changing handle to the new one
+                    config.refresh_config_handle()
+                    # We need to reconnect to the device
+                    if not self.parent.connect(bypass_version_checks=bypass_version_checks):
+                        return False
+
+                    self.logger(message="Old session id " + str(old_session_id) + " will self timeout")
+
             if config.timezone_mgmt:
                 config.timezone_mgmt[0].push_object()
             if config.local_users_properties:

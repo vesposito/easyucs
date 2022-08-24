@@ -289,9 +289,9 @@ class UcsImcAdminNetwork(UcsImcConfigObject):
         if self.nic_mode != "cisco_card":
             self.vic_slot = None
         if self.nic_mode == "dedicated":
-            self.nic_redundancy = None
+            self.nic_redundancy = "none"
         else:
-            self.auto_negotiation = None
+            self.auto_negotiation = "disabled"
         if self.port_profile == "":
             self.port_profile = None
         if self.vlan_enable == "no" or self.vlan_enable == "No":
