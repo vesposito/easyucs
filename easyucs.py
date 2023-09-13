@@ -41,13 +41,13 @@ def instantiate_device(args):
 
     if args.ip:
         target = args.ip
-    if args.username:
+    if hasattr(args, "username") and args.username:
         username = args.username
-    if args.password:
+    if hasattr(args, "password") and args.password:
         password = args.password
-    if args.api_key:
+    if hasattr(args, "api_key") and args.api_key:
         api_key = args.api_key
-    if args.secret_key_path:
+    if hasattr(args, "secret_key_path") and args.secret_key_path:
         secret_key_path = args.secret_key_path
 
     device = None
