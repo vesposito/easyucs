@@ -1,0 +1,108 @@
+{
+   "id": "ucs_central_config_host_firmware_packages#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS ucs central config orgs host_firmware_packages section",
+   "description": "EasyUCS ucs central config orgs host_firmware_packages section JSON schema",
+   "type": "object",
+   "properties": {
+      "comment": {
+         "description": "Host Firmware Package Comments",
+         "type": "string",
+         "default": ""
+      },
+      "name": {
+         "description": "Host Firmware Package Name",
+         "type": "string",
+         "default": "",
+         "pattern": "^[\\-\\.:_a-zA-Z0-9]{1,16}$"
+      },
+      "descr": {
+         "description": "Description of Host Firmware Package",
+         "type": "string",
+         "default": "",
+         "pattern": "^[ !#$%&\\(\\)\\*\\+,\\-\\./:;\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{0,256}$"
+      },
+      "blade_package": {
+         "description": "Host Firmware Package Blade Package",
+         "type": "string",
+         "default": ""
+      },
+      "rack_package": {
+         "description": "Host Firmware Package Rack Package",
+         "type": "string",
+         "default": ""
+      },
+      "service_pack": {
+         "description": "Host Firmware Package Service Pack",
+         "type": "string",
+         "default": ""
+      },
+      "excluded_components": {
+         "description": "Host Firmware Package Excluded Components",
+         "type": "array",
+         "items": {
+            "description": "Host Firmware Package Excluded Component Item",
+            "type": "string",
+            "enum": [
+               "adapter",
+               "adaptor",
+               "bios",
+               "blade-bios",
+               "server-bios",
+               "board-controller",
+               "cimc",
+               "blade-controller",
+               "flexflash-controller",
+               "gpus",
+               "graphics-card",
+               "host-hba",
+               "fc-adapters",
+               "host-hba-optionrom",
+               "hba-optionrom",
+               "host-nic",
+               "host-nic-optionrom",
+               "local-disk",
+               "psu",
+               "sas-expander",
+               "sas-expander-regular-fw",
+               "sas-exp-reg-fw",
+               "storage-controller",
+               "storage-controller-onboard-device",
+               "storage-controller-onboard-device-cpld",
+               "storage-device-bridge",
+               "storage-dev-bridge",
+               "storage-bridge-device",
+               "unspecified"
+            ]
+         }
+      },
+      "tags": {
+         "description": "Host Firmware Package - Tags",
+         "type": "array",
+         "items": {
+            "description": "Host Firmware Package - Tag",
+            "type": "object",
+            "properties": {
+               "type": {
+                  "description": "Host Firmware Package - Tag - Type",
+                  "type": "string",
+                  "pattern": "^[ !#$%&\\(\\)\\*\\+,\\-\\.:;=\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{1,32}$"
+               },
+               "value": {
+                  "description": "Host Firmware Package - Tag - Value",
+                  "type": "string"
+               }
+            },
+            "additionalProperties": false,
+            "required": [
+               "type",
+               "value"
+            ]
+         }
+      }
+   },
+   "additionalProperties": false,
+   "required": [
+      "name"
+   ]
+}

@@ -16,6 +16,13 @@
          "default": "",
          "pattern": "^[\\-\\.:_a-zA-Z0-9]{1,16}$"
       },
+      "policy_owner": {
+         "description": "iSCSI Adapter Policy Owner (for UCS Central)",
+         "type": "string",
+         "enum": [
+            "ucs-central"
+         ]
+      },
       "connection_timeout": {
          "description": "iSCSI Adapter Policy - Connection Timeout",
          "type": "string",

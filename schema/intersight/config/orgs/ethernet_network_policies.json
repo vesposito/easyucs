@@ -1,0 +1,87 @@
+{
+   "id": "intersight_config_orgs_ethernet_network_policies#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS intersight config orgs ethernet_network_policies section",
+   "description": "EasyUCS intersight config orgs ethernet_network_policies section JSON schema",
+   "type": "object",
+   "properties": {
+      "comment": {
+         "description": "Ethernet Network Policy Comments",
+         "type": "string",
+         "default": ""
+      },
+      "descr": {
+         "description": "Ethernet Network Policy Description",
+         "type": "string",
+         "default": "",
+         "pattern": "^$|^[a-zA-Z0-9]+[\\x00-\\xFF]*$",
+         "maxLength": 1024
+      },
+      "name": {
+         "description": "Ethernet Network Policy Name",
+         "type": "string",
+         "default": "",
+         "pattern": "^[a-zA-Z0-9_.:-]{1,64}$"
+      },
+      "tags": {
+         "description": "Ethernet Network Policy Tags",
+         "type": "array",
+         "items": {
+            "description": "Ethernet Network Policy Tag",
+            "type": "object",
+            "properties": {
+               "key": {
+                  "description": "Ethernet Network Policy Tag Key",
+                  "type": "string",
+                  "default": "",
+                  "minLength": 1,
+                  "maxLength": 128
+               },
+               "value": {
+                  "description": "Ethernet Network Policy Tag Value",
+                  "type": "string",
+                  "default": "",
+                  "minLength": 0,
+                  "maxLength": 256
+               }
+            },
+            "additionalProperties": false,
+            "required": [
+               "key",
+               "value"
+            ]
+         },
+         "minItems": 1
+      },
+      "default_vlan": {
+         "description": "Ethernet Network Policy Default VLAN",
+         "type": "integer",
+         "default": 0,
+         "minimum": 0,
+         "maximum": 4094
+      },
+      "target_platform": {
+         "description": "Ethernet Network Policy Target Platform",
+         "type": "string",
+         "default": "Standalone",
+         "enum": [
+            "FI-Attached",
+            "Standalone"
+         ]
+      },
+      "vlan_mode": {
+         "description": "Ethernet Network Policy VLAN Mode",
+         "type": "string",
+         "default": "access",
+         "enum": [
+            "access",
+            "trunk"
+         ]
+      }
+   },
+   "additionalProperties": false,
+   "required": [
+      "name",
+      "target_platform"
+   ]
+}

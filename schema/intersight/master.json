@@ -1,0 +1,89 @@
+{
+   "id": "intersight_master#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS intersight master schema",
+   "description": "EasyUCS intersight master JSON schema",
+   "type": "object",
+   "properties": {
+      "easyucs": {
+         "description": "easyucs section",
+         "type": "object",
+         "$ref": "easyucs.json"
+      },
+      "config": {
+         "description": "config section",
+         "type": "object",
+         "$ref": "config.json"
+      },
+      "device": {
+         "description": "device section",
+         "type": "object",
+         "$ref": "device.json"
+      },
+      "inventory": {
+         "description": "inventory section",
+         "type": "object",
+         "$ref": "inventory.json"
+      }
+   },
+   "additionalProperties": false,
+   "required": [
+      "easyucs"
+   ],
+   "dependencies": {
+      "config": {
+         "allOf": [
+            {
+               "not": {
+                  "required": [
+                     "device"
+                  ]
+               }
+            },
+            {
+               "not": {
+                  "required": [
+                     "inventory"
+                  ]
+               }
+            }
+         ]
+      },
+      "inventory": {
+         "allOf": [
+            {
+               "not": {
+                  "required": [
+                     "device"
+                  ]
+               }
+            },
+            {
+               "not": {
+                  "required": [
+                     "config"
+                  ]
+               }
+            }
+         ]
+      },
+      "device": {
+         "allOf": [
+            {
+               "not": {
+                  "required": [
+                     "config"
+                  ]
+               }
+            },
+            {
+               "not": {
+                  "required": [
+                     "inventory"
+                  ]
+               }
+            }
+         ]
+      }
+   }
+}

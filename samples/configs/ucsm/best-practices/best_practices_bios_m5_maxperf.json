@@ -7,9 +7,9 @@
             "category":"best-practices",
             "subcategory":"BIOS",
             "name":"UCS Manager BIOS Policy for Maximum Performance on Cisco UCS M5 Servers",
-            "url":"https://www.cisco.com/c/dam/en/us/products/collateral/servers-unified-computing/ucs-b-series-blade-servers/whitepaper_c11-740098.pdf",
+            "url":"https://www.cisco.com/c/en/us/products/collateral/servers-unified-computing/ucs-b-series-blade-servers/white-paper-c11-744678.html",
             "easyucs_version":"0.9.0",
-            "revision": "1.0"
+            "revision": "1.1"
          }
       ]
    },
@@ -40,14 +40,14 @@
                   "package_c_state_limit":"platform-default",
                   "energy_performance_tuning": "platform-default",
                   "cpu_hardware_power_management":"platform-default",
-                  "workload_configuration": "platform-default",
+                  "workload_configuration": "balanced",
+                  "autonomous_core_c_state": "platform-default",
                   "numa_optimized":"platform-default",
                   "imc_inteleave": "1-way-interleave",
                   "xpt_prefetch": "platform-default",
                   "upi_prefetch": "platform-default",
                   "sub_numa_clustering": "enabled",
                   "memory_ras_configuration": "platform-default"
-
                }
             ]
          }

@@ -371,7 +371,7 @@ class UcsSystemFiPort(UcsPort):
                     setattr(self, attribute, self.get_attribute(ucs_sdk_object=port, attribute_name=attribute))
 
     def _get_neighbor_entries(self):
-            return []
+        return []
 
     def _get_transceivers(self):
         if self._inventory.load_from == "live":

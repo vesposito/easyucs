@@ -22,13 +22,11 @@
          "default": "",
          "pattern": "^[ !#$%&\\(\\)\\*\\+,\\-\\./:;\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{0,256}$"
       },
-      "pooled": {
-         "description": "Fibre Channel Adapter Policy - Pooled",
+      "policy_owner": {
+         "description": "Fibre Channel Adapter Policy Owner (for UCS Central)",
          "type": "string",
-         "default": "disabled",
          "enum": [
-            "enabled",
-            "disabled"
+            "ucs-central"
          ]
       },
       "transmit_queues_ring_size": {
@@ -121,7 +119,7 @@
          "description": "Fibre Channel Adapter Policy - Max LUNs per Target",
          "type": "string",
          "default": "256",
-         "pattern": "^[1-9]$|^[1-9][0-9]$|^[1-9][0-9][0-9]$|^10[0-1][0-9]$|^102[0-4]$"
+         "pattern": "^[1-9]$|^[1-9][0-9]$|^[1-9][0-9][0-9]$|^[1-3][0-9][0-9][0-9]$|^40[0-8][0-9]$|^409[0-6]$"
       },
       "lun_queue_depth": {
          "description": "Fibre Channel Adapter Policy - Port down IO Retry",
@@ -155,12 +153,14 @@
    "required": [
       "name"
    ],
-   "$comment": "Below is for handling an exception with UCS Central policy global-default using an invalid value of 16 for io_throttle_count",
+   "$comment": "Below is for handling an exception with UCS Central default global policies using an invalid value of 16 for io_throttle_count",
    "if": {
       "properties": {
          "name": {
             "enum": [
-               "global-default"
+               "global-default",
+               "global-Linux",
+               "global-Solaris"
             ]
          }
       }

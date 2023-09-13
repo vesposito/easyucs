@@ -1,0 +1,107 @@
+{
+   "id": "intersight_config_orgs_smtp_policies#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS intersight config orgs smtp_policies section",
+   "description": "EasyUCS intersight config orgs smtp_policies section JSON schema",
+   "type": "object",
+   "properties": {
+      "comment": {
+         "description": "SMTP Policy Comments",
+         "type": "string",
+         "default": ""
+      },
+      "descr": {
+         "description": "SMTP Policy Description",
+         "type": "string",
+         "default": "",
+         "pattern": "^$|^[a-zA-Z0-9]+[\\x00-\\xFF]*$",
+         "maxLength": 1024
+      },
+      "name": {
+         "description": "SMTP Policy Name",
+         "type": "string",
+         "default": "",
+         "pattern": "^[a-zA-Z0-9_.:-]{1,64}$"
+      },
+      "tags": {
+         "description": "SMTP Policy Tags",
+         "type": "array",
+         "items": {
+            "description": "SMTP Policy Tags",
+            "type": "object",
+            "properties": {
+               "key": {
+                  "description": "SMTP Policy Tag Key",
+                  "type": "string",
+                  "default": "",
+                  "minLength": 1,
+                  "maxLength": 128
+               },
+               "value": {
+                  "description": "SMTP Policy Tag Value",
+                  "type": "string",
+                  "default": "",
+                  "minLength": 0,
+                  "maxLength": 256
+               }
+            },
+            "additionalProperties": false,
+            "required": [
+               "key",
+               "value"
+            ]
+         },
+         "minItems": 1
+      },
+      "enabled": {
+         "description": "SMTP Policy Enable SMTP",
+         "type": "boolean",
+         "default": true
+      },
+      "smtp_server_address": {
+         "description": "SMTP Policy SMTP Server Address",
+         "type": "string",
+         "default": ""
+      },
+      "smtp_port": {
+         "description": "SMTP Policy SMTP Port",
+         "type": "integer",
+         "default": 25,
+         "minimum": 1,
+         "maximum": 65535
+      },
+      "min_severity": {
+         "description": "SMTP Policy Minimum Severity",
+         "type": "string",
+         "default": "critical",
+         "enum": [
+            "critical",
+            "condition",
+            "warning",
+            "minor",
+            "major"
+         ]
+      },
+      "sender_email": {
+         "description": "SMTP Policy Alert Sender Address",
+         "format": "email",
+         "default": ""
+      },
+      "smtp_recipients": {
+         "description": "SMTP Policy Mail Alert Recipients",
+         "type": "array",
+         "default": "",
+         "minItems": 0,
+         "maxItems": 4,
+         "items": {
+            "description": "SMTP Policy Mail Alert Recipients",
+            "format": "email",
+            "default": ""
+         }
+      }
+   },
+   "additionalProperties": false,
+   "required": [
+      "name"
+   ]
+}

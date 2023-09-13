@@ -1,50 +1,55 @@
 {
-   "id":"ucs_system_config_san_uplink_ports#",
-   "$schema":"http://json-schema.org/draft-07/schema#",
-   "title":"EasyUCS ucs system config san_uplink_ports section",
-   "description":"EasyUCS ucs system config san_uplink_ports section JSON schema",
-   "type":"object",
-   "properties":{
+   "id": "ucs_system_config_san_uplink_ports#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS ucs system config san_uplink_ports section",
+   "description": "EasyUCS ucs system config san_uplink_ports section JSON schema",
+   "type": "object",
+   "properties": {
       "comment": {
          "description": "SAN Uplink Port Comments",
          "type": "string",
          "default": ""
       },
-      "fabric":{
-         "description":"Fabric ID of SAN Uplink Port (\"A\" or \"B\")",
-         "type":"string",
-         "enum":[
+      "fabric": {
+         "description": "Fabric ID of SAN Uplink Port (\"A\" or \"B\")",
+         "type": "string",
+         "enum": [
             "a",
             "A",
             "b",
             "B"
          ]
       },
-      "slot_id":{
-         "description":"Slot ID of SAN Uplink Port",
-         "type":"string",
-         "pattern":"^[1-5]$"
+      "slot_id": {
+         "description": "Slot ID of SAN Uplink Port",
+         "type": "string",
+         "pattern": "^[1-5]$"
       },
-      "port_id":{
-         "description":"Port ID of SAN Uplink Port",
-         "type":"string",
-         "pattern":"^[1-9]$|^[1-9][0-9]$|^10[0-8]$"
+      "port_id": {
+         "description": "Port ID of SAN Uplink Port",
+         "type": "string",
+         "pattern": "^[1-9]$|^[1-9][0-9]$|^10[0-8]$"
       },
-      "user_label":{
-         "description":"User Label of SAN Uplink Port",
-         "type":"string",
-         "default":"",
-         "pattern":"^[ !#$%&\\(\\)\\*\\+,\\-\\./:;\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{0,32}$"
+      "aggr_id": {
+         "description": "Aggregate ID of SAN Uplink Port (for Breakout Ports)",
+         "type": "string",
+         "pattern": "^[1-4]$"
       },
-      "vsan":{
-         "description":"Name of VSAN assigned to SAN Uplink Port",
-         "type":"string",
-         "pattern":"^[\\-\\.:_a-zA-Z0-9]{1,32}$"
+      "user_label": {
+         "description": "User Label of SAN Uplink Port",
+         "type": "string",
+         "default": "",
+         "pattern": "^[ !#$%&\\(\\)\\*\\+,\\-\\./:;\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{0,32}$"
       },
-      "vsan_fabric":{
-         "description":"Fabric ID of VSAN assigned to SAN Uplink Port",
-         "type":"string",
-         "enum":[
+      "vsan": {
+         "description": "Name of VSAN assigned to SAN Uplink Port",
+         "type": "string",
+         "pattern": "^[\\-\\.:_a-zA-Z0-9]{1,32}$"
+      },
+      "vsan_fabric": {
+         "description": "Fabric ID of VSAN assigned to SAN Uplink Port",
+         "type": "string",
+         "enum": [
             "a",
             "A",
             "b",
@@ -52,19 +57,19 @@
             "dual"
          ]
       },
-      "fill_pattern":{
-         "description":"Fill Pattern of SAN Uplink Port",
-         "type":"string",
-         "enum":[
+      "fill_pattern": {
+         "description": "Fill Pattern of SAN Uplink Port",
+         "type": "string",
+         "enum": [
             "arbff",
             "idle"
          ]
       },
-      "admin_state":{
-         "description":"Admin State of SAN Uplink Port",
-         "type":"string",
-         "default":"enabled",
-         "enum":[
+      "admin_state": {
+         "description": "Admin State of SAN Uplink Port",
+         "type": "string",
+         "default": "enabled",
+         "enum": [
             "disabled",
             "enabled"
          ]
@@ -81,8 +86,8 @@
          ]
       }
    },
-   "additionalProperties":false,
-   "required":[
+   "additionalProperties": false,
+   "required": [
       "fabric",
       "slot_id",
       "port_id"

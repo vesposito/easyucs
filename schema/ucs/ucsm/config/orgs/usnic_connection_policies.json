@@ -1,0 +1,48 @@
+{
+   "id": "ucs_system_usnic_connection_policies#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS ucs system config orgs usnic_connection_policies section",
+   "description": "EasyUCS ucs system config orgs usnic_connection_policies section JSON schema",
+   "type": "object",
+   "properties": {
+      "comment": {
+         "description": "usNIC Connection Policy Comments",
+         "type": "string",
+         "default": ""
+      },
+      "name": {
+         "description": "usNIC Connection Policy Name",
+         "type": "string",
+         "default": "",
+         "pattern": "^[\\-\\.:_a-zA-Z0-9]{1,16}$"
+      },
+      "descr": {
+         "description": "Description of usNIC Connection Policy",
+         "type": "string",
+         "default": "",
+         "pattern": "^[ !#$%&\\(\\)\\*\\+,\\-\\./:;\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{0,256}$"
+      },
+      "policy_owner": {
+         "description": "usNIC Connection Policy Owner (for UCS Central)",
+         "type": "string",
+         "enum": [
+            "ucs-central"
+         ]
+      },
+      "number_of_usnics": {
+         "description": "usNIC Connection Policy - Number of usNICs",
+         "type": "string",
+         "default": "58",
+         "pattern": "^[1-9]$|^[0-9][0-9]$|^10[0-9]$|^11[0-6]$"
+      },
+      "adapter_policy": {
+         "description": "usNIC Connection Policy - Adapter Policy",
+         "type": "string",
+         "pattern": "^[\\-\\.:_a-zA-Z0-9]{0,16}$|^VMWare-NVMe-RoCEv2$"
+      }
+   },
+   "additionalProperties": false,
+   "required": [
+      "name"
+   ]
+}

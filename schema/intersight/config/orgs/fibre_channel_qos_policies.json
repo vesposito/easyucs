@@ -1,0 +1,89 @@
+{
+   "id": "intersight_config_orgs_fibre_channel_qos_policies#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS intersight config orgs fibre_channel_qos_policies section",
+   "description": "EasyUCS intersight config orgs fibre_channel_qos_policies section JSON schema",
+   "type": "object",
+   "properties": {
+      "comment": {
+         "description": "Fibre Channel QoS Policy Comments",
+         "type": "string",
+         "default": ""
+      },
+      "descr": {
+         "description": "Fibre Channel QoS Policy Description",
+         "type": "string",
+         "default": "",
+         "pattern": "^$|^[a-zA-Z0-9]+[\\x00-\\xFF]*$",
+         "maxLength": 1024
+      },
+      "name": {
+         "description": "Fibre Channel QoS Policy Name",
+         "type": "string",
+         "default": "",
+         "pattern": "^[a-zA-Z0-9_.:-]{1,64}$"
+      },
+      "tags": {
+         "description": "Fibre Channel QoS Policy Tags",
+         "type": "array",
+         "items": {
+            "description": "Fibre Channel QoS Policy Tag",
+            "type": "object",
+            "properties": {
+               "key": {
+                  "description": "Fibre Channel QoS Policy Tag Key",
+                  "type": "string",
+                  "default": "",
+                  "minLength": 1,
+                  "maxLength": 128
+               },
+               "value": {
+                  "description": "Fibre Channel QoS Policy Tag Value",
+                  "type": "string",
+                  "default": "",
+                  "minLength": 0,
+                  "maxLength": 256
+               }
+            },
+            "additionalProperties": false,
+            "required": [
+               "key",
+               "value"
+            ]
+         },
+         "minItems": 1
+      },
+      "burst": {
+         "description": "Fibre Channel QoS Policy Burst (bytes)",
+         "type": "integer",
+         "default": 10240,
+         "minimum": 1,
+         "maximum": 1000000
+      },
+      "class_of_service": {
+         "description": "Fibre Channel QoS Policy Class of Service",
+         "type": "integer",
+         "default": 3,
+         "minimum": 0,
+         "maximum": 6
+      },
+      "max_data_field_size": {
+         "description": "Fibre Channel QoS Policy Maximum Data Field Size (bytes)",
+         "type": "integer",
+         "default": 2112,
+         "minimum": 256,
+         "maximum": 2112
+      },
+      "rate_limit": {
+         "description": "Fibre Channel QoS Policy Rate Limit (Mbps)",
+         "type": "integer",
+         "default": 0,
+         "minimum": 0,
+         "maximum": 100000
+      }
+   },
+   "additionalProperties": false,
+   "required": [
+      "name"
+   ]
+}

@@ -62,6 +62,7 @@ class UcsSystemTransceiver(UcsTransceiver, UcsSystemInventoryObject):
             "h25gaoc1m": {"sku": "SFP-25G-AOC1M", "length": "1m"},
             "h25gaoc2m": {"sku": "SFP-25G-AOC2M", "length": "2m"},
             "h25gaoc3m": {"sku": "SFP-25G-AOC3M", "length": "3m"},
+            "h25gaoc4m": {"sku": "SFP-25G-AOC4M", "length": "4m"},
             "h25gaoc5m": {"sku": "SFP-25G-AOC5M", "length": "5m"},
             "h25gaoc7m": {"sku": "SFP-25G-AOC7M", "length": "7m"},
             "h25gaoc10m": {"sku": "SFP-25G-AOC10M", "length": "10m"},
@@ -145,17 +146,30 @@ class UcsSystemTransceiver(UcsTransceiver, UcsSystemInventoryObject):
             "qsfp40glr4": {"sku": "QSFP-40G-LR4/LR4-S", "length": "<=10km"},
 
             # QSFP28 100Gbps transceivers
+            "qsfp100gsl4": {"sku": "QSFP-100G-SL4", "length": "<=30m"},
             "qsfp100g40gbidi": {"sku": "QSFP-40/100-SRBD", "length": "<=100m"},
             "qsfp100gsmsr": {"sku": "QSFP-100G-SM-SR", "length": "<=2km"},
             "qsfp100gcr4": {"sku": "QSFP-100G-SR4-S", "length": "<=100m"},
             "qsfp100gsr4": {"sku": "QSFP-100G-SR4-S", "length": "<=100m"},
             "qsfp100gsr4s": {"sku": "QSFP-100G-SR4-S", "length": "<=100m"},
-            "qsfp100glr4s": {"sku": "QSFP-100G-LR4-S", "length": "<=10km"}
+            "qsfp100glr4s": {"sku": "QSFP-100G-LR4-S", "length": "<=10km"},
+            "qsfp100gdr": {"sku": "QSFP-100G-DR-S", "length": "<=500m"},
+            "qsfp100gfr": {"sku": "QSFP-100G-FR-S", "length": "<=2km"}
         }
         for transceiver_type in transceiver_types_matrix.keys():
             if self.type == transceiver_type:
                 self.sku = transceiver_types_matrix[transceiver_type]["sku"]
                 self.length = transceiver_types_matrix[transceiver_type]["length"]
+
+        # Manual entries for Ethernet transceivers that were not properly categorized
+        if self._parent.__class__.__name__ == "UcsSystemFiEthPort":
+            if not self.sku:
+                if self.model in ["FTL410QT3C-C1"]:
+                    self.sku = "FET-40G"
+                    self.length = "<=150m"
+                elif self.model in ["AFBR-79EBPZ-CS2"]:
+                    self.sku = "QSFP-40G-SR-BD"
+                    self.length = "<=150m"
 
         # Manual entries for FC transceivers
         if self._parent.__class__.__name__ == "UcsSystemFiFcPort":
@@ -163,15 +177,19 @@ class UcsSystemTransceiver(UcsTransceiver, UcsSystemInventoryObject):
                 if self.model in ["FTLF8524P2BNL-C2"]:
                     self.sku = "DS-SFP-FC4G-SW"
                     self.length = "<=380m"
-                if self.model in ["FTLF8528P2BCV-CS", "FTLF8528P3BCV-C1", "SFBR-5780AMZ-CS2", "SFBR-5780APZ-CS2"]:
+                if self.model in ["FTLF8528P2BCV-CS", "FTLF8528P3BCV-C1", "SFBR-5780AMZ-CS2", "SFBR-5780APZ",
+                                  "SFBR-5780APZ-CS2"]:
                     self.sku = "DS-SFP-FC8G-SW"
                     self.length = "<=190m"
-                if self.model in ["FTLF8528P3BCV-CS", "FTLF8529P3BCV-CS", "AFBR-57F5PZ-CS1"]:
+                if self.model in ["FTLF8528P3BCV-CS", "FTLF8529P3BCV-CS", "AFBR-57F5PZ-CS1", "RTXM228-561-C99"]:
                     self.sku = "DS-SFP-FC16G-SW"
                     self.length = "<=125m"
                 if self.model in ["FTLF8532P4BCV-C1", "SFBR-57G5MZ-CS1"]:
                     self.sku = "DS-SFP-FC32G-SW"
                     self.length = "<=100m"
+            elif self.type in ["4x32gsw"]:
+                self.sku = "DS-SFP-4X32G-SW"
+                self.length = "<=100m"
 
         # Manual entries for unknown Ethernet transceivers
         if self._parent.__class__.__name__ == "UcsSystemFiEthPort":

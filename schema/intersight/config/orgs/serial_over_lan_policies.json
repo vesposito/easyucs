@@ -1,0 +1,87 @@
+{
+   "id": "intersight_config_orgs_serial_over_lan_policies#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS intersight config orgs serial_over_lan_policies section",
+   "description": "EasyUCS intersight config orgs serial_over_lan_policies section JSON schema",
+   "type": "object",
+   "properties": {
+      "comment": {
+         "description": "Serial over LAN Policy Comments",
+         "type": "string",
+         "default": ""
+      },
+      "descr": {
+         "description": "Serial over LAN Policy Description",
+         "type": "string",
+         "default": "",
+         "pattern": "^$|^[a-zA-Z0-9]+[\\x00-\\xFF]*$",
+         "maxLength": 1024
+      },
+      "name": {
+         "description": "Serial over LAN Policy Name",
+         "type": "string",
+         "default": "",
+         "pattern": "^[a-zA-Z0-9_.:-]{1,64}$"
+      },
+      "tags": {
+         "description": "Serial over LAN Policy Tags",
+         "type": "array",
+         "items": {
+            "description": "Serial over LAN Policy Tag",
+            "type": "object",
+            "properties": {
+               "key": {
+                  "description": "Serial over LAN Policy Tag Key",
+                  "type": "string",
+                  "default": "",
+                  "minLength": 1,
+                  "maxLength": 128
+               },
+               "value": {
+                  "description": "Serial over LAN Policy Tag Value",
+                  "type": "string",
+                  "default": "",
+                  "minLength": 0,
+                  "maxLength": 256
+               }
+            },
+            "additionalProperties": false,
+            "required": [
+               "key",
+               "value"
+            ]
+         },
+         "minItems": 1
+      },
+      "enabled": {
+         "description": "Serial over LAN Policy Admin State",
+         "type": "boolean",
+         "default": true
+      },
+      "baud_rate": {
+         "description": "Serial over LAN Policy Baud Rate",
+         "type": "integer",
+         "default": 9600
+      },
+      "com_port": {
+         "description": "Serial over LAN Policy COM Port",
+         "type": "string",
+         "default": "com0",
+         "enum": [
+            "com0",
+            "com1"
+         ]
+      },
+      "ssh_port": {
+         "description": "Serial over LAN Policy SSH Port",
+         "type": "integer",
+         "default": 2400,
+         "minimum": 1024,
+         "maximum": 65535
+      }
+   },
+   "additionalProperties": false,
+   "required": [
+      "name"
+   ]
+}

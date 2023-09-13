@@ -1,0 +1,133 @@
+{
+   "id": "intersight_config_orgs_mac_pools#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS intersight config orgs mac_pools section",
+   "description": "EasyUCS intersight config orgs mac_pools section JSON schema",
+   "type": "object",
+   "properties": {
+      "comment": {
+         "description": "MAC Pool Comments",
+         "type": "string",
+         "default": ""
+      },
+      "descr": {
+         "description": "MAC Pool Description",
+         "type": "string",
+         "default": "",
+         "pattern": "^$|^[a-zA-Z0-9]+[\\x00-\\xFF]*$",
+         "maxLength": 1024
+      },
+      "name": {
+         "description": "MAC Pool Name",
+         "type": "string",
+         "default": "",
+         "pattern": "^[a-zA-Z0-9_.:-]{1,64}$"
+      },
+      "tags": {
+         "description": "MAC Pool Tags",
+         "type": "array",
+         "items": {
+            "description": "MAC Pool Tag",
+            "type": "object",
+            "properties": {
+               "key": {
+                  "description": "MAC Pool Tag Key",
+                  "type": "string",
+                  "default": "",
+                  "minLength": 1,
+                  "maxLength": 128
+               },
+               "value": {
+                  "description": "MAC Pool Tag Value",
+                  "type": "string",
+                  "default": "",
+                  "minLength": 0,
+                  "maxLength": 256
+               }
+            },
+            "additionalProperties": false,
+            "required": [
+               "key",
+               "value"
+            ]
+         },
+         "minItems": 1
+      },
+      "mac_blocks": {
+         "description": "Blocks of MAC Addresses in MAC Pool",
+         "type": "array",
+         "items": {
+            "type": "object",
+            "oneOf": [
+               {
+                  "properties": {
+                     "from": {
+                        "description": "First MAC Address of Block",
+                        "type": "string",
+                        "default": "00:25:B5:00:00:00",
+                        "pattern": "^(([0-9a-fA-F][0-9a-fA-F]:){5}([0-9a-fA-F][0-9a-fA-F]))$|^0$"
+                     },
+                     "to": {
+                        "description": "Last MAC Address of Block",
+                        "type": "string",
+                        "default": "00:25:B5:00:00:00",
+                        "pattern": "^(([0-9a-fA-F][0-9a-fA-F]:){5}([0-9a-fA-F][0-9a-fA-F]))$|^0$"
+                     }
+                  },
+                  "additionalProperties": false,
+                  "required": [
+                     "from",
+                     "to"
+                  ]
+               },
+               {
+                  "properties": {
+                     "from": {
+                        "description": "First MAC Address of Block",
+                        "type": "string",
+                        "default": "00:25:B5:00:00:00",
+                        "pattern": "^(([0-9a-fA-F][0-9a-fA-F]:){5}([0-9a-fA-F][0-9a-fA-F]))$|^0$"
+                     },
+                     "size": {
+                        "description": "Size of MAC Address Block",
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 1024
+                     }
+                  },
+                  "additionalProperties": false,
+                  "required": [
+                     "from",
+                     "size"
+                  ]
+               }
+            ]
+         },
+         "minItems": 1
+      },
+      "reservations": {
+         "description": "Reservations in MAC Pool",
+         "type": "array",
+         "items": {
+            "type": "object",
+            "properties": {
+               "identity": {
+                  "description": "Identity of MAC address being reserved",
+                  "type": "string",
+                  "default": "00:25:B5:00:00:00",
+                  "pattern": "^(([0-9a-fA-F][0-9a-fA-F]:){5}([0-9a-fA-F][0-9a-fA-F]))$|^0$"
+               }
+            },
+            "additionalProperties": false,
+            "required": [
+               "identity"
+            ]
+         },
+         "minItems": 1
+      }
+   },
+   "additionalProperties": false,
+   "required": [
+      "name"
+   ]
+}

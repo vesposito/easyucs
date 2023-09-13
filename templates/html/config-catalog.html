@@ -1,0 +1,275 @@
+{% extends "/html/base.html" %}
+
+{% block css %}
+<!-- DataTables -->
+<link rel="stylesheet" href="/static/plugins/datatables-bs4/css/dataTables.bootstrap4.min.css">
+<link rel="stylesheet" href="/static/plugins/datatables-select/css/select.bootstrap4.min.css">
+<link rel="stylesheet" href="/static/plugins/datatables-responsive/css/responsive.bootstrap4.min.css">
+<link rel="stylesheet" href="/static/plugins/datatables-buttons/css/buttons.bootstrap4.min.css">
+{% endblock %}
+
+{% block modals %}
+<div class="modal fade" id="pushConfigModal" tabindex="-1" role="dialog" aria-labelledby="push_config_label" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="push_config_label">Push Config</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <h5 class="modal-title">Push config using:</h5>
+        <form id = "pushConfigForm">
+          <div class = "row">
+            <div class = "col-md-12">
+              <div id="pushConfigTargetDevice" class="form-group">
+                <label for="push_config_device_target" class="col-form-label">Device to push on</label>
+                <select class="form-control" name="device_uuid" id="push_config_device_target">
+                </select>
+              </div>
+            </div>
+          </div>
+          <div class = "row">
+            <div class = "col-md-12">
+              <div id="catalogConfigs" class="form-group">
+                <label for="push_configs_catalog" class="col-form-label">Config to push</label>
+                <select class="form-control" name="config_uuid" id="push_configs_catalog">
+                </select>
+              </div>
+            </div>
+          </div>
+          <div class = "row pb-2">
+            <div class = "col-md-12">
+              <div class="form-check form-check-inline">
+                <input class="form-check-input" type="checkbox" name = "reset" id="reset">
+                <label class="form-check-label" for="reset">Reset</label>
+              </div>
+              <div class="form-check form-check-inline">
+                <input class="form-check-input" type="checkbox" name = "setup" id="setup" onclick="showFabricFields()">
+                <label class="form-check-label" for="setup">Setup</label>
+              </div>
+            </div>
+          </div>
+          <div id="collapsedFabricFields_ucsm" class="form-group collapse">
+            <div class = "row">
+              <div class = "col-md-6">
+                <label for="dhcp_ip_fabA">DHCP IP for FABRIC-A:</label>
+                <input type="text" name="dhcp_ip_fabA" class="form-control" id="dhcp_ip_fabA" placeholder="10.60.11.201">
+              </div>
+              <div class = "col-md-6">
+                <label for="dhcp_ip_fabB">DHCP IP for FABRIC-B:</label>
+                <input type="text" name="dhcp_ip_fabB" class="form-control" id="dhcp_ip_fabB" placeholder="10.60.11.202">
+              </div>
+            </div>
+          </div>
+          <div id="collapsedFabricFields_cimc" class="form-group collapse">
+            <div class = "row">
+              <div class = "col-md-12">
+                <label for="dhcp_ip_cimc">DHCP IP for CIMC:</label>
+                <input type="text" name="dhcp_ip_cimc" class="form-control" id="dhcp_ip_cimc" placeholder="10.60.11.209">
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+        <button id = "pushConfigSubmitButton" type="submit" class="btn btn-primary" onclick="pushConfig()">Push</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+
+{% block content %}
+<div class="content-header">
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-sm-8 col-md-6">
+        <div id="deviceTypeDisplayContainer"></div>
+      </div>
+      <!-- /.col -->
+      <div class="col-sm-4 col-md-6">
+        <ol class="breadcrumb float-sm-right">
+          <li class="breadcrumb-item"><a href="/">Home</a></li>
+          <li class="breadcrumb-item active">Config Catalog</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+</div>
+
+<section class="content">
+  <div class = "container-fluid">
+    <div class = "row">
+      <div id="configCatalogContainer" class = "col-md-12">
+        <nav>
+          <div class="nav nav-tabs" id="nav-tab" role="tablist">
+            <a class="d-none nav-item nav-link" id="nav-best-practices-tab" data-toggle="tab" href="#nav-best-practices" role="tab" aria-controls="nav-best-practices" aria-selected="false">Best Practices</a>
+            <a class="d-none nav-item nav-link" id="nav-cvd-tab" data-toggle="tab" href="#nav-cvd" role="tab" aria-controls="nav-cvd" aria-selected="false">CVD</a>
+            <a class="d-none nav-item nav-link" id="nav-samples-tab" data-toggle="tab" href="#nav-samples" role="tab" aria-controls="nav-samples" aria-selected="false">Samples</a>
+            <a class="border-left d-none nav-item nav-link" id="nav-custom-tab" data-toggle="tab" href="#nav-custom" role="tab" aria-controls="nav-custom" aria-selected="false">Custom</a>
+          </div>
+        </nav>
+        <div class="tab-content" id="nav-tabContent">
+          <div class="d-none tab-pane fade" id="nav-best-practices" role="tabpanel" aria-labelledby="nav-best-practices-tab">
+            <div class="card">
+              <div class="card-body">
+                <form id = "best-practicesActionForm" onchange = "onSelectedCategoryChanged('best-practices');">
+                  <div class="row">
+                    <div id="best-practicesTableButtonContainer" class="col-md-12 d-none">
+                      <button type="button" class="btn btn-success dropdown-toggle mb-3" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Actions</button>
+                      <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                        <a class="dropdown-item" type="submit" onclick="downloadConfigs('best-practices')">Download Config(s)</a>
+                        <div class="dropdown-divider"></div>
+                        <a id = "best-practicesPushTableButton" class="dropdown-item" type="submit" onclick="togglePushConfigModal(event, 'best-practices')">Push Config</a>
+                      </div>
+                    </div>
+                  </div>
+                  <table id="best-practicesTable" class="table table-bordered table-striped table-hover">
+                    <thead>
+                    <tr>
+                      <th><input type="checkbox" id="best-practicesTable_selectAll" name="select_all" value="1" onclick = "handleSelectAll('best-practices', this);"></th>
+                      <th>Configuration name</th>
+                      <th>Category</th>
+                      <th>Revision</th>
+                      <th>Link</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                  </table>
+                </form>
+              </div>
+            </div>
+          </div>
+          <div class="d-none tab-pane fade" id="nav-cvd" role="tabpanel" aria-labelledby="nav-cvd-tab">
+            <div class="card">
+              <div class="card-body">
+                <div class="row">
+                  <div id="cvdTableButtonContainer" class="col-md-12 d-none">
+                    <button type="button" class="btn btn-success dropdown-toggle mb-3" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Actions</button>
+                    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                      <a class="dropdown-item" type="submit" onclick="downloadConfigs('cvd')">Download Config(s)</a>
+                      <div class="dropdown-divider"></div>
+                      <a id = "cvdPushTableButton" class="dropdown-item" type="submit" onclick="togglePushConfigModal(event, 'cvd')">Push Config</a>
+                    </div>
+                  </div>
+                </div>
+                <form id = "cvdActionForm" onchange = "onSelectedCategoryChanged('cvd');">
+                  <table id="cvdTable" class="table table-bordered table-striped table-hover">
+                    <thead>
+                    <tr>
+                      <th><input type="checkbox" id="cvdTable_selectAll" name="select_all" value="1" onclick = "handleSelectAll('cvd', this);"></th>
+                      <th>Configuration name</th>
+                      <th>Category</th>
+                      <th>Revision</th>
+                      <th>Link</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                  </table>
+                </form>
+              </div>
+            </div>
+          </div>
+          <div class="d-none tab-pane fade" id="nav-samples" role="tabpanel" aria-labelledby="nav-samples-tab">
+            <div class="card">
+              <div class="card-body">
+                <div class="row">
+                  <div id="samplesTableButtonContainer" class="col-md-12 d-none">
+                    <button type="button" class="btn btn-success dropdown-toggle mb-3" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Actions</button>
+                    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                      <a class="dropdown-item" type="submit" onclick="downloadConfigs('samples')">Download Config(s)</a>
+                      <div class="dropdown-divider"></div>
+                      <a id = "samplesPushTableButton" class="dropdown-item" type="submit" onclick="togglePushConfigModal(event, 'samples')">Push Config</a>
+                    </div>
+                  </div>
+                </div>
+                <form id = "samplesActionForm" onchange = "onSelectedCategoryChanged('samples');">
+                  <table id="samplesTable" class="table table-bordered table-striped table-hover">
+                    <thead>
+                    <tr>
+                      <th><input type="checkbox" id="samplesTable_selectAll" name="select_all" value="1" onclick = "handleSelectAll('samples', this);"></th>
+                      <th>Configuration name</th>
+                      <th>Category</th>
+                      <th>Revision</th>
+                      <th>Link</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                  </table>
+                </form>
+              </div>
+            </div>
+          </div>
+          <div class="d-none tab-pane fade" id="nav-custom" role="tabpanel" aria-labelledby="nav-custom-tab">
+            <div class="card">
+              <div class="card-body">
+                <div class="row">
+                  <div class="col-md-12">
+                    <button type="button" class="btn btn-primary mb-3" onclick="openImportFileDialog();">
+                      <i class="fas fa-plus"></i>
+                      Import Config
+                    </button>
+                    <input id='importConfigDialog' type='file' onchange="importConfig(event)" hidden/>
+                  </div>
+                  <div id="customTableButtonContainer" class="col-md-12 d-none">
+                    <button type="button" class="btn btn-success dropdown-toggle mb-3" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Actions</button>
+                    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                      <a class="dropdown-item" type="submit" onclick="downloadConfigs('custom')">Download Config(s)</a>
+                      <a class="dropdown-item" type="submit" onclick="deleteMultipleConfigs('custom')">Delete Config(s)</a>
+                      <div class="dropdown-divider"></div>
+                      <a id = "customPushTableButton" class="dropdown-item" type="submit" onclick="togglePushConfigModal(event, 'custom')">Push Config</a>
+                    </div>
+                  </div>
+                </div>
+                <form id = "customActionForm" onchange = "onSelectedCategoryChanged('custom');">
+                  <table id="customTable" class="table table-bordered table-striped table-hover">
+                    <thead>
+                    <tr>
+                      <th><input type="checkbox" id="customTable_selectAll" name="select_all" value="1" onclick = "handleSelectAll('custom', this);"></th>
+                      <th>Configuration name</th>
+                      <th>Category</th>
+                      <th>Revision</th>
+                      <th>Import date</th>
+                      <th>Link</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                  </table>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block javascript%}
+<script src="/static/plugins/moment/moment.min.js"></script>
+<script src="/static/plugins/datatables/jquery.dataTables.min.js"></script>
+<script src="/static/plugins/datatables-bs4/js/dataTables.bootstrap4.min.js"></script>
+<script src="/static/plugins/datatables-responsive/js/dataTables.responsive.min.js"></script>
+<script src="/static/plugins/datatables-responsive/js/responsive.bootstrap4.min.js"></script>
+<script src="/static/plugins/datatables-buttons/js/dataTables.buttons.min.js"></script>
+<script src="/static/plugins/datatables-buttons/js/buttons.bootstrap4.min.js"></script>
+<script src="/static/plugins/datatables-select/js/dataTables.select.min.js"></script>
+<script src="/static/plugins/datatables-select/js/select.bootstrap4.min.js"></script>
+<script src="/static/plugins/jszip/jszip.min.js"></script>
+<script src="/static/plugins/pdfmake/pdfmake.min.js"></script>
+<script src="/static/plugins/datatables-buttons/js/buttons.html5.min.js"></script>
+<script src="/static/plugins/datatables-buttons/js/buttons.print.min.js"></script>
+<script src="/static/plugins/datatables-buttons/js/buttons.colVis.min.js"></script>
+<script src="/static/plugins/datatables-datetime-moment/datetime-moment.js"></script>
+<!-- Page-specific JS -->
+<script src="/static/js/config-catalog.js" crossorigin="anonymous"></script>
+{% endblock %}

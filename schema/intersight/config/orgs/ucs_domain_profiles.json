@@ -1,0 +1,142 @@
+{
+   "id": "intersight_config_orgs_ucs_domain_profiles#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS intersight config orgs ucs_domain_profiles section",
+   "description": "EasyUCS intersight config orgs ucs_domain_profiles section JSON schema",
+   "type": "object",
+   "properties": {
+      "comment": {
+         "description": "UCS Domain Profile Comments",
+         "type": "string",
+         "default": ""
+      },
+      "descr": {
+         "description": "UCS Domain Profile Description",
+         "type": "string",
+         "default": "",
+         "pattern": "^$|^[a-zA-Z0-9]+[\\x00-\\xFF]*$",
+         "maxLength": 1024
+      },
+      "name": {
+         "description": "UCS Domain Profile Name",
+         "type": "string",
+         "default": "",
+         "pattern": "^[a-zA-Z0-9_.-]{1,64}$"
+      },
+      "tags": {
+         "description": "UCS Domain Profile Tags",
+         "type": "array",
+         "items": {
+            "description": "UCS Domain Profile Tag",
+            "type": "object",
+            "properties": {
+               "key": {
+                  "description": "UCS Domain Profile Tag Key",
+                  "type": "string",
+                  "default": "",
+                  "minLength": 1,
+                  "maxLength": 128
+               },
+               "value": {
+                  "description": "UCS Domain Profile Tag Value",
+                  "type": "string",
+                  "default": "",
+                  "minLength": 0,
+                  "maxLength": 256
+               }
+            },
+            "additionalProperties": false,
+            "required": [
+               "key",
+               "value"
+            ]
+         },
+         "minItems": 1
+      },
+      "network_connectivity_policy": {
+         "description": "UCS Domain Profile Network Connectivity Policy",
+         "type": "string",
+         "default": ""
+      },
+      "ntp_policy": {
+         "description": "UCS Domain Profile NTP Policy",
+         "type": "string",
+         "default": ""
+      },
+      "port_policies": {
+         "description": "UCS Domain Profile Port Policies",
+         "type": "object",
+         "properties": {
+            "fabric_a": {
+               "description": "UCS Domain Profile Port Policy for Fabric Interconnect A",
+               "type": "string",
+               "default": ""
+            },
+            "fabric_b": {
+               "description": "UCS Domain Profile Port Policy for Fabric Interconnect B",
+               "type": "string",
+               "default": ""
+            }
+         },
+         "additionalProperties": false
+      },
+      "snmp_policy": {
+         "description": "UCS Domain Profile SNMP Policy",
+         "type": "string",
+         "default": ""
+      },
+      "switch_control_policy": {
+         "description": "UCS Domain Profile Switch Control Policy",
+         "type": "string",
+         "default": ""
+      },
+      "syslog_policy": {
+         "description": "UCS Domain Profile Syslog Policy",
+         "type": "string",
+         "default": ""
+      },
+      "system_qos_policy": {
+         "description": "UCS Domain Profile System QoS Policy",
+         "type": "string",
+         "default": ""
+      },
+      "vlan_policies": {
+         "description": "UCS Domain Profile VLAN Policies",
+         "type": "object",
+         "properties": {
+            "fabric_a": {
+               "description": "UCS Domain Profile VLAN Policy for Fabric Interconnect A",
+               "type": "string",
+               "default": ""
+            },
+            "fabric_b": {
+               "description": "UCS Domain Profile VLAN Policy for Fabric Interconnect B",
+               "type": "string",
+               "default": ""
+            }
+         },
+         "additionalProperties": false
+      },
+      "vsan_policies": {
+         "description": "UCS Domain Profile VSAN Policies",
+         "type": "object",
+         "properties": {
+            "fabric_a": {
+               "description": "UCS Domain Profile VSAN Policy for Fabric Interconnect A",
+               "type": "string",
+               "default": ""
+            },
+            "fabric_b": {
+               "description": "UCS Domain Profile VSAN Policy for Fabric Interconnect B",
+               "type": "string",
+               "default": ""
+            }
+         },
+         "additionalProperties": false
+      }
+   },
+   "additionalProperties": false,
+   "required": [
+      "name"
+   ]
+}

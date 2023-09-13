@@ -2,17 +2,17 @@
 # !/usr/bin/env python
 
 """ domain_groups.py: Easy UCS Central Domain Groups objects """
-from __init__ import __author__, __copyright__, __version__, __status__
-
 import copy
 import hashlib
 
-from config.ucs.object import GenericUcsConfigObject, UcsCentralConfigObject
+from config.ucs.object import UcsCentralConfigObject
 from config.ucs.ucsc.orgs import UcsCentralIpPool
+from config.ucs.ucsc.policies import UcsCentralApplianceNetworkControlPolicy, UcsCentralFlowControlPolicy, \
+    UcsCentralHardwareChangeDiscoveryPolicy, UcsCentralInbandPolicy, UcsCentralKmipCertificationPolicy, \
+    UcsCentralLacpPolicy, UcsCentralLinkProfile, UcsCentralMulticastPolicy, UcsCentralPortAutoDiscoveryPolicy, \
+    UcsCentralUdldLinkPolicy
 from config.ucs.ucsc.system import UcsCentralDateTimeMgmt, UcsCentralDns, UcsCentralLocale, UcsCentralRole, \
     UcsCentralSnmp, UcsCentralSyslog
-
-import common
 
 from ucscsdk.mometa.comm.CommCimxml import CommCimxml
 from ucscsdk.mometa.comm.CommHttp import CommHttp
@@ -37,15 +37,14 @@ from ucscsdk.mometa.org.OrgDomainGroupPolicy import OrgDomainGroupPolicy
 from ucscsdk.mometa.power.PowerMgmtPolicy import PowerMgmtPolicy
 from ucscsdk.mometa.top.TopInfoSyncPolicy import TopInfoSyncPolicy
 
-from ucscsdk.ucscexception import UcscException
-
 
 class UcsCentralDomainGroup(UcsCentralConfigObject):
     _CONFIG_NAME = "Domain Group"
+    _CONFIG_SECTION_NAME = "domain_groups"
     _UCS_SDK_OBJECT_NAME = "orgDomainGroup"
 
     def __init__(self, parent=None, json_content=None, org_domain_group=None):
-        UcsCentralConfigObject.__init__(self, parent=parent)
+        UcsCentralConfigObject.__init__(self, parent=parent, ucs_sdk_object=org_domain_group)
         self.descr = None
         self.domains = []
         self.name = None
@@ -78,6 +77,9 @@ class UcsCentralDomainGroup(UcsCentralConfigObject):
                     self.logger(level="error",
                                 message="Unable to get attributes from JSON content for " + self._CONFIG_NAME)
 
+        self.logger(level="debug",
+                    message="Building internal objects for policies of Domain Group " + self.get_domain_group_path())
+
         self.date_time = \
             self._get_generic_element(json_content=json_content, object_class=UcsCentralDateTimeMgmt,
                                       name_to_fetch="date_time")
@@ -90,15 +92,39 @@ class UcsCentralDomainGroup(UcsCentralConfigObject):
         self.equipment_policies = \
             self._get_generic_element(json_content=json_content, object_class=UcsCentralDomainGroupEquipmentPolicies,
                                       name_to_fetch="equipment_policies")
+        self.flow_control_policies = \
+            self._get_generic_element(json_content=json_content, object_class=UcsCentralFlowControlPolicy,
+                                      name_to_fetch="flow_control_policies")
+        self.hardware_change_discovery_policies = \
+            self._get_generic_element(json_content=json_content, object_class=UcsCentralHardwareChangeDiscoveryPolicy,
+                                      name_to_fetch="hardware_change_discovery_policies")
+        self.inband_policies = \
+            self._get_generic_element(json_content=json_content, object_class=UcsCentralInbandPolicy,
+                                      name_to_fetch="inband_policies")
+        self.kmip_certification_policies = \
+            self._get_generic_element(json_content=json_content, object_class=UcsCentralKmipCertificationPolicy,
+                                      name_to_fetch="kmip_certification_policies")
         self.syslog = \
             self._get_generic_element(json_content=json_content, object_class=UcsCentralSyslog,
                                       name_to_fetch="syslog")
         self.snmp = \
             self._get_generic_element(json_content=json_content, object_class=UcsCentralSnmp,
                                       name_to_fetch="snmp")
+        self.lacp_policies = \
+            self._get_generic_element(json_content=json_content, object_class=UcsCentralLacpPolicy,
+                                      name_to_fetch="lacp_policies")
+        self.link_profiles = \
+            self._get_generic_element(json_content=json_content, object_class=UcsCentralLinkProfile,
+                                      name_to_fetch="link_profiles")
         self.locales = \
             self._get_generic_element(json_content=json_content, object_class=UcsCentralLocale,
                                       name_to_fetch="locales")
+        self.multicast_policies = \
+            self._get_generic_element(json_content=json_content, object_class=UcsCentralMulticastPolicy,
+                                      name_to_fetch="multicast_policies")
+        self.port_auto_discovery_policies = \
+            self._get_generic_element(json_content=json_content, object_class=UcsCentralPortAutoDiscoveryPolicy,
+                                      name_to_fetch="port_auto_discovery_policies")
         self.roles = \
             self._get_generic_element(json_content=json_content, object_class=UcsCentralRole,
                                       name_to_fetch="roles")
@@ -108,6 +134,9 @@ class UcsCentralDomainGroup(UcsCentralConfigObject):
         self.vlans = \
             self._get_generic_element(json_content=json_content, object_class=UcsCentralVlan,
                                       name_to_fetch="vlans")
+        self.appliance_network_control_policies = \
+            self._get_generic_element(json_content=json_content, object_class=UcsCentralApplianceNetworkControlPolicy,
+                                      name_to_fetch="appliance_network_control_policies")
         self.appliance_vlans = \
             self._get_generic_element(json_content=json_content, object_class=UcsCentralApplianceVlan,
                                       name_to_fetch="appliance_vlans")
@@ -120,6 +149,12 @@ class UcsCentralDomainGroup(UcsCentralConfigObject):
         self.vsans = \
             self._get_generic_element(json_content=json_content, object_class=UcsCentralVsan,
                                       name_to_fetch="vsans")
+        self.storage_vsans = \
+            self._get_generic_element(json_content=json_content, object_class=UcsCentralStorageVsan,
+                                      name_to_fetch="storage_vsans")
+        self.udld_link_policies = \
+            self._get_generic_element(json_content=json_content, object_class=UcsCentralUdldLinkPolicy,
+                                      name_to_fetch="udld_link_policies")
 
         self.clean_object()
 
@@ -174,8 +209,11 @@ class UcsCentralDomainGroup(UcsCentralConfigObject):
                     return False
 
         # We push all subconfig elements, in a specific optimized order
-        objects_to_push_in_order = ['date_time', 'dns', 'remote_access', 'equipment_policies', 'snmp', 'syslog',
-                                    'locales', 'roles', 'vlan_groups', 'ip_pools', 'vsans', 'domain_groups']
+        objects_to_push_in_order = [
+            'appliance_network_control_policies', 'date_time', 'dns', 'remote_access', 'equipment_policies',
+            'hardware_change_discovery_policies', 'inband_policies', 'kmip_certification_policies', 'snmp', 'syslog', 'lacp_policies',
+            'link_profiles', 'locales', 'roles', 'vlan_groups', 'ip_pools', 'flow_control_policies', 'multicast_policies',
+            'port_auto_discovery_policies', 'vsans', 'storage_vsans', 'udld_link_policies', 'domain_groups']
 
         # The VLANs and Appliance VLANs are not pushed with the rest
         vlan_list = None
@@ -208,6 +246,12 @@ class UcsCentralDomainGroup(UcsCentralConfigObject):
 
         return True
 
+    def get_domain_group_path(self):
+        """
+        Returns the "readable" domain group path of the current domain group based on its DN
+        """
+        return '/'.join([dg.replace('domaingroup-', '', 1) for dg in self._dn.split('/')])
+
     def _get_generic_element(self, json_content, object_class, name_to_fetch):
         if self._config.load_from == "live":
             list_of_obj = self._config.get_config_objects_under_dn(dn=self._dn, object_class=object_class, parent=self)
@@ -221,12 +265,13 @@ class UcsCentralDomainGroup(UcsCentralConfigObject):
 
 class UcsCentralDomainGroupEquipmentPolicies(UcsCentralConfigObject):
     _CONFIG_NAME = "Domain Group Equipment Policies"
+    _CONFIG_SECTION_NAME = "equipment_policies"
     _UCS_SDK_OBJECTS_NAMES = ["computeChassisDiscPolicy", "computePsuPolicy", "computeServerDiscPolicy",
                               "computeServerMgmtPolicy", "fabricLanCloudPolicy", "firmwareAutoSyncPolicy",
                               "powerMgmtPolicy", "topInfoSyncPolicy"]
 
     def __init__(self, parent=None, json_content=None, sdk_object=None):
-        UcsCentralConfigObject.__init__(self, parent=parent)
+        UcsCentralConfigObject.__init__(self, parent=parent, ucs_sdk_object=sdk_object)
         self.rack_management_connection_policy = None
         self.mac_address_table_aging = None
         self.vlan_port_count_optimization = None
@@ -486,10 +531,11 @@ class UcsCentralDomainGroupEquipmentPolicies(UcsCentralConfigObject):
 
 class UcsCentralDomainGroupRemoteAccess(UcsCentralConfigObject):
     _CONFIG_NAME = "Domain Group Remote Access"
+    _CONFIG_SECTION_NAME = "remote_access"
     _UCS_SDK_OBJECTS_NAMES = ["commHttp", "commTelnet", "commCimxml", "commWebSvcLimits", "commShellSvcLimits"]
 
     def __init__(self, parent=None, json_content=None, sdk_object=None):
-        UcsCentralConfigObject.__init__(self, parent=parent)
+        UcsCentralConfigObject.__init__(self, parent=parent, ucs_sdk_object=sdk_object)
         self.http = []
         self.telnet = None
         self.cim_xml = None
@@ -628,10 +674,11 @@ class UcsCentralDomainGroupRemoteAccess(UcsCentralConfigObject):
 
 class UcsCentralVlan(UcsCentralConfigObject):
     _CONFIG_NAME = "VLAN"
+    _CONFIG_SECTION_NAME = "vlans"
     _UCS_SDK_OBJECT_NAME = "fabricVlan"
 
     def __init__(self, parent=None, json_content=None, fabric_vlan=None):
-        UcsCentralConfigObject.__init__(self, parent=parent)
+        UcsCentralConfigObject.__init__(self, parent=parent, ucs_sdk_object=fabric_vlan)
         self.id = None
         self.name = None
         self.sharing_type = None
@@ -694,7 +741,7 @@ class UcsCentralVlan(UcsCentralConfigObject):
             for organization in self.org_permissions:
                 complete_org_path = ""
                 for part in organization.split("/"):
-                    if "org-" not in part:
+                    if not part.startswith("org-"):
                         complete_org_path += "org-"
                     complete_org_path += part + "/"
                 complete_org_path = complete_org_path[:-1]  # Remove the trailing "/"
@@ -713,10 +760,11 @@ class UcsCentralVlan(UcsCentralConfigObject):
 
 class UcsCentralApplianceVlan(UcsCentralConfigObject):
     _CONFIG_NAME = "Appliance VLAN"
+    _CONFIG_SECTION_NAME = "appliance_vlans"
     _UCS_SDK_OBJECT_NAME = "fabricVlan"
 
     def __init__(self, parent=None, json_content=None, fabric_vlan=None):
-        UcsCentralConfigObject.__init__(self, parent=parent)
+        UcsCentralConfigObject.__init__(self, parent=parent, ucs_sdk_object=fabric_vlan)
         self.id = None
         self.name = None
         self.sharing_type = None
@@ -779,7 +827,7 @@ class UcsCentralApplianceVlan(UcsCentralConfigObject):
             for organization in self.org_permissions:
                 complete_org_path = ""
                 for part in organization.split("/"):
-                    if "org-" not in part:
+                    if not part.startswith("org-"):
                         complete_org_path += "org-"
                     complete_org_path += part + "/"
                 complete_org_path = complete_org_path[:-1]  # Remove the trailing "/"
@@ -798,10 +846,11 @@ class UcsCentralApplianceVlan(UcsCentralConfigObject):
 
 class UcsCentralVlanGroup(UcsCentralConfigObject):
     _CONFIG_NAME = "VLAN Group"
+    _CONFIG_SECTION_NAME = "vlan_groups"
     _UCS_SDK_OBJECT_NAME = "fabricNetGroup"
 
     def __init__(self, parent=None, json_content=None, fabric_net_group=None):
-        UcsCentralConfigObject.__init__(self, parent=parent)
+        UcsCentralConfigObject.__init__(self, parent=parent, ucs_sdk_object=fabric_net_group)
         self.name = None
         self.vlans = []
         self.native_vlan = None
@@ -814,7 +863,7 @@ class UcsCentralVlanGroup(UcsCentralConfigObject):
 
                 if "fabricPooledVlan" in self._config.sdk_objects:
                     vlans = [vlan for vlan in self._config.sdk_objects["fabricPooledVlan"]
-                             if "fabric/lan/net-group-" + self.name in vlan.dn]
+                             if self._parent._dn + "/fabric/lan/net-group-" + self.name in vlan.dn]
                     if vlans:
                         for vlan in vlans:
                             if vlan.name != self.native_vlan:
@@ -875,7 +924,7 @@ class UcsCentralVlanGroup(UcsCentralConfigObject):
             for organization in self.org_permissions:
                 complete_org_path = ""
                 for part in organization.split("/"):
-                    if "org-" not in part:
+                    if not part.startswith("org-"):
                         complete_org_path += "org-"
                     complete_org_path += part + "/"
                 complete_org_path = complete_org_path[:-1]  # Remove the trailing "/"
@@ -893,10 +942,11 @@ class UcsCentralVlanGroup(UcsCentralConfigObject):
 
 class UcsCentralVsan(UcsCentralConfigObject):
     _CONFIG_NAME = "VSAN"
+    _CONFIG_SECTION_NAME = "vsans"
     _UCS_SDK_OBJECT_NAME = "fabricVsan"
 
     def __init__(self, parent=None, json_content=None, fabric_vsan=None):
-        UcsCentralConfigObject.__init__(self, parent=parent)
+        UcsCentralConfigObject.__init__(self, parent=parent, ucs_sdk_object=fabric_vsan)
         self.fabric = None
         self.fcoe_vlan_id = None
         self.id = None
@@ -940,6 +990,67 @@ class UcsCentralVsan(UcsCentralConfigObject):
         dn_subpath = "/fabric/san"
         if self.fabric is not None and self.fabric not in ["NONE", "dual"]:
             dn_subpath = "/fabric/san/" + self.fabric
+
+        mo_fabric_vsan = FabricVsan(parent_mo_or_dn=parent_mo + dn_subpath, name=self.name, id=self.id,
+                                    zoning_state=self.zoning, fcoe_vlan=self.fcoe_vlan_id)
+
+        self._handle.add_mo(mo=mo_fabric_vsan, modify_present=True)
+        if commit:
+            if self.commit(detail=self.name + " (" + self.id + ")") != True:
+                return False
+        return True
+
+
+class UcsCentralStorageVsan(UcsCentralConfigObject):
+    _CONFIG_NAME = "Storage VSAN"
+    _CONFIG_SECTION_NAME = "storage_vsans"
+    _UCS_SDK_OBJECT_NAME = "fabricVsan"
+
+    def __init__(self, parent=None, json_content=None, fabric_vsan=None):
+        UcsCentralConfigObject.__init__(self, parent=parent, ucs_sdk_object=fabric_vsan)
+        self.fabric = None
+        self.fcoe_vlan_id = None
+        self.id = None
+        self.name = None
+        self.zoning = None
+
+        if self._config.load_from == "live":
+            if fabric_vsan is not None:
+                self.fcoe_vlan_id = fabric_vsan.fcoe_vlan
+                self.id = fabric_vsan.id
+                self.name = fabric_vsan.name
+                self.zoning = fabric_vsan.zoning_state
+
+                if fabric_vsan.switch_id not in ["NONE", "dual"]:
+                    self.fabric = fabric_vsan.switch_id
+                else:
+                    self.fabric = "dual"
+
+        elif self._config.load_from == "file":
+            if json_content is not None:
+                if not self.get_attributes_from_json(json_content=json_content):
+                    self.logger(level="error",
+                                message="Unable to get attributes from JSON content for " + self._CONFIG_NAME)
+
+        self.clean_object()
+
+    def push_object(self, commit=True):
+        if commit:
+            self.logger(message="Pushing " + self._CONFIG_NAME + " configuration: " + self.name + ' (' + self.id + ')')
+        else:
+            self.logger(message="Adding to the handle " + self._CONFIG_NAME + " configuration: " + self.name +
+                                ' (' + self.id + ')' + ", waiting for a commit")
+
+        if hasattr(self._parent, '_dn'):
+            parent_mo = self._parent._dn
+        else:
+            self.logger(level="error",
+                        message="Impossible to find the parent dn of " + self._CONFIG_NAME + " : " + str(self.name))
+            return False
+
+        dn_subpath = "/fabric/fc-estc"
+        if self.fabric is not None and self.fabric not in ["NONE", "dual"]:
+            dn_subpath = "/fabric/fc-estc/" + self.fabric
 
         mo_fabric_vsan = FabricVsan(parent_mo_or_dn=parent_mo + dn_subpath, name=self.name, id=self.id,
                                     zoning_state=self.zoning, fcoe_vlan=self.fcoe_vlan_id)

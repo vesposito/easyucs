@@ -1,0 +1,12 @@
+{
+   "model_short_name": "2B",
+   "rear_file_name": "UCSC-RIS2A_2B-22XM7.png",
+   "rear_file_size": [508, 137],
+   "pcie_slots": [
+      {
+         "id": 2,
+         "width": "half",
+         "coord": [76, 22]
+      }
+   ]
+}

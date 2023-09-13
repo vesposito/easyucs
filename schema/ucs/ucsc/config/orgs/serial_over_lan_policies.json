@@ -1,0 +1,72 @@
+{
+   "id": "ucs_central_config_serial_over_lan_policies#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS ucs central config serial_over_lan_policies section",
+   "description": "EasyUCS ucs central config serial_over_lan_policies section JSON schema",
+   "type": "object",
+   "properties": {
+      "comment": {
+         "description": "Serial over LAN Policy Comments",
+         "type": "string",
+         "default": ""
+      },
+      "name": {
+         "description": "Serial over LAN Policy Name",
+         "type": "string",
+         "default": "",
+         "pattern": "^[\\-\\.:_a-zA-Z0-9]{1,16}$"
+      },
+      "descr": {
+         "description": "Description of Serial over LAN Policy",
+         "type": "string",
+         "default": "",
+         "pattern": "^[ !#$%&\\(\\)\\*\\+,\\-\\./:;\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{0,256}$"
+      },
+      "serial_over_lan_state": {
+         "description": "Serial over LAN State of Serial over LAN Policy",
+         "type": "string",
+         "default": "disable",
+         "enum": [
+            "enable",
+            "disable"
+         ]
+      },
+      "speed": {
+         "description": "Speed of Serial over LAN Policy",
+         "type": "string",
+         "default": "9600",
+         "enum": [
+            "115200",
+            "19200",
+            "38400",
+            "57600",
+            "9600"
+         ]
+      },
+      "tags": {
+         "description": "Serial over LAN Policy - Tags",
+         "type": "array",
+         "items": {
+            "description": "Serial over LAN Policy - Tag",
+            "type": "object",
+            "properties": {
+               "type": {
+                  "description": "Serial over LAN Policy - Tag - Type",
+                  "type": "string",
+                  "pattern": "^[ !#$%&\\(\\)\\*\\+,\\-\\.:;=\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{1,32}$"
+               },
+               "value": {
+                  "description": "Serial over LAN Policy - Tag - Value",
+                  "type": "string"
+               }
+            },
+            "additionalProperties": false,
+            "required": [
+               "type",
+               "value"
+            ]
+         }
+      }
+   },
+   "additionalProperties": false
+}

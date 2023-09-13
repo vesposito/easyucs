@@ -22,6 +22,13 @@
          "default": "",
          "pattern": "^[ !#$%&\\(\\)\\*\\+,\\-\\./:;\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{0,256}$"
       },
+      "policy_owner": {
+         "description": "Boot Policy Owner (for UCS Central)",
+         "type": "string",
+         "enum": [
+            "ucs-central"
+         ]
+      },
       "reboot_on_boot_order_change": {
          "description": "Boot Policy - Reboot on Boot Order Change",
          "type": "string",
@@ -279,7 +286,7 @@
                            "description": "Boot Policy - Boot Order - Embedded Local Disk Slot Number",
                            "type": "string",
                            "default": "1",
-                           "pattern": "^[1-9]$|^[0-9][0-9]$|^[0-1][0-9][0-9]$|^20[0-5]$"
+                           "pattern": "^[1-9]$|^[0-9][0-9]$|^[0-1][0-9][0-9]$|^2[0-4][0-9]$|^25[0-4]$"
                         },
                         "boot_loader_name": {
                            "description": "Boot Policy - Boot Order - UEFI Boot Parameters - Boot Loader Name (Embedded Local Disk)",
@@ -350,7 +357,7 @@
                            "description": "Boot Policy - Boot Order - Local JBOD Slot Number",
                            "type": "string",
                            "default": "1",
-                           "pattern": "^[1-9]$|^[0-9][0-9]$|^[0-1][0-9][0-9]$|^20[0-5]$"
+                           "pattern": "^[1-9]$|^[0-9][0-9]$|^[0-1][0-9][0-9]$|^2[0-4][0-9]$|^25[0-4]$"
                         }
                      },
                      "additionalProperties": false
@@ -390,8 +397,5 @@
          "maxItems": 16
       }
    },
-   "additionalProperties": false,
-   "required": [
-      "name"
-   ]
+   "additionalProperties": false
 }

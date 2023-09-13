@@ -1,0 +1,91 @@
+{
+   "id": "intersight_config_roles#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS intersight config roles section",
+   "description": "EasyUCS intersight config roles section JSON schema",
+   "type": "object",
+   "properties": {
+      "comment": {
+         "description": "Role Comments",
+         "type": "string",
+         "default": ""
+      },
+      "descr": {
+         "description": "Role Description",
+         "type": "string",
+         "default": ""
+      },
+      "name": {
+         "description": "Role Name",
+         "type": "string",
+         "default": ""
+      },
+      "operational_state": {
+         "description": "Operational state",
+         "type": "object",
+         "properties": {
+            "creator_type": {
+               "description": "Type of creator of the Role",
+               "type": "string",
+               "enum": [
+                  "SystemDefined",
+                  "UserDefined"
+               ]
+            }
+         }
+      },
+      "scope": {
+         "description": "Role Scope",
+         "type": "string",
+         "default": "all",
+         "enum": [
+            "all",
+            "organization"
+         ]
+      },
+      "privileges": {
+         "description": "Role Privileges",
+         "type": "array",
+         "items": {
+            "description": "Role Privilege",
+            "type": "string",
+            "default": ""
+         },
+         "minItems": 1
+      },
+      "access_control": {
+         "description": "Role Access Control",
+         "type": "array",
+         "items": [
+            {
+               "description": "Role Access Control Entry",
+               "type": "object",
+               "properties": {
+                  "organization": {
+                     "description": "Role Access Control Organization",
+                     "type": "string",
+                     "default": ""
+                  },
+                  "privileges": {
+                     "description": "Role Access Control Privileges",
+                     "type": "array",
+                     "items": {
+                        "description": "Role Access Control Privilege",
+                        "type": "string",
+                        "default": ""
+                     },
+                     "minItems": 1
+                  }
+               },
+               "additionalProperties": false
+            }
+         ],
+         "minItems": 1
+      }
+   },
+   "additionalProperties": false,
+   "required": [
+      "name",
+      "scope"
+   ]
+}

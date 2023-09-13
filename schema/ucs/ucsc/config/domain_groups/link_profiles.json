@@ -1,0 +1,61 @@
+{
+   "id": "ucs_central_config_domain_groups_link_profiles#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS ucs central config domain_groups link_profiles section",
+   "description": "EasyUCS ucs central config domain_groups link_profiles section JSON schema",
+   "type": "object",
+   "properties": {
+      "comment": {
+         "description": "Link Profile Comments",
+         "type": "string",
+         "default": ""
+      },
+      "name": {
+         "description": "Link Profile Name",
+         "type": "string",
+         "default": "",
+         "pattern": "^[\\-\\.:_a-zA-Z0-9]{1,16}$"
+      },
+      "descr": {
+         "description": "Description of Link Profile",
+         "type": "string",
+         "default": "",
+         "pattern": "^[ !#$%&\\(\\)\\*\\+,\\-\\./:;\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{0,256}$"
+      },
+      "udld_link_policy": {
+         "description": "Link Profile UDLD Link Policy",
+         "type": "string",
+         "default": "default",
+         "pattern": "^[\\-\\.:_a-zA-Z0-9]{1,16}$"
+      },
+      "tags": {
+         "description": "Link Profile - Tags",
+         "type": "array",
+         "items": {
+            "description": "Link Profile - Tag",
+            "type": "object",
+            "properties": {
+               "type": {
+                  "description": "Link Profile - Tag - Type",
+                  "type": "string",
+                  "pattern": "^[ !#$%&\\(\\)\\*\\+,\\-\\.:;=\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{1,32}$"
+               },
+               "value": {
+                  "description": "Link Profile - Tag - Value",
+                  "type": "string"
+               }
+            },
+            "additionalProperties": false,
+            "required": [
+               "type",
+               "value"
+            ]
+         }
+      }
+   },
+   "additionalProperties": false,
+   "required": [
+      "name",
+      "udld_link_policy"
+   ]
+}

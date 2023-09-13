@@ -1,0 +1,81 @@
+{
+   "id": "ucs_central_config_domain_groups_storage_vsans#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS ucs central config domain_groups storage vsans section",
+   "description": "EasyUCS ucs central config domain_groups storage vsans section JSON schema",
+   "type": "object",
+   "properties": {
+      "comment": {
+         "description": "Storage VSAN Comments",
+         "type": "string",
+         "default": ""
+      },
+      "name": {
+         "description": "Storage VSAN Name",
+         "type": "string",
+         "default": "",
+         "pattern": "^[\\-\\.:_a-zA-Z0-9]{1,32}$"
+      },
+      "id": {
+         "description": "Storage VSAN ID",
+         "type": "string",
+         "pattern": "^[1-9]$|^[1-9][0-9]$|^[1-9][0-9][0-9]$|^[1-3][0-9][0-9][0-9]$|^40[0-8][0-9]$|^409[0-3]$"
+      },
+      "fcoe_vlan_id": {
+         "description": "FCoE VLAN ID for this Storage VSAN",
+         "type": "string",
+         "pattern": "^[1-9]$|^[1-9][0-9]$|^[1-9][0-9][0-9]$|^[1-3][0-9][0-9][0-9]$|^40[0-2][0-9]$|^404[8-9]$|^40[5-8][0-9]$|^409[0-3]$"
+      },
+      "fabric": {
+         "description": "Storage VSAN Fabric",
+         "type": "string",
+         "enum": [
+            "a",
+            "A",
+            "b",
+            "B",
+            "dual"
+         ]
+      },
+      "zoning": {
+         "description": "Storage VSAN FC Zoning Admin State",
+         "type": "string",
+         "default": "disabled",
+         "enum": [
+            "disabled",
+            "enabled"
+         ]
+      },
+      "tags": {
+         "description": "Storage VSAN - Tags",
+         "type": "array",
+         "items": {
+            "description": "Storage VSAN - Tag",
+            "type": "object",
+            "properties": {
+               "type": {
+                  "description": "Storage VSAN - Tag - Type",
+                  "type": "string",
+                  "pattern": "^[ !#$%&\\(\\)\\*\\+,\\-\\.:;=\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{1,32}$"
+               },
+               "value": {
+                  "description": "Storage VSAN - Tag - Value",
+                  "type": "string"
+               }
+            },
+            "additionalProperties": false,
+            "required": [
+               "type",
+               "value"
+            ]
+         }
+      }
+   },
+   "additionalProperties": false,
+   "required": [
+      "name",
+      "id",
+      "fabric",
+      "fcoe_vlan_id"
+   ]
+}

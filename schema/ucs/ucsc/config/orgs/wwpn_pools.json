@@ -83,6 +83,44 @@
             ]
          },
          "minItems": 1
+      },
+      "operational_state": {
+         "description": "Operational state",
+         "type": "object",
+         "properties": {
+            "assigned": {
+               "description": "Number of identities that have been assigned",
+               "type": "string"
+            },
+            "size": {
+               "description": "Total size of the pool, aggregating all blocks",
+               "type": "string"
+            }
+         }
+      },
+      "tags": {
+         "description": "WWPN Pool - Tags",
+         "type": "array",
+         "items": {
+            "description": "WWPN Pool - Tag",
+            "type": "object",
+            "properties": {
+               "type": {
+                  "description": "WWPN Pool - Tag - Type",
+                  "type": "string",
+                  "pattern": "^[ !#$%&\\(\\)\\*\\+,\\-\\.:;=\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{1,32}$"
+               },
+               "value": {
+                  "description": "WWPN Pool - Tag - Value",
+                  "type": "string"
+               }
+            },
+            "additionalProperties": false,
+            "required": [
+               "type",
+               "value"
+            ]
+         }
       }
    },
    "additionalProperties": false,

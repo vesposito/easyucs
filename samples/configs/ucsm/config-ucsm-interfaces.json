@@ -1,399 +1,399 @@
 {
-   "easyucs":{
-      "metadata":[
+   "easyucs": {
+      "metadata": [
          {
             "file_type": "config",
             "device_type": "ucsm",
-            "category":"custom",
-            "subcategory":"samples",
-            "name":"UCS Manager interfaces-related sections configuration sample",
-            "easyucs_version":"0.9.0",
-            "revision": "1.0"
+            "category": "samples",
+            "subcategory": "Interfaces",
+            "name": "UCS Manager interfaces-related sections configuration sample",
+            "easyucs_version": "0.9.0",
+            "revision": "1.1"
          }
       ]
    },
-   "config":{
-      "breakout_ports":[
+   "config": {
+      "breakout_ports": [
          {
-            "fabric":"A",
-            "slot_id":"1",
-            "port_id":"18"
+            "fabric": "A",
+            "slot_id": "1",
+            "port_id": "18"
          }
       ],
-      "lan_uplink_ports":[
+      "lan_uplink_ports": [
          {
-            "fabric":"A",
-            "slot_id":"1",
-            "port_id":"15",
-            "flow_control_policy":"flow_ctrl",
-            "link_profile":"link_profile1"
+            "fabric": "A",
+            "slot_id": "1",
+            "port_id": "15",
+            "flow_control_policy": "flow_ctrl",
+            "link_profile": "link_profile1"
          },
          {
-            "fabric":"A",
-            "slot_id":"1",
-            "port_id":"16",
-            "admin_speed":"1gbps"
+            "fabric": "A",
+            "slot_id": "1",
+            "port_id": "16",
+            "admin_speed": "1gbps"
          },
          {
-            "fabric":"B",
-            "slot_id":"1",
-            "port_id":"15",
-            "user_label":"lan uplink port",
-            "admin_state":"disabled"
+            "fabric": "B",
+            "slot_id": "1",
+            "port_id": "15",
+            "user_label": "lan uplink port",
+            "admin_state": "disabled"
          },
          {
-            "fabric":"b",
-            "slot_id":"1",
-            "port_id":"16"
+            "fabric": "b",
+            "slot_id": "1",
+            "port_id": "16"
          }
       ],
-      "san_unified_ports":[
+      "san_unified_ports": [
          {
-            "fabric":"A",
-            "slot_id":"1",
-            "port_id_start":"23",
-            "port_id_end":"32",
-            "admin_state":"disabled"
+            "fabric": "A",
+            "slot_id": "1",
+            "port_id_start": "23",
+            "port_id_end": "32",
+            "admin_state": "disabled"
          },
          {
-            "fabric":"B",
-            "slot_id":"1",
-            "port_id_start":"23",
-            "port_id_end":"32",
-            "admin_state":"disabled"
+            "fabric": "B",
+            "slot_id": "1",
+            "port_id_start": "23",
+            "port_id_end": "32",
+            "admin_state": "disabled"
          }
       ],
-      "san_uplink_ports":[
+      "san_uplink_ports": [
          {
-            "fabric":"A",
-            "slot_id":"1",
-            "port_id":"24",
-            "vsan":"PROD",
-            "vsan_fabric":"dual",
-            "fill_pattern":"arbff",
-            "user_label":""
+            "fabric": "A",
+            "slot_id": "1",
+            "port_id": "24",
+            "vsan": "PROD",
+            "vsan_fabric": "dual",
+            "fill_pattern": "arbff",
+            "user_label": ""
          },
          {
-            "fabric":"B",
-            "slot_id":"1",
-            "port_id":"24",
-            "vsan":"PROD",
-            "fill_pattern":"arbff",
-            "user_label":""
+            "fabric": "B",
+            "slot_id": "1",
+            "port_id": "24",
+            "vsan": "PROD",
+            "fill_pattern": "arbff",
+            "user_label": ""
          }
       ],
-      "unified_uplink_ports":[
+      "unified_uplink_ports": [
          {
-            "fabric":"A",
-            "slot_id":"1",
-            "port_id":"17"
+            "fabric": "A",
+            "slot_id": "1",
+            "port_id": "17"
          }
       ],
-      "san_storage_ports":[
+      "san_storage_ports": [
          {
-            "fabric":"A",
-            "slot_id":"1",
-            "port_id":"23",
-            "vsan":"TOTO",
-            "vsan_fabric":"dual",
-            "fill_pattern":"arbff",
-            "user_label":""
+            "fabric": "A",
+            "slot_id": "1",
+            "port_id": "23",
+            "vsan": "TOTO",
+            "vsan_fabric": "dual",
+            "fill_pattern": "arbff",
+            "user_label": ""
          },
          {
-            "fabric":"B",
-            "slot_id":"1",
-            "port_id":"23",
-            "vsan":"TOTO",
-            "vsan_fabric":"dual",
-            "fill_pattern":"arbff",
-            "user_label":""
+            "fabric": "B",
+            "slot_id": "1",
+            "port_id": "23",
+            "vsan": "TOTO",
+            "vsan_fabric": "dual",
+            "fill_pattern": "arbff",
+            "user_label": ""
          }
       ],
-      "unified_storage_ports":[
+      "unified_storage_ports": [
          {
-            "fabric":"a",
-            "slot_id":"1",
-            "port_id":"22"
+            "fabric": "a",
+            "slot_id": "1",
+            "port_id": "22"
          }
       ],
-      "fcoe_uplink_ports":[
+      "fcoe_uplink_ports": [
          {
-            "fabric":"A",
-            "slot_id":"1",
-            "port_id":"19",
-            "link_profile":"link_profile1"
+            "fabric": "A",
+            "slot_id": "1",
+            "port_id": "19",
+            "link_profile": "link_profile1"
          },
          {
-            "fabric":"b",
-            "slot_id":"1",
-            "port_id":"19"
+            "fabric": "b",
+            "slot_id": "1",
+            "port_id": "19"
          }
       ],
-      "fcoe_storage_ports":[
+      "fcoe_storage_ports": [
          {
-            "fabric":"A",
-            "slot_id":"1",
-            "port_id":"5"
+            "fabric": "A",
+            "slot_id": "1",
+            "port_id": "5"
          },
          {
-            "fabric":"b",
-            "slot_id":"1",
-            "port_id":"5"
+            "fabric": "b",
+            "slot_id": "1",
+            "port_id": "5"
          }
       ],
-      "server_ports":[
+      "server_ports": [
          {
-            "fabric":"a",
-            "slot_id":"1",
-            "port_id":"24",
-            "user_label":"server port",
-            "admin_state":"disabled"
+            "fabric": "a",
+            "slot_id": "1",
+            "port_id": "24",
+            "user_label": "server port",
+            "admin_state": "disabled"
          },
          {
-            "fabric":"B",
-            "slot_id":"1",
-            "port_id":"24"
+            "fabric": "B",
+            "slot_id": "1",
+            "port_id": "24"
          }
       ],
-      "lan_port_channels":[
+      "lan_port_channels": [
          {
-            "fabric":"A",
-            "pc_id":"9",
-            "interfaces":[
+            "fabric": "A",
+            "pc_id": "9",
+            "interfaces": [
                {
-                  "port_id":"15",
-                  "slot_id":"1",
-                  "link_profile":"link_profile1"
+                  "port_id": "15",
+                  "slot_id": "1",
+                  "link_profile": "link_profile1"
                },
                {
-                  "port_id":"16",
-                  "slot_id":"1",
-                  "admin_state":"disabled"
+                  "port_id": "16",
+                  "slot_id": "1",
+                  "admin_state": "disabled"
                }
             ],
-            "lacp_policy":"lacp_pol",
-            "flow_control_policy":"flow_ctrl",
-            "admin_speed":"1gbps"
+            "lacp_policy": "lacp_pol",
+            "flow_control_policy": "flow_ctrl",
+            "admin_speed": "1gbps"
          },
          {
-            "fabric":"B",
-            "pc_id":"10",
-            "admin_state":"enabled",
-            "interfaces":[
+            "fabric": "B",
+            "pc_id": "10",
+            "admin_state": "enabled",
+            "interfaces": [
                {
-                  "port_id":"15",
-                  "slot_id":"1"
+                  "port_id": "15",
+                  "slot_id": "1"
                },
                {
-                  "port_id":"16",
-                  "slot_id":"1"
+                  "port_id": "16",
+                  "slot_id": "1"
                }
             ]
          }
       ],
-      "san_port_channels":[
+      "san_port_channels": [
          {
-            "fabric":"A",
-            "pc_id":"12",
-            "vsan":"PROD",
-            "name":"sanPC",
-            "interfaces":[
+            "fabric": "A",
+            "pc_id": "12",
+            "vsan": "PROD",
+            "name": "sanPC",
+            "interfaces": [
                {
-                  "port_id":"26",
-                  "slot_id":"1"
+                  "port_id": "26",
+                  "slot_id": "1"
                }
             ],
-            "admin_speed":"auto"
+            "admin_speed": "auto"
          },
          {
-            "fabric":"B",
-            "pc_id":"12",
-            "interfaces":[
+            "fabric": "B",
+            "pc_id": "12",
+            "interfaces": [
                {
-                  "port_id":"26",
-                  "slot_id":"1"
+                  "port_id": "26",
+                  "slot_id": "1"
                }
             ]
          }
       ],
-      "fcoe_port_channels":[
+      "fcoe_port_channels": [
          {
-            "fabric":"A",
-            "pc_id":"4",
-            "interfaces":[
+            "fabric": "A",
+            "pc_id": "4",
+            "interfaces": [
                {
-                  "port_id":"19",
-                  "slot_id":"1",
-                  "link_profile":"link_profile1"
+                  "port_id": "19",
+                  "slot_id": "1",
+                  "link_profile": "link_profile1"
                }
             ]
          },
          {
-            "fabric":"B",
-            "pc_id":"4",
-            "interfaces":[
+            "fabric": "B",
+            "pc_id": "4",
+            "interfaces": [
                {
-                  "port_id":"19",
-                  "slot_id":"1"
+                  "port_id": "19",
+                  "slot_id": "1"
                }
             ]
          }
       ],
-      "appliance_ports":[
+      "appliance_ports": [
          {
-            "fabric":"A",
-            "slot_id":"1",
-            "port_id":"8",
-            "ethernet_target_endpoint":[
+            "fabric": "A",
+            "slot_id": "1",
+            "port_id": "8",
+            "ethernet_target_endpoint": [
                {
-                  "name":"target",
-                  "mac_address":"00:00:00:00:00:11"
+                  "name": "target",
+                  "mac_address": "00:00:00:00:00:11"
                }
             ]
          }
       ],
-      "appliance_port_channels":[
+      "appliance_port_channels": [
          {
-            "fabric":"A",
-            "pc_id":"123",
-            "name":"toto",
-            "ethernet_target_endpoint":[
+            "fabric": "A",
+            "pc_id": "123",
+            "name": "toto",
+            "ethernet_target_endpoint": [
                {
-                  "name":"target"
+                  "name": "target"
                }
             ],
-            "interfaces":[
+            "interfaces": [
                {
-                  "port_id":"7",
-                  "slot_id":"1"
+                  "port_id": "7",
+                  "slot_id": "1"
                }
             ]
          }
       ],
-      "lan_pin_groups":[
+      "lan_pin_groups": [
          {
-            "name":"pinPy",
-            "descr":"test",
-            "interfaces":[
+            "name": "pinPy",
+            "descr": "test",
+            "interfaces": [
                {
-                  "fabric":"A",
-                  "slot_id":"1",
-                  "port_id":"1"
+                  "fabric": "A",
+                  "slot_id": "1",
+                  "port_id": "1"
                },
                {
-                  "fabric":"B",
-                  "pc_id":"14"
+                  "fabric": "B",
+                  "pc_id": "14"
                }
             ]
          }
       ],
-      "san_pin_groups":[
+      "san_pin_groups": [
          {
-            "name":"SanPy",
-            "descr":"test",
-            "interfaces":[
+            "name": "SanPy",
+            "descr": "test",
+            "interfaces": [
                {
-                  "fabric":"A",
-                  "fcoe":"yes",
-                  "pc_id":"14"
+                  "fabric": "A",
+                  "fcoe": "yes",
+                  "pc_id": "14"
                },
                {
-                  "fabric":"B",
-                  "pc_id":"12"
+                  "fabric": "B",
+                  "pc_id": "12"
                }
             ]
          },
          {
-            "name":"SanPy2",
-            "descr":"test",
-            "interfaces":[
+            "name": "SanPy2",
+            "descr": "test",
+            "interfaces": [
                {
-                  "fabric":"A",
-                  "fcoe":"yes",
-                  "slot_id":"1",
-                  "port_id":"13"
+                  "fabric": "A",
+                  "fcoe": "yes",
+                  "slot_id": "1",
+                  "port_id": "13"
                },
                {
-                  "fabric":"B",
-                  "slot_id":"1",
-                  "port_id":"1"
+                  "fabric": "B",
+                  "slot_id": "1",
+                  "port_id": "1"
                }
             ]
          }
       ],
-      "qos_system_class":[
+      "qos_system_class": [
          {
-            "priority":"platinum",
-            "state":"disabled",
-            "cos":"3",
-            "packet_drop":"disabled",
-            "weight":"best-effort",
-            "mtu":"1602",
-            "multicast_optimized":"enabled"
+            "priority": "platinum",
+            "state": "disabled",
+            "cos": "3",
+            "packet_drop": "disabled",
+            "weight": "best-effort",
+            "mtu": "1602",
+            "multicast_optimized": "enabled"
          },
          {
-            "priority":"gold",
-            "state":"enabled",
-            "cos":"6",
-            "packet_drop":"enabled",
-            "weight":"7",
-            "mtu":"1601",
-            "multicast_optimized":"disabled"
+            "priority": "gold",
+            "state": "enabled",
+            "cos": "6",
+            "packet_drop": "enabled",
+            "weight": "7",
+            "mtu": "1601",
+            "multicast_optimized": "disabled"
          },
          {
-            "priority":"best-effort",
-            "mtu":"2049"
+            "priority": "best-effort",
+            "mtu": "2049"
          },
          {
-            "priority":"fc",
-            "cos":"4"
+            "priority": "fc",
+            "cos": "4"
          }
       ],
-      "orgs":[
+      "orgs": [
          {
-            "name":"root",
-            "vhba_templates":[
+            "name": "root",
+            "vhba_templates": [
                {
-                  "name":"test1",
-                  "descr":"descr",
-                  "redundancy_type":"primary",
-                  "peer_redundancy_template":"",
-                  "qos_policy":"100Mb",
-                  "wwpn_pool":"DEMO-SAN-A",
-                  "template_type":"initial-template",
-                  "pin_group":"",
-                  "stats_threshold_policy":"",
-                  "fabric":"B",
-                  "vsan":"PROD",
-                  "max_data_field_size":"2047"
+                  "name": "test1",
+                  "descr": "descr",
+                  "redundancy_type": "primary",
+                  "peer_redundancy_template": "",
+                  "qos_policy": "100Mb",
+                  "wwpn_pool": "DEMO-SAN-A",
+                  "template_type": "initial-template",
+                  "pin_group": "",
+                  "stats_threshold_policy": "",
+                  "fabric": "B",
+                  "vsan": "PROD",
+                  "max_data_field_size": "2047"
                }
             ],
-            "vnic_templates":[
+            "vnic_templates": [
                {
-                  "name":"test13",
-                  "vlan_groups":["group0"],
-                  "descr":"descr",
-                  "redundancy_type":"secondary",
-                  "peer_redundancy_template":"",
-                  "qos_policy":"100Mb",
-                  "cdn_source":"user-defined",
-                  "cdn_name":"toto",
-                  "target":[
+                  "name": "test13",
+                  "vlan_groups": ["group0"],
+                  "descr": "descr",
+                  "redundancy_type": "secondary",
+                  "peer_redundancy_template": "",
+                  "qos_policy": "100Mb",
+                  "cdn_source": "user-defined",
+                  "cdn_name": "toto",
+                  "target": [
                      "adaptor",
                      "vm"
                   ],
-                  "mtu":"1503",
-                  "mac_pool":"DEMO",
-                  "template_type":"initial-template",
-                  "pin_group":"",
-                  "stats_threshold_policy":"default",
-                  "connection_policy":"dynamic-vnic",
-                  "fabric":"A-B",
-                  "vlans":[
+                  "mtu": "1503",
+                  "mac_address_pool": "DEMO",
+                  "template_type": "initial-template",
+                  "pin_group": "",
+                  "stats_threshold_policy": "default",
+                  "connection_policy": "dynamic-vnic",
+                  "fabric": "A-B",
+                  "vlans": [
                      "100",
                      "101"
                   ],
-                  "network_control_policy":"CDP-enable"
+                  "network_control_policy": "CDP-enable"
                }
             ],
             "default_vhba_behavior": [

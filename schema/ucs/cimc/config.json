@@ -6,5 +6,10 @@
    "type": "object",
    "properties": {
    },
-   "additionalProperties": true
+   "additionalProperties": true,
+   "minProperties": 1,
+   "$comment": "Below is for supporting any additional commented property starting with a #",
+   "patternProperties": {
+      "^#": {}
+   }
 }

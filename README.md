@@ -1,20 +1,22 @@
 # EasyUCS [![published](https://static.production.devnetcloud.com/codeexchange/assets/images/devnet-published.svg)](https://developer.cisco.com/codeexchange/github/repo/vesposito/easyucs)
 
-EasyUCS is a toolbox to help deploy and manage Cisco UCS devices.
+EasyUCS is a toolbox to help deploy and manage Cisco UCS/Intersight devices.
 
 It can :
 
-* [deploy a configuration](docs/CONFIG.md) on a running UCS device:
+* [deploy a configuration](docs/CONFIG.md) on a running UCS device / Intersight instance:
     - UCS system (UCS Manager)
     - UCS IMC (Integrated Management Controller) for standalone servers
     - UCS Central
+    - Intersight (SaaS or Appliance)
 * perform the initial setup of an "out of the box" UCS device (UCSM or CIMC)
 * reset the configuration of an UCS device before configuring it
 * [fetch a configuration](docs/CONFIG.md) and export it in JSON format
 * [fetch an inventory](docs/INVENTORY.md) and export it in JSON format
 * [perform maintenance actions](docs/ACTIONS.md) on a UCS device (regenerate self-signed certificate, clear user sessions, clear SEL logs)
+* claim/unclaim UCS devices to/from Intersight
 * create pictures of equipment and infrastructure [schemas](docs/SCHEMAS.md)
-* create [Technical Architecture Documentation (TAD)](docs/REPORT.md) in Word format
+* create [Technical Architecture Documentation (TAD)](docs/REPORT.md) in Word/PDF formats
 
 ## Getting Started
 
@@ -27,8 +29,9 @@ Minimum versions of UCS devices :
 * UCS Manager: ***3.2(1d)*** or above
 * UCS IMC: ***3.0(1c)*** or above
 * UCS Central: ***2.0(1a)*** or above
+* Intersight SaaS ***(no prerequisite)*** & Appliance: ***1.0.9-589*** or above
 
-This tool requires ***Python 3.6+*** to work. *Python 2.x* is not supported.
+This tool requires ***Python 3.8+*** to work. *Python 2.x* is not supported.
 
 Python can be used on Windows, Linux/Unix, Mac OS X and more.
 
@@ -130,12 +133,12 @@ Clear Intersight Device Connector claim status for UCS system
 python easyucs.py device clear_intersight_claim_status -t ucsm -i 192.168.0.1 -u admin -p password
 ```
 
-#### Using the Web Graphical User Interface (GUI)
+#### Using the Web Graphical User Interface (GUI) / the API
 
-The Web GUI is hosted by your machine, in order to launch it you need to use the file **[easyucs_gui.py](./easyucs_gui.py)**.
+The Web GUI is hosted by your machine, in order to launch it you need to use the file **[easyucs_api.py](./easyucs_api.py)**.
 
 ```
-python easyucs_gui.py
+python easyucs_api.py
 ```
 
 
@@ -144,9 +147,35 @@ python easyucs_gui.py
 * [ucsmsdk](https://github.com/CiscoUcs/ucsmsdk) - The UCS Manager Python SDK
 * [imcsdk](https://github.com/CiscoUcs/imcsdk) - The UCS IMC Python SDK
 * [ucscsdk](https://github.com/CiscoUcs/ucscsdk) - The UCS Central Python SDK
+* [intersight-python](https://github.com/CiscoDevNet/intersight-python) - The Intersight Python SDK
 
 
 ## Versioning
+
+### 0.9.8.5
+
+Sorry for the delay in updating this tool! We were busy working on the [**IMM Transition Tool**](https://www.cisco.com/c/en/us/td/docs/unified_computing/Intersight/IMM-Transition-Tool/b_imm_tt_rn.html) which uses EasyUCS as its backend.
+* HUGE rework of many parts of EasyUCS. It would be too long to list them all here!  
+This also means that there are a few **breaking changes** in the JSON format for UCSM files. Sorry about this!
+* **Fully redesigned & dynamic GUI**
+* **Repository backend** for multi-device management (used by the GUI)
+* EasyUCS also now has an **OpenAPI-based API** (used by the GUI) to easily automate your tasks
+* Add support for **UCS Central config fetch/push** of most policies/profiles/templates/pools. UCS Central is now a first class citizen in EasyUCS.
+* Add support for **Intersight config fetch/push** of all Server/Chassis/Domain policies/profiles/templates/pools. You can now use EasyUCS for Intersight Managed servers! (Standalone & FI-Attached)
+* Add support for M6, M7 & X-Series (UCSM) in the schemas generation as well as the report.
+* Add support for generating reports in PDF format (on top of Word format)
+* Add support for BIOS Tokens up to UCSM 4.3(2b)
+* Add support for (un)claiming CIMC/UCSM devices to Intersight using the API/GUI
+* Add support for taking backups using the API/GUI (for UCSM and UCS Central)
+
+### 0.9.7.6
+
+* Fix CIMC push of Admin Networking config section
+
+### 0.9.7.5
+
+* Add support for SNMP users/traps & Syslog in CIMC config
+* Update SDK requirements to fix compatibility issues
 
 ### 0.9.7.4
 
@@ -165,14 +194,14 @@ python easyucs_gui.py
 * Add missing "Storage Config. Deployment Policy" attribute in Maintenance Policies in UCSM config
 * Other small bug fixes and improvements
 
-#### 0.9.7.2
+### 0.9.7.2
 
 * Add support for Intersight Device Connector in inventory & config for UCSM & IMC
 * Add Device Connector section in UCSM & IMC report
 * Add support for clearing Intersight Claim Status for UCSM & IMC Device Connector
 * Miscellaneous bug fixes
 
-#### 0.9.7
+### 0.9.7
 
 * Add device actions in CLI ("regenerate_certificate", "clear_sel_logs", "clear_user_sessions")
 * Add "Policies" section in UCSM report with Server Policies (Boot, BIOS, Local Disk Config, Scrub, etc.)
@@ -188,7 +217,7 @@ python easyucs_gui.py
 * Major reorganization of report code
 * Multiple bug fixes and improvements
 
-#### 0.9.6
+### 0.9.6
 
 * Add support for UCSM 4.1(1) specific features (FI 64108 & Unified Ports, Fan Control Policy, new BIOS Tokens, Writable vMedia Mount)
 * Add support for fetching Reserved VLAN Start ID for FI 6400 (push is planned for a future release)
@@ -199,7 +228,7 @@ python easyucs_gui.py
 * Multiple bug fixes and improvements
 
 
-#### 0.9.5
+### 0.9.5
 
 * Add support for UCSM 4.0(4) specific features (M.2 HWRAID, Persistent Memory Policies, Alternate KVM Port)
 * Add support for configuring up to 16 Unified Ports on FI 6454
@@ -210,7 +239,7 @@ python easyucs_gui.py
 * Miscellaneous bug fixes and improvements (including fix for missing dependency on tkinter package)
 
 
-#### 0.9.4
+### 0.9.4
 
 * Add support for "comment" field in all sections of a configuration file for easily add comments to specific items of a configuration
 * Add support for Fabric Interconnect port licenses in inventory and report
@@ -221,7 +250,7 @@ python easyucs_gui.py
 * Miscellaneous bug fixes and improvements
 
 
-#### 0.9.3
+### 0.9.3
 
 * Include Storage Enclosures & drives of S3260 in report
 * Add support for UEFI Boot Parameters in SAN Boot (Boot Policies)
@@ -231,7 +260,7 @@ python easyucs_gui.py
 * Lots of bug fixes and improvements
 
 
-#### 0.9.2
+### 0.9.2
 
 * Include portions of Logical Configuration in Technical Architecture Documentation, including Networking, Organizations, Identities and Service Profiles
 * Add support for Dynamic vNIC Connection Policies in UCS Manager
@@ -239,7 +268,7 @@ python easyucs_gui.py
 * Add support for C4200 and C125 server node
 * Various bug fixes and improvements
 
-#### 0.9.1
+### 0.9.1
 
 * Add automatic Technical Architecture Documentation creation (containing detailed inventory and architecture schemas)
 * Add support for LAN & SAN Global Policies in UCS Manager (VLAN Port Count Optimization, VLAN Org Permissions, Inband Profile)
@@ -247,7 +276,7 @@ python easyucs_gui.py
 * Add support for IOM 2408, HXAF220C All NVMe, C480 M5 ML
 * Various bug fixes and improvements
 
-#### 0.9.0
+### 0.9.0
 
 Initial release
 
@@ -257,7 +286,18 @@ Initial release
 * **Franck Bonneau** - *Initial work* - [github account link](https://github.com/Franck-Bonneau)
 * **Vincent Esposito** - *Initial work* - [github account link](https://github.com/vesposito)
 
-See also the list of [contributors](https://github.com/vesposito/easyucs/contributors) who participated in this project.
+## Contributors
+* **Shashank Pandey** - *Repository, DB, API, Intersight, ...* - [github account link](https://github.com/Shashank-Pandey-ML)
+* **Valentin Pereira** - *Redesigned GUI* - [github account link](https://github.com/Valisback)
+* **Mohamed Ismayil** - *Intersight support*
+* **Syeda Mehar Naseer** - *UCS Central/Manager & Intersight support*
+* **Anjana Devi Chilukuri** - *UCS Central/Manager & Intersight support*
+* **Ananta Surendra Babu** - *UCS Central/Manager & Intersight support*
+* **Simon Mathai** - *UCS Central/Manager & Intersight support*
+* **Kistareddy Gari Sreelatha** - *UCS Central/Manager & Intersight support*
+* **Tony Frank** - *PDF reporting*
+* **Prabhu Ganesh** - *Various enhancements*
+* **Rushab Mohanlal Jain** - *Various enhancements*
 
 ## License
 

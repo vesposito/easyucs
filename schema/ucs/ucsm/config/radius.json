@@ -1,41 +1,48 @@
 {
-   "id":"ucs_system_config_radius#",
-   "$schema":"http://json-schema.org/draft-07/schema#",
-   "title":"EasyUCS ucs system config radius section",
-   "description":"EasyUCS ucs system config radius section JSON schema",
-   "type":"object",
-   "properties":{
+   "id": "ucs_system_config_radius#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS ucs system config radius section",
+   "description": "EasyUCS ucs system config radius section JSON schema",
+   "type": "object",
+   "properties": {
       "comment": {
          "description": "RADIUS Comments",
          "type": "string",
          "default": ""
       },
-      "timeout":{
-         "description":"RADIUS Timeout",
-         "type":"string",
-         "default":"5"
+      "policy_owner": {
+         "description": "RADIUS Owner (for UCS Central)",
+         "type": "string",
+         "enum": [
+            "ucs-central"
+         ]
       },
-      "retries":{
-         "description":"RADIUS Retries",
-         "type":"string",
-         "default":"1"
+      "timeout": {
+         "description": "RADIUS Timeout",
+         "type": "string",
+         "default": "5"
       },
-      "providers":{
-         "description":"RADIUS Providers List",
-         "type":"array",
-         "items":{
-            "type":"object",
-            "description":"RADIUS Provider",
-            "properties":{
-               "hostname":{
-                  "description":"RADIUS Provider Hostname/FQDN/IP Address",
-                  "type":"string"
+      "retries": {
+         "description": "RADIUS Retries",
+         "type": "string",
+         "default": "1"
+      },
+      "providers": {
+         "description": "RADIUS Providers List",
+         "type": "array",
+         "items": {
+            "type": "object",
+            "description": "RADIUS Provider",
+            "properties": {
+               "hostname": {
+                  "description": "RADIUS Provider Hostname/FQDN/IP Address",
+                  "type": "string"
                },
-               "order":{
-                  "description":"RADIUS Provider Order",
-                  "type":"string",
-                  "default":"lowest-available",
-                  "enum":[
+               "order": {
+                  "description": "RADIUS Provider Order",
+                  "type": "string",
+                  "default": "lowest-available",
+                  "enum": [
                      "0",
                      "1",
                      "2",
@@ -56,60 +63,60 @@
                      "lowest-available"
                   ]
                },
-               "key":{
-                  "description":"RADIUS Provider SSL Encryption Key",
-                  "type":"string"
+               "key": {
+                  "description": "RADIUS Provider SSL Encryption Key",
+                  "type": "string"
                },
-               "port":{
-                  "description":"RADIUS Provider Port",
-                  "type":"string",
-                  "default":"1812"
+               "port": {
+                  "description": "RADIUS Provider Port",
+                  "type": "string",
+                  "default": "1812"
                },
-               "timeout":{
-                  "description":"RADIUS Provider Timeout",
-                  "type":"string",
-                  "default":"5"
+               "timeout": {
+                  "description": "RADIUS Provider Timeout",
+                  "type": "string",
+                  "default": "5"
                },
-               "retries":{
-                  "description":"RADIUS Provider Retries",
-                  "type":"string",
-                  "default":"1"
+               "retries": {
+                  "description": "RADIUS Provider Retries",
+                  "type": "string",
+                  "default": "1"
                }
             },
-            "additionalProperties":false,
-            "required":[
+            "additionalProperties": false,
+            "required": [
                "hostname"
             ]
          },
-         "minItems":1
+         "minItems": 1
       },
-      "provider_groups":{
-         "description":"RADIUS Provider Groups List",
-         "type":"array",
-         "items":{
-            "type":"object",
-            "description":"RADIUS Provider Group",
-            "properties":{
-               "name":{
-                  "description":"RADIUS Provider Group Name",
-                  "type":"string"
+      "provider_groups": {
+         "description": "RADIUS Provider Groups List",
+         "type": "array",
+         "items": {
+            "type": "object",
+            "description": "RADIUS Provider Group",
+            "properties": {
+               "name": {
+                  "description": "RADIUS Provider Group Name",
+                  "type": "string"
                },
-               "included_providers":{
-                  "description":"RADIUS Provider Group Included Providers",
-                  "type":"array",
-                  "items":{
-                     "description":"RADIUS Provider Group Included Provider",
-                     "type":"string"
+               "included_providers": {
+                  "description": "RADIUS Provider Group Included Providers",
+                  "type": "array",
+                  "items": {
+                     "description": "RADIUS Provider Group Included Provider",
+                     "type": "string"
                   }
                }
             },
-            "additionalProperties":false,
-            "required":[
+            "additionalProperties": false,
+            "required": [
                "name"
             ]
          },
-         "minItems":1
+         "minItems": 1
       }
    },
-   "additionalProperties":false
+   "additionalProperties": false
 }

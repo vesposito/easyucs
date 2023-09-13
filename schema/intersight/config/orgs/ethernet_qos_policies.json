@@ -1,0 +1,107 @@
+{
+   "id": "intersight_config_orgs_ethernet_qos_policies#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS intersight config orgs ethernet_qos_policies section",
+   "description": "EasyUCS intersight config orgs ethernet_qos_policies section JSON schema",
+   "type": "object",
+   "properties": {
+      "comment": {
+         "description": "Ethernet QoS Policy Comments",
+         "type": "string",
+         "default": ""
+      },
+      "descr": {
+         "description": "Ethernet QoS Policy Description",
+         "type": "string",
+         "default": "",
+         "pattern": "^$|^[a-zA-Z0-9]+[\\x00-\\xFF]*$",
+         "maxLength": 1024
+      },
+      "name": {
+         "description": "Ethernet QoS Policy Name",
+         "type": "string",
+         "default": "",
+         "pattern": "^[a-zA-Z0-9_.:-]{1,64}$"
+      },
+      "tags": {
+         "description": "Ethernet QoS Policy Tags",
+         "type": "array",
+         "items": {
+            "description": "Ethernet QoS Policy Tag",
+            "type": "object",
+            "properties": {
+               "key": {
+                  "description": "Ethernet QoS Policy Tag Key",
+                  "type": "string",
+                  "default": "",
+                  "minLength": 1,
+                  "maxLength": 128
+               },
+               "value": {
+                  "description": "Ethernet QoS Policy Tag Value",
+                  "type": "string",
+                  "default": "",
+                  "minLength": 0,
+                  "maxLength": 256
+               }
+            },
+            "additionalProperties": false,
+            "required": [
+               "key",
+               "value"
+            ]
+         },
+         "minItems": 1
+      },
+      "burst": {
+         "description": "Ethernet QoS Policy Burst (bytes)",
+         "type": "integer",
+         "default": 10240,
+         "minimum": 1,
+         "maximum": 1000000
+      },
+      "class_of_service": {
+         "description": "Ethernet QoS Policy Class of Service",
+         "type": "integer",
+         "default": 0,
+         "minimum": 0,
+         "maximum": 6
+      },
+      "enable_trust_host_cos": {
+         "description": "Ethernet QoS Policy Enable Trust Host QoS",
+         "type": "boolean",
+         "default": false
+      },
+      "mtu": {
+         "description": "Ethernet QoS Policy MTU (bytes)",
+         "type": "integer",
+         "default": 1500,
+         "minimum": 1500,
+         "maximum": 9000
+      },
+      "priority": {
+         "description": "Ethernet QoS Policy Priority",
+         "type": "string",
+         "default": "Best Effort",
+         "enum": [
+            "Best Effort",
+            "Bronze",
+            "FC",
+            "Gold",
+            "Platinum",
+            "Silver"
+         ]
+      },
+      "rate_limit": {
+         "description": "Ethernet QoS Policy Rate Limit (Mbps)",
+         "type": "integer",
+         "default": 0,
+         "minimum": 0,
+         "maximum": 100000
+      }
+   },
+   "additionalProperties": false,
+   "required": [
+      "name"
+   ]
+}

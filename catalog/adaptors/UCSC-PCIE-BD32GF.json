@@ -1,7 +1,7 @@
 {
-  "model_short_name": "Emulex LPe32002 2x32G",
-  "rear_file_name": "UCSC-PCIE-E16002.png",
-  "rear_file_name_half": "UCSC-PCIE-E16002_half.png",
+  "model_short_name": "Emulex LPe32002-M2 2x32G",
+  "rear_file_name": "UCSC-PCIE-BD32GF.png",
+  "rear_file_name_half": "UCSC-PCIE-BD32GF_half.png",
   "rear_file_size": [593,75],
   "rear_file_size_half": [389,75],
   "rear_ports": {

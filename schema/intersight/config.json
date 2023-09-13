@@ -1,0 +1,76 @@
+{
+   "id": "intersight_config#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS intersight config section",
+   "description": "EasyUCS intersight config section JSON schema",
+   "type": "object",
+   "properties": {
+      "account_details": {
+         "description": "EasyUCS config/account_details section",
+         "type": "array",
+         "items": {
+            "description": "EasyUCS config/account_details element",
+            "type": "object",
+            "$ref": "config/account_details.json"
+         },
+         "minItems": 1,
+         "maxItems": 1
+      },
+      "orgs": {
+         "description": "EasyUCS config/orgs section",
+         "type": "array",
+         "items": {
+            "description": "EasyUCS config/orgs element",
+            "type": "object",
+            "$ref": "config/orgs.json"
+         },
+         "minItems": 1
+      },
+      "resource_groups": {
+         "description": "EasyUCS config/resource_groups section",
+         "type": "array",
+         "items": {
+            "description": "EasyUCS config/resource_groups element",
+            "type": "object",
+            "$ref": "config/resource_groups.json"
+         },
+         "minItems": 1
+      },
+      "roles": {
+         "description": "EasyUCS config/roles section",
+         "type": "array",
+         "items": {
+            "description": "EasyUCS config/roles element",
+            "type": "object",
+            "$ref": "config/roles.json"
+         },
+         "minItems": 1
+      },
+      "user_groups": {
+         "description": "EasyUCS config/user_groups section",
+         "type": "array",
+         "items": {
+            "description": "EasyUCS config/user_groups element",
+            "type": "object",
+            "$ref": "config/user_groups.json"
+         },
+         "minItems": 1
+      },
+      "users": {
+         "description": "EasyUCS config/users section",
+         "type": "array",
+         "items": {
+            "description": "EasyUCS config/users element",
+            "type": "object",
+            "$ref": "config/users.json"
+         },
+         "minItems": 1
+      }
+   },
+   "additionalProperties": false,
+   "minProperties": 1,
+   "$comment": "Below is for supporting any additional commented property starting with a #",
+   "patternProperties": {
+      "^#": {}
+   }
+}

@@ -1,0 +1,67 @@
+{
+  "model_short_name": "B200 M6",
+  "front_file_name": "UCSB-B200-M6.png",
+  "front_file_size": [1231,304],
+  "disks_slots": [
+    {
+      "id": 1,
+      "format": "sff_7mm_m6",
+      "orientation": "horizontal",
+      "coord": [373, 84],
+      "size": [466,48]
+    },
+    {
+      "id": 2,
+      "format": "sff_7mm_m6",
+      "orientation": "horizontal",
+      "coord": [373, 27],
+      "size": [466,48]
+    }
+  ],
+  "disks_models": [
+    {
+      "name": "UCSB-FBLK-M6",
+      "type": "blank",
+      "format": "sff_7mm_m6",
+      "description": "UCS M6 7mm SSD blanking panel"
+    }
+  ],
+  "imm_compatible": true,
+  "imm_min_required_version": "4.2(1d)",
+  "spec_sheet_url": "https://www.cisco.com/c/dam/en/us/products/collateral/servers-unified-computing/ucs-b-series-blade-servers/b200m6-specsheet.pdf",
+  "data_sheet_url": "https://www.cisco.com/c/en/us/products/collateral/servers-unified-computing/ucs-b-series-blade-servers/datasheet-c78-2368888.html",
+  "specs": {
+    "form_factor": "half-width",
+    "chipset": "Intel® C621 series chipset (Lewisburg)",
+    "cpu": {
+      "sockets": 2,
+      "family_name": {
+        "ice_lake": "3rd Gen Intel Xeon Processor Scalable Family"
+      }
+    },
+    "memory": {
+      "dimm_type": "DDR4",
+      "dimm_slots": 32,
+      "max_speed": 3200,
+      "max_capacity": 8388608,
+      "dcpmm_support": true
+    },
+    "dimensions": {
+      "centimeters": {
+        "height": 5,
+        "width": 21.2,
+        "depth": 62
+      },
+      "inches": {
+        "height": 1.95,
+        "width": 8.35,
+        "depth": 24.4
+      },
+      "rack_units": 0
+    },
+    "weight": {
+      "lb": 18.1,
+      "kg": 8.23
+    }
+  }
+}

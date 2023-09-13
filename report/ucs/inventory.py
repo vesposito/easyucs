@@ -284,7 +284,10 @@ class UcsSystemFexReportTable(UcsReportTable):
         # We use a DrawingObject because they already have a method to get the JSON file efficiently
         draw = GenericDrawObject(parent=fex)
         draw._get_json_file()
-        rear_ports = draw.json_file['rear_ports']
+        rear_ports = None
+        if draw.json_file:
+            if "rear_ports" in draw.json_file:
+                rear_ports = draw.json_file['rear_ports']
         if rear_ports:
             port_dict = {}
             for port in rear_ports.items():
@@ -512,15 +515,20 @@ class UcsBladesSummaryReportTable(UcsReportTable):
                         cores = int(blade.cpus[0].cores) * len(blade.cpus)
 
             adaptor_sum = 0
-            adaptor_models = ""  # If all drives have the same capacity, we write it down
+            adaptor_models = ""  # If all adaptors have the same model, we write it down
             if blade.adaptors:
                 adaptor_sum = len(blade.adaptors)
                 if type(adaptor_models) == str:
                     adaptor_models = blade.adaptors[0].short_name
                 if adaptor_models:
-                    for adaptor in blade.adaptors:
-                        if adaptor.short_name != adaptor_models:
-                            adaptor_models = None
+                    # We treat VIC + Port Expander in a specific fashion to display "1x VIC 1340+PE"
+                    if adaptor_sum == 2 and blade.adaptors[1].sku == "UCSB-MLOM-PT-01":
+                        adaptor_sum = 1
+                        adaptor_models = adaptor_models + "+PE"
+                    else:
+                        for adaptor in blade.adaptors:
+                            if adaptor.short_name != adaptor_models:
+                                adaptor_models = None
             if adaptor_models and adaptor_sum:
                 adaptor_sum = str(adaptor_sum) + "x " + adaptor_models
 
@@ -548,7 +556,7 @@ class UcsBladesSummaryReportTable(UcsReportTable):
                 drives = str(drives) + "x " + drives_capacity
 
             sd_cards = 0
-            sd_cards_capacity = ""   # If all drives have the same capacity, we write it down
+            sd_cards_capacity = ""   # If all SD cards have the same capacity, we write it down
             for storage_flexflash_controller in blade.storage_flexflash_controllers:
                 if storage_flexflash_controller.flexflash_cards:
                     sd_cards += len(storage_flexflash_controller.flexflash_cards)
@@ -561,18 +569,13 @@ class UcsBladesSummaryReportTable(UcsReportTable):
                 if sd_cards_capacity and sd_cards:
                     sd_cards = str(sd_cards) + "x " + sd_cards_capacity
 
-            if parent.__class__.__name__ == "UcsBladesReportSection":
-                blade_id = blade.id
-            else:
-                blade_id = blade.slot_id
-
             if blade.cpus:
                 if blade.cpus[0].model_short_name:
-                    rows.append([blade_id, blade.short_name, blade.serial, blade.memory_total_marketing,
+                    rows.append([blade.id, blade.short_name, blade.serial, blade.memory_total_marketing,
                                  str(len(blade.cpus)) + "x " + blade.cpus[0].model_short_name, cores, adaptor_sum,
                                  len(blade.gpus), drives, sd_cards])
                 else:
-                    rows.append([blade_id, blade.short_name, blade.serial, blade.memory_total_marketing,
+                    rows.append([blade.id, blade.short_name, blade.serial, blade.memory_total_marketing,
                                  str(len(blade.cpus)), cores, adaptor_sum, len(blade.gpus), drives, sd_cards])
 
         UcsReportTable.__init__(self, order_id=order_id, parent=parent, row_number=len(rows),
@@ -659,6 +662,11 @@ class UcsBladeReportTable(UcsReportTable):
                 if cpu.cores:
                     cores += int(cpu.cores)
 
+            if cores:
+                if blade.cpus[0].speed:
+                    speed = round(blade.cpus[0].speed / 1000, 2)
+                    cores = str(cores) + " @ " + str(speed) + "GHz"
+
             cpu_model = "\n".join([(str(i[1]) + "x " + str(i[0])) for i in cpu_dict.items()])
 
         rows.append([_("CPUs"), cpu_model])
@@ -739,7 +747,7 @@ class UcsRacksInventoryReportSection(UcsReportSection):
             self.content_list.append(UcsRackReportSection(order_id=self.report.get_current_order_id(), parent=self,
                                                           title=_("Rack ") + rack_name, rack=rack))
 
-        if self.report.device.device_type == "UCS System":
+        if self.report.device.metadata.device_type == "ucsm":
             if self.report.inventory.rack_units:
                 self.content_list.append(
                     UcsRacksSummaryReportSection(order_id=self.report.get_current_order_id(), parent=self,
@@ -757,7 +765,7 @@ class UcsRackReportSection(UcsReportSection):
 
         path_front = self.report.img_path + "rack_" + rack.id + "_front.png"
         path_rear = self.report.img_path + "rack_" + rack.id + "_rear_clear.png"
-        if self.report.device.device_type == "UCS IMC":
+        if self.report.device.metadata.device_type == "cimc":
             path_front = self.report.img_path + "rack_front.png"
             path_rear = self.report.img_path + "rack_rear.png"
 
@@ -854,6 +862,11 @@ class UcsRackReportTable(UcsReportTable):
                     cpu_dict.update({key: 1})
                 if cpu.cores:
                     cores += int(cpu.cores)
+
+            if cores:
+                if rack.cpus[0].speed:
+                    speed = round(rack.cpus[0].speed / 1000, 2)
+                    cores = str(cores) + " @ " + str(speed) + "GHz"
 
             cpu_model = "\n".join([(str(i[1]) + "x " + str(i[0])) for i in cpu_dict.items()])
 
@@ -1195,6 +1208,11 @@ class UcsServerNodeReportTable(UcsReportTable):
                     cpu_dict.update({key: 1})
                 if cpu.cores:
                     cores += int(cpu.cores)
+
+            if cores:
+                if server_node.cpus[0].speed:
+                    speed = round(server_node.cpus[0].speed / 1000, 2)
+                    cores = str(cores) + " @ " + str(speed) + "GHz"
 
             cpu_model = "\n".join([(str(i[1]) + "x " + str(i[0])) for i in cpu_dict.items()])
 

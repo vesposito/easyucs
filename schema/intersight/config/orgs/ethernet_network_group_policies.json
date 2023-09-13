@@ -1,0 +1,71 @@
+{
+   "id": "intersight_config_orgs_ethernet_network_group_policies#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS intersight config orgs ethernet_network_group_policies section",
+   "description": "EasyUCS intersight config orgs ethernet_network_group_policies section JSON schema",
+   "type": "object",
+   "properties": {
+      "comment": {
+         "description": "Ethernet Network Group Policy Comments",
+         "type": "string",
+         "default": ""
+      },
+      "descr": {
+         "description": "Ethernet Network Group Policy Description",
+         "type": "string",
+         "default": "",
+         "pattern": "^$|^[a-zA-Z0-9]+[\\x00-\\xFF]*$",
+         "maxLength": 1024
+      },
+      "name": {
+         "description": "Ethernet Network Group Policy Name",
+         "type": "string",
+         "default": "",
+         "pattern": "^[a-zA-Z0-9_.:-]{1,64}$"
+      },
+      "tags": {
+         "description": "Ethernet Network Group Policy Tags",
+         "type": "array",
+         "items": {
+            "description": "Ethernet Network Group Policy Tag",
+            "type": "object",
+            "properties": {
+               "key": {
+                  "description": "Ethernet Network Group Policy Tag Key",
+                  "type": "string",
+                  "default": "",
+                  "minLength": 1,
+                  "maxLength": 128
+               },
+               "value": {
+                  "description": "Ethernet Network Group Policy Tag Value",
+                  "type": "string",
+                  "default": "",
+                  "minLength": 0,
+                  "maxLength": 256
+               }
+            },
+            "additionalProperties": false,
+            "required": [
+               "key",
+               "value"
+            ]
+         },
+         "minItems": 1
+      },
+      "allowed_vlans": {
+         "description": "Ethernet Network Group Policy - Allowed VLANs",
+         "type": "string",
+         "default": ""
+      },
+      "native_vlan": {
+         "description": "Ethernet Network Group Policy - Native VLAN",
+         "type": "integer",
+         "default": 0
+      }
+   },
+   "additionalProperties": false,
+   "required": [
+      "name"
+   ]
+}

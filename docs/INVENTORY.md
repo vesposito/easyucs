@@ -1,6 +1,6 @@
 # Working with inventory files
 
-Inventory files can be fetched from a UCS device. They are JSON-formatted files that are meant to be **human-readable** with each section corresponding to a UCS equipment.
+Inventory files can be fetched from a device. They are JSON-formatted files that are meant to be **human-readable** with each section corresponding to a UCS equipment.
 
 
 ## Fetch inventories
@@ -29,7 +29,7 @@ The second argument is the type of action:
 ```
 Action:
   {fetch}     Inventory actions
-    fetch     Fetch an inventory from a UCS device
+    fetch     Fetch an inventory from a device
 ```
 
 #### Arguments for an inventory fetch
@@ -37,13 +37,17 @@ Action:
 List of arguments :
 
 - **-h**, --help            | show this help message and exit
-- **-i IP**, --ip IP        | UCS IP address
+- **-i IP**, --ip IP        | Device IP address
 - **-u USERNAME**, --username USERNAME
-                    | UCS Account Username
+                      | Device Account Username
 - **-p PASSWORD**, --password PASSWORD
-                    | UCS Account Password
-- **-t** {**ucsm**,**cimc**}, --ucstype {ucsm,cimc}
-                    | UCS system type ("ucsm" or "cimc")
+                      | Device Account Password
+- **-a API_KEY**, --api_key API_KEY
+                     | Device Account API Key
+- **-k SECRET_KEY_PATH**, --secret_key_path SECRET_KEY_PATH
+                     | Device Account Secret Key (path to file)
+- **-t** {**ucsm**,**cimc**, **ucsc**, **intersight**}, --device_type {ucsm,cimc,ucsc,intersight}
+                      | Device type ("ucsm", "cimc", "ucsc" or "intersight")
 - **-v**, --verbose         | Print debug log
 - **-l LOGFILE**, --logfile LOGFILE
                     | Print log in a file

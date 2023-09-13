@@ -1,0 +1,17 @@
+{
+  "model_short_name": "",
+  "rear_file_name": "UCSC-GPURKIT-C220.png",
+  "rear_file_size": [1421,104],
+  "pcie_slots": [
+    {
+      "id": 1,
+      "width": "full",
+      "coord": [9, 26]
+    },
+    {
+      "id": 2,
+      "width": "full",
+      "coord": [817, 2]
+    }
+  ]
+}

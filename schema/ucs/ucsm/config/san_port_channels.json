@@ -1,50 +1,50 @@
 {
-   "id":"ucs_system_config_san_port_channels#",
-   "$schema":"http://json-schema.org/draft-07/schema#",
-   "title":"EasyUCS ucs system config san_port_channels section",
-   "description":"EasyUCS ucs system config san_port_channels section JSON schema",
-   "type":"object",
-   "properties":{
+   "id": "ucs_system_config_san_port_channels#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS ucs system config san_port_channels section",
+   "description": "EasyUCS ucs system config san_port_channels section JSON schema",
+   "type": "object",
+   "properties": {
       "comment": {
          "description": "SAN Port-Channel Comments",
          "type": "string",
          "default": ""
       },
-      "name":{
-         "description":"Name of SAN Port-Channel",
-         "type":"string",
-         "pattern":"^[\\-\\.:_a-zA-Z0-9]{0,16}$"
+      "name": {
+         "description": "Name of SAN Port-Channel",
+         "type": "string",
+         "pattern": "^[\\-\\.:_a-zA-Z0-9]{0,16}$"
       },
-      "descr":{
-         "description":"Description of SAN Port-Channel",
-         "type":"string",
-         "default":"",
-         "pattern":"^[ !#$%&\\(\\)\\*\\+,\\-\\./:;\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{0,256}$"
+      "descr": {
+         "description": "Description of SAN Port-Channel",
+         "type": "string",
+         "default": "",
+         "pattern": "^[ !#$%&\\(\\)\\*\\+,\\-\\./:;\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{0,256}$"
       },
-      "fabric":{
-         "description":"Fabric ID of SAN Port-Channel (\"A\" or \"B\")",
-         "type":"string",
-         "enum":[
+      "fabric": {
+         "description": "Fabric ID of SAN Port-Channel (\"A\" or \"B\")",
+         "type": "string",
+         "enum": [
             "a",
             "A",
             "b",
             "B"
          ]
       },
-      "pc_id":{
-         "description":"Port-Channel ID of SAN Port-Channel",
-         "type":"string",
-         "pattern":"^[1-9]$|^[1-9][0-9]$|^1[0-9][0-9]$|^2[0-4][0-9]$|^25[0-6]$"
+      "pc_id": {
+         "description": "Port-Channel ID of SAN Port-Channel",
+         "type": "string",
+         "pattern": "^[1-9]$|^[1-9][0-9]$|^1[0-9][0-9]$|^2[0-4][0-9]$|^25[0-6]$"
       },
-      "vsan":{
-         "description":"VSAN assigned to SAN Port-Channel",
-         "type":"string",
-         "pattern":"^[\\-\\.:_a-zA-Z0-9]{0,16}$"
+      "vsan": {
+         "description": "VSAN assigned to SAN Port-Channel",
+         "type": "string",
+         "pattern": "^[\\-\\.:_a-zA-Z0-9]{1,32}$"
       },
-      "vsan_fabric":{
-         "description":"Fabric ID of VSAN assigned to SAN Port-Channel",
-         "type":"string",
-         "enum":[
+      "vsan_fabric": {
+         "description": "Fabric ID of VSAN assigned to SAN Port-Channel",
+         "type": "string",
+         "enum": [
             "a",
             "A",
             "b",
@@ -52,52 +52,57 @@
             "dual"
          ]
       },
-      "interfaces":{
-         "description":"List of interfaces member of SAN Port-Channel",
-         "type":"array",
-         "items":{
-            "description":"Interface member of SAN Port-Channel",
-            "type":"object",
-            "properties":{
-               "slot_id":{
-                  "description":"Slot ID of Interface member of SAN Port-Channel",
-                  "type":"string",
-                  "pattern":"^[1-5]$"
+      "interfaces": {
+         "description": "List of interfaces member of SAN Port-Channel",
+         "type": "array",
+         "items": {
+            "description": "Interface member of SAN Port-Channel",
+            "type": "object",
+            "properties": {
+               "slot_id": {
+                  "description": "Slot ID of Interface member of SAN Port-Channel",
+                  "type": "string",
+                  "pattern": "^[1-5]$"
                },
-               "port_id":{
-                  "description":"Port ID of Interface member of SAN Port-Channel",
-                  "type":"string",
-                  "pattern":"^[1-9]$|^[1-9][0-9]$|^10[0-8]$"
+               "port_id": {
+                  "description": "Port ID of Interface member of SAN Port-Channel",
+                  "type": "string",
+                  "pattern": "^[1-9]$|^[1-9][0-9]$|^10[0-8]$"
                },
-               "user_label":{
-                  "description":"User Label of Interface member of SAN Port-Channel",
-                  "type":"string",
-                  "default":"",
-                  "pattern":"^[ !#$%&\\(\\)\\*\\+,\\-\\./:;\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{0,32}$"
+               "aggr_id": {
+                  "description": "Aggregate ID of Interface member of SAN Port-Channel (for Breakout Ports)",
+                  "type": "string",
+                  "pattern": "^[1-4]$"
                },
-               "admin_state":{
-                  "description":"Admin State of Interface member of SAN Port-Channel",
-                  "type":"string",
-                  "default":"enabled",
-                  "enum":[
+               "user_label": {
+                  "description": "User Label of Interface member of SAN Port-Channel",
+                  "type": "string",
+                  "default": "",
+                  "pattern": "^[ !#$%&\\(\\)\\*\\+,\\-\\./:;\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{0,32}$"
+               },
+               "admin_state": {
+                  "description": "Admin State of Interface member of SAN Port-Channel",
+                  "type": "string",
+                  "default": "enabled",
+                  "enum": [
                      "disabled",
                      "enabled"
                   ]
                }
             },
-            "additionalProperties":false,
-            "required":[
+            "additionalProperties": false,
+            "required": [
                "slot_id",
                "port_id"
             ]
          },
-         "minItems":1
+         "minItems": 1
       },
-      "admin_speed":{
-         "description":"Admin Speed of interfaces member of SAN Port-Channel",
-         "type":"string",
-         "default":"auto",
-         "enum":[
+      "admin_speed": {
+         "description": "Admin Speed of interfaces member of SAN Port-Channel",
+         "type": "string",
+         "default": "auto",
+         "enum": [
             "32gbps",
             "16gbps",
             "1gbps",
@@ -107,18 +112,18 @@
             "auto"
          ]
       },
-      "admin_state":{
-         "description":"Admin State of SAN Port-Channel",
-         "type":"string",
-         "default":"enabled",
-         "enum":[
+      "admin_state": {
+         "description": "Admin State of SAN Port-Channel",
+         "type": "string",
+         "default": "enabled",
+         "enum": [
             "disabled",
             "enabled"
          ]
       }
    },
-   "additionalProperties":false,
-   "required":[
+   "additionalProperties": false,
+   "required": [
       "fabric",
       "pc_id"
    ]

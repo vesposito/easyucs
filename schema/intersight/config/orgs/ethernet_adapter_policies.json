@@ -1,0 +1,311 @@
+{
+   "id": "intersight_config_orgs_ethernet_adapter_policies#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS intersight config orgs ethernet_adapter_policies section",
+   "description": "EasyUCS intersight config orgs ethernet_adapter_policies section JSON schema",
+   "type": "object",
+   "properties": {
+      "comment": {
+         "description": "Ethernet Adapter Policy Comments",
+         "type": "string",
+         "default": ""
+      },
+      "descr": {
+         "description": "Ethernet Adapter Policy Description",
+         "type": "string",
+         "default": "",
+         "pattern": "^$|^[a-zA-Z0-9]+[\\x00-\\xFF]*$",
+         "maxLength": 1024
+      },
+      "name": {
+         "description": "Ethernet Adapter Policy Name",
+         "type": "string",
+         "default": "",
+         "pattern": "^[a-zA-Z0-9_.:-]{1,64}$"
+      },
+      "tags": {
+         "description": "Ethernet Adapter Policy Tags",
+         "type": "array",
+         "items": {
+            "description": "Ethernet Adapter Policy Tag",
+            "type": "object",
+            "properties": {
+               "key": {
+                  "description": "Ethernet Adapter Policy Tag Key",
+                  "type": "string",
+                  "default": "",
+                  "minLength": 1,
+                  "maxLength": 128
+               },
+               "value": {
+                  "description": "Ethernet Adapter Policy Tag Value",
+                  "type": "string",
+                  "default": "",
+                  "minLength": 0,
+                  "maxLength": 256
+               }
+            },
+            "additionalProperties": false,
+            "required": [
+               "key",
+               "value"
+            ]
+         },
+         "minItems": 1
+      },
+      "completion_queue_count": {
+         "description": "Ethernet Adapter Policy Completion Queue Count",
+         "type": "integer",
+         "default": 5,
+         "minimum": 1,
+         "maximum": 2000
+      },
+      "completion_ring_size": {
+         "description": "Ethernet Adapter Policy Completion Ring Size",
+         "type": "integer",
+         "default": 1,
+         "minimum": 1,
+         "maximum": 256
+      },
+      "enable_accelerated_receive_flow_steering": {
+         "description": "Ethernet Adapter Policy Enable Accelerated Receive Flow Steering",
+         "type": "boolean",
+         "default": false
+      },
+      "enable_advanced_filter": {
+         "description": "Ethernet Adapter Policy Enable Advanced Filter",
+         "type": "boolean",
+         "default": false
+      },
+      "enable_geneve_offload": {
+         "description": "GENEVE offload protocol allows you to create logical networks that span physical network boundaries by allowing any information to be encoded in a packet and passed between tunnel endpoints",
+         "type": "boolean",
+         "default": false
+      },
+      "enable_interrupt_scaling": {
+         "description": "Ethernet Adapter Policy Enable Interrupt Scaling",
+         "type": "boolean",
+         "default": false
+      },
+      "enable_nvgre_offload": {
+         "description": "Ethernet Adapter Policy Enable NVGRE Offload",
+         "type": "boolean",
+         "default": false
+      },
+      "enable_vxlan_offload": {
+         "description": "Ethernet Adapter Policy Enable VXLAN Offload",
+         "type": "boolean",
+         "default": false
+      },
+      "receive_queue_count": {
+         "description": "Ethernet Adapter Policy Receive Queue Count",
+         "type": "integer",
+         "default": 4,
+         "minimum": 1,
+         "maximum": 1000
+      },
+      "receive_ring_size": {
+         "description": "Ethernet Adapter Policy Receive Ring Size",
+         "type": "integer",
+         "default": 512,
+         "minimum": 64,
+         "maximum": 4096
+      },
+      "transmit_queue_count": {
+         "description": "Ethernet Adapter Policy Transmit Queue Count",
+         "type": "integer",
+         "default": 1,
+         "minimum": 1,
+         "maximum": 1000
+      },
+      "transmit_ring_size": {
+         "description": "Ethernet Adapter Policy Transmit Ring Size",
+         "type": "integer",
+         "default": 256,
+         "minimum": 64,
+         "maximum": 4096
+      },
+      "uplink_failback_timeout": {
+         "description": "Ethernet Adapter Policy Uplink Failback Timeout (seconds)",
+         "type": "integer",
+         "default": 5,
+         "minimum": 0,
+         "maximum": 600
+      },
+      "interrupt_settings": {
+         "description": "Ethernet Adapter Policy - Interrupt Settings",
+         "type": "object",
+         "properties": {
+            "interrupts": {
+               "description": "Ethernet Adapter Policy - Interrupt Settings - Interrupts Count",
+               "type": "integer",
+               "default": 8,
+               "minimum": 1,
+               "maximum": 1024
+            },
+            "interrupt_mode": {
+               "description": "Ethernet Adapter Policy - Interrupt Settings - Interrupt Mode",
+               "type": "string",
+               "default": "MSIx",
+               "enum": [
+                  "INTx",
+                  "MSI",
+                  "MSIx"
+               ]
+            },
+            "interrupt_timer": {
+               "description": "Ethernet Adapter Policy - Interrupt Settings - Interrupt Coalescing Timer (µs)",
+               "type": "integer",
+               "default": 125,
+               "minimum": 0,
+               "maximum": 65535
+            },
+            "interrupt_coalescing_type": {
+               "description": "Ethernet Adapter Policy - Interrupt Settings - Interrupt Coalescing Type",
+               "type": "string",
+               "default": "Min",
+               "enum": [
+                  "Idle",
+                  "Min"
+               ]
+            }
+         },
+         "additionalProperties": false
+      },
+      "roce_settings": {
+         "description": "Ethernet Adapter Policy - RDMA over Converged Ethernet (RoCE) Settings",
+         "type": "object",
+         "properties": {
+            "class_of_service": {
+               "description": "Ethernet Adapter Policy - RoCE Settings - Class of Service (for RoCE v2)",
+               "type": "integer",
+               "default": 5,
+               "minimum": 1,
+               "maximum": 6,
+               "not": {
+                  "enum": [
+                     3
+                  ]
+               }
+            },
+            "enable_rdma_over_converged_ethernet": {
+               "description": "Ethernet Adapter Policy - RoCE Settings - Enable RDMA over Converged Ethernet",
+               "type": "boolean",
+               "default": false
+            },
+            "queue_pairs": {
+               "description": "Ethernet Adapter Policy - RoCE Settings - Queue Pairs",
+               "type": "integer",
+               "default": 256,
+               "minimum": 0,
+               "maximum": 8192
+            },
+            "memory_regions": {
+               "description": "Ethernet Adapter Policy - RoCE Settings - Memory Regions",
+               "type": "integer",
+               "default": 131072,
+               "minimum": 0,
+               "maximum": 524288
+            },
+            "resource_groups": {
+               "description": "Ethernet Adapter Policy - RoCE Settings - Resource Groups",
+               "type": "integer",
+               "default": 4,
+               "minimum": 0,
+               "maximum": 128
+            },
+            "version": {
+               "description": "Ethernet Adapter Policy - RoCE Settings - Version",
+               "type": "integer",
+               "default": 1,
+               "minimum": 1,
+               "maximum": 2
+            }
+         },
+         "additionalProperties": false
+      },
+      "rss_settings": {
+         "description": "Ethernet Adapter Policy - Receive Side Scaling (RSS) Settings",
+         "type": "object",
+         "properties": {
+            "enable_receive_side_scaling": {
+               "description": "Ethernet Adapter Policy - RSS Settings - Enable Receive Side Scaling",
+               "type": "boolean",
+               "default": true
+            },
+            "enable_ipv4_hash": {
+               "description": "Ethernet Adapter Policy - RSS Settings - Enable IPv4 Hash",
+               "type": "boolean",
+               "default": true
+            },
+            "enable_ipv6_extensions_hash": {
+               "description": "Ethernet Adapter Policy - RSS Settings - Enable IPv6 Extensions Hash",
+               "type": "boolean",
+               "default": false
+            },
+            "enable_ipv6_hash": {
+               "description": "Ethernet Adapter Policy - RSS Settings - Enable IPv6 Hash",
+               "type": "boolean",
+               "default": true
+            },
+            "enable_tcp_and_ipv4_hash": {
+               "description": "Ethernet Adapter Policy - RSS Settings - Enable TCP & IPv4 Hash",
+               "type": "boolean",
+               "default": true
+            },
+            "enable_tcp_and_ipv6_extensions_hash": {
+               "description": "Ethernet Adapter Policy - RSS Settings - Enable TCP & IPv6 Extensions Hash",
+               "type": "boolean",
+               "default": false
+            },
+            "enable_tcp_and_ipv6_hash": {
+               "description": "Ethernet Adapter Policy - RSS Settings - Enable TCP & IPv6 Hash",
+               "type": "boolean",
+               "default": true
+            },
+            "enable_udp_and_ipv4_hash": {
+               "description": "Ethernet Adapter Policy - RSS Settings - Enable UDP & IPv4 Hash",
+               "type": "boolean",
+               "default": false
+            },
+            "enable_udp_and_ipv6_hash": {
+               "description": "Ethernet Adapter Policy - RSS Settings - Enable UDP & IPv6 Hash",
+               "type": "boolean",
+               "default": false
+            }
+         },
+         "additionalProperties": false
+      },
+      "tcp_offload_settings": {
+         "description": "Ethernet Adapter Policy - TCP Offload Settings",
+         "type": "object",
+         "properties": {
+            "enable_tx_checksum_offload": {
+               "description": "Ethernet Adapter Policy - TCP Offload Settings - Enable Tx Checksum Offload",
+               "type": "boolean",
+               "default": true
+            },
+            "enable_rx_checksum_offload": {
+               "description": "Ethernet Adapter Policy - RSS Settings - Enable Rx Checksum Offload",
+               "type": "boolean",
+               "default": true
+            },
+            "enable_large_send_offload": {
+               "description": "Ethernet Adapter Policy - RSS Settings - Enable Large Send Offload",
+               "type": "boolean",
+               "default": true
+            },
+            "enable_large_receive_offload": {
+               "description": "Ethernet Adapter Policy - RSS Settings - Enable Large Receive Offload",
+               "type": "boolean",
+               "default": true
+            }
+         },
+         "additionalProperties": false
+      }
+   },
+   "additionalProperties": false,
+   "required": [
+      "name"
+   ]
+}

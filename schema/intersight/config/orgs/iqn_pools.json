@@ -1,0 +1,144 @@
+{
+   "id": "intersight_config_orgs_iqn_pools#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS intersight config orgs iqn_pools section",
+   "description": "EasyUCS intersight config orgs iqn_pools section JSON schema",
+   "type": "object",
+   "properties": {
+      "comment": {
+         "description": "IQN Pool Comments",
+         "type": "string",
+         "default": ""
+      },
+      "descr": {
+         "description": "IQN Pool Description",
+         "type": "string",
+         "default": "",
+         "pattern": "^$|^[a-zA-Z0-9]+[\\x00-\\xFF]*$",
+         "maxLength": 1024
+      },
+      "name": {
+         "description": "IQN Pool Name",
+         "type": "string",
+         "default": "",
+         "pattern": "^[a-zA-Z0-9_.:-]{1,64}$"
+      },
+      "tags": {
+         "description": "IQN Pool Tags",
+         "type": "array",
+         "items": {
+            "description": "IQN Pool Tag",
+            "type": "object",
+            "properties": {
+               "key": {
+                  "description": "IQN Pool Tag Key",
+                  "type": "string",
+                  "default": "",
+                  "minLength": 1,
+                  "maxLength": 128
+               },
+               "value": {
+                  "description": "IQN Pool Tag Value",
+                  "type": "string",
+                  "default": "",
+                  "minLength": 0,
+                  "maxLength": 256
+               }
+            },
+            "additionalProperties": false,
+            "required": [
+               "key",
+               "value"
+            ]
+         },
+         "minItems": 1
+      },
+      "prefix": {
+         "description": "IQN Pool Prefix",
+         "type": "string",
+         "default": ""
+      },
+      "iqn_blocks": {
+         "description": "Blocks of IQN Suffixes in IQN Pool",
+         "type": "array",
+         "items": {
+            "type": "object",
+            "oneOf": [
+               {
+                  "properties": {
+                     "from": {
+                        "description": "First IQN Suffix of Block",
+                        "type": "integer",
+                        "minimum": 0
+                     },
+                     "suffix": {
+                        "description": "Suffix of IQN Block",
+                        "type": "string",
+                        "default": ""
+                     },
+                     "to": {
+                        "description": "Last IQN Suffix of Block",
+                        "type": "integer"
+                     }
+                  },
+                  "additionalProperties": false,
+                  "required": [
+                     "from",
+                     "suffix",
+                     "to"
+                  ]
+               },
+               {
+                  "properties": {
+                     "from": {
+                        "description": "First IQN Suffix of Block",
+                        "type": "integer",
+                        "minimum": 0
+                     },
+                     "size": {
+                        "description": "Size of IQN Suffix Block",
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 1024
+                     },
+                     "suffix": {
+                        "description": "Suffix of IQN Block",
+                        "type": "string",
+                        "default": ""
+                     }
+                  },
+                  "additionalProperties": false,
+                  "required": [
+                     "from",
+                     "suffix",
+                     "size"
+                  ]
+               }
+            ]
+         },
+         "minItems": 1
+      },
+      "reservations": {
+         "description": "Reservations in IQN Pool",
+         "type": "array",
+         "items": {
+            "type": "object",
+            "properties": {
+               "identity": {
+                  "description": "Identity of IQN being reserved",
+                  "type": "string"
+               }
+            },
+            "additionalProperties": false,
+            "required": [
+               "identity"
+            ]
+         },
+         "minItems": 1
+      }
+   },
+   "additionalProperties": false,
+   "required": [
+      "name"
+   ]
+}

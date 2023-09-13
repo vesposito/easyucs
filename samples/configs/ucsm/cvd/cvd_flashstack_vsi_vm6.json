@@ -8,8 +8,8 @@
             "subcategory":"FlashStack",
             "name":"FlashStack Virtual Server Infrastructure for VMware vSphere 6.0 U2",
             "url":"https://www.cisco.com/c/en/us/td/docs/unified_computing/ucs/UCS_CVDs/ucs_flashstack_vsi_vm6.html",
-            "easyucs_version":"0.9.0",
-            "revision": "1.0"
+            "easyucs_version":"0.9.8.2",
+            "revision": "1.2"
          }
       ]
    },
@@ -484,7 +484,7 @@
                   ],
                   "vlan_native":"Native-VLAN",
                   "mtu":"1500",
-                  "mac_pool":"MAC_Pool_A",
+                  "mac_address_pool":"MAC_Pool_A",
                   "network_control_policy":"Enable_CDP"
                },
                {
@@ -501,7 +501,7 @@
                   ],
                   "vlan_native":"Native-VLAN",
                   "mtu":"1500",
-                  "mac_pool":"MAC_Pool_B",
+                  "mac_address_pool":"MAC_Pool_B",
                   "network_control_policy":"Enable_CDP"
                },
                {
@@ -515,7 +515,7 @@
                   "template_type":"updating-template",
                   "vlan_native":"vMotion",
                   "mtu":"9000",
-                  "mac_pool":"MAC_Pool_A",
+                  "mac_address_pool":"MAC_Pool_A",
                   "network_control_policy":"Enable_CDP"
                },
                {
@@ -529,7 +529,7 @@
                   "template_type":"updating-template",
                   "vlan_native":"vMotion",
                   "mtu":"9000",
-                  "mac_pool":"MAC_Pool_B",
+                  "mac_address_pool":"MAC_Pool_B",
                   "network_control_policy":"Enable_CDP"
                },
                {
@@ -547,7 +547,7 @@
                      "VM-App-3"
                   ],
                   "mtu":"9000",
-                  "mac_pool":"MAC_Pool_A",
+                  "mac_address_pool":"MAC_Pool_A",
                   "network_control_policy":"Enable_CDP"
                },
                {
@@ -565,7 +565,7 @@
                      "VM-App-3"
                   ],
                   "mtu":"9000",
-                  "mac_pool":"MAC_Pool_B",
+                  "mac_address_pool":"MAC_Pool_B",
                   "network_control_policy":"Enable_CDP"
                }
             ],
@@ -575,32 +575,32 @@
                   "vnics":[
                      {
                         "name":"00-Mgmt-A",
-                        "template":"vNIC_Mgmt_A",
+                        "vnic_template":"vNIC_Mgmt_A",
                         "adapter_policy":"VMWare"
                      },
                      {
                         "name":"01-Mgmt-B",
-                        "template":"vNIC_Mgmt_B",
+                        "vnic_template":"vNIC_Mgmt_B",
                         "adapter_policy":"VMWare"
                      },
                      {
                         "name":"02-vMotion-A",
-                        "template":"vNIC_vMotion_A",
+                        "vnic_template":"vNIC_vMotion_A",
                         "adapter_policy":"VMWare"
                      },
                      {
                         "name":"03-vMotion-B",
-                        "template":"vNIC_vMotion_B",
+                        "vnic_template":"vNIC_vMotion_B",
                         "adapter_policy":"VMWare"
                      },
                      {
                         "name":"04-App-A",
-                        "template":"vNIC_App_A",
+                        "vnic_template":"vNIC_App_A",
                         "adapter_policy":"VMWare"
                      },
                      {
                         "name":"05-App-B",
-                        "template":"vNIC_App_B",
+                        "vnic_template":"vNIC_App_B",
                         "adapter_policy":"VMWare"
                      }
                   ]
@@ -632,12 +632,12 @@
                      {
                         "name":"Fabric-A",
                         "adapter_policy":"VMWare",
-                        "template":"vHBA_Template_A"
+                        "vhba_template":"vHBA_Template_A"
                      },
                      {
                         "name":"Fabric-B",
                         "adapter_policy":"VMWare",
-                        "template":"vHBA_Template_B"
+                        "vhba_template":"vHBA_Template_B"
                      }
                   ]
                }

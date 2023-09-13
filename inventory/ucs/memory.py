@@ -86,7 +86,16 @@ class UcsImcMemoryArray(UcsMemoryArray, UcsImcInventoryObject):
             "UCSC-C240-M5S": 3145728, "UCSC-C240-M5SX": 3145728, "UCSC-C240-M5SN": 3145728,
             "UCSC-C240-M5L": 3145728,
             # C480 M5
-            "UCSC-C480-M5": 6291456
+            "UCSC-C480-M5": 6291456,
+            # C220 M6
+            "UCSC-C220-M6S": 4194304, "UCSC-C220-M6N": 4194304,
+            # C240 M6
+            "UCSC-C240-M6S": 8388608, "UCSC-C240-M6SX": 8388608, "UCSC-C240-M6N": 8388608, "UCSC-C240-M6SN": 8388608,
+            "UCSC-C240-M6L": 8388608,
+            # C220 M7
+            "UCSC-C220-M7S": 4194304, "UCSC-C220-M7N": 4194304,
+            # C240 M7
+            "UCSC-C240-M7SX": 8388608, "UCSC-C240-M7SN": 8388608
         }
         if hasattr(self._parent, "model"):
             if self._parent.model in max_ram_capacity:
@@ -159,7 +168,7 @@ class UcsSystemMemoryUnit(UcsMemoryUnit, UcsSystemInventoryObject):
 
     def _find_corresponding_memory_error_stats(self):
         if "memoryErrorStats" not in self._inventory.sdk_objects.keys():
-            return False
+            return None
 
         # We check if we already have fetched the list of memoryErrorStats objects
         if self._inventory.sdk_objects["memoryErrorStats"] is not None:
@@ -173,17 +182,17 @@ class UcsSystemMemoryUnit(UcsMemoryUnit, UcsSystemInventoryObject):
                             message="Could not find the corresponding memoryErrorStats for object with DN " +
                                     self.dn + " of model \"" + str(self.model) + "\" with ID " + str(self.id))
                 if hasattr(self._parent, "id"):
-                    self.logger(level="info", message="Error stats of memory with id " + str(self.id) + " for server " +
-                                                      self._parent.id + " are not available.")
+                    self.logger(level="info", message="Error stats of memory unit with id " + str(self.id) +
+                                                      " for server " + self._parent.id + " are not available.")
                 else:
-                    self.logger(level="info", message="Error stats of memory with id " + str(self.id) + " for server " +
-                                                      self._parent.dn + " are not available.")
+                    self.logger(level="info", message="Error stats of memory unit with id " + str(self.id) +
+                                                      " for server " + self._parent.dn + " are not available.")
 
-                return False
+                return None
             else:
                 return memory_error_stats_list[0]
 
-        return False
+        return None
 
 
 class UcsImcMemoryUnit(UcsMemoryUnit, UcsImcInventoryObject):

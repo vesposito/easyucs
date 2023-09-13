@@ -1,0 +1,142 @@
+{
+   "id": "ucs_central_config_wwxn_pools#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS ucs central config orgs wwxn_pools section",
+   "description": "EasyUCS ucs central config orgs wwxn_pools section JSON schema",
+   "type": "object",
+   "properties": {
+      "comment": {
+         "description": "WWxN Pool Comments",
+         "type": "string",
+         "default": ""
+      },
+      "name": {
+         "description": "WWxN Pool Name",
+         "type": "string",
+         "default": "",
+         "pattern": "^[\\-\\.:_a-zA-Z0-9]{1,32}$"
+      },
+      "descr": {
+         "description": "Description of WWxN Pool",
+         "type": "string",
+         "default": "",
+         "pattern": "^[ !#$%&\\(\\)\\*\\+,\\-\\./:;\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{0,256}$"
+      },
+      "max_ports_per_node": {
+         "description": "Max Ports per Node of WWxN Pool",
+         "type": "string",
+         "default": "3",
+         "enum": [
+            "3",
+            "7",
+            "15",
+            "31",
+            "63"
+         ]
+      },
+      "wwxn_blocks": {
+         "description": "Blocks of WWxNs in WWxN Pool",
+         "type": "array",
+         "items": {
+            "type": "object",
+            "oneOf": [
+               {
+                  "properties": {
+                     "from": {
+                        "description": "First WWxN of Block",
+                        "type": "string",
+                        "default": "20:00:00:25:B5:00:00:00",
+                        "pattern": "^(([A-Fa-f0-9][A-Fa-f0-9]:){7}[A-Fa-f0-9][A-Fa-f0-9])$|^0$"
+                     },
+                     "to": {
+                        "description": "Last WWxN of Block",
+                        "type": "string",
+                        "default": "20:00:00:25:B5:00:00:00",
+                        "pattern": "^(([A-Fa-f0-9][A-Fa-f0-9]:){7}[A-Fa-f0-9][A-Fa-f0-9])$|^0$"
+                     },
+                     "id_range_access_control": {
+                        "description": "ID Range Access Control of WWxN Block",
+                        "type": "string",
+                        "pattern": "^[\\-\\.:_a-zA-Z0-9]{0,16}$"
+                     }
+                  },
+                  "additionalProperties": false,
+                  "required": [
+                     "from",
+                     "to"
+                  ]
+               },
+               {
+                  "properties": {
+                     "from": {
+                        "description": "First WWxN of Block",
+                        "type": "string",
+                        "default": "20:00:00:25:B5:00:00:00",
+                        "pattern": "^(([A-Fa-f0-9][A-Fa-f0-9]:){7}[A-Fa-f0-9][A-Fa-f0-9])$|^0$"
+                     },
+                     "size": {
+                        "description": "Size of WWxN Block",
+                        "type": "string",
+                        "default": "1",
+                        "pattern": "^[1-9]$|^[1-9][0-9]$|^[1-9][0-9][0-9]$|^10[0-1][0-9]$|^102[0-4]$"
+                     },
+                     "id_range_access_control": {
+                        "description": "ID Range Access Control of WWxN Block",
+                        "type": "string",
+                        "pattern": "^[\\-\\.:_a-zA-Z0-9]{0,16}$"
+                     }
+                  },
+                  "additionalProperties": false,
+                  "required": [
+                     "from",
+                     "size"
+                  ]
+               }
+            ]
+         },
+         "minItems": 1
+      },
+      "operational_state": {
+         "description": "Operational state",
+         "type": "object",
+         "properties": {
+            "assigned": {
+               "description": "Number of identities that have been assigned",
+               "type": "string"
+            },
+            "size": {
+               "description": "Total size of the pool, aggregating all blocks",
+               "type": "string"
+            }
+         }
+      },
+      "tags": {
+         "description": "WWxN Pool - Tags",
+         "type": "array",
+         "items": {
+            "description": "WWxN Pool - Tag",
+            "type": "object",
+            "properties": {
+               "type": {
+                  "description": "WWxN Pool - Tag - Type",
+                  "type": "string",
+                  "pattern": "^[ !#$%&\\(\\)\\*\\+,\\-\\.:;=\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{1,32}$"
+               },
+               "value": {
+                  "description": "WWxN Pool - Tag - Value",
+                  "type": "string"
+               }
+            },
+            "additionalProperties": false,
+            "required": [
+               "type",
+               "value"
+            ]
+         }
+      }
+   },
+   "additionalProperties": false,
+   "required": [
+      "name"
+   ]
+}

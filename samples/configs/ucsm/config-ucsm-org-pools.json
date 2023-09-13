@@ -1,22 +1,22 @@
 {
-   "easyucs":{
-      "metadata":[
+   "easyucs": {
+      "metadata": [
          {
             "file_type": "config",
             "device_type": "ucsm",
-            "category":"custom",
-            "subcategory":"samples",
-            "name":"UCS Manager pools-related sections configuration sample",
-            "easyucs_version":"0.9.0",
-            "revision": "1.0"
+            "category": "samples",
+            "subcategory": "Pools",
+            "name": "UCS Manager pools-related sections configuration sample",
+            "easyucs_version": "0.9.8.1",
+            "revision": "1.2"
          }
       ]
    },
-   "config":{
-      "orgs":[
+   "config": {
+      "orgs": [
          {
-            "name":"root",
-            "iqn_suffix_pools": [
+            "name": "root",
+            "iqn_pools": [
                {
                   "descr": "suffix",
                   "iqn_blocks": [
@@ -36,62 +36,62 @@
                   "prefix": "IQNSuffix"
                }
             ],
-            "wwpn_pools":[
+            "wwpn_pools": [
                {
-                  "name":"wwpn0",
-                  "order":"sequential",
-                  "wwpn_blocks":[
+                  "name": "wwpn0",
+                  "order": "sequential",
+                  "wwpn_blocks": [
                      {
-                        "from":"20:00:00:25:B5:00:30:00",
-                        "to":"20:00:00:25:B5:00:30:10"
+                        "from": "20:00:00:25:B5:00:30:00",
+                        "to": "20:00:00:25:B5:00:30:10"
                      },
                      {
-                        "from":"20:00:00:25:B5:00:30:11",
-                        "to":"20:00:00:25:B5:00:30:19"
+                        "from": "20:00:00:25:B5:00:30:11",
+                        "to": "20:00:00:25:B5:00:30:19"
                      }
                   ]
                }
             ],
-            "wwxn_pools":[
+            "wwxn_pools": [
                {
-                  "name":"wwxnPY",
-                  "order":"sequential",
-                  "wwxn_blocks":[
+                  "name": "wwxnPY",
+                  "order": "sequential",
+                  "wwxn_blocks": [
                      {
-                        "from":"20:00:00:25:B5:00:31:00",
-                        "to":"20:00:00:25:B5:00:31:03"
+                        "from": "20:00:00:25:B5:00:31:00",
+                        "to": "20:00:00:25:B5:00:31:03"
                      },
                      {
-                        "from":"20:00:00:25:B5:00:32:11",
-                        "to":"20:00:00:25:B5:00:32:14"
+                        "from": "20:00:00:25:B5:00:32:11",
+                        "to": "20:00:00:25:B5:00:32:14"
                      }
                   ]
                }
             ],
-            "mac_pools":[
+            "mac_pools": [
                {
-                  "name":"python1",
-                  "order":"sequential",
-                  "mac_blocks":[
+                  "name": "python1",
+                  "order": "sequential",
+                  "mac_blocks": [
                      {
-                        "from":"00:25:B5:69:00:00",
-                        "to":"00:25:B5:69:00:03"
+                        "from": "00:25:B5:69:00:00",
+                        "to": "00:25:B5:69:00:03"
                      },
                      {
-                        "from":"00:25:B5:69:00:05",
-                        "size":"4"
+                        "from": "00:25:B5:69:00:05",
+                        "size": "4"
                      }
                   ]
                }
             ],
-            "ip_pools":[
+            "ip_pools": [
                {
-                  "name":"python1",
-                  "order":"sequential",
-                  "ip_blocks":[
+                  "name": "python1",
+                  "order": "sequential",
+                  "ip_blocks": [
                      {
-                        "from":"192.168.0.16",
-                        "to":"192.168.0.24"
+                        "from": "192.168.0.16",
+                        "to": "192.168.0.24"
                      },
                      {
                         "from": "192.168.0.26",
@@ -104,152 +104,152 @@
                   ]
                }
             ],
-            "uuid_pools":[
+            "uuid_pools": [
                {
-                  "name":"pythonUUID1",
-                  "order":"sequential",
-                  "prefix":"88A8E5FE-EC5C-11E6",
-                  "uuid_blocks":[
+                  "name": "pythonUUID1",
+                  "order": "sequential",
+                  "prefix": "88A8E5FE-EC5C-11E6",
+                  "uuid_blocks": [
                      {
-                        "from":"1100-000000000001",
-                        "to":"1100-000000000005"
+                        "from": "1100-000000000001",
+                        "to": "1100-000000000005"
                      },
                      {
-                        "from":"1100-000000000006",
-                        "to":"1100-000000000009"
+                        "from": "1100-000000000006",
+                        "to": "1100-000000000009"
                      }
                   ]
                }
             ],
-            "orgs":[
+            "orgs": [
                {
-                  "name":"org1",
-                  "mac_pools":[
+                  "name": "org1",
+                  "mac_pools": [
                      {
-                        "name":"python3",
-                        "order":"sequential",
-                        "mac_blocks":[
+                        "name": "python3",
+                        "order": "sequential",
+                        "mac_blocks": [
                            {
-                              "from":"00:25:B5:69:00:00",
-                              "to":"00:25:B5:69:00:03"
+                              "from": "00:25:B5:69:00:00",
+                              "to": "00:25:B5:69:00:03"
                            },
                            {
-                              "from":"00:25:B5:69:00:05",
-                              "to":"00:25:B5:69:00:09"
+                              "from": "00:25:B5:69:00:05",
+                              "to": "00:25:B5:69:00:09"
                            }
                         ]
                      },
                      {
-                        "name":"python4",
-                        "order":"sequential",
-                        "mac_blocks":[
+                        "name": "python4",
+                        "order": "sequential",
+                        "mac_blocks": [
                            {
-                              "from":"00:25:B5:69:00:00",
-                              "to":"00:25:B5:69:00:03"
+                              "from": "00:25:B5:69:00:00",
+                              "to": "00:25:B5:69:00:03"
                            },
                            {
-                              "from":"00:25:B5:69:00:05",
-                              "to":"00:25:B5:69:00:09"
+                              "from": "00:25:B5:69:00:05",
+                              "to": "00:25:B5:69:00:09"
                            }
                         ]
                      }
                   ]
                },
                {
-                  "name":"org2",
-                  "orgs":[
+                  "name": "org2",
+                  "orgs": [
                      {
-                        "name":"org22",
-                        "mac_pools":[
+                        "name": "org22",
+                        "mac_pools": [
                            {
-                              "name":"python22",
-                              "order":"sequential",
-                              "mac_blocks":[
+                              "name": "python22",
+                              "order": "sequential",
+                              "mac_blocks": [
                                  {
-                                    "from":"00:25:B5:69:00:00",
-                                    "to":"00:25:B5:69:00:03"
+                                    "from": "00:25:B5:69:00:00",
+                                    "to": "00:25:B5:69:00:03"
                                  },
                                  {
-                                    "from":"00:25:B5:69:00:05",
-                                    "to":"00:25:B5:69:00:09"
+                                    "from": "00:25:B5:69:00:05",
+                                    "to": "00:25:B5:69:00:09"
                                  }
                               ]
                            }
                         ],
-                        "uuid_pools":[
+                        "uuid_pools": [
                            {
-                              "name":"pythonUUID22",
-                              "order":"sequential",
-                              "uuid_blocks":[
+                              "name": "pythonUUID22",
+                              "order": "sequential",
+                              "uuid_blocks": [
                                  {
-                                    "from":"1100-000000000001",
-                                    "to":"1100-000000000005"
+                                    "from": "1100-000000000001",
+                                    "to": "1100-000000000005"
                                  },
                                  {
-                                    "from":"1100-000000000006",
-                                    "to":"1100-000000000009"
+                                    "from": "1100-000000000006",
+                                    "to": "1100-000000000009"
                                  }
                               ]
                            }
                         ],
-                        "wwnn_pools":[
+                        "wwnn_pools": [
                            {
-                              "name":"wwnn22",
-                              "order":"sequential",
-                              "wwnn_blocks":[
+                              "name": "wwnn22",
+                              "order": "sequential",
+                              "wwnn_blocks": [
                                  {
-                                    "from":"20:00:00:25:B5:00:31:00",
-                                    "to":"20:00:00:25:B5:00:31:10"
+                                    "from": "20:00:00:25:B5:00:31:00",
+                                    "to": "20:00:00:25:B5:00:31:10"
                                  }
                               ]
                            }
                         ],
-                        "wwpn_pools":[
+                        "wwpn_pools": [
                            {
-                              "name":"wwpn22",
-                              "order":"sequential",
-                              "wwpn_blocks":[
+                              "name": "wwpn22",
+                              "order": "sequential",
+                              "wwpn_blocks": [
                                  {
-                                    "from":"20:00:00:25:B5:00:30:00",
-                                    "to":"20:00:00:25:B5:00:30:10"
+                                    "from": "20:00:00:25:B5:00:30:00",
+                                    "to": "20:00:00:25:B5:00:30:10"
                                  }
                               ]
                            }
                         ]
                      },
                      {
-                        "name":"org23"
+                        "name": "org23"
                      }
                   ]
                },
                {
-                  "name":"org3",
-                  "mac_pools":[
+                  "name": "org3",
+                  "mac_pools": [
                      {
-                        "name":"python1",
-                        "order":"sequential",
-                        "mac_blocks":[
+                        "name": "python1",
+                        "order": "sequential",
+                        "mac_blocks": [
                            {
-                              "from":"00:25:B5:69:00:00",
-                              "to":"00:25:B5:69:00:03"
+                              "from": "00:25:B5:69:00:00",
+                              "to": "00:25:B5:69:00:03"
                            },
                            {
-                              "from":"00:25:B5:69:00:05",
-                              "to":"00:25:B5:69:00:09"
+                              "from": "00:25:B5:69:00:05",
+                              "to": "00:25:B5:69:00:09"
                            }
                         ]
                      },
                      {
-                        "name":"python2",
-                        "order":"sequential",
-                        "mac_blocks":[
+                        "name": "python2",
+                        "order": "sequential",
+                        "mac_blocks": [
                            {
-                              "from":"00:25:B5:69:00:00",
-                              "to":"00:25:B5:69:00:03"
+                              "from": "00:25:B5:69:00:00",
+                              "to": "00:25:B5:69:00:03"
                            },
                            {
-                              "from":"00:25:B5:69:00:05",
-                              "to":"00:25:B5:69:00:09"
+                              "from": "00:25:B5:69:00:05",
+                              "to": "00:25:B5:69:00:09"
                            }
                         ]
                      }

@@ -3,8 +3,7 @@
 
 """ adaptor.py: Easy UCS Deployment Tool """
 
-import json
-
+from common import read_json_file
 from inventory.ucs.object import GenericUcsInventoryObject, UcsImcInventoryObject, UcsSystemInventoryObject
 from inventory.ucs.port import UcsImcAdaptorPort, UcsImcNetworkAdapterPort, UcsSystemAdaptorPort, \
     UcsSystemNicAdaptorPort
@@ -24,27 +23,14 @@ class UcsAdaptor(GenericUcsInventoryObject):
         """
         if self.sku is not None:
             # We use the catalog file to get the adaptor IMM Compatibility
-            try:
-                json_file = open("catalog/adaptors/" + self.sku + ".json")
-                adaptor_catalog = json.load(fp=json_file)
-                json_file.close()
+            adaptor_catalog = read_json_file(file_path="catalog/adaptors/" + self.sku + ".json", logger=self)
+            if not adaptor_catalog:
+                # If we are on a S3260 chassis, we look for the catalog file in the io_modules folder
+                adaptor_catalog = read_json_file(file_path="catalog/io_modules/" + self.sku + ".json", logger=self)
 
+            if adaptor_catalog:
                 if "imm_compatible" in adaptor_catalog:
                     return adaptor_catalog["imm_compatible"]
-
-            except FileNotFoundError:
-                # If we are on a S3260 chassis, we look for the catalog file in the io_modules folder
-                try:
-                    json_file = open("catalog/io_modules/" + self.sku + ".json")
-                    adaptor_catalog = json.load(fp=json_file)
-                    json_file.close()
-
-                    if "imm_compatible" in adaptor_catalog:
-                        return adaptor_catalog["imm_compatible"]
-
-                except FileNotFoundError:
-                    self.logger(level="error", message="Adaptor catalog file " + self.sku + ".json not found")
-                    return None
 
         return None
 
@@ -54,27 +40,14 @@ class UcsAdaptor(GenericUcsInventoryObject):
         """
         if self.sku is not None:
             # We use the catalog file to get the adaptor short name
-            try:
-                json_file = open("catalog/adaptors/" + self.sku + ".json")
-                adaptor_catalog = json.load(fp=json_file)
-                json_file.close()
+            adaptor_catalog = read_json_file(file_path="catalog/adaptors/" + self.sku + ".json", logger=self)
+            if not adaptor_catalog:
+                # If we are on a S3260 chassis, we look for the catalog file in the io_modules folder
+                adaptor_catalog = read_json_file(file_path="catalog/io_modules/" + self.sku + ".json", logger=self)
 
+            if adaptor_catalog:
                 if "model_short_name" in adaptor_catalog:
                     return adaptor_catalog["model_short_name"]
-
-            except FileNotFoundError:
-                # If we are on a S3260 chassis, we look for the catalog file in the io_modules folder
-                try:
-                    json_file = open("catalog/io_modules/" + self.sku + ".json")
-                    adaptor_catalog = json.load(fp=json_file)
-                    json_file.close()
-
-                    if "model_short_name" in adaptor_catalog:
-                        return adaptor_catalog["model_short_name"]
-
-                except FileNotFoundError:
-                    self.logger(level="error", message="Adaptor catalog file " + self.sku + ".json not found")
-                    return None
 
         return None
 
@@ -201,7 +174,9 @@ class UcsAdaptor(GenericUcsInventoryObject):
             self.type = "nic"
         elif self.sku in ["N2XX-ACPCI01", "UCSC-PCIE-CSC-02", "UCSC-PCIE-C10T-02", "UCSC-MLOM-CSC-02",
                           "UCSC-MLOM-C10T-02", "UCSC-PCIE-C40Q-02", "UCSC-PCIE-C40Q-03", "UCSC-MLOM-C40Q-03",
-                          "UCSC-PCIE-C25Q-04", "UCSC-MLOM-C25Q-04", "UCSC-PCIE-C100-04", "UCSC-MLOM-C100-04"]:
+                          "UCSC-PCIE-C25Q-04", "UCSC-MLOM-C25Q-04", "UCSC-M-V25-04", "UCSC-M-V100-04",
+                          "UCSC-PCIE-C100-04", "UCSC-MLOM-C100-04", "UCSC-P-V5Q50G", "UCSC-M-V5Q50G", "UCSC-P-V5D200G",
+                          "UCSC-M-V5D200G"]:
             self.type = "vic"
         elif self.pci_slot == "L":  # For LoM ports
             self.type = "nic"
@@ -257,6 +232,33 @@ class UcsSystemAdaptor(UcsAdaptor, UcsSystemInventoryObject):
             return []
 
 
+class UcsSystemAdaptorPortExpander(UcsAdaptor, UcsSystemInventoryObject):
+    _UCS_SDK_OBJECT_NAME = "adaptorUnitExtn"
+    _UCS_SDK_CATALOG_OBJECT_NAME = "adaptorFruCapProvider"
+
+    def __init__(self, parent=None, adaptor_unit_extn=None):
+        UcsAdaptor.__init__(self, parent=parent, adaptor_unit=adaptor_unit_extn)
+
+        self.id = self.get_attribute(ucs_sdk_object=adaptor_unit_extn, attribute_name="id")
+        self.revision = self.get_attribute(ucs_sdk_object=adaptor_unit_extn, attribute_name="revision")
+        self.serial = self.get_attribute(ucs_sdk_object=adaptor_unit_extn, attribute_name="serial")
+        self.vendor = self.get_attribute(ucs_sdk_object=adaptor_unit_extn, attribute_name="vendor")
+
+        UcsSystemInventoryObject.__init__(self, parent=parent, ucs_sdk_object=adaptor_unit_extn)
+
+        self.imm_compatible = None
+        self.short_name = None
+        if self._inventory.load_from == "live":
+            self.short_name = self._get_model_short_name()
+            self.imm_compatible = self._get_imm_compatibility()
+        elif self._inventory.load_from == "file":
+            for attribute in ["imm_compatible", "short_name"]:
+                setattr(self, attribute, None)
+                if attribute in adaptor_unit_extn:
+                    setattr(self, attribute, self.get_attribute(ucs_sdk_object=adaptor_unit_extn,
+                                                                attribute_name=attribute))
+
+
 class UcsImcAdaptor(UcsAdaptor, UcsImcInventoryObject):
     _UCS_SDK_OBJECT_NAME = "adaptorUnit"
     _UCS_SDK_CATALOG_OBJECT_NAME = "pidCatalogPCIAdapter"
@@ -279,7 +281,9 @@ class UcsImcAdaptor(UcsAdaptor, UcsImcInventoryObject):
             if not self.sku:
                 if self.model in ["N2XX-ACPCI01", "UCSC-PCIE-CSC-02", "UCSC-PCIE-C10T-02", "UCSC-MLOM-CSC-02",
                                   "UCSC-MLOM-C10T-02", "UCSC-PCIE-C40Q-02", "UCSC-PCIE-C40Q-03", "UCSC-MLOM-C40Q-03",
-                                  "UCSC-PCIE-C25Q-04", "UCSC-MLOM-C25Q-04", "UCSC-PCIE-C100-04", "UCSC-MLOM-C100-04"]:
+                                  "UCSC-PCIE-C25Q-04", "UCSC-MLOM-C25Q-04", "UCSC-M-V25-04", "UCSC-M-V100-04",
+                                  "UCSC-PCIE-C100-04", "UCSC-MLOM-C100-04", "UCSC-P-V5Q50G", "UCSC-M-V5Q50G",
+                                  "UCSC-P-V5D200G", "UCSC-M-V5D200G"]:
                     self.sku = self.model
 
         self.short_name = None
@@ -348,15 +352,18 @@ class UcsImcNetworkAdapter(UcsAdaptor, UcsImcInventoryObject):
 
             # Handling potentially incomplete UCS catalog entries (when SKU is not found)
             if self.sku is None:
-                if hasattr(self, "_pid_catalog"):
-                    if all(hasattr(self._pid_catalog, attr) for attr in ["vendor", "device", "subvendor", "subdevice"]):
-                        vendor = self._pid_catalog.vendor
-                        device = self._pid_catalog.device
-                        subvendor = self._pid_catalog.subvendor
-                        subdevice = self._pid_catalog.subdevice
+                # We do not perform this operation for S3260 server node LoM ports since there is no PID for those
+                if self.pci_slot not in ["SBLoM1"]:
+                    if hasattr(self, "_pid_catalog"):
+                        if all(hasattr(self._pid_catalog, attr) for attr in ["vendor", "device", "subvendor",
+                                                                             "subdevice"]):
+                            vendor = self._pid_catalog.vendor
+                            device = self._pid_catalog.device
+                            subvendor = self._pid_catalog.subvendor
+                            subdevice = self._pid_catalog.subdevice
 
-                        self._determine_adaptor_sku_and_type(vendor=vendor, device=device, subvendor=subvendor,
-                                                             subdevice=subdevice)
+                            self._determine_adaptor_sku_and_type(vendor=vendor, device=device, subvendor=subvendor,
+                                                                 subdevice=subdevice)
             else:
                 if self.type == "unknown":
                     self._determine_adaptor_sku_and_type()

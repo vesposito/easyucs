@@ -1,0 +1,325 @@
+{
+   "id": "intersight_config_orgs_storage_policies#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS intersight config orgs storage_policies section",
+   "description": "EasyUCS intersight config orgs storage_policies section JSON schema",
+   "type": "object",
+   "properties": {
+      "comment": {
+         "description": "Storage Policy Comments",
+         "type": "string",
+         "default": ""
+      },
+      "descr": {
+         "description": "Storage Policy Description",
+         "type": "string",
+         "default": "",
+         "pattern": "^$|^[a-zA-Z0-9]+[\\x00-\\xFF]*$",
+         "maxLength": 1024
+      },
+      "name": {
+         "description": "Storage Policy Name",
+         "type": "string",
+         "default": "",
+         "pattern": "^[a-zA-Z0-9_.:-]{1,64}$"
+      },
+      "tags": {
+         "description": "Storage Policy Tags",
+         "type": "array",
+         "items": {
+            "description": "Storage Policy Tag",
+            "type": "object",
+            "properties": {
+               "key": {
+                  "description": "Storage Policy Tag Key",
+                  "type": "string",
+                  "default": "",
+                  "minLength": 1,
+                  "maxLength": 128
+               },
+               "value": {
+                  "description": "Storage Policy Tag Value",
+                  "type": "string",
+                  "default": "",
+                  "minLength": 0,
+                  "maxLength": 256
+               }
+            },
+            "additionalProperties": false,
+            "required": [
+               "key",
+               "value"
+            ]
+         },
+         "minItems": 1
+      },
+      "use_jbod_for_vd_creation": {
+         "description": "Disks in JBOD State are used to create virtual drives.",
+         "type": "boolean",
+         "default": false
+      },
+      "unused_disks_state": {
+         "description": "State to which disks, not used in this policy, are to be moved. NoChange will not change the drive state. 'NoChange' - Drive state will not be modified by Storage Policy. 'UnconfiguredGood' - Unconfigured good state -ready to be added in a RAID group. 'Jbod' - JBOD state where the disks start showing up to Host OS.",
+         "type": "string",
+         "default": "No Change",
+         "enum": [
+            "No Change",
+            "Unconfigured Good",
+            "JBOD"
+         ]
+      },
+      "m2_configuration": {
+         "description": "M.2 Virtual Drive Configuration",
+         "type": "object",
+         "properties": {
+            "enable": {
+               "description": "Flag to indicate if M.2 Configuration is enabled or not.",
+               "type": "boolean",
+               "default": false
+            },
+            "controller_slot": {
+               "description": "Select 'MSTOR-RAID-1' if there is only one M.2 RAID controller slot. Select 'MSTOR-RAID-1' if there are two slots for M.2 RAID controller and virtual drive has to be created on controller in first slot. Select 'MSTOR-RAID-2' if there are two slots for M.2 RAID controller and virtual drive has to be created on controller in the second slot. Select 'MSTOR-RAID-1, MSTOR-RAID-2' to create virtual drives on both M.2 controllers. 'MSTOR-RAID-1' - Virtual drive will be created on the M.2 RAID controller in the first slot. 'MSTOR-RAID-2' - Virtual drive will be created on the M.2 RAID controller in the second slot, if available. 'MSTOR-RAID-1,MSTOR-RAID-2' - Virtual drive will be created on the M.2 RAID controller in both the slots, if available.",
+               "type": "string",
+               "default": "MSTOR-RAID-1",
+               "enum": [
+                  "MSTOR-RAID-1",
+                  "MSTOR-RAID-2",
+                  "MSTOR-RAID-1,MSTOR-RAID-2"
+               ]
+            }
+         },
+         "additionalProperties": false
+      },
+      "global_hot_spares": {
+         "description": "A collection of disks that is to be used as hot spares, globally, for all the RAID groups. Allowed value is a number range separated by a comma or a hyphen.",
+         "type": "string",
+         "default": ""
+      },
+      "drive_group": {
+         "description": "List of Drive Groups associated with Storage Policy",
+         "type": "array",
+         "items": {
+            "description": "Individual Drive Group",
+            "type": "object",
+            "properties": {
+               "drive_group_name": {
+                  "description": "The name of the drive group. The name can be between 1 and 15 alphanumeric characters. Spaces or any special characters other than - (hyphen), _ (underscore), : (colon), and . (period) are not allowed.",
+                  "type": "string",
+                  "default": ""
+               },
+               "raid_level": {
+                  "description": "The supported RAID level for the disk group.\n* `Raid0` - RAID 0 Stripe Raid Level.\n* `Raid1` - RAID 1 Mirror Raid Level.\n* `Raid5` - RAID 5 Mirror Raid Level.\n* `Raid6` - RAID 6 Mirror Raid Level.\n* `Raid10` - RAID 10 Mirror Raid Level.\n* `Raid50` - RAID 50 Mirror Raid Level.\n* `Raid60` - RAID 60 Mirror Raid Level.",
+                  "type": "string",
+                  "default": "RAID0",
+                  "enum": [
+                     "RAID0",
+                     "RAID1",
+                     "RAID5",
+                     "RAID6",
+                     "RAID10",
+                     "RAID50",
+                     "RAID60"
+                  ]
+               },
+               "secure_drive_group": {
+                  "description": "Enables/disables the drive encryption on all the drives used in this policy. This flag just enables the drive security and only after remote key setting configured, the actual encryption will be done.",
+                  "type": "boolean",
+                  "default": false
+               },
+               "manual_drive_selection": {
+                  "description": "Drives are selected manually by the user based on the RAID and virtual drive configuration.",
+                  "type": "object",
+                  "properties": {
+                     "dedicated_hot_spares": {
+                        "description": "A collection of drives to be used as hot spares for this Drive Group.",
+                        "type": "string",
+                        "default": ""
+                     },
+                     "drive_array_spans": {
+                        "description": "The array of 'storage.Span' resources matching the request.",
+                        "type": "array",
+                        "items": {
+                           "description": "Storage Spans associated with Storage Policy",
+                           "type": "object",
+                           "properties": {
+                              "slots": {
+                                 "description": "Individual Storage Span slot details",
+                                 "type": "string",
+                                 "default": ""
+                              },
+                              "additionalProperties": false
+                           },
+                           "minItems": 1
+                        }
+                     }
+                  }
+               },
+               "virtual_drives": {
+                  "description": "Virtual Drives part of Drive Group",
+                  "type": "array",
+                  "items": {
+                     "description": "Individual Virtual Drive",
+                     "type": "object",
+                     "properties": {
+                        "vd_name": {
+                           "description": "The name of the virtual drive. The name can be between 1 and 15 alphanumeric characters. Spaces or any special characters other than - (hyphen), _ (underscore), : (colon), and . (period) are not allowed.",
+                           "type": "string",
+                           "default": ""
+                        },
+                        "boot_drive": {
+                           "description": "This flag enables this virtual drive to be used as a boot drive.",
+                           "type": "boolean",
+                           "default": false
+                        },
+                        "expand_to_available": {
+                           "description": "This flag enables the virtual drive to use all the space available in the disk group. When this flag is enabled, the size property is ignored.",
+                           "type": "boolean",
+                           "default": false
+                        },
+                        "size": {
+                           "description": "Virtual drive size in MebiBytes. Size is mandatory field except when the Expand to Available option is enabled.",
+                           "type": "integer"
+                        },
+                        "strip_size": {
+                           "description": "Desired strip size - Allowed values are 64KiB, 128KiB, 256KiB, 512KiB, 1024KiB.\n* `64` - Number of bytes in a strip is 64 Kibibytes.\n* `128` - Number of bytes in a strip is 128 Kibibytes.\n* `256` - Number of bytes in a strip is 256 Kibibytes.\n* `512` - Number of bytes in a strip is 512 Kibibytes.\n* `1024` - Number of bytes in a strip is 1024 Kibibytes or 1 Mebibyte.",
+                           "type": "string",
+                           "default": "64KiB",
+                           "enum": [
+                              "64KiB",
+                              "128KiB",
+                              "256KiB",
+                              "512KiB",
+                              "1MiB"
+                           ]
+                        },
+                        "access_policy": {
+                           "description": "Access policy that host has on this virtual drive.\n* `Default` - Use platform default access mode.\n* `ReadWrite` - Enables host to perform read-write on the VD.\n* `ReadOnly` - Host can only read from the VD.\n* `Blocked` - Host can neither read nor write to the VD.",
+                           "type": "string",
+                           "default": "Default",
+                           "enum": [
+                              "Default",
+                              "Read Write",
+                              "Read Only",
+                              "Blocked"
+                           ]
+                        },
+                        "read_policy": {
+                           "description": "Read ahead mode to be used to read data from this virtual drive.\n* `Default` - Use platform default read ahead mode.\n* `ReadAhead` - Use read ahead mode for the policy.\n* `NoReadAhead` - Do not use read ahead mode for the policy.",
+                           "type": "string",
+                           "default": "Default",
+                           "enum": [
+                              "Default",
+                              "Always Read Ahead",
+                              "No Read Ahead"
+                           ]
+                        },
+                        "write_policy": {
+                           "description": "Write mode to be used to write data to this virtual drive.\n* `Default` - Use platform default write mode.\n* `WriteThrough` - Data is written through the cache and to the physical drives. Performance is improved, because subsequent reads of that data can be satisfied from the cache.\n* `WriteBackGoodBbu` - Data is stored in the cache, and is only written to the physical drives when space in the cache is needed. Virtual drives requesting this policy fall back to Write Through caching when the battery backup unit (BBU) cannot guarantee the safety of the cache in the event of a power failure.\n* `AlwaysWriteBack` - With this policy, write caching remains Write Back even if the battery backup unit is defective or discharged.",
+                           "type": "string",
+                           "default": "Default",
+                           "enum": [
+                              "Default",
+                              "Write Through",
+                              "Write Back Good BBU",
+                              "Always Write Back"
+                           ]
+                        },
+                        "disk_cache": {
+                           "description": "Disk cache policy for the virtual drive.\n* `Default` - Use platform default drive cache mode.\n* `NoChange` - Drive cache policy is unchanged.\n* `Enable` - Enables IO caching on the drive.\n* `Disable` - Disables IO caching on the drive.",
+                           "type": "string",
+                           "default": "Default",
+                           "enum": [
+                              "Default",
+                              "Unchanged",
+                              "Enabled",
+                              "Disabled"
+                           ]
+                        }
+                     },
+                     "required": [
+                        "vd_name"
+                     ],
+                     "minItems": 1
+                  }
+               }
+            }
+         }
+      },
+      "single_drive_raid_configuration": {
+         "description": "M.2 Virtual Drive Configuration",
+         "type": "object",
+         "properties": {
+            "enable": {
+               "description": "",
+               "type": "boolean",
+               "default": false
+            },
+            "drive_slots": {
+               "description": "",
+               "type": "string",
+               "default": ""
+            },
+            "strip_size": {
+               "description": "Desired strip size - Allowed values are 64KiB, 128KiB, 256KiB, 512KiB, 1024KiB.\n* `64` - Number of bytes in a strip is 64 Kibibytes.\n* `128` - Number of bytes in a strip is 128 Kibibytes.\n* `256` - Number of bytes in a strip is 256 Kibibytes.\n* `512` - Number of bytes in a strip is 512 Kibibytes.\n* `1024` - Number of bytes in a strip is 1024 Kibibytes or 1 Mebibyte.",
+               "type": "string",
+               "default": "64KiB",
+               "enum": [
+                  "64KiB",
+                  "128KiB",
+                  "256KiB",
+                  "512KiB",
+                  "1MiB"
+               ]
+            },
+            "access_policy": {
+               "description": "Access policy that host has on this virtual drive.\n* `Default` - Use platform default access mode.\n* `ReadWrite` - Enables host to perform read-write on the VD.\n* `ReadOnly` - Host can only read from the VD.\n* `Blocked` - Host can neither read nor write to the VD.",
+               "type": "string",
+               "default": "Default",
+               "enum": [
+                  "Default",
+                  "Read Write",
+                  "Read Only",
+                  "Blocked"
+               ]
+            },
+            "read_policy": {
+               "description": "Read ahead mode to be used to read data from this virtual drive.\n* `Default` - Use platform default read ahead mode.\n* `ReadAhead` - Use read ahead mode for the policy.\n* `NoReadAhead` - Do not use read ahead mode for the policy.",
+               "type": "string",
+               "default": "Default",
+               "enum": [
+                  "Default",
+                  "Always Read Ahead",
+                  "No Read Ahead"
+               ]
+            },
+            "write_policy": {
+               "description": "Write mode to be used to write data to this virtual drive.\n* `Default` - Use platform default write mode.\n* `WriteThrough` - Data is written through the cache and to the physical drives. Performance is improved, because subsequent reads of that data can be satisfied from the cache.\n* `WriteBackGoodBbu` - Data is stored in the cache, and is only written to the physical drives when space in the cache is needed. Virtual drives requesting this policy fall back to Write Through caching when the battery backup unit (BBU) cannot guarantee the safety of the cache in the event of a power failure.\n* `AlwaysWriteBack` - With this policy, write caching remains Write Back even if the battery backup unit is defective or discharged.",
+               "type": "string",
+               "default": "Default",
+               "enum": [
+                  "Default",
+                  "Write Through",
+                  "Write Back Good BBU",
+                  "Always Write Back"
+               ]
+            },
+            "disk_cache": {
+               "description": "Disk cache policy for the virtual drive.\n* `Default` - Use platform default drive cache mode.\n* `NoChange` - Drive cache policy is unchanged.\n* `Enable` - Enables IO caching on the drive.\n* `Disable` - Disables IO caching on the drive.",
+               "type": "string",
+               "default": "Default",
+               "enum": [
+                  "Default",
+                  "Unchanged",
+                  "Enabled",
+                  "Disabled"
+               ]
+            }
+         },
+         "additionalProperties": false
+      }
+   },
+   "additionalProperties": false,
+   "required": [
+      "name"
+   ]
+}

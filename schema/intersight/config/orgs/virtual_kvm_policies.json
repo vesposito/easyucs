@@ -1,0 +1,86 @@
+{
+   "id": "intersight_config_orgs_virtual_kvm_policies#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS intersight config orgs virtual_kvm_policies section",
+   "description": "EasyUCS intersight config orgs virtual_kvm_policies section JSON schema",
+   "type": "object",
+   "properties": {
+      "comment": {
+         "description": "Virtual KVM Policy Comments",
+         "type": "string",
+         "default": ""
+      },
+      "descr": {
+         "description": "Virtual KVM Policy Description",
+         "type": "string",
+         "default": "",
+         "pattern": "^$|^[a-zA-Z0-9]+[\\x00-\\xFF]*$",
+         "maxLength": 1024
+      },
+      "name": {
+         "description": "Virtual KVM Policy Name",
+         "type": "string",
+         "default": "",
+         "pattern": "^[a-zA-Z0-9_.:-]{1,64}$"
+      },
+      "tags": {
+         "description": "Virtual KVM Policy Tags",
+         "type": "array",
+         "items": {
+            "description": "Virtual KVM Policy Tag",
+            "type": "object",
+            "properties": {
+               "key": {
+                  "description": "Virtual KVM Policy Tag Key",
+                  "type": "string",
+                  "default": "",
+                  "minLength": 1,
+                  "maxLength": 128
+               },
+               "value": {
+                  "description": "Virtual KVM Policy Tag Value",
+                  "type": "string",
+                  "default": "",
+                  "minLength": 0,
+                  "maxLength": 256
+               }
+            },
+            "additionalProperties": false,
+            "required": [
+               "key",
+               "value"
+            ]
+         },
+         "minItems": 1
+      },
+      "enable_virtual_kvm": {
+         "description": "Virtual KVM Policy Admin State",
+         "type": "boolean",
+         "default": true
+      },
+      "enable_video_encryption": {
+         "description": "Virtual KVM Policy Video Encryption State",
+         "type": "boolean",
+         "default": true
+      },
+      "enable_local_server_video": {
+         "description": "Virtual KVM Policy Local Server Video State",
+         "type": "boolean",
+         "default": true
+      },
+      "remote_port": {
+         "description": "Virtual KVM Policy Remote Port",
+         "type": "integer",
+         "default": 2068
+      },
+      "max_sessions": {
+         "description": "Virtual KVM Policy Max Sessions",
+         "type": "integer",
+         "default": 4
+      }
+   },
+   "additionalProperties": false,
+   "required": [
+      "name"
+   ]
+}

@@ -1,0 +1,128 @@
+{
+   "id": "intersight_config_orgs_system_qos_policies#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS intersight config orgs system_qos_policies section",
+   "description": "EasyUCS intersight config orgs system_qos_policies section JSON schema",
+   "type": "object",
+   "properties": {
+      "comment": {
+         "description": "System QoS Policy Comments",
+         "type": "string",
+         "default": ""
+      },
+      "descr": {
+         "description": "System QoS Policy Description",
+         "type": "string",
+         "default": "",
+         "pattern": "^$|^[a-zA-Z0-9]+[\\x00-\\xFF]*$",
+         "maxLength": 1024
+      },
+      "name": {
+         "description": "System QoS Policy Name",
+         "type": "string",
+         "default": "",
+         "pattern": "^[a-zA-Z0-9_.:-]{1,64}$"
+      },
+      "tags": {
+         "description": "System QoS Policy Tags",
+         "type": "array",
+         "items": {
+            "description": "System QoS Policy Tag",
+            "type": "object",
+            "properties": {
+               "key": {
+                  "description": "System QoS Policy Tag Key",
+                  "type": "string",
+                  "default": "",
+                  "minLength": 1,
+                  "maxLength": 128
+               },
+               "value": {
+                  "description": "System QoS Policy Tag Value",
+                  "type": "string",
+                  "default": "",
+                  "minLength": 0,
+                  "maxLength": 256
+               }
+            },
+            "additionalProperties": false,
+            "required": [
+               "key",
+               "value"
+            ]
+         },
+         "minItems": 1
+      },
+      "classes": {
+         "description": "System QoS Policy Classes",
+         "type": "array",
+         "items": {
+            "description": "System Qos Policy Class",
+            "type": "object",
+            "properties": {
+               "cos": {
+                  "description": "System Qos Policy Class - CoS",
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 255
+               },
+               "mtu": {
+                  "description": "System Qos Policy Class - MTU",
+                  "type": "integer",
+                  "minimum": 1500,
+                  "maximum": 9216
+               },
+               "multicast_optimized": {
+                  "description": "System Qos Policy Class - Multicast Optimized?",
+                  "type": "boolean",
+                  "default": false
+               },
+               "packet_drop": {
+                  "description": "System Qos Policy Class - Packet Drop",
+                  "type": "boolean"
+               },
+               "priority": {
+                  "description": "System QoS Policy Class - Priority Name",
+                  "type": "string",
+                  "enum": [
+                     "Best Effort",
+                     "Bronze",
+                     "FC",
+                     "Gold",
+                     "Platinum",
+                     "Silver"
+                  ]
+               },
+               "state": {
+                  "description": "System QoS Policy Class - Priority Admin State",
+                  "type": "string",
+                  "default": "Disabled",
+                  "enum": [
+                     "Disabled",
+                     "Enabled"
+                  ]
+               },
+               "weight": {
+                  "description": "System Qos Policy Class - Weight",
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 10
+               }
+            },
+            "additionalProperties": false,
+            "required": [
+               "priority",
+               "state",
+               "cos",
+               "weight",
+               "packet_drop"
+            ]
+         },
+         "minItems": 1
+      }
+   },
+   "additionalProperties": false,
+   "required": [
+      "name"
+   ]
+}

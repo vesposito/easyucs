@@ -27,6 +27,7 @@
             "enum": [
                "aaa",
                "admin",
+               "domain-group-management",
                "ext-lan-config",
                "ext-lan-policy",
                "ext-lan-qos",
@@ -36,6 +37,7 @@
                "ext-san-qos",
                "ext-san-security",
                "fault",
+               "kvm",
                "operations",
                "org-management",
                "pod-config",
@@ -63,7 +65,8 @@
                "ls-storage",
                "ls-storage-policy",
                "read-only",
-               "stats-management"
+               "stats-management",
+               "tag"
             ]
          },
          "minItems": 1

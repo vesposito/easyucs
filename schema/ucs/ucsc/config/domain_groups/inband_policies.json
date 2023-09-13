@@ -1,0 +1,80 @@
+{
+   "id": "ucs_central_config_domain_groups_inband_policies#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS ucs central config domain_groups inband_policies section",
+   "description": "EasyUCS ucs central config domain_groups inband_policies section JSON schema",
+   "type": "object",
+   "properties": {
+      "comment": {
+         "description": "Inband Policy Comments",
+         "type": "string",
+         "default": ""
+      },
+      "name": {
+         "description": "Inband Policy Name",
+         "type": "string",
+         "default": "",
+         "pattern": "^[\\-\\.:_a-zA-Z0-9]{1,16}$"
+      },
+      "descr": {
+         "description": "Description of Inband Policy",
+         "type": "string",
+         "default": "",
+         "pattern": "^[ !#$%&\\(\\)\\*\\+,\\-\\./:;\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{0,256}$"
+      },
+      "vlan_groups": {
+         "description": "Inband Policy - VLAN Groups",
+         "type": "array",
+         "items": {
+            "description": "Inband Policy - Network",
+            "type": "object",
+            "properties": {
+               "vlan_group": {
+                  "description": "Inband Policy - Network - VLAN Group",
+                  "type": "string",
+                  "pattern": "^[\\-\\.:_a-zA-Z0-9]{0,32}$"
+               },
+               "default_management_vlan": {
+                  "description": "Inband Policy - Network - Default Management VLAN",
+                  "type": "string",
+                  "pattern": "^[\\-\\.:_a-zA-Z0-9]{0,32}$"
+               }
+            }
+         },
+         "minItems": 1,
+         "maxItems": 1
+      },
+      "management_ip_pool": {
+         "Description": "Inband Policy - IP Pool - Management IP Pool",
+         "type": "string"
+      },
+      "tags": {
+         "description": "Inband Policy - Tags",
+         "type": "array",
+         "items": {
+            "description": "Inband Policy - Tag",
+            "type": "object",
+            "properties": {
+               "type": {
+                  "description": "Inband Policy - Tag - Type",
+                  "type": "string",
+                  "pattern": "^[ !#$%&\\(\\)\\*\\+,\\-\\.:;=\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{1,32}$"
+               },
+               "value": {
+                  "description": "Inband Policy - Tag - Value",
+                  "type": "string"
+               }
+            },
+            "additionalProperties": false,
+            "required": [
+               "type",
+               "value"
+            ]
+         }
+      }
+   },
+   "additionalProperties": false,
+   "required": [
+      "name"
+   ]
+}

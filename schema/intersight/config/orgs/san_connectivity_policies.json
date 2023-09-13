@@ -1,0 +1,498 @@
+{
+   "id": "intersight_config_orgs_san_connectivity_policies#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS intersight config orgs san_connectivity_policies section",
+   "description": "EasyUCS intersight config orgs san_connectivity_policies section JSON schema",
+   "type": "object",
+   "properties": {
+      "comment": {
+         "description": "SAN Connectivity Policy Comments",
+         "type": "string",
+         "default": ""
+      },
+      "descr": {
+         "description": "SAN Connectivity Policy Description",
+         "type": "string",
+         "default": "",
+         "pattern": "^$|^[a-zA-Z0-9]+[\\x00-\\xFF]*$",
+         "maxLength": 1024
+      },
+      "name": {
+         "description": "SAN Connectivity Policy Name",
+         "type": "string",
+         "default": "",
+         "pattern": "^[a-zA-Z0-9_.:-]{1,64}$"
+      },
+      "tags": {
+         "description": "SAN Connectivity Policy Tags",
+         "type": "array",
+         "items": {
+            "description": "SAN Connectivity Policy Tag",
+            "type": "object",
+            "properties": {
+               "key": {
+                  "description": "SAN Connectivity Policy Tag Key",
+                  "type": "string",
+                  "default": "",
+                  "minLength": 1,
+                  "maxLength": 128
+               },
+               "value": {
+                  "description": "SAN Connectivity Policy Tag Value",
+                  "type": "string",
+                  "default": "",
+                  "minLength": 0,
+                  "maxLength": 256
+               }
+            },
+            "additionalProperties": false,
+            "required": [
+               "key",
+               "value"
+            ]
+         },
+         "minItems": 1
+      },
+      "target_platform": {
+         "description": "SAN Connectivity Policy Target Platform",
+         "type": "string",
+         "default": "Standalone",
+         "enum": [
+            "FI-Attached",
+            "Standalone"
+         ]
+      },
+      "vhba_placement_mode": {
+         "description": "SAN Connectivity Policy vHBA Placement Mode",
+         "type": "string",
+         "default": "custom",
+         "enum": [
+            "auto",
+            "custom"
+         ]
+      },
+      "vhbas": {
+         "oneOf": [
+            {
+               "description": "SAN Connectivity Policy vHBAs - for FI-Attached Servers",
+               "type": "array",
+               "items": {
+                  "type": "object",
+                  "description": "SAN Connectivity Policy - vHBA",
+                  "properties": {
+                     "fibre_channel_adapter_policy": {
+                        "description": "SAN Connectivity Policy - vHBA Fibre Channel Adapter Policy",
+                        "type": "string",
+                        "default": "",
+                        "pattern": "^[a-zA-Z0-9_.:-]{1,64}$"
+                     },
+                     "fibre_channel_network_policy": {
+                        "description": "SAN Connectivity Policy - vHBA Fibre Channel Network Policy",
+                        "type": "string",
+                        "default": "",
+                        "pattern": "^[a-zA-Z0-9_.:-]{1,64}$"
+                     },
+                     "fibre_channel_qos_policy": {
+                        "description": "SAN Connectivity Policy - vHBA Fibre Channel QoS Policy",
+                        "type": "string",
+                        "default": "",
+                        "pattern": "^[a-zA-Z0-9_.:-]{1,64}$"
+                     },
+                     "fc_zone_policies": {
+                        "description": "SAN Connectivity Policy - vHBA FC Zone Policies",
+                        "type": "array",
+                        "items": {
+                           "description": "SAN Connectivity Policy - vHBA FC Zone Policy",
+                           "type": "string",
+                           "default": "",
+                           "pattern": "^[a-zA-Z0-9_.:-]{1,64}$"
+                        },
+                        "minItems": 1
+                     },
+                     "name": {
+                        "description": "SAN Connectivity Policy - vHBA Name",
+                        "type": "string",
+                        "default": "",
+                        "maxLength": 31,
+                        "pattern": "^[a-zA-Z0-9-._:]+$"
+                     },
+                     "persistent_lun_bindings": {
+                        "description": "SAN Connectivity Policy - Persistent LUN Bindings",
+                        "type": "boolean",
+                        "default": false
+                     },
+                     "pci_link": {
+                        "description": "SAN Connectivity Policy - vHBA PCI Link",
+                        "type": "integer",
+                        "default": 0,
+                        "maximum": 1
+                     },
+                     "pci_order": {
+                        "description": "SAN Connectivity Policy - vHBA PCI Order",
+                        "type": "integer",
+                        "default": 0
+                     },
+                     "pin_group_name": {
+                        "description": "SAN Connectivity Policy - Pin Group Name",
+                        "type": "string",
+                        "default": "",
+                        "pattern": "^$|^[a-zA-Z0-9_.:-]{1,64}$"
+                     },
+                     "slot_id": {
+                        "description": "SAN Connectivity Policy - vHBA Slot ID",
+                        "type": "string",
+                        "default": "",
+                        "pattern": "^$|^([1-9]|1[0-5]|MLOM)$"
+                     },
+                     "switch_id": {
+                        "description": "SAN Connectivity Policy - vHBA Switch ID",
+                        "type": "string",
+                        "default": "A",
+                        "enum": [
+                           "A",
+                           "B"
+                        ]
+                     },
+                     "vhba_type": {
+                        "description": "SAN Connectivity Policy - vHBA Type",
+                        "type": "string",
+                        "default": "fc-initiator",
+                        "enum": [
+                           "fc-initiator",
+                           "fc-nvme-initiator",
+                           "fc-nvme-target",
+                           "fc-target"
+                        ]
+                     },
+                     "wwpn_allocation_type": {
+                        "description": "SAN Connectivity Policy - vHBA WWPN Allocation Type",
+                        "type": "string",
+                        "default": "pool",
+                        "enum": [
+                           "pool",
+                           "static"
+                        ]
+                     },
+                     "wwpn_pool": {
+                        "description": "SAN Connectivity Policy - vHBA WWPN Pool Name",
+                        "type": "string",
+                        "default": "",
+                        "pattern": "^[a-zA-Z0-9_.:-]{1,64}$"
+                     },
+                     "wwpn_static": {
+                        "description": "SAN Connectivity Policy - vHBA Static WWPN",
+                        "type": "string",
+                        "default": "",
+                        "pattern": "^$|((^20|5[0-9a-fA-F]{1}):([0-9a-fA-F]{2}:){6}([0-9a-fA-F]{2}))"
+                     }
+                  },
+                  "additionalProperties": false,
+                  "required": [
+                     "fibre_channel_adapter_policy",
+                     "fibre_channel_network_policy",
+                     "fibre_channel_qos_policy",
+                     "name",
+                     "switch_id",
+                     "wwpn_allocation_type"
+                  ],
+                  "allOf": [
+                     {
+                        "$comment": "Below is for setting constraints for wwpn_allocation_type with value pool",
+                        "if": {
+                           "properties": {
+                              "wwpn_allocation_type": {
+                                 "enum": [
+                                    "pool"
+                                 ]
+                              }
+                           },
+                           "required": [
+                              "wwpn_allocation_type"
+                           ]
+                        },
+                        "then": {
+                           "allOf": [
+                              {
+                                 "not": {
+                                    "required": [
+                                       "wwpn_static"
+                                    ]
+                                 }
+                              }
+                           ]
+                        }
+                     },
+                     {
+                        "$comment": "Below is for setting constraints for wwpn_allocation_type with value static",
+                        "if": {
+                           "properties": {
+                              "wwpn_allocation_type": {
+                                 "enum": [
+                                    "static"
+                                 ]
+                              }
+                           },
+                           "required": [
+                              "wwpn_allocation_type"
+                           ]
+                        },
+                        "then": {
+                           "allOf": [
+                              {
+                                 "required": [
+                                    "wwpn_static"
+                                 ]
+                              },
+                              {
+                                 "not": {
+                                    "required": [
+                                       "wwpn_pool"
+                                    ]
+                                 }
+                              }
+                           ]
+                        }
+                     }
+                  ]
+               },
+               "minItems": 1
+            },
+            {
+               "description": "SAN Connectivity Policy vHBAs - for Standalone Servers",
+               "type": "array",
+               "items": {
+                  "type": "object",
+                  "description": "SAN Connectivity Policy - vHBA",
+                  "properties": {
+                     "fibre_channel_adapter_policy": {
+                        "description": "SAN Connectivity Policy - vHBA Fibre Channel Adapter Policy",
+                        "type": "string",
+                        "default": "",
+                        "pattern": "^[a-zA-Z0-9_.:-]{1,64}$"
+                     },
+                     "fibre_channel_network_policy": {
+                        "description": "SAN Connectivity Policy - vHBA Fibre Channel Network Policy",
+                        "type": "string",
+                        "default": "",
+                        "pattern": "^[a-zA-Z0-9_.:-]{1,64}$"
+                     },
+                     "fibre_channel_qos_policy": {
+                        "description": "SAN Connectivity Policy - vHBA Fibre Channel QoS Policy",
+                        "type": "string",
+                        "default": "",
+                        "pattern": "^[a-zA-Z0-9_.:-]{1,64}$"
+                     },
+                     "fc_zone_policies": {
+                        "description": "SAN Connectivity Policy - vHBA FC Zone Policies",
+                        "type": "array",
+                        "items": {
+                           "description": "SAN Connectivity Policy - vHBA FC Zone Policy",
+                           "type": "string",
+                           "default": "",
+                           "pattern": "^[a-zA-Z0-9_.:-]{1,64}$"
+                        },
+                        "minItems": 1
+                     },
+                     "name": {
+                        "description": "SAN Connectivity Policy - vHBA Name",
+                        "type": "string",
+                        "default": "",
+                        "maxLength": 31,
+                        "pattern": "^[a-zA-Z0-9-._:]+$"
+                     },
+                     "persistent_lun_bindings": {
+                        "description": "SAN Connectivity Policy - Persistent LUN Bindings",
+                        "type": "boolean",
+                        "default": false
+                     },
+                     "pci_link": {
+                        "description": "SAN Connectivity Policy - vHBA PCI Link",
+                        "type": "integer",
+                        "default": 0,
+                        "maximum": 1
+                     },
+                     "pci_order": {
+                        "description": "SAN Connectivity Policy - vHBA PCI Order",
+                        "type": "integer",
+                        "default": 0
+                     },
+                     "slot_id": {
+                        "description": "SAN Connectivity Policy - vHBA Slot ID",
+                        "type": "string",
+                        "default": "",
+                        "pattern": "^$|^([1-9]|1[0-5]|MLOM)$"
+                     },
+                     "uplink_port": {
+                        "description": "SAN Connectivity Policy - vHBA Uplink Port",
+                        "type": "integer",
+                        "default": 0,
+                        "minimum": 0,
+                        "maximum": 3
+                     },
+                     "vhba_type": {
+                        "description": "SAN Connectivity Policy - vHBA Type",
+                        "type": "string",
+                        "default": "fc-initiator",
+                        "enum": [
+                           "fc-initiator",
+                           "fc-nvme-initiator",
+                           "fc-nvme-target",
+                           "fc-target"
+                        ]
+                     }
+                  },
+                  "additionalProperties": false,
+                  "required": [
+                     "fibre_channel_adapter_policy",
+                     "fibre_channel_network_policy",
+                     "fibre_channel_qos_policy",
+                     "name",
+                     "slot_id"
+                  ]
+               },
+               "minItems": 1
+            }
+         ]
+      },
+      "wwnn_allocation_type": {
+         "description": "SAN Connectivity Policy WWNN Allocation Type",
+         "type": "string",
+         "default": "pool",
+         "enum": [
+            "pool",
+            "static"
+         ]
+      },
+      "wwnn_static": {
+         "description": "SAN Connectivity Policy Static WWNN Address",
+         "type": "string",
+         "default": "",
+         "pattern": "^$|((^20|5[0-9a-fA-F]{1}):([0-9a-fA-F]{2}:){6}([0-9a-fA-F]{2}))"
+      },
+      "wwnn_pool": {
+         "description": "SAN Connectivity Policy WWNN Pool Name",
+         "type": "string",
+         "default": "",
+         "pattern": "^[a-zA-Z0-9_.:-]{1,64}$"
+      }
+   },
+   "additionalProperties": false,
+   "required": [
+      "name",
+      "target_platform"
+   ],
+   "allOf": [
+      {
+         "$comment": "Below is for setting constraints for target_platform with value Standalone",
+         "if": {
+            "properties": {
+               "target_platform": {
+                  "enum": [
+                     "Standalone"
+                  ]
+               }
+            },
+            "required": [
+               "target_platform"
+            ]
+         },
+         "then": {
+            "not": {
+               "anyOf": [
+                  {
+                     "required": [
+                        "wwnn_allocation_type"
+                     ]
+                  },
+                  {
+                     "required": [
+                        "wwnn_static"
+                     ]
+                  },
+                  {
+                     "required": [
+                        "wwnn_pool"
+                     ]
+                  }
+               ]
+            },
+            "properties": {
+               "vhba_placement_mode": {
+                  "not": {
+                     "enum": [
+                        "auto"
+                     ]
+                  }
+               }
+            }
+         }
+      },
+      {
+         "$comment": "Below is for setting constraints for target_platform with value FI-Attached",
+         "if": {
+            "properties": {
+               "target_platform": {
+                  "enum": [
+                     "FI-Attached"
+                  ]
+               }
+            },
+            "required": [
+               "target_platform"
+            ]
+         },
+         "then": {
+            "required": [
+               "wwnn_allocation_type"
+            ]
+         }
+      },
+      {
+         "$comment": "Below is for setting constraints for wwnn_allocation_type with value pool",
+         "if": {
+            "properties": {
+               "wwnn_allocation_type": {
+                  "enum": [
+                     "pool"
+                  ]
+               }
+            },
+            "required": [
+               "wwnn_allocation_type"
+            ]
+         },
+         "then": {
+            "not": {
+               "required": [
+                  "wwnn_static"
+               ]
+            }
+         }
+      },
+      {
+         "$comment": "Below is for setting constraints for wwnn_allocation_type with value static",
+         "if": {
+            "properties": {
+               "wwnn_allocation_type": {
+                  "enum": [
+                     "static"
+                  ]
+               }
+            },
+            "required": [
+               "wwnn_allocation_type"
+            ]
+         },
+         "then": {
+            "required": [
+               "wwnn_static"
+            ],
+            "not": {
+               "required": [
+                  "wwnn_pool"
+               ]
+            }
+         }
+      }
+   ]
+}

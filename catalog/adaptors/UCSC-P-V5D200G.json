@@ -1,0 +1,34 @@
+{
+   "model_short_name": "VIC 15235",
+   "rear_file_name": "UCSC-P-V5D200G.png",
+   "rear_file_name_half": "UCSC-P-V5D200G_half.png",
+   "rear_file_size": [593,75],
+   "rear_file_size_half": [389,75],
+   "rear_ports": {
+      "x/2": {
+         "port_coord": [228, 17],
+         "port_type": "qsfp56",
+         "port_size": [111, 49]
+      },
+      "x/1": {
+         "port_coord": [378, 17],
+         "port_type": "qsfp56",
+         "port_size": [111, 49]
+      }
+   },
+   "rear_ports_half": {
+      "x/2": {
+         "port_coord": [34, 17],
+         "port_type": "qsfp56",
+         "port_size": [111, 49]
+      },
+      "x/1": {
+         "port_coord": [184, 17],
+         "port_type": "qsfp56",
+         "port_size": [111, 49]
+      }
+   },
+   "imm_compatible": true,
+   "imm_min_required_version": "4.3(1.230097)",
+   "data_sheet_url": "https://www.cisco.com/c/en/us/products/collateral/interfaces-modules/unified-computing-system-adapters/ucs-vic-15000-series-ds.html"
+}

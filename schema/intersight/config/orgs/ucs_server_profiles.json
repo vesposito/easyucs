@@ -1,0 +1,630 @@
+{
+   "id": "intersight_config_orgs_ucs_server_profiles#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS intersight config orgs ucs_server_profiles section",
+   "description": "EasyUCS intersight config orgs ucs_server_profiles section JSON schema",
+   "type": "object",
+   "properties": {
+      "comment": {
+         "description": "UCS Server Profile Comments",
+         "type": "string",
+         "default": ""
+      },
+      "descr": {
+         "description": "UCS Server Profile Description",
+         "type": "string",
+         "default": "",
+         "pattern": "^$|^[a-zA-Z0-9]+[\\x00-\\xFF]*$",
+         "maxLength": 1024
+      },
+      "name": {
+         "description": "UCS Server Profile Name",
+         "type": "string",
+         "default": "",
+         "pattern": "^[a-zA-Z0-9_.-]{1,64}$"
+      },
+      "tags": {
+         "description": "UCS Server Profile Tags",
+         "type": "array",
+         "items": {
+            "description": "UCS Server Profile Tag",
+            "type": "object",
+            "properties": {
+               "key": {
+                  "description": "UCS Server Profile Tag Key",
+                  "type": "string",
+                  "default": "",
+                  "minLength": 1,
+                  "maxLength": 128
+               },
+               "value": {
+                  "description": "UCS Server Profile Tag Value",
+                  "type": "string",
+                  "default": "",
+                  "minLength": 0,
+                  "maxLength": 256
+               }
+            },
+            "additionalProperties": false,
+            "required": [
+               "key",
+               "value"
+            ]
+         },
+         "minItems": 1
+      },
+      "target_platform": {
+         "description": "UCS Server Profile Target Platform",
+         "type": "string",
+         "default": "Standalone",
+         "enum": [
+            "FI-Attached",
+            "Standalone"
+         ]
+      },
+      "adapter_configuration_policy": {
+         "description": "Adapter Configuration Policy associated to UCS Server Profile",
+         "type": "string",
+         "default": ""
+      },
+      "assigned_server": {
+         "description": "Server assigned to UCS Server Profile ",
+         "type": "object",
+         "properties": {
+            "model": {
+               "description": "Server Model associated UCS Server Profile",
+               "type": "string",
+               "default": ""
+            },
+            "server_id": {
+               "description": "ID of Rack Server assigned to UCS Server Profile",
+               "type": "integer",
+               "default": ""
+            },
+            "chassis_id": {
+               "description": "Chassis ID of Blade Server assigned to UCS Server Profile",
+               "type": "string",
+               "default": ""
+            },
+            "slot_id": {
+               "description": "Slot ID of Blade Server assigned to UCS Server Profile",
+               "type": "integer",
+               "default": ""
+            },
+            "server_type": {
+               "description": "Object Type of Server assigned to UCS Server Profile",
+               "type": "string",
+               "enum": [
+                  "Rack",
+                  "Blade"
+               ]
+            }
+         },
+         "additionalProperties": false
+      },
+      "associated_server": {
+         "description": "Server associated to UCS Server Profile ",
+         "type": "object",
+         "properties": {
+            "model": {
+               "description": "Server Model associated UCS Server Profile",
+               "type": "string",
+               "default": ""
+            },
+            "server_id": {
+               "description": "ID of Rack Server associated to UCS Server Profile",
+               "type": "integer",
+               "default": ""
+            },
+            "chassis_id": {
+               "description": "Chassis ID of Blade Server associated to UCS Server Profile",
+               "type": "string",
+               "default": ""
+            },
+            "slot_id": {
+               "description": "Slot ID of Blade Server associated to UCS Server Profile",
+               "type": "integer",
+               "default": ""
+            },
+            "server_type": {
+               "description": "Object Type of Server associated to UCS Server Profile",
+               "type": "string",
+               "enum": [
+                  "Rack",
+                  "Blade"
+               ]
+            }
+         },
+         "additionalProperties": false
+      },
+      "bios_policy": {
+         "description": "BIOS Policy associated to UCS Server Profile",
+         "type": "string",
+         "default": ""
+      },
+      "boot_policy": {
+         "description": "Boot Policy associated to UCS Server Profile",
+         "type": "string",
+         "default": ""
+      },
+      "certificate_management_policy": {
+         "description": "Certificate Management Policy associated to UCS Server Profile",
+         "type": "string",
+         "default": ""
+      },
+      "device_connector_policy": {
+         "description": "Device Connector Policy associated to UCS Server Profile",
+         "type": "string",
+         "default": ""
+      },
+      "drive_security_policy": {
+         "description": "Drive Security Policy associated to UCS Server Profile",
+         "type": "string",
+         "default": ""
+      },
+      "firmware_policy": {
+         "description": "Firmware Policy associated to UCS Server Profile",
+         "type": "string",
+         "default": ""
+      },
+      "imc_access_policy": {
+         "description": "IMC Access Policy associated to UCS Server Profile",
+         "type": "string",
+         "default": ""
+      },
+      "ipmi_over_lan_policy": {
+         "description": "IPMI Over LAN Policy associated to UCS Server Profile",
+         "type": "string",
+         "default": ""
+      },
+      "lan_connectivity_policy": {
+         "description": "LAN Connectivity Policy associated to UCS Server Profile",
+         "type": "string",
+         "default": ""
+      },
+      "ldap_policy": {
+         "description": "LDAP Policy associated to UCS Server Profile",
+         "type": "string",
+         "default": ""
+      },
+      "local_user_policy": {
+         "description": "Local User Policy associated to UCS Server Profile",
+         "type": "string",
+         "default": ""
+      },
+      "network_connectivity_policy": {
+         "description": "Network Connectivity Policy associated to UCS Server Profile",
+         "type": "string",
+         "default": ""
+      },
+      "ntp_policy": {
+         "description": "NTP Policy associated to UCS Server Profile",
+         "type": "string",
+         "default": ""
+      },
+      "operational_state": {
+         "description": "UCS Server Profile - Operational State",
+         "type": "object",
+         "properties": {
+            "identities": {
+               "description": "Identities associated to UCS Server Profile",
+               "type": "array",
+               "items": {
+                  "description": "Identity associated to UCS Server Profile",
+                  "type": "object",
+                  "properties": {
+                     "identity": {
+                        "description": "Value of the identity associated to UCS Server Profile",
+                        "type": "string"
+                     },
+                     "identity_type": {
+                        "description": "Type of the identity associated to UCS Server Profile",
+                        "type": "string",
+                        "enum": [
+                           "mac",
+                           "ip",
+                           "iqn",
+                           "uuid",
+                           "wwpn",
+                           "wwnn"
+                        ]
+                     },
+                     "pool_name": {
+                        "description": "Name of the pool holding the identity associated to UCS Server Profile",
+                        "type": "string"
+                     },
+                     "vnic_name": {
+                        "description": "Name of the vNIC to which belongs the identity associated to UCS Server Profile (for MAC & iSCSI IP)",
+                        "type": "string"
+                     },
+                     "vhba_name": {
+                        "description": "Name of the vHBA to which belongs the identity associated to UCS Server Profile (for WWPN)",
+                        "type": "string"
+                     },
+                     "ip_type": {
+                        "description": "IP Type of the identity associated to UCS Server Profile (for IP)",
+                        "type": "string",
+                        "enum": [
+                           "IPv4",
+                           "IPv6"
+                        ]
+                     },
+                     "management_type": {
+                        "description": "Management Type of the identity associated to UCS Server Profile (for IP)",
+                        "type": "string",
+                        "enum": [
+                           "Inband",
+                           "ISCSI",
+                           "OutOfBand"
+                        ]
+                     }
+                  },
+                  "additionalProperties": false,
+                  "required": [
+                     "identity",
+                     "identity_type"
+                  ]
+               },
+               "minItems": 1
+            }
+         },
+         "additionalProperties": false
+      },
+      "persistent_memory_policy": {
+         "description": "Persistent Memory Policy associated to UCS Server Profile",
+         "type": "string",
+         "default": ""
+      },
+      "power_policy": {
+         "description": "Power Policy associated to UCS Server Profile",
+         "type": "string",
+         "default": ""
+      },
+      "reservations": {
+         "description": "Reservations associated to UCS Server Profile",
+         "type": "array",
+         "items": {
+            "description": "Reservation associated to UCS Server Profile",
+            "type": "object",
+            "properties": {
+               "identity": {
+                  "description": "Identity of Reservation associated to UCS Server Profile",
+                  "type": "string"
+               },
+               "reservation_type": {
+                  "description": "Reservation type of Reservation associated to UCS Server Profile",
+                  "type": "string",
+                  "enum": [
+                     "mac",
+                     "ip",
+                     "iqn",
+                     "uuid",
+                     "wwpn",
+                     "wwnn"
+                  ]
+               },
+               "pool_name": {
+                  "description": "Pool name of Reservation associated to UCS Server Profile",
+                  "type": "string"
+               },
+               "vnic_name": {
+                  "description": "vNIC name of Reservation associated to UCS Server Profile (for MAC & iSCSI IP)",
+                  "type": "string"
+               },
+               "vhba_name": {
+                  "description": "vHBA name of Reservation associated to UCS Server Profile (for WWPN)",
+                  "type": "string"
+               },
+               "ip_type": {
+                  "description": "IP Type of Reservation associated to UCS Server Profile (for IP)",
+                  "type": "string",
+                  "enum": [
+                     "IPv4",
+                     "IPv6"
+                  ]
+               },
+               "management_type": {
+                  "description": "Management Type of Reservation associated to UCS Server Profile (for IP)",
+                  "type": "string",
+                  "enum": [
+                     "Inband",
+                     "ISCSI",
+                     "OutOfBand"
+                  ]
+               }
+            },
+            "additionalProperties": false,
+            "required": [
+               "identity",
+               "reservation_type",
+               "pool_name"
+            ]
+         },
+         "minItems": 1
+      },
+      "resource_pool": {
+         "description": "UCS Server Profile - Assigned Resource Pool Name",
+         "type": "string",
+         "default": "",
+         "pattern": "^[a-zA-Z0-9_.:-]{1,64}$"
+      },
+      "san_connectivity_policy": {
+         "description": "SAN Connectivity Policy associated to UCS Server Profile",
+         "type": "string",
+         "default": ""
+      },
+      "sd_card_policy": {
+         "description": "SD Card Policy associated to UCS Server Profile",
+         "type": "string",
+         "default": ""
+      },
+      "serial_over_lan_policy": {
+         "description": "Serial Over LAN Policy associated to UCS Server Profile",
+         "type": "string",
+         "default": ""
+      },
+      "server_pre_assign_by_serial": {
+         "description": "Serial number of the server that would be automatically assigned to the UCS Server Profile",
+         "type": "string",
+         "pattern": "^[a-zA-Z0-9]{0,20}$"
+      },
+      "server_pre_assign_by_slot": {
+         "description": "Chassis/Slot Location of the server that would be automatically assigned to the UCS Server Profile",
+         "type": "object",
+         "properties": {
+            "chassis_id": {
+               "description": "Chassis-id of the server that would be automatically assigned to the UCS Server Profile",
+               "type": "integer",
+               "default": 0,
+               "minimum": 0,
+               "maximum": 255
+            },
+            "domain_name": {
+               "description": "Name of the UCS Domain to which belongs the server that would be automatically assigned to the UCS Server Profile",
+               "type": "string",
+               "pattern": "^[a-zA-Z0-9_\\-]{0,30}$"
+            },
+            "slot_id": {
+               "description": "Slot-id of the server that would be automatically assigned to the UCS Server Profile",
+               "type": "integer",
+               "default": 0,
+               "minimum": 0,
+               "maximum": 8
+            }
+         },
+         "additionalProperties": false,
+         "required": [
+            "domain_name",
+            "chassis_id",
+            "slot_id"
+         ]
+      },
+      "smtp_policy": {
+         "description": "SMTP Policy associated to UCS Server Profile",
+         "type": "string",
+         "default": ""
+      },
+      "snmp_policy": {
+         "description": "SNMP Policy associated to UCS Server Profile",
+         "type": "string",
+         "default": ""
+      },
+      "ssh_policy": {
+         "description": "SSH Policy associated to UCS Server Profile",
+         "type": "string",
+         "default": ""
+      },
+      "storage_policy": {
+         "description": "Storage Policy associated to UCS Server Profile",
+         "type": "string",
+         "default": ""
+      },
+      "syslog_policy": {
+         "description": "Syslog Policy associated to UCS Server Profile",
+         "type": "string",
+         "default": ""
+      },
+      "thermal_policy": {
+         "description": "Thermal Policy associated to UCS Server Profile",
+         "type": "string",
+         "default": ""
+      },
+      "ucs_server_profile_template": {
+         "description": "Source UCS Server Profile Template from which this UCS Server Profile has been derived",
+         "type": "string",
+         "default": ""
+      },
+      "uuid_allocation_type": {
+         "description": "UCS Server Profile - UUID Allocation Type",
+         "type": "string",
+         "default": "pool",
+         "enum": [
+            "pool",
+            "static"
+         ]
+      },
+      "uuid_pool": {
+         "description": "UCS Server Profile - UUID Pool Name",
+         "type": "string",
+         "default": "",
+         "pattern": "^[a-zA-Z0-9_.:-]{1,64}$"
+      },
+      "uuid_static": {
+         "description": "UCS Server Profile - UUID Static",
+         "type": "string",
+         "default": "",
+         "pattern": "^$|^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$"
+      },
+      "virtual_kvm_policy": {
+         "description": "Virtual KVM Policy associated to UCS Server Profile",
+         "type": "string",
+         "default": ""
+      },
+      "virtual_media_policy": {
+         "description": "Virtual Media Policy associated to UCS Server Profile",
+         "type": "string",
+         "default": ""
+      }
+   },
+   "additionalProperties": false,
+   "required": [
+      "name",
+      "target_platform"
+   ],
+   "allOf": [
+      {
+         "$comment": "Below is for setting constraints for target_platform with value FI-Attached",
+         "if": {
+            "properties": {
+               "target_platform": {
+                  "enum": [
+                     "FI-Attached"
+                  ]
+               }
+            },
+            "required": [
+               "target_platform"
+            ]
+         },
+         "then": {
+            "not": {
+               "anyOf": [
+                  {
+                     "required": [
+                        "adapter_configuration_policy"
+                     ]
+                  },
+                  {
+                     "required": [
+                        "device_connector_policy"
+                     ]
+                  },
+                  {
+                     "required": [
+                        "ldap_policy"
+                     ]
+                  },
+                  {
+                     "required": [
+                        "network_connectivity_policy"
+                     ]
+                  },
+                  {
+                     "required": [
+                        "ntp_policy"
+                     ]
+                  },
+                  {
+                     "required": [
+                        "persistent_memory_policy"
+                     ]
+                  },
+                  {
+                     "required": [
+                        "smtp_policy"
+                     ]
+                  },
+                  {
+                     "required": [
+                        "ssh_policy"
+                     ]
+                  }
+               ]
+            }
+         }
+      },
+      {
+         "$comment": "Below is for setting constraints for target_platform with value Standalone",
+         "if": {
+            "properties": {
+               "target_platform": {
+                  "enum": [
+                     "Standalone"
+                  ]
+               }
+            },
+            "required": [
+               "target_platform"
+            ]
+         },
+         "then": {
+            "not": {
+               "anyOf": [
+                  {
+                     "required": [
+                        "certificate_management_policy"
+                     ]
+                  },
+                  {
+                     "required": [
+                        "imc_access_policy"
+                     ]
+                  },
+                  {
+                     "required": [
+                        "thermal_policy"
+                     ]
+                  }
+               ]
+            }
+         }
+      },
+      {
+         "$comment": "Below is for setting constraints for uuid_allocation_type with value pool",
+         "if": {
+            "properties": {
+               "uuid_allocation_type": {
+                  "enum": [
+                     "pool"
+                  ]
+               }
+            },
+            "required": [
+               "uuid_allocation_type"
+            ]
+         },
+         "then": {
+            "allOf": [
+               {
+                  "not": {
+                     "required": [
+                        "uuid_static"
+                     ]
+                  }
+               }
+            ]
+         }
+      },
+      {
+         "$comment": "Below is for setting constraints for uuid_allocation_type with value static",
+         "if": {
+            "properties": {
+               "uuid_allocation_type": {
+                  "enum": [
+                     "static"
+                  ]
+               }
+            },
+            "required": [
+               "uuid_allocation_type"
+            ]
+         },
+         "then": {
+            "allOf": [
+               {
+                  "required": [
+                     "uuid_static"
+                  ]
+               },
+               {
+                  "not": {
+                     "required": [
+                        "uuid_pool"
+                     ]
+                  }
+               }
+            ]
+         }
+      }
+   ]
+}

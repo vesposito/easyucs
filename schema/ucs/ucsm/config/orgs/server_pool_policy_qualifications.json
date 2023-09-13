@@ -22,566 +22,2607 @@
          "default": "",
          "pattern": "^[ !#$%&\\(\\)\\*\\+,\\-\\./:;\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{0,256}$"
       },
+      "policy_owner": {
+         "description": "Server Pool Policy Qualification Owner (for UCS Central)",
+         "type": "string",
+         "enum": [
+            "ucs-central"
+         ]
+      },
       "qualifications": {
          "description": "Qualifications of Server Pool Policy Qualification",
          "type": "array",
          "items": {
-            "description": "Qualification of Server Pool Policy Qualification",
-            "type": "object",
-            "anyOf": [
-               {
-                  "properties": {
-                     "type": {
-                        "description": "Qualification Type",
-                        "type": "string",
-                        "enum": [
-                           "adapter"
-                        ]
-                     },
-                     "adapter_type": {
-                        "description": "Adapter Qualifications - Adapter Type",
-                        "type": "string",
-                        "default": "virtualized-eth-if",
-                        "enum": [
-                           "cdn-support",
-                           "eth-flow-monitoring-netflow",
-                           "eth-nvgre",
-                           "eth-nvgre-rocev2",
-                           "eth-nvgre-vmq",
-                           "eth-roce",
-                           "eth-roce-v2",
-                           "eth-vxlan",
-                           "eth-vxlan-rocev2",
-                           "eth-vxlan-vmq",
-                           "fcoe",
-                           "non-virtualized-eth-if",
-                           "non-virtualized-fc-if",
-                           "oracle-rac-support",
-                           "path-encap-consolidated",
-                           "path-encap-virtual",
-                           "path-encap-virtual-ce",
-                           "protected-eth-if",
-                           "protected-fc-if",
-                           "protected-fcoe",
-                           "pxeboot-config-support",
-                           "uplink-aggregation",
-                           "virtualized-ce-eth-if",
-                           "virtualized-eth-if",
-                           "virtualized-eth-sriov",
-                           "virtualized-eth-sriov-usnic",
-                           "virtualized-eth-vmmq",
-                           "virtualized-eth-vmq",
-                           "virtualized-fc-if",
-                           "virtualized-fc-sriov",
-                           "virtualized-scsi-if"
-                        ]
-                     },
-                     "adapter_pid": {
-                        "description": "Adapter Qualifications - Adapter PID (RegEx)",
-                        "type": "string",
-                        "default": "",
-                        "pattern": "[ !#$%\\(\\)\\*\\+,\\-\\./:;\\?@\\[\\\\\\]\\^_\\{\\|\\}~a-zA-Z0-9]{0,256}"
-                     },
-                     "adapter_maximum_capacity": {
-                        "description": "Adapter Qualifications - Maximum Capacity",
-                        "type": "string",
-                        "default": "unspecified",
-                        "pattern": "^unspecified$|^[0-9]$|^[0-9][0-9]$|^[0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9]$|^[0-5][0-9][0-9][0-9][0-9]$|^6[0-4][0-9][0-9][0-9]$|^65[0-4][0-9][0-9]$|^655[0-2][0-9]$|^6553[0-5]$"
-                     }
-                  },
-                  "additionalProperties": false,
-                  "required": [
-                     "type",
-                     "adapter_type"
+            "properties": {
+               "type": {
+                  "description": "Qualification Type",
+                  "type": "string",
+                  "enum": [
+                     "adapter",
+                     "chassis-server",
+                     "cpu-cores",
+                     "memory",
+                     "power_group",
+                     "rack",
+                     "server_pid",
+                     "storage"
                   ]
                },
-               {
-                  "properties": {
-                     "type": {
-                        "description": "Qualification Type",
-                        "type": "string",
-                        "enum": [
-                           "chassis-server"
+               "adapter_qualifications": {
+                  "description": "Adapter Qualifications - Adapter Type",
+                  "type": "array",
+                  "items": {
+                     "properties": {
+                        "adapter_type": {
+                           "description": "Adapter Qualifications - Adapter Type",
+                           "type": "string",
+                           "default": "virtualized-eth-if",
+                           "enum": [
+                              "cdn-support",
+                              "eth-flow-monitoring-netflow",
+                              "eth-nvgre",
+                              "eth-nvgre-rocev2",
+                              "eth-nvgre-vmq",
+                              "eth-roce",
+                              "eth-roce-v2",
+                              "eth-vxlan",
+                              "eth-vxlan-rocev2",
+                              "eth-vxlan-vmq",
+                              "fcoe",
+                              "non-virtualized-eth-if",
+                              "non-virtualized-fc-if",
+                              "oracle-rac-support",
+                              "path-encap-consolidated",
+                              "path-encap-virtual",
+                              "path-encap-virtual-ce",
+                              "protected-eth-if",
+                              "protected-fc-if",
+                              "protected-fcoe",
+                              "pxeboot-config-support",
+                              "uplink-aggregation",
+                              "virtualized-ce-eth-if",
+                              "virtualized-eth-if",
+                              "virtualized-eth-sriov",
+                              "virtualized-eth-sriov-usnic",
+                              "virtualized-eth-vmmq",
+                              "virtualized-eth-vmq",
+                              "virtualized-fc-if",
+                              "virtualized-fc-sriov",
+                              "virtualized-scsi-if"
+                           ]
+                        },
+                        "adapter_pid": {
+                           "description": "Adapter Qualifications - Adapter PID (RegEx)",
+                           "type": "string",
+                           "default": "",
+                           "pattern": "[ !#$%\\(\\)\\*\\+,\\-\\./:;\\?@\\[\\\\\\]\\^_\\{\\|\\}~a-zA-Z0-9]{0,256}"
+                        },
+                        "adapter_maximum_capacity": {
+                           "description": "Adapter Qualifications - Maximum Capacity",
+                           "type": "string",
+                           "default": "unspecified",
+                           "pattern": "^unspecified$|^[0-9]$|^[0-9][0-9]$|^[0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9]$|^[0-5][0-9][0-9][0-9][0-9]$|^6[0-4][0-9][0-9][0-9]$|^65[0-4][0-9][0-9]$|^655[0-2][0-9]$|^6553[0-5]$"
+                        }
+                     },
+                     "additionalProperties": false,
+                     "required": [
+                        "adapter_type"
+                     ]
+                  }
+               },
+               "first_chassis_id": {
+                  "description": "Chassis/Server Qualifications - First Chassis ID",
+                  "type": "string",
+                  "default": "1",
+                  "pattern": "^[1-9]$|^[0-9][0-9]$|^[0-1][0-9][0-9]$|^2[0-4][0-9]$|^25[0-5]$"
+               },
+               "last_chassis_id": {
+                  "description": "Chassis/Server Qualifications - Last Chassis ID",
+                  "type": "string",
+                  "default": "1",
+                  "pattern": "^[1-9]$|^[0-9][0-9]$|^[0-1][0-9][0-9]$|^2[0-4][0-9]$|^25[0-5]$"
+               },
+               "server_qualifications": {
+                  "description": "Chassis/Server Qualifications - Server Qualifications",
+                  "type": "array",
+                  "items": {
+                     "description": "Chassis/Server Qualifications - Server Qualification Element",
+                     "type": "object",
+                     "properties": {
+                        "first_slot_id": {
+                           "description": "Chassis/Server Qualifications - First Server Slot ID",
+                           "type": "string",
+                           "default": "1",
+                           "pattern": "^[1-8]$"
+                        },
+                        "last_slot_id": {
+                           "description": "Chassis/Server Qualifications - Last Server Slot ID",
+                           "type": "string",
+                           "default": "1",
+                           "pattern": "^[1-8]$"
+                        },
+                        "number_of_slots": {
+                           "description": "Chassis/Server Qualifications - Number of Server Slots",
+                           "type": "string",
+                           "default": "1",
+                           "pattern": "^[1-8]$"
+                        }
+                     },
+                     "additionalProperties": false,
+                     "if": {
+                        "$comment": "Chassis/Server Qualifications with parameter number_of_slots",
+                        "required": [
+                           "number_of_slots"
                         ]
                      },
-                     "first_chassis_id": {
-                        "description": "Chassis/Server Qualifications - First Chassis ID",
-                        "type": "string",
-                        "default": "1",
-                        "pattern": "^[1-9]$|^[0-9][0-9]$|^[0-1][0-9][0-9]$|^2[0-4][0-9]$|^25[0-5]$"
+                     "then": {
+                        "required": [
+                           "first_slot_id"
+                        ],
+                        "not": {
+                           "required": [
+                              "last_slot_id"
+                           ]
+                        }
                      },
-                     "last_chassis_id": {
-                        "description": "Chassis/Server Qualifications - Last Chassis ID",
-                        "type": "string",
-                        "default": "1",
-                        "pattern": "^[1-9]$|^[0-9][0-9]$|^[0-1][0-9][0-9]$|^2[0-4][0-9]$|^25[0-5]$"
-                     },
-                     "server_qualifications": {
-                        "description": "Chassis/Server Qualifications - Server Qualifications",
-                        "type": "array",
-                        "items": {
-                           "description": "Chassis/Server Qualifications - Server Qualification Element",
-                           "type": "object",
-                           "oneOf": [
-                              {
-                                 "properties": {
-                                    "first_slot_id": {
-                                       "description": "Chassis/Server Qualifications - First Server Slot ID",
-                                       "type": "string",
-                                       "default": "1",
-                                       "pattern": "^[1-8]$"
-                                    },
-                                    "last_slot_id": {
-                                       "description": "Chassis/Server Qualifications - Last Server Slot ID",
-                                       "type": "string",
-                                       "default": "1",
-                                       "pattern": "^[1-8]$"
-                                    }
-                                 },
-                                 "additionalProperties": false,
-                                 "required": [
-                                    "first_slot_id",
-                                    "last_slot_id"
-                                 ]
-                              },
-                              {
-                                 "properties": {
-                                    "first_slot_id": {
-                                       "description": "Chassis/Server Qualifications - First Server Slot ID",
-                                       "type": "string",
-                                       "default": "1",
-                                       "pattern": "^[1-8]$"
-                                    },
-                                    "number_of_slots": {
-                                       "description": "Chassis/Server Qualifications - Number of Server Slots",
-                                       "type": "string",
-                                       "default": "1",
-                                       "pattern": "^[1-9]$"
-                                    }
-                                 },
-                                 "additionalProperties": false,
-                                 "required": [
-                                    "first_slot_id",
-                                    "number_of_slots"
-                                 ]
-                              }
+                     "else": {
+                        "$comment": "Chassis/Server Qualifications with parameter last_slot_id",
+                        "required": [
+                           "first_slot_id",
+                           "last_slot_id"
+                        ],
+                        "not": {
+                           "required": [
+                              "number_of_slots"
+                           ]
+                        }
+                     }
+                  }
+               },
+               "min_cores": {
+                  "description": "CPU/Cores Qualifications - Minimum Number of Cores",
+                  "type": "string",
+                  "default": "unspecified",
+                  "pattern": "^unspecified$|^[0-9]$|^[0-9][0-9]$|^[0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9]$|^[0-5][0-9][0-9][0-9][0-9]$|^6[0-4][0-9][0-9][0-9]$|^65[0-4][0-9][0-9]$|^655[0-2][0-9]$|^6553[0-5]$"
+               },
+               "max_cores": {
+                  "description": "CPU/Cores Qualifications - Maximum Number of Cores",
+                  "type": "string",
+                  "default": "unspecified",
+                  "pattern": "^unspecified$|^[0-9]$|^[0-9][0-9]$|^[0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9]$|^[0-5][0-9][0-9][0-9][0-9]$|^6[0-4][0-9][0-9][0-9]$|^65[0-4][0-9][0-9]$|^655[0-2][0-9]$|^6553[0-5]$"
+               },
+               "min_threads": {
+                  "description": "CPU/Cores Qualifications - Minimum Number of Threads",
+                  "type": "string",
+                  "default": "unspecified",
+                  "pattern": "^unspecified$|^[0-9]$|^[0-9][0-9]$|^[0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9]$|^[0-5][0-9][0-9][0-9][0-9]$|^6[0-4][0-9][0-9][0-9]$|^65[0-4][0-9][0-9]$|^655[0-2][0-9]$|^6553[0-5]$"
+               },
+               "max_threads": {
+                  "description": "CPU/Cores Qualifications - Maximum Number of Threads",
+                  "type": "string",
+                  "default": "unspecified",
+                  "pattern": "^unspecified$|^[0-9]$|^[0-9][0-9]$|^[0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9]$|^[0-5][0-9][0-9][0-9][0-9]$|^6[0-4][0-9][0-9][0-9]$|^65[0-4][0-9][0-9]$|^655[0-2][0-9]$|^6553[0-5]$"
+               },
+               "number_of_chassis": {
+                  "description": "Chassis/Server Qualifications - Number of Chassis",
+                  "type": "string",
+                  "default": "1",
+                  "pattern": "^[1-9]$|^[0-9][0-9]$|^[0-1][0-9][0-9]$|^2[0-4][0-9]$|^25[0-5]$"
+               },
+               "processor_architecture": {
+                  "description": "CPU/Cores Qualifications - Processor Architecture",
+                  "type": "string",
+                  "default": "any",
+                  "enum": [
+                     "Dual-Core_Opteron",
+                     "Intel_P4_C",
+                     "Opteron",
+                     "Pentium_4",
+                     "Turion_64",
+                     "Xeon",
+                     "Xeon_MP",
+                     "Zen",
+                     "any"
+                  ]
+               },
+               "processor_pid": {
+                  "description": "CPU/Cores Qualifications - Processor PID",
+                  "type": "string",
+                  "default": "",
+                  "pattern": "^[ !#$%\\(\\)\\*\\+,\\-\\./:;\\?@\\[\\\\\\]\\^_\\{\\|\\}~a-zA-Z0-9]{0,256}$"
+               },
+               "cpu_speed": {
+                  "description": "CPU/Cores Qualifications - CPU Speed (in MHz)",
+                  "type": "string",
+                  "default": "unspecified",
+                  "pattern": "^unspecified$|^([\\-]?)([123]?[1234]?)([0-9]{0,36})(([.])([0-9]{1,10}))?$|^[0-9]$|^[0-9][0-9]$|^[0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-3][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^4[0-1][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^42[0-8][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^429[0-3][0-9][0-9][0-9][0-9][0-9][0-9]$|^4294[0-8][0-9][0-9][0-9][0-9][0-9]$|^42949[0-5][0-9][0-9][0-9][0-9]$|^429496[0-6][0-9][0-9][0-9]$|^4294967[0-1][0-9][0-9]$|^42949672[0-8][0-9]$|^429496729[0-5]$"
+               },
+               "cpu_stepping": {
+                  "description": "CPU/Cores Qualifications - CPU Stepping",
+                  "type": "string",
+                  "default": "unspecified",
+                  "pattern": "^unspecified$|^[0-9]$|^[0-9][0-9]$|^[0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-3][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^4[0-1][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^42[0-8][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^429[0-3][0-9][0-9][0-9][0-9][0-9][0-9]$|^4294[0-8][0-9][0-9][0-9][0-9][0-9]$|^42949[0-5][0-9][0-9][0-9][0-9]$|^429496[0-6][0-9][0-9][0-9]$|^4294967[0-1][0-9][0-9]$|^42949672[0-8][0-9]$|^429496729[0-5]$"
+               },
+               "clock": {
+                  "description": "Memory Qualifications - Memory Clock (in MHz)",
+                  "type": "string",
+                  "default": "unspecified",
+                  "pattern": "^unspecified$|^[0-9]$|^[0-9][0-9]$|^[0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9]$|^[0-5][0-9][0-9][0-9][0-9]$|^6[0-4][0-9][0-9][0-9]$|^65[0-4][0-9][0-9]$|^655[0-2][0-9]$|^6553[0-5]$"
+               },
+               "latency": {
+                  "description": "Memory Qualifications - Memory Latency (in ns)",
+                  "type": "string",
+                  "default": "unspecified",
+                  "pattern": "^unspecified$|^([\\-]?)([123]?[1234]?)([0-9]{0,36})(([.])([0-9]{1,10}))?$|^[0-9]$|^[0-9][0-9]$|^[0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-3][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^4[0-1][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^42[0-8][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^429[0-3][0-9][0-9][0-9][0-9][0-9][0-9]$|^4294[0-8][0-9][0-9][0-9][0-9][0-9]$|^42949[0-5][0-9][0-9][0-9][0-9]$|^429496[0-6][0-9][0-9][0-9]$|^4294967[0-1][0-9][0-9]$|^42949672[0-8][0-9]$|^429496729[0-5]$"
+               },
+               "width": {
+                  "description": "Memory Qualifications - Width",
+                  "type": "string",
+                  "default": "unspecified",
+                  "pattern": "^unspecified$|^[0-9]$|^[0-9][0-9]$|^[0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9]$|^[0-5][0-9][0-9][0-9][0-9]$|^6[0-4][0-9][0-9][0-9]$|^65[0-4][0-9][0-9]$|^655[0-2][0-9]$|^6553[0-5]$"
+               },
+               "power_group": {
+                  "description": "Power Group Qualifications - Power Group",
+                  "type": "string",
+                  "default": "",
+                  "pattern": "^[\\-\\.:_a-zA-Z0-9]{1,16}$"
+               },
+               "number_of_servers": {
+                  "description": "Rack Qualifications - Number of Rack Server Slots",
+                  "type": "string",
+                  "default": "1",
+                  "pattern": "^[1-9]$|^[0-9][0-9]$|^[0-1][0-9][0-9]$|^2[0-4][0-9]$|^25[0-5]$"
+               },
+               "first_rack_id": {
+                  "description": "Rack Qualifications - First Rack Server Slot ID",
+                  "type": "string",
+                  "default": "1",
+                  "pattern": "^[1-9]$|^[0-9][0-9]$|^[0-1][0-9][0-9]$|^2[0-4][0-9]$|^25[0-5]$"
+               },
+               "last_rack_id": {
+                  "description": "Rack Qualifications - Last Rack Server Slot ID",
+                  "type": "string",
+                  "default": "1",
+                  "pattern": "^[1-9]$|^[0-9][0-9]$|^[0-1][0-9][0-9]$|^2[0-4][0-9]$|^25[0-5]$"
+               },
+               "diskless": {
+                  "description": "Storage Qualifications - Diskless",
+                  "type": "string",
+                  "default": "unspecified",
+                  "enum": [
+                     "no",
+                     "unspecified",
+                     "yes"
+                  ]
+               },
+               "number_of_blocks": {
+                  "description": "Storage Qualifications - Number of Blocks",
+                  "type": "string",
+                  "default": "unknown",
+                  "pattern": "^unknown$|^[0-9]$|^[0-9][0-9]$|^[0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^0[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^1[0-7][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^18[0-3][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^184[0-3][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^1844[0-5][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^18446[0-6][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^184467[0-3][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^1844674[0-3][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^184467440[0-6][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^1844674407[0-2][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^18446744073[0-6][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^1844674407370[0-8][0-9][0-9][0-9][0-9][0-9][0-9]$|^18446744073709[0-4][0-9][0-9][0-9][0-9][0-9]$|^184467440737095[0-4][0-9][0-9][0-9][0-9]$|^18446744073709550[0-9][0-9][0-9]$|^18446744073709551[0-5][0-9][0-9]$|^1844674407370955160[0-9]$|^1844674407370955161[0-5]$"
+               },
+               "block_size": {
+                  "description": "Storage Qualifications - Block Size",
+                  "type": "string",
+                  "default": "unknown",
+                  "pattern": "^unknown$|^[0-9]$|^[0-9][0-9]$|^[0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-3][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^4[0-1][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^42[0-8][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^429[0-3][0-9][0-9][0-9][0-9][0-9][0-9]$|^4294[0-8][0-9][0-9][0-9][0-9][0-9]$|^42949[0-5][0-9][0-9][0-9][0-9]$|^429496[0-6][0-9][0-9][0-9]$|^4294967[0-1][0-9][0-9]$|^42949672[0-8][0-9]$|^429496729[0-5]$"
+               },
+               "min_cap": {
+                  "description": "Memory/Storage Qualifications - Minimum Capacity (in MB)",
+                  "type": "string"
+               },
+               "max_cap": {
+                  "description": "Memory/Storage Qualifications - Maximum Capacity (in MB)",
+                  "type": "string"
+               },
+               "per_disk_cap": {
+                  "description": "Storage Qualifications - Per Disk Capacity (in MB)",
+                  "type": "string",
+                  "default": "unknown",
+                  "pattern": "^unknown$|^[0-9]$|^[0-9][0-9]$|^[0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^0[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^1[0-7][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^18[0-3][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^184[0-3][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^1844[0-5][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^18446[0-6][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^184467[0-3][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^1844674[0-3][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^184467440[0-6][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^1844674407[0-2][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^18446744073[0-6][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^1844674407370[0-8][0-9][0-9][0-9][0-9][0-9][0-9]$|^18446744073709[0-4][0-9][0-9][0-9][0-9][0-9]$|^184467440737095[0-4][0-9][0-9][0-9][0-9]$|^18446744073709550[0-9][0-9][0-9]$|^18446744073709551[0-5][0-9][0-9]$|^1844674407370955160[0-9]$|^1844674407370955161[0-5]$"
+               },
+               "server_pid": {
+                  "description": "Server PID Qualifications - Server PID",
+                  "type": "string",
+                  "default": "",
+                  "pattern": "^[ !#$%\\(\\)\\*\\+,\\-\\./:;\\?@\\[\\\\\\]\\^_\\{\\|\\}~a-zA-Z0-9]{0,256}$"
+               },
+               "units": {
+                  "description": "Storage Qualifications - Units",
+                  "type": "string",
+                  "default": "unspecified",
+                  "pattern": "^unspecified$|^[0-9]$|^[0-9][0-9]$|^[0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9]$|^[0-5][0-9][0-9][0-9][0-9]$|^6[0-4][0-9][0-9][0-9]$|^65[0-4][0-9][0-9]$|^655[0-2][0-9]$|^6553[0-5]$"
+               },
+               "number_of_flexflash_cards": {
+                  "description": "Storage Qualifications - Number of FlexFlash Cards",
+                  "type": "string",
+                  "default": "unknown",
+                  "pattern": "^unknown$|^[0-9]{1,3}$|^[1-2][0-9]{4}$|^3[0-1][0-9]{3}$|^32[0-6][0-9]{2}$|^327[0-5][0-9]$|^3276[0-7]$"
+               },
+               "disk_type": {
+                  "description": "Storage Qualifications - Disk Type",
+                  "type": "string",
+                  "default": "unspecified",
+                  "enum": [
+                     "HDD",
+                     "SSD",
+                     "unspecified"
+                  ]
+               }
+            },
+            "additionalProperties": false,
+            "required": [
+               "type"
+            ],
+            "allOf": [
+               {
+                  "if": {
+                     "properties": {
+                        "type": {
+                           "enum": [
+                              "adapter"
                            ]
                         }
                      }
                   },
-                  "additionalProperties": false,
-                  "required": [
-                     "type",
-                     "first_chassis_id",
-                     "last_chassis_id"
-                  ]
+                  "then": {
+                     "allOf": [
+                        {
+                           "not": {
+                              "required": [
+                                 "block_size"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "clock"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "cpu_speed"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "cpu_stepping"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "diskless"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "disk_type"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "first_chassis_id"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "first_rack_id"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "last_chassis_id"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "last_rack_id"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "latency"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "max_cap"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "max_cores"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "max_threads"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "min_cap"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "min_cores"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "min_threads"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "number_of_blocks"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "number_of_chassis"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "number_of_flexflash_cards"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "number_of_servers"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "per_disk_cap"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "power_group"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "processor_architecture"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "processor_pid"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "server_pid"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "server_qualifications"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "units"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "width"
+                              ]
+                           }
+                        }
+                     ]
+                  }
                },
                {
-                  "properties": {
-                     "type": {
-                        "description": "Qualification Type",
-                        "type": "string",
-                        "enum": [
-                           "chassis-server"
-                        ]
-                     },
-                     "first_chassis_id": {
-                        "description": "Chassis/Server Qualifications - First Chassis ID",
-                        "type": "string",
-                        "default": "1",
-                        "pattern": "^[1-9]$|^[0-9][0-9]$|^[0-1][0-9][0-9]$|^2[0-4][0-9]$|^25[0-5]$"
-                     },
-                     "number_of_chassis": {
-                        "description": "Chassis/Server Qualifications - Number of Chassis",
-                        "type": "string",
-                        "default": "1",
-                        "pattern": "^[1-9]$|^[0-9][0-9]$|^[0-1][0-9][0-9]$|^2[0-4][0-9]$|^25[0-5]$"
-                     },
-                     "server_qualifications": {
-                        "description": "Chassis/Server Qualifications - Server Qualifications",
-                        "type": "array",
-                        "items": {
-                           "description": "Chassis/Server Qualifications - Server Qualification Element",
-                           "type": "object",
-                           "oneOf": [
-                              {
-                                 "properties": {
-                                    "first_slot_id": {
-                                       "description": "Chassis/Server Qualifications - First Server Slot ID",
-                                       "type": "string",
-                                       "default": "1",
-                                       "pattern": "^[1-8]$"
-                                    },
-                                    "last_slot_id": {
-                                       "description": "Chassis/Server Qualifications - Last Server Slot ID",
-                                       "type": "string",
-                                       "default": "1",
-                                       "pattern": "^[1-8]$"
-                                    }
-                                 },
-                                 "additionalProperties": false,
-                                 "required": [
-                                    "first_slot_id",
-                                    "last_slot_id"
-                                 ]
-                              },
-                              {
-                                 "properties": {
-                                    "first_slot_id": {
-                                       "description": "Chassis/Server Qualifications - First Server Slot ID",
-                                       "type": "string",
-                                       "default": "1",
-                                       "pattern": "^[1-8]$"
-                                    },
-                                    "number_of_slots": {
-                                       "description": "Chassis/Server Qualifications - Number of Server Slots",
-                                       "type": "string",
-                                       "default": "1",
-                                       "pattern": "^[1-9]$"
-                                    }
-                                 },
-                                 "additionalProperties": false,
-                                 "required": [
-                                    "first_slot_id",
-                                    "number_of_slots"
-                                 ]
-                              }
+                  "$comment": "Chassis Qualification",
+                  "if": {
+                     "properties": {
+                        "type": {
+                           "enum": [
+                              "chassis-server"
                            ]
                         }
                      }
                   },
-                  "additionalProperties": false,
-                  "required": [
-                     "type",
-                     "first_chassis_id",
-                     "number_of_chassis"
-                  ]
+                  "then": {
+                     "if": {
+                        "$comment": "Chassis with number_of_chassis parameter",
+                        "required": [
+                           "number_of_chassis"
+                        ]
+                     },
+                     "then": {
+                        "required": [
+                           "first_chassis_id"
+                        ],
+                        "allOf": [
+                           {
+                              "not": {
+                                 "required": [
+                                    "adapter_qualifications"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "clock"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "cpu_speed"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "cpu_stepping"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "diskless"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "disk_type"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "first_rack_id"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "last_chassis_id"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "last_rack_id"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "latency"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "max_cap"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "max_cores"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "max_threads"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "min_cap"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "min_cores"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "min_threads"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "number_of_blocks"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "number_of_flexflash_cards"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "number_of_servers"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "per_disk_cap"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "power_group"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "processor_architecture"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "processor_pid"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "server_pid"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "units"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "width"
+                                 ]
+                              }
+                           }
+                        ]
+                     },
+                     "else": {
+                        "$comment": "Chassis with last_chassis_id parameter",
+                        "required": [
+                           "first_chassis_id",
+                           "last_chassis_id"
+                        ],
+                        "allOf": [
+                           {
+                              "not": {
+                                 "required": [
+                                    "adapter_qualifications"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "block_size"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "clock"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "cpu_speed"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "cpu_stepping"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "diskless"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "disk_type"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "first_rack_id"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "last_rack_id"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "latency"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "max_cap"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "max_cores"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "max_threads"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "min_cap"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "min_cores"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "min_threads"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "number_of_blocks"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "number_of_chassis"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "number_of_flexflash_cards"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "number_of_servers"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "per_disk_cap"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "power_group"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "processor_architecture"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "processor_pid"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "server_pid"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "units"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "width"
+                                 ]
+                              }
+                           }
+                        ]
+                     }
+                  }
                },
                {
-                  "properties": {
-                     "type": {
-                        "description": "Qualification Type",
-                        "type": "string",
-                        "enum": [
-                           "cpu-cores"
-                        ]
-                     },
-                     "processor_architecture": {
-                        "description": "CPU/Cores Qualifications - Processor Architecture",
-                        "type": "string",
-                        "default": "any",
-                        "enum": [
-                           "Dual-Core_Opteron",
-                           "Intel_P4_C",
-                           "Opteron",
-                           "Pentium_4",
-                           "Turion_64",
-                           "Xeon",
-                           "Xeon_MP",
-                           "Zen",
-                           "any"
-                        ]
-                     },
-                     "processor_pid": {
-                        "description": "CPU/Cores Qualifications - Processor PID",
-                        "type": "string",
-                        "default": "",
-                        "pattern": "^[ !#$%\\(\\)\\*\\+,\\-\\./:;\\?@\\[\\\\\\]\\^_\\{\\|\\}~a-zA-Z0-9]{0,256}$"
-                     },
-                     "min_cores": {
-                        "description": "CPU/Cores Qualifications - Minimum Number of Cores",
-                        "type": "string",
-                        "default": "unspecified",
-                        "pattern": "^unspecified$|^[0-9]$|^[0-9][0-9]$|^[0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9]$|^[0-5][0-9][0-9][0-9][0-9]$|^6[0-4][0-9][0-9][0-9]$|^65[0-4][0-9][0-9]$|^655[0-2][0-9]$|^6553[0-5]$"
-                     },
-                     "max_cores": {
-                        "description": "CPU/Cores Qualifications - Maximum Number of Cores",
-                        "type": "string",
-                        "default": "unspecified",
-                        "pattern": "^unspecified$|^[0-9]$|^[0-9][0-9]$|^[0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9]$|^[0-5][0-9][0-9][0-9][0-9]$|^6[0-4][0-9][0-9][0-9]$|^65[0-4][0-9][0-9]$|^655[0-2][0-9]$|^6553[0-5]$"
-                     },
-                     "min_threads": {
-                        "description": "CPU/Cores Qualifications - Minimum Number of Threads",
-                        "type": "string",
-                        "default": "unspecified",
-                        "pattern": "^unspecified$|^[0-9]$|^[0-9][0-9]$|^[0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9]$|^[0-5][0-9][0-9][0-9][0-9]$|^6[0-4][0-9][0-9][0-9]$|^65[0-4][0-9][0-9]$|^655[0-2][0-9]$|^6553[0-5]$"
-                     },
-                     "max_threads": {
-                        "description": "CPU/Cores Qualifications - Maximum Number of Threads",
-                        "type": "string",
-                        "default": "unspecified",
-                        "pattern": "^unspecified$|^[0-9]$|^[0-9][0-9]$|^[0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9]$|^[0-5][0-9][0-9][0-9][0-9]$|^6[0-4][0-9][0-9][0-9]$|^65[0-4][0-9][0-9]$|^655[0-2][0-9]$|^6553[0-5]$"
-                     },
-                     "cpu_speed": {
-                        "description": "CPU/Cores Qualifications - CPU Speed (in MHz)",
-                        "type": "string",
-                        "default": "unspecified",
-                        "pattern": "^unspecified$|^[0-9]$|^[0-9][0-9]$|^[0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-3][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^4[0-1][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^42[0-8][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^429[0-3][0-9][0-9][0-9][0-9][0-9][0-9]$|^4294[0-8][0-9][0-9][0-9][0-9][0-9]$|^42949[0-5][0-9][0-9][0-9][0-9]$|^429496[0-6][0-9][0-9][0-9]$|^4294967[0-1][0-9][0-9]$|^42949672[0-8][0-9]$|^429496729[0-5]$"
-                     },
-                     "cpu_stepping": {
-                        "description": "CPU/Cores Qualifications - CPU Stepping",
-                        "type": "string",
-                        "default": "unspecified",
-                        "pattern": "^unspecified$|^[0-9]$|^[0-9][0-9]$|^[0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-3][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^4[0-1][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^42[0-8][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^429[0-3][0-9][0-9][0-9][0-9][0-9][0-9]$|^4294[0-8][0-9][0-9][0-9][0-9][0-9]$|^42949[0-5][0-9][0-9][0-9][0-9]$|^429496[0-6][0-9][0-9][0-9]$|^4294967[0-1][0-9][0-9]$|^42949672[0-8][0-9]$|^429496729[0-5]$"
+                  "$comment": "Rack Qualification",
+                  "if": {
+                     "properties": {
+                        "type": {
+                           "enum": [
+                              "rack"
+                           ]
+                        }
                      }
                   },
-                  "additionalProperties": false,
-                  "required": [
-                     "type"
-                  ]
+                  "then": {
+                     "$comment": "Rack with number_of_servers parameter",
+                     "if": {
+                        "required": [
+                           "number_of_servers"
+                        ]
+                     },
+                     "then": {
+                        "required": [
+                           "first_rack_id"
+                        ],
+                        "allOf": [
+                           {
+                              "not": {
+                                 "required": [
+                                    "adapter_qualifications"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "block_size"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "clock"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "cpu_speed"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "cpu_stepping"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "diskless"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "disk_type"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "first_chassis_id"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "last_chassis_id"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "last_rack_id"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "latency"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "max_cap"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "max_cores"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "max_threads"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "min_cap"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "min_cores"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "min_threads"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "number_of_blocks"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "number_of_chassis"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "number_of_flexflash_cards"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "per_disk_cap"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "power_group"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "processor_architecture"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "processor_pid"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "server_pid"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "server_qualifications"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "units"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "width"
+                                 ]
+                              }
+                           }
+                        ]
+                     },
+                     "else": {
+                        "$comment": "Rack with last_rack_id parameter",
+                        "required": [
+                           "first_rack_id",
+                           "last_rack_id"
+                        ],
+                        "allOf": [
+                           {
+                              "not": {
+                                 "required": [
+                                    "adapter_qualifications"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "block_size"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "clock"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "cpu_speed"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "cpu_stepping"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "diskless"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "disk_type"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "first_chassis_id"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "last_chassis_id"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "latency"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "max_cap"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "max_cores"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "max_threads"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "min_cap"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "min_cores"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "min_threads"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "number_of_blocks"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "number_of_chassis"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "number_of_flexflash_cards"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "number_of_servers"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "per_disk_cap"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "power_group"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "processor_architecture"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "processor_pid"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "server_qualifications"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "server_pid"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "units"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "width"
+                                 ]
+                              }
+                           }
+                        ]
+                     }
+                  }
                },
                {
-                  "properties": {
-                     "type": {
-                        "description": "Qualification Type",
-                        "type": "string",
-                        "enum": [
-                           "memory"
-                        ]
-                     },
-                     "clock": {
-                        "description": "Memory Qualifications - Memory Clock (in MHz)",
-                        "type": "string",
-                        "default": "unspecified",
-                        "pattern": "^unspecified$|^[0-9]$|^[0-9][0-9]$|^[0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-3][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^4[0-1][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^42[0-8][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^429[0-3][0-9][0-9][0-9][0-9][0-9][0-9]$|^4294[0-8][0-9][0-9][0-9][0-9][0-9]$|^42949[0-5][0-9][0-9][0-9][0-9]$|^429496[0-6][0-9][0-9][0-9]$|^4294967[0-1][0-9][0-9]$|^42949672[0-8][0-9]$|^429496729[0-5]$"
-                     },
-                     "latency": {
-                        "description": "Memory Qualifications - Memory Latency (in ns)",
-                        "type": "string",
-                        "default": "unspecified",
-                        "pattern": "^unspecified$|^[0-9]$|^[0-9][0-9]$|^[0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-3][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^4[0-1][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^42[0-8][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^429[0-3][0-9][0-9][0-9][0-9][0-9][0-9]$|^4294[0-8][0-9][0-9][0-9][0-9][0-9]$|^42949[0-5][0-9][0-9][0-9][0-9]$|^429496[0-6][0-9][0-9][0-9]$|^4294967[0-1][0-9][0-9]$|^42949672[0-8][0-9]$|^429496729[0-5]$"
-                     },
-                     "min_cap": {
-                        "description": "Memory Qualifications - Minimum Capacity (in MB)",
-                        "type": "string",
-                        "default": "unspecified",
-                        "pattern": "^unspecified$|^[0-9]$|^[0-9][0-9]$|^[0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-3][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^4[0-1][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^42[0-8][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^429[0-3][0-9][0-9][0-9][0-9][0-9][0-9]$|^4294[0-8][0-9][0-9][0-9][0-9][0-9]$|^42949[0-5][0-9][0-9][0-9][0-9]$|^429496[0-6][0-9][0-9][0-9]$|^4294967[0-1][0-9][0-9]$|^42949672[0-8][0-9]$|^429496729[0-5]$"
-                     },
-                     "max_cap": {
-                        "description": "Memory Qualifications - Maximum Capacity (in MB)",
-                        "type": "string",
-                        "default": "unspecified",
-                        "pattern": "^unspecified$|^[0-9]$|^[0-9][0-9]$|^[0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-3][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^4[0-1][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^42[0-8][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^429[0-3][0-9][0-9][0-9][0-9][0-9][0-9]$|^4294[0-8][0-9][0-9][0-9][0-9][0-9]$|^42949[0-5][0-9][0-9][0-9][0-9]$|^429496[0-6][0-9][0-9][0-9]$|^4294967[0-1][0-9][0-9]$|^42949672[0-8][0-9]$|^429496729[0-5]$"
-                     },
-                     "width": {
-                        "description": "Memory Qualifications - Width",
-                        "type": "string",
-                        "default": "unspecified",
-                        "pattern": "^unspecified$|^[0-9]$|^[0-9][0-9]$|^[0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9]$|^[0-5][0-9][0-9][0-9][0-9]$|^6[0-4][0-9][0-9][0-9]$|^65[0-4][0-9][0-9]$|^655[0-2][0-9]$|^6553[0-5]$"
-                     },
-                     "units": {
-                        "description": "Memory Qualifications - Units",
-                        "type": "string",
-                        "default": "unspecified",
-                        "pattern": "^unspecified$|^[0-9]$|^[0-9][0-9]$|^[0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9]$|^[0-5][0-9][0-9][0-9][0-9]$|^6[0-4][0-9][0-9][0-9]$|^65[0-4][0-9][0-9]$|^655[0-2][0-9]$|^6553[0-5]$"
+                  "$comment": "CPU Qualification",
+                  "if": {
+                     "properties": {
+                        "type": {
+                           "enum": [
+                              "cpu-cores"
+                           ]
+                        }
                      }
                   },
-                  "additionalProperties": false,
-                  "required": [
-                     "type"
-                  ]
+                  "then": {
+                     "required": [
+                        "processor_architecture"
+                     ],
+                     "allOf": [
+                        {
+                           "not": {
+                              "required": [
+                                 "adapter_qualifications"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "block_size"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "clock"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "diskless"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "disk_type"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "first_chassis_id"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "first_rack_id"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "last_chassis_id"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "last_rack_id"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "latency"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "max_cap"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "min_cap"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "number_of_blocks"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "number_of_chassis"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "number_of_flexflash_cards"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "number_of_servers"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "per_disk_cap"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "power_group"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "server_qualifications"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "server_pid"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "units"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "width"
+                              ]
+                           }
+                        }
+                     ]
+                  }
                },
                {
-                  "properties": {
-                     "type": {
-                        "description": "Qualification Type",
-                        "type": "string",
-                        "enum": [
-                           "power_group"
-                        ]
-                     },
-                     "power_group": {
-                        "description": "Power Group Qualifications - Power Group",
-                        "type": "string",
-                        "default": "",
-                        "pattern": "^[\\-\\.:_a-zA-Z0-9]{1,16}$"
+                  "$comment": "Memory Qualification",
+                  "if": {
+                     "properties": {
+                        "type": {
+                           "enum": [
+                              "memory"
+                           ]
+                        }
                      }
                   },
-                  "additionalProperties": false,
-                  "required": [
-                     "type",
-                     "power_group"
-                  ]
+                  "then": {
+                     "properties": {
+                        "min_cap": {
+                           "default": "unspecified",
+                           "pattern": "^unspecified$|^[0-9]$|^[0-9][0-9]$|^[0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-3][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^4[0-1][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^42[0-8][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^429[0-3][0-9][0-9][0-9][0-9][0-9][0-9]$|^4294[0-8][0-9][0-9][0-9][0-9][0-9]$|^42949[0-5][0-9][0-9][0-9][0-9]$|^429496[0-6][0-9][0-9][0-9]$|^4294967[0-1][0-9][0-9]$|^42949672[0-8][0-9]$|^429496729[0-5]$"
+                        },
+                        "max_cap": {
+                           "default": "unspecified",
+                           "pattern": "^unspecified$|^[0-9]$|^[0-9][0-9]$|^[0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-3][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^4[0-1][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^42[0-8][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^429[0-3][0-9][0-9][0-9][0-9][0-9][0-9]$|^4294[0-8][0-9][0-9][0-9][0-9][0-9]$|^42949[0-5][0-9][0-9][0-9][0-9]$|^429496[0-6][0-9][0-9][0-9]$|^4294967[0-1][0-9][0-9]$|^42949672[0-8][0-9]$|^429496729[0-5]$"
+                        },
+                        "units": {
+                           "default": "unspecified",
+                           "pattern": "^unspecified$|^[0-9]$|^[0-9][0-9]$|^[0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9]$|^[0-5][0-9][0-9][0-9][0-9]$|^6[0-4][0-9][0-9][0-9]$|^65[0-4][0-9][0-9]$|^655[0-2][0-9]$|^6553[0-5]$"
+                        }
+                     },
+                     "allOf": [
+                        {
+                           "not": {
+                              "required": [
+                                 "adapter_qualifications"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "block_size"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "cpu_speed"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "cpu_stepping"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "diskless"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "disk_type"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "first_chassis_id"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "first_rack_id"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "last_chassis_id"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "last_rack_id"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "max_cores"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "max_threads"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "min_cores"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "min_threads"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "number_of_blocks"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "number_of_chassis"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "number_of_flexflash_cards"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "number_of_servers"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "per_disk_cap"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "power_group"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "processor_architecture"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "processor_pid"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "server_pid"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "server_qualifications"
+                              ]
+                           }
+                        }
+                     ]
+                  }
                },
                {
-                  "properties": {
-                     "type": {
-                        "description": "Qualification Type",
-                        "type": "string",
-                        "enum": [
-                           "rack"
-                        ]
-                     },
-                     "first_slot_id": {
-                        "description": "Rack Qualifications - First Rack Server Slot ID",
-                        "type": "string",
-                        "default": "1",
-                        "pattern": "^[1-9]$|^[0-9][0-9]$|^[0-1][0-9][0-9]$|^2[0-4][0-9]$|^25[0-5]$"
-                     },
-                     "last_slot_id": {
-                        "description": "Rack Qualifications - Last Rack Server Slot ID",
-                        "type": "string",
-                        "default": "1",
-                        "pattern": "^[1-9]$|^[0-9][0-9]$|^[0-1][0-9][0-9]$|^2[0-4][0-9]$|^25[0-5]$"
+                  "$comment": "Power Qualification",
+                  "if": {
+                     "properties": {
+                        "type": {
+                           "enum": [
+                              "power_group"
+                           ]
+                        }
                      }
                   },
-                  "additionalProperties": false,
-                  "required": [
-                     "type",
-                     "first_slot_id",
-                     "last_slot_id"
-                  ]
+                  "then": {
+                     "required": [
+                        "power_group"
+                     ],
+                     "allOf": [
+                        {
+                           "not": {
+                              "required": [
+                                 "adapter_qualifications"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "block_size"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "clock"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "cpu_speed"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "cpu_stepping"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "diskless"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "disk_type"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "first_chassis_id"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "first_rack_id"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "last_chassis_id"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "last_rack_id"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "latency"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "max_cap"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "max_cores"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "max_threads"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "min_cap"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "min_cores"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "min_threads"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "number_of_blocks"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "number_of_chassis"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "number_of_flexflash_cards"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "number_of_servers"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "per_disk_cap"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "processor_architecture"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "processor_pid"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "server_pid"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "server_qualifications"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "units"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "width"
+                              ]
+                           }
+                        }
+                     ]
+                  }
                },
                {
-                  "properties": {
-                     "type": {
-                        "description": "Qualification Type",
-                        "type": "string",
-                        "enum": [
-                           "rack"
-                        ]
-                     },
-                     "first_slot_id": {
-                        "description": "Rack Qualifications - First Rack Server Slot ID",
-                        "type": "string",
-                        "default": "1",
-                        "pattern": "^[1-9]$|^[0-9][0-9]$|^[0-1][0-9][0-9]$|^2[0-4][0-9]$|^25[0-5]$"
-                     },
-                     "number_of_slots": {
-                        "description": "Rack Qualifications - Number of Rack Server Slots",
-                        "type": "string",
-                        "default": "1",
-                        "pattern": "^[1-9]$|^[0-9][0-9]$|^[0-1][0-9][0-9]$|^2[0-4][0-9]$|^25[0-5]$"
+                  "$comment": "Server PID Qualification",
+                  "if": {
+                     "properties": {
+                        "type": {
+                           "enum": [
+                              "server_pid"
+                           ]
+                        }
                      }
                   },
-                  "additionalProperties": false,
-                  "required": [
-                     "type",
-                     "first_slot_id",
-                     "number_of_slots"
-                  ]
+                  "then": {
+                     "required": [
+                        "server_pid"
+                     ],
+                     "allOf": [
+                        {
+                           "not": {
+                              "required": [
+                                 "adapter_qualifications"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "block_size"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "clock"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "cpu_speed"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "cpu_stepping"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "diskless"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "disk_type"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "first_chassis_id"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "first_rack_id"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "last_chassis_id"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "last_rack_id"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "latency"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "max_cap"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "max_cores"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "max_threads"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "min_cap"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "min_cores"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "min_threads"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "number_of_blocks"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "number_of_chassis"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "number_of_flexflash_cards"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "number_of_servers"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "per_disk_cap"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "power_group"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "processor_architecture"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "processor_pid"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "server_qualifications"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "units"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "width"
+                              ]
+                           }
+                        }
+                     ]
+                  }
                },
                {
-                  "properties": {
-                     "type": {
-                        "description": "Qualification Type",
-                        "type": "string",
-                        "enum": [
-                           "server_pid"
-                        ]
-                     },
-                     "server_pid": {
-                        "description": "Server PID Qualifications - Server PID",
-                        "type": "string",
-                        "default": "",
-                        "pattern": "^[ !#$%\\(\\)\\*\\+,\\-\\./:;\\?@\\[\\\\\\]\\^_\\{\\|\\}~a-zA-Z0-9]{0,256}$"
+                  "$comment": "Storage Qualification",
+                  "if": {
+                     "properties": {
+                        "type": {
+                           "enum": [
+                              "storage"
+                           ]
+                        }
                      }
                   },
-                  "additionalProperties": false,
-                  "required": [
-                     "type",
-                     "server_pid"
-                  ]
-               },
-               {
-                  "properties": {
-                     "type": {
-                        "description": "Qualification Type",
-                        "type": "string",
-                        "enum": [
-                           "storage"
+                  "then": {
+                     "required": [
+                        "diskless"
+                     ],
+                     "if": {
+                        "$comment": "Storage Qualification with diskless option unspecified or no",
+                        "properties": {
+                           "diskless": {
+                              "enum": [
+                                 "no",
+                                 "unspecified"
+                              ]
+                           }
+                        }
+                     },
+                     "then": {
+                        "properties": {
+                           "min_cap": {
+                              "default": "unknown",
+                              "pattern": "^unknown$|^[0-9]$|^[0-9][0-9]$|^[0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^0[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^1[0-7][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^18[0-3][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^184[0-3][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^1844[0-5][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^18446[0-6][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^184467[0-3][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^1844674[0-3][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^184467440[0-6][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^1844674407[0-2][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^18446744073[0-6][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^1844674407370[0-8][0-9][0-9][0-9][0-9][0-9][0-9]$|^18446744073709[0-4][0-9][0-9][0-9][0-9][0-9]$|^184467440737095[0-4][0-9][0-9][0-9][0-9]$|^18446744073709550[0-9][0-9][0-9]$|^18446744073709551[0-5][0-9][0-9]$|^1844674407370955160[0-9]$|^1844674407370955161[0-5]$"
+                           },
+                           "max_cap": {
+                              "default": "unknown",
+                              "pattern": "^unknown$|^[0-9]$|^[0-9][0-9]$|^[0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^0[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^1[0-7][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^18[0-3][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^184[0-3][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^1844[0-5][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^18446[0-6][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^184467[0-3][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^1844674[0-3][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^184467440[0-6][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^1844674407[0-2][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^18446744073[0-6][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^1844674407370[0-8][0-9][0-9][0-9][0-9][0-9][0-9]$|^18446744073709[0-4][0-9][0-9][0-9][0-9][0-9]$|^184467440737095[0-4][0-9][0-9][0-9][0-9]$|^18446744073709550[0-9][0-9][0-9]$|^18446744073709551[0-5][0-9][0-9]$|^1844674407370955160[0-9]$|^1844674407370955161[0-5]$"
+                           },
+                           "units": {
+                              "default": "unspecified",
+                              "pattern": "^unspecified$|^[0-9]$|^[0-9][0-9]$|^[0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9]$|^[0-5][0-9][0-9][0-9][0-9]$|^6[0-4][0-9][0-9][0-9]$|^65[0-4][0-9][0-9]$|^655[0-2][0-9]$|^6553[0-5]$"
+                           }
+                        },
+                        "allOf": [
+                           {
+                              "not": {
+                                 "required": [
+                                    "adapter_qualifications"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "clock"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "cpu_speed"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "cpu_stepping"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "first_chassis_id"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "first_rack_id"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "last_chassis_id"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "last_rack_id"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "latency"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "max_cores"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "max_threads"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "min_cores"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "min_threads"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "number_of_chassis"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "number_of_servers"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "power_group"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "processor_architecture"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "processor_pid"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "server_qualifications"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "server_pid"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "width"
+                                 ]
+                              }
+                           }
                         ]
                      },
-                     "diskless": {
-                        "description": "Storage Qualifications - Diskless",
-                        "type": "string",
-                        "default": "unspecified",
-                        "enum": [
-                           "yes"
+                     "else": {
+                        "$comment": "Storage Qualification with diskless option yes",
+                        "allOf": [
+                           {
+                              "not": {
+                                 "required": [
+                                    "adapter_qualifications"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "block_size"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "clock"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "cpu_speed"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "cpu_stepping"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "disk_type"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "first_chassis_id"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "first_rack_id"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "last_chassis_id"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "last_rack_id"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "latency"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "max_cap"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "max_cores"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "max_threads"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "min_cap"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "min_cores"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "min_threads"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "number_of_blocks"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "number_of_chassis"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "number_of_flexflash_cards"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "number_of_servers"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "per_disk_cap"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "power_group"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "processor_architecture"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "processor_pid"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "server_qualifications"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "server_pid"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "units"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "width"
+                                 ]
+                              }
+                           }
                         ]
                      }
-                  },
-                  "additionalProperties": false,
-                  "required": [
-                     "type",
-                     "diskless"
-                  ]
-               },
-               {
-                  "properties": {
-                     "type": {
-                        "description": "Qualification Type",
-                        "type": "string",
-                        "enum": [
-                           "storage"
-                        ]
-                     },
-                     "diskless": {
-                        "description": "Storage Qualifications - Diskless",
-                        "type": "string",
-                        "default": "unspecified",
-                        "enum": [
-                           "no",
-                           "unspecified"
-                        ]
-                     },
-                     "number_of_blocks": {
-                        "description": "Storage Qualifications - Number of Blocks",
-                        "type": "string",
-                        "default": "unknown",
-                        "pattern": "^unknown$|^[0-9]$|^[0-9][0-9]$|^[0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^0[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^1[0-7][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^18[0-3][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^184[0-3][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^1844[0-5][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^18446[0-6][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^184467[0-3][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^1844674[0-3][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^184467440[0-6][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^1844674407[0-2][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^18446744073[0-6][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^1844674407370[0-8][0-9][0-9][0-9][0-9][0-9][0-9]$|^18446744073709[0-4][0-9][0-9][0-9][0-9][0-9]$|^184467440737095[0-4][0-9][0-9][0-9][0-9]$|^18446744073709550[0-9][0-9][0-9]$|^18446744073709551[0-5][0-9][0-9]$|^1844674407370955160[0-9]$|^1844674407370955161[0-5]$"
-                     },
-                     "block_size": {
-                        "description": "Storage Qualifications - Block Size",
-                        "type": "string",
-                        "default": "unknown",
-                        "pattern": "^unknown$|^[0-9]$|^[0-9][0-9]$|^[0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-3][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^4[0-1][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^42[0-8][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^429[0-3][0-9][0-9][0-9][0-9][0-9][0-9]$|^4294[0-8][0-9][0-9][0-9][0-9][0-9]$|^42949[0-5][0-9][0-9][0-9][0-9]$|^429496[0-6][0-9][0-9][0-9]$|^4294967[0-1][0-9][0-9]$|^42949672[0-8][0-9]$|^429496729[0-5]$"
-                     },
-                     "min_cap": {
-                        "description": "Storage Qualifications - Minimum Capacity (in MB)",
-                        "type": "string",
-                        "default": "unknown",
-                        "pattern": "^unknown$|^[0-9]$|^[0-9][0-9]$|^[0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^0[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^1[0-7][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^18[0-3][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^184[0-3][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^1844[0-5][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^18446[0-6][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^184467[0-3][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^1844674[0-3][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^184467440[0-6][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^1844674407[0-2][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^18446744073[0-6][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^1844674407370[0-8][0-9][0-9][0-9][0-9][0-9][0-9]$|^18446744073709[0-4][0-9][0-9][0-9][0-9][0-9]$|^184467440737095[0-4][0-9][0-9][0-9][0-9]$|^18446744073709550[0-9][0-9][0-9]$|^18446744073709551[0-5][0-9][0-9]$|^1844674407370955160[0-9]$|^1844674407370955161[0-5]$"
-                     },
-                     "max_cap": {
-                        "description": "Storage Qualifications - Maximum Capacity (in MB)",
-                        "type": "string",
-                        "default": "unknown",
-                        "pattern": "^unknown$|^[0-9]$|^[0-9][0-9]$|^[0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^0[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^1[0-7][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^18[0-3][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^184[0-3][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^1844[0-5][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^18446[0-6][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^184467[0-3][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^1844674[0-3][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^184467440[0-6][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^1844674407[0-2][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^18446744073[0-6][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^1844674407370[0-8][0-9][0-9][0-9][0-9][0-9][0-9]$|^18446744073709[0-4][0-9][0-9][0-9][0-9][0-9]$|^184467440737095[0-4][0-9][0-9][0-9][0-9]$|^18446744073709550[0-9][0-9][0-9]$|^18446744073709551[0-5][0-9][0-9]$|^1844674407370955160[0-9]$|^1844674407370955161[0-5]$"
-                     },
-                     "per_disk_cap": {
-                        "description": "Storage Qualifications - Per Disk Capacity (in MB)",
-                        "type": "string",
-                        "default": "unknown",
-                        "pattern": "^unknown$|^[0-9]$|^[0-9][0-9]$|^[0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^0[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^1[0-7][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^18[0-3][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^184[0-3][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^1844[0-5][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^18446[0-6][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^184467[0-3][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^1844674[0-3][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^184467440[0-6][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^1844674407[0-2][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^18446744073[0-6][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^1844674407370[0-8][0-9][0-9][0-9][0-9][0-9][0-9]$|^18446744073709[0-4][0-9][0-9][0-9][0-9][0-9]$|^184467440737095[0-4][0-9][0-9][0-9][0-9]$|^18446744073709550[0-9][0-9][0-9]$|^18446744073709551[0-5][0-9][0-9]$|^1844674407370955160[0-9]$|^1844674407370955161[0-5]$"
-                     },
-                     "units": {
-                        "description": "Storage Qualifications - Units",
-                        "type": "string",
-                        "default": "unspecified",
-                        "pattern": "^unspecified$|^[0-9]$|^[0-9][0-9]$|^[0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9]$|^[0-5][0-9][0-9][0-9][0-9]$|^6[0-4][0-9][0-9][0-9]$|^65[0-4][0-9][0-9]$|^655[0-2][0-9]$|^6553[0-5]$"
-                     },
-                     "number_of_flexflash_cards": {
-                        "description": "Storage Qualifications - Number of FlexFlash Cards",
-                        "type": "string",
-                        "default": "unknown",
-                        "pattern": "^unknown$|^[0-9]$|^[0-9][0-9]$|^[0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-3][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^4[0-1][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^42[0-8][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^429[0-3][0-9][0-9][0-9][0-9][0-9][0-9]$|^4294[0-8][0-9][0-9][0-9][0-9][0-9]$|^42949[0-5][0-9][0-9][0-9][0-9]$|^429496[0-6][0-9][0-9][0-9]$|^4294967[0-1][0-9][0-9]$|^42949672[0-8][0-9]$|^429496729[0-5]$"
-                     },
-                     "disk_type": {
-                        "description": "Storage Qualifications - Disk Type",
-                        "type": "string",
-                        "default": "unspecified",
-                        "enum": [
-                           "HDD",
-                           "SSD",
-                           "unspecified"
-                        ]
-                     }
-                  },
-                  "additionalProperties": false,
-                  "required": [
-                     "type"
-                  ]
+                  }
                }
             ]
          }

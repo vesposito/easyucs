@@ -1,0 +1,88 @@
+{
+   "id": "ucs_central_config_qos_policies#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS ucs central config orgs qos_policies section",
+   "description": "EasyUCS ucs central config orgs qos_policies section JSON schema",
+   "type": "object",
+   "properties": {
+      "comment": {
+         "description": "QoS Policy Comments",
+         "type": "string",
+         "default": ""
+      },
+      "name": {
+         "description": "QoS Policy Name",
+         "type": "string",
+         "default": "",
+         "pattern": "^[\\-\\.:_a-zA-Z0-9]{1,16}$"
+      },
+      "descr": {
+         "description": "Description of QoS Policy",
+         "type": "string",
+         "default": "",
+         "pattern": "^[ !#$%&\\(\\)\\*\\+,\\-\\./:;\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{0,256}$"
+      },
+      "priority": {
+         "description": "QoS Policy - Priority",
+         "type": "string",
+         "default": "best-effort",
+         "enum": [
+            "best-effort",
+            "bronze",
+            "fc",
+            "gold",
+            "platinum",
+            "silver"
+         ]
+      },
+      "burst": {
+         "description": "QoS Policy - Burst (Bytes)",
+         "type": "string",
+         "default": "10240",
+         "pattern": "^[0-9]$|^[0-9][0-9]$|^[0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9]$|^[0-5][0-9][0-9][0-9][0-9]$|^6[0-4][0-9][0-9][0-9]$|^65[0-4][0-9][0-9]$|^655[0-2][0-9]$|^6553[0-5]$"
+      },
+      "rate": {
+         "description": "QoS Policy - Rate (Kbps)",
+         "type": "string",
+         "default": "line-rate",
+         "pattern": "^line-rate$|^[8-9]$|^[0-9][0-9]$|^[0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-3][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^40000000$"
+      },
+      "host_control": {
+         "description": "QoS Policy - Host Control",
+         "type": "string",
+         "default": "none",
+         "enum": [
+            "full",
+            "none"
+         ]
+      },
+      "tags": {
+         "description": "QoS Policy - Tags",
+         "type": "array",
+         "items": {
+            "description": "QoS Policy - Tag",
+            "type": "object",
+            "properties": {
+               "type": {
+                  "description": "QoS Policy - Tag - Type",
+                  "type": "string",
+                  "pattern": "^[ !#$%&\\(\\)\\*\\+,\\-\\.:;=\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{1,32}$"
+               },
+               "value": {
+                  "description": "QoS Policy - Tag - Value",
+                  "type": "string"
+               }
+            },
+            "additionalProperties": false,
+            "required": [
+               "type",
+               "value"
+            ]
+         }
+      }
+   },
+   "additionalProperties": false,
+   "required": [
+      "name"
+   ]
+}

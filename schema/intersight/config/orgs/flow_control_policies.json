@@ -1,0 +1,132 @@
+{
+   "id": "intersight_config_orgs_flow_control_policies#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS intersight config orgs flow_control_policies section",
+   "description": "EasyUCS intersight config orgs flow_control_policies section JSON schema",
+   "type": "object",
+   "properties": {
+      "comment": {
+         "description": "Flow Control Policy Comments",
+         "type": "string",
+         "default": ""
+      },
+      "descr": {
+         "description": "Flow Control Policy Description",
+         "type": "string",
+         "default": "",
+         "pattern": "^$|^[a-zA-Z0-9]+[\\x00-\\xFF]*$",
+         "maxLength": 1024
+      },
+      "name": {
+         "description": "Flow Control Policy Name",
+         "type": "string",
+         "default": "",
+         "pattern": "^[a-zA-Z0-9_.:-]{1,64}$"
+      },
+      "tags": {
+         "description": "Flow Control Policy Tags",
+         "type": "array",
+         "items": {
+            "description": "Flow Control Policy Tag",
+            "type": "object",
+            "properties": {
+               "key": {
+                  "description": "Flow Control Policy Tag Key",
+                  "type": "string",
+                  "default": "",
+                  "minLength": 1,
+                  "maxLength": 128
+               },
+               "value": {
+                  "description": "Flow Control Policy Tag Value",
+                  "type": "string",
+                  "default": "",
+                  "minLength": 0,
+                  "maxLength": 256
+               }
+            },
+            "additionalProperties": false,
+            "required": [
+               "key",
+               "value"
+            ]
+         },
+         "minItems": 1
+      },
+      "priority": {
+         "description": "Flow Control Policy Priority",
+         "type": "string",
+         "default": "auto",
+         "enum": [
+            "auto",
+            "off",
+            "on"
+         ]
+      },
+      "receive": {
+         "description": "Flow Control Policy Receive",
+         "type": "string",
+         "default": "Disabled",
+         "enum": [
+            "Disabled",
+            "Enabled"
+         ]
+      },
+      "send": {
+         "description": "Flow Control Policy Send",
+         "type": "string",
+         "default": "Disabled",
+         "enum": [
+            "Disabled",
+            "Enabled"
+         ]
+      }
+   },
+   "additionalProperties": false,
+   "required": [
+      "name"
+   ],
+   "$comment": "Below is for setting constraints for priority attribute set to on",
+   "if": {
+      "properties": {
+         "priority": {
+            "enum": [
+               "on"
+            ]
+         }
+      },
+      "required": [
+         "priority"
+      ]
+   },
+   "then": {
+      "not": {
+         "anyOf": [
+            {
+               "properties": {
+                  "receive": {
+                     "enum": [
+                        "Enabled"
+                     ]
+                  }
+               },
+               "required": [
+                  "receive"
+               ]
+            },
+            {
+               "properties": {
+                  "send": {
+                     "enum": [
+                        "Enabled"
+                     ]
+                  }
+               },
+               "required": [
+                  "send"
+               ]
+            }
+         ]
+      }
+   }
+}

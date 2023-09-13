@@ -26,6 +26,11 @@
     {
       "name": "UCS-PSU-6332-DC",
       "description": "UCS 64108 Power Supply/-48VDC"
+    },
+    {
+      "name": "UCS-PSU-64108-BLKP",
+      "type": "blank",
+      "description": "Power supply blanking panel/filler"
     }
   ],
   "rear_ports": {
@@ -571,7 +576,7 @@
     }
   },
   "imm_compatible": true,
-  "imm_min_required_version": "4.1(2b)",
+  "imm_min_required_version": "4.1(3b)",
   "spec_sheet_url": "https://www.cisco.com/c/dam/en/us/products/collateral/servers-unified-computing/ucs-b-series-blade-servers/6400-specsheet.pdf",
   "data_sheet_url": "https://www.cisco.com/c/en/us/products/collateral/servers-unified-computing/datasheet-c78-741116.html",
   "specs": {

@@ -135,5 +135,10 @@
          "maxItems": 1
       }
    },
-   "additionalProperties": false
+   "additionalProperties": false,
+   "minProperties": 1,
+   "$comment": "Below is for supporting any additional commented property starting with a #",
+   "patternProperties": {
+      "^#": {}
+   }
 }

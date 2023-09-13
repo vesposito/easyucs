@@ -1,51 +1,58 @@
 {
-   "id":"ucs_system_config_ldap#",
-   "$schema":"http://json-schema.org/draft-07/schema#",
-   "title":"EasyUCS ucs system config ldap section",
-   "description":"EasyUCS ucs system config ldap section JSON schema",
-   "type":"object",
-   "properties":{
+   "id": "ucs_system_config_ldap#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS ucs system config ldap section",
+   "description": "EasyUCS ucs system config ldap section JSON schema",
+   "type": "object",
+   "properties": {
       "comment": {
          "description": "LDAP Comments",
          "type": "string",
          "default": ""
       },
-      "timeout":{
-         "description":"LDAP Timeout",
-         "type":"string",
-         "default":"30",
-         "pattern":"^[1-9]$|^[1-5][0-9]$|^60$"
+      "policy_owner": {
+         "description": "LDAP Owner (for UCS Central)",
+         "type": "string",
+         "enum": [
+            "ucs-central"
+         ]
       },
-      "attribute":{
-         "description":"LDAP Attribute storing values for user roles and locales",
-         "type":"string"
+      "timeout": {
+         "description": "LDAP Timeout",
+         "type": "string",
+         "default": "30",
+         "pattern": "^[1-9]$|^[1-5][0-9]$|^60$"
       },
-      "base_dn":{
-         "description":"LDAP Base DN",
-         "type":"string"
+      "attribute": {
+         "description": "LDAP Attribute storing values for user roles and locales",
+         "type": "string"
       },
-      "filter":{
-         "description":"LDAP Filter",
-         "type":"string",
-         "default":"cn=$userid"
+      "base_dn": {
+         "description": "LDAP Base DN",
+         "type": "string"
       },
-      "providers":{
-         "description":"LDAP Providers List",
-         "type":"array",
-         "items":{
-            "type":"object",
-            "description":"LDAP Provider",
-            "properties":{
-               "hostname":{
-                  "description":"LDAP Provider Hostname/FQDN/IP Address",
-                  "type":"string",
-                  "pattern":"^[a-zA-Z0-9][a-zA-Z0-9_.-]{0,63}$|^([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}$|^([0-9a-fA-F]{1,4}:){1,7}:$|^([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}$|^([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}$|^([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}$|^([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}$|^([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}$|^[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})$|^:((:[0-9a-fA-F]{1,4}){1,7}|:)$"
+      "filter": {
+         "description": "LDAP Filter",
+         "type": "string",
+         "default": "cn=$userid"
+      },
+      "providers": {
+         "description": "LDAP Providers List",
+         "type": "array",
+         "items": {
+            "type": "object",
+            "description": "LDAP Provider",
+            "properties": {
+               "hostname": {
+                  "description": "LDAP Provider Hostname/FQDN/IP Address",
+                  "type": "string",
+                  "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.-]{0,63}$|^([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}$|^([0-9a-fA-F]{1,4}:){1,7}:$|^([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}$|^([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}$|^([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}$|^([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}$|^([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}$|^[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})$|^:((:[0-9a-fA-F]{1,4}){1,7}|:)$"
                },
-               "order":{
-                  "description":"LDAP Provider Order",
-                  "type":"string",
-                  "default":"lowest-available",
-                  "enum":[
+               "order": {
+                  "description": "LDAP Provider Order",
+                  "type": "string",
+                  "default": "lowest-available",
+                  "enum": [
                      "0",
                      "1",
                      "2",
@@ -66,162 +73,166 @@
                      "lowest-available"
                   ]
                },
-               "bind_dn":{
-                  "description":"LDAP Provider Bind DN",
-                  "type":"string"
+               "bind_dn": {
+                  "description": "LDAP Provider Bind DN",
+                  "type": "string"
                },
-               "base_dn":{
-                  "description":"LDAP Provider Base DN",
-                  "type":"string"
+               "base_dn": {
+                  "description": "LDAP Provider Base DN",
+                  "type": "string"
                },
-               "port":{
-                  "description":"LDAP Provider Port",
-                  "type":"string",
-                  "default":"389",
-                  "pattern":"^[1-9]$|^[1-9][0-9]$|^[1-9][0-9][0-9]$|^[1-9][0-9][0-9][0-9]$|^[1-5][0-9][0-9][0-9][0-9]$|^6[0-4][0-9][0-9][0-9]$|^65[0-4][0-9][0-9]$|^655[0-2][0-9]$|^6553[0-5]$"
+               "port": {
+                  "description": "LDAP Provider Port",
+                  "type": "string",
+                  "default": "389",
+                  "pattern": "^[1-9]$|^[1-9][0-9]$|^[1-9][0-9][0-9]$|^[1-9][0-9][0-9][0-9]$|^[1-5][0-9][0-9][0-9][0-9]$|^6[0-4][0-9][0-9][0-9]$|^65[0-4][0-9][0-9]$|^655[0-2][0-9]$|^6553[0-5]$"
                },
-               "ssl":{
-                  "description":"LDAP Provider Enable SSL",
-                  "type":"string",
-                  "default":"no",
-                  "enum":[
+               "ssl": {
+                  "description": "LDAP Provider Enable SSL",
+                  "type": "string",
+                  "default": "no",
+                  "enum": [
                      "yes",
                      "no"
                   ]
                },
-               "filter":{
-                  "description":"LDAP Provider Filter",
-                  "type":"string"
+               "filter": {
+                  "description": "LDAP Provider Filter",
+                  "type": "string"
                },
-               "attribute":{
-                  "description":"LDAP Provider Attribute",
-                  "type":"string"
+               "attribute": {
+                  "description": "LDAP Provider Attribute",
+                  "type": "string"
                },
-               "password":{
-                  "description":"LDAP Provider Password for Bind DN",
-                  "type":"string"
+               "password": {
+                  "description": "LDAP Provider Password for Bind DN",
+                  "type": "string"
                },
-               "timeout":{
-                  "description":"LDAP Provider Timeout",
-                  "type":"string",
-                  "default":"30",
-                  "pattern":"^[1-9]$|^[1-5][0-9]$|^60$"
+               "encrypted_password": {
+                  "description": "LDAP Provider Encrypted Password for Bind DN",
+                  "type": "string"
                },
-               "vendor":{
-                  "description":"LDAP Provider Vendor",
-                  "type":"string",
-                  "default":"OpenLdap",
-                  "enum":[
+               "timeout": {
+                  "description": "LDAP Provider Timeout",
+                  "type": "string",
+                  "default": "30",
+                  "pattern": "^[1-9]$|^[1-5][0-9]$|^60$"
+               },
+               "vendor": {
+                  "description": "LDAP Provider Vendor",
+                  "type": "string",
+                  "default": "OpenLdap",
+                  "enum": [
                      "MS-AD",
                      "OpenLdap"
                   ]
                },
-               "group_authorization":{
-                  "description":"LDAP Provider Group Authorization",
-                  "type":"string",
-                  "default":"disable",
-                  "enum":[
+               "group_authorization": {
+                  "description": "LDAP Provider Group Authorization",
+                  "type": "string",
+                  "default": "disable",
+                  "enum": [
                      "disable",
                      "enable"
                   ]
                },
-               "group_recursion":{
-                  "description":"LDAP Provider Group Recursion",
-                  "type":"string",
-                  "default":"non-recursive",
-                  "enum":[
+               "group_recursion": {
+                  "description": "LDAP Provider Group Recursion",
+                  "type": "string",
+                  "default": "non-recursive",
+                  "enum": [
                      "non-recursive",
                      "recursive"
                   ]
                },
-               "target_attribute":{
-                  "description":"LDAP Provider Target Attribute",
-                  "type":"string",
-                  "default":"memberOf"
+               "target_attribute": {
+                  "description": "LDAP Provider Target Attribute",
+                  "type": "string",
+                  "default": "memberOf"
                },
-               "use_primary_group":{
-                  "description":"LDAP Provider Use Primary Group?",
-                  "type":"string",
-                  "default":"no",
-                  "enum":[
+               "use_primary_group": {
+                  "description": "LDAP Provider Use Primary Group?",
+                  "type": "string",
+                  "default": "no",
+                  "enum": [
                      "yes",
                      "no"
                   ]
                }
             },
-            "additionalProperties":false,
-            "required":[
+            "additionalProperties": false,
+            "required": [
                "hostname"
             ]
          },
-         "minItems":1
+         "minItems": 1
       },
-      "provider_groups":{
-         "description":"LDAP Provider Groups List",
-         "type":"array",
-         "items":{
-            "type":"object",
-            "description":"LDAP Provider Group",
-            "properties":{
-               "name":{
-                  "description":"LDAP Provider Group Name",
-                  "type":"string"
+      "provider_groups": {
+         "description": "LDAP Provider Groups List",
+         "type": "array",
+         "items": {
+            "type": "object",
+            "description": "LDAP Provider Group",
+            "properties": {
+               "name": {
+                  "description": "LDAP Provider Group Name",
+                  "type": "string"
                },
-               "included_providers":{
-                  "description":"LDAP Provider Group Included Providers",
-                  "type":"array",
-                  "items":{
-                     "description":"LDAP Provider Group Included Provider",
-                     "type":"string",
-                     "pattern":"^[a-zA-Z0-9][a-zA-Z0-9_.-]{0,63}$|^([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}$|^([0-9a-fA-F]{1,4}:){1,7}:$|^([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}$|^([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}$|^([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}$|^([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}$|^([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}$|^[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})$|^:((:[0-9a-fA-F]{1,4}){1,7}|:)$"
+               "included_providers": {
+                  "description": "LDAP Provider Group Included Providers",
+                  "type": "array",
+                  "items": {
+                     "description": "LDAP Provider Group Included Provider",
+                     "type": "string",
+                     "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.-]{0,63}$|^([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}$|^([0-9a-fA-F]{1,4}:){1,7}:$|^([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}$|^([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}$|^([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}$|^([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}$|^([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}$|^[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})$|^:((:[0-9a-fA-F]{1,4}){1,7}|:)$"
                   }
                }
             },
-            "additionalProperties":false,
-            "required":[
+            "additionalProperties": false,
+            "required": [
                "name"
             ]
          },
-         "minItems":1
+         "minItems": 1
       },
-      "group_maps":{
-         "description":"LDAP Group Maps",
-         "type":"array",
-         "items":{
-            "type":"object",
-            "description":"LDAP Group Map",
-            "properties":{
-               "group_dn":{
-                  "description":"LDAP Group Map Group DN",
-                  "type":"string",
-                  "pattern":"^[\\t\\n\\x0b\\x0c\\r !\"\"#$%&'\\(\\)\\*\\+,\\-\\./:;<=>\\?@\\[\\\\\\]\\^_`\\{\\|\\}~a-zA-Z0-9]{1,240}$"
+      "group_maps": {
+         "description": "LDAP Group Maps",
+         "type": "array",
+         "items": {
+            "type": "object",
+            "description": "LDAP Group Map",
+            "properties": {
+               "group_dn": {
+                  "description": "LDAP Group Map Group DN",
+                  "type": "string",
+                  "pattern": "^[\\t\\n\\x0b\\x0c\\r !\"\"#$%&'\\(\\)\\*\\+,\\-\\./:;<=>\\?@\\[\\\\\\]\\^_`\\{\\|\\}~a-zA-Z0-9]{1,240}$"
                },
-               "roles":{
-                  "description":"LDAP Group Map Roles",
-                  "type":"array",
-                  "default":"[\"read-only\"]",
-                  "items":{
-                     "type":"string",
-                     "description":"Role"
+               "roles": {
+                  "description": "LDAP Group Map Roles",
+                  "type": "array",
+                  "default": "[\"read-only\"]",
+                  "items": {
+                     "type": "string",
+                     "description": "Role"
                   },
                   "minItems": 1
                },
-               "locales":{
-                  "description":"LDAP Group Map Locales",
-                  "type":"array",
-                  "items":{
-                     "type":"string",
-                     "description":"Locale"
+               "locales": {
+                  "description": "LDAP Group Map Locales",
+                  "type": "array",
+                  "items": {
+                     "type": "string",
+                     "description": "Locale"
                   },
                   "minItems": 1
                }
             },
-            "additionalProperties":false,
-            "required":[
+            "additionalProperties": false,
+            "required": [
                "group_dn"
             ]
          }
       }
    },
-   "additionalProperties":false
+   "additionalProperties": false
 }

@@ -7,28 +7,47 @@ import datetime
 import inspect
 import json
 import logging
-import uuid
+import uuid as python_uuid
+from queue import Queue
 
+import common
 import export
+from __init__ import __version__
+from config.intersight.object import IntersightConfigObject
+from repository.metadata import DeviceMetadata
 
 
 class GenericDevice:
-    def __init__(self, target="", user="", password="", logger_handle_log_level="info", log_file_path=None):
-        self.device_type = "Generic"
-        self.device_type_short = "generic"
+    def __init__(self, parent=None, uuid=None, target="", user="", password="", is_hidden=False, is_system=False,
+                 system_usage=None, logger_handle_log_level="info", log_file_path=None, bypass_version_checks=False):
+        self.bypass_version_checks = bypass_version_checks
         self.custom = None
         self.load_from = None
         self.name = None
+        self.parent = parent
         self.password = password
+        # Tasks queued to be executed for the device (excluding the already executing ones in the task manager).
+        # This queue will only get populated when a device already have a task under execution and some other tasks
+        # are queued to be executed. So the queued tasks will be part of this queue.
+        self.queued_tasks = Queue(maxsize=10)
         self.target = target
+        self.task = None
         self.task_progression = 0
         self.username = user
-        self.uuid = uuid.uuid4()
+        self.uuid = uuid
         self.version = None
         self.version_max_supported_by_sdk = None
         self.version_min_required = None
 
-        self._logger_handle_log_level = logger_handle_log_level
+        if not self.uuid:
+            self.uuid = python_uuid.uuid4()
+
+        # Needs to be created after UUID
+        self.metadata = DeviceMetadata(
+            parent=self, device_name=target, is_hidden=is_hidden, is_system=is_system, system_usage=system_usage,
+            bypass_version_checks=bypass_version_checks)
+
+        self.logger_handle_log_level = logger_handle_log_level
         self._log_file_path = log_file_path
         self._logger_buffer = []
         self._logger_handle = None
@@ -37,8 +56,10 @@ class GenericDevice:
 
         self._init_logger()
 
+        self.backup_manager = None
         self.config_manager = None
         self.inventory_manager = None
+        self.report_manager = None
 
     # We override __getstate__ and __setstate__. These functions are component of pickle.
     # When multi-threading : in order to get from the main operational task to multiple thread, python uses them
@@ -68,9 +89,8 @@ class GenericDevice:
         self._init_logger()
 
     def _init_logger(self):
-        # We need to avoid dot in the logger name because if there is more than one dot it will create multiple
-        # logger handles
-        self.logger_target = self.target.replace(".", "_")
+        # We use the UUID as the logger target as it is a unique string of characters
+        self.logger_target = str(self.uuid)
 
         # We use a custom named logger
         self._logger_handle = logging.getLogger(self.logger_target)
@@ -81,9 +101,9 @@ class GenericDevice:
         # create console handler for log
         ch = logging.StreamHandler()
         ch.setLevel(logging.WARNING)
-        if self._logger_handle_log_level == "debug":
+        if self.logger_handle_log_level == "debug":
             ch.setLevel(logging.DEBUG)
-        elif self._logger_handle_log_level == "info":
+        elif self.logger_handle_log_level == "info":
             ch.setLevel(logging.INFO)
         ch.setFormatter(formatter)
 
@@ -102,7 +122,14 @@ class GenericDevice:
             fh.setFormatter(formatter)
             self._logger_handle.addHandler(fh)
 
-    def logger(self, level='info', message="No message"):
+    def logger(self, level='info', message="No message", set_api_error_message=True):
+        """
+        Function to write a logger message
+        :param level: Logger level
+        :param message: Logger message
+        :param set_api_error_message: If true then set the 'api_error_message' field in the thread local storage. This
+        helps the APIs to get access to the last relevant error message.
+        """
         # Sanity check:
         if not self._logger_handle:
             self._init_logger()
@@ -138,6 +165,12 @@ class GenericDevice:
             self._logger_handle.critical(log_string)
         if level == "error":
             self._logger_handle.error(log_string)
+            # If we are running the code through a server and set_api_error_message is true then set the
+            # 'api_error_message' field in the thread local storage. This helps the APIs to get access to the last
+            # relevant error message.
+            from api.api_server import easyucs
+            if set_api_error_message and easyucs:
+                easyucs.api_error_message = message
 
         # Add to the keeper
         now = str(datetime.datetime.now()).replace('.', ',')[:-3]
@@ -162,7 +195,6 @@ class GenericDevice:
                              display="logger"):
         """
         Print the log summary
-
         :param full_list: Print the full list of logs in time order
         :param by_level: Print the list of logs ordered by level and time
         :param count: Print the number of logs by each level
@@ -218,20 +250,13 @@ class GenericDevice:
     def disconnect(self):
         pass
 
-    def generate_report(self, inventory=None, config=None, language="en", output_format="docx", page_layout="a4",
-                        directory=None, filename=None, size="full"):
-        pass
-
-    def generate_config_plots(self, config=None, directory=None):
-        pass
-
     def reset(self):
         pass
 
     def export_device(self, export_format="json", directory=None, filename=None):
         """
         Exports a device using the specified export format to a file
-        :param export_format: Export format. Currently only supports JSON
+        :param export_format: Export format. Currently, only supports JSON
         :param directory: Directory to store the export file
         :param filename: Name of the export file
         :return: True if export is successful, False otherwise
@@ -242,15 +267,16 @@ class GenericDevice:
             directory = "."
 
         if export_format == "json":
-            header_json = {}
-            header_json["metadata"] = [export.generate_json_metadata_header(file_type="device", device=self)]
-            device_json = {}
-            device_json["easyucs"] = header_json
-            device_json["device"] = {}
+            header_json = {"metadata": [export.generate_json_metadata_header(file_type="device", device=self)]}
+            device_json = {"easyucs": header_json, "device": {}}
 
             device_json["device"]["target"] = self.target
-            device_json["device"]["username"] = self.username
-            device_json["device"]["password"] = self.password
+            if self.metadata.device_type in ["intersight"]:
+                device_json["device"]["key_id"] = self.key_id
+                device_json["device"]["private_key_path"] = self.private_key_path
+            else:
+                device_json["device"]["username"] = self.username
+                device_json["device"]["password"] = self.password
 
             # Calculate hash of entire JSON file and adding it to header before exporting
             device_json = export.insert_json_metadata_hash(json_content=device_json)
@@ -298,7 +324,7 @@ class GenericDevice:
         90% : ucsm : Now configuring orgs section
 
         60% : cimc : Admin section configured
-        70% : cimc : Bunch of things configured
+        70% : cimc : A bunch of things configured
         80% : cimc : Other bunch of things configured
         90% : cimc : BIOS section configured
 
@@ -323,3 +349,20 @@ class GenericDevice:
             log_str += "\r"
             self._logger_buffer.pop(0)
         return log_str
+
+    def get_log_message(self, level="all", index=-1):
+        """
+        Get a log message of a particular level and at a particular index from the log buffer
+        :param level: log level
+        :param index: the position of the log entry
+        :return: (str) a string containing the log
+        """
+        if level not in ["error", "critical", "warning", "info", "debug", "all"]:
+            return ""
+        if not isinstance(index, int):
+            return ""
+        # The index provided must be present in self._logger_keeper["level"]
+        if (index < 0 and abs(index) > len(self._logger_keeper[level])) or \
+                (index >= 0 and index + 1 > len(self._logger_keeper[level])):
+            return ""
+        return self._logger_keeper[level][index]

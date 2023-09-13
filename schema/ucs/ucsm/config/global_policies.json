@@ -1,25 +1,25 @@
 {
-   "id":"ucs_system_config_global_policies#",
-   "$schema":"http://json-schema.org/draft-07/schema#",
-   "title":"EasyUCS ucs system config global_policies section",
-   "description":"EasyUCS ucs system config global_policies section JSON schema",
-   "type":"object",
-   "properties":{
+   "id": "ucs_system_config_global_policies#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS ucs system config global_policies section",
+   "description": "EasyUCS ucs system config global_policies section JSON schema",
+   "type": "object",
+   "properties": {
       "comment": {
          "description": "Global Policies Comments",
          "type": "string",
          "default": ""
       },
-      "chassis_discovery_policy":{
-         "description":"Chassis/FEX Discovery Policy",
-         "type":"array",
-         "items":{
-            "properties":{
-               "action_link":{
-                  "description":"Number of links for new Chassis/FEX discovered",
-                  "type":"string",
-                  "default":"1",
-                  "enum":[
+      "chassis_discovery_policy": {
+         "description": "Chassis/FEX Discovery Policy",
+         "type": "array",
+         "items": {
+            "properties": {
+               "action_link": {
+                  "description": "Number of links for new Chassis/FEX discovered",
+                  "type": "string",
+                  "default": "1",
+                  "enum": [
                      "1",
                      "2",
                      "4",
@@ -30,20 +30,20 @@
                      "user-acknowledged"
                   ]
                },
-               "link_grouping_preference":{
-                  "description":"Link Grouping mode for new Chassis/FEX discovered",
-                  "type":"string",
-                  "default":"none",
-                  "enum":[
+               "link_grouping_preference": {
+                  "description": "Link Grouping mode for new Chassis/FEX discovered",
+                  "type": "string",
+                  "default": "none",
+                  "enum": [
                      "none",
                      "port-channel"
                   ]
                },
-               "multicast_hardware_hash":{
-                  "description":"Multicast Hardware Hash Admin State",
-                  "type":"string",
-                  "default":"disabled",
-                  "enum":[
+               "multicast_hardware_hash": {
+                  "description": "Multicast Hardware Hash Admin State",
+                  "type": "string",
+                  "default": "disabled",
+                  "enum": [
                      "disabled",
                      "enabled"
                   ]
@@ -56,173 +56,298 @@
                      "40G",
                      "4x10G"
                   ]
+               },
+               "policy_owner": {
+                  "description": "Chassis/FEX Discovery Policy Owner (for UCS Central)",
+                  "type": "string",
+                  "enum": [
+                     "ucs-central"
+                  ]
                }
             },
-            "additionalProperties":false
+            "additionalProperties": false
          }
       },
-      "rack_server_discovery_policy":{
-         "description":"Rack Server Discovery Policy",
-         "type":"array",
-         "items":{
-            "properties":{
-               "action":{
-                  "description":"How UCS Manager reacts when adding a new server",
-                  "type":"string",
-                  "default":"immediate",
-                  "enum":[
+      "rack_server_discovery_policy": {
+         "description": "Rack Server Discovery Policy",
+         "type": "array",
+         "items": {
+            "properties": {
+               "action": {
+                  "description": "How UCS Manager reacts when adding a new server",
+                  "type": "string",
+                  "default": "immediate",
+                  "enum": [
                      "diag",
                      "immediate",
                      "user-acknowledged"
                   ]
                },
-               "scrub_policy":{
-                  "description":"Scrub Policy to run on a newly discovered server",
-                  "type":"string"
+               "scrub_policy": {
+                  "description": "Scrub Policy to run on a newly discovered server",
+                  "type": "string"
+               },
+               "policy_owner": {
+                  "description": "Rack Server Discovery Policy Owner (for UCS Central)",
+                  "type": "string",
+                  "enum": [
+                     "ucs-central"
+                  ]
                }
             },
-            "additionalProperties":false
+            "additionalProperties": false
          }
       },
-      "rack_management_connection_policy":{
-         "description":"Rack Management Connection Policy",
-         "type":"string",
-         "default":"auto-acknowledged",
-         "enum":[
+      "rack_management_connection_policy": {
+         "description": "Rack Management Connection Policy",
+         "type": "string",
+         "default": "auto-acknowledged",
+         "enum": [
             "auto-acknowledged",
             "user-acknowledged"
          ]
       },
-      "power_policy":{
-         "description":"Power Policy (Redundancy)",
-         "type":"string",
-         "default":"non-redundant",
-         "enum":[
+      "rack_management_connection_policy_owner": {
+         "description": "Rack Management Connection Policy Owner (for UCS Central)",
+         "type": "string",
+         "enum": [
+            "ucs-central"
+         ]
+      },
+      "power_policy": {
+         "description": "Power Policy (Redundancy)",
+         "type": "string",
+         "default": "non-redundant",
+         "enum": [
             "grid",
             "n+1",
+            "n+2",
             "non-redundant"
          ]
       },
-      "fan_control_policy":{
-         "description":"Fan Control Policy (Speed)",
-         "type":"string",
-         "default":"balanced",
+      "power_policy_owner": {
+         "description": "Power Policy Owner (for UCS Central)",
+         "type": "string",
+         "enum": [
+            "ucs-central"
+         ]
+      },
+      "power_save_policy": {
+         "description": "Power Save Policy Mode",
+         "type": "string",
+         "default": "Disable",
+         "enum": [
+            "Disable",
+            "Enable"
+         ]
+      },
+      "power_extended_policy": {
+         "description": "Cisco UCS X9508 Chassis Power Extended Policy Mode",
+         "type": "string",
+         "default": "Disable",
+         "enum": [
+            "Disable",
+            "Enable"
+         ]
+      },
+      "fan_control_policy": {
+         "description": "Fan Control Policy (Speed)",
+         "type": "string",
+         "default": "balanced",
          "enum": [
             "balanced",
             "low-power"
          ]
       },
-      "mac_address_table_aging":{
-         "description":"MAC Address Table Aging Time",
-         "type":"string",
-         "default":"mode-default"
+      "fan_control_policy_owner": {
+         "description": "Fan Control Policy Owner (for UCS Central)",
+         "type": "string",
+         "enum": [
+            "ucs-central"
+         ]
       },
-      "vlan_port_count_optimization":{
-         "description":"VLAN Port Count Optimization",
-         "type":"string",
-         "default":"disabled",
+      "x9508_chassis_fan_control_policy": {
+         "description": "Cisco UCS X9508 Chassis Fan Control Policy (Speed)",
+         "type": "string",
+         "default": "acoustic",
+         "enum": [
+            "acoustic",
+            "balanced",
+            "high-power",
+            "low-power",
+            "max-power",
+            "performance"
+         ]
+      },
+      "x9508_chassis_fan_control_policy_owner": {
+         "description": "Cisco UCS X9508 Fan Control Policy Owner (for UCS Central)",
+         "type": "string",
+         "enum": [
+            "ucs-central"
+         ]
+      },
+      "mac_address_table_aging": {
+         "description": "MAC Address Table Aging Time",
+         "type": "string",
+         "default": "mode-default"
+      },
+      "vlan_port_count_optimization": {
+         "description": "VLAN Port Count Optimization",
+         "type": "string",
+         "default": "disabled",
          "enum": [
             "enabled",
             "disabled"
          ]
       },
-      "reserved_vlan_start_id":{
-         "description":"Reserved VLANs Start ID",
-         "type":"string",
-         "default":"3915",
-         "pattern":"^[2-9]$|^[1-9][0-9]$|^[1-9][0-9][0-9]$|^[1-2][0-9][0-9][0-9]$|^3[0-8][0-9][0-9]$|^390[0-9]$|^391[0-5]$"
+      "lan_global_policy_owner": {
+         "description": "LAN Global Policies Policy Owner (for UCS Central)",
+         "type": "string",
+         "enum": [
+            "ucs-central"
+         ]
       },
-      "org_permissions":{
-         "description":"Org Permissions",
-         "type":"string",
-         "default":"disabled",
+      "reserved_vlan_start_id": {
+         "description": "Reserved VLANs Start ID",
+         "type": "string",
+         "default": "3915",
+         "pattern": "^[2-9]$|^[1-9][0-9]$|^[1-9][0-9][0-9]$|^[1-2][0-9][0-9][0-9]$|^3[0-8][0-9][0-9]$|^390[0-9]$|^391[0-5]$"
+      },
+      "org_permissions": {
+         "description": "Org Permissions",
+         "type": "string",
+         "default": "disabled",
          "enum": [
             "enabled",
             "disabled"
          ]
       },
-      "inband_profile_vlan_group":{
-         "description":"Inband Profile - Inband VLAN Group",
-         "type":"string",
-         "default":"",
+      "inband_profile_vlan_group": {
+         "description": "Inband Profile - Inband VLAN Group",
+         "type": "string",
+         "default": "",
          "pattern": "^[\\-\\.:_a-zA-Z0-9]{0,32}$"
       },
-      "inband_profile_network":{
-         "description":"Inband Profile - Network",
-         "type":"string",
-         "default":""
+      "inband_profile_network": {
+         "description": "Inband Profile - Network",
+         "type": "string",
+         "default": ""
       },
-      "inband_profile_ip_pool_name":{
-         "description":"Inband Profile - IP Pool Name",
-         "type":"string",
-         "default":"",
+      "inband_profile_ip_pool_name": {
+         "description": "Inband Profile - IP Pool Name",
+         "type": "string",
+         "default": "",
          "pattern": "^[\\-\\.:_a-zA-Z0-9]{0,32}$"
       },
-      "global_power_allocation_policy":{
-         "description":"Global Power Allocation Policy",
-         "type":"string",
-         "default":"intelligent-policy-driven",
-         "enum":[
+      "inband_profile_policy_owner": {
+         "description": "Inband Profile Policy Owner (for UCS Central)",
+         "type": "string",
+         "enum": [
+            "ucs-central"
+         ]
+      },
+      "global_power_allocation_policy": {
+         "description": "Global Power Allocation Policy",
+         "type": "string",
+         "default": "intelligent-policy-driven",
+         "enum": [
             "intelligent-policy-driven",
             "manual-per-blade"
          ]
       },
-      "firmware_auto_sync_server_policy":{
-         "description":"Firmware Auto-Sync Server Policy",
-         "type":"string",
-         "default":"No Actions",
-         "enum":[
+      "firmware_auto_sync_server_policy": {
+         "description": "Firmware Auto-Sync Server Policy",
+         "type": "string",
+         "default": "No Actions",
+         "enum": [
             "No Actions",
             "User Acknowledge"
          ]
       },
-      "global_power_profiling_policy":{
-         "description":"Global Power Profiling Policy - Profile Power?",
-         "type":"string",
-         "default":"no",
-         "enum":[
+      "firmware_auto_sync_server_policy_owner": {
+         "description": "Firmware Auto-Sync Server Policy Owner (for UCS Central)",
+         "type": "string",
+         "enum": [
+            "ucs-central"
+         ]
+      },
+      "global_power_profiling_policy": {
+         "description": "Global Power Profiling Policy - Profile Power?",
+         "type": "string",
+         "default": "no",
+         "enum": [
             "false",
             "no",
             "true",
             "yes"
          ]
       },
-      "info_policy":{
-         "description":"Info Policy",
-         "type":"string",
-         "default":"disabled",
-         "enum":[
+      "global_power_policy_owner": {
+         "description": "Global Power Policy Owner (for UCS Central)",
+         "type": "string",
+         "enum": [
+            "ucs-central"
+         ]
+      },
+      "info_policy": {
+         "description": "Info Policy",
+         "type": "string",
+         "default": "disabled",
+         "enum": [
             "disabled",
             "enabled"
          ]
       },
-      "hardware_change_discovery_policy":{
-         "description":"Hardware Change Discovery Policy",
-         "type":"string",
-         "default":"auto-acknowledged",
-         "enum":[
+      "info_policy_owner": {
+         "description": "Info Policy Owner (for UCS Central)",
+         "type": "string",
+         "enum": [
+            "ucs-central"
+         ]
+      },
+      "hardware_change_discovery_policy": {
+         "description": "Hardware Change Discovery Policy",
+         "type": "string",
+         "default": "auto-acknowledged",
+         "enum": [
             "auto-acknowledged",
             "user-acknowledged"
          ]
       },
-      "fabric_a_fc_uplink_trunking":{
-         "description":"FI A - FC Uplink Trunking",
-         "type":"string",
-         "default":"disabled",
+      "hardware_change_discovery_policy_owner": {
+         "description": "Hardware Change Discovery Policy Owner (for UCS Central)",
+         "type": "string",
+         "enum": [
+            "ucs-central"
+         ]
+      },
+      "fabric_a_fc_uplink_trunking": {
+         "description": "FI A - FC Uplink Trunking",
+         "type": "string",
+         "default": "disabled",
          "enum": [
             "enabled",
             "disabled"
          ]
       },
-      "fabric_b_fc_uplink_trunking":{
-         "description":"FI B - FC Uplink Trunking",
-         "type":"string",
-         "default":"disabled",
+      "fabric_b_fc_uplink_trunking": {
+         "description": "FI B - FC Uplink Trunking",
+         "type": "string",
+         "default": "disabled",
+         "enum": [
+            "enabled",
+            "disabled"
+         ]
+      },
+      "q_in_q_forwarding": {
+         "description": "Q-in-Q Forwarding",
+         "type": "string",
+         "default": "disabled",
          "enum": [
             "enabled",
             "disabled"
          ]
       }
    },
-   "additionalProperties":false
+   "additionalProperties": false
 }

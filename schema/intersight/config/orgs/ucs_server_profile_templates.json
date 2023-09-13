@@ -1,0 +1,311 @@
+{
+   "id": "intersight_config_orgs_ucs_server_profile_templates#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS intersight config orgs ucs_server_profile_templates section",
+   "description": "EasyUCS intersight config orgs ucs_server_profile_templates section JSON schema",
+   "type": "object",
+   "properties": {
+      "comment": {
+         "description": "UCS Server Profile Template Comments",
+         "type": "string",
+         "default": ""
+      },
+      "descr": {
+         "description": "UCS Server Profile Template Description",
+         "type": "string",
+         "default": "",
+         "pattern": "^$|^[a-zA-Z0-9]+[\\x00-\\xFF]*$",
+         "maxLength": 1024
+      },
+      "name": {
+         "description": "UCS Server Profile Template Name",
+         "type": "string",
+         "default": "",
+         "pattern": "^[a-zA-Z0-9_.-]{1,64}$"
+      },
+      "tags": {
+         "description": "UCS Server Profile Template Tags",
+         "type": "array",
+         "items": {
+            "description": "UCS Server Profile Template Tag",
+            "type": "object",
+            "properties": {
+               "key": {
+                  "description": "UCS Server Profile Template Tag Key",
+                  "type": "string",
+                  "default": "",
+                  "minLength": 1,
+                  "maxLength": 128
+               },
+               "value": {
+                  "description": "UCS Server Profile Template Tag Value",
+                  "type": "string",
+                  "default": "",
+                  "minLength": 0,
+                  "maxLength": 256
+               }
+            },
+            "additionalProperties": false,
+            "required": [
+               "key",
+               "value"
+            ]
+         },
+         "minItems": 1
+      },
+      "target_platform": {
+         "description": "The platform for which the server profile is applicable. It can either be a server that is operating in standalone mode or which is attached to a Fabric Interconnect managed by Intersight. * `Standalone` - Servers which are operating in standalone mode i.e. not connected to a Fabric Interconnected. * `FIAttached` - Servers which are connected to a Fabric Interconnect that is managed by Intersight.",
+         "type": "string",
+         "default": "Standalone",
+         "enum": [
+            "FI-Attached",
+            "Standalone"
+         ]
+      },
+      "adapter_configuration_policy": {
+         "description": "UCS Server Profile Template Adapter Configuration Policy",
+         "type": "string",
+         "default": ""
+      },
+      "bios_policy": {
+         "description": "UCS Server Profile Template BIOS Policy",
+         "type": "string",
+         "default": ""
+      },
+      "boot_policy": {
+         "description": "UCS Server Profile Template Boot Order Policy",
+         "type": "string",
+         "default": ""
+      },
+      "certificate_management_policy": {
+         "description": "UCS Server Profile Template Certificate Management Policy",
+         "type": "string",
+         "default": ""
+      },
+      "device_connector_policy": {
+         "description": "UCS Server Profile Template Device Connector Policy",
+         "type": "string",
+         "default": ""
+      },
+      "drive_security_policy": {
+         "description": "UCS Server Profile Template Drive Security Policy",
+         "type": "string",
+         "default": ""
+      },
+      "firmware_policy": {
+         "description": "UCS Server Profile Template Firmware Policy",
+         "type": "string",
+         "default": ""
+      },
+      "imc_access_policy": {
+         "description": "UCS Server Profile Template IMC Access Policy",
+         "type": "string",
+         "default": ""
+      },
+      "ipmi_over_lan_policy": {
+         "description": "UCS Server Profile Template IPMI Over LAN Policy",
+         "type": "string",
+         "default": ""
+      },
+      "lan_connectivity_policy": {
+         "description": "UCS Server Profile Template LAN Connectivity Policy",
+         "type": "string",
+         "default": ""
+      },
+      "ldap_policy": {
+         "description": "UCS Server Profile Template LDAP Policy",
+         "type": "string",
+         "default": ""
+      },
+      "local_user_policy": {
+         "description": "UCS Server Profile Template Local User  Policy",
+         "type": "string",
+         "default": ""
+      },
+      "network_connectivity_policy": {
+         "description": "UCS Server Profile Template Network Connectivity Policy",
+         "type": "string",
+         "default": ""
+      },
+      "ntp_policy": {
+         "description": "UCS Server Profile Template NTP Policy",
+         "type": "string",
+         "default": ""
+      },
+      "persistent_memory_policy": {
+         "description": "UCS Server Profile Template Persistent Memory Policy",
+         "type": "string",
+         "default": ""
+      },
+      "power_policy": {
+         "description": "UCS Server Profile Template Power Policy",
+         "type": "string",
+         "default": ""
+      },
+      "san_connectivity_policy": {
+         "description": "UCS Server Profile Template SAN Connectivity Policy",
+         "type": "string",
+         "default": ""
+      },
+      "sd_card_policy": {
+         "description": "UCS Server Profile Template SD Card Policy",
+         "type": "string",
+         "default": ""
+      },
+      "serial_over_lan_policy": {
+         "description": "UCS Server Profile Template Serial Over LAN Policy",
+         "type": "string",
+         "default": ""
+      },
+      "smtp_policy": {
+         "description": "UCS Server Profile Template SMTP Policy",
+         "type": "string",
+         "default": ""
+      },
+      "snmp_policy": {
+         "description": "UCS Server Profile Template SNMP Policy",
+         "type": "string",
+         "default": ""
+      },
+      "ssh_policy": {
+         "description": "UCS Server Profile Template SSH Policy",
+         "type": "string",
+         "default": ""
+      },
+      "storage_policy": {
+         "description": "UCS Server Profile Template Storage Policy",
+         "type": "string",
+         "default": ""
+      },
+      "syslog_policy": {
+         "description": "UCS Server Profile Template Syslog Policy",
+         "type": "string",
+         "default": ""
+      },
+      "thermal_policy": {
+         "description": "UCS Server Profile Template Thermal Policy",
+         "type": "string",
+         "default": ""
+      },
+      "uuid_pool": {
+         "description": "UCS Server Profile Template - UUID Pool Name",
+         "type": "string",
+         "default": "",
+         "pattern": "^[a-zA-Z0-9_.:-]{1,64}$"
+      },
+      "virtual_kvm_policy": {
+         "description": "UCS Server Profile Template Virtual KVM Policy",
+         "type": "string",
+         "default": ""
+      },
+      "virtual_media_policy": {
+         "description": "UCS Server Profile Template Virtual Media Policy",
+         "type": "string",
+         "default": ""
+      }
+   },
+   "additionalProperties": false,
+   "required": [
+      "name",
+      "target_platform"
+   ],
+   "allOf": [
+      {
+         "$comment": "Below is for setting constraints for target_platform with value FI-Attached",
+         "if": {
+            "properties": {
+               "target_platform": {
+                  "enum": [
+                     "FI-Attached"
+                  ]
+               }
+            },
+            "required": [
+               "target_platform"
+            ]
+         },
+         "then": {
+            "not": {
+               "anyOf": [
+                  {
+                     "required": [
+                        "adapter_configuration_policy"
+                     ]
+                  },
+                  {
+                     "required": [
+                        "device_connector_policy"
+                     ]
+                  },
+                  {
+                     "required": [
+                        "ldap_policy"
+                     ]
+                  },
+                  {
+                     "required": [
+                        "network_connectivity_policy"
+                     ]
+                  },
+                  {
+                     "required": [
+                        "ntp_policy"
+                     ]
+                  },
+                  {
+                     "required": [
+                        "persistent_memory_policy"
+                     ]
+                  },
+                  {
+                     "required": [
+                        "smtp_policy"
+                     ]
+                  },
+                  {
+                     "required": [
+                        "ssh_policy"
+                     ]
+                  }
+               ]
+            }
+         }
+      },
+      {
+         "$comment": "Below is for setting constraints for target_platform with value Standalone",
+         "if": {
+            "properties": {
+               "target_platform": {
+                  "enum": [
+                     "Standalone"
+                  ]
+               }
+            },
+            "required": [
+               "target_platform"
+            ]
+         },
+         "then": {
+            "not": {
+               "anyOf": [
+                  {
+                     "required": [
+                        "certificate_management_policy"
+                     ]
+                  },
+                  {
+                     "required": [
+                        "imc_access_policy"
+                     ]
+                  },
+                  {
+                     "required": [
+                        "thermal_policy"
+                     ]
+                  }
+               ]
+            }
+         }
+      }
+   ]
+}

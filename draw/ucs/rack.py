@@ -77,8 +77,7 @@ class GenericDrawRackFront(GenericUcsDrawObject):
     def get_storage_controllers(self):
         storage_controller_list = []
         for storage_controller in self._parent.storage_controllers:
-            if any(x in self._parent.sku for x in ["C240-M5", "HX240C-M5", "HXAF240C-M5"]) \
-                    and (storage_controller.type not in ["SAS", "NVME"]):
+            if storage_controller.type not in ["SAS", "NVME"]:
                 continue
             storage_controller_list.append(UcsSystemDrawStorageController(storage_controller, self))
         # storage_controller_list = remove_not_completed_in_list(storage_controller_list)
@@ -186,18 +185,68 @@ class GenericDrawRackRear(GenericUcsDrawObject):
 
     def get_mgmt_if_list(self):
         mgmt_if_list = []
-        for mgmt_if in self._parent.mgmt_interfaces:
-            mgmt_if_list.append(UcsSystemDrawMgmtInterface(mgmt_if, self))
-        # mgmt_if_list = remove_not_completed_in_list(mgmt_if_list)
+        if "lom_ports" in self.json_file:
+            for mgmt_if in self._parent.mgmt_interfaces:
+                if mgmt_if.id is not None:
+                    mgmt_if_list.append(UcsSystemDrawMgmtInterface(mgmt_if, self))
+            # mgmt_if_list = remove_not_completed_in_list(mgmt_if_list)
         return mgmt_if_list
 
     def get_pcie_riser_list(self, infra=False):
         pcie_riser_list = []
+        self._parent_pcie_risers = None
         if self._parent.pcie_risers:
-            for pcie_riser in self._parent.pcie_risers:
-                pcie_riser_list.append(GenericUcsDrawPcieRiser(parent=pcie_riser, parent_draw=self, infra=infra))
-            # We only keep the Riser that have been fully created -> picture
-            pcie_riser_list = [riser for riser in pcie_riser_list if riser.picture_size]
+            self._parent_pcie_risers = self._parent.pcie_risers
+
+        # If no PCIe Riser detected
+        elif self._parent.model == "UCSC-C240-M5SD":
+            # Since we don't have any object that gives us which PCIe risers are available, we have to force a default
+            # We do this for C240 M5SD, since it is mandatory for the draw operation
+            self._parent_pcie_risers = [{"id": "1", "sku": "UCSC-RIS-1-240M5"},
+                                        {"id": "2", "sku": "UCSC-RIS-2B-240M5"}]
+
+        elif self._parent.model in ["UCSC-C240-M6S", "UCSC-C240-M6SX", "UCSC-C240-M6N", "UCSC-C240-M6SN",
+                                    "UCSC-C240-M6L", "UCSC-C245-M6SX"]:
+            # Since we don't have any object that gives us which PCIe risers are available, we have to force a default
+            # We do this for C240/C245 M6, since it is mandatory for the draw operation
+            self._parent_pcie_risers = [{"id": "1", "sku": "UCSC-RIS1A-240M6"},
+                                        {"id": "2", "sku": "UCSC-RIS2A-240M6"},
+                                        {"id": "3", "sku": "UCSC-RIS3A-240M6"}]
+
+        elif self._parent.model in ["UCSC-C220-M6S", "UCSC-C220-M6N", "UCSC-C225-M6S", "UCSC-C225-M6N"]:
+            # Since we don't have any object that gives us which PCIe risers are available, we have to force a default
+            # We do this for C220/C225 M6, since it is mandatory for the draw operation
+            self._parent_pcie_risers = [{"id": "1", "sku": "UCSC-R2R3-C220M6"}]
+
+        elif self._parent.model in ["UCSC-C220-M7S", "UCSC-C220-M7N"]:
+            # Since we don't have any object that gives us which PCIe risers are available, we have to force a default
+            # We do this for C220 M7, since it is mandatory for the draw operation
+            self._parent_pcie_risers = [{"id": "1", "sku": "UCSC-RIS1A-22XM7"},
+                                        {"id": "2", "sku": "UCSC-RIS2A-22XM7"},
+                                        {"id": "3", "sku": "UCSC-RIS3A-22XM7"}]
+
+        elif self._parent.model in ["UCSC-C240-M7SX", "UCSC-C240-M7SN"]:
+            # Since we don't have any object that gives us which PCIe risers are available, we have to force a default
+            # We do this for C240 M7, since it is mandatory for the draw operation
+            self._parent_pcie_risers = [{"id": "1", "sku": "UCSC-RIS1A-240-D"},
+                                        {"id": "2", "sku": "UCSC-RIS2A-240-D"},
+                                        {"id": "3", "sku": "UCSC-RIS3A-240-D"}]
+
+        else:
+            return pcie_riser_list
+
+        for pcie_riser in self._parent_pcie_risers:
+            # if hasattr(pcie_riser, "sku"):
+            #     if pcie_riser.sku not in ["None"]:
+            #         pcie_riser_list.append(
+            #             GenericUcsDrawPcieRiser(parent=pcie_riser, parent_draw=self, infra=infra))
+            if pcie_riser["sku"] not in ["None"]:
+                pcie_riser_list.append(
+                    GenericUcsDrawPcieRiser(parent=pcie_riser, parent_draw=self, infra=infra))
+
+        # We only keep the Riser that have been fully created -> picture
+        pcie_riser_list = [riser for riser in pcie_riser_list if riser.picture_size]
+
         return pcie_riser_list
 
     def get_adaptor_list(self):
@@ -330,12 +379,12 @@ class GenericDrawRackRear(GenericUcsDrawObject):
                                 self.paste_layer(img, coord_offset)
 
         if "pcie_riser_slots" in self.json_file:
-            # Fill blank for PCIe Riser slot
-            if len(self._parent.pcie_risers)-1 < len(self.json_file["pcie_riser_slots"]):
+            # Fill blank for PCIe Riser slot (we put the default ones when None could been detected)
+            if len(self._parent_pcie_risers)-1 < len(self.json_file["pcie_riser_slots"]):
                 used_slot = []
                 potential_slot = []
                 unused_slot = []
-                for slot in self._parent.pcie_risers:
+                for slot in self._parent_pcie_risers:
                     used_slot.append(int(slot["id"]))
                 for slot in self.json_file["pcie_riser_slots"]:
                     potential_slot.append(slot["id"])
@@ -346,6 +395,14 @@ class GenericDrawRackRear(GenericUcsDrawObject):
                     for expansion in self.json_file["pcie_riser_models"]:
                         if "type" in expansion:
                             if expansion["type"] == "blank":
+                                # Some riser need a specific blank panel due to form factor
+                                if "riser_ids" in expansion:
+                                    found = False
+                                    for riser_id in expansion["riser_ids"]:
+                                        if riser_id == slot_id:
+                                            found = True
+                                    if not found:
+                                        continue
                                 blank_name = expansion["name"]
                                 img = Image.open("catalog/pcie_risers/img/" + blank_name + ".png", 'r')
                                 for slot in self.json_file["pcie_riser_slots"]:
@@ -354,42 +411,41 @@ class GenericDrawRackRear(GenericUcsDrawObject):
                                 coord_offset = self.picture_offset[0] + coord[0], self.picture_offset[1] + coord[1]
                                 self.paste_layer(img, coord_offset)
 
-        if any(x in self._parent.sku for x in ["C240-M5", "HX240C-M5", "HXAF240C-M5"]):
-            if not self.storage_controller_list:
-                if "disks_slots_rear" in self.json_file:
-                    # Fill blank for disks slots
-                    if len(self.disk_slots_used) < len(self.json_file["disks_slots_rear"]):
-                        used_slot = []
-                        potential_slot = []
-                        unused_slot = []
-                        for disk_used in self.disk_slots_used:
-                            used_slot.append(disk_used)
-                        for disk in self.json_file["disks_slots_rear"]:
-                            potential_slot.append(disk["id"])
-                        for blank_id in set(potential_slot) - set(used_slot):
-                            unused_slot.append(blank_id)
-                        for slot_id in unused_slot:
-                            blank_name = None
-                            orientation = "horizontal"
-                            disk_format = None
-                            for disk_slot in self.json_file['disks_slots_rear']:
-                                if disk_slot['id'] == slot_id:
-                                    orientation = disk_slot['orientation']
-                                    disk_format = disk_slot['format']
-                            for model in self.json_file["disks_models"]:
-                                if "type" in model and not blank_name:
-                                    if model["type"] == "blank" and model["format"] == disk_format:
-                                        blank_name = model["name"]
-                                        img = Image.open("catalog/drives/img/" + blank_name + ".png", 'r')
-                                        if orientation == "vertical":
-                                            img = GenericUcsDrawEquipment.rotate_object(picture=img)
+        if not self.storage_controller_list:
+            if "disks_slots_rear" in self.json_file:
+                # Fill blank for disks slots
+                if len(self.disk_slots_used) < len(self.json_file["disks_slots_rear"]):
+                    used_slot = []
+                    potential_slot = []
+                    unused_slot = []
+                    for disk_used in self.disk_slots_used:
+                        used_slot.append(disk_used)
+                    for disk in self.json_file["disks_slots_rear"]:
+                        potential_slot.append(disk["id"])
+                    for blank_id in set(potential_slot) - set(used_slot):
+                        unused_slot.append(blank_id)
+                    for slot_id in unused_slot:
+                        blank_name = None
+                        orientation = "horizontal"
+                        disk_format = None
+                        for disk_slot in self.json_file['disks_slots_rear']:
+                            if disk_slot['id'] == slot_id:
+                                orientation = disk_slot['orientation']
+                                disk_format = disk_slot['format']
+                        for model in self.json_file["disks_models"]:
+                            if "type" in model and not blank_name:
+                                if model["type"] == "blank" and model["format"] == disk_format:
+                                    blank_name = model["name"]
+                                    img = Image.open("catalog/drives/img/" + blank_name + ".png", 'r')
+                                    if orientation == "vertical":
+                                        img = GenericUcsDrawEquipment.rotate_object(picture=img)
 
-                            if blank_name:
-                                for slot in self.json_file["disks_slots_rear"]:
-                                    if slot["id"] == int(slot_id):
-                                        coord = slot["coord"]
-                                coord_offset = self.picture_offset[0] + coord[0], self.picture_offset[1] + coord[1]
-                                self.paste_layer(img, coord_offset)
+                        if blank_name:
+                            for slot in self.json_file["disks_slots_rear"]:
+                                if slot["id"] == int(slot_id):
+                                    coord = slot["coord"]
+                            coord_offset = self.picture_offset[0] + coord[0], self.picture_offset[1] + coord[1]
+                            self.paste_layer(img, coord_offset)
 
 
 class UcsSystemDrawRackRear(GenericDrawRackRear, GenericUcsDrawEquipment):
@@ -410,8 +466,7 @@ class UcsSystemDrawRackRear(GenericDrawRackRear, GenericUcsDrawEquipment):
         self.psu_list = self.get_psu_list()
         self.mgmt_if_list = self.get_mgmt_if_list()
 
-        if any(x in self._parent.sku for x in ["C240-M5", "HX240C-M5", "HXAF240C-M5"]):
-            self.storage_controller_list = self.get_storage_controllers()
+        self.storage_controller_list = self.get_storage_controllers()
 
         self.nvme_disks = []
         if hasattr(self._parent, "nvme_drives") and "disks_slots_rear" in self.json_file:
@@ -450,8 +505,7 @@ class UcsImcDrawRackRear(GenericDrawRackRear, GenericUcsDrawEquipment):
         self.psu_list = self.get_psu_list()
         # self.mgmt_if_list = self.get_mgmt_if_list()
 
-        if any(x in self._parent.sku for x in ["C240-M5", "HX240C-M5", "HXAF240C-M5"]):
-            self.storage_controller_list = self.get_storage_controllers()
+        self.storage_controller_list = self.get_storage_controllers()
 
         self.nvme_disks = []
         if hasattr(self._parent, "nvme_drives") and "disks_slots_rear" in self.json_file:
@@ -485,8 +539,13 @@ class UcsSystemDrawInfraRack(UcsSystemDrawInfraEquipment):
                 self.fex_b = self.fex_list[1]
                 if self.fex_a:
                     self.valid_fex = self.fex_a
-                else:
+                elif self.fex_b:
                     self.valid_fex = self.fex_b
+                else:
+                    self.logger(level="warning", message="Infra of rack #" + self.rack._parent.id +
+                                                         " not saved because FEX presence confirmed "
+                                                         "but could not be found")
+                    return None
 
         # Canvas settings
         if self.fex_presence:
@@ -582,8 +641,7 @@ class UcsSystemDrawInfraRack(UcsSystemDrawInfraEquipment):
         self.rack.adaptor_list = self.rack.get_adaptor_list()
         self.rack.psu_list = self.rack.get_psu_list()
         self.rack.mgmt_if_list = self.rack.get_mgmt_if_list()
-        if any(x in self.rack._parent.sku for x in ["C240-M5", "HX240C-M5", "HXAF240C-M5"]):
-            self.rack.storage_controller_list = self.rack.get_storage_controllers()
+        self.rack.storage_controller_list = self.rack.get_storage_controllers()
         if hasattr(self.rack._parent, "nvme_drives") and "disks_slots_rear" in self.rack.json_file:
             self.rack.disk_slots_used = []
             self.rack.nvme_disks = self.rack.get_nvme_disks()
@@ -1487,7 +1545,6 @@ class UcsSystemDrawServerNodeRear(GenericUcsDrawEquipment):
                                 coord_offset = self.picture_offset[0] + coord[0], self.picture_offset[1] + coord[1]
                                 self.paste_layer(img, coord_offset)
 
-
     def get_adaptor_list(self):
         adaptor_list = []
         for adaptor in self._parent.adaptors:
@@ -1532,8 +1589,13 @@ class UcsSystemDrawInfraRackEnclosure(UcsSystemDrawInfraEquipment):
                 self.fex_b = self.fex_list[1]
                 if self.fex_a:
                     self.valid_fex = self.fex_a
-                else:
+                elif self.fex_b:
                     self.valid_fex = self.fex_b
+                else:
+                    self.logger(level="warning", message="Infra of rack enclosure #" + self.rack_enclosure._parent.id +
+                                                         " not saved because FEX presence confirmed "
+                                                         "but could not be found")
+                    return None
 
         # Canvas settings
         if self.fex_presence:
@@ -1659,21 +1721,24 @@ class UcsSystemDrawInfraRackEnclosure(UcsSystemDrawInfraEquipment):
                 for adapt_port in adaptor.ports:
                     # Search for peer information
                     if hasattr(adapt_port, "peer"):
-                        if "fex" in adapt_port.peer:
-                            return True
+                        if adapt_port.peer:
+                            if "fex" in adapt_port.peer:
+                                return True
             for mgmt_if in server_node._parent.mgmt_interfaces:
                 if hasattr(mgmt_if, "peer"):
-                    if "fex" in mgmt_if.peer:
-                        return True
+                    if mgmt_if.peer:
+                        if "fex" in mgmt_if.peer:
+                            return True
         return False
 
     def _get_fex(self, list):
         fex_id_list = []
         for server_node in self.rack_enclosure.server_nodes_list:
             for mgmt_if in server_node._parent.mgmt_interfaces:
-                if hasattr(mgmt_if, "peer") and mgmt_if.peer is not None:
-                    if "fex" in mgmt_if.peer:
-                        fex_id_list.append(str(mgmt_if.peer["fex"]))
+                if hasattr(mgmt_if, "peer"):
+                    if mgmt_if.peer:
+                        if "fex" in mgmt_if.peer:
+                            fex_id_list.append(str(mgmt_if.peer["fex"]))
         fex_list = [None, None]
         for id in fex_id_list:
             for fex in list:
@@ -2018,7 +2083,7 @@ class UcsSystemDrawInfraRackEnclosure(UcsSystemDrawInfraEquipment):
             for fex in fex_list:
                 for fex_port in fex.fabric_port_list:
                     # Search for peer information
-                    if hasattr(port, 'peer'):
+                    if hasattr(fex_port, 'peer'):
                         peer = fex_port.peer
                     else:
                         peer = fex_port._parent.peer
@@ -2112,50 +2177,51 @@ class UcsSystemDrawInfraRackEnclosure(UcsSystemDrawInfraEquipment):
             # Determine if the rack connection to FEX is dual wire mode (shared-lom) or single wire (sideband)
             for server_node in self.rack_enclosure.server_nodes_list:
                 if server_node._parent.mgmt_connection_type == "shared-lom":
-                    for mgmt_port in server_node.mgmt_if_list:
-                        peer_port_id = mgmt_port.peer['port']
+                    if hasattr(server_node, "mgmt_if_list"):
+                        for mgmt_port in server_node.mgmt_if_list:
+                            peer_port_id = mgmt_port.peer['port']
 
-                        point_rack = mgmt_port.coord[0] + round(mgmt_port.size[0] / 2), mgmt_port.coord[
-                            1] + round(mgmt_port.size[1] / 2)
+                            point_rack = mgmt_port.coord[0] + round(mgmt_port.size[0] / 2), mgmt_port.coord[
+                                1] + round(mgmt_port.size[1] / 2)
 
-                        wire_width = self.WIDTH_WIRE
+                            wire_width = self.WIDTH_WIRE
 
-                        if str(mgmt_port.peer['fex']) == '1':
-                            fex = self.fex_a
-                            fabric = "a"
-                        else:
-                            fex = self.fex_b
-                            fabric = "b"
-                        # Find and calculate coordinates of the peer point on the FEX
-                        point_fex = None
-                        for port in fex.host_port_list:
-                            if int(port.id) == peer_port_id:
-                                # Even / odd
-                                point_fex = port.coord[0] + round(port.size[0] / 3) + (
-                                    peer_port_id + 1) % 2 * round(
-                                    port.size[0] / 3), port.coord[1] + round(
-                                    port.size[1] / 2)
-                                peer_port = port
+                            if str(mgmt_port.peer['fex']) == '1':
+                                fex = self.fex_a
+                                fabric = "a"
+                            else:
+                                fex = self.fex_b
+                                fabric = "b"
+                            # Find and calculate coordinates of the peer point on the FEX
+                            point_fex = None
+                            for port in fex.host_port_list:
+                                if int(port.id) == peer_port_id:
+                                    # Even / odd
+                                    point_fex = port.coord[0] + round(port.size[0] / 3) + (
+                                        peer_port_id + 1) % 2 * round(
+                                        port.size[0] / 3), port.coord[1] + round(
+                                        port.size[1] / 2)
+                                    peer_port = port
 
-                        if point_fex:
-                            # draw_wire(self.draw, point_fi, point_chassis, wire_color, wire_width)
-                            # self.wires.append(UcsSystemDrawWire(self, (point_fi, point_rack), wire_width,
-                            #                                  easyucs_fi_port=port._parent))
-                            if fabric == "a":
-                                if int(mgmt_port.id) % 2:
-                                # if (int(mgmt_port._parent.port_id) % 2) :
-                                    step = self.WIRE_DISTANCE_LONG + round(mgmt_port.size[1] / 2)
-                                else:
-                                    step = self.WIRE_DISTANCE_SHORT + round(mgmt_port.size[1] / 2)
-                            if fabric == "b":
-                                if int(mgmt_port.id) % 2:
-                                    step = - self.WIRE_DISTANCE_SHORT - round(mgmt_port.size[1] / 2)
-                                else:
-                                    step = - self.WIRE_DISTANCE_LONG - round(mgmt_port.size[1] / 2)
-                            target = point_rack[0], point_rack[1] + step
-                            self.wires.append(UcsSystemDrawWire(self, (point_fex, point_rack), wire_width,
-                                                                extra_points=[target],
-                                                                easyucs_fabric_port=peer_port._parent))
-                            # self.wires = remove_not_completed_in_list(self.wires)
-                        else:
-                            self.logger(level="error", message="Peer not found")
+                            if point_fex:
+                                # draw_wire(self.draw, point_fi, point_chassis, wire_color, wire_width)
+                                # self.wires.append(UcsSystemDrawWire(self, (point_fi, point_rack), wire_width,
+                                #                                  easyucs_fi_port=port._parent))
+                                if fabric == "a":
+                                    if int(mgmt_port.id) % 2:
+                                    # if (int(mgmt_port._parent.port_id) % 2) :
+                                        step = self.WIRE_DISTANCE_LONG + round(mgmt_port.size[1] / 2)
+                                    else:
+                                        step = self.WIRE_DISTANCE_SHORT + round(mgmt_port.size[1] / 2)
+                                if fabric == "b":
+                                    if int(mgmt_port.id) % 2:
+                                        step = - self.WIRE_DISTANCE_SHORT - round(mgmt_port.size[1] / 2)
+                                    else:
+                                        step = - self.WIRE_DISTANCE_LONG - round(mgmt_port.size[1] / 2)
+                                target = point_rack[0], point_rack[1] + step
+                                self.wires.append(UcsSystemDrawWire(self, (point_fex, point_rack), wire_width,
+                                                                    extra_points=[target],
+                                                                    easyucs_fabric_port=peer_port._parent))
+                                # self.wires = remove_not_completed_in_list(self.wires)
+                            else:
+                                self.logger(level="error", message="Peer not found")

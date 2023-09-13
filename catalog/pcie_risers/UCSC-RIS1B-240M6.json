@@ -1,0 +1,21 @@
+{
+  "model_short_name": "",
+  "rear_file_name": "UCSC-RIS1B-240M6.png",
+  "rear_file_size": [651,393],
+  "disks_slots": [
+    {
+      "id": 101,
+      "format": "sff_m5",
+      "orientation": "horizontal",
+      "coord": [158, 28],
+      "size": [437,97]
+    },
+    {
+      "id": 102,
+      "format": "sff_m5",
+      "orientation": "horizontal",
+      "coord": [158, 132],
+      "size": [437,97]
+    }
+  ]
+}

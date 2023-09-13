@@ -1,0 +1,171 @@
+{
+   "model_short_name": "9508",
+   "rear_file_name": "UCSX-9508_rear.png",
+   "front_file_name": "UCSX-9508_front.png",
+   "rear_file_size": [2925,1873],
+   "front_file_size": [2925,1869],
+   "io_modules_slots": [
+      {
+         "id": 1,
+         "coord": [472,45]
+      },
+      {
+         "id": 2,
+         "coord": [472,318]
+      }
+   ],
+   "io_modules_models": [
+      {
+         "name": "UCSX-I-9108-25G",
+         "description": "UCS 9108-25G IFM for X9508 chassis"
+      },
+      {
+         "name": "UCSX-I-9108-100G",
+         "description": "UCS 9108-100G IFM for X9508 chassis"
+      },
+      {
+         "name": "UCSX-9508-RBLK",
+         "type": "blank",
+         "description": "UCS 9508 IFM Module Blank"
+      }
+   ],
+   "x_fabric_modules_slots": [
+      {
+         "id": 1,
+         "coord": [472,1271]
+      },
+      {
+         "id": 2,
+         "coord": [472,1545]
+      }
+   ],
+   "x_fabric_modules_models": [
+      {
+         "name": "UCSX-F-9416",
+         "description": "UCS 9416 X-Fabric module for 9508 chassis"
+      },
+      {
+         "name": "UCSX-9508-RBLK",
+         "type": "blank",
+         "description": "UCS X-Fabric Module Blank"
+      }
+   ],
+   "blades_slots": [
+      {
+         "id": 1,
+         "coord": [171,57]
+      },
+      {
+         "id": 2,
+         "coord": [461,57]
+      },
+      {
+         "id": 3,
+         "coord": [751,57]
+      },
+      {
+         "id": 4,
+         "coord": [1041,57]
+      },
+      {
+         "id": 5,
+         "coord": [1331,57]
+      },
+      {
+         "id": 6,
+         "coord": [1621,57]
+      },
+      {
+         "id": 7,
+         "coord": [1911,57]
+      },
+      {
+         "id": 8,
+         "coord": [2201,57]
+      }
+   ],
+   "blades_models": [
+      {
+         "name": "UCSX-210C-M6",
+         "description": "UCS X210c M6 Compute Node",
+         "width": "half"
+      },
+      {
+         "name": "UCSX-210C-M7",
+         "description": "UCS X210c M7 Compute Node",
+         "width": "half"
+      },
+      {
+         "name": "UCSX-440P",
+         "description": "UCS X440P PCIe Node",
+         "width": "half"
+      },
+      {
+         "name": "UCSX-9508-FSBK",
+         "type": "blank",
+         "description": "Blade slot blanking panel for UCS 9508",
+         "width": "half"
+      }
+   ],
+   "psus_slots": [
+      {
+         "id": 1,
+         "coord": [2508,45]
+      },
+      {
+         "id": 2,
+         "coord": [2508,339]
+      },
+      {
+         "id": 3,
+         "coord": [2508,633]
+      },
+      {
+         "id": 4,
+         "coord": [2508,927]
+      },
+      {
+         "id": 5,
+         "coord": [2508,1221]
+      },
+      {
+         "id": 6,
+         "coord": [2508,1515]
+      }
+   ],
+   "psus_models": [
+      {
+         "name": "UCSX-PSU-2800AC",
+         "description": "UCS 9508 Chassis 2800 VAC Dual Voltage PSU"
+      },
+      {
+         "name": "UCSX-9508-PSUBK",
+         "type": "blank",
+         "description": "UCS 9508 Chassis PSU Blank"
+      }
+   ],
+   "imm_compatible": true,
+   "spec_sheet_url": "https://www.cisco.com/c/dam/en/us/products/collateral/servers-unified-computing/ucs-x-series-modular-system/x9508-specsheet.pdf",
+   "data_sheet_url": "https://www.cisco.com/c/en/us/products/collateral/servers-unified-computing/ucs-x-series-modular-system/datasheet-c78-2472574.html",
+   "specs": {
+      "descr": "The Cisco UCS 9508 Modular Server Chassis is a Seven-Rack-Unit (7RU) chassis that can house up to eight Cisco UCS X-Series Nodes and can accommodate both compute and resource nodes.",
+      "form_factor": "7RU",
+      "dimensions": {
+         "centimeters": {
+            "height": 30.6,
+            "width": 44.6,
+            "depth": 90.932
+         },
+         "inches": {
+            "height": 12.05,
+            "width": 17.55,
+            "depth": 35.8
+         },
+         "rack_units": 7
+      },
+      "weight": {
+         "lb": 400,
+         "kg": 163.29
+      }
+   }
+}

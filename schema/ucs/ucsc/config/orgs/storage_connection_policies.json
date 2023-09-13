@@ -1,0 +1,107 @@
+{
+   "id": "ucs_central_config_storage_connection_policies#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS ucs central config orgs storage_connection_policies section",
+   "description": "EasyUCS ucs central config orgs storage_connection_policies section JSON schema",
+   "type": "object",
+   "properties": {
+      "comment": {
+         "description": "Storage Connection Policy Comments",
+         "type": "string",
+         "default": ""
+      },
+      "name": {
+         "description": "Storage Connection Policy Name",
+         "type": "string",
+         "default": "",
+         "pattern": "^[\\-\\.:_a-zA-Z0-9]{1,16}$"
+      },
+      "descr": {
+         "description": "Description of Storage Connection Policy",
+         "type": "string",
+         "default": "",
+         "pattern": "^[ !#$%&\\(\\)\\*\\+,\\-\\./:;\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{0,256}$"
+      },
+      "zoning_type": {
+         "description": "Storage Connection Policy - Zoning Type",
+         "type": "string",
+         "default": "single_initiator_single_target",
+         "enum": [
+            "single_initiator_single_target",
+            "single_initiator_multiple_targets",
+            "none",
+            "simt",
+            "sist"
+         ]
+      },
+      "fc_target_endpoints": {
+         "description": "Storage Connection Policy - FC Target Endpoints",
+         "type": "array",
+         "items": {
+            "type": "object",
+            "properties": {
+               "wwpn": {
+                  "description": "Storage Connection Policy - FC Target Endpoint - WWPN",
+                  "type": "string",
+                  "default": "00:00:00:00:00:00:00:00",
+                  "pattern": "^(([A-Fa-f0-9][A-Fa-f0-9]:){7}[A-Fa-f0-9][A-Fa-f0-9])|0$"
+               },
+               "descr": {
+                  "description": "Storage Connection Policy - FC Target Endpoint - Description",
+                  "type": "string",
+                  "default": "",
+                  "pattern": "^[ !#$%&\\(\\)\\*\\+,\\-\\./:;\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{0,256}$"
+               },
+               "path": {
+                  "description": "Storage Connection Policy - FC Target Endpoint - Path",
+                  "type": "string",
+                  "default": "A",
+                  "enum": [
+                     "A",
+                     "B"
+                  ]
+               },
+               "vsan": {
+                  "description": "Storage Connection Policy - FC Target Endpoint - VSAN",
+                  "type": "string",
+                  "default": "",
+                  "pattern": "^[\\-\\.:_a-zA-Z0-9]{0,32}$"
+               }
+            },
+            "additionalProperties": false,
+            "required": [
+               "wwpn"
+            ]
+         },
+         "minItems": 1
+      },
+      "tags": {
+         "description": "Storage Connection Policy - Tags",
+         "type": "array",
+         "items": {
+            "description": "Storage Connection Policy - Tag",
+            "type": "object",
+            "properties": {
+               "type": {
+                  "description": "Storage Connection Policy - Tag - Type",
+                  "type": "string",
+                  "pattern": "^[ !#$%&\\(\\)\\*\\+,\\-\\.:;=\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{1,32}$"
+               },
+               "value": {
+                  "description": "Storage Connection Policy - Tag - Value",
+                  "type": "string"
+               }
+            },
+            "additionalProperties": false,
+            "required": [
+               "type",
+               "value"
+            ]
+         }
+      }
+   },
+   "additionalProperties": false,
+   "required": [
+      "name"
+   ]
+}

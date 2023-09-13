@@ -45,5 +45,5 @@
     }
   },
   "imm_compatible": true,
-  "imm_min_required_version": "4.1(2a)"
+  "imm_min_required_version": "4.1(3b)"
 }

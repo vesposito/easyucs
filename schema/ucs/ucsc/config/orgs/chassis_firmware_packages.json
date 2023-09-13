@@ -1,0 +1,82 @@
+{
+   "id": "ucs_central_config_chassis_firmware_packages#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS ucs central config orgs chassis_firmware_packages section",
+   "description": "EasyUCS ucs central config orgs chassis_firmware_packages section JSON schema",
+   "type": "object",
+   "properties": {
+      "comment": {
+         "description": "Chassis Firmware Package Comments",
+         "type": "string",
+         "default": ""
+      },
+      "name": {
+         "description": "Chassis Firmware Package Name",
+         "type": "string",
+         "default": "",
+         "pattern": "^[\\-\\.:_a-zA-Z0-9]{1,16}$"
+      },
+      "descr": {
+         "description": "Description of Chassis Firmware Package",
+         "type": "string",
+         "default": "",
+         "pattern": "^[ !#$%&\\(\\)\\*\\+,\\-\\./:;\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{0,256}$"
+      },
+      "chassis_package": {
+         "description": "Chassis Firmware Package Blade Package",
+         "type": "string",
+         "default": ""
+      },
+      "service_pack": {
+         "description": "Chassis Firmware Package Service Pack",
+         "type": "string",
+         "default": ""
+      },
+      "excluded_components": {
+         "description": "Chassis Firmware Package Excluded Components",
+         "type": "array",
+         "items": {
+            "description": "Chassis Firmware Package Excluded Component Item",
+            "type": "string",
+            "enum": [
+               "chassis-board-controller",
+               "cmc",
+               "iocard",
+               "local-disk",
+               "sas-expander",
+               "unspecified",
+               "chassis-management-controller",
+               "chassis-adaptor"
+            ]
+         }
+      },
+      "tags": {
+         "description": "Chassis Firmware Package - Tags",
+         "type": "array",
+         "items": {
+            "description": "Chassis Firmware Package - Tag",
+            "type": "object",
+            "properties": {
+               "type": {
+                  "description": "Chassis Firmware Package - Tag - Type",
+                  "type": "string",
+                  "pattern": "^[ !#$%&\\(\\)\\*\\+,\\-\\.:;=\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{1,32}$"
+               },
+               "value": {
+                  "description": "Chassis Firmware Package - Tag - Value",
+                  "type": "string"
+               }
+            },
+            "additionalProperties": false,
+            "required": [
+               "type",
+               "value"
+            ]
+         }
+      }
+   },
+   "additionalProperties": false,
+   "required": [
+      "name"
+   ]
+}

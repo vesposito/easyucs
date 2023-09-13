@@ -1,0 +1,141 @@
+{
+   "id": "intersight_config_orgs_imc_access_policies#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS intersight config orgs imc_access_policies section",
+   "description": "EasyUCS intersight config orgs imc_access_policies section JSON schema",
+   "type": "object",
+   "properties": {
+      "comment": {
+         "description": "IMC Access Policy Comments",
+         "type": "string",
+         "default": ""
+      },
+      "descr": {
+         "description": "IMC Access Policy Description",
+         "type": "string",
+         "default": "",
+         "pattern": "^$|^[a-zA-Z0-9]+[\\x00-\\xFF]*$",
+         "maxLength": 1024
+      },
+      "name": {
+         "description": "IMC Access Policy Name",
+         "type": "string",
+         "default": "",
+         "pattern": "^[a-zA-Z0-9_.:-]{1,64}$"
+      },
+      "tags": {
+         "description": "IMC Access Policy Tags",
+         "type": "array",
+         "items": {
+            "description": "IMC Access Policy Tag",
+            "type": "object",
+            "properties": {
+               "key": {
+                  "description": "IMC Access Policy Tag Key",
+                  "type": "string",
+                  "default": "",
+                  "minLength": 1,
+                  "maxLength": 128
+               },
+               "value": {
+                  "description": "IMC Access Policy Tag Value",
+                  "type": "string",
+                  "default": "",
+                  "minLength": 0,
+                  "maxLength": 256
+               }
+            },
+            "additionalProperties": false,
+            "required": [
+               "key",
+               "value"
+            ]
+         },
+         "minItems": 1
+      },
+      "inband_configuration": {
+         "description": "IMC Access Policy Inband Configuration",
+         "type": "boolean",
+         "default": true
+      },
+      "inband_ip_pool": {
+         "description": "IMC Access Policy Inband IP Pool",
+         "type": "string",
+         "default": ""
+      },
+      "inband_vlan_id": {
+         "description": "IMC Access Policy Inband VLAN ID",
+         "type": "integer",
+         "default": 4,
+         "minimum": 4,
+         "maximum": 4093
+      },
+      "ipv4_address_configuration": {
+         "description": "IMC Access Policy IPv4 Address Configuration",
+         "type": "boolean",
+         "default": true
+      },
+      "ipv6_address_configuration": {
+         "description": "IMC Access Policy IPv6 Address Configuration",
+         "type": "boolean",
+         "default": false
+      },
+      "out_of_band_configuration": {
+         "description": "IMC Access Policy Out-of-band Configuration",
+         "type": "boolean",
+         "default": false
+      },
+      "out_of_band_ip_pool": {
+         "description": "IMC Access Policy Out of Band IP Pool",
+         "type": "string",
+         "default": ""
+      }
+   },
+   "additionalProperties": false,
+   "required": [
+      "name"
+   ],
+   "allOf": [
+      {
+         "$comment": "Below is for setting constraints for inband_configuration attribute set to true",
+         "if": {
+            "properties": {
+               "inband_configuration": {
+                  "enum": [
+                     true
+                  ]
+               }
+            },
+            "required": [
+               "inband_configuration"
+            ]
+         },
+         "then": {
+            "required": [
+               "inband_ip_pool",
+               "inband_vlan_id"
+            ]
+         }
+      },
+      {
+         "$comment": "Below is for setting constraints for out_of_band_configuration attribute set to true",
+         "if": {
+            "properties": {
+               "out_of_band_configuration": {
+                  "enum": [
+                     true
+                  ]
+               }
+            },
+            "required": [
+               "out_of_band_configuration"
+            ]
+         },
+         "then": {
+            "required": [
+               "out_of_band_ip_pool"
+            ]
+         }
+      }
+   ]
+}

@@ -1,18 +1,18 @@
 {
-   "id":"ucs_system_config_locales#",
-   "$schema":"http://json-schema.org/draft-07/schema#",
-   "title":"EasyUCS ucs system config locales section",
-   "description":"EasyUCS ucs system config locales section JSON schema",
-   "type":"object",
-   "properties":{
+   "id": "ucs_system_config_locales#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS ucs system config locales section",
+   "description": "EasyUCS ucs system config locales section JSON schema",
+   "type": "object",
+   "properties": {
       "comment": {
          "description": "Locale Comments",
          "type": "string",
          "default": ""
       },
-      "name":{
-         "description":"Locale Name",
-         "type":"string",
+      "name": {
+         "description": "Locale Name",
+         "type": "string",
          "default": "",
          "pattern": "^[\\-\\.:_a-zA-Z0-9]{1,16}$"
       },
@@ -21,6 +21,13 @@
          "type": "string",
          "default": "",
          "pattern": "^[ !#$%&\\(\\)\\*\\+,\\-\\./:;\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{0,256}$"
+      },
+      "policy_owner": {
+         "description": "Locale Owner (for UCS Central)",
+         "type": "string",
+         "enum": [
+            "ucs-central"
+         ]
       },
       "organizations": {
          "description": "Organizations assigned to the Locale",
@@ -34,8 +41,8 @@
          "minItems": 1
       }
    },
-   "required":[
+   "required": [
       "name"
    ],
-   "additionalProperties":false
+   "additionalProperties": false
 }

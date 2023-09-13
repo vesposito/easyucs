@@ -24,14 +24,14 @@ class GenericDeviceConnector(GenericInventoryObject):
                     response = requests.get(uri, verify=False, headers=auth_header)
                     return response.json()
                 except Exception as err:
-                    print(err)
-                    self.logger(level="error", message="Couldn't request the device connector informations to the API")
+                    self.logger(level="error", message="Couldn't request the device connector information " +
+                                                       "from the API for inventory: " + str(err))
             else:
                 self.logger(level="error",
-                            message="No login cookie, no request can be made to find device connector informations")
+                            message="No login cookie, no request can be made to find device connector information")
         else:
             self.logger(level="error",
-                        message="No login cookie, no request can be made to find device connector informations")
+                        message="No login cookie, no request can be made to find device connector information")
 
     def get_attribute(self, ucs_sdk_object=None, attribute_name=None, attribute_secondary_name=None,
                       attribute_type=None):

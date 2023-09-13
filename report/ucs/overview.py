@@ -3,7 +3,6 @@
 
 """ overview.py: Easy UCS Deployment Tool """
 
-from report.content import *
 from report.ucs.section import UcsReportSection
 from report.ucs.table import UcsReportTable
 
@@ -32,7 +31,7 @@ class UcsSystemClusterInfoReportTable(UcsReportTable):
         config_mng_int = config.management_interfaces[0]
 
         rows = [[_("Description"), _("Value")], [_("System Name"), config_system.name],
-                [_("Version"), config.device_version], [_("Cluster IP Address"), config_system.virtual_ip],
+                [_("Version"), config.metadata.device_version], [_("Cluster IP Address"), config_system.virtual_ip],
                 [_("Netmask"), config_mng_int.netmask], [_("Gateway"), config_mng_int.gateway]]
         # Cluster info
         if config_system.virtual_ipv6 and config_system.virtual_ipv6 not in ["::"]:
@@ -153,7 +152,7 @@ class UcsImcInfoReportTable(UcsReportTable):
         config_admin_networking = config.admin_networking[0]
 
         rows = [[_("Description"), _("Value")], [_("System Name"), config_admin_networking.management_hostname],
-                [_("Version"), config.device_version],
+                [_("Version"), config.metadata.device_version],
                 [_("IP Address"), config_admin_networking.management_ipv4_address],
                 [_("Netmask"), config_admin_networking.management_subnet_mask],
                 [_("Gateway"), config_admin_networking.gateway_ipv4],

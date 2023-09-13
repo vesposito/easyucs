@@ -1,0 +1,124 @@
+{
+   "id": "intersight_config_orgs_sd_card_policies#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS intersight config orgs sd_card_policies section",
+   "description": "EasyUCS intersight config orgs sd_card_policies section JSON schema",
+   "type": "object",
+   "properties": {
+      "comment": {
+         "description": "SD Card Policy Comments",
+         "type": "string",
+         "default": ""
+      },
+      "descr": {
+         "description": "SD Card Policy Description",
+         "type": "string",
+         "default": "",
+         "pattern": "^$|^[a-zA-Z0-9]+[\\x00-\\xFF]*$",
+         "maxLength": 1024
+      },
+      "name": {
+         "description": "SD Card Policy Name",
+         "type": "string",
+         "default": "",
+         "pattern": "^[a-zA-Z0-9_.:-]{1,64}$"
+      },
+      "tags": {
+         "description": "SD Card Policy Tags",
+         "type": "array",
+         "items": {
+            "description": "SD Card Policy Tag",
+            "type": "object",
+            "properties": {
+               "key": {
+                  "description": "SD Card Policy Tag Key",
+                  "type": "string",
+                  "default": "",
+                  "minLength": 1,
+                  "maxLength": 128
+               },
+               "value": {
+                  "description": "SD Card Policy Tag Value",
+                  "type": "string",
+                  "default": "",
+                  "minLength": 0,
+                  "maxLength": 256
+               }
+            },
+            "additionalProperties": false,
+            "required": [
+               "key",
+               "value"
+            ]
+         },
+         "minItems": 1
+      },
+      "partitions": {
+         "description": "SD Card Policy Partitions",
+         "type": "array",
+         "items": {
+            "description": "SD Card Policy Partition",
+            "type": "object",
+            "properties": {
+               "type": {
+                  "description": "SD Card Policy Partition Type",
+                  "type": "string",
+                  "enum": [
+                     "OS",
+                     "Utility"
+                  ]
+               },
+               "virtual_drives": {
+                  "description": "SD Card Policy Partition Drive",
+                  "type": "array",
+                  "items": {
+                     "description": "",
+                     "type": "object",
+                     "properties": {
+                        "enable": {
+                           "description": "SD Card Policy Partition VD State",
+                           "type": "boolean",
+                           "default": true
+                        },
+                        "name": {
+                           "description": "SD Card Policy Partition Name",
+                           "type": "string",
+                           "default": "",
+                           "minLength": 0,
+                           "maxLength": 15
+                        },
+                        "object_type": {
+                           "description": "SD Card Policy Partition Object Type",
+                           "type": "string",
+                           "enum": [
+                              "Operating_System",
+                              "Diagnostics",
+                              "Drivers",
+                              "Host_Upgrade_Utility",
+                              "Server_Configuration_Utility",
+                              "User_Partition"
+                           ]
+                        }
+                     }
+                  },
+                  "additionalProperties": false,
+                  "required": [
+                     "enable",
+                     "object_type"
+                  ]
+               }
+            },
+            "additionalProperties": false,
+            "required": [
+               "type",
+               "virtual_drives"
+            ]
+         },
+         "minItems": 1
+      }
+   },
+   "additionalProperties": false,
+   "required": [
+      "name"
+   ]
+}

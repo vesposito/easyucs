@@ -1,0 +1,375 @@
+{
+   "id": "ucs_central_config_san_connectivity_policies#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS ucs central config orgs san_connectivity_policies section",
+   "description": "EasyUCS ucs central config orgs san_connectivity_policies section JSON schema",
+   "type": "object",
+   "properties": {
+      "comment": {
+         "description": "SAN Connectivity Policy Comments",
+         "type": "string",
+         "default": ""
+      },
+      "name": {
+         "description": "SAN Connectivity Policy Name",
+         "type": "string",
+         "default": "",
+         "pattern": "^[\\-\\.:_a-zA-Z0-9]{1,16}$"
+      },
+      "descr": {
+         "description": "Description of SAN Connectivity Policy",
+         "type": "string",
+         "default": "",
+         "pattern": "^[ !#$%&\\(\\)\\*\\+,\\-\\./:;\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{0,256}$"
+      },
+      "wwnn_pool": {
+         "description": "SAN Connectivity Policy - WWNN Pool",
+         "type": "string",
+         "default": ""
+      },
+      "vhbas": {
+         "description": "SAN Connectivity Policy - vHBAs",
+         "type": "array",
+         "items": {
+            "type": "object",
+            "oneOf": [
+               {
+                  "properties": {
+                     "name": {
+                        "description": "SAN Connectivity Policy - vHBA - Name",
+                        "type": "string",
+                        "default": "",
+                        "pattern": "^[\\-\\.:_a-zA-Z0-9]{1,16}$"
+                     },
+                     "adapter_policy": {
+                        "description": "SAN Connectivity Policy - vHBA - Adapter Policy",
+                        "type": "string",
+                        "default": "",
+                        "pattern": "^[\\-\\.:_a-zA-Z0-9]{0,16}$"
+                     },
+                     "order": {
+                        "description": "SAN Connectivity Policy - vHBA - Order",
+                        "type": "string",
+                        "default": "0",
+                        "pattern": "^[0-9]$|^[1-9][0-9]$|^1[0-9][0-9]$|^2[0-4][0-9]$|^25[0-6]$|^unspecified$"
+                     },
+                     "vhba_template": {
+                        "description": "SAN Connectivity Policy - vHBA - Template",
+                        "type": "string",
+                        "default": "",
+                        "pattern": "^[\\-\\.:_a-zA-Z0-9]{0,16}$"
+                     },
+                     "operational_state": {
+                        "description": "SAN Connectivity Policy - vHBA - Operational State of the vHBA",
+                        "type": "object",
+                        "properties": {
+                           "adapter_policy": {
+                              "description": "SAN Connectivity Policy - vHBA - Operational State - Adapter Policy",
+                              "type": "object",
+                              "properties": {
+                                 "name": {
+                                    "description": "SAN Connectivity Policy - vHBA - Operational State - Adapter Policy - Name",
+                                    "type": "string",
+                                    "default": ""
+                                 },
+                                 "org": {
+                                    "description": "SAN Connectivity Policy - vHBA - Operational State - Adapter Policy - Org",
+                                    "type": "string",
+                                    "default": ""
+                                 }
+                              },
+                              "additionalProperties": false,
+                              "required": [
+                                 "name",
+                                 "org"
+                              ]
+                           },
+                           "qos_policy": {
+                              "description": "SAN Connectivity Policy - vHBA - Operational State - QoS Policy",
+                              "type": "object",
+                              "properties": {
+                                 "name": {
+                                    "description": "SAN Connectivity Policy - vHBA - Operational State - QoS Policy - Name",
+                                    "type": "string",
+                                    "default": ""
+                                 },
+                                 "org": {
+                                    "description": "SAN Connectivity Policy - vHBA - Operational State - QoS Policy - Org",
+                                    "type": "string",
+                                    "default": ""
+                                 }
+                              },
+                              "additionalProperties": false,
+                              "required": [
+                                 "name",
+                                 "org"
+                              ]
+                           },
+                           "stats_threshold_policy": {
+                              "description": "SAN Connectivity Policy - vHBA - Operational State - Stats Threshold Policy",
+                              "type": "object",
+                              "properties": {
+                                 "name": {
+                                    "description": "SAN Connectivity Policy - vHBA - Operational State - Stats Threshold Policy - Name",
+                                    "type": "string",
+                                    "default": ""
+                                 },
+                                 "org": {
+                                    "description": "SAN Connectivity Policy - vHBA - Operational State - Stats Threshold Policy - Org",
+                                    "type": "string",
+                                    "default": ""
+                                 }
+                              },
+                              "additionalProperties": false,
+                              "required": [
+                                 "name",
+                                 "org"
+                              ]
+                           },
+                           "vhba_template": {
+                              "description": "SAN Connectivity Policy - vHBA - Operational State - vHBA Template",
+                              "type": "object",
+                              "properties": {
+                                 "name": {
+                                    "description": "SAN Connectivity Policy - vHBA - Operational State - vHBA Template - Name",
+                                    "type": "string",
+                                    "default": ""
+                                 },
+                                 "org": {
+                                    "description": "SAN Connectivity Policy - vHBA - Operational State - vHBA Template - Org",
+                                    "type": "string",
+                                    "default": ""
+                                 }
+                              },
+                              "additionalProperties": false,
+                              "required": [
+                                 "name",
+                                 "org"
+                              ]
+                           }
+                        },
+                        "additionalProperties": false
+                     }
+                  },
+                  "additionalProperties": false,
+                  "required": [
+                     "name"
+                  ]
+               },
+               {
+                  "properties": {
+                     "name": {
+                        "description": "SAN Connectivity Policy - vHBA - Name",
+                        "type": "string",
+                        "default": "",
+                        "pattern": "^[\\-\\.:_a-zA-Z0-9]{1,16}$"
+                     },
+                     "adapter_policy": {
+                        "description": "SAN Connectivity Policy - vHBA - Adapter Policy",
+                        "type": "string",
+                        "default": "",
+                        "pattern": "^[\\-\\.:_a-zA-Z0-9]{0,16}$"
+                     },
+                     "order": {
+                        "description": "SAN Connectivity Policy - vHBA - Order",
+                        "type": "string",
+                        "default": "0",
+                        "pattern": "^[0-9]$|^[1-9][0-9]$|^1[0-9][0-9]$|^2[0-4][0-9]$|^25[0-6]$|^unspecified$"
+                     },
+                     "fabric": {
+                        "description": "SAN Connectivity Policy - vHBA - Fabric",
+                        "type": "string",
+                        "default": "A",
+                        "enum": [
+                           "A",
+                           "B"
+                        ]
+                     },
+                     "wwpn_pool": {
+                        "description": "SAN Connectivity Policy - vHBA - WWPN Pool",
+                        "type": "string"
+                     },
+                     "persistent_binding": {
+                        "description": "SAN Connectivity Policy - vHBA - Persistent Binding",
+                        "type": "string",
+                        "default": "disabled",
+                        "enum": [
+                           "disabled",
+                           "enabled"
+                        ]
+                     },
+                     "max_data_field_size": {
+                        "description": "SAN Connectivity Policy - vHBA - Max Data Field Size",
+                        "type": "string",
+                        "default": "2048",
+                        "pattern": "^25[6-9]$|^2[6-9][0-9]$|^[3-9][0-9][0-9]$|^1[0-9][0-9][0-9]$|^20[0-9][0-9]$|^210[0-9]$|^211[0-2]$"
+                     },
+                     "qos_policy": {
+                        "description": "SAN Connectivity Policy - vHBA - QoS Policy",
+                        "type": "string",
+                        "pattern": "^[\\-\\.:_a-zA-Z0-9]{0,16}$"
+                     },
+                     "stats_threshold_policy": {
+                        "description": "SAN Connectivity Policy - vHBA - Stats Threshold Policy",
+                        "type": "string",
+                        "default": "default",
+                        "pattern": "^[\\-\\.:_a-zA-Z0-9]{0,16}$"
+                     },
+                     "vsan": {
+                        "description": "SAN Connectivity Policy - vHBA - VSAN",
+                        "type": "string",
+                        "default": "",
+                        "pattern": "^[\\-\\.:_a-zA-Z0-9]{0,32}$"
+                     },
+                     "operational_state": {
+                        "description": "SAN Connectivity Policy - vHBA - Operational State of the vHBA",
+                        "type": "object",
+                        "properties": {
+                           "adapter_policy": {
+                              "description": "SAN Connectivity Policy - vHBA - Operational State - Adapter Policy",
+                              "type": "object",
+                              "properties": {
+                                 "name": {
+                                    "description": "SAN Connectivity Policy - vHBA - Operational State - Adapter Policy - Name",
+                                    "type": "string",
+                                    "default": ""
+                                 },
+                                 "org": {
+                                    "description": "SAN Connectivity Policy - vHBA - Operational State - Adapter Policy - Org",
+                                    "type": "string",
+                                    "default": ""
+                                 }
+                              },
+                              "additionalProperties": false,
+                              "required": [
+                                 "name",
+                                 "org"
+                              ]
+                           },
+                           "qos_policy": {
+                              "description": "SAN Connectivity Policy - vHBA - Operational State - QoS Policy",
+                              "type": "object",
+                              "properties": {
+                                 "name": {
+                                    "description": "SAN Connectivity Policy - vHBA - Operational State - QoS Policy - Name",
+                                    "type": "string",
+                                    "default": ""
+                                 },
+                                 "org": {
+                                    "description": "SAN Connectivity Policy - vHBA - Operational State - QoS Policy - Org",
+                                    "type": "string",
+                                    "default": ""
+                                 }
+                              },
+                              "additionalProperties": false,
+                              "required": [
+                                 "name",
+                                 "org"
+                              ]
+                           },
+                           "stats_threshold_policy": {
+                              "description": "SAN Connectivity Policy - vHBA - Operational State - Stats Threshold Policy",
+                              "type": "object",
+                              "properties": {
+                                 "name": {
+                                    "description": "SAN Connectivity Policy - vHBA - Operational State - Stats Threshold Policy - Name",
+                                    "type": "string",
+                                    "default": ""
+                                 },
+                                 "org": {
+                                    "description": "SAN Connectivity Policy - vHBA - Operational State - Stats Threshold Policy - Org",
+                                    "type": "string",
+                                    "default": ""
+                                 }
+                              },
+                              "additionalProperties": false,
+                              "required": [
+                                 "name",
+                                 "org"
+                              ]
+                           }
+                        },
+                        "additionalProperties": false
+                     }
+                  },
+                  "additionalProperties": false,
+                  "required": [
+                     "name"
+                  ]
+               }
+            ]
+         },
+         "minItems": 1
+      },
+      "vhba_initiator_groups": {
+         "description": "SAN Connectivity Policy - vHBA Initiator Groups",
+         "type": "array",
+         "items": {
+            "type": "object",
+            "properties": {
+               "name": {
+                  "description": "SAN Connectivity Policy - vHBA Initiator Group - Name",
+                  "type": "string",
+                  "default": "",
+                  "pattern": "^[\\-\\.:_a-zA-Z0-9]{1,16}$"
+               },
+               "descr": {
+                  "description": "SAN Connectivity Policy - vHBA Initiator Group - Description",
+                  "type": "string",
+                  "default": "",
+                  "pattern": "^[ !#$%&\\(\\)\\*\\+,\\-\\./:;\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{0,256}$"
+               },
+               "storage_connection_policy": {
+                  "description": "SAN Connectivity Policy - vHBA Initiator Group - Storage Connection Policy",
+                  "type": "string",
+                  "default": "",
+                  "pattern": "^[\\-\\.:_a-zA-Z0-9]{0,16}$"
+               },
+               "initiators": {
+                  "description": "SAN Connectivity Policy - vHBA Initiator Group - Initiators",
+                  "type": "array",
+                  "items": {
+                     "description": "SAN Connectivity Policy - vHBA Initiator Group - Initiators",
+                     "type": "string",
+                     "default": "",
+                     "pattern": "^[\\-\\.:_a-zA-Z0-9]{1,16}$"
+                  }
+               }
+            },
+            "additionalProperties": false,
+            "required": [
+               "name"
+            ]
+         },
+         "minItems": 1
+      },
+      "tags": {
+         "description": "SAN Connectivity Policy - Tags",
+         "type": "array",
+         "items": {
+            "description": "SAN Connectivity Policy - Tag",
+            "type": "object",
+            "properties": {
+               "type": {
+                  "description": "SAN Connectivity Policy - Tag - Type",
+                  "type": "string",
+                  "pattern": "^[ !#$%&\\(\\)\\*\\+,\\-\\.:;=\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{1,32}$"
+               },
+               "value": {
+                  "description": "SAN Connectivity Policy - Tag - Value",
+                  "type": "string"
+               }
+            },
+            "additionalProperties": false,
+            "required": [
+               "type",
+               "value"
+            ]
+         }
+      }
+   },
+   "additionalProperties": false,
+   "required": [
+      "name"
+   ]
+}

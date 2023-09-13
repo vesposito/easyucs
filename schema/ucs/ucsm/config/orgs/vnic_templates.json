@@ -20,7 +20,7 @@
          "description": "vNIC Template - Fabric",
          "type": "string",
          "default": "A",
-         "enum":  [
+         "enum": [
             "A",
             "A-B",
             "B",
@@ -32,6 +32,13 @@
          "type": "string",
          "default": "",
          "pattern": "^[ !#$%&\\(\\)\\*\\+,\\-\\./:;\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{0,256}$"
+      },
+      "policy_owner": {
+         "description": "vNIC Template Owner (for UCS Central)",
+         "type": "string",
+         "enum": [
+            "ucs-central"
+         ]
       },
       "redundancy_type": {
          "description": "vNIC Template - Redundancy Pair Type",
@@ -78,7 +85,11 @@
             "description": "vNIC Template - Target",
             "type": "string",
             "default": "adaptor",
-            "enum": ["adaptor", "adapter", "vm"]
+            "enum": [
+               "adaptor",
+               "adapter",
+               "vm"
+            ]
          }
       },
       "mtu": {
@@ -87,8 +98,8 @@
          "default": "1500",
          "pattern": "^1[5-9][0-9][0-9]$|^[2-8][0-9][0-9][0-9]$|^9000$"
       },
-      "mac_pool": {
-         "description": "vNIC Template - MAC Pool",
+      "mac_address_pool": {
+         "description": "vNIC Template - MAC Address Pool",
          "type": "string",
          "default": ""
       },
@@ -123,7 +134,11 @@
          "description": "vNIC Template - Connection Policy",
          "type": "string",
          "default": "dynamic-vnic",
-         "enum": ["dynamic-vnic", "usnic", "vmq"]
+         "enum": [
+            "dynamic-vnic",
+            "usnic",
+            "vmq"
+         ]
       },
       "connection_policy_name": {
          "description": "vNIC Template - Connection Policy Name",
@@ -156,6 +171,118 @@
             "default": "",
             "pattern": "^[\\-\\.:_a-zA-Z0-9]{1,32}$"
          }
+      },
+      "operational_state": {
+         "description": "vNIC Template - Operational State",
+         "type": "object",
+         "properties": {
+            "connection_policy": {
+               "description": "vNIC Template - Operational State - Connection Policy",
+               "type": "object",
+               "properties": {
+                  "name": {
+                     "description": "vNIC Template - Operational State - Connection Policy - Name",
+                     "type": "string",
+                     "default": ""
+                  },
+                  "org": {
+                     "description": "vNIC Template - Operational State - Connection Policy - Org",
+                     "type": "string",
+                     "default": ""
+                  }
+               },
+               "additionalProperties": false,
+               "required": [
+                  "name",
+                  "org"
+               ]
+            },
+            "network_control_policy": {
+               "description": "vNIC Template - Operational State - Network Control Policy",
+               "type": "object",
+               "properties": {
+                  "name": {
+                     "description": "vNIC Template - Operational State - Network Control Policy - Name",
+                     "type": "string",
+                     "default": ""
+                  },
+                  "org": {
+                     "description": "vNIC Template - Operational State - Network Control Policy - Org",
+                     "type": "string",
+                     "default": ""
+                  }
+               },
+               "additionalProperties": false,
+               "required": [
+                  "name",
+                  "org"
+               ]
+            },
+            "peer_redundancy_template": {
+               "description": "vNIC Template - Operational State - Peer Redundancy Template",
+               "type": "object",
+               "properties": {
+                  "name": {
+                     "description": "vNIC Template - Operational State - Peer Redundancy Template - Name",
+                     "type": "string",
+                     "default": ""
+                  },
+                  "org": {
+                     "description": "vNIC Template - Operational State - Peer Redundancy Template - Org",
+                     "type": "string",
+                     "default": ""
+                  }
+               },
+               "additionalProperties": false,
+               "required": [
+                  "name",
+                  "org"
+               ]
+            },
+            "qos_policy": {
+               "description": "vNIC Template - Operational State - QoS Policy",
+               "type": "object",
+               "properties": {
+                  "name": {
+                     "description": "vNIC Template - Operational State - QoS Policy - Name",
+                     "type": "string",
+                     "default": ""
+                  },
+                  "org": {
+                     "description": "vNIC Template - Operational State - QoS Policy - Org",
+                     "type": "string",
+                     "default": ""
+                  }
+               },
+               "additionalProperties": false,
+               "required": [
+                  "name",
+                  "org"
+               ]
+            },
+            "stats_threshold_policy": {
+               "description": "vNIC Template - Operational State - Stats Threshold Policy",
+               "type": "object",
+               "properties": {
+                  "name": {
+                     "description": "vNIC Template - Operational State - Stats Threshold Policy - Name",
+                     "type": "string",
+                     "default": ""
+                  },
+                  "org": {
+                     "description": "vNIC Template - Operational State - Stats Threshold Policy - Org",
+                     "type": "string",
+                     "default": ""
+                  }
+               },
+               "additionalProperties": false,
+               "required": [
+                  "name",
+                  "org"
+               ]
+            }
+         },
+         "additionalProperties": false
       }
    },
    "additionalProperties": false,

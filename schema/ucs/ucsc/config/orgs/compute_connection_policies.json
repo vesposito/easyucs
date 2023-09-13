@@ -1,0 +1,63 @@
+{
+   "id": "ucs_central_config_compute_connection_policies#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS ucs central config compute_connection_policies section",
+   "description": "EasyUCS ucs central config compute_connection_policies section JSON schema",
+   "type": "object",
+   "properties": {
+      "comment": {
+         "description": "Compute Connection Policy Comments",
+         "type": "string",
+         "default": ""
+      },
+      "name": {
+         "description": "Compute Connection Policy Name",
+         "type": "string",
+         "default": "",
+         "pattern": "^[\\-\\.:_a-zA-Z0-9]{1,16}$"
+      },
+      "descr": {
+         "description": "Description of Compute Connection Policy",
+         "type": "string",
+         "default": "",
+         "pattern": "^[ !#$%&\\(\\)\\*\\+,\\-\\./:;\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{0,256}$"
+      },
+      "server_sioc_connectivity": {
+         "description": "Server SIOC Connectivity of Compute Connection Policy",
+         "type": "string",
+         "default": "single-server-single-sioc",
+         "enum": [
+            "single-server-dual-sioc",
+            "single-server-single-sioc"
+         ]
+      },
+      "tags": {
+         "description": "Compute Connection Policy - Tags",
+         "type": "array",
+         "items": {
+            "description": "Compute Connection Policy - Tag",
+            "type": "object",
+            "properties": {
+               "type": {
+                  "description": "Compute Connection Policy - Tag - Type",
+                  "type": "string",
+                  "pattern": "^[ !#$%&\\(\\)\\*\\+,\\-\\.:;=\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{1,32}$"
+               },
+               "value": {
+                  "description": "Compute Connection Policy - Tag - Value",
+                  "type": "string"
+               }
+            },
+            "additionalProperties": false,
+            "required": [
+               "type",
+               "value"
+            ]
+         }
+      }
+   },
+   "additionalProperties": false,
+   "required": [
+      "name"
+   ]
+}

@@ -1,51 +1,51 @@
 {
-   "id":"ucs_system_config_unified_storage_ports#",
-   "$schema":"http://json-schema.org/draft-07/schema#",
-   "title":"EasyUCS ucs system config unified_storage_ports section",
-   "description":"EasyUCS ucs system config unified_storage_ports section JSON schema",
-   "type":"object",
-   "properties":{
+   "id": "ucs_system_config_unified_storage_ports#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS ucs system config unified_storage_ports section",
+   "description": "EasyUCS ucs system config unified_storage_ports section JSON schema",
+   "type": "object",
+   "properties": {
       "comment": {
          "description": "Unified Storage Port Comments",
          "type": "string",
          "default": ""
       },
-      "fabric":{
-         "description":"Fabric ID of Unified Storage Port (\"A\" or \"B\")",
-         "type":"string",
-         "enum":[
+      "fabric": {
+         "description": "Fabric ID of Unified Storage Port (\"A\" or \"B\")",
+         "type": "string",
+         "enum": [
             "a",
             "A",
             "b",
             "B"
          ]
       },
-      "slot_id":{
-         "description":"Slot ID of Unified Storage Port",
-         "type":"string",
-         "pattern":"^[1-4]$"
+      "slot_id": {
+         "description": "Slot ID of Unified Storage Port",
+         "type": "string",
+         "pattern": "^[1-4]$"
       },
-      "port_id":{
-         "description":"Port ID of Unified Storage Port",
-         "type":"string",
-         "pattern":"^[1-9]$|^[1-9][0-9]$|^10[0-8]$"
+      "port_id": {
+         "description": "Port ID of Unified Storage Port",
+         "type": "string",
+         "pattern": "^[1-9]$|^[1-9][0-9]$|^10[0-8]$"
       },
-      "aggr_id":{
-         "description":"Aggregate ID of Unified Storage Port (for Breakout Ports)",
-         "type":"string",
-         "pattern":"^[1-4]$"
+      "aggr_id": {
+         "description": "Aggregate ID of Unified Storage Port (for Breakout Ports)",
+         "type": "string",
+         "pattern": "^[1-4]$"
       },
-      "user_label":{
-         "description":"User Label of Unified Storage Port",
-         "type":"string",
-         "default":"",
-         "pattern":"^[ !#$%&\\(\\)\\*\\+,\\-\\./:;\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{0,32}$"
+      "user_label": {
+         "description": "User Label of Unified Storage Port",
+         "type": "string",
+         "default": "",
+         "pattern": "^[ !#$%&\\(\\)\\*\\+,\\-\\./:;\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{0,32}$"
       },
-      "priority":{
-         "description":"Priority of Unified Storage Port",
-         "type":"string",
-         "default":"best-effort",
-         "enum":[
+      "priority": {
+         "description": "Priority of Unified Storage Port",
+         "type": "string",
+         "default": "best-effort",
+         "enum": [
             "best-effort",
             "bronze",
             "fc",
@@ -54,90 +54,90 @@
             "silver"
          ]
       },
-      "pin_group":{
-         "description":"LAN Pin Group of Unified Storage Port",
-         "type":"string"
+      "pin_group": {
+         "description": "LAN Pin Group of Unified Storage Port",
+         "type": "string"
       },
-      "network_control_policy":{
-         "description":"Network Control Policy of Unified Storage Port",
-         "type":"string",
-         "pattern":"^[\\-\\.:_a-zA-Z0-9]{0,16}$"
+      "network_control_policy": {
+         "description": "Network Control Policy of Unified Storage Port",
+         "type": "string",
+         "pattern": "^[\\-\\.:_a-zA-Z0-9]{0,16}$"
       },
-      "flow_control_policy":{
-         "description":"Flow Control Policy of Unified Storage Port",
-         "type":"string",
-         "pattern":"^[\\-\\.:_a-zA-Z0-9]{0,16}$"
+      "flow_control_policy": {
+         "description": "Flow Control Policy of Unified Storage Port",
+         "type": "string",
+         "pattern": "^[\\-\\.:_a-zA-Z0-9]{0,16}$"
       },
-      "admin_speed":{
-         "description":"Admin Speed of Unified Storage Port",
-         "type":"string",
-         "enum":[
+      "admin_speed": {
+         "description": "Admin Speed of Unified Storage Port",
+         "type": "string",
+         "enum": [
             "1gbps",
             "10gbps",
             "40gbps"
          ]
       },
-      "vlan_port_mode":{
-         "description":"VLAN Port Mode of Unified Storage Port",
-         "type":"string",
-         "default":"trunk",
-         "enum":[
+      "vlan_port_mode": {
+         "description": "VLAN Port Mode of Unified Storage Port",
+         "type": "string",
+         "default": "trunk",
+         "enum": [
             "access",
             "trunk"
          ]
       },
-      "appliance_vlans":{
-         "description":"VLAN Name(s) assigned to Unified Storage Port",
-         "type":"array",
-         "items":{
-            "description":"VLAN Name assigned to Unified Storage Port",
-            "type":"string",
-            "pattern":"^[\\-\\.:_a-zA-Z0-9]{1,32}$"
+      "appliance_vlans": {
+         "description": "VLAN Name(s) assigned to Unified Storage Port",
+         "type": "array",
+         "items": {
+            "description": "VLAN Name assigned to Unified Storage Port",
+            "type": "string",
+            "pattern": "^[\\-\\.:_a-zA-Z0-9]{1,32}$"
          },
-         "minItems":1
+         "minItems": 1
       },
-      "native_vlan":{
-         "description":"(Optional) VLAN Name of native VLAN assigned to Unified Storage Port",
-         "type":"string",
-         "pattern":"^[\\-\\.:_a-zA-Z0-9]{1,32}$"
+      "native_vlan": {
+         "description": "(Optional) VLAN Name of native VLAN assigned to Unified Storage Port",
+         "type": "string",
+         "pattern": "^[\\-\\.:_a-zA-Z0-9]{1,32}$"
       },
-      "ethernet_target_endpoint":{
-         "description":"Ethernet Target Endpoint list of Unified Storage Port",
-         "type":"array",
-         "items":{
-            "description":"Ethernet Target Endpoint of Unified Storage Port",
-            "type":"object",
-            "properties":{
-               "name":{
-                  "description":"Name of Ethernet Target Endpoint of Unified Storage Port",
-                  "type":"string",
-                  "pattern":"^[\\-\\.:_a-zA-Z0-9]{1,16}$"
+      "ethernet_target_endpoint": {
+         "description": "Ethernet Target Endpoint list of Unified Storage Port",
+         "type": "array",
+         "items": {
+            "description": "Ethernet Target Endpoint of Unified Storage Port",
+            "type": "object",
+            "properties": {
+               "name": {
+                  "description": "Name of Ethernet Target Endpoint of Unified Storage Port",
+                  "type": "string",
+                  "pattern": "^[\\-\\.:_a-zA-Z0-9]{1,16}$"
                },
-               "mac_address":{
-                  "description":"MAC Address of Ethernet Target Endpoint of Unified Storage Port",
-                  "type":"string",
-                  "default":"00:00:00:00:00:00",
-                  "pattern":"^(([0-9a-fA-F][0-9a-fA-F]:){5}([0-9a-fA-F][0-9a-fA-F]))$|^0$"
+               "mac_address": {
+                  "description": "MAC Address of Ethernet Target Endpoint of Unified Storage Port",
+                  "type": "string",
+                  "default": "00:00:00:00:00:00",
+                  "pattern": "^(([0-9a-fA-F][0-9a-fA-F]:){5}([0-9a-fA-F][0-9a-fA-F]))$|^0$"
                }
             },
-            "additionalProperties":false,
-            "required":[
+            "additionalProperties": false,
+            "required": [
                "name",
                "mac_address"
             ]
          },
-         "minItems":1,
-         "maxItems":1
+         "minItems": 1,
+         "maxItems": 1
       },
-      "vsan":{
-         "description":"VSAN assigned to Unified Storage Port",
-         "type":"string",
-         "pattern":"^[\\-\\.:_a-zA-Z0-9]{0,16}$"
+      "vsan": {
+         "description": "VSAN assigned to Unified Storage Port",
+         "type": "string",
+         "pattern": "^[\\-\\.:_a-zA-Z0-9]{0,16}$"
       },
-      "vsan_fabric":{
-         "description":"Fabric ID of VSAN assigned to Unified Storage Port",
-         "type":"string",
-         "enum":[
+      "vsan_fabric": {
+         "description": "Fabric ID of VSAN assigned to Unified Storage Port",
+         "type": "string",
+         "enum": [
             "a",
             "A",
             "b",
@@ -146,8 +146,8 @@
          ]
       }
    },
-   "additionalProperties":false,
-   "required":[
+   "additionalProperties": false,
+   "required": [
       "fabric",
       "slot_id",
       "port_id"

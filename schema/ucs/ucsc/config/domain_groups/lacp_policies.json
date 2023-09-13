@@ -1,0 +1,72 @@
+{
+   "id": "ucs_central_config_domain_groups_lacp_policies#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS ucs central config domain_groups lacp_policies section",
+   "description": "EasyUCS ucs central config domain_groups lacp_policies section JSON schema",
+   "type": "object",
+   "properties": {
+      "comment": {
+         "description": "LACP Policy Comments",
+         "type": "string",
+         "default": ""
+      },
+      "name": {
+         "description": "LACP Policy Name",
+         "type": "string",
+         "default": "",
+         "pattern": "^[\\-\\.:_a-zA-Z0-9]{1,16}$"
+      },
+      "descr": {
+         "description": "Description of LACP Policy",
+         "type": "string",
+         "default": "",
+         "pattern": "^[ !#$%&\\(\\)\\*\\+,\\-\\./:;\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{0,256}$"
+      },
+      "suspend_individual": {
+         "description": "LACP Policy Suspend Individual",
+         "type": "string",
+         "default": "false",
+         "enum": [
+            "false",
+            "true"
+         ]
+      },
+      "lacp_rate": {
+         "description": "LACP Policy - LACP Rate",
+         "type": "string",
+         "default": "normal",
+         "enum": [
+            "fast",
+            "normal"
+         ]
+      },
+      "tags": {
+         "description": "LACP Policy - Tags",
+         "type": "array",
+         "items": {
+            "description": "LACP Policy - Tag",
+            "type": "object",
+            "properties": {
+               "type": {
+                  "description": "LACP Policy - Tag - Type",
+                  "type": "string",
+                  "pattern": "^[ !#$%&\\(\\)\\*\\+,\\-\\.:;=\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{1,32}$"
+               },
+               "value": {
+                  "description": "LACP Policy - Tag - Value",
+                  "type": "string"
+               }
+            },
+            "additionalProperties": false,
+            "required": [
+               "type",
+               "value"
+            ]
+         }
+      }
+   },
+   "additionalProperties": false,
+   "required": [
+      "name"
+   ]
+}

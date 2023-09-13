@@ -1,0 +1,95 @@
+{
+   "model_short_name": "X210c M7",
+   "front_file_name": "UCSX-210C-M7.png",
+   "front_file_size": [289,1755],
+   "disks_slots": [
+      {
+         "id": 1,
+         "format": "sff_m5",
+         "orientation": "vertical",
+         "coord": [16,132],
+         "size": [437,97]
+      },
+      {
+         "id": 2,
+         "format": "sff_m5",
+         "orientation": "vertical",
+         "coord": [129,132],
+         "size": [437,97]
+      },
+      {
+         "id": 3,
+         "format": "sff_m5",
+         "orientation": "vertical",
+         "coord": [16,622],
+         "size": [437,97]
+      },
+      {
+         "id": 4,
+         "format": "sff_m5",
+         "orientation": "vertical",
+         "coord": [129,622],
+         "size": [437,97]
+      },
+      {
+         "id": 5,
+         "format": "sff_m5",
+         "orientation": "vertical",
+         "coord": [16,1112],
+         "size": [437,97]
+      },
+      {
+         "id": 6,
+         "format": "sff_m5",
+         "orientation": "vertical",
+         "coord": [129,1112],
+         "size": [437,97]
+      }
+   ],
+   "disks_models": [
+      {
+         "name": "UCSC-BBLKD-S2",
+         "type": "blank",
+         "format": "sff_m5",
+         "description": "C-Series M5 SFF drive blanking panel"
+      }
+   ],
+   "imm_compatible": true,
+   "imm_min_required_version": "4.3(2.230131)",
+   "spec_sheet_url": "https://www.cisco.com/c/dam/en/us/products/collateral/servers-unified-computing/ucs-x-series-modular-system/x210cm7-specsheet.pdf",
+   "data_sheet_url": "https://www.cisco.com/c/en/us/products/collateral/servers-unified-computing/ucs-x-series-modular-system/ucs-x210c-m7-compute-node-ds.html",
+   "specs": {
+      "form_factor": "1-slot",
+      "chipset": "Intel® C741 series chipset (Emmitsburg)",
+      "cpu": {
+         "sockets": 2,
+         "family_name": {
+            "ice_lake": "4th Gen Intel Xeon Processor Scalable Family"
+         }
+      },
+      "memory": {
+         "dimm_type": "DDR5",
+         "dimm_slots": 32,
+         "max_speed": 4800,
+         "max_capacity": 8388608,
+         "dcpmm_support": false
+      },
+      "dimensions": {
+         "centimeters": {
+            "height": 45.7,
+            "width": 28.65,
+            "depth": 60.2
+         },
+         "inches": {
+            "height": 1.8,
+            "width": 11.28,
+            "depth": 23.7
+         },
+         "rack_units": 0
+      },
+      "weight": {
+         "lb": 25.1,
+         "kg": 11.39
+      }
+   }
+}

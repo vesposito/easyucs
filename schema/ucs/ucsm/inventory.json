@@ -6,5 +6,6 @@
    "type": "object",
    "properties": {
    },
-   "additionalProperties": true
+   "additionalProperties": true,
+   "minProperties": 1
 }

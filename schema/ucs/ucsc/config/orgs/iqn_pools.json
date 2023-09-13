@@ -1,0 +1,150 @@
+{
+   "id": "ucs_central_config_iqn_pools#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS ucs central config orgs iqn_pools section",
+   "description": "EasyUCS ucs central config orgs iqn_pools section JSON schema",
+   "type": "object",
+   "properties": {
+      "comment": {
+         "description": "IQN Pool Comments",
+         "type": "string",
+         "default": ""
+      },
+      "name": {
+         "description": "IQN Pool Name",
+         "type": "string",
+         "default": "",
+         "pattern": "^[\\-\\.:_a-zA-Z0-9]{1,32}$"
+      },
+      "descr": {
+         "description": "Description of IQN Pool",
+         "type": "string",
+         "default": "",
+         "pattern": "^[ !#$%&\\(\\)\\*\\+,\\-\\./:;\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{0,256}$"
+      },
+      "prefix": {
+         "description": "IQN Pool- Prefix",
+         "type": "string",
+         "default": "",
+         "pattern": "^[0-9a-zA-Z\\.:-]{0,150}$|^''$"
+      },
+      "iqn_blocks": {
+         "description": "Blocks of IQN Pool",
+         "type": "array",
+         "items": {
+            "type": "object",
+            "oneOf": [
+               {
+                  "properties": {
+                     "from": {
+                        "description": "First Suffix of Block",
+                        "type": "string",
+                        "default": "0",
+                        "pattern": "^[0-9]$|^[1-9][0-9]$|^[1-9][0-9][0-9]$|^[1-9][0-9][0-9][0-9]$|^[1-5][0-9][0-9][0-9][0-9]$|^6[0-4][0-9][0-9][0-9]$|^65[0-4][0-9][0-9]$|^655[0-2][0-9]$|^6553[0-5]$"
+                     },
+                     "to": {
+                        "description": "Last Suffix of Block",
+                        "type": "string",
+                        "default": "1",
+                        "pattern": "^[0-9]$|^[1-9][0-9]$|^[1-9][0-9][0-9]$|^[1-9][0-9][0-9][0-9]$|^[1-5][0-9][0-9][0-9][0-9]$|^6[0-4][0-9][0-9][0-9]$|^65[0-4][0-9][0-9]$|^655[0-2][0-9]$|^6553[0-5]$"
+                     },
+                     "suffix": {
+                        "description": "Suffix of IQN Block",
+                        "type": "string",
+                        "default": "",
+                        "pattern": "^[0-9a-zA-Z\\.:-]{0,64}$"
+                     },
+                     "id_range_access_control": {
+                        "description": "ID Range Access Control of IQN Suffix Block",
+                        "type": "string",
+                        "pattern": "^[\\-\\.:_a-zA-Z0-9]{0,16}$"
+                     }
+                  },
+                  "additionalProperties": false,
+                  "required": [
+                     "from",
+                     "to",
+                     "suffix"
+                  ]
+               },
+               {
+                  "properties": {
+                     "from": {
+                        "description": "First Suffix of Block",
+                        "type": "string",
+                        "default": "0",
+                        "pattern": "^[0-9]$|^[1-9][0-9]$|^[1-9][0-9][0-9]$|^[1-9][0-9][0-9][0-9]$|^[1-5][0-9][0-9][0-9][0-9]$|^6[0-4][0-9][0-9][0-9]$|^65[0-4][0-9][0-9]$|^655[0-2][0-9]$|^6553[0-5]$"
+                     },
+                     "size": {
+                        "description": "Size of Suffix Block",
+                        "type": "string",
+                        "default": "1",
+                        "pattern": "^[0-9]$|^[1-9][0-9]$|^[1-9][0-9][0-9]$|^[1-9][0-9][0-9][0-9]$|^[1-5][0-9][0-9][0-9][0-9]$|^6[0-4][0-9][0-9][0-9]$|^65[0-4][0-9][0-9]$|^655[0-2][0-9]$|^6553[0-5]$"
+                     },
+                     "suffix": {
+                        "description": "Suffix of IQN Block",
+                        "type": "string",
+                        "default": "",
+                        "pattern": "^[0-9a-zA-Z\\.:-]{0,64}$"
+                     },
+                     "id_range_access_control": {
+                        "description": "ID Range Access Control of IQN Suffix Block",
+                        "type": "string",
+                        "pattern": "^[\\-\\.:_a-zA-Z0-9]{0,16}$"
+                     }
+                  },
+                  "additionalProperties": false,
+                  "required": [
+                     "from",
+                     "size",
+                     "suffix"
+                  ]
+               }
+            ]
+         },
+         "minItems": 1
+      },
+      "operational_state": {
+         "description": "Operational state",
+         "type": "object",
+         "properties": {
+            "assigned": {
+               "description": "Number of identities that have been assigned",
+               "type": "string"
+            },
+            "size": {
+               "description": "Total size of the pool, aggregating all blocks",
+               "type": "string"
+            }
+         }
+      },
+      "tags": {
+         "description": "IQN Pool - Tags",
+         "type": "array",
+         "items": {
+            "description": "IQN Pool - Tag",
+            "type": "object",
+            "properties": {
+               "type": {
+                  "description": "IQN Pool - Tag - Type",
+                  "type": "string",
+                  "pattern": "^[ !#$%&\\(\\)\\*\\+,\\-\\.:;=\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{1,32}$"
+               },
+               "value": {
+                  "description": "IQN Pool - Tag - Value",
+                  "type": "string"
+               }
+            },
+            "additionalProperties": false,
+            "required": [
+               "type",
+               "value"
+            ]
+         }
+      }
+   },
+   "additionalProperties": false,
+   "required": [
+      "name"
+   ]
+}

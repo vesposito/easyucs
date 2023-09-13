@@ -11,18 +11,19 @@ from config.ucs.object import UcsSystemConfigObject
 from config.ucs.ucsm.lan import UcsSystemIpPool, UcsSystemMacPool, UcsSystemVnicTemplate, UcsSystemQosPolicy,\
     UcsSystemNetworkControlPolicy, UcsSystemMulticastPolicy, UcsSystemLinkProtocolPolicy,\
     UcsSystemLanConnectivityPolicy, UcsSystemLacpPolicy, UcsSystemFlowControlPolicy, UcsSystemDefaultVnicBehavior,\
-    UcsSystemDynamicVnicConnectionPolicy
+    UcsSystemDynamicVnicConnectionPolicy, UcsSystemVmqConnectionPolicy, UcsSystemUsnicConnectionPolicy
 from config.ucs.ucsm.servers import UcsSystemUuidPool, UcsSystemServerPool, UcsSystemServerPoolPolicy,\
     UcsSystemPowerControlPolicy, UcsSystemMaintenancePolicy, UcsSystemGraphicsCardPolicy,\
     UcsSystemLocalDiskConfPolicy, UcsSystemServerPoolPolicyQualifications, UcsSystemPowerSyncPolicy,\
     UcsSystemHostFirmwarePackage, UcsSystemIpmiAccessProfile, UcsSystemKvmManagementPolicy, UcsSystemScrubPolicy,\
-    UcsSystemSerialOverLanPolicy, UcsSystemBootPolicy, UcsSystemVnicVhbaPlacementPolicy, UcsSystemBiosPolicy,\
-    UcsSystemIscsiAuthenticationProfile, UcsSystemVmediaPolicy, UcsSystemEthernetAdapterPolicy,\
-    UcsSystemFibreChannelAdapterPolicy, UcsSystemIscsiAdapterPolicy, UcsSystemServiceProfile,\
-    UcsSystemMemoryPolicy, UcsSystemThresholdPolicy, UcsSystemDiagnosticsPolicy, UcsSystemPersistentMemoryPolicy
+    UcsSystemSerialOverLanPolicy, UcsSystemSpdmCertificatePolicy, UcsSystemBootPolicy, UcsSystemVnicVhbaPlacementPolicy,\
+    UcsSystemBiosPolicy, UcsSystemIscsiAuthenticationProfile, UcsSystemVmediaPolicy, UcsSystemEthernetAdapterPolicy,\
+    UcsSystemFibreChannelAdapterPolicy, UcsSystemIscsiAdapterPolicy, UcsSystemMemoryPolicy, UcsSystemThresholdPolicy, \
+    UcsSystemDiagnosticsPolicy, UcsSystemPersistentMemoryPolicy
+from config.ucs.ucsm.profiles import UcsSystemServiceProfile
 from config.ucs.ucsm.san import UcsSystemWwpnPool, UcsSystemWwnnPool, UcsSystemWwxnPool, UcsSystemVhbaTemplate,\
     UcsSystemSanConnectivityPolicy, UcsSystemStorageConnectionPolicy, UcsSystemDefaultVhbaBehavior, \
-    UcsSystemIqnSuffixPool
+    UcsSystemIqnPool
 from config.ucs.ucsm.storage import UcsSystemDiskGroupPolicy, UcsSystemStorageProfile
 from config.ucs.ucsm.chassis import UcsSystemChassisMaintenancePolicy, UcsSystemComputeConnectionPolicy,\
     UcsSystemChassisFirmwarePackage, UcsSystemDiskZoningPolicy, UcsSystemChassisProfile, \
@@ -76,6 +77,7 @@ from ucsmsdk.mometa.comm.CommSnmp import CommSnmp
 from ucsmsdk.mometa.comm.CommSnmpTrap import CommSnmpTrap
 from ucsmsdk.mometa.comm.CommSnmpUser import CommSnmpUser
 from ucsmsdk.mometa.comm.CommSsh import CommSsh
+from ucsmsdk.mometa.comm.CommSyslog import CommSyslog
 from ucsmsdk.mometa.comm.CommSyslogClient import CommSyslogClient
 from ucsmsdk.mometa.comm.CommSyslogConsole import CommSyslogConsole
 from ucsmsdk.mometa.comm.CommSyslogFile import CommSyslogFile
@@ -83,15 +85,18 @@ from ucsmsdk.mometa.comm.CommSyslogMonitor import CommSyslogMonitor
 from ucsmsdk.mometa.comm.CommSyslogSource import CommSyslogSource
 from ucsmsdk.mometa.comm.CommTelnet import CommTelnet
 from ucsmsdk.mometa.comm.CommWebSvcLimits import CommWebSvcLimits
-from ucsmsdk.mometa.compute.ComputeFanPolicy import ComputeFanPolicy
 from ucsmsdk.mometa.compute.ComputeChassisDiscPolicy import ComputeChassisDiscPolicy
+from ucsmsdk.mometa.compute.ComputeFanPolicy import ComputeFanPolicy
 from ucsmsdk.mometa.compute.ComputeHwChangeDiscPolicy import ComputeHwChangeDiscPolicy
+from ucsmsdk.mometa.compute.ComputeModularChassisFanPolicy import ComputeModularChassisFanPolicy
 from ucsmsdk.mometa.compute.ComputePortDiscPolicy import ComputePortDiscPolicy
 from ucsmsdk.mometa.compute.ComputePsuPolicy import ComputePsuPolicy
+from ucsmsdk.mometa.compute.ComputePowerExtendedPolicy import ComputePowerExtendedPolicy
 from ucsmsdk.mometa.compute.ComputeServerDiscPolicy import ComputeServerDiscPolicy
 from ucsmsdk.mometa.compute.ComputeServerMgmtPolicy import ComputeServerMgmtPolicy
 from ucsmsdk.mometa.fabric.FabricFcSan import FabricFcSan
 from ucsmsdk.mometa.fabric.FabricLanCloud import FabricLanCloud
+from ucsmsdk.mometa.fabric.FabricLanCloudPolicy import FabricLanCloudPolicy
 from ucsmsdk.mometa.fabric.FabricOrgVlanPolicy import FabricOrgVlanPolicy
 from ucsmsdk.mometa.fabric.FabricReservedVlan import FabricReservedVlan
 from ucsmsdk.mometa.fabric.FabricSanCloud import FabricSanCloud
@@ -103,6 +108,7 @@ from ucsmsdk.mometa.mgmt.MgmtBackupPolicy import MgmtBackupPolicy
 from ucsmsdk.mometa.mgmt.MgmtCfgExportPolicy import MgmtCfgExportPolicy
 from ucsmsdk.mometa.mgmt.MgmtIPv6IfAddr import MgmtIPv6IfAddr
 from ucsmsdk.mometa.mgmt.MgmtInbandProfile import MgmtInbandProfile
+from ucsmsdk.mometa.mgmt.MgmtKmipCertPolicy import MgmtKmipCertPolicy
 from ucsmsdk.mometa.network.NetworkElement import NetworkElement
 from ucsmsdk.mometa.org.OrgOrg import OrgOrg
 from ucsmsdk.mometa.policy.PolicyCommunication import PolicyCommunication
@@ -128,6 +134,7 @@ from ucsmsdk.mometa.top.TopSystem import TopSystem
 
 class UcsSystemDns(UcsSystemConfigObject):
     _CONFIG_NAME = "DNS"
+    _CONFIG_SECTION_NAME = "dns"
 
     def __init__(self, parent=None, json_content=None):
         UcsSystemConfigObject.__init__(self, parent=parent)
@@ -135,10 +142,11 @@ class UcsSystemDns(UcsSystemConfigObject):
 
         if self._config.load_from == "live":
             if "commDnsProvider" in self._config.sdk_objects:
-                dns_list = [dns for dns in self._config.sdk_objects["commDnsProvider"] if "sys/svc-ext/dns-svc" in
-                            dns.dn]
-                for dns in dns_list:
-                    self.dns.append(dns.name)
+                if self._config.sdk_objects["commDnsProvider"]:
+                    dns_list = [dns for dns in self._config.sdk_objects["commDnsProvider"] if "sys/svc-ext/dns-svc" in
+                                dns.dn]
+                    for dns in dns_list:
+                        self.dns.append(dns.name)
 
         elif self._config.load_from == "file":
             # DNS is not a regular configuration object
@@ -166,6 +174,7 @@ class UcsSystemDns(UcsSystemConfigObject):
 
 class UcsSystemInformation(UcsSystemConfigObject):
     _CONFIG_NAME = "System Information"
+    _CONFIG_SECTION_NAME = "system"
 
     def __init__(self, parent=None, json_content=None):
         UcsSystemConfigObject.__init__(self, parent=parent)
@@ -230,9 +239,10 @@ class UcsSystemInformation(UcsSystemConfigObject):
 
 class UcsSystemManagementInterface(UcsSystemConfigObject):
     _CONFIG_NAME = "Management Interface"
+    _CONFIG_SECTION_NAME = "management_interfaces"
 
     def __init__(self, parent=None, json_content=None, network_element=None):
-        UcsSystemConfigObject.__init__(self, parent=parent)
+        UcsSystemConfigObject.__init__(self, parent=parent, ucs_sdk_object=network_element)
         self.fabric = None
         self.gateway = None
         self.gateway_v6 = None
@@ -293,10 +303,72 @@ class UcsSystemManagementInterface(UcsSystemConfigObject):
 
 class UcsSystemOrg(UcsSystemConfigObject):
     _CONFIG_NAME = "Organization"
+    _CONFIG_SECTION_NAME = "orgs"
+    _CONFIG_SECTION_ATTRIBUTES_MAP = {
+        "bios_policies": "BIOS Policies",
+        "boot_policies": "Boot Policies",
+        "chassis_firmware_packages": "Chassis Firmware Packages",
+        "chassis_maintenance_policies": "Chassis Maintenance Policies",
+        "chassis_profiles": "Chassis Profiles",
+        "compute_connection_policies": "Compute Connection Policies",
+        "default_vhba_behavior": "Default vHBA Behavior",
+        "default_vnic_behavior": "Default vNIC Behavior",
+        "diagnostics_policies": "Diagnostics Policies",
+        "disk_group_policies": "Disk Group Policies",
+        "disk_zoning_policies": "Disk Zoning Policies",
+        "dynamic_vnic_connection_policies": "Dynamic vNIC Connection Policies",
+        "ethernet_adapter_policies": "Ethernet Adapter Policies",
+        "fibre_channel_adapter_policies": "Fibre Channel Adapter Policies",
+        "flow_control_policies": "Flow Control Policies",
+        "graphics_card_policies": "Graphics Card Policies",
+        "host_firmware_packages": "Host Firmware Packages",
+        "ip_pools": "IP Pools",
+        "ipmi_access_profiles": "IPMI Access Profiles",
+        "iqn_pools": "IQN Pools",
+        "iscsi_adapter_policies": "iSCSI Adapter Policies",
+        "iscsi_authentication_profiles": "iSCSI Authentication Profiles",
+        "kvm_management_policies": "KVM Management Policies",
+        "lacp_policies": "LACP Policies",
+        "lan_connectivity_policies": "LAN Connectivity Policies",
+        "link_protocol_policy": "Link Protocol Policy",
+        "local_disk_config_policies": "Local Disk Config Policies",
+        "mac_pools": "MAC Pools",
+        "maintenance_policies": "Maintenance Policies",
+        "memory_policy": "Memory Policy",
+        "multicast_policies": "Multicast Policies",
+        "network_control_policies": "Network Control Policies",
+        "orgs": "Organizations",
+        "persistent_memory_policies": "Persistent Memory Policies",
+        "power_control_policies": "Power Control Policies",
+        "power_sync_policies": "Power Sync Policies",
+        "qos_policies": "QoS Policies",
+        "san_connectivity_policies": "SAN Connectivity Policies",
+        "sas_expander_configuration_policies": "SAS Expander Configuration Policies",
+        "scrub_policies": "Scrub Policies",
+        "serial_over_lan_policies": "Serial Over LAN Policies",
+        "server_pool_policies": "Server Pool Policies",
+        "server_pool_policy_qualifications": "Server Pool Policy Qualifications",
+        "server_pools": "Server Pools",
+        "service_profiles": "Service Profiles",
+        "spdm_certificate_policies": "SPDM Certificate Policies",
+        "storage_connection_policies": "Storage Connection Policies",
+        "storage_profiles": "Storage Profiles",
+        "threshold_policies": "Threshold Policies",
+        "usnic_connection_policies": "usNIC Connection Policies",
+        "uuid_pools": "UUID Pools",
+        "vhba_templates": "vHBA Templates",
+        "vmedia_policies": "vMedia Policies",
+        "vmq_connection_policies": "VMQ Connection Policies",
+        "vnic_templates": "vNIC Templates",
+        "vnic_vhba_placement_policies": "vNIC/vHBA Placement Policies",
+        "wwnn_pools": "WWNN Pools",
+        "wwpn_pools": "WWPN Pools",
+        "wwxn_pools": "WWxN Pools"
+    }
     _UCS_SDK_OBJECT_NAME = "orgOrg"
 
     def __init__(self, parent=None, json_content=None, org_org=None):
-        UcsSystemConfigObject.__init__(self, parent=parent)
+        UcsSystemConfigObject.__init__(self, parent=parent, ucs_sdk_object=org_org)
         self.descr = None
         self.name = None
 
@@ -319,6 +391,9 @@ class UcsSystemOrg(UcsSystemConfigObject):
 
         self.orgs = \
             self._get_generic_element(json_content=json_content, object_class=UcsSystemOrg, name_to_fetch="orgs")
+
+        self.logger(level="debug", message="Building internal objects for policies of Org " + self.get_org_path())
+
         self.ip_pools = \
             self._get_generic_element(json_content=json_content, object_class=UcsSystemIpPool, name_to_fetch="ip_pools")
         self.mac_pools = \
@@ -336,9 +411,9 @@ class UcsSystemOrg(UcsSystemConfigObject):
         self.wwxn_pools = \
             self._get_generic_element(json_content=json_content, object_class=UcsSystemWwxnPool,
                                       name_to_fetch="wwxn_pools")
-        self.iqn_suffix_pools = \
-            self._get_generic_element(json_content=json_content, object_class=UcsSystemIqnSuffixPool,
-                                      name_to_fetch="iqn_suffix_pools")
+        self.iqn_pools = \
+            self._get_generic_element(json_content=json_content, object_class=UcsSystemIqnPool,
+                                      name_to_fetch="iqn_pools")
         self.server_pools = \
             self._get_generic_element(json_content=json_content, object_class=UcsSystemServerPool,
                                       name_to_fetch="server_pools")
@@ -360,6 +435,12 @@ class UcsSystemOrg(UcsSystemConfigObject):
         self.dynamic_vnic_connection_policies = \
             self._get_generic_element(json_content=json_content, object_class=UcsSystemDynamicVnicConnectionPolicy,
                                       name_to_fetch="dynamic_vnic_connection_policies")
+        self.usnic_connection_policies = \
+            self._get_generic_element(json_content=json_content, object_class=UcsSystemUsnicConnectionPolicy,
+                                      name_to_fetch="usnic_connection_policies")
+        self.vmq_connection_policies = \
+            self._get_generic_element(json_content=json_content, object_class=UcsSystemVmqConnectionPolicy,
+                                      name_to_fetch="vmq_connection_policies")
         self.maintenance_policies = \
             self._get_generic_element(json_content=json_content, object_class=UcsSystemMaintenancePolicy,
                                       name_to_fetch="maintenance_policies")
@@ -390,6 +471,9 @@ class UcsSystemOrg(UcsSystemConfigObject):
         self.serial_over_lan_policies = \
             self._get_generic_element(json_content=json_content, object_class=UcsSystemSerialOverLanPolicy,
                                       name_to_fetch="serial_over_lan_policies")
+        self.spdm_certificate_policies = \
+            self._get_generic_element(json_content=json_content, object_class=UcsSystemSpdmCertificatePolicy,
+                                      name_to_fetch="spdm_certificate_policies")
         self.boot_policies = \
             self._get_generic_element(json_content=json_content, object_class=UcsSystemBootPolicy,
                                       name_to_fetch="boot_policies")
@@ -486,6 +570,12 @@ class UcsSystemOrg(UcsSystemConfigObject):
 
         self.clean_object()
 
+    def get_org_path(self):
+        """
+        Returns the "readable" org path of the current org based on its DN
+        """
+        return '/'.join([dn.replace("org-", "", 1) for dn in self._dn.split("/")])
+
     def push_object(self, commit=True):
         if commit:
             self.logger(message="Pushing " + self._CONFIG_NAME + " configuration: " + str(self.name))
@@ -506,24 +596,21 @@ class UcsSystemOrg(UcsSystemConfigObject):
 
         # We push all subconfig elements, in a specific optimized order to reduce number of reboots
         # TODO: Verify order
-        objects_to_push_in_order = ['server_pool_policy_qualifications', 'server_pools', 'server_pool_policies',
-                                    'ip_pools', 'mac_pools', 'uuid_pools', 'wwpn_pools', 'wwnn_pools', 'wwxn_pools',
-                                    'bios_policies', 'boot_policies', 'orgs', 'iqn_suffix_pools',
-                                    'vmedia_policies', 'qos_policies', 'dynamic_vnic_connection_policies',
-                                    'ethernet_adapter_policies', 'fibre_channel_adapter_policies',
-                                    'diagnostics_policies', 'iscsi_adapter_policies', 'ipmi_access_profiles',
-                                    'power_control_policies', 'serial_over_lan_policies', 'power_sync_policies',
-                                    'vnic_vhba_placement_policies', 'lan_connectivity_policies',
-                                    'san_connectivity_policies', 'storage_connection_policies',
-                                    'local_disk_config_policies', 'host_firmware_packages', 'maintenance_policies',
-                                    'network_control_policies', 'multicast_policies', 'lacp_policies',
-                                    'link_protocol_policy', 'default_vnic_behavior', 'flow_control_policies',
-                                    'scrub_policies', 'vnic_templates', 'default_vhba_behavior', 'vhba_templates',
-                                    'chassis_firmware_packages', 'chassis_maintenance_policies',
-                                    'compute_connection_policies', 'disk_zoning_policies',
-                                    'sas_expander_configuration_policies', 'disk_group_policies', 'storage_profiles',
-                                    'graphics_card_policies', 'kvm_management_policies', 'memory_policy',
-                                    'threshold_policies', 'iscsi_authentication_profiles', 'persistent_memory_policies']
+        objects_to_push_in_order = [
+            'server_pool_policy_qualifications', 'server_pools', 'server_pool_policies', 'ip_pools', 'mac_pools',
+            'uuid_pools', 'wwpn_pools', 'wwnn_pools', 'wwxn_pools', 'bios_policies', 'boot_policies', 'orgs',
+            'iqn_pools', 'vmedia_policies', 'qos_policies', 'ethernet_adapter_policies',
+            'fibre_channel_adapter_policies', 'diagnostics_policies', 'iscsi_adapter_policies', 'ipmi_access_profiles',
+            'power_control_policies', 'serial_over_lan_policies', 'power_sync_policies', 'vnic_vhba_placement_policies',
+            'dynamic_vnic_connection_policies', 'usnic_connection_policies', 'vmq_connection_policies',
+            'lan_connectivity_policies', 'san_connectivity_policies', 'storage_connection_policies',
+            'local_disk_config_policies', 'host_firmware_packages', 'maintenance_policies', 'network_control_policies',
+            'multicast_policies', 'lacp_policies', 'link_protocol_policy', 'default_vnic_behavior',
+            'flow_control_policies', 'scrub_policies', 'spdm_certificate_policies', 'vnic_templates',
+            'default_vhba_behavior', 'vhba_templates', 'chassis_firmware_packages', 'chassis_maintenance_policies',
+            'compute_connection_policies', 'disk_zoning_policies', 'sas_expander_configuration_policies',
+            'disk_group_policies', 'storage_profiles', 'graphics_card_policies', 'kvm_management_policies',
+            'memory_policy', 'threshold_policies', 'iscsi_authentication_profiles', 'persistent_memory_policies']
 
         for config_object in objects_to_push_in_order:
             if getattr(self, config_object) is not None:
@@ -548,7 +635,12 @@ class UcsSystemOrg(UcsSystemConfigObject):
 
         for chassis_profile in chassis_profiles:
             if all(getattr(chassis_profile, attr) for attr in ["chassis_profile_template", "name"]):
-                chassis_profile.instantiate_profile()
+                if not chassis_profile.chassis_profile_template.startswith("ucs-central/"):
+                    chassis_profile.instantiate_profile()
+                else:
+                    self.logger(level="debug",
+                                message="Ignoring Chassis Profile " + chassis_profile.name +
+                                        " as it is instantiated from a UCS Central Global Chassis Profile Template")
             else:
                 chassis_profile.push_object()
 
@@ -569,7 +661,12 @@ class UcsSystemOrg(UcsSystemConfigObject):
 
         for service_profile in service_profiles:
             if all(getattr(service_profile, attr) for attr in ["service_profile_template", "name"]):
-                service_profile.instantiate_profile()
+                if not service_profile.service_profile_template.startswith("ucs-central/"):
+                    service_profile.instantiate_profile()
+                else:
+                    self.logger(level="debug",
+                                message="Ignoring Service Profile " + service_profile.name +
+                                        " as it is instantiated from a UCS Central Global Service Profile Template")
             else:
                 service_profile.push_object()
 
@@ -577,7 +674,7 @@ class UcsSystemOrg(UcsSystemConfigObject):
 
     def _get_generic_element(self, json_content, object_class, name_to_fetch, restrict_to_root=False):
         if self._config.load_from == "live":
-            if restrict_to_root and self.name != "root":
+            if restrict_to_root and not self._parent.__class__.__name__ == "UcsSystemConfig":
                 return []
             list_of_obj = self._config.get_config_objects_under_dn(dn=self._dn, object_class=object_class, parent=self)
             return list_of_obj
@@ -590,6 +687,7 @@ class UcsSystemOrg(UcsSystemConfigObject):
 
 class UcsSystemTimezoneMgmt(UcsSystemConfigObject):
     _CONFIG_NAME = "Timezone Management"
+    _CONFIG_SECTION_NAME = "timezone_mgmt"
 
     def __init__(self, parent=None, json_content=None):
         UcsSystemConfigObject.__init__(self, parent=parent)
@@ -603,6 +701,8 @@ class UcsSystemTimezoneMgmt(UcsSystemConfigObject):
                 if len(comm_date_time_list) == 1:
                     comm_date_time = comm_date_time_list[0]
                     self.zone = comm_date_time.timezone
+                    if comm_date_time.policy_owner in ["policy"]:
+                        self.policy_owner = "ucs-central"
 
             if "commNtpProvider" in self._config.sdk_objects:
                 ntp_provider_list = [ntp_provider for ntp_provider in self._config.sdk_objects["commNtpProvider"]
@@ -637,11 +737,73 @@ class UcsSystemTimezoneMgmt(UcsSystemConfigObject):
         return True
 
 
+class UcsSystemKmipCertificationPolicy(UcsSystemConfigObject):
+    _CONFIG_NAME = "KMIP Certification Policies"
+    _CONFIG_SECTION_NAME = "kmip_client_cert_policy"
+    _UCS_SDK_OBJECT_NAME = "mgmtKmipCertPolicy"
+
+    def __init__(self, parent=None, json_content=None):
+        UcsSystemConfigObject.__init__(self, parent=parent)
+        self.country_code = None
+        self.email_addr = None
+        self.locality = None
+        self.org_name = None
+        self.org_unit_name = None
+        self.policy_owner = None
+        self.state = None
+        self.validity = None
+
+        if self._config.load_from == "live":
+            if "mgmtKmipCertPolicy" in self._config.sdk_objects:
+                if len(self._config.sdk_objects["mgmtKmipCertPolicy"]) != 0:
+                    if self._config.sdk_objects["mgmtKmipCertPolicy"][0].policy_owner in ["policy"]:
+                        self.policy_owner = "ucs-central"
+                    self.country_code = self._config.sdk_objects["mgmtKmipCertPolicy"][0].country_code
+                    self.email_addr = self._config.sdk_objects["mgmtKmipCertPolicy"][0].email_addr
+                    self.locality = self._config.sdk_objects["mgmtKmipCertPolicy"][0].locality
+                    self.org_name = self._config.sdk_objects["mgmtKmipCertPolicy"][0].org_name
+                    self.org_unit_name = self._config.sdk_objects["mgmtKmipCertPolicy"][0].org_unit_name
+                    self.state = self._config.sdk_objects["mgmtKmipCertPolicy"][0].state
+                    self.validity = self._config.sdk_objects["mgmtKmipCertPolicy"][0].validity
+
+        elif self._config.load_from == "file":
+            if json_content is not None:
+                if not self.get_attributes_from_json(json_content=json_content):
+                    self.logger(level="error",
+                                message="Unable to get attributes from JSON content for " + self._CONFIG_NAME)
+
+        self.clean_object()
+
+    def push_object(self, commit=True):
+        if commit:
+            self.logger(message="Pushing " + self._CONFIG_NAME + " configuration")
+        else:
+            self.logger(message="Adding to the handle " + self._CONFIG_NAME + " configuration" +
+                                ", waiting for a commit")
+
+        parent_mo = "sys/pki-ext"
+
+        mo_mgmt_kmip_cert_policy = MgmtKmipCertPolicy(parent_mo_or_dn=parent_mo,
+                                                      country_code=self.country_code,
+                                                      email_addr=self.email_addr,
+                                                      locality=self.locality,
+                                                      org_name=self.org_name,
+                                                      org_unit_name=self.org_unit_name,
+                                                      state=self.state,
+                                                      validity=self.validity)
+        self._handle.add_mo(mo=mo_mgmt_kmip_cert_policy, modify_present=True)
+        if commit:
+            if self.commit() != True:
+                return False
+        return True
+
+
 class UcsSystemLocale(UcsSystemConfigObject):
     _CONFIG_NAME = "Locale"
+    _CONFIG_SECTION_NAME = "locales"
 
     def __init__(self, parent=None, json_content=None, aaa_locale=None):
-        UcsSystemConfigObject.__init__(self, parent=parent)
+        UcsSystemConfigObject.__init__(self, parent=parent, ucs_sdk_object=aaa_locale)
         self.name = None
         self.descr = None
         self.organizations = []
@@ -676,7 +838,7 @@ class UcsSystemLocale(UcsSystemConfigObject):
             for organization in self.organizations:
                 complete_org_path = ""
                 for part in organization.split("/"):
-                    if "org-" not in part:
+                    if not part.startswith("org-"):
                         complete_org_path += "org-"
                     complete_org_path += part + "/"
                 complete_org_path = complete_org_path[:-1]  # Remove the trailing "/"
@@ -697,9 +859,10 @@ class UcsSystemLocale(UcsSystemConfigObject):
 
 class UcsSystemRole(UcsSystemConfigObject):
     _CONFIG_NAME = "Role"
+    _CONFIG_SECTION_NAME = "roles"
 
     def __init__(self, parent=None, json_content=None, aaa_role=None):
-        UcsSystemConfigObject.__init__(self, parent=parent)
+        UcsSystemConfigObject.__init__(self, parent=parent, ucs_sdk_object=aaa_role)
         self.name = None
         self.privileges = []
 
@@ -743,6 +906,7 @@ class UcsSystemRole(UcsSystemConfigObject):
 
 class UcsSystemPreLoginBanner(UcsSystemConfigObject):
     _CONFIG_NAME = "Pre-Login Banner"
+    _CONFIG_SECTION_NAME = "pre_login_banner"
 
     def __init__(self, parent=None, json_content=None):
         UcsSystemConfigObject.__init__(self, parent=parent)
@@ -780,6 +944,7 @@ class UcsSystemPreLoginBanner(UcsSystemConfigObject):
 
 class UcsSystemLocalUsersProperties(UcsSystemConfigObject):
     _CONFIG_NAME = "Local Users Properties"
+    _CONFIG_SECTION_NAME = "local_users_properties"
 
     def __init__(self, parent=None, json_content=None):
         UcsSystemConfigObject.__init__(self, parent=parent)
@@ -836,9 +1001,10 @@ class UcsSystemLocalUsersProperties(UcsSystemConfigObject):
 
 class UcsSystemLocalUser(UcsSystemConfigObject):
     _CONFIG_NAME = "Local User"
+    _CONFIG_SECTION_NAME = "local_users"
 
     def __init__(self, parent=None, json_content=None, aaa_user=None):
-        UcsSystemConfigObject.__init__(self, parent=parent)
+        UcsSystemConfigObject.__init__(self, parent=parent, ucs_sdk_object=aaa_user)
         self.id = None
         self.first_name = None
         self.last_name = None
@@ -946,28 +1112,42 @@ class UcsSystemLocalUser(UcsSystemConfigObject):
 
 class UcsSystemGlobalPolicies(UcsSystemConfigObject):
     _CONFIG_NAME = "Global Policies"
+    _CONFIG_SECTION_NAME = "global_policies"
 
     def __init__(self, parent=None, json_content=None):
         UcsSystemConfigObject.__init__(self, parent=parent)
         self.chassis_discovery_policy = []
         self.rack_server_discovery_policy = []
         self.rack_management_connection_policy = None
+        self.rack_management_connection_policy_owner = None
         self.power_policy = None
+        self.power_policy_owner = None
+        self.power_save_policy = None
+        self.power_extended_policy = None
         self.fan_control_policy = None
+        self.fan_control_policy_owner = None
+        self.x9508_chassis_fan_control_policy = None
+        self.x9508_chassis_fan_control_policy_owner = None
         self.mac_address_table_aging = None
         self.vlan_port_count_optimization = None
+        self.lan_global_policy_owner = None
         self.reserved_vlan_start_id = None
         self.org_permissions = None
         self.inband_profile_vlan_group = None
         self.inband_profile_network = None
         self.inband_profile_ip_pool_name = None
+        self.inband_profile_policy_owner = None
         self.global_power_allocation_policy = None
         self.firmware_auto_sync_server_policy = None
+        self.firmware_auto_sync_server_policy_owner = None
         self.global_power_profiling_policy = None
+        self.global_power_policy_owner = None
         self.info_policy = None
         self.hardware_change_discovery_policy = None
+        self.hardware_change_discovery_policy_owner = None
         self.fabric_a_fc_uplink_trunking = None
         self.fabric_b_fc_uplink_trunking = None
+        self.q_in_q_forwarding = None
 
         if self._config.load_from == "live":
             # Locating SDK objects needed to initialize
@@ -984,6 +1164,8 @@ class UcsSystemGlobalPolicies(UcsSystemConfigObject):
                     {"multicast_hardware_hash": chassis_discovery_policy.multicast_hw_hash})
                 self.chassis_discovery_policy[0].update(
                     {"backplane_speed_preference": chassis_discovery_policy.backplane_speed_pref})
+                if chassis_discovery_policy.policy_owner in ["policy"]:
+                    self.chassis_discovery_policy[0].update({"policy_owner": "ucs-central"})
 
             if "computeServerDiscPolicy" in self._config.sdk_objects:
                 self.rack_server_discovery_policy = [{}]
@@ -991,12 +1173,22 @@ class UcsSystemGlobalPolicies(UcsSystemConfigObject):
                 self.rack_server_discovery_policy[0].update({"action": rack_server_discovery_policy.action})
                 self.rack_server_discovery_policy[0].update(
                     {"scrub_policy": rack_server_discovery_policy.scrub_policy_name})
+                if rack_server_discovery_policy.policy_owner in ["policy"]:
+                    self.rack_server_discovery_policy[0].update({"policy_owner": "ucs-central"})
 
             if "computeServerMgmtPolicy" in self._config.sdk_objects:
                 self.rack_management_connection_policy = self._config.sdk_objects["computeServerMgmtPolicy"][0].action
+                if self._config.sdk_objects["computeServerMgmtPolicy"][0].policy_owner in ["policy"]:
+                    self.rack_management_connection_policy_owner = "ucs-central"
 
             if "computePsuPolicy" in self._config.sdk_objects:
                 self.power_policy = self._config.sdk_objects["computePsuPolicy"][0].redundancy
+                if self._config.sdk_objects["computePsuPolicy"][0].policy_owner in ["policy"]:
+                    self.power_policy_owner = "ucs-central"
+                self.power_save_policy = self._config.sdk_objects["computePsuPolicy"][0].mode
+
+            if "computePowerExtendedPolicy" in self._config.sdk_objects:
+                self.power_extended_policy = self._config.sdk_objects["computePowerExtendedPolicy"][0].extended_mode
 
             if "computeFanPolicy" in self._config.sdk_objects:
                 self.fan_control_policy = self._config.sdk_objects["computeFanPolicy"][0].speed
@@ -1004,10 +1196,35 @@ class UcsSystemGlobalPolicies(UcsSystemConfigObject):
                     self.fan_control_policy = "balanced"
                 elif self.fan_control_policy == "Low Power":
                     self.fan_control_policy = "low-power"
+                if self._config.sdk_objects["computeFanPolicy"][0].policy_owner in ["policy"]:
+                    self.fan_control_policy_owner = "ucs-central"
+
+            if "computeModularChassisFanPolicy" in self._config.sdk_objects:
+                self.x9508_chassis_fan_control_policy = \
+                    self._config.sdk_objects["computeModularChassisFanPolicy"][0].speed
+                if self.x9508_chassis_fan_control_policy == "Acoustic":
+                    self.x9508_chassis_fan_control_policy = "acoustic"
+                elif self.x9508_chassis_fan_control_policy == "Balanced":
+                    self.x9508_chassis_fan_control_policy = "balanced"
+                elif self.x9508_chassis_fan_control_policy == "High Power":
+                    self.x9508_chassis_fan_control_policy = "high-power"
+                elif self.x9508_chassis_fan_control_policy == "Low Power":
+                    self.x9508_chassis_fan_control_policy = "low-power"
+                elif self.x9508_chassis_fan_control_policy == "Max Power":
+                    self.x9508_chassis_fan_control_policy = "max-power"
+                elif self.x9508_chassis_fan_control_policy == "Performance":
+                    self.x9508_chassis_fan_control_policy = "performance"
+                if self._config.sdk_objects["computeModularChassisFanPolicy"][0].policy_owner in ["policy"]:
+                    self.x9508_chassis_fan_control_policy_owner = "ucs-central"
 
             if "fabricLanCloud" in self._config.sdk_objects:
                 self.mac_address_table_aging = self._config.sdk_objects["fabricLanCloud"][0].mac_aging
                 self.vlan_port_count_optimization = self._config.sdk_objects["fabricLanCloud"][0].vlan_compression
+                self.q_in_q_forwarding = self._config.sdk_objects["fabricLanCloud"][0].qin_q_forwarding
+
+            if "fabricLanCloudPolicy" in self._config.sdk_objects:
+                if self._config.sdk_objects["fabricLanCloudPolicy"][0].policy_owner in ["policy"]:
+                    self.lan_global_policy_owner = "ucs-central"
 
             if "fabricReservedVlan" in self._config.sdk_objects:
                 if self._config.sdk_objects["fabricReservedVlan"]:
@@ -1020,19 +1237,31 @@ class UcsSystemGlobalPolicies(UcsSystemConfigObject):
                 self.inband_profile_vlan_group = self._config.sdk_objects["mgmtInbandProfile"][0].name
                 self.inband_profile_network = self._config.sdk_objects["mgmtInbandProfile"][0].default_vlan_name
                 self.inband_profile_ip_pool_name = self._config.sdk_objects["mgmtInbandProfile"][0].pool_name
+                if self._config.sdk_objects["mgmtInbandProfile"][0].policy_owner in ["policy"]:
+                    self.inband_profile_policy_owner = "ucs-central"
 
             if "powerMgmtPolicy" in self._config.sdk_objects:
                 self.global_power_allocation_policy = self._config.sdk_objects["powerMgmtPolicy"][0].style
                 self.global_power_profiling_policy = self._config.sdk_objects["powerMgmtPolicy"][0].profiling
+                if self._config.sdk_objects["powerMgmtPolicy"][0].policy_owner in ["policy"]:
+                    self.global_power_policy_owner = "ucs-central"
 
             if "firmwareAutoSyncPolicy" in self._config.sdk_objects:
                 self.firmware_auto_sync_server_policy = self._config.sdk_objects["firmwareAutoSyncPolicy"][0].sync_state
+                if self._config.sdk_objects["firmwareAutoSyncPolicy"][0].policy_owner in ["policy"]:
+                    self.firmware_auto_sync_server_policy_owner = "ucs-central"
 
             if "topInfoPolicy" in self._config.sdk_objects:
                 self.info_policy = self._config.sdk_objects["topInfoPolicy"][0].state
 
+            if "topInfoSyncPolicy" in self._config.sdk_objects:
+                if self._config.sdk_objects["topInfoSyncPolicy"][0].policy_owner in ["policy"]:
+                    self.info_policy_owner = "ucs-central"
+
             if "computeHwChangeDiscPolicy" in self._config.sdk_objects:
                 self.hardware_change_discovery_policy = self._config.sdk_objects["computeHwChangeDiscPolicy"][0].action
+                if self._config.sdk_objects["computeHwChangeDiscPolicy"][0].policy_owner in ["policy"]:
+                    self.hardware_change_discovery_policy_owner = "ucs-central"
 
             if "fabricFcSan" in self._config.sdk_objects:
                 for fi in self._config.sdk_objects["fabricFcSan"]:
@@ -1115,10 +1344,19 @@ class UcsSystemGlobalPolicies(UcsSystemConfigObject):
                     return False
 
         if self.power_policy:
-            mo_compute_psu_policy = ComputePsuPolicy(parent_mo_or_dn=parent_mo_root, redundancy=self.power_policy)
+            mo_compute_psu_policy = ComputePsuPolicy(parent_mo_or_dn=parent_mo_root, redundancy=self.power_policy,
+                                                     mode=self.power_save_policy)
             self._handle.add_mo(mo_compute_psu_policy, modify_present=True)
             if commit:
                 if self.commit("Power Policy") != True:
+                    return False
+
+        if self.power_extended_policy:
+            mo_compute_power_extended_policy = ComputePowerExtendedPolicy(parent_mo_or_dn=parent_mo_root,
+                                                                          extended_mode=self.power_extended_policy)
+            self._handle.add_mo(mo_compute_power_extended_policy, modify_present=True)
+            if commit:
+                if self.commit("Power Extended Policy") != True:
                     return False
 
         if self.fan_control_policy:
@@ -1130,6 +1368,26 @@ class UcsSystemGlobalPolicies(UcsSystemConfigObject):
             self._handle.add_mo(mo_compute_fan_policy, modify_present=True)
             if commit:
                 if self.commit("Fan Control Policy") != True:
+                    return False
+
+        if self.x9508_chassis_fan_control_policy:
+            if self.x9508_chassis_fan_control_policy == "acoustic":
+                speed = "Acoustic"
+            elif self.x9508_chassis_fan_control_policy == "balanced":
+                speed = "Balanced"
+            elif self.x9508_chassis_fan_control_policy == "high-power":
+                speed = "High Power"
+            elif self.x9508_chassis_fan_control_policy == "low-power":
+                speed = "Low Power"
+            elif self.x9508_chassis_fan_control_policy == "max-power":
+                speed = "Max Power"
+            elif self.x9508_chassis_fan_control_policy == "performance":
+                speed = "Performance"
+            mo_compute_modular_chassis_fan_policy = ComputeModularChassisFanPolicy(parent_mo_or_dn=parent_mo_root,
+                                                                                   speed=speed)
+            self._handle.add_mo(mo_compute_modular_chassis_fan_policy, modify_present=True)
+            if commit:
+                if self.commit("UCS X9508 Chassis Fan Control Policy") != True:
                     return False
 
         if self.mac_address_table_aging:
@@ -1146,6 +1404,14 @@ class UcsSystemGlobalPolicies(UcsSystemConfigObject):
             self._handle.add_mo(mo_fabric_lan_cloud, modify_present=True)
             if commit:
                 if self.commit("VLAN Port Count Optimization") != True:
+                    return False
+
+        if self.q_in_q_forwarding:
+            mo_fabric_lan_cloud = FabricLanCloud(parent_mo_or_dn=parent_mo_fabric,
+                                                 qin_q_forwarding=self.q_in_q_forwarding)
+            self._handle.add_mo(mo_fabric_lan_cloud, modify_present=True)
+            if commit:
+                if self.commit("Q-in-Q Forwarding") != True:
                     return False
 
         # TODO: Support modifying Reserved VLAN IDs by handling associated required reboot
@@ -1246,9 +1512,10 @@ class UcsSystemGlobalPolicies(UcsSystemConfigObject):
 
 class UcsSystemFaultPolicy(UcsSystemConfigObject):
     _CONFIG_NAME = "Global Fault Policy"
+    _CONFIG_SECTION_NAME = "global_fault_policy"
 
-    def __init__(self, parent=None, json_content=None):
-        UcsSystemConfigObject.__init__(self, parent=parent)
+    def __init__(self, parent=None, json_content=None, fault_policy=None):
+        UcsSystemConfigObject.__init__(self, parent=parent, ucs_sdk_object=fault_policy)
         self.flapping_interval = None
         self.clear_action = None
         self.clear_interval = None
@@ -1256,13 +1523,11 @@ class UcsSystemFaultPolicy(UcsSystemConfigObject):
         self.baseline_expiration_interval = None
 
         if self._config.load_from == "live":
-            if "faultPolicy" in self._config.sdk_objects:
-                self.flapping_interval = self._config.sdk_objects["faultPolicy"][0].flap_interval
-                self.clear_action = self._config.sdk_objects["faultPolicy"][0].clear_action
-                self.clear_interval = self._config.sdk_objects["faultPolicy"][0].clear_interval
-                self.retention_interval = self._config.sdk_objects["faultPolicy"][0].retention_interval
-                self.baseline_expiration_interval = \
-                    self._config.sdk_objects["faultPolicy"][0].pinning_expiration_interval
+            self.flapping_interval = fault_policy.flap_interval
+            self.clear_action = fault_policy.clear_action
+            self.clear_interval = fault_policy.clear_interval
+            self.retention_interval = fault_policy.retention_interval
+            self.baseline_expiration_interval = fault_policy.pinning_expiration_interval
 
         elif self._config.load_from == "file":
             if json_content is not None:
@@ -1295,14 +1560,22 @@ class UcsSystemFaultPolicy(UcsSystemConfigObject):
 
 class UcsSystemSyslog(UcsSystemConfigObject):
     _CONFIG_NAME = "Syslog"
+    _CONFIG_SECTION_NAME = "syslog"
 
     def __init__(self, parent=None, json_content=None):
         UcsSystemConfigObject.__init__(self, parent=parent)
+        self.rfc_5424_compliance = None
         self.local_destinations = []
         self.local_sources = []
         self.remote_destinations = []
 
         if self._config.load_from == "live":
+            if "commSyslog" in self._config.sdk_objects:
+                syslog_list = [syslog for syslog in self._config.sdk_objects["commSyslog"] if
+                               syslog.dn == "sys/svc-ext/syslog"]
+                if len(syslog_list) == 1:
+                    self.rfc_5424_compliance = syslog_list[0].rfc5424_compliance
+
             # Local destinations
             if "commSyslogConsole" in self._config.sdk_objects:
                 syslog_list = [syslog for syslog in self._config.sdk_objects["commSyslogConsole"] if
@@ -1394,63 +1667,68 @@ class UcsSystemSyslog(UcsSystemConfigObject):
             self.logger(message="Adding to the handle " + self._CONFIG_NAME + " configuration" +
                                 ", waiting for a commit")
 
-        parent_mo = "sys/svc-ext/syslog"
+        parent_mo = "sys/svc-ext"
+        mo_syslog = CommSyslog(parent_mo_or_dn=parent_mo, rfc5424_compliance=self.rfc_5424_compliance)
+        self._handle.add_mo(mo_syslog, modify_present=True)
 
         # Local destinations
         for local_dest in self.local_destinations:
             if "console" in local_dest:
                 if local_dest["console"]:
-                    mo_comm_syslog_console = CommSyslogConsole(parent_mo_or_dn=parent_mo,
-                                                               admin_state=local_dest["console"][0]["admin_state"],
-                                                               severity=local_dest["console"][0]["level"])
+                    mo_comm_syslog_console = CommSyslogConsole(parent_mo_or_dn=mo_syslog,
+                                                               admin_state=local_dest["console"][0].get("admin_state"),
+                                                               severity=local_dest["console"][0].get("level"))
                     self._handle.add_mo(mo_comm_syslog_console, modify_present=True)
 
             if "monitor" in local_dest:
                 if local_dest["monitor"]:
-                    mo_comm_syslog_monitor = CommSyslogMonitor(parent_mo_or_dn=parent_mo,
-                                                               admin_state=local_dest["monitor"][0]["admin_state"],
-                                                               severity=local_dest["monitor"][0]["level"])
+                    mo_comm_syslog_monitor = CommSyslogMonitor(parent_mo_or_dn=mo_syslog,
+                                                               admin_state=local_dest["monitor"][0].get("admin_state"),
+                                                               severity=local_dest["monitor"][0].get("level"))
                     self._handle.add_mo(mo_comm_syslog_monitor, modify_present=True)
 
             if "file" in local_dest:
                 if local_dest["file"]:
-                    mo_comm_syslog_file = CommSyslogFile(parent_mo_or_dn=parent_mo,
-                                                         admin_state=local_dest["file"][0]["admin_state"],
-                                                         severity=local_dest["file"][0]["level"],
-                                                         name=local_dest["file"][0]["name"],
-                                                         size=local_dest["file"][0]["size"])
+                    mo_comm_syslog_file = CommSyslogFile(parent_mo_or_dn=mo_syslog,
+                                                         admin_state=local_dest["file"][0].get("admin_state"),
+                                                         severity=local_dest["file"][0].get("level"),
+                                                         name=local_dest["file"][0].get("name"),
+                                                         size=local_dest["file"][0].get("size"))
                     self._handle.add_mo(mo_comm_syslog_file, modify_present=True)
 
         # Remote destinations
         for remote_dest in self.remote_destinations:
             if "server1" in remote_dest:
                 if remote_dest["server1"]:
-                    mo_comm_syslog_client = CommSyslogClient(parent_mo_or_dn=parent_mo,
-                                                             name="primary",
-                                                             admin_state=remote_dest["server1"][0]["admin_state"],
-                                                             severity=remote_dest["server1"][0]["level"],
-                                                             forwarding_facility=remote_dest["server1"][0]["facility"],
-                                                             hostname=remote_dest["server1"][0]["hostname"])
+                    mo_comm_syslog_client = CommSyslogClient(
+                        parent_mo_or_dn=mo_syslog, name="primary",
+                        admin_state=remote_dest["server1"][0].get("admin_state"),
+                        severity=remote_dest["server1"][0].get("level"),
+                        forwarding_facility=remote_dest["server1"][0].get("facility"),
+                        hostname=remote_dest["server1"][0].get("hostname")
+                    )
                     self._handle.add_mo(mo_comm_syslog_client, modify_present=True)
 
             if "server2" in remote_dest:
                 if remote_dest["server2"]:
-                    mo_comm_syslog_client = CommSyslogClient(parent_mo_or_dn=parent_mo,
-                                                             name="secondary",
-                                                             admin_state=remote_dest["server2"][0]["admin_state"],
-                                                             severity=remote_dest["server2"][0]["level"],
-                                                             forwarding_facility=remote_dest["server2"][0]["facility"],
-                                                             hostname=remote_dest["server2"][0]["hostname"])
+                    mo_comm_syslog_client = CommSyslogClient(
+                        parent_mo_or_dn=mo_syslog, name="secondary",
+                        admin_state=remote_dest["server2"][0].get("admin_state"),
+                        severity=remote_dest["server2"][0].get("level"),
+                        forwarding_facility=remote_dest["server2"][0].get("facility"),
+                        hostname=remote_dest["server2"][0].get("hostname")
+                    )
                     self._handle.add_mo(mo_comm_syslog_client, modify_present=True)
 
             if "server3" in remote_dest:
                 if remote_dest["server3"]:
-                    mo_comm_syslog_client = CommSyslogClient(parent_mo_or_dn=parent_mo,
-                                                             name="tertiary",
-                                                             admin_state=remote_dest["server3"][0]["admin_state"],
-                                                             severity=remote_dest["server3"][0]["level"],
-                                                             forwarding_facility=remote_dest["server3"][0]["facility"],
-                                                             hostname=remote_dest["server3"][0]["hostname"])
+                    mo_comm_syslog_client = CommSyslogClient(
+                        parent_mo_or_dn=mo_syslog, name="tertiary",
+                        admin_state=remote_dest["server3"][0].get("admin_state"),
+                        severity=remote_dest["server3"][0].get("level"),
+                        forwarding_facility=remote_dest["server3"][0].get("facility"),
+                        hostname=remote_dest["server3"][0].get("hostname")
+                    )
                     self._handle.add_mo(mo_comm_syslog_client, modify_present=True)
 
         # Local sources
@@ -1465,30 +1743,35 @@ class UcsSystemSyslog(UcsSystemConfigObject):
             if "events" in local_source:
                 events = local_source["events"]
 
-            mo_comm_syslog_source = CommSyslogSource(parent_mo_or_dn=parent_mo, faults=faults, audits=audits,
+            mo_comm_syslog_source = CommSyslogSource(parent_mo_or_dn=mo_syslog, faults=faults, audits=audits,
                                                      events=events)
             self._handle.add_mo(mo_comm_syslog_source, modify_present=True)
 
         if commit:
-            if self.commit() != True:
+            if self.commit(detail="Settings & Destinations") != True:
                 return False
         return True
 
 
 class UcsSystemCommunicationServices(UcsSystemConfigObject):
     _CONFIG_NAME = "Communication Services"
+    _CONFIG_SECTION_NAME = "communication_services"
 
     def __init__(self, parent=None, json_content=None):
         UcsSystemConfigObject.__init__(self, parent=parent)
         self.web_session_limits = []
         self.shell_session_limits = []
         self.cimc_web_service = None
+        self.cimc_web_service_policy_owner = None
         self.http_service = []
         self.telnet_service = None
+        self.telnet_service_policy_owner = None
         self.https_service = []
         self.cim_xml_service = None
+        self.cim_xml_service_policy_owner = None
         self.snmp_service = []
         self.ssh_service = None
+        self.ssh_service_policy_owner = None
 
         if self._config.load_from == "live":
             # Locating SDK objects needed to initialize
@@ -1498,6 +1781,8 @@ class UcsSystemCommunicationServices(UcsSystemConfigObject):
                 self.web_session_limits[0].update({"maximum_sessions_per_user": web_session_limits.sessions_per_user})
                 self.web_session_limits[0].update({"maximum_sessions": web_session_limits.total_sessions})
                 self.web_session_limits[0].update({"maximum_event_interval": web_session_limits.max_event_interval})
+                if web_session_limits.policy_owner in ["policy"]:
+                    self.web_session_limits[0].update({"policy_owner": "ucs-central"})
 
             if "commShellSvcLimits" in self._config.sdk_objects:
                 self.shell_session_limits = [{}]
@@ -1505,9 +1790,13 @@ class UcsSystemCommunicationServices(UcsSystemConfigObject):
                 self.shell_session_limits[0].update(
                     {"maximum_sessions_per_user": shell_session_limits.sessions_per_user})
                 self.shell_session_limits[0].update({"maximum_sessions": shell_session_limits.total_sessions})
+                if shell_session_limits.policy_owner in ["policy"]:
+                    self.shell_session_limits[0].update({"policy_owner": "ucs-central"})
 
             if "commCimcWebService" in self._config.sdk_objects:
                 self.cimc_web_service = self._config.sdk_objects["commCimcWebService"][0].admin_state
+                if self._config.sdk_objects["commCimcWebService"][0].policy_owner in ["policy"]:
+                    self.cimc_web_service_policy_owner = "ucs-central"
 
             if "commHttp" in self._config.sdk_objects:
                 self.http_service = [{}]
@@ -1516,9 +1805,13 @@ class UcsSystemCommunicationServices(UcsSystemConfigObject):
                 self.http_service[0].update({"timeout": http_service.request_timeout})
                 self.http_service[0].update({"redirect_to_https": http_service.redirect_state})
                 self.http_service[0].update({"port": http_service.port})
+                if http_service.policy_owner in ["policy"]:
+                    self.http_service[0].update({"policy_owner": "ucs-central"})
 
             if "commTelnet" in self._config.sdk_objects:
                 self.telnet_service = self._config.sdk_objects["commTelnet"][0].admin_state
+                if self._config.sdk_objects["commTelnet"][0].policy_owner in ["policy"]:
+                    self.telnet_service_policy_owner = "ucs-central"
 
             if "commHttps" in self._config.sdk_objects:
                 self.https_service = [{}]
@@ -1529,6 +1822,8 @@ class UcsSystemCommunicationServices(UcsSystemConfigObject):
                 self.https_service[0].update({"cipher_mode": https_service.cipher_suite_mode})
                 self.https_service[0].update({"custom_cipher_suite": https_service.cipher_suite})
                 self.https_service[0].update({"allowed_ssl_protocols": https_service.allowed_ssl_protocols})
+                if https_service.policy_owner in ["policy"]:
+                    self.https_service[0].update({"policy_owner": "ucs-central"})
 
                 if self.https_service[0]["allowed_ssl_protocols"] == "default":
                     # "default" in the UCSM GUI is "all" in the SDK
@@ -1538,14 +1833,23 @@ class UcsSystemCommunicationServices(UcsSystemConfigObject):
 
             if "commCimxml" in self._config.sdk_objects:
                 self.cim_xml_service = self._config.sdk_objects["commCimxml"][0].admin_state
+                if self._config.sdk_objects["commCimxml"][0].policy_owner in ["policy"]:
+                    self.cim_xml_service_policy_owner = "ucs-central"
 
             if "commSnmp" in self._config.sdk_objects:
                 self.snmp_service = [{}]
                 snmp_service = self._config.sdk_objects["commSnmp"][0]
                 self.snmp_service[0].update({"state": snmp_service.admin_state})
+                self.snmp_service[0].update({"protocol": snmp_service.protocol})
                 self.snmp_service[0].update({"community": snmp_service.community})
                 self.snmp_service[0].update({"contact": snmp_service.sys_contact})
                 self.snmp_service[0].update({"location": snmp_service.sys_location})
+                if snmp_service.policy_owner in ["policy"]:
+                    self.snmp_service[0].update({"policy_owner": "ucs-central"})
+
+                if snmp_service.is_set_snmp_secure:
+                    self.logger(level="warning", message="Community of SNMP Service can't be exported")
+
                 if "commSnmpTrap" in self._config.sdk_objects:
                     self.snmp_service[0].update({"snmp_traps": []})
                     traps = self.snmp_service[0]["snmp_traps"]
@@ -1565,14 +1869,21 @@ class UcsSystemCommunicationServices(UcsSystemConfigObject):
                         user = {}
                         user.update({"name": snmp_user.name})
                         user.update({"descr": snmp_user.descr})
-                        user.update({"privacy_password": snmp_user.privpwd})
-                        user.update({"password": snmp_user.pwd})
                         user.update({"auth_type": snmp_user.auth})
                         user.update({"use_aes": snmp_user.use_aes})
                         users.append(user)
 
+                        if snmp_user.pwd_set:
+                            self.logger(level="warning",
+                                        message="Password of SNMP User " + snmp_user.name + " can't be exported")
+                        if snmp_user.priv_pwd_set:
+                            self.logger(level="warning",
+                                        message="Priv Password of SNMP User " + snmp_user.name + " can't be exported")
+
             if "commSsh" in self._config.sdk_objects:
                 self.ssh_service = self._config.sdk_objects["commSsh"][0].admin_state
+                if self._config.sdk_objects["commSsh"][0].policy_owner in ["policy"]:
+                    self.ssh_service_policy_owner = "ucs-central"
 
         elif self._config.load_from == "file":
             if json_content is not None:
@@ -1580,24 +1891,26 @@ class UcsSystemCommunicationServices(UcsSystemConfigObject):
                     self.logger(level="error",
                                 message="Unable to get attributes from JSON content for " + self._CONFIG_NAME)
                 for element in self.web_session_limits:
-                    for value in ["maximum_sessions_per_user", "maximum_sessions", "maximum_event_interval"]:
+                    for value in ["maximum_sessions_per_user", "maximum_sessions", "maximum_event_interval",
+                                  "policy_owner"]:
                         if value not in element:
                             element[value] = None
                 for element in self.shell_session_limits:
-                    for value in ["maximum_sessions_per_user", "maximum_sessions"]:
+                    for value in ["maximum_sessions_per_user", "maximum_sessions", "policy_owner"]:
                         if value not in element:
                             element[value] = None
                 for element in self.http_service:
-                    for value in ["state", "timeout", "redirect_to_https", "port"]:
+                    for value in ["state", "timeout", "redirect_to_https", "port", "policy_owner"]:
                         if value not in element:
                             element[value] = None
                 for element in self.https_service:
                     for value in ["state", "port", "keyring", "cipher_mode", "custom_cipher_suite",
-                                  "allowed_ssl_protocols"]:
+                                  "allowed_ssl_protocols", "policy_owner"]:
                         if value not in element:
                             element[value] = None
                 for element in self.snmp_service:
-                    for value in ["state", "community", "contact", "location", "snmp_traps", "snmp_users"]:
+                    for value in ["state", "protocol", "community", "contact", "location", "snmp_traps", "snmp_users",
+                                  "policy_owner"]:
                         if value not in element:
                             element[value] = None
                     if element["snmp_traps"]:
@@ -1691,6 +2004,7 @@ class UcsSystemCommunicationServices(UcsSystemConfigObject):
 
         if self.snmp_service:
             mo_comm_snmp = CommSnmp(parent_mo_or_dn=parent_mo_svc_ext, admin_state=self.snmp_service[0]["state"],
+                                    protocol=self.snmp_service[0]["protocol"],
                                     community=self.snmp_service[0]["community"],
                                     sys_contact=self.snmp_service[0]["contact"],
                                     sys_location=self.snmp_service[0]["location"])
@@ -1723,6 +2037,7 @@ class UcsSystemCommunicationServices(UcsSystemConfigObject):
 
 class UcsSystemBackupExportPolicy(UcsSystemConfigObject):
     _CONFIG_NAME = "Backup Export Policy"
+    _CONFIG_SECTION_NAME = "backup_export_policy"
 
     def __init__(self, parent=None, json_content=None):
         UcsSystemConfigObject.__init__(self, parent=parent)
@@ -1854,6 +2169,7 @@ class UcsSystemBackupExportPolicy(UcsSystemConfigObject):
 
 class UcsSystemSelPolicy(UcsSystemConfigObject):
     _CONFIG_NAME = "SEL Policy"
+    _CONFIG_SECTION_NAME = "sel_policy"
 
     def __init__(self, parent=None, json_content=None):
         UcsSystemConfigObject.__init__(self, parent=parent)
@@ -1872,6 +2188,8 @@ class UcsSystemSelPolicy(UcsSystemConfigObject):
             # Locating SDK objects needed to initialize
             if "sysdebugMEpLogPolicy" in self._config.sdk_objects:
                 self.description = self._config.sdk_objects["sysdebugMEpLogPolicy"][0].descr
+                if self._config.sdk_objects["sysdebugMEpLogPolicy"][0].policy_owner in ["policy"]:
+                    self.policy_owner = "ucs-central"
             if "sysdebugBackupBehavior" in self._config.sdk_objects:
                 self.action = [action for action in
                                self._config.sdk_objects["sysdebugBackupBehavior"][0].action.split(',') if action != ""]
@@ -1921,6 +2239,7 @@ class UcsSystemSelPolicy(UcsSystemConfigObject):
 
 class UcsSystemUcsCentral(UcsSystemConfigObject):
     _CONFIG_NAME = "UCS Central"
+    _CONFIG_SECTION_NAME = "ucs_central"
 
     def __init__(self, parent=None, json_content=None):
         UcsSystemConfigObject.__init__(self, parent=parent)
@@ -1942,7 +2261,7 @@ class UcsSystemUcsCentral(UcsSystemConfigObject):
 
                 self.logger(level="warning", message="Password of " + self._CONFIG_NAME + " can't be exported")
 
-                if 'policyCommunication'or 'policyConfigBackup' or 'policyDateTime' or 'policyDns' or 'policyEquipment'\
+                if 'policyCommunication' or 'policyConfigBackup' or 'policyDateTime' or 'policyDns' or 'policyEquipment'\
                         or 'policyFault' or 'policyInfraFirmware' or 'policyMEp' or 'policyMonitoring'\
                         or 'policyPortConfig' or 'policyPowerMgmt' or 'policyPsu'\
                         or 'policySecurity' in self._config.sdk_objects:
@@ -2135,6 +2454,7 @@ class UcsSystemUcsCentral(UcsSystemConfigObject):
 
 class UcsSystemSwitchingMode(UcsSystemConfigObject):
     _CONFIG_NAME = "Switching Mode"
+    _CONFIG_SECTION_NAME = "switching_mode"
 
     def __init__(self, parent=None, json_content=None):
         UcsSystemConfigObject.__init__(self, parent=parent)
@@ -2298,6 +2618,7 @@ class UcsSystemSwitchingMode(UcsSystemConfigObject):
 
 class UcsSystemRadius(UcsSystemConfigObject):
     _CONFIG_NAME = "RADIUS"
+    _CONFIG_SECTION_NAME = "radius"
 
     def __init__(self, parent=None, json_content=None):
         UcsSystemConfigObject.__init__(self, parent=parent)
@@ -2311,6 +2632,8 @@ class UcsSystemRadius(UcsSystemConfigObject):
             if "aaaRadiusEp" in self._config.sdk_objects:
                 self.timeout = self._config.sdk_objects["aaaRadiusEp"][0].timeout
                 self.retries = self._config.sdk_objects["aaaRadiusEp"][0].retries
+                if self._config.sdk_objects["aaaRadiusEp"][0].policy_owner in ["policy"]:
+                    self.policy_owner = "ucs-central"
 
             if "aaaRadiusProvider" in self._config.sdk_objects:
                 for radius_provider in self._config.sdk_objects["aaaRadiusProvider"]:
@@ -2385,6 +2708,7 @@ class UcsSystemRadius(UcsSystemConfigObject):
 
 class UcsSystemTacacs(UcsSystemConfigObject):
     _CONFIG_NAME = "TACACS"
+    _CONFIG_SECTION_NAME = "tacacs"
 
     def __init__(self, parent=None, json_content=None):
         UcsSystemConfigObject.__init__(self, parent=parent)
@@ -2396,6 +2720,8 @@ class UcsSystemTacacs(UcsSystemConfigObject):
             # Locating SDK objects needed to initialize
             if "aaaTacacsPlusEp" in self._config.sdk_objects:
                 self.timeout = self._config.sdk_objects["aaaTacacsPlusEp"][0].timeout
+                if self._config.sdk_objects["aaaTacacsPlusEp"][0].policy_owner in ["policy"]:
+                    self.policy_owner = "ucs-central"
 
             if "aaaTacacsPlusProvider" in self._config.sdk_objects:
                 for tacacs_provider in self._config.sdk_objects["aaaTacacsPlusProvider"]:
@@ -2470,6 +2796,7 @@ class UcsSystemTacacs(UcsSystemConfigObject):
 
 class UcsSystemLdap(UcsSystemConfigObject):
     _CONFIG_NAME = "LDAP"
+    _CONFIG_SECTION_NAME = "ldap"
 
     def __init__(self, parent=None, json_content=None):
         UcsSystemConfigObject.__init__(self, parent=parent)
@@ -2488,6 +2815,8 @@ class UcsSystemLdap(UcsSystemConfigObject):
                 self.base_dn = self._config.sdk_objects["aaaLdapEp"][0].basedn
                 self.filter = self._config.sdk_objects["aaaLdapEp"][0].filter
                 self.attribute = self._config.sdk_objects["aaaLdapEp"][0].attribute
+                if self._config.sdk_objects["aaaLdapEp"][0].policy_owner in ["policy"]:
+                    self.policy_owner = "ucs-central"
 
             if "aaaProviderGroup" in self._config.sdk_objects:
                 for aaa_provider_group in [aaa_provider_group for aaa_provider_group in
@@ -2617,6 +2946,7 @@ class UcsSystemLdap(UcsSystemConfigObject):
 
 class UcsSystemAuthentication(UcsSystemConfigObject):
     _CONFIG_NAME = "Authentication"
+    _CONFIG_SECTION_NAME = "authentication"
 
     def __init__(self, parent=None, json_content=None):
         UcsSystemConfigObject.__init__(self, parent=parent)
@@ -2788,6 +3118,7 @@ class UcsSystemAuthentication(UcsSystemConfigObject):
 
 class UcsSystemCallHome(UcsSystemConfigObject):
     _CONFIG_NAME = "Call Home"
+    _CONFIG_SECTION_NAME = "call_home"
 
     def __init__(self, parent=None, json_content=None):
         UcsSystemConfigObject.__init__(self, parent=parent)
@@ -2795,6 +3126,9 @@ class UcsSystemCallHome(UcsSystemConfigObject):
         self.anonymous_reporting = None
         self.smtp_host = None
         self.smtp_port = None
+        self.smtp_authentication = None
+        self.smtp_username = None
+        self.smtp_password = None
         self.system_inventory = None
         self.system_inventory_send_now = None
         self.system_inventory_send_interval = None
@@ -2826,11 +3160,19 @@ class UcsSystemCallHome(UcsSystemConfigObject):
                 if self._config.sdk_objects["callhomeSmtp"]:
                     self.smtp_port = self._config.sdk_objects["callhomeSmtp"][0].port
                     self.smtp_host = self._config.sdk_objects["callhomeSmtp"][0].host
+                    self.smtp_authentication = self._config.sdk_objects["callhomeSmtp"][0].smtp_authentication
+                    if self.smtp_authentication in ["on"]:
+                        self.smtp_username = self._config.sdk_objects["callhomeSmtp"][0].username
+                        self.logger(level="warning",
+                                    message="Password of " + self._CONFIG_NAME + " SMTP Authentication" +
+                                            " Username '" + str(self.smtp_username) + "' can't be exported")
 
             if "callhomeEp" in self._config.sdk_objects:
                 if self._config.sdk_objects["callhomeEp"]:
                     self.admin_state = self._config.sdk_objects["callhomeEp"][0].admin_state
                     self.throttling = self._config.sdk_objects["callhomeEp"][0].alert_throttling_admin_state
+                    if self._config.sdk_objects["callhomeEp"][0].policy_owner in ["policy"]:
+                        self.policy_owner = "ucs-central"
 
             if "callhomeSource" in self._config.sdk_objects:
                 if self._config.sdk_objects["callhomeSource"]:
@@ -2871,11 +3213,13 @@ class UcsSystemCallHome(UcsSystemConfigObject):
                     profile.update({"profile_level": callhome_profile.level})
                     profile.update({"profile_format": callhome_profile.format})
                     profile.update({"profile_max_size": callhome_profile.max_size})
-                    profile.update({"profile_alert_groups": callhome_profile.alert_groups.split(',')})
+                    if callhome_profile.alert_groups:
+                        profile.update({"profile_alert_groups": callhome_profile.alert_groups.split(',')})
                     profile.update({"profile_emails": []})
                     if "callhomeDest" in self._config.sdk_objects:
                         for callhome_dest in self._config.sdk_objects["callhomeDest"]:
-                            profile["profile_emails"].append(callhome_dest.email)
+                            if callhome_profile.dn + "/" in callhome_dest.dn:
+                                profile["profile_emails"].append(callhome_dest.email)
                     self.profiles.append(profile)
 
         elif self._config.load_from == "file":
@@ -2908,8 +3252,12 @@ class UcsSystemCallHome(UcsSystemConfigObject):
                                                                      user_acknowledged=self.mute_at_start,
                                                                      admin_state=self.anonymous_reporting)
         self._handle.add_mo(mo_callhome_anonymous_reporting, modify_present=True)
-        mo_callhome_smtp = CallhomeSmtp(parent_mo_or_dn=mo_callhome, port=self.smtp_port, host=self.smtp_host)
+
+        mo_callhome_smtp = CallhomeSmtp(parent_mo_or_dn=mo_callhome, port=self.smtp_port, host=self.smtp_host,
+                                        smtp_authentication=self.smtp_authentication, username=self.smtp_username,
+                                        password=self.smtp_password)
         self._handle.add_mo(mo_callhome_smtp, modify_present=True)
+
         mo_callhome_ep = CallhomeEp(admin_state=self.admin_state, alert_throttling_admin_state=self.throttling)
         CallhomeSource(parent_mo_or_dn=mo_callhome_ep, contact=self.contact, phone=self.phone, email=self.email,
                        addr=self.address, contract=self.contract_id, customer=self.customer_id, site=self.site_id,
@@ -2951,25 +3299,22 @@ class UcsSystemCallHome(UcsSystemConfigObject):
         self._handle.add_mo(mo_callhome_anonymous_reporting, modify_present=True)
 
         if commit:
-            if self.commit() != True:
+            if self.commit(detail="Configuration") != True:
                 return False
         return True
 
 
 class UcsSystemPortAutoDiscoveryPolicy(UcsSystemConfigObject):
     _CONFIG_NAME = "Port Auto Discovery Policy"
+    _CONFIG_SECTION_NAME = "port_auto_discovery_policy"
 
-    def __init__(self, parent=None, json_content=None):
-        UcsSystemConfigObject.__init__(self, parent=parent)
+    def __init__(self, parent=None, json_content=None, compute_port_disc_policy=None):
+        UcsSystemConfigObject.__init__(self, parent=parent, ucs_sdk_object=compute_port_disc_policy)
 
         self.auto_configure_server_ports = None
 
         if self._config.load_from == "live":
-            # Locating SDK objects needed to initialize
-            if "computePortDiscPolicy" in self._config.sdk_objects:
-                discovery_policy = [policy for policy in self._config.sdk_objects["computePortDiscPolicy"]]
-                if len(discovery_policy):
-                    self.auto_configure_server_ports = discovery_policy[0].eth_svr_auto_discovery
+            self.auto_configure_server_ports = compute_port_disc_policy.eth_svr_auto_discovery
 
         elif self._config.load_from == "file":
             if json_content is not None:

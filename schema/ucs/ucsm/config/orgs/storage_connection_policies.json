@@ -22,15 +22,22 @@
          "default": "",
          "pattern": "^[ !#$%&\\(\\)\\*\\+,\\-\\./:;\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{0,256}$"
       },
+      "policy_owner": {
+         "description": "Storage Connection Policy Owner (for UCS Central)",
+         "type": "string",
+         "enum": [
+            "ucs-central"
+         ]
+      },
       "zoning_type": {
          "description": "Storage Connection Policy - Zoning Type",
          "type": "string",
          "default": "single_initiator_single_target",
          "enum": [
-            "single_initiator_single_target", 
-            "single_initiator_multiple_targets", 
-            "none", 
-            "simt", 
+            "single_initiator_single_target",
+            "single_initiator_multiple_targets",
+            "none",
+            "simt",
             "sist"
          ]
       },
@@ -56,7 +63,7 @@
                   "description": "Storage Connection Policy - FC Target Endpoint - Path",
                   "type": "string",
                   "default": "A",
-                  "enum":  [
+                  "enum": [
                      "A",
                      "B"
                   ]

@@ -53,6 +53,16 @@
          },
          "minItems": 1
       },
+      "appliance_network_control_policies": {
+         "description": "EasyUCS config/domain_groups/appliance_network_control_policies section",
+         "type": "array",
+         "items": {
+            "description": "EasyUCS config/domain_groups/appliance_network_control_policies element",
+            "type": "object",
+            "$ref": "domain_groups/appliance_network_control_policies.json"
+         },
+         "minItems": 1
+      },
       "appliance_vlans": {
          "description": "EasyUCS config/domain_groups/appliance_vlans section",
          "type": "array",
@@ -96,6 +106,36 @@
          "minItems": 1,
          "maxItems": 1
       },
+      "flow_control_policies": {
+         "description": "EasyUCS config/domain_groups/flow_control_policies section",
+         "type": "array",
+         "items": {
+            "description:": "EasyUCS config/domain_groups/flow_control_policies element",
+            "type": "object",
+            "$ref": "domain_groups/flow_control_policies.json"
+         },
+         "minItems": 1
+      },
+      "hardware_change_discovery_policies": {
+         "description": "EasyUCS config/domain_groups/hardware_change_discovery_policies section",
+         "type": "array",
+         "items": {
+            "description:": "EasyUCS config/domain_groups/hardware_change_discovery_policies element",
+            "type": "object",
+            "$ref": "domain_groups/hardware_change_discovery_policies.json"
+         },
+         "minItems": 1
+      },
+      "inband_policies": {
+         "description": "EasyUCS config/domain_groups/inband_policies section",
+         "type": "array",
+         "items": {
+            "description": "EasyUCS config/domain_groups/inband_policies element",
+            "type": "object",
+            "$ref": "domain_groups/inband_policies.json"
+         },
+         "minItems": 1
+      },
       "ip_pools": {
          "description": "EasyUCS config/domain_groups/ip_pools section",
          "type": "array",
@@ -106,6 +146,36 @@
          },
          "minItems": 1
       },
+      "kmip_certification_policies": {
+         "description": "EasyUCS config/domain_groups/kmip_certification_policies section",
+         "type": "array",
+         "items": {
+            "description:": "EasyUCS config/domain_groups/kmip_certification_policies element",
+            "type": "object",
+            "$ref": "domain_groups/kmip_certification_policies.json"
+         },
+         "minItems": 1
+      },
+      "lacp_policies": {
+         "description": "EasyUCS config/domain_groups/lacp_policies section",
+         "type": "array",
+         "items": {
+            "description:": "EasyUCS config/domain_groups/lacp_policies element",
+            "type": "object",
+            "$ref": "domain_groups/lacp_policies.json"
+         },
+         "minItems": 1
+      },
+      "link_profiles": {
+         "description": "EasyUCS config/domain_groups/link_profiles section",
+         "type": "array",
+         "items": {
+            "description": "EasyUCS config/domain_groups/link_profiles element",
+            "type": "object",
+            "$ref": "domain_groups/link_profiles.json"
+         },
+         "minItems": 1
+      },
       "locales": {
          "description": "EasyUCS config/domain_groups/locales section",
          "type": "array",
@@ -113,6 +183,26 @@
             "description": "EasyUCS config/domain_groups/locales element",
             "type": "object",
             "$ref": "domain_groups/locales.json"
+         },
+         "minItems": 1
+      },
+      "multicast_policies": {
+         "description": "EasyUCS config/domain_groups/multicast_policies section",
+         "type": "array",
+         "items": {
+            "description:": "EasyUCS config/domain_groups/multicast_policies element",
+            "type": "object",
+            "$ref": "domain_groups/multicast_policies.json"
+         },
+         "minItems": 1
+      },
+      "port_auto_discovery_policies": {
+         "description": "EasyUCS config/domain_groups/port_auto_discovery_policies section",
+         "type": "array",
+         "items": {
+            "description:": "EasyUCS config/domain_groups/port_auto_discovery_policies element",
+            "type": "object",
+            "$ref": "domain_groups/port_auto_discovery_policies.json"
          },
          "minItems": 1
       },
@@ -186,6 +276,26 @@
             "description": "EasyUCS config/domain_groups/vsans element",
             "type": "object",
             "$ref": "domain_groups/vsans.json"
+         },
+         "minItems": 1
+      },
+      "storage_vsans": {
+         "description": "EasyUCS config/domain_groups/storage_vsans section",
+         "type": "array",
+         "items": {
+            "description": "EasyUCS config/domain_groups/storage_vsans element",
+            "type": "object",
+            "$ref": "domain_groups/storage_vsans.json"
+         },
+         "minItems": 1
+      },
+      "udld_link_policies": {
+         "description": "EasyUCS config/domain_groups/udld_link_policies section",
+         "type": "array",
+         "items": {
+            "description": "EasyUCS config/domain_groups/udld_link_policies element",
+            "type": "object",
+            "$ref": "domain_groups/udld_link_policies.json"
          },
          "minItems": 1
       }

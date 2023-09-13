@@ -7,9 +7,9 @@
             "category":"best-practices",
             "subcategory":"BIOS",
             "name":"UCS Manager BIOS Policy for Energy Efficiency on Cisco UCS M5 Servers",
-            "url":"https://www.cisco.com/c/dam/en/us/products/collateral/servers-unified-computing/ucs-b-series-blade-servers/whitepaper_c11-740098.pdf",
+            "url":"https://www.cisco.com/c/en/us/products/collateral/servers-unified-computing/ucs-b-series-blade-servers/white-paper-c11-744678.html",
             "easyucs_version":"0.9.0",
-            "revision": "1.0"
+            "revision": "1.1"
          }
       ]
    },
@@ -22,14 +22,14 @@
                   "name":"Energy-M5",
                   "descr": "BIOS Policy for Energy Efficiency on Cisco UCS M5 Servers",
                   "enhanced_intel_speedstep_tech": "platform-default",
-                  "intel_hyperthreading_tech": "disabled",
-                  "intel_virtualization_technology": "disabled",
-                  "intel_vt_for_directed_io": "disabled",
+                  "intel_hyperthreading_tech": "platform-default",
+                  "intel_virtualization_technology": "platform-default",
+                  "intel_vt_for_directed_io": "platform-default",
                   "cpu_performance": "platform-default",
                   "llc_prefetch": "platform-default",
                   "direct_cache_access": "platform-default",
                   "power_technology": "custom",
-                  "intel_turbo_boost_tech": "platform-default",
+                  "intel_turbo_boost_tech": "disabled",
                   "p_state_coordination": "platform-default",
                   "energy_performance": "platform-default",
                   "processor_c_state":"platform-default",
@@ -41,13 +41,13 @@
                   "energy_performance_tuning": "platform-default",
                   "cpu_hardware_power_management":"platform-default",
                   "workload_configuration": "platform-default",
+                  "autonomous_core_c_state": "enabled",
                   "numa_optimized":"platform-default",
                   "imc_inteleave": "platform-default",
                   "xpt_prefetch": "platform-default",
                   "upi_prefetch": "platform-default",
                   "sub_numa_clustering": "platform-default",
                   "memory_ras_configuration": "platform-default"
-
                }
             ]
          }

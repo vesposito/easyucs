@@ -1,0 +1,92 @@
+{
+   "id": "ucs_central_config_host_interface_placement_policies#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS ucs central config orgs host_interface_placement_policies section",
+   "description": "EasyUCS ucs central config orgs host_interface_placement_policies section JSON schema",
+   "type": "object",
+   "properties": {
+      "comment": {
+         "description": "Host Interface Placement Policy Comments",
+         "type": "string",
+         "default": ""
+      },
+      "name": {
+         "description": "Host Interface Placement Policy Name",
+         "type": "string",
+         "default": "",
+         "pattern": "^[\\-\\.:_a-zA-Z0-9]{1,16}$"
+      },
+      "descr": {
+         "description": "Description of Host Interface Placement Policy",
+         "type": "string",
+         "default": "",
+         "pattern": "^[ !#$%&\\(\\)\\*\\+,\\-\\./:;\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{0,256}$"
+      },
+      "virtual_slot_mapping_scheme": {
+         "description": "Host Interface Placement Policy - Mezz Mapping Scheme",
+         "type": "string",
+         "default": "round-robin",
+         "enum": [
+            "round-robin",
+            "linear-ordered"
+         ]
+      },
+      "selection_preference": {
+         "description": "Host Interface Placement Policy - Selection Preference",
+         "type": "array",
+         "items": {
+            "type": "object",
+            "properties": {
+               "slot_id": {
+                  "description": "Host Interface Placement Policy - Selection Preferance Slot ID",
+                  "type": "string",
+                  "default": "",
+                  "pattern": "^[1-4]"
+               },
+               "slot_selection_preference": {
+                  "description": "Host Interface Placement Policy - Virtual Slot Selection Preference",
+                  "type": "string",
+                  "default": "all",
+                  "enum": [
+                     "all",
+                     "assigned-only",
+                     "exclude-dynamic",
+                     "exclude-unassigned",
+                     "exclude-usnic"
+                  ]
+               }
+            },
+            "additionalProperties": false
+         },
+         "minItems": 1
+      },
+      "tags": {
+         "description": "Host Interface Placement Policy - Tags",
+         "type": "array",
+         "items": {
+            "description": "Host Interface Placement Policy - Tag",
+            "type": "object",
+            "properties": {
+               "type": {
+                  "description": "Host Interface Placement Policy - Tag - Type",
+                  "type": "string",
+                  "pattern": "^[ !#$%&\\(\\)\\*\\+,\\-\\.:;=\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{1,32}$"
+               },
+               "value": {
+                  "description": "Host Interface Placement Policy - Tag - Value",
+                  "type": "string"
+               }
+            },
+            "additionalProperties": false,
+            "required": [
+               "type",
+               "value"
+            ]
+         }
+      }
+   },
+   "additionalProperties": false,
+   "required": [
+      "name"
+   ]
+}

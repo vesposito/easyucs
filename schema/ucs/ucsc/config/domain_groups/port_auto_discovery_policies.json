@@ -1,0 +1,63 @@
+{
+   "id": "ucs_central_config_domain_groups_port_auto_discovery_policies#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS ucs central config domain_groups port_auto_discovery_policies section",
+   "description": "EasyUCS ucs central config domain_groups port_auto_discovery_policies section JSON schema",
+   "type": "object",
+   "properties": {
+      "comment": {
+         "description": "Port Auto-Discovery Policy Comments",
+         "type": "string",
+         "default": ""
+      },
+      "name": {
+         "description": "Port Auto-Discovery Policy Name",
+         "type": "string",
+         "default": "",
+         "pattern": "^[\\-\\.:_a-zA-Z0-9]{1,16}$"
+      },
+      "descr": {
+         "description": "Description of Port Auto-Discovery Policy",
+         "type": "string",
+         "default": "",
+         "pattern": "^[ !#$%&\\(\\)\\*\\+,\\-\\./:;\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{0,256}$"
+      },
+      "auto_configure_server_ports": {
+         "description": "Auto Configure Server Ports Admin State",
+         "type": "string",
+         "default": "disabled",
+         "enum": [
+            "disabled",
+            "enabled"
+         ]
+      },
+      "tags": {
+         "description": "Port Auto-Discovery Policy - Tags",
+         "type": "array",
+         "items": {
+            "description": "Port Auto-Discovery Policy - Tag",
+            "type": "object",
+            "properties": {
+               "type": {
+                  "description": "Port Auto-Discovery Policy - Tag - Type",
+                  "type": "string",
+                  "pattern": "^[ !#$%&\\(\\)\\*\\+,\\-\\.:;=\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{1,32}$"
+               },
+               "value": {
+                  "description": "Port Auto-Discovery Policy - Tag - Value",
+                  "type": "string"
+               }
+            },
+            "additionalProperties": false,
+            "required": [
+               "type",
+               "value"
+            ]
+         }
+      }
+   },
+   "additionalProperties": false,
+   "required": [
+      "name"
+   ]
+}

@@ -3,8 +3,7 @@
 
 """ chassis.py: Easy UCS Deployment Tool """
 
-import json
-
+from common import read_json_file
 from draw.ucs.chassis import UcsSystemDrawChassisFront, UcsSystemDrawChassisRear, UcsImcDrawChassisFront, \
     UcsImcDrawChassisRear
 from inventory.ucs.blade import UcsSystemBlade
@@ -40,17 +39,10 @@ class UcsChassis(GenericUcsInventoryObject):
         """
         if self.sku is not None:
             # We use the catalog file to get the chassis IMM Compatibility status
-            try:
-                json_file = open("catalog/chassis/" + self.sku + ".json")
-                chassis_catalog = json.load(fp=json_file)
-                json_file.close()
-
+            chassis_catalog = read_json_file(file_path="catalog/chassis/" + self.sku + ".json", logger=self)
+            if chassis_catalog:
                 if "imm_compatible" in chassis_catalog:
                     return chassis_catalog["imm_compatible"]
-
-            except FileNotFoundError:
-                self.logger(level="error", message="Chassis catalog file " + self.sku + ".json not found")
-                return None
 
         return None
 
@@ -60,17 +52,10 @@ class UcsChassis(GenericUcsInventoryObject):
         """
         if self.sku is not None:
             # We use the catalog file to get the chassis short name
-            try:
-                json_file = open("catalog/chassis/" + self.sku + ".json")
-                chassis_catalog = json.load(fp=json_file)
-                json_file.close()
-
+            chassis_catalog = read_json_file(file_path="catalog/chassis/" + self.sku + ".json", logger=self)
+            if chassis_catalog:
                 if "model_short_name" in chassis_catalog:
                     return chassis_catalog["model_short_name"]
-
-            except FileNotFoundError:
-                self.logger(level="error", message="Chassis catalog file " + self.sku + ".json not found")
-                return None
 
         return None
 
@@ -105,17 +90,10 @@ class UcsIom(GenericUcsInventoryObject):
         """
         if self.sku is not None:
             # We use the catalog file to get the IO Module IMM Compatibility status
-            try:
-                json_file = open("catalog/io_modules/" + self.sku + ".json")
-                iom_catalog = json.load(fp=json_file)
-                json_file.close()
-
+            iom_catalog = read_json_file(file_path="catalog/io_modules/" + self.sku + ".json", logger=self)
+            if iom_catalog:
                 if "imm_compatible" in iom_catalog:
                     return iom_catalog["imm_compatible"]
-
-            except FileNotFoundError:
-                self.logger(level="error", message="IO Module catalog file " + self.sku + ".json not found")
-                return None
 
         return None
 
@@ -125,17 +103,10 @@ class UcsIom(GenericUcsInventoryObject):
         """
         if self.sku is not None:
             # We use the catalog file to get the IO Module short name
-            try:
-                json_file = open("catalog/io_modules/" + self.sku + ".json")
-                iom_catalog = json.load(fp=json_file)
-                json_file.close()
-
+            iom_catalog = read_json_file(file_path="catalog/io_modules/" + self.sku + ".json", logger=self)
+            if iom_catalog:
                 if "model_short_name" in iom_catalog:
                     return iom_catalog["model_short_name"]
-
-            except FileNotFoundError:
-                self.logger(level="error", message="IO Module catalog file " + self.sku + ".json not found")
-                return None
 
         return None
 
@@ -169,10 +140,15 @@ class UcsSystemChassis(UcsChassis, UcsSystemInventoryObject):
 
         UcsSystemInventoryObject.__init__(self, parent=parent, ucs_sdk_object=equipment_chassis)
 
+        # Manually fixing old UCS X-Series chassis SKU
+        if self.sku in ["UCSBX-9508"]:
+            self.sku = "UCSX-9508"
+
         self.blades = self._get_blades()
         self.fabric_interconnects = self._get_fabric_interconnects()
         self.io_modules = self._get_io_modules()
         self.storage_enclosures = self._get_storage_enclosures()
+        self.x_fabric_modules = self._get_x_fabric_modules()
         self.slots_max = self._get_chassis_slots_max()
         self.slots_populated = self._calculate_chassis_slots_populated()
         self.slots_free_half = self._calculate_chassis_slots_free_half()
@@ -223,12 +199,9 @@ class UcsSystemChassis(UcsChassis, UcsSystemInventoryObject):
             return None
 
         # We use the catalog file to get the blades widths
-        try:
-            json_file = open("catalog/chassis/" + self.sku + ".json")
-            chassis_catalog = json.load(fp=json_file)
-            json_file.close()
-        except FileNotFoundError:
-            self.logger(level="error", message="Chassis catalog file " + self.sku + ".json not found")
+        chassis_catalog = read_json_file(file_path="catalog/chassis/" + self.sku + ".json", logger=self)
+        if not chassis_catalog:
+            self.logger(level="warning", message="Could not calculate populated slots")
             return None
 
         if "blades_models" not in chassis_catalog:
@@ -284,12 +257,9 @@ class UcsSystemChassis(UcsChassis, UcsSystemInventoryObject):
             return None
 
         # We use the catalog file to get the number of slots in the chassis
-        try:
-            json_file = open("catalog/chassis/" + self.sku + ".json")
-            chassis_catalog = json.load(fp=json_file)
-            json_file.close()
-        except FileNotFoundError:
-            self.logger(level="error", message="Chassis catalog file " + self.sku + ".json not found")
+        chassis_catalog = read_json_file(file_path="catalog/chassis/" + self.sku + ".json", logger=self)
+        if not chassis_catalog:
+            self.logger(level="warning", message="Could not determine max slots")
             return None
 
         if "blades_slots" in chassis_catalog:
@@ -357,6 +327,9 @@ class UcsSystemChassis(UcsChassis, UcsSystemInventoryObject):
         else:
             return []
 
+    def _get_x_fabric_modules(self):
+        return []
+
 
 class UcsImcChassis(UcsChassis, UcsImcInventoryObject):
     def __init__(self, parent=None, equipment_chassis=None):
@@ -416,12 +389,9 @@ class UcsImcChassis(UcsChassis, UcsImcInventoryObject):
             return None
 
         # We use the catalog file to get the blades widths
-        try:
-            json_file = open("catalog/chassis/" + self.sku + ".json")
-            chassis_catalog = json.load(fp=json_file)
-            json_file.close()
-        except FileNotFoundError:
-            self.logger(level="error", message="Chassis catalog file " + self.sku + ".json not found")
+        chassis_catalog = read_json_file(file_path="catalog/chassis/" + self.sku + ".json", logger=self)
+        if not chassis_catalog:
+            self.logger(level="warning", message="Could not calculate populated slots")
             return None
 
         if "blades_models" not in chassis_catalog:
@@ -463,12 +433,9 @@ class UcsImcChassis(UcsChassis, UcsImcInventoryObject):
             return None
 
         # We use the catalog file to get the number of slots in the chassis
-        try:
-            json_file = open("catalog/chassis/" + self.sku + ".json")
-            chassis_catalog = json.load(fp=json_file)
-            json_file.close()
-        except FileNotFoundError:
-            self.logger(level="error", message="Chassis catalog file " + self.sku + ".json not found")
+        chassis_catalog = read_json_file(file_path="catalog/chassis/" + self.sku + ".json", logger=self)
+        if not chassis_catalog:
+            self.logger(level="warning", message="Could not determine max slots")
             return None
 
         if "blades_slots" in chassis_catalog:
@@ -512,15 +479,20 @@ class UcsImcChassis(UcsChassis, UcsImcInventoryObject):
                         # We need to find the matching storageLocalDisk object(s)
                         storage_local_disk_list = [storage_local_disk for storage_local_disk in
                                                    self._inventory.sdk_objects["storageLocalDisk"] if
+                                                   "server-1" in storage_local_disk.dn and
                                                    storage_local_disk.id in ["201", "202"]]
                         if (len(storage_local_disk_list)) in [1, 2]:
                             for boot_drive in storage_local_disk_list:
+                                # We skip non-existing drives
+                                if hasattr(boot_drive, "drive_slot_status"):
+                                    if boot_drive.drive_slot_status in ["Absent"]:
+                                        continue
                                 rear_ssd_storage_enclosure_1.disks.append(
                                     UcsImcStorageLocalDisk(parent=rear_ssd_storage_enclosure_1,
                                                            storage_local_disk=boot_drive))
                         else:
-                            self.logger(level="debug",
-                                        message="Could not find corresponding boot drive(s) for rear SSD storage enclosure 1")
+                            self.logger(level="debug", message="Could not find corresponding boot drive(s) for " +
+                                                               "rear SSD storage enclosure 1")
 
                 if len(self.server_nodes) == 2:
                     rear_ssd_storage_enclosure_2 = UcsImcStorageEnclosure(parent=self, storage_enclosure=None)
@@ -537,15 +509,28 @@ class UcsImcChassis(UcsChassis, UcsImcInventoryObject):
                             # We need to find the matching storageLocalDisk object(s)
                             storage_local_disk_list = [storage_local_disk for storage_local_disk in
                                                        self._inventory.sdk_objects["storageLocalDisk"] if
-                                                       storage_local_disk.id in ["203", "204"]]
+                                                       storage_local_disk.id in ["203", "204"]] +\
+                                                      [storage_local_disk for storage_local_disk in
+                                                       self._inventory.sdk_objects["storageLocalDisk"] if
+                                                       "server-2" in storage_local_disk.dn and
+                                                       storage_local_disk.id in ["201", "202"]]
                             if (len(storage_local_disk_list)) in [1, 2]:
                                 for boot_drive in storage_local_disk_list:
-                                    rear_ssd_storage_enclosure_2.disks.append(
-                                        UcsImcStorageLocalDisk(parent=rear_ssd_storage_enclosure_2,
-                                                               storage_local_disk=boot_drive))
+                                    # We skip non-existing drives
+                                    if hasattr(boot_drive, "drive_slot_status"):
+                                        if boot_drive.drive_slot_status in ["Absent"]:
+                                            continue
+                                    drive = UcsImcStorageLocalDisk(parent=rear_ssd_storage_enclosure_2,
+                                                                   storage_local_disk=boot_drive)
+                                    # We fix the drive IDs to be unique for the whole S3260 chassis
+                                    if drive.id == "201":
+                                        drive.id = "203"
+                                    elif drive.id == "202":
+                                        drive.id = "204"
+                                    rear_ssd_storage_enclosure_2.disks.append(drive)
                             else:
-                                self.logger(level="debug",
-                                            message="Could not find corresponding boot drive(s) for rear SSD storage enclosure 2")
+                                self.logger(level="debug", message="Could not find corresponding boot drive(s) for " +
+                                                                   "rear SSD storage enclosure 2")
 
                     return self._inventory.get_inventory_objects_under_dn(dn=self.dn,
                                                                           object_class=UcsImcStorageEnclosure,
@@ -673,7 +658,7 @@ class UcsImcSioc(UcsSioc, UcsImcInventoryObject):
                 if self._inventory.sdk_objects["mgmtController"] is not None:
                     # We filter out SDK objects that are not under this Dn
                     for sdk_object in self._inventory.sdk_objects["mgmtController"]:
-                        if self.dn + "/" in sdk_object.dn:
+                        if self.dn + "/shared-io-module" in sdk_object.dn:
                             mgmt_controller_list.append(sdk_object)
 
                     if len(mgmt_controller_list) != 1:

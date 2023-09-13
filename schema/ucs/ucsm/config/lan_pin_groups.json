@@ -1,65 +1,72 @@
 {
-   "id":"ucs_system_config_lan_pin_groups#",
-   "$schema":"http://json-schema.org/draft-07/schema#",
-   "title":"EasyUCS ucs system config lan_pin_groups section",
-   "description":"EasyUCS ucs system config lan_pin_groups section JSON schema",
-   "type":"object",
-   "properties":{
+   "id": "ucs_system_config_lan_pin_groups#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS ucs system config lan_pin_groups section",
+   "description": "EasyUCS ucs system config lan_pin_groups section JSON schema",
+   "type": "object",
+   "properties": {
       "comment": {
          "description": "LAN Pin Group Comments",
          "type": "string",
          "default": ""
       },
-      "name":{
-         "description":"Name of LAN Pin Group",
-         "type":"string",
-         "pattern":"^[\\-\\.:_a-zA-Z0-9]{1,16}$"
+      "name": {
+         "description": "Name of LAN Pin Group",
+         "type": "string",
+         "pattern": "^[\\-\\.:_a-zA-Z0-9]{1,16}$"
       },
-      "descr":{
-         "description":"Description of LAN Pin Group",
-         "type":"string",
-         "default":"",
-         "pattern":"^[ !#$%&\\(\\)\\*\\+,\\-\\./:;\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{0,256}$"
+      "descr": {
+         "description": "Description of LAN Pin Group",
+         "type": "string",
+         "default": "",
+         "pattern": "^[ !#$%&\\(\\)\\*\\+,\\-\\./:;\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{0,256}$"
       },
-      "interfaces":{
-         "description":"List of interfaces member of LAN Pin Group",
-         "type":"array",
-         "items":{
-            "description":"Interface member of LAN Pin Group",
-            "type":"object",
-            "properties":{
-               "fabric":{
-                  "description":"Fabric ID of Interface/Port-Channel member of LAN Pin Group",
-                  "type":"string",
-                  "enum":[
+      "policy_owner": {
+         "description": "LAN Pin Group Owner (for UCS Central)",
+         "type": "string",
+         "enum": [
+            "ucs-central"
+         ]
+      },
+      "interfaces": {
+         "description": "List of interfaces member of LAN Pin Group",
+         "type": "array",
+         "items": {
+            "description": "Interface member of LAN Pin Group",
+            "type": "object",
+            "properties": {
+               "fabric": {
+                  "description": "Fabric ID of Interface/Port-Channel member of LAN Pin Group",
+                  "type": "string",
+                  "enum": [
                      "a",
                      "A",
                      "b",
                      "B"
                   ]
                },
-               "slot_id":{
-                  "description":"Slot ID of Interface member of LAN Pin Group",
-                  "type":"string",
-                  "pattern":"^[1-5]$"
+               "slot_id": {
+                  "description": "Slot ID of Interface member of LAN Pin Group",
+                  "type": "string",
+                  "pattern": "^[1-5]$"
                },
-               "port_id":{
-                  "description":"Port ID of Interface member of LAN Pin Group",
-                  "type":"string",
-                  "pattern":"^[1-9]$|^[1-9][0-9]$|^10[0-8]$"
+               "port_id": {
+                  "description": "Port ID of Interface member of LAN Pin Group",
+                  "type": "string",
+                  "pattern": "^[1-9]$|^[1-9][0-9]$|^10[0-8]$"
                },
-               "aggr_id":{
-                  "description":"Aggregate ID of Interface member of LAN Pin Group (for Breakout Ports)",
-                  "type":"string",
-                  "pattern":"^[1-4]$"
+               "aggr_id": {
+                  "description": "Aggregate ID of Interface member of LAN Pin Group (for Breakout Ports)",
+                  "type": "string",
+                  "pattern": "^[1-4]$"
                },
-               "pc_id":{
-                  "description":"Port-Channel ID of Port-Channel Interface member of LAN Pin Group",
-                  "type":"string",
-                  "pattern":"^[1-9]$|^[1-9][0-9]$|^1[0-9][0-9]$|^2[0-4][0-9]$|^25[0-6]$"
+               "pc_id": {
+                  "description": "Port-Channel ID of Port-Channel Interface member of LAN Pin Group",
+                  "type": "string",
+                  "pattern": "^[1-9]$|^[1-9][0-9]$|^1[0-9][0-9]$|^2[0-4][0-9]$|^25[0-6]$"
                }
             },
-            "additionalProperties":false,
+            "additionalProperties": false,
             "required": [
                "fabric"
             ],
@@ -90,11 +97,11 @@
                }
             }
          },
-         "minItems":1
+         "minItems": 1
       }
    },
-   "additionalProperties":false,
-   "required":[
+   "additionalProperties": false,
+   "required": [
       "name"
    ]
 }

@@ -11,6 +11,9 @@ class GenericInventoryObject:
         self._parent_having_logger = self._find_logger()
 
         self._inventory = self.__find_inventory()
+        self._device = None
+        if self._inventory:
+            self._device = self._inventory.parent.parent  # noqa
 
     def logger(self, level='info', message="No message"):
         if not self._parent_having_logger:
@@ -41,9 +44,9 @@ class GenericInventoryObject:
     def __find_inventory(self):
         # Method to find the Inventory object - it can be high up in the hierarchy of objects
         current_object = self
-        while hasattr(current_object, '_parent') and not hasattr(current_object, 'timestamp'):
+        while hasattr(current_object, '_parent') and not hasattr(current_object, 'uuid'):
             current_object = current_object._parent
-        if hasattr(current_object, 'timestamp'):
+        if hasattr(current_object, 'uuid'):
             return current_object
         else:
             return None

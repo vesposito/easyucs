@@ -1,0 +1,1096 @@
+{
+   "id": "intersight_config_orgs_port_policies#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS intersight config orgs port_policies section",
+   "description": "EasyUCS intersight config orgs port_policies section JSON schema",
+   "type": "object",
+   "properties": {
+      "comment": {
+         "description": "Port Policy Comments",
+         "type": "string",
+         "default": ""
+      },
+      "descr": {
+         "description": "Port Policy Description",
+         "type": "string",
+         "default": "",
+         "pattern": "^$|^[a-zA-Z0-9]+[\\x00-\\xFF]*$",
+         "maxLength": 1024
+      },
+      "name": {
+         "description": "Port Policy Name",
+         "type": "string",
+         "default": "",
+         "pattern": "^[a-zA-Z0-9_.:-]{1,64}$"
+      },
+      "tags": {
+         "description": "Port Policy Tags",
+         "type": "array",
+         "items": {
+            "description": "Port Policy Tag",
+            "type": "object",
+            "properties": {
+               "key": {
+                  "description": "Port Policy Tag Key",
+                  "type": "string",
+                  "default": "",
+                  "minLength": 1,
+                  "maxLength": 128
+               },
+               "value": {
+                  "description": "Port Policy Tag Value",
+                  "type": "string",
+                  "default": "",
+                  "minLength": 0,
+                  "maxLength": 256
+               }
+            },
+            "additionalProperties": false,
+            "required": [
+               "key",
+               "value"
+            ]
+         },
+         "minItems": 1
+      },
+      "device_model": {
+         "description": "Port Policy Device Model",
+         "type": "string",
+         "default": "UCS-FI-6454",
+         "enum": [
+            "UCS-FI-6454",
+            "UCS-FI-64108",
+            "UCS-FI-6536"
+         ]
+      },
+      "appliance_port_channels": {
+         "description": "Port Policy - Appliance Port Channels",
+         "type": "array",
+         "items": {
+            "description": "Port Policy - Appliance Port Channel",
+            "type": "object",
+            "properties": {
+               "admin_speed": {
+                  "description": "Port Policy - Appliance Port Channel - Admin Speed",
+                  "type": "string",
+                  "default": "Auto",
+                  "enum": [
+                     "Auto",
+                     "1Gbps",
+                     "10Gbps",
+                     "25Gbps",
+                     "40Gbps",
+                     "100Gbps"
+                  ]
+               },
+               "pc_id": {
+                  "description": "Port Policy - Appliance Port Channel - Port Channel ID",
+                  "type": "integer",
+                  "default": 1,
+                  "minimum": 1,
+                  "maximum": 256
+               },
+               "mode": {
+                  "description": "Port Policy - Appliance Port Channel - Mode",
+                  "type": "string",
+                  "default": "trunk",
+                  "enum": [
+                     "access",
+                     "trunk"
+                  ]
+               },
+               "priority": {
+                  "description": "Port Policy - Appliance Port Channel - Priority",
+                  "type": "string",
+                  "default": "Best Effort",
+                  "enum": [
+                     "Best Effort",
+                     "Bronze",
+                     "FC",
+                     "Gold",
+                     "Platinum",
+                     "Silver"
+                  ]
+               },
+               "ethernet_network_control_policy": {
+                  "description": "Port Policy - Appliance Port Channel - Ethernet Network Control Policy",
+                  "type": "string"
+               },
+               "ethernet_network_group_policy": {
+                  "description": "Port Policy - Appliance Port Channel - Ethernet Network Group Policy",
+                  "type": "string"
+               },
+               "interfaces": {
+                  "description": "List of interfaces member of Appliance Port-Channel",
+                  "type": "array",
+                  "items": {
+                     "description": "Interface member of Appliance Port-Channel",
+                     "type": "object",
+                     "properties": {
+                        "slot_id": {
+                           "description": "Slot ID of Interface member of Appliance Port-Channel",
+                           "type": "integer",
+                           "default": 1,
+                           "minimum": 1,
+                           "maximum": 1
+                        },
+                        "port_id": {
+                           "description": "Port ID of Interface member of Appliance Port-Channel",
+                           "type": "integer",
+                           "default": 1,
+                           "minimum": 1,
+                           "maximum": 108
+                        },
+                        "aggr_id": {
+                           "description": "Aggregate ID of Interface member of Appliance Port-Channel (for Breakout Ports)",
+                           "type": "integer",
+                           "default": 0,
+                           "minimum": 0,
+                           "maximum": 4
+                        }
+                     },
+                     "additionalProperties": false,
+                     "required": [
+                        "slot_id",
+                        "port_id"
+                     ]
+                  },
+                  "minItems": 1
+               }
+            },
+            "additionalProperties": false,
+            "required": [
+               "pc_id",
+               "ethernet_network_control_policy",
+               "ethernet_network_group_policy"
+            ]
+         },
+         "minItems": 1
+      },
+      "appliance_ports": {
+         "description": "Port Policy - Appliance Ports",
+         "type": "array",
+         "items": {
+            "description": "Port Policy - Appliance Port",
+            "type": "object",
+            "properties": {
+               "slot_id": {
+                  "description": "Port Policy - Appliance Port - Slot ID",
+                  "type": "integer",
+                  "default": 1,
+                  "minimum": 1,
+                  "maximum": 1
+               },
+               "port_id": {
+                  "description": "Port Policy - Appliance Port - Port ID",
+                  "type": "integer",
+                  "default": 1,
+                  "minimum": 1,
+                  "maximum": 108
+               },
+               "aggr_id": {
+                  "description": "Port Policy - Appliance Port - Aggregate ID",
+                  "type": "integer",
+                  "default": 0,
+                  "minimum": 0,
+                  "maximum": 4
+               },
+               "admin_speed": {
+                  "description": "Port Policy - Appliance Port - Admin Speed",
+                  "type": "string",
+                  "default": "Auto",
+                  "enum": [
+                     "Auto",
+                     "1Gbps",
+                     "10Gbps",
+                     "25Gbps",
+                     "40Gbps",
+                     "100Gbps"
+                  ]
+               },
+               "fec": {
+                  "description": "Port Policy - Appliance Port - FEC",
+                  "type": "string",
+                  "default": "Auto",
+                  "enum": [
+                     "Auto",
+                     "Cl74",
+                     "Cl91"
+                  ]
+               },
+               "mode": {
+                  "description": "Port Policy - Appliance Port - Mode",
+                  "type": "string",
+                  "default": "trunk",
+                  "enum": [
+                     "access",
+                     "trunk"
+                  ]
+               },
+               "priority": {
+                  "description": "Port Policy - Appliance Port - Priority",
+                  "type": "string",
+                  "default": "Best Effort",
+                  "enum": [
+                     "Best Effort",
+                     "Bronze",
+                     "FC",
+                     "Gold",
+                     "Platinum",
+                     "Silver"
+                  ]
+               },
+               "ethernet_network_control_policy": {
+                  "description": "Port Policy - Appliance Port - Ethernet Network Control Policy",
+                  "type": "string"
+               },
+               "ethernet_network_group_policy": {
+                  "description": "Port Policy - Appliance Port - Ethernet Network Group Policy",
+                  "type": "string"
+               }
+            },
+            "additionalProperties": false,
+            "required": [
+               "slot_id",
+               "port_id",
+               "ethernet_network_control_policy",
+               "ethernet_network_group_policy"
+            ]
+         },
+         "minItems": 1
+      },
+      "breakout_ports": {
+         "description": "Port Policy - Breakout Ports",
+         "type": "array",
+         "items": {
+            "description": "Port Policy - Breakout Port",
+            "type": "object",
+            "properties": {
+               "slot_id": {
+                  "description": "Port Policy - Breakout Port - Slot ID",
+                  "type": "integer",
+                  "default": 1,
+                  "minimum": 1,
+                  "maximum": 1
+               },
+               "port_id": {
+                  "description": "Port Policy - Breakout Port - Port ID",
+                  "type": "integer",
+                  "default": 1,
+                  "minimum": 1,
+                  "maximum": 108
+               },
+               "mode": {
+                  "description": "Port Policy - Breakout Port - Mode",
+                  "type": "string",
+                  "enum": [
+                     "4x8g",
+                     "4x10g",
+                     "4x16g",
+                     "4x25g",
+                     "4x32g"
+                  ]
+               }
+            },
+            "additionalProperties": false,
+            "required": [
+               "slot_id",
+               "port_id",
+               "mode"
+            ]
+         }
+      },
+      "fcoe_port_channels": {
+         "description": "Port Policy - FCoE Port Channels",
+         "type": "array",
+         "items": {
+            "description": "Port Policy - FCoE Port Channel",
+            "type": "object",
+            "properties": {
+               "admin_speed": {
+                  "description": "Port Policy - FCoE Port Channel - Admin Speed",
+                  "type": "string",
+                  "default": "Auto",
+                  "enum": [
+                     "Auto",
+                     "1Gbps",
+                     "10Gbps",
+                     "25Gbps",
+                     "40Gbps",
+                     "100Gbps"
+                  ]
+               },
+               "pc_id": {
+                  "description": "Port Policy - FCoE Port Channel - Port Channel ID",
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 256
+               },
+               "link_aggregation_policy": {
+                  "description": "Port Policy - FCoE Port Channel - Link Aggregation Policy",
+                  "type": "string"
+               },
+               "link_control_policy": {
+                  "description": "Port Policy - FCoE Port Channel - Link Control Policy",
+                  "type": "string"
+               },
+               "interfaces": {
+                  "description": "List of interfaces member of FCoE Port-Channel",
+                  "type": "array",
+                  "items": {
+                     "description": "Interface member of FCoE Port-Channel",
+                     "type": "object",
+                     "properties": {
+                        "slot_id": {
+                           "description": "Slot ID of Interface member of FCoE Port-Channel",
+                           "type": "integer",
+                           "default": 1,
+                           "minimum": 1,
+                           "maximum": 1
+                        },
+                        "port_id": {
+                           "description": "Port ID of Interface member of FCoE Port-Channel",
+                           "type": "integer",
+                           "default": 1,
+                           "minimum": 1,
+                           "maximum": 108
+                        },
+                        "aggr_id": {
+                           "description": "Aggregate ID of Interface member of FCoE Port-Channel (for Breakout Ports)",
+                           "type": "integer",
+                           "default": 0,
+                           "minimum": 0,
+                           "maximum": 4
+                        }
+                     },
+                     "additionalProperties": false,
+                     "required": [
+                        "slot_id",
+                        "port_id"
+                     ]
+                  },
+                  "minItems": 1
+               }
+            },
+            "additionalProperties": false,
+            "required": [
+               "pc_id"
+            ]
+         },
+         "minItems": 1
+      },
+      "fcoe_uplink_ports": {
+         "description": "Port Policy - FCoE Uplink Ports",
+         "type": "array",
+         "items": {
+            "description": "Port Policy - FCoE Uplink Port",
+            "type": "object",
+            "properties": {
+               "slot_id": {
+                  "description": "Port Policy - FCoE Uplink Port - Slot ID",
+                  "type": "integer",
+                  "default": 1,
+                  "minimum": 1,
+                  "maximum": 1
+               },
+               "port_id": {
+                  "description": "Port Policy - FCoE Uplink Port - Port ID",
+                  "type": "integer",
+                  "default": 1,
+                  "minimum": 1,
+                  "maximum": 108
+               },
+               "aggr_id": {
+                  "description": "Port Policy - FCoE Uplink Port - Aggregate ID",
+                  "type": "integer",
+                  "default": 0,
+                  "minimum": 0,
+                  "maximum": 4
+               },
+               "admin_speed": {
+                  "description": "Port Policy - FCoE Uplink Port - Admin Speed",
+                  "type": "string",
+                  "default": "Auto",
+                  "enum": [
+                     "Auto",
+                     "1Gbps",
+                     "10Gbps",
+                     "25Gbps",
+                     "40Gbps",
+                     "100Gbps"
+                  ]
+               },
+               "fec": {
+                  "description": "Port Policy - FCoE Uplink Port - FEC",
+                  "type": "string",
+                  "default": "Auto",
+                  "enum": [
+                     "Auto",
+                     "Cl74",
+                     "Cl91"
+                  ]
+               },
+               "link_control_policy": {
+                  "description": "Port Policy - FCoE Uplink Port - Link Control Policy",
+                  "type": "string"
+               }
+            },
+            "additionalProperties": false,
+            "required": [
+               "slot_id",
+               "port_id"
+            ]
+         },
+         "minItems": 1
+      },
+      "lan_pin_groups": {
+         "description": "Port Policy - LAN Pin Groups",
+         "type": "array",
+         "items": {
+            "description": "Port Policy - LAN Pin Group",
+            "type": "object",
+            "oneOf": [
+               {
+                  "properties": {
+                     "slot_id": {
+                        "description": "Port Policy - LAN Pin Group - Slot ID",
+                        "type": "integer",
+                        "default": 1,
+                        "minimum": 1,
+                        "maximum": 1
+                     },
+                     "port_id": {
+                        "description": "Port Policy - LAN Pin Group - Port ID",
+                        "type": "integer",
+                        "default": 1,
+                        "minimum": 1,
+                        "maximum": 108
+                     },
+                     "aggr_id": {
+                        "description": "Port Policy - LAN Pin Group - Aggregate ID",
+                        "type": "integer",
+                        "default": 0,
+                        "minimum": 0,
+                        "maximum": 4
+                     },
+                     "name": {
+                        "description": "Port Policy - LAN Pin Group - Name",
+                        "type": "string",
+                        "pattern": "^[a-zA-Z0-9_.:-]{1,64}$"
+                     }
+                  },
+                  "additionalProperties": false,
+                  "required": [
+                     "name",
+                     "slot_id",
+                     "port_id"
+                  ]
+               },
+               {
+                  "properties": {
+                     "pc_id": {
+                        "description": "Port Policy - LAN Pin Group - Port Channel ID",
+                        "type": "integer",
+                        "default": 1,
+                        "minimum": 1,
+                        "maximum": 256
+                     },
+                     "name": {
+                        "description": "Port Policy - LAN Pin Group - Name",
+                        "type": "string",
+                        "pattern": "^[a-zA-Z0-9_.:-]{1,64}$"
+                     }
+                  },
+                  "additionalProperties": false,
+                  "required": [
+                     "name",
+                     "pc_id"
+                  ]
+               },
+               {
+                  "properties": {
+                     "name": {
+                        "description": "Port Policy - LAN Pin Group - Name",
+                        "type": "string",
+                        "pattern": "^[a-zA-Z0-9_.:-]{1,64}$"
+                     }
+                  },
+                  "additionalProperties": false,
+                  "required": [
+                     "name"
+                  ]
+               }
+            ]
+         },
+         "minItems": 1
+      },
+      "lan_port_channels": {
+         "description": "Port Policy - LAN Port Channels",
+         "type": "array",
+         "items": {
+            "description": "Port Policy - LAN Port Channel",
+            "type": "object",
+            "properties": {
+               "admin_speed": {
+                  "description": "Port Policy - LAN Port Channel - Admin Speed",
+                  "type": "string",
+                  "default": "Auto",
+                  "enum": [
+                     "Auto",
+                     "1Gbps",
+                     "10Gbps",
+                     "25Gbps",
+                     "40Gbps",
+                     "100Gbps"
+                  ]
+               },
+               "pc_id": {
+                  "description": "Port Policy - LAN Port Channel - Port Channel ID",
+                  "type": "integer",
+                  "default": 1,
+                  "minimum": 1,
+                  "maximum": 256
+               },
+               "ethernet_network_group_policy": {
+                  "description": "Port Policy - LAN Port Channel - Ethernet Network Group Policy",
+                  "type": "string"
+               },
+               "flow_control_policy": {
+                  "description": "Port Policy - LAN Port Channel - Flow Control Policy",
+                  "type": "string"
+               },
+               "link_aggregation_policy": {
+                  "description": "Port Policy - LAN Port Channel - Link Aggregation Policy",
+                  "type": "string"
+               },
+               "link_control_policy": {
+                  "description": "Port Policy - LAN Port Channel - Link Control Policy",
+                  "type": "string"
+               },
+               "interfaces": {
+                  "description": "List of interfaces member of LAN Port-Channel",
+                  "type": "array",
+                  "items": {
+                     "description": "Interface member of LAN Port-Channel",
+                     "type": "object",
+                     "properties": {
+                        "slot_id": {
+                           "description": "Slot ID of Interface member of LAN Port-Channel",
+                           "type": "integer",
+                           "default": 1,
+                           "minimum": 1,
+                           "maximum": 1
+                        },
+                        "port_id": {
+                           "description": "Port ID of Interface member of LAN Port-Channel",
+                           "type": "integer",
+                           "default": 1,
+                           "minimum": 1,
+                           "maximum": 108
+                        },
+                        "aggr_id": {
+                           "description": "Aggregate ID of Interface member of LAN Port-Channel (for Breakout Ports)",
+                           "type": "integer",
+                           "default": 0,
+                           "minimum": 0,
+                           "maximum": 4
+                        }
+                     },
+                     "additionalProperties": false,
+                     "required": [
+                        "slot_id",
+                        "port_id"
+                     ]
+                  },
+                  "minItems": 1
+               }
+            },
+            "additionalProperties": false,
+            "required": [
+               "pc_id"
+            ]
+         },
+         "minItems": 1
+      },
+      "lan_uplink_ports": {
+         "description": "Port Policy - LAN Uplink Ports",
+         "type": "array",
+         "items": {
+            "description": "Port Policy - LAN Uplink Port",
+            "type": "object",
+            "properties": {
+               "slot_id": {
+                  "description": "Port Policy - LAN Uplink Port - Slot ID",
+                  "type": "integer",
+                  "default": 1,
+                  "minimum": 1,
+                  "maximum": 1
+               },
+               "port_id": {
+                  "description": "Port Policy - LAN Uplink Port - Port ID",
+                  "type": "integer",
+                  "default": 1,
+                  "minimum": 1,
+                  "maximum": 108
+               },
+               "aggr_id": {
+                  "description": "Port Policy - LAN Uplink Port - Aggregate ID",
+                  "type": "integer",
+                  "default": 0,
+                  "minimum": 0,
+                  "maximum": 4
+               },
+               "admin_speed": {
+                  "description": "Port Policy - LAN Uplink Port - Admin Speed",
+                  "type": "string",
+                  "default": "Auto",
+                  "enum": [
+                     "Auto",
+                     "1Gbps",
+                     "10Gbps",
+                     "25Gbps",
+                     "40Gbps",
+                     "100Gbps"
+                  ]
+               },
+               "fec": {
+                  "description": "Port Policy - LAN Uplink Port - FEC",
+                  "type": "string",
+                  "default": "Auto",
+                  "enum": [
+                     "Auto",
+                     "Cl74",
+                     "Cl91"
+                  ]
+               },
+               "ethernet_network_group_policy": {
+                  "description": "Port Policy - LAN Uplink Port - Ethernet Network Group Policy",
+                  "type": "string"
+               },
+               "flow_control_policy": {
+                  "description": "Port Policy - LAN Uplink Port - Flow Control Policy",
+                  "type": "string"
+               },
+               "link_control_policy": {
+                  "description": "Port Policy - LAN Uplink Port - Link Control Policy",
+                  "type": "string"
+               }
+            },
+            "additionalProperties": false,
+            "required": [
+               "slot_id",
+               "port_id"
+            ]
+         },
+         "minItems": 1
+      },
+      "san_pin_groups": {
+         "description": "Port Policy - SAN Pin Groups",
+         "type": "array",
+         "items": {
+            "description": "Port Policy - SAN Pin Group",
+            "type": "object",
+            "oneOf": [
+               {
+                  "properties": {
+                     "slot_id": {
+                        "description": "Port Policy - SAN Pin Group - Slot ID",
+                        "type": "integer",
+                        "default": 1,
+                        "minimum": 1,
+                        "maximum": 1
+                     },
+                     "port_id": {
+                        "description": "Port Policy - SAN Pin Group - Port ID",
+                        "type": "integer",
+                        "default": 1,
+                        "minimum": 1,
+                        "maximum": 108
+                     },
+                     "aggr_id": {
+                        "description": "Port Policy - SAN Pin Group - Aggregate ID",
+                        "type": "integer",
+                        "default": 0,
+                        "minimum": 0,
+                        "maximum": 4
+                     },
+                     "name": {
+                        "description": "Port Policy - SAN Pin Group - Name",
+                        "type": "string",
+                        "pattern": "^[a-zA-Z0-9_.:-]{1,64}$"
+                     },
+                     "fcoe": {
+                        "description": "Is Interface/Port-Channel an FCoE interface?",
+                        "type": "boolean",
+                        "default": false
+                     }
+                  },
+                  "additionalProperties": false,
+                  "required": [
+                     "name",
+                     "fcoe",
+                     "slot_id",
+                     "port_id"
+                  ]
+               },
+               {
+                  "properties": {
+                     "pc_id": {
+                        "description": "Port Policy - SAN Pin Group - Port Channel ID",
+                        "type": "integer",
+                        "default": 1,
+                        "minimum": 1,
+                        "maximum": 256
+                     },
+                     "name": {
+                        "description": "Port Policy - SAN Pin Group - Name",
+                        "type": "string",
+                        "pattern": "^[a-zA-Z0-9_.:-]{1,64}$"
+                     },
+                     "fcoe": {
+                        "description": "Is Interface/Port-Channel an FCoE interface?",
+                        "type": "boolean",
+                        "default": false
+                     }
+                  },
+                  "additionalProperties": false,
+                  "required": [
+                     "name",
+                     "fcoe",
+                     "pc_id"
+                  ]
+               },
+               {
+                  "properties": {
+                     "name": {
+                        "description": "Port Policy - SAN Pin Group - Name",
+                        "type": "string",
+                        "pattern": "^[a-zA-Z0-9_.:-]{1,64}$"
+                     },
+                     "fcoe": {
+                        "description": "Is Interface/Port-Channel an FCoE interface?",
+                        "type": "boolean",
+                        "default": false
+                     }
+                  },
+                  "additionalProperties": false,
+                  "required": [
+                     "name"
+                  ]
+               }
+            ]
+         },
+         "minItems": 1
+      },
+      "san_port_channels": {
+         "description": "Port Policy - SAN Port Channels",
+         "type": "array",
+         "items": {
+            "description": "Port Policy - SAN Port Channel",
+            "type": "object",
+            "properties": {
+               "admin_speed": {
+                  "description": "Port Policy - SAN Port Channel - Admin Speed",
+                  "type": "string",
+                  "default": "Auto",
+                  "enum": [
+                     "Auto",
+                     "8Gbps",
+                     "16Gbps",
+                     "32Gbps"
+                  ]
+               },
+               "pc_id": {
+                  "description": "Port Policy - SAN Port Channel - Port Channel ID",
+                  "type": "integer",
+                  "default": 1,
+                  "minimum": 1,
+                  "maximum": 256
+               },
+               "vsan_id": {
+                  "description": "Port Policy - SAN Port Channel - VSAN ID",
+                  "type": "integer",
+                  "default": 1,
+                  "minimum": 1,
+                  "maximum": 4093
+               },
+               "fill_pattern": {
+                  "description": "Port Policy - SAN Port Channel - Fill Pattern",
+                  "type": "string",
+                  "default": "Idle",
+                  "enum": [
+                     "Arbff",
+                     "Idle"
+                  ]
+               },
+               "interfaces": {
+                  "description": "List of interfaces member of SAN Port-Channel",
+                  "type": "array",
+                  "items": {
+                     "description": "Interface member of SAN Port-Channel",
+                     "type": "object",
+                     "properties": {
+                        "slot_id": {
+                           "description": "Slot ID of Interface member of SAN Port-Channel",
+                           "type": "integer",
+                           "default": 1,
+                           "minimum": 1,
+                           "maximum": 1
+                        },
+                        "port_id": {
+                           "description": "Port ID of Interface member of SAN Port-Channel",
+                           "type": "integer",
+                           "default": 1,
+                           "minimum": 1,
+                           "maximum": 108
+                        },
+                        "aggr_id": {
+                           "description": "Aggregate ID of Interface member of SAN Port-Channel (for Breakout Ports)",
+                           "type": "integer",
+                           "default": 0,
+                           "minimum": 0,
+                           "maximum": 4
+                        }
+                     },
+                     "additionalProperties": false,
+                     "required": [
+                        "slot_id",
+                        "port_id"
+                     ]
+                  },
+                  "minItems": 1
+               }
+            },
+            "additionalProperties": false,
+            "required": [
+               "pc_id",
+               "vsan_id"
+            ]
+         },
+         "minItems": 1
+      },
+      "san_storage_ports": {
+         "description": "Port Policy - SAN Storage Ports",
+         "type": "array",
+         "items": {
+            "description": "Port Policy - SAN Storage Port",
+            "type": "object",
+            "properties": {
+               "slot_id": {
+                  "description": "Port Policy - SAN Storage Port - Slot ID",
+                  "type": "integer",
+                  "default": 1,
+                  "minimum": 1,
+                  "maximum": 1
+               },
+               "port_id": {
+                  "description": "Port Policy - SAN Storage Port - Port ID",
+                  "type": "integer",
+                  "default": 1,
+                  "minimum": 1,
+                  "maximum": 108
+               },
+               "aggr_id": {
+                  "description": "Port Policy - SAN Storage Port - Aggregate ID",
+                  "type": "integer",
+                  "default": 0,
+                  "minimum": 0,
+                  "maximum": 4
+               },
+               "admin_speed": {
+                  "description": "Port Policy - SAN Storage Port - Admin Speed",
+                  "type": "string",
+                  "default": "Auto",
+                  "enum": [
+                     "Auto",
+                     "8Gbps",
+                     "16Gbps",
+                     "32Gbps"
+                  ]
+               },
+               "vsan_id": {
+                  "description": "Port Policy - SAN Uplink Port - VSAN ID",
+                  "type": "integer",
+                  "default": 1,
+                  "minimum": 1,
+                  "maximum": 4093
+               }
+            },
+            "additionalProperties": false,
+            "required": [
+               "slot_id",
+               "port_id",
+               "vsan_id"
+            ]
+         },
+         "minItems": 1
+      },
+      "san_unified_ports": {
+         "description": "Port Policy - SAN Unified Ports",
+         "type": "object",
+         "properties": {
+            "slot_id": {
+               "description": "Port Policy - SAN Unified Ports - Slot ID",
+               "type": "integer",
+               "default": 1,
+               "minimum": 1,
+               "maximum": 1
+            },
+            "port_id_start": {
+               "description": "Port Policy - SAN Unified Ports - Port ID Start of Range",
+               "type": "integer",
+               "default": 1,
+               "minimum": 1,
+               "maximum": 36
+            },
+            "port_id_end": {
+               "description": "Port Policy - SAN Unified Ports - Port ID End of Range",
+               "type": "integer",
+               "default": 4,
+               "minimum": 4,
+               "maximum": 36
+            }
+         },
+         "additionalProperties": false,
+         "required": [
+            "slot_id",
+            "port_id_start",
+            "port_id_end"
+         ]
+      },
+      "san_uplink_ports": {
+         "description": "Port Policy - SAN Uplink Ports",
+         "type": "array",
+         "items": {
+            "description": "Port Policy - SAN Uplink Port",
+            "type": "object",
+            "properties": {
+               "slot_id": {
+                  "description": "Port Policy - SAN Uplink Port - Slot ID",
+                  "type": "integer",
+                  "default": 1,
+                  "minimum": 1,
+                  "maximum": 1
+               },
+               "port_id": {
+                  "description": "Port Policy - SAN Uplink Port - Port ID",
+                  "type": "integer",
+                  "default": 1,
+                  "minimum": 1,
+                  "maximum": 108
+               },
+               "aggr_id": {
+                  "description": "Port Policy - SAN Uplink Port - Aggregate ID",
+                  "type": "integer",
+                  "default": 0,
+                  "minimum": 0,
+                  "maximum": 4
+               },
+               "admin_speed": {
+                  "description": "Port Policy - SAN Uplink Port - Admin Speed",
+                  "type": "string",
+                  "default": "Auto",
+                  "enum": [
+                     "Auto",
+                     "8Gbps",
+                     "16Gbps",
+                     "32Gbps"
+                  ]
+               },
+               "vsan_id": {
+                  "description": "Port Policy - SAN Uplink Port - VSAN ID",
+                  "type": "integer",
+                  "default": 1,
+                  "minimum": 1,
+                  "maximum": 4093
+               },
+               "fill_pattern": {
+                  "description": "Port Policy - SAN Uplink Port - Fill Pattern",
+                  "type": "string",
+                  "default": "Idle",
+                  "enum": [
+                     "Arbff",
+                     "Idle"
+                  ]
+               }
+            },
+            "additionalProperties": false,
+            "required": [
+               "slot_id",
+               "port_id",
+               "vsan_id"
+            ]
+         },
+         "minItems": 1
+      },
+      "server_ports": {
+         "description": "Port Policy - Server Ports",
+         "type": "array",
+         "items": {
+            "description": "Port Policy - Server Port",
+            "type": "object",
+            "properties": {
+               "slot_id": {
+                  "description": "Port Policy - Server Port - Slot ID",
+                  "type": "integer",
+                  "default": 1,
+                  "minimum": 1,
+                  "maximum": 1
+               },
+               "port_id": {
+                  "description": "Port Policy - Server Port - Port ID",
+                  "type": "integer",
+                  "default": 1,
+                  "minimum": 1,
+                  "maximum": 108
+               },
+               "aggr_id": {
+                  "description": "Port Policy - Server Port - Aggregate ID",
+                  "type": "integer",
+                  "default": 0,
+                  "minimum": 0,
+                  "maximum": 4
+               },
+               "connected_device_type": {
+                  "description": "Port Policy - Server Port - Connected Device Type",
+                  "type": "string",
+                  "default": "Auto",
+                  "enum": [
+                     "Auto",
+                     "Chassis",
+                     "RackServer"
+                  ]
+               },
+               "connected_device_id": {
+                  "description": "Port Policy - Server Port - Connected Device Id",
+                  "type": "integer",
+                  "default": 1,
+                  "minimum": 1,
+                  "maximum": 255
+               },
+               "fec": {
+                  "description": "Port Policy - Server Port - Forward Error Correction",
+                  "type": "string",
+                  "default": "Auto",
+                  "enum": [
+                     "Auto",
+                     "Cl74",
+                     "Cl91"
+                  ]
+               }
+            },
+            "additionalProperties": false,
+            "required": [
+               "slot_id",
+               "port_id"
+            ]
+         },
+         "minItems": 1
+      }
+   },
+   "additionalProperties": false,
+   "required": [
+      "name",
+      "device_model"
+   ]
+}

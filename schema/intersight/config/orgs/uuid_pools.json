@@ -1,0 +1,138 @@
+{
+   "id": "intersight_config_orgs_uuid_pools#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS intersight config orgs uuid_pools section",
+   "description": "EasyUCS intersight config orgs uuid_pools section JSON schema",
+   "type": "object",
+   "properties": {
+      "comment": {
+         "description": "UUID Pool Comments",
+         "type": "string",
+         "default": ""
+      },
+      "descr": {
+         "description": "UUID Pool Description",
+         "type": "string",
+         "default": "",
+         "pattern": "^$|^[a-zA-Z0-9]+[\\x00-\\xFF]*$",
+         "maxLength": 1024
+      },
+      "name": {
+         "description": "UUID Pool Name",
+         "type": "string",
+         "default": "",
+         "pattern": "^[a-zA-Z0-9_.:-]{1,64}$"
+      },
+      "tags": {
+         "description": "UUID Pool Tags",
+         "type": "array",
+         "items": {
+            "description": "UUID Pool Tag",
+            "type": "object",
+            "properties": {
+               "key": {
+                  "description": "UUID Pool Tag Key",
+                  "type": "string",
+                  "default": "",
+                  "minLength": 1,
+                  "maxLength": 128
+               },
+               "value": {
+                  "description": "UUID Pool Tag Value",
+                  "type": "string",
+                  "default": "",
+                  "minLength": 0,
+                  "maxLength": 256
+               }
+            },
+            "additionalProperties": false,
+            "required": [
+               "key",
+               "value"
+            ]
+         },
+         "minItems": 1
+      },
+      "prefix": {
+         "description": "The UUID prefix must be in hexadecimal format xxxxxxxx-xxxx-xxxx.",
+         "type": "string",
+         "default": "",
+         "pattern": "(([0-9a-fA-F]){8}\\-([0-9a-fA-F]){4}\\-([0-9a-fA-F]){4})"
+      },
+      "uuid_blocks": {
+         "description": "Blocks of UUID Suffixes in UUID Pool",
+         "type": "array",
+         "items": {
+            "type": "object",
+            "oneOf": [
+               {
+                  "properties": {
+                     "from": {
+                        "description": "Starting UUID suffix of the block must be in hexadecimal format xxxx-xxxxxxxxxxxx.",
+                        "type": "string",
+                        "default": "0000-000000000001",
+                        "pattern": "(([0-9a-fA-F]){4}\\-([0-9a-fA-F]){12})"
+                     },
+                     "to": {
+                        "description": "Starting UUID suffix of the block must be in hexadecimal format xxxx-xxxxxxxxxxxx.",
+                        "type": "string",
+                        "default": "0000-000000000001",
+                        "pattern": "(([0-9a-fA-F]){4}\\-([0-9a-fA-F]){12})"
+                     }
+                  },
+                  "additionalProperties": false,
+                  "required": [
+                     "from",
+                     "to"
+                  ]
+               },
+               {
+                  "properties": {
+                     "from": {
+                        "description": "First UUID Suffix of Block",
+                        "type": "string",
+                        "default": "0000-000000000001",
+                        "pattern": "(([0-9a-fA-F]){4}\\-([0-9a-fA-F]){12})"
+                     },
+                     "size": {
+                        "description": "Size of UUID Suffix Block",
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 1024
+                     }
+                  },
+                  "additionalProperties": false,
+                  "required": [
+                     "from",
+                     "size"
+                  ]
+               }
+            ]
+         },
+         "minItems": 1
+      },
+      "reservations": {
+         "description": "Reservation in UUID Pool",
+         "type": "array",
+         "items": {
+            "type": "object",
+            "properties": {
+               "identity": {
+                  "description": "Identity of UUID being reserved",
+                  "type": "string",
+                  "default": "00000000-0000-0000-0000-000000000001"
+               }
+            },
+            "additionalProperties": false,
+            "required": [
+               "identity"
+            ]
+         },
+         "minItems": 1
+      }
+   },
+   "additionalProperties": false,
+   "required": [
+      "name"
+   ]
+}

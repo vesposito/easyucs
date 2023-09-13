@@ -22,21 +22,29 @@
          "default": "",
          "pattern": "^[ !#$%&\\(\\)\\*\\+,\\-\\./:;\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{0,256}$"
       },
+      "policy_owner": {
+         "description": "Power Sync Policy Owner (for UCS Central)",
+         "type": "string",
+         "enum": [
+            "ucs-central"
+         ]
+      },
       "sync_option": {
          "description": "Sync Option of Power Sync Policy",
          "type": "string",
-         "default": "initial-only-sync",
+         "default": "default",
          "enum": [
             "always-sync",
             "always",
+            "default-sync",
             "default",
             "initial-only-sync",
             "initial"
          ]
       }
    },
-   "additionalProperties":false,
-   "required":[
+   "additionalProperties": false,
+   "required": [
       "name"
    ]
 }

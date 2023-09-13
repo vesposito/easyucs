@@ -1,55 +1,67 @@
 {
-   "id":"ucs_system_config_persistent_memory_policies#",
-   "$schema":"http://json-schema.org/draft-07/schema#",
-   "title":"EasyUCS ucs system config orgs persistent_memory_policies section",
-   "description":"EasyUCS ucs system config orgs persistent_memory_policies section JSON schema",
-   "type":"object",
-   "properties":{
+   "id": "ucs_system_config_persistent_memory_policies#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS ucs system config orgs persistent_memory_policies section",
+   "description": "EasyUCS ucs system config orgs persistent_memory_policies section JSON schema",
+   "type": "object",
+   "properties": {
       "comment": {
          "description": "Persistent Memory Policy Comments",
          "type": "string",
          "default": ""
       },
-      "name":{
-         "description":"Persistent Memory Policy Name",
-         "type":"string",
-         "default":"",
-         "pattern":"^[\\-\\.:_a-zA-Z0-9]{1,16}$"
+      "name": {
+         "description": "Persistent Memory Policy Name",
+         "type": "string",
+         "default": "",
+         "pattern": "^[\\-\\.:_a-zA-Z0-9]{1,16}$"
       },
-      "descr":{
-         "description":"Description of Persistent Memory Policy",
-         "type":"string",
-         "default":"",
-         "pattern":"^[ !#$%&\\(\\)\\*\\+,\\-\\./:;\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{0,256}$"
+      "descr": {
+         "description": "Description of Persistent Memory Policy",
+         "type": "string",
+         "default": "",
+         "pattern": "^[ !#$%&\\(\\)\\*\\+,\\-\\./:;\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{0,256}$"
       },
-      "secure_passphrase":{
-         "description":"Secure Passphrase of Persistent Memory Policy",
-         "type":"string",
-         "default":"",
-         "pattern":"^[a-zA-Z0-9=!&#$%+^@_*-]{8,32}$"
+      "policy_owner": {
+         "description": "Persistent Memory Policy Owner (for UCS Central)",
+         "type": "string",
+         "enum": [
+            "ucs-central"
+         ]
       },
-      "deployed_secure_passphrase":{
-         "description":"Deployed Secure Passphrase of Persistent Memory Policy",
-         "type":"string",
-         "default":""
+      "secure_passphrase": {
+         "description": "Secure Passphrase of Persistent Memory Policy",
+         "type": "string",
+         "default": "",
+         "pattern": "^[a-zA-Z0-9=!&#$%+^@_*-]{8,32}$"
       },
-      "goal_socket_id":{
-         "description":"Goal Socket ID of Persistent Memory Policy",
-         "type":"string",
-         "default":"all-sockets",
-         "enum":["all-sockets"]
+      "deployed_secure_passphrase": {
+         "description": "Deployed Secure Passphrase of Persistent Memory Policy",
+         "type": "string",
+         "default": ""
       },
-      "goal_memory_mode":{
-         "description":"Goal Memory Mode of Persistent Memory Policy",
-         "type":"string",
-         "default":"0",
-         "pattern":"^[0-9]$|^[1-9][0-9]$|^100$"
+      "goal_socket_id": {
+         "description": "Goal Socket ID of Persistent Memory Policy",
+         "type": "string",
+         "default": "all-sockets",
+         "enum": [
+            "all-sockets"
+         ]
       },
-      "goal_persistent_memory_type":{
-         "description":"Goal Persistent Memory Type of Persistent Memory Policy",
-         "type":"string",
-         "default":"app-direct",
-         "enum":["app-direct", "app-direct-non-interleaved"]
+      "goal_memory_mode": {
+         "description": "Goal Memory Mode of Persistent Memory Policy",
+         "type": "string",
+         "default": "0",
+         "pattern": "^[0-9]$|^[1-9][0-9]$|^100$"
+      },
+      "goal_persistent_memory_type": {
+         "description": "Goal Persistent Memory Type of Persistent Memory Policy",
+         "type": "string",
+         "default": "app-direct",
+         "enum": [
+            "app-direct",
+            "app-direct-non-interleaved"
+         ]
       },
       "namespaces": {
          "description": "Persistent Memory Policy - Namespace",
@@ -60,25 +72,41 @@
                "name": {
                   "description": "Persistent Memory Policy - Namespace - Name",
                   "type": "string",
-                  "pattern":"^[a-zA-Z0-9#_-][a-zA-Z0-9#_ -]{0,62}"
+                  "pattern": "^[a-zA-Z0-9#_-][a-zA-Z0-9#_ -]{0,62}"
                },
                "socket_id": {
                   "description": "Persistent Memory Policy - Namespace - Socket ID",
                   "type": "string",
                   "default": "socket-1",
-                  "enum": ["socket-1", "socket-2", "socket-3", "socket-4"]
+                  "enum": [
+                     "socket-1",
+                     "socket-2",
+                     "socket-3",
+                     "socket-4"
+                  ]
                },
                "socket_local_dimm_number": {
                   "description": "Persistent Memory Policy - Namespace - Socket Local DIMM Number",
                   "type": "string",
                   "default": "not-applicable",
-                  "enum": ["10", "12", "2", "4", "6", "8", "not-applicable"]
+                  "enum": [
+                     "10",
+                     "12",
+                     "2",
+                     "4",
+                     "6",
+                     "8",
+                     "not-applicable"
+                  ]
                },
                "mode": {
                   "description": "Persistent Memory Policy - Namespace - Mode",
                   "type": "string",
                   "default": "raw",
-                  "enum": ["block", "raw"]
+                  "enum": [
+                     "block",
+                     "raw"
+                  ]
                },
                "capacity": {
                   "description": "Persistent Memory Policy - Namespace - Capacity",
@@ -94,8 +122,8 @@
          "minItems": 1
       }
    },
-   "additionalProperties":false,
-   "required":[
+   "additionalProperties": false,
+   "required": [
       "name"
    ]
 }

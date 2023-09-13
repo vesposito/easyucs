@@ -1,0 +1,42 @@
+{
+   "id": "intersight_config_users#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS intersight config users section",
+   "description": "EasyUCS intersight config users section JSON schema",
+   "type": "object",
+   "properties": {
+      "comment": {
+         "description": "User Comments",
+         "type": "string",
+         "default": ""
+      },
+      "email": {
+         "description": "User Email",
+         "format": "email",
+         "default": ""
+      },
+      "identity_provider": {
+         "description": "User Identity Provider",
+         "type": "string",
+         "default": "Cisco"
+      },
+      "name": {
+         "description": "User Name",
+         "type": "string",
+         "default": ""
+      },
+      "roles": {
+         "description": "User Roles",
+         "type": "array",
+         "items": {
+            "description": "User Role",
+            "type": "string"
+         },
+         "minItems": 1
+      }
+   },
+   "additionalProperties": false,
+   "required": [
+      "email"
+   ]
+}

@@ -1,24 +1,31 @@
 {
-   "id":"ucs_system_config_port_auto_discovery_policy#",
-   "$schema":"http://json-schema.org/draft-07/schema#",
-   "title":"EasyUCS ucs system config port_auto_discovery_policy section",
-   "description":"EasyUCS ucs system config port_auto_discovery_policy section JSON schema",
-   "type":"object",
-   "properties":{
+   "id": "ucs_system_config_port_auto_discovery_policy#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS ucs system config port_auto_discovery_policy section",
+   "description": "EasyUCS ucs system config port_auto_discovery_policy section JSON schema",
+   "type": "object",
+   "properties": {
       "comment": {
          "description": "Port Auto-Discovery Policy Comments",
          "type": "string",
          "default": ""
       },
-      "auto_configure_server_ports":{
-         "description":"Auto Configure Server Ports Admin State",
-         "type":"string",
-         "default":"disabled",
-         "enum":[
+      "policy_owner": {
+         "description": "Port Auto-Discovery Policy Owner (for UCS Central)",
+         "type": "string",
+         "enum": [
+            "ucs-central"
+         ]
+      },
+      "auto_configure_server_ports": {
+         "description": "Auto Configure Server Ports Admin State",
+         "type": "string",
+         "default": "disabled",
+         "enum": [
             "disabled",
             "enabled"
          ]
       }
    },
-   "additionalProperties":false
+   "additionalProperties": false
 }

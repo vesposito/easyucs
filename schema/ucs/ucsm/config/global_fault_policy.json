@@ -10,6 +10,13 @@
          "type": "string",
          "default": ""
       },
+      "policy_owner": {
+         "description": "Global Fault Policy Owner (for UCS Central)",
+         "type": "string",
+         "enum": [
+            "ucs-central"
+         ]
+      },
       "baseline_expiration_interval": {
          "description": "Global Fault Policy Baseline Expiration Interval",
          "type": "string",

@@ -200,6 +200,7 @@ class UcsSystemDrawFiFront(GenericUcsDrawEquipment):
         if "psus_slots" in self.json_file:
             self.power_supplies = self.get_power_supplies()
 
+        self.fill_blanks()
         self._file_name = self._device_target + "_fi_" + self._parent.id + "_front"
 
         # We drop the picture in order to save on memory
@@ -211,6 +212,31 @@ class UcsSystemDrawFiFront(GenericUcsDrawEquipment):
             if psu.id != '0':
                 psu_list.append(GenericUcsDrawPsu(psu, self))
         return psu_list
+
+    def fill_blanks(self):
+        if "psus_slots" in self.json_file:
+            # Fill blank for rear PSU Slot
+            if len(self._parent.power_supplies)-1 < len(self.json_file["psus_slots"]):
+                used_slot = []
+                potential_slot = []
+                unused_slot = []
+                for slot in self._parent.power_supplies:
+                    used_slot.append(int(slot.id))
+                for slot in self.json_file["psus_slots"]:
+                    potential_slot.append(slot["id"])
+                for blank_id in set(potential_slot) - set(used_slot):
+                    unused_slot.append(blank_id)
+                for slot_id in unused_slot:
+                    for expansion in self.json_file["psus_models"]:
+                        if "type" in expansion:
+                            if expansion["type"] == "blank":
+                                blank_name = expansion["name"]
+                                img = Image.open("catalog/power_supplies/img/" + blank_name + ".png", 'r')
+                                for slot in self.json_file["psus_slots"]:
+                                    if slot["id"] == int(slot_id):
+                                        coord = slot["coord"]
+                                coord_offset = self.picture_offset[0] + coord[0], self.picture_offset[1] + coord[1]
+                                self.paste_layer(img, coord_offset)
 
 
 class UcsSystemDrawGem(GenericUcsDrawEquipment):

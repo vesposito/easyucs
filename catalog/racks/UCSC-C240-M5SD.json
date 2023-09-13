@@ -4,12 +4,6 @@
   "front_file_name": "UCSC-C240-M5SD_front.png",
   "rear_file_size": [2928,549],
   "front_file_size": [2925,545],
-  "mlom_slots": [
-    {
-      "id": 1,
-      "coord": [295, 438]
-    }
-  ],
   "pcie_riser_slots": [
     {
       "id": 1,
@@ -25,6 +19,12 @@
       "name": "UCSC-PCIF-240M5",
       "type": "blank",
       "description": "Blanking Panel"
+    }
+  ],
+  "mlom_slots": [
+    {
+      "id": 1,
+      "coord": [295, 438]
     }
   ],
   "mlom_models": [

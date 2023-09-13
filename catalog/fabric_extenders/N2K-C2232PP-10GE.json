@@ -232,7 +232,7 @@
     }
   ],
   "imm_compatible": true,
-  "imm_min_required_version": "4.1(2b)",
+  "imm_min_required_version": "4.1(3b)",
   "data_sheet_url": "https://www.cisco.com/c/en/us/products/collateral/switches/nexus-2000-series-fabric-extenders/data_sheet_c78-507093.html",
   "specs": {
     "descr": "The Cisco Nexus 2232PP 40-Port Fabric Extender is a One-Rack-Unit (1RU) 1/10 Gigabit Ethernet and FCoE switch offering up to 800 Gbps throughput and up to 40 ports. The switch has 32 fixed 1/10-Gbps SFP+ server ports and 8 10-Gbps SFP+ uplink ports. All Ethernet ports are capable of supporting FCoE.",

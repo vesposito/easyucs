@@ -8,6 +8,45 @@ from docx.shared import Pt
 
 from report.content import GenericReportContent
 
+import textwrap
+from reportlab.platypus import Paragraph, KeepTogether, Table, TableStyle, Spacer
+
+
+def wrap_custom(source_text, separator_chars, width=70, keep_separators=True):
+    current_length = 0
+    latest_separator = -1
+    current_chunk_start = 0
+    output = ""
+    char_index = 0
+    while char_index < len(source_text):
+        if source_text[char_index] == "\n":
+            keep_separators = False
+        if source_text[char_index] in separator_chars:
+            latest_separator = char_index
+        output += source_text[char_index]
+        current_length += 1
+        if current_length == width:
+            if latest_separator >= current_chunk_start:
+                # Valid earlier separator, cut there
+                cutting_length = char_index - latest_separator
+                if not keep_separators:
+                    cutting_length += 1
+                if cutting_length:
+                    output = output[:-cutting_length]
+                output += "\n"
+                current_chunk_start = latest_separator + 1
+                char_index = current_chunk_start
+            else:
+                # No separator found, hard cut
+                output += "\n"
+                current_chunk_start = char_index + 1
+                latest_separator = current_chunk_start - 1
+                char_index += 1
+            current_length = 0
+        else:
+            char_index += 1
+    return output
+
 
 class GenericReportTable(GenericReportContent):
     def __init__(self, order_id, parent, row_number, column_number, centered=False, cells_list=[],
@@ -38,11 +77,16 @@ class GenericReportTable(GenericReportContent):
             self.cells_type = "column"
             self.__format_column_to_row()
         else:
-            self.logger(level="warning",
-                        message="Cells in the table are not the same size as the number of columns or rows")
-            return False
+            err_message = "Cells in the table are not the same size as the number of columns or rows"
+            self.logger(level="warning", message=err_message)
+            raise ValueError(err_message)
 
         self.clean_empty()
+
+        self.table_style = TableStyle([("BOX", (0, 0), (-1, -1), 0.10, "#4983c6"),
+                                       ("GRID", (0, 0), (-1, -1), 0.10, "#4983c6"),
+                                       ("FONTSIZE", (0, 0), (-1, -1), 8),
+                                       ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold")])
 
     def clean_empty(self):
         # Column
@@ -60,7 +104,7 @@ class GenericReportTable(GenericReportContent):
             if empty:
                 columns_to_delete.append(column_index)
 
-        # Ajust list of index column to delete because we delete column one by one. So if I need to delete the
+        # Adjust list of index column to delete because we delete column one by one. So if I need to delete the
         # 2 and 3 column, once the 2nd column is deleted the 3rd column is now the 2nd
         for i in range(len(columns_to_delete)):
             columns_to_delete[i] = columns_to_delete[i] - i
@@ -74,22 +118,23 @@ class GenericReportTable(GenericReportContent):
 
         # Rows
         rows_to_delete = []
-        for row_index in range(len(self.cells_list)):
-            if row_index != 0:
-                empty = True
-                for column_in_row in self.cells_list[row_index]:
-                    if isinstance(column_in_row, type(None)):
-                        # Avoid issue with None value that is misinterpret by Word. We change None to empty string
-                        self.cells_list[row_index][self.cells_list[row_index].index(column_in_row)] = ""
-                    if not empty:
-                        continue
-                    if column_in_row == self.cells_list[row_index][0]:
-                        continue
-                    if column_in_row or column_in_row == 0:
-                        empty = False
-                if empty:
-                    rows_to_delete.append(row_index)
-        # Ajust list of index row to delete because we delete row one by one. So if I need to delete the
+        if self.column_number > 1:
+            for row_index in range(len(self.cells_list)):
+                if row_index != 0:
+                    empty = True
+                    for column_in_row in self.cells_list[row_index]:
+                        if isinstance(column_in_row, type(None)):
+                            # Avoid issue with None value that is misinterpreted by Word. We change None to empty string
+                            self.cells_list[row_index][self.cells_list[row_index].index(column_in_row)] = ""
+                        if not empty:
+                            continue
+                        if column_in_row == self.cells_list[row_index][0]:
+                            continue
+                        if column_in_row or column_in_row == 0:
+                            empty = False
+                    if empty:
+                        rows_to_delete.append(row_index)
+        # Adjust list of index row to delete because we delete row one by one. So if I need to delete the
         # 2 and 3 row, once the 2nd row is deleted the 3rd row is now the 2nd
         for i in range(len(rows_to_delete)):
             rows_to_delete[i] = rows_to_delete[i] - i
@@ -106,38 +151,141 @@ class GenericReportTable(GenericReportContent):
                                                style=self.style)
         table.alignment = int(bool(self.centered))
 
+        # Change to keep the table on one page 1/2 - Put all the value at True (default values)
+        table.style.paragraph_format.keep_together = True
+        table.style.paragraph_format.keep_with_next = True
+
         for i in range(len(self.cells_list)):
             row = self.cells_list[i]
             row = list(filter(None.__ne__, row))  # Remove None values
+            # Replace True with unicode check mark and False with unicode cross mark
+            # row = ["\U00002705" if e is True else "\U0000274C" if e is False else e for e in row]
             row_cells = table.rows[i].cells
             for j in range(0, len(row)):
+                if row[j] is True:
+                    row[j] = "Yes"
+                elif row[j] is False:
+                    row[j] = "No"
                 row_cells[j].text = str(row[j])
                 row_cells[j].vertical_alignment = WD_CELL_VERTICAL_ALIGNMENT.CENTER
                 if self.autofit:
                     # For more info : https://github.com/python-openxml/python-docx/issues/209
                     row_cells[j]._tc.tcPr.tcW.type = 'auto'
 
-        # Change to keep the table on one page 1/2 - Put all the value at False (default values)
-        table.style.paragraph_format.keep_together = False
-        table.style.paragraph_format.keep_with_next = False
-
-        # Change the font size
-        for row in table.rows:
-            for cell in row.cells:
-                paragraphs = cell.paragraphs
+                paragraphs = row_cells[j].paragraphs
                 for paragraph in paragraphs:
-                    for run in paragraph.runs:
-                        run.font.size = Pt(self.font_size)
+                    # Change to keep the table on one page 2/2
+                    # We have put the entire table at "Keep lines together" and "Keep with Next" in the template.docx.
+                    # And then we unset the last row's "Keep with Next". To summarize we have all rows, except the
+                    # last row at "Keep with Next"
+                    # Tips found here : https://wordribbon.tips.net/T012975_Keeping_Tables_on_One_Page
+                    if i == len(table.rows) - 1:
+                        paragraph.paragraph_format.keep_with_next = False
+                    # Change the font size only when self.font_size is not 10 cause the default font size is
+                    # kept at 10 in the template.docx file
+                    if self.font_size != 10:
+                        for run in paragraph.runs:
+                            run.font.size = Pt(self.font_size)
 
-        # Change to keep the table on one page 2/2
-        # Put the entire table at "keep together" and then put all the rows, except the last one, at "keep with next"
-        # Tips found here : https://wordribbon.tips.net/T012975_Keeping_Tables_on_One_Page
-        table.style.paragraph_format.keep_together = True
-        for row in table.rows[:-1]:
-            for cell in row.cells:
-                paragraphs = cell.paragraphs
-                for paragraph in paragraphs:
-                    paragraph.paragraph_format.keep_with_next = True
+    def add_in_json_report(self, content):
+        content["Table"] = True
+        content["CellsList"] = {
+            "Headers": self.cells_list[0],
+            "Rows": [[cell if not isinstance(cell, bool) else ("Yes" if cell else "No") for cell in row] for row in
+                     self.cells_list[1:]]
+        }
+
+    def add_in_pdf_report(self):
+        if self.font_size > 8 or not self.font_size:
+            self.font_size = 8
+        self.report.pdf_element_list.append(Spacer(1, 10))
+        table = []
+        for i in range(len(self.cells_list)):
+            column = []
+            for j in range(len(self.cells_list[i])):
+                if self.cells_list[i][j] is True:
+                    self.cells_list[i][j] = "Yes"
+                elif self.cells_list[i][j] is False:
+                    self.cells_list[i][j] = "No"
+                if chr(9989) in str(self.cells_list[i][j]):
+                    self.cells_list[i][j] = self.cells_list[i][j].replace(chr(9989), "✓")
+                # Wrapping the text inside the table cell so that it wouldn't bleed out of the page
+                wrap_delimiter = [" ", "_", "-", "/", ":", "\n", "*"]
+                if len(self.cells_list[i]) == 2:
+                    word_len = 65 + abs(self.font_size - 8) * 4
+                    if len(str(self.cells_list[i][j])) >= word_len:
+                        p = self.cells_list[i][j]
+                        self.cells_list[i][j] = wrap_custom(str(p), wrap_delimiter, word_len, True)
+                elif len(self.cells_list[i]) == 3:
+                    word_len = 45 + abs(self.font_size - 8) * 4
+                    if len(str(self.cells_list[i][j])) >= word_len:
+                        p = self.cells_list[i][j]
+                        self.cells_list[i][j] = wrap_custom(str(p), wrap_delimiter, word_len, True)
+                elif len(self.cells_list[i]) == 4:
+                    word_len = 24 + abs(self.font_size - 8) * 4
+                    if len(str(self.cells_list[i][j])) >= word_len:
+                        p = self.cells_list[i][j]
+                        self.cells_list[i][j] = wrap_custom(str(p), wrap_delimiter, word_len, True)
+                elif len(self.cells_list[i]) == 5:
+                    word_len = 22 + abs(self.font_size - 8) * 3
+                    if len(str(self.cells_list[i][j])) >= word_len:
+                        p = self.cells_list[i][j]
+                        self.cells_list[i][j] = wrap_custom(str(p), wrap_delimiter, word_len, True)
+                elif len(self.cells_list[i]) == 6:
+                    word_len = 21 + abs(self.font_size - 8) * 3
+                    if len(str(self.cells_list[i][j])) >= word_len:
+                        p = self.cells_list[i][j]
+                        self.cells_list[i][j] = wrap_custom(str(p), wrap_delimiter, word_len, True)
+                elif len(self.cells_list[i]) == 7:
+                    word_len = 18 + abs(self.font_size - 8) * 3
+                    if len(str(self.cells_list[i][j])) >= word_len:
+                        p = self.cells_list[i][j]
+                        self.cells_list[i][j] = wrap_custom(str(p), wrap_delimiter, word_len, True)
+                elif len(self.cells_list[i]) == 8:
+                    word_len = 15 + abs(self.font_size - 8) * 3
+                    if len(str(self.cells_list[i][j])) >= word_len:
+                        p = self.cells_list[i][j]
+                        self.cells_list[i][j] = wrap_custom(str(p), wrap_delimiter, word_len, True)
+                elif len(self.cells_list[i]) == 9:
+                    word_len = 12 + abs(self.font_size - 8) * 3
+                    if len(str(self.cells_list[i][j])) >= word_len:
+                        p = self.cells_list[i][j]
+                        self.cells_list[i][j] = wrap_custom(str(p), wrap_delimiter, word_len, True)
+                elif len(self.cells_list[i]) == 10:
+                    word_len = 10 + abs(self.font_size - 8) * 3
+                    if len(str(self.cells_list[i][j])) >= word_len:
+                        p = self.cells_list[i][j]
+                        self.cells_list[i][j] = wrap_custom(str(p), wrap_delimiter, word_len, True)
+                elif len(self.cells_list[i]) >= 11:
+                    word_len = 10 + abs(self.font_size - 8) * 1
+                    if len(str(self.cells_list[i][j])) >= word_len:
+                        p = self.cells_list[i][j]
+                        self.cells_list[i][j] = wrap_custom(str(p), wrap_delimiter, word_len, True)
+                # Truncating larger cells
+                if self.cells_list[0][j] == "Description" and len(str(self.cells_list[i][j])) >= 156:
+                    p = self.cells_list[i][j]
+                    self.cells_list[i][j] = textwrap.shorten(p, width=10, placeholder='...')
+                column.append(str(self.cells_list[i][j]))
+            table.append(column)
+
+        try:
+            tables = Table(table, spaceAfter=0, repeatRows=1)
+            tables.setStyle(self.table_style)
+            column_len = len(table)
+            if self.font_size:
+                tables.setStyle(TableStyle([("FONTSIZE", (0, 0), (-1, -1), self.font_size)]))
+            for each in range(column_len):
+                if each % 2 == 0:
+                    bg_color = "#dbe5f1"
+                else:
+                    bg_color = "#ffffff"
+                tables.setStyle(TableStyle([("BACKGROUND", (0, each), (-1, each), bg_color)]))
+            self.report.pdf_element_list.append(KeepTogether(tables))
+        except ValueError as err:
+            self.logger(
+                level="debug",
+                message=f"Error while adding table of type {self.__class__.__name__} to the PDF report: {str(err)}"
+            )
 
     def __format_column_to_row(self):
         column_cells_list = self.cells_list

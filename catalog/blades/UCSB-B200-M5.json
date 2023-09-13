@@ -27,7 +27,7 @@
     }
   ],
   "imm_compatible": true,
-  "imm_min_required_version": "4.1(2a)",
+  "imm_min_required_version": "4.1(3b)",
   "spec_sheet_url": "https://www.cisco.com/c/dam/en/us/products/collateral/servers-unified-computing/ucs-b-series-blade-servers/b200m5-specsheet.pdf",
   "data_sheet_url": "https://www.cisco.com/c/en/us/products/collateral/servers-unified-computing/ucs-b-series-blade-servers/datasheet-c78-739296.html",
   "specs": {

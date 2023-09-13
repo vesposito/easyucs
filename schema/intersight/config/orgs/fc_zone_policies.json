@@ -1,0 +1,115 @@
+{
+   "id": "intersight_config_orgs_fc_zone_policies#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS intersight config orgs fc_zone_policies section",
+   "description": "EasyUCS intersight config orgs fc_zone_policies section JSON schema",
+   "type": "object",
+   "properties": {
+      "comment": {
+         "description": "FC Zone Policy Comments",
+         "type": "string",
+         "default": ""
+      },
+      "descr": {
+         "description": "FC Zone Policy Description",
+         "type": "string",
+         "default": "",
+         "pattern": "^$|^[a-zA-Z0-9]+[\\x00-\\xFF]*$",
+         "maxLength": 1024
+      },
+      "name": {
+         "description": "FC Zone Policy Name",
+         "type": "string",
+         "default": "",
+         "pattern": "^[a-zA-Z0-9_.:-]{1,64}$"
+      },
+      "tags": {
+         "description": "FC Zone Policy Tags",
+         "type": "array",
+         "items": {
+            "description": "FC Zone Policy Tag",
+            "type": "object",
+            "properties": {
+               "key": {
+                  "description": "FC Zone Policy Tag Key",
+                  "type": "string",
+                  "default": "",
+                  "minLength": 1,
+                  "maxLength": 128
+               },
+               "value": {
+                  "description": "FC Zone Policy Tag Value",
+                  "type": "string",
+                  "default": "",
+                  "minLength": 0,
+                  "maxLength": 256
+               }
+            },
+            "additionalProperties": false,
+            "required": [
+               "key",
+               "value"
+            ]
+         },
+         "minItems": 1
+      },
+      "fc_target_zoning_type": {
+         "description": "Type of FC zoning. Allowed values are SIST, SIMT and None. * 'SIST' - The system automatically creates one zone for each vHBA and storage port pair. Each zone has two members. * 'SIMT' - The system automatically creates one zone for each vHBA. Configure this type of zoning if the number of zones created is likely to exceed the maximum supported number of zones. * 'None' - FC zoning is not configured.",
+         "type": "string",
+         "default": "single_initiator_single_target",
+         "enum": [
+            "single_initiator_single_target",
+            "single_initiator_multiple_targets",
+            "none"
+         ]
+      },
+      "fc_zone_targets": {
+         "description": "FC Zone Policy FC Zone Targets",
+         "type": "array",
+         "items": {
+            "type": "object",
+            "description": "FC Zone Policy - FC Zone Target",
+            "properties": {
+               "name": {
+                  "type": "string",
+                  "description": "FC Zone Policy - FC Zone Target - Name",
+                  "default": "",
+                  "pattern": "^[a-zA-Z0-9_.:-]{1,64}$"
+               },
+               "switch_id": {
+                  "description": "FC Zone Policy - FC Zone Target - Switch ID",
+                  "type": "string",
+                  "default": "A",
+                  "enum": [
+                     "A",
+                     "B"
+                  ]
+               },
+               "vsan_id": {
+                  "description": "FC Zone Policy - FC Zone Target - VSAN ID",
+                  "type": "integer",
+                  "default": "",
+                  "minimum": 1,
+                  "maximum": 4093
+               },
+               "wwpn": {
+                  "type": "string",
+                  "description": "FC Zone Policy - FC Zone Target - WWPN",
+                  "default": "",
+                  "pattern": "^(([A-Fa-f0-9][A-Fa-f0-9]:){7}[A-Fa-f0-9][A-Fa-f0-9])|0$"
+               }
+            },
+            "required": [
+               "name",
+               "vsan_id",
+               "wwpn"
+            ]
+         }
+      }
+   },
+   "additionalProperties": false,
+   "required": [
+      "name"
+   ]
+}
+ 

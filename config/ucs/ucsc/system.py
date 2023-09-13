@@ -36,10 +36,11 @@ from ucscsdk.mometa.top.TopSystem import TopSystem
 
 class UcsCentralDateTimeMgmt(UcsCentralConfigObject):
     _CONFIG_NAME = "Date & Time"
+    _CONFIG_SECTION_NAME = "date_time"
     _UCS_SDK_OBJECT_NAME = "commDateTime"
 
     def __init__(self, parent=None, json_content=None, comm_date_time=None):
-        UcsCentralConfigObject.__init__(self, parent=parent)
+        UcsCentralConfigObject.__init__(self, parent=parent, ucs_sdk_object=comm_date_time)
         self.ntp_servers = []
         self.timezone = None
 
@@ -104,10 +105,11 @@ class UcsCentralDateTimeMgmt(UcsCentralConfigObject):
 
 class UcsCentralDns(UcsCentralConfigObject):
     _CONFIG_NAME = "DNS"
+    _CONFIG_SECTION_NAME = "dns"
     _UCS_SDK_OBJECT_NAME = "commDns"
 
     def __init__(self, parent=None, json_content=None, comm_dns=None):
-        UcsCentralConfigObject.__init__(self, parent=parent)
+        UcsCentralConfigObject.__init__(self, parent=parent, ucs_sdk_object=comm_dns)
         self.dns_servers = []
         self.domain_name = None
 
@@ -145,15 +147,15 @@ class UcsCentralDns(UcsCentralConfigObject):
 
         parent_obj = self._parent
         if parent_obj.__class__.__name__ in ["UcsCentralDomainGroup"]:
-                dg_list = []
-                while parent_obj.__class__.__name__ in ["UcsCentralDomainGroup"]:
-                    dg_list.append(parent_obj.name)
-                    parent_obj = parent_obj._parent
-                dg_list.reverse()
-                parent_mo = ""
-                for dg in dg_list:
-                    parent_mo += "domaingroup-" + dg + "/"
-                parent_mo = parent_mo[:-1]  # We remove the last "/" at the end of the mo
+            dg_list = []
+            while parent_obj.__class__.__name__ in ["UcsCentralDomainGroup"]:
+                dg_list.append(parent_obj.name)
+                parent_obj = parent_obj._parent
+            dg_list.reverse()
+            parent_mo = ""
+            for dg in dg_list:
+                parent_mo += "domaingroup-" + dg + "/"
+            parent_mo = parent_mo[:-1]  # We remove the last "/" at the end of the mo
         else:
             parent_mo = "org-root/deviceprofile-default"
 
@@ -172,10 +174,11 @@ class UcsCentralDns(UcsCentralConfigObject):
 
 class UcsCentralLocalUser(UcsCentralConfigObject):
     _CONFIG_NAME = "Local User"
+    _CONFIG_SECTION_NAME = "local_users"
     _UCS_SDK_OBJECT_NAME = "aaaUser"
 
     def __init__(self, parent=None, json_content=None, aaa_user=None):
-        UcsCentralConfigObject.__init__(self, parent=parent)
+        UcsCentralConfigObject.__init__(self, parent=parent, ucs_sdk_object=aaa_user)
         self.name = None
         self.descr = None
         self.first_name = None
@@ -305,10 +308,11 @@ class UcsCentralLocalUser(UcsCentralConfigObject):
 
 class UcsCentralLocale(UcsCentralConfigObject):
     _CONFIG_NAME = "Locale"
+    _CONFIG_SECTION_NAME = "locales"
     _UCS_SDK_OBJECT_NAME = "aaaLocale"
 
     def __init__(self, parent=None, json_content=None, aaa_locale=None):
-        UcsCentralConfigObject.__init__(self, parent=parent)
+        UcsCentralConfigObject.__init__(self, parent=parent, ucs_sdk_object=aaa_locale)
         self.name = None
         self.descr = None
         self.domain_groups = []
@@ -372,7 +376,7 @@ class UcsCentralLocale(UcsCentralConfigObject):
             for organization in self.organizations:
                 complete_org_path = ""
                 for part in organization.split("/"):
-                    if "org-" not in part:
+                    if not part.startswith("org-"):
                         complete_org_path += "org-"
                     complete_org_path += part + "/"
                 complete_org_path = complete_org_path[:-1]  # Remove the trailing "/"
@@ -388,7 +392,7 @@ class UcsCentralLocale(UcsCentralConfigObject):
             for domain_group in self.domain_groups:
                 complete_dg_path = ""
                 for part in domain_group.split("/"):
-                    if "domaingroup-" not in part:
+                    if not part.startswith("domaingroup-"):
                         complete_dg_path += "domaingroup-"
                     complete_dg_path += part + "/"
                 complete_dg_path = complete_dg_path[:-1]  # Remove the trailing "/"
@@ -410,9 +414,10 @@ class UcsCentralLocale(UcsCentralConfigObject):
 
 class UcsCentralManagementInterface(UcsCentralConfigObject):
     _CONFIG_NAME = "Management Interface"
+    _CONFIG_SECTION_NAME = "management_interfaces"
 
     def __init__(self, parent=None, json_content=None, network_element=None):
-        UcsCentralConfigObject.__init__(self, parent=parent)
+        UcsCentralConfigObject.__init__(self, parent=parent, ucs_sdk_object=network_element)
         self.node = "primary"
         self.gateway = None
         self.gateway_v6 = None
@@ -482,10 +487,11 @@ class UcsCentralManagementInterface(UcsCentralConfigObject):
 
 class UcsCentralPasswordProfile(UcsCentralConfigObject):
     _CONFIG_NAME = "Password Profile"
+    _CONFIG_SECTION_NAME = "password_profile"
     _UCS_SDK_OBJECT_NAME = "aaaPwdProfile"
 
     def __init__(self, parent=None, json_content=None, aaa_pwd_profile=None):
-        UcsCentralConfigObject.__init__(self, parent=parent)
+        UcsCentralConfigObject.__init__(self, parent=parent, ucs_sdk_object=aaa_pwd_profile)
         self.password_strength_check = None
         self.change_interval = None
         self.no_change_interval = None
@@ -556,10 +562,11 @@ class UcsCentralPasswordProfile(UcsCentralConfigObject):
 
 class UcsCentralRole(UcsCentralConfigObject):
     _CONFIG_NAME = "Role"
+    _CONFIG_SECTION_NAME = "roles"
     _UCS_SDK_OBJECT_NAME = "aaaRole"
 
     def __init__(self, parent=None, json_content=None, aaa_role=None):
-        UcsCentralConfigObject.__init__(self, parent=parent)
+        UcsCentralConfigObject.__init__(self, parent=parent, ucs_sdk_object=aaa_role)
         self.name = None
         self.privileges = []
 
@@ -620,10 +627,11 @@ class UcsCentralRole(UcsCentralConfigObject):
 
 class UcsCentralSnmp(UcsCentralConfigObject):
     _CONFIG_NAME = "SNMP"
+    _CONFIG_SECTION_NAME = "snmp"
     _UCS_SDK_OBJECT_NAME = "commSnmp"
 
     def __init__(self, parent=None, json_content=None, comm_snmp=None):
-        UcsCentralConfigObject.__init__(self, parent=parent)
+        UcsCentralConfigObject.__init__(self, parent=parent, ucs_sdk_object=comm_snmp)
         self.state = None
         self.community = None
         self.contact = None
@@ -656,12 +664,25 @@ class UcsCentralSnmp(UcsCentralConfigObject):
                                        if mo + "/snmp-trap" in comm_snmp_trap.dn]
                 if len(comm_snmp_trap_list) == 1:
                     comm_snmp_trap = comm_snmp_trap_list[0]
+
+                    # Some UCS Central setups can have traps set with no version, type or v3privilege. In that case
+                    # those attributes are assigned value "0". Setting those to None instead.
+                    version = None
+                    if comm_snmp_trap.version not in ["0"]:
+                        version = comm_snmp_trap.version
+                    notification_type = None
+                    if comm_snmp_trap.notification_type not in ["0"]:
+                        notification_type = comm_snmp_trap.notification_type
+                    v3privilege = None
+                    if comm_snmp_trap.v3_privilege not in ["0"]:
+                        v3privilege = comm_snmp_trap.v3_privilege
+
                     self.snmp_traps.append({"hostname": comm_snmp_trap.hostname,
                                             "community": comm_snmp_trap.community,
                                             "port": comm_snmp_trap.port,
-                                            "version": comm_snmp_trap.version,
-                                            "notification_type": comm_snmp_trap.notification_type,
-                                            "v3privilege": comm_snmp_trap.v3_privilege})
+                                            "version": version,
+                                            "notification_type": notification_type,
+                                            "v3privilege": v3privilege})
 
             # SNMP Users
             if "commSnmpUser" in self._config.sdk_objects:
@@ -672,10 +693,15 @@ class UcsCentralSnmp(UcsCentralConfigObject):
                     comm_snmp_user = comm_snmp_user_list[0]
                     self.snmp_users.append({"name": comm_snmp_user.name,
                                             "descr": comm_snmp_user.descr,
-                                            "privacy_password": comm_snmp_user.privpwd,
-                                            "password": comm_snmp_user.pwd,
                                             "auth_type": comm_snmp_user.auth,
                                             "use_aes": comm_snmp_user.use_aes})
+
+                    if comm_snmp_user.pwd_set:
+                        self.logger(level="warning",
+                                    message="Password of SNMP User " + comm_snmp_user.name + " can't be exported")
+                    if comm_snmp_user.priv_pwd_set:
+                        self.logger(level="warning",
+                                    message="Priv Password of SNMP User " + comm_snmp_user.name + " can't be exported")
 
         elif self._config.load_from == "file":
             if json_content is not None:
@@ -740,10 +766,11 @@ class UcsCentralSnmp(UcsCentralConfigObject):
 
 class UcsCentralSyslog(UcsCentralConfigObject):
     _CONFIG_NAME = "Syslog"
+    _CONFIG_SECTION_NAME = "syslog"
     _UCS_SDK_OBJECT_NAME = "commSyslog"
 
     def __init__(self, parent=None, json_content=None, comm_syslog=None):
-        UcsCentralConfigObject.__init__(self, parent=parent)
+        UcsCentralConfigObject.__init__(self, parent=parent, ucs_sdk_object=comm_syslog)
         self.local_destinations = []
         self.local_sources = []
         self.remote_destinations = []
@@ -772,8 +799,20 @@ class UcsCentralSyslog(UcsCentralConfigObject):
                                             if mo + "/console" in comm_syslog_console.dn]
                 if len(comm_syslog_console_list) == 1:
                     comm_syslog = comm_syslog_console_list[0]
+                    level = comm_syslog.severity
+                    if level in ["3", "4", "5", "6", "7"]:
+                        if mo.startswith("org-root"):
+                            location = "UCS Central System Policies"
+                        else:
+                            location = "Domain Group " + self._parent.get_domain_group_path()
+                        self.logger(
+                            level="warning",
+                            message="Ignoring syslog logging level '" + level + "' for Local Destination Console of " +
+                                    location + " as it is not supported by ucscsdk"
+                        )
+                        level = None
                     self.local_destinations.append({"console": [{"admin_state": comm_syslog.admin_state,
-                                                                 "level": comm_syslog.severity}]})
+                                                                 "level": level}]})
 
             if "commSyslogMonitor" in self._config.sdk_objects:
                 comm_syslog_monitor_list = [comm_syslog_monitor for comm_syslog_monitor
@@ -876,7 +915,7 @@ class UcsCentralSyslog(UcsCentralConfigObject):
             parent_mo = "org-root/deviceprofile-default/syslog"
 
         # In case we are in a Domain Group, the parent commSyslog object must first be created if it does not exist
-        if "domaingroup-" in parent_mo:
+        if parent_mo.startswith("domaingroup-"):
             mo_comm_syslog = CommSyslog(parent_mo_or_dn=parent_mo)
             self._handle.add_mo(mo_comm_syslog, modify_present=True)
             parent_mo = mo_comm_syslog
@@ -962,10 +1001,11 @@ class UcsCentralSyslog(UcsCentralConfigObject):
 
 class UcsCentralSystem(UcsCentralConfigObject):
     _CONFIG_NAME = "System Information"
+    _CONFIG_SECTION_NAME = "system"
     _UCS_SDK_OBJECT_NAME = "topSystem"
 
     def __init__(self, parent=None, json_content=None):
-        UcsCentralConfigObject.__init__(self, parent=parent)
+        UcsCentralConfigObject.__init__(self, parent=parent, ucs_sdk_object=None)
         self.descr = None
         self.name = None
         self.mode = None

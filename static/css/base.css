@@ -1,0 +1,349 @@
+:root {
+  --light_blue: #00bceb;
+  --medium_blue: #005173;
+  --medium_blue_hover: #0075a6;
+  --dark_blue: #27426E;
+  --dark_blue_hover: #345994;
+  --light_grey: #DFDFE0;
+  --grey: #9E9FA1;
+  --dark_grey: #676767;
+  --dark_grey_hover: #4e4e4e;
+  --orange: #fbac18;
+  --orange_hover: #dc9104;
+  --red: #D0392B;
+  --red_hover: #a62d22;
+  --green: #6ebe4a;
+  --green_hover: #579d38;
+  --white: #ffffff;
+  --default_hover: #e9ecef;
+  --default_font: "Source Sans Pro"
+}
+
+html {
+  scroll-behavior: smooth!important;
+}
+
+.bg-primary {
+  background-color: var(--dark_blue)!important;
+}
+
+.bg-info{
+  background-color: var(--light_blue)!important;
+}
+
+.bg-warning {
+  background-color: var(--orange)!important;
+}
+
+.bg-warning.click-item:hover{
+  color: black!important;
+}
+
+.bg-dark.click-item:hover,.bg-primary.click-item:hover, .bg-danger.click-item:hover{
+  color: var(--light_grey)!important;
+}
+
+.btn-primary {
+  background-color: var(--dark_blue)!important;
+  border-color: var(--dark_blue)!important;
+}
+
+.btn-primary:hover {
+  background-color: var(--dark_blue_hover)!important;
+  border-color: var(--dark_blue_hover)!important;
+}
+
+.btn-secondary {
+  background-color: var(--dark_grey)!important;
+  border-color: var(--dark_grey)!important;
+}
+
+.btn-secondary:hover {
+  background-color: var(--dark_grey_hover)!important;
+  border-color: var(--dark_grey_hover)!important;
+}
+
+.btn-success{
+  background-color: var(--green)!important;
+  border-color: var(--green)!important;
+}
+
+.btn-success:hover{
+  color: var(--white)!important;
+  background-color: var(--green_hover)!important;
+  border-color: var(--green_hover)!important;
+}
+
+.btn-outline-white{
+  color: var(--white)!important;
+  border-color: var(--white)!important;
+}
+
+.btn-outline-white:hover{
+  color: var(--dark_blue)!important;
+  background-color: var(--white)!important;
+}
+
+.btn-outline-danger{
+  color: var(--red)!important;
+  border-color: var(--red)!important;
+}
+
+.btn-outline-danger:hover{
+  color: var(--white)!important;
+  background-color: var(--red)!important;
+}
+
+.btn-outline-secondary{
+  color: var(--dark_blue)!important;
+  border-color: var(--dark_blue)!important;
+}
+
+.btn-outline-secondary:hover{
+  color: var(--white)!important;
+  background-color: var(--dark_blue)!important;
+}
+
+.btn-outline-success{
+  color: var(--green)!important;
+  border-color: var(--green)!important;
+}
+
+.btn-outline-success:hover{
+  color: var(--white)!important;
+  border-color: var(--green_hover)!important;
+}
+
+.dropdown-item.active, .dropdown-item:active{
+background-color: var(--dark_blue)!important;
+}
+
+.btn-default:not(:disabled):not(.disabled).active, .btn-default:not(:disabled):not(.disabled):active, .show>.btn-default.dropdown-toggle {
+  background-color: var(--light_grey)!important;
+}
+
+
+a {
+  color: var(--medium_blue);
+}
+
+a:hover {
+  color: var(--medium_blue_hover);
+}
+
+.json-string.json-property{
+  color: var(--dark_blue)!important;
+}
+
+.json-string{
+  color: var(--light_blue)!important;
+}
+
+#statusAlert{
+  position: fixed;
+  z-index: 9999;
+  left: 50%;
+  bottom: 20px;
+  transform: translate(-50%, -50%);
+  margin: 0 auto;
+}
+
+.nav-item>.nav-link.active, .sidebar-light-primary .nav-sidebar>.nav-item>.nav-link.active {
+  background-color: var(--light_blue)!important;
+  color: #fff!important;
+}
+
+[class*=sidebar-dark-] .nav-treeview>.nav-item>.nav-link.active, [class*=sidebar-dark-] .nav-treeview>.nav-item>.nav-link.active:focus, [class*=sidebar-dark-] .nav-treeview>.nav-item>.nav-link.active:hover {
+  background-color: var(--default_hover)!important;
+  color: #343a40!important;
+}
+
+.no-resize{
+  resize: none;
+}
+
+.card:hover{
+  box-shadow: 0 10px 20px rgba(0,0,0,.12), 0 4px 8px rgba(0,0,0,.06);
+}
+
+.fa-icon-inner-text{
+  font-family: var(--default_font);
+  font-style: normal;
+}
+
+.right-0{
+  right: 0;
+}
+
+.text-decoration-none{
+  text-decoration: none;
+}
+
+.rounded-top{
+  border-top-left-radius: 0.25rem!important;
+  border-top-right-radius: 0.25rem!important;
+  border-bottom-left-radius: 0rem!important;
+  border-bottom-right-radius: 0rem!important;
+
+}
+
+.table-avatar {
+  border-radius: 50%;
+  width: 55px;
+  display: inline;
+}
+
+.text-middle{
+  vertical-align: middle!important;
+}
+
+.shadow{
+  box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+}
+
+.overflow-auto{
+  overflow: auto;
+}
+
+#right-panel-container{
+  z-index: 1000;
+  color: #fff;
+  background-color: #343a40;
+}
+
+.log-offcanvas{
+  height: 0;
+  z-index: 9998; /* Stay on top */
+  overflow: hidden; /* Disable horizontal scroll */
+  transition: 0.5s; /* 0.5 second transition effect to slide in the sidenav */
+}
+
+/* Styling of JSON editor */
+div.jsoneditor,
+div.jsoneditor-menu {
+  border: none!important;
+}
+
+div.jsoneditor-menu {
+  border-top-left-radius: 0.25rem!important;
+  border-top-right-radius: 0.25rem!important;
+  background-color: var(--dark_blue);
+}
+
+div.jsoneditor-tree,
+div.jsoneditor textarea.jsoneditor-text {
+  background-color: var(--white)!important;
+  color: #ffffff!important;
+}
+
+div.jsoneditor-field,
+div.jsoneditor-value {
+  color: var(--dark_blue)!important;
+}
+
+div.jsoneditor-frame{
+  border-radius: .25rem!important
+}
+
+table.jsoneditor-search div.jsoneditor-frame {
+  background: var(--grey)!important;
+}
+
+tr.jsoneditor-highlight,
+tr.jsoneditor-selected {
+  background-color: var(--default_hover)!important;
+}
+
+div.jsoneditor-field[contenteditable=true]:focus,
+div.jsoneditor-field[contenteditable=true]:hover,
+div.jsoneditor-value[contenteditable=true]:focus,
+div.jsoneditor-value[contenteditable=true]:hover,
+div.jsoneditor-field.jsoneditor-highlight,
+div.jsoneditor-value.jsoneditor-highlight {
+  background-color: #FBD8BA!important;
+  border: none!important;
+}
+
+div.jsoneditor-field.highlight-active,
+div.jsoneditor-field.highlight-active:focus,
+div.jsoneditor-field.highlight-active:hover,
+div.jsoneditor-value.highlight-active,
+div.jsoneditor-value.highlight-active:focus,
+div.jsoneditor-value.highlight-active:hover {
+  background-color: var(--default_hover)!important;
+  border: none!important;
+}
+
+div.jsoneditor-tree {
+border-bottom-right-radius: 0.25rem!important;
+border-bottom-left-radius: 0.25rem!important;
+}
+
+div.jsoneditor-tree button:focus {
+  background-color: var(--default_hover)!important;
+}
+
+/* coloring of JSON in tree mode */
+div.jsoneditor-readonly {
+  color: var(--dark_grey)!important;
+}
+div.jsoneditor td.jsoneditor-separator {
+  color: var(--dark_grey)!important;
+}
+div.jsoneditor-value.jsoneditor-string {
+  color: var(--light_blue)!important;
+}
+div.jsoneditor-value.jsoneditor-object,
+div.jsoneditor-value.jsoneditor-array {
+  color: var(--grey)!important;
+}
+div.jsoneditor-value.jsoneditor-number {
+  color: var(--red)!important;
+}
+div.jsoneditor-value.jsoneditor-boolean {
+  color: var(--orange)!important;
+}
+div.jsoneditor-value.jsoneditor-null {
+  color: var(--green)!important;
+}
+div.jsoneditor-value.jsoneditor-invalid {
+  color: var(--dark_grey)!important;
+}
+
+
+@media (min-width: 1800px){
+.col-xxl-2 {
+    -webkit-flex: 0 0 16.666667%;
+    -ms-flex: 0 0 16.666667%;
+    flex: 0 0 16.666667%;
+    max-width: 16.666667%;
+}
+
+.col-xxl-3 {
+  -webkit-flex: 0 0 25%;
+  -ms-flex: 0 0 25%;
+  flex: 0 0 25%;
+  max-width: 25%;
+}
+
+.col-xxl-4 {
+  -webkit-flex: 0 0 33.333333%;
+  -ms-flex: 0 0 33.333333%;
+  flex: 0 0 33.333333%;
+  max-width: 33.333333%;
+}
+
+.col-xxl-5 {
+  -webkit-flex: 0 0 41.666667%;
+  -ms-flex: 0 0 41.666667%;
+  flex: 0 0 41.666667%;
+  max-width: 41.666667%;
+}
+
+.col-xxl-6 {
+  -webkit-flex: 0 0 50%;
+  -ms-flex: 0 0 50%;
+  flex: 0 0 50%;
+  max-width: 50%;
+}
+}

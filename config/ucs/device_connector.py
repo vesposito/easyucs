@@ -16,17 +16,24 @@ class UcsDeviceConnector(GenericUcsConfigObject):
         GenericUcsConfigObject.__init__(self, parent=parent)
         self._connector_uri = self._parent_having_logger.target + "/connector"
 
+        self.enabled = None
         self.intersight_url = None
         self.proxy_host = None
         self.proxy_port = None
         self.proxy_state = None
         self.proxy_username = None
         self.proxy_password = None
+        self.read_only = None
+        self.tunneled_kvm = None
+        self.configuration_from_intersight_only = None
 
         if self._config.load_from == "live":
             self._cookie = self._parent_having_logger.handle.cookie
             self._get_device_connections()
             self._get_http_proxies()
+            self._get_systems()
+            if "Imc" in self._parent_having_logger.__class__.__name__:
+                self._get_device_configurations()
 
         elif self._config.load_from == "file":
             if json_content is not None:
@@ -48,8 +55,8 @@ class UcsDeviceConnector(GenericUcsConfigObject):
                     response = requests.get(uri, verify=False, headers=auth_header)
                     return response.json()
                 except Exception as err:
-                    print(err)
-                    self.logger(level="error", message="Couldn't request the device connector information from the API")
+                    self.logger(level="error", message="Couldn't request the device connector information " +
+                                                       "from the API for config: " + str(err))
             else:
                 self.logger(level="error",
                             message="No login cookie, no request can be made to find device connector information")
@@ -74,6 +81,42 @@ class UcsDeviceConnector(GenericUcsConfigObject):
             if self.intersight_url in ["svc.ucs-connect.com", "svc.intersight.com", "svc-static1.intersight.com",
                                        "svc-static1.ucs-connect.com"]:
                 self.intersight_url = "svc.intersight.com"
+        except KeyError as err:
+            self.logger(level="error", message="Could not find key parameter " + str(err))
+
+    def _get_device_configurations(self):
+        uri = "https://" + self._connector_uri + "/DeviceConfigurations"
+        response = self.get_request(uri=uri)
+        # Sanity check
+        if not response:
+            return None
+        if isinstance(response, list):
+            if not response[0]:
+                return None
+        else:
+            return None
+
+        try:
+            self.tunneled_kvm = str(response[0]["KVMTunnellingEnabled"]).lower()
+            self.configuration_from_intersight_only = str(response[0]["ConfigurationLockoutEnabled"]).lower()
+        except KeyError as err:
+            self.logger(level="error", message="Could not find key parameter " + str(err))
+
+    def _get_systems(self):
+        uri = "https://" + self._connector_uri + "/Systems"
+        response = self.get_request(uri=uri)
+        # Sanity check
+        if not response:
+            return None
+        if isinstance(response, list):
+            if not response[0]:
+                return None
+        else:
+            return None
+
+        try:
+            self.enabled = str(response[0]["AdminState"]).lower()
+            self.read_only = str(response[0]["ReadOnlyMode"]).lower()
         except KeyError as err:
             self.logger(level="error", message="Could not find key parameter " + str(err))
 
@@ -134,17 +177,29 @@ class UcsDeviceConnector(GenericUcsConfigObject):
         uri = "https://" + self._parent_having_logger.target + "/connector/HttpProxies"
         response = self.put_request(uri=uri, data=data)
 
-        # Pushing Intersight URL configuration
+        # Pushing Intersight Device Connections
         # FIXME: Check before performing ForceResetIdentity
         # data = '{"CloudDns":"' + self.intersight_url + '", "ForceResetIdentity": true }'
         # uri = "https://" + self._parent_having_logger.target + "/connector/DeviceConnections"
         # response = self.put_request(uri=uri, data=data)
 
+        # Pushing Intersight Systems
+        data = '{"ReadOnlyMode":' + self.read_only + ', "AdminState":' + self.enabled + '}'
+        uri = "https://" + self._parent_having_logger.target + "/connector/Systems"
+        response = self.put_request(uri=uri, data=data)
+
+        # Pushing Intersight Device configuration
+        if "Imc" in self._parent_having_logger.__class__.__name__:
+            data = '{"KVMTunnellingEnabled":' + self.tunneled_kvm + ', "ConfigurationLockoutEnabled":' +\
+                   self.configuration_from_intersight_only + '}'
+            uri = "https://" + self._parent_having_logger.target + "/connector/DeviceConfigurations"
+            response = self.put_request(uri=uri, data=data)
+
         return True
 
     def put_request(self, uri="", data=""):
         """
-        Do a put request specific for the proxy settings (subject to change to make it generic?)
+        Does a put request specific for the proxy settings (subject to change to make it generic?)
         """
 
         # Disable warning at each request
@@ -167,6 +222,10 @@ class UcsDeviceConnector(GenericUcsConfigObject):
                         self.logger(level="error",
                                     message=message)
                         return False
+                    elif "InvalidRequest" in response.text:
+                        self.logger(level="error",
+                                    message=response.json()["message"])
+
                     return response.json()
                 except Exception as err:
                     print(err)

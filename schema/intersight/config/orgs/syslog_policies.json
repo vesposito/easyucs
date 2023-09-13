@@ -1,0 +1,199 @@
+{
+   "id": "intersight_config_orgs_syslog_policies#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS intersight config orgs syslog_policies section",
+   "description": "EasyUCS intersight config orgs syslog_policies section JSON schema",
+   "type": "object",
+   "properties": {
+      "comment": {
+         "description": "Syslog Policy Comments",
+         "type": "string",
+         "default": ""
+      },
+      "descr": {
+         "description": "Syslog Policy Description",
+         "type": "string",
+         "default": "",
+         "pattern": "^$|^[a-zA-Z0-9]+[\\x00-\\xFF]*$",
+         "maxLength": 1024
+      },
+      "name": {
+         "description": "Syslog Policy Name",
+         "type": "string",
+         "default": "",
+         "pattern": "^[a-zA-Z0-9_.:-]{1,64}$"
+      },
+      "tags": {
+         "description": "Syslog Policy Tags",
+         "type": "array",
+         "items": {
+            "description": "Syslog Policy Tag",
+            "type": "object",
+            "properties": {
+               "key": {
+                  "description": "Syslog Policy Tag Key",
+                  "type": "string",
+                  "default": "",
+                  "minLength": 1,
+                  "maxLength": 128
+               },
+               "value": {
+                  "description": "Syslog Policy Tag Value",
+                  "type": "string",
+                  "default": "",
+                  "minLength": 0,
+                  "maxLength": 256
+               }
+            },
+            "additionalProperties": false,
+            "required": [
+               "key",
+               "value"
+            ]
+         },
+         "minItems": 1
+      },
+      "local_logging": {
+         "description": "Syslog Policy - Local Logging",
+         "type": "object",
+         "properties": {
+            "file": {
+               "description": "Syslog Policy - Local Logging - File",
+               "type": "object",
+               "properties": {
+                  "min_severity": {
+                     "description": "Syslog Policy - Local Logging - File - Minimum Severity to Report",
+                     "type": "string",
+                     "default": "warning",
+                     "enum": [
+                        "alert",
+                        "critical",
+                        "debug",
+                        "emergency",
+                        "error",
+                        "informational",
+                        "notice",
+                        "warning"
+                     ]
+                  }
+               },
+               "additionalProperties": false,
+               "required": [
+                  "min_severity"
+               ]
+            }
+         },
+         "additionalProperties": false,
+         "required": [
+            "file"
+         ]
+      },
+      "remote_logging": {
+         "description": "Syslog Policy - Remote Logging",
+         "type": "object",
+         "properties": {
+            "server1": {
+               "description": "Syslog Policy - Remote Logging - Server 1",
+               "type": "object",
+               "properties": {
+                  "enable": {
+                     "description": "Syslog Policy - Remote Logging - Server 1 - Enable",
+                     "type": "boolean",
+                     "default": false
+                  },
+                  "hostname": {
+                     "description": "Syslog Policy - Remote Logging - Server 1 - Hostname",
+                     "type": "string",
+                     "default": "0.0.0.0"
+                  },
+                  "port": {
+                     "description": "Syslog Policy - Remote Logging - Server 1 - Port",
+                     "type": "integer",
+                     "default": 514,
+                     "minimum": 1,
+                     "maximum": 65535
+                  },
+                  "protocol": {
+                     "description": "Syslog Policy - Remote Logging - Server 1 - Protocol",
+                     "type": "string",
+                     "default": "udp",
+                     "enum": [
+                        "tcp",
+                        "udp"
+                     ]
+                  },
+                  "min_severity": {
+                     "description": "Syslog Policy - Remote Logging Logging - Server 1 - Minimum Severity to Report",
+                     "type": "string",
+                     "default": "warning",
+                     "enum": [
+                        "alert",
+                        "critical",
+                        "debug",
+                        "emergency",
+                        "error",
+                        "informational",
+                        "notice",
+                        "warning"
+                     ]
+                  }
+               },
+               "additionalProperties": false
+            },
+            "server2": {
+               "description": "Syslog Policy - Remote Logging - Server 2",
+               "type": "object",
+               "properties": {
+                  "enable": {
+                     "description": "Syslog Policy - Remote Logging - Server 2 - Enable",
+                     "type": "boolean",
+                     "default": false
+                  },
+                  "hostname": {
+                     "description": "Syslog Policy - Remote Logging - Server 2 - Hostname",
+                     "type": "string",
+                     "default": "0.0.0.0"
+                  },
+                  "port": {
+                     "description": "Syslog Policy - Remote Logging - Server 2 - Port",
+                     "type": "integer",
+                     "default": 514,
+                     "minimum": 1,
+                     "maximum": 65535
+                  },
+                  "protocol": {
+                     "description": "Syslog Policy - Remote Logging - Server 2 - Protocol",
+                     "type": "string",
+                     "default": "udp",
+                     "enum": [
+                        "tcp",
+                        "udp"
+                     ]
+                  },
+                  "min_severity": {
+                     "description": "Syslog Policy - Remote Logging Logging - Server 2 - Minimum Severity to Report",
+                     "type": "string",
+                     "default": "warning",
+                     "enum": [
+                        "alert",
+                        "critical",
+                        "debug",
+                        "emergency",
+                        "error",
+                        "informational",
+                        "notice",
+                        "warning"
+                     ]
+                  }
+               },
+               "additionalProperties": false
+            }
+         },
+         "additionalProperties": false
+      }
+   },
+   "additionalProperties": false,
+   "required": [
+      "name"
+   ]
+}

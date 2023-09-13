@@ -1,0 +1,210 @@
+{
+   "id": "intersight_config_orgs_vlan_policies#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS intersight config orgs vlan_policies section",
+   "description": "EasyUCS intersight config orgs vlan_policies section JSON schema",
+   "type": "object",
+   "properties": {
+      "comment": {
+         "description": "VLAN Policy Comments",
+         "type": "string",
+         "default": ""
+      },
+      "descr": {
+         "description": "VLAN Policy Description",
+         "type": "string",
+         "default": "",
+         "pattern": "^$|^[a-zA-Z0-9]+[\\x00-\\xFF]*$",
+         "maxLength": 1024
+      },
+      "name": {
+         "description": "VLAN Policy Name",
+         "type": "string",
+         "default": "",
+         "pattern": "^[a-zA-Z0-9_.:-]{1,64}$"
+      },
+      "tags": {
+         "description": "VLAN Policy Tags",
+         "type": "array",
+         "items": {
+            "description": "VLAN Policy Tag",
+            "type": "object",
+            "properties": {
+               "key": {
+                  "description": "VLAN Policy Tag Key",
+                  "type": "string",
+                  "default": "",
+                  "minLength": 1,
+                  "maxLength": 128
+               },
+               "value": {
+                  "description": "VLAN Policy Tag Value",
+                  "type": "string",
+                  "default": "",
+                  "minLength": 0,
+                  "maxLength": 256
+               }
+            },
+            "additionalProperties": false,
+            "required": [
+               "key",
+               "value"
+            ]
+         },
+         "minItems": 1
+      },
+      "vlans": {
+         "description": "VLAN Policy - VLANs",
+         "type": "array",
+         "items": {
+            "description": "VLAN Policy - VLAN",
+            "type": "object",
+            "properties": {
+               "name": {
+                  "description": "VLAN Policy - VLAN Name",
+                  "type": "string",
+                  "default": ""
+               },
+               "id": {
+                  "description": "VLAN Policy - VLAN ID",
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 4093
+               },
+               "auto_allow_on_uplinks": {
+                  "description": "VLAN Policy - Auto Allow on Uplinks",
+                  "type": "boolean",
+                  "default": true
+               },
+               "native_vlan": {
+                  "description": "VLAN Policy - Native VLAN",
+                  "type": "boolean",
+                  "default": false
+               },
+               "multicast_policy": {
+                  "description": "VLAN Policy - Multicast Policy",
+                  "type": "string",
+                  "default": ""
+               },
+               "sharing_type": {
+                  "description": "VLAN Policy - VLAN Sharing Type",
+                  "type": "string",
+                  "default": "",
+                  "enum": [
+                     "Community",
+                     "Isolated",
+                     "Primary"
+                  ]
+               },
+               "primary_vlan_id": {
+                  "description": "VLAN Policy - Primary VLAN ID",
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 4093
+               }
+            },
+            "additionalProperties": false,
+            "required": [
+               "name",
+               "id"
+            ],
+            "allOf": [
+               {
+                  "$comment": "Below is for setting constraints for sharing_type with value Primary",
+                  "if": {
+                     "properties": {
+                        "sharing_type": {
+                           "enum": [
+                              "Primary"
+                           ]
+                        }
+                     },
+                     "required": [
+                        "sharing_type"
+                     ]
+                  },
+                  "then": {
+                     "not": {
+                        "anyOf": [
+                           {
+                              "required": [
+                                 "primary_vlan_id"
+                              ]
+                           },
+                           {
+                              "required": [
+                                 "multicast_policy"
+                              ]
+                           }
+                        ]
+                     }
+                  }
+               },
+               {
+                  "$comment": "Below is for setting constraints for sharing_type with value Community or Isolated",
+                  "if": {
+                     "properties": {
+                        "sharing_type": {
+                           "enum": [
+                              "Community",
+                              "Isolated"
+                           ]
+                        }
+                     },
+                     "required": [
+                        "sharing_type"
+                     ]
+                  },
+                  "then": {
+                     "allOf": [
+                        {
+                           "required": [
+                              "primary_vlan_id"
+                           ]
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "multicast_policy"
+                              ]
+                           }
+                        }
+                     ]
+                  }
+               },
+               {
+                  "$comment": "Below is for setting constraints for sharing_type with value None",
+                  "if": {
+                     "not": {
+                        "required": [
+                           "sharing_type"
+                        ]
+                     }
+                  },
+                  "then": {
+                     "allOf": [
+                        {
+                           "not": {
+                              "required": [
+                                 "primary_vlan_id"
+                              ]
+                           }
+                        },
+                        {
+                           "required": [
+                              "multicast_policy"
+                           ]
+                        }
+                     ]
+                  }
+               }
+            ]
+         },
+         "minItems": 1
+      }
+   },
+   "additionalProperties": false,
+   "required": [
+      "name"
+   ]
+}

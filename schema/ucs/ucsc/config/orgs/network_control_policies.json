@@ -1,0 +1,108 @@
+{
+   "id": "ucs_central_config_network_control_policies#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS ucs central config orgs network_control_policies section",
+   "description": "EasyUCS ucs central config orgs network_control_policies section JSON schema",
+   "type": "object",
+   "properties": {
+      "comment": {
+         "description": "Network Control Policy Comments",
+         "type": "string",
+         "default": ""
+      },
+      "name": {
+         "description": "Network Control Policy Name",
+         "type": "string",
+         "default": "",
+         "pattern": "^[\\-\\.:_a-zA-Z0-9]{1,16}$"
+      },
+      "descr": {
+         "description": "Description of Network Control Policy",
+         "type": "string",
+         "default": "",
+         "pattern": "^[ !#$%&\\(\\)\\*\\+,\\-\\./:;\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{0,256}$"
+      },
+      "cdp_admin_state": {
+         "description": "Network Control Policy CDP Admin State",
+         "type": "string",
+         "default": "disabled",
+         "enum": [
+            "disabled",
+            "enabled"
+         ]
+      },
+      "mac_register_mode": {
+         "description": "Network Control Policy MAC Register Mode",
+         "type": "string",
+         "default": "only-native-vlan",
+         "enum": [
+            "all-host-vlans",
+            "only-native-vlan"
+         ]
+      },
+      "action_on_uplink_fail": {
+         "description": "Network Control Policy Action on Uplink Fail",
+         "type": "string",
+         "default": "link-down",
+         "enum": [
+            "link-down",
+            "warning"
+         ]
+      },
+      "mac_security_forge": {
+         "description": "Network Control Policy MAC Security - Allow/Deny Forged MAC Addresses",
+         "type": "string",
+         "default": "allow",
+         "enum": [
+            "allow",
+            "deny"
+         ]
+      },
+      "lldp_transmit": {
+         "description": "Network Control Policy LLDP Transmit State",
+         "type": "string",
+         "default": "disabled",
+         "enum": [
+            "disabled",
+            "enabled"
+         ]
+      },
+      "lldp_receive": {
+         "description": "Network Control Policy LLDP Receive State",
+         "type": "string",
+         "default": "disabled",
+         "enum": [
+            "disabled",
+            "enabled"
+         ]
+      },
+      "tags": {
+         "description": "Network Control Policy - Tags",
+         "type": "array",
+         "items": {
+            "description": "Network Control Policy - Tag",
+            "type": "object",
+            "properties": {
+               "type": {
+                  "description": "Network Control Policy - Tag - Type",
+                  "type": "string",
+                  "pattern": "^[ !#$%&\\(\\)\\*\\+,\\-\\.:;=\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{1,32}$"
+               },
+               "value": {
+                  "description": "Network Control Policy - Tag - Value",
+                  "type": "string"
+               }
+            },
+            "additionalProperties": false,
+            "required": [
+               "type",
+               "value"
+            ]
+         }
+      }
+   },
+   "additionalProperties": false,
+   "required": [
+      "name"
+   ]
+}

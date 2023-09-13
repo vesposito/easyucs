@@ -1,0 +1,92 @@
+{
+   "id": "intersight_config_resource_groups#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS intersight config resource_groups section",
+   "description": "EasyUCS intersight config resource_groups section JSON schema",
+   "type": "object",
+   "properties": {
+      "comment": {
+         "description": "Resource Group Comments",
+         "type": "string",
+         "default": ""
+      },
+      "name": {
+         "description": "Resource Group Name",
+         "type": "string",
+         "default": ""
+      },
+      "descr": {
+         "description": "Resource Group Description",
+         "type": "string",
+         "default": ""
+      },
+      "memberships": {
+         "description": "Resource Group Memberships",
+         "type": "string",
+         "default": "all",
+         "enum": [
+            "all",
+            "custom"
+         ]
+      },
+      "devices": {
+         "description": "Resource Group Member Devices",
+         "type": "array",
+         "items": [
+            {
+               "description": "Resource Group Member Device",
+               "type": "object",
+               "properties": {
+                  "moid": {
+                     "description": "Resource Group Member Device MOID",
+                     "type": "string",
+                     "default": ""
+                  },
+                  "name": {
+                     "description": "Resource Group Member Device Name",
+                     "type": "string",
+                     "default": ""
+                  }
+               },
+               "additionalProperties": false,
+               "required": [
+                  "name"
+               ]
+            }
+         ],
+         "minItems": 1
+      }
+   },
+   "additionalProperties": false,
+   "required": [
+      "name"
+   ],
+   "allOf": [
+      {
+         "$comment": "Below is for setting constraints for memberships with value all",
+         "if": {
+            "properties": {
+               "memberships": {
+                  "enum": [
+                     "all"
+                  ]
+               }
+            },
+            "required": [
+               "memberships"
+            ]
+         },
+         "then": {
+            "not": {
+               "anyOf": [
+                  {
+                     "required": [
+                        "devices"
+                     ]
+                  }
+               ]
+            }
+         }
+      }
+   ]
+}

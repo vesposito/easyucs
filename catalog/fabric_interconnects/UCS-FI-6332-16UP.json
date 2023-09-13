@@ -24,6 +24,11 @@
     {
       "name": "UCS-PSU-6332-DC",
       "description": "UCS 6332/6454 power supply/-48VDC (930 W)"
+    },
+    {
+      "name": "UCSC-PSU-BLKP",
+      "type": "blank",
+      "description": "Power supply blanking panel/filler"
     }
   ],
   "rear_ports": {

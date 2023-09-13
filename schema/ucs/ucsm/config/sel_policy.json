@@ -1,24 +1,31 @@
 {
-   "id":"ucs_system_config_sel_policy#",
-   "$schema":"http://json-schema.org/draft-07/schema#",
-   "title":"EasyUCS ucs system config sel_policy section",
-   "description":"EasyUCS ucs system config sel_policy section JSON schema",
-   "type":"object",
-   "properties":{
+   "id": "ucs_system_config_sel_policy#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS ucs system config sel_policy section",
+   "description": "EasyUCS ucs system config sel_policy section JSON schema",
+   "type": "object",
+   "properties": {
       "comment": {
          "description": "SEL Policy Comments",
          "type": "string",
          "default": ""
       },
-      "description":{
-         "description":"SEL Policy description",
-         "type":"string"
+      "description": {
+         "description": "SEL Policy Description",
+         "type": "string"
       },
-      "protocol":{
-         "description":"SEL Policy Backup Configuration Protocol",
-         "type":"string",
-         "default":"none",
-         "enum":[
+      "policy_owner": {
+         "description": "SEL Policy Owner (for UCS Central)",
+         "type": "string",
+         "enum": [
+            "ucs-central"
+         ]
+      },
+      "protocol": {
+         "description": "SEL Policy Backup Configuration Protocol",
+         "type": "string",
+         "default": "none",
+         "enum": [
             "ftp",
             "none",
             "scp",
@@ -26,20 +33,20 @@
             "tftp"
          ]
       },
-      "hostname":{
-         "description":"SEL Policy Backup Configuration Hostname/IP Address",
-         "type":"string"
+      "hostname": {
+         "description": "SEL Policy Backup Configuration Hostname/IP Address",
+         "type": "string"
       },
-      "remote_path":{
-         "description":"SEL Policy Backup Configuration Remote Path",
-         "type":"string",
-         "default":"/"
+      "remote_path": {
+         "description": "SEL Policy Backup Configuration Remote Path",
+         "type": "string",
+         "default": "/"
       },
-      "backup_interval":{
-         "description":"SEL Policy Backup Configuration Backup Interval",
-         "type":"string",
-         "default":"never",
-         "enum":[
+      "backup_interval": {
+         "description": "SEL Policy Backup Configuration Backup Interval",
+         "type": "string",
+         "default": "never",
+         "enum": [
             "1hour",
             "1month",
             "1week",
@@ -50,42 +57,46 @@
             "never"
          ]
       },
-      "format":{
-         "description":"SEL Policy Backup Configuration Format",
-         "type":"string",
-         "default":"ascii",
-         "enum":[
+      "format": {
+         "description": "SEL Policy Backup Configuration Format",
+         "type": "string",
+         "default": "ascii",
+         "enum": [
             "ascii",
             "binary"
          ]
       },
-      "clear_on_backup":{
-         "description":"SEL Policy Backup Configuration Clear On Backup?",
-         "type":"string",
-         "default":"no",
-         "enum":[
+      "clear_on_backup": {
+         "description": "SEL Policy Backup Configuration Clear On Backup?",
+         "type": "string",
+         "default": "no",
+         "enum": [
             "false",
             "no",
             "true",
             "yes"
          ]
       },
-      "user":{
-         "description":"SEL Policy Backup Configuration User",
-         "type":"string"
+      "user": {
+         "description": "SEL Policy Backup Configuration User",
+         "type": "string"
       },
-      "password":{
-         "description":"SEL Policy Backup Configuration Password",
-         "type":"string"
+      "password": {
+         "description": "SEL Policy Backup Configuration Password",
+         "type": "string"
       },
-      "action":{
-         "description":"SEL Policy Backup Configuration Actions List",
-         "type":"array",
-         "items":{
-            "description":"SEL Policy Backup Configuration Action",
-            "type":"string",
-            "default":"[\"none\"]",
-            "enum":[
+      "encrypted_password": {
+         "description": "SEL Policy Backup Configuration Encrypted Password",
+         "type": "string"
+      },
+      "action": {
+         "description": "SEL Policy Backup Configuration Actions List",
+         "type": "array",
+         "items": {
+            "description": "SEL Policy Backup Configuration Action",
+            "type": "string",
+            "default": "[\"none\"]",
+            "enum": [
                "none",
                "log-full",
                "on-clear",
@@ -93,12 +104,12 @@
                "on-assoc-change"
             ]
          },
-         "minItems":1,
-         "maxItems":4
+         "minItems": 1,
+         "maxItems": 4
       }
    },
-   "additionalProperties":false,
-   "required":[
+   "additionalProperties": false,
+   "required": [
       "protocol"
    ]
 }

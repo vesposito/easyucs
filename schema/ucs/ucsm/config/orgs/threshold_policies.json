@@ -22,6 +22,13 @@
          "default": "",
          "pattern": "^[ !#$%&\\(\\)\\*\\+,\\-\\./:;\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{0,256}$"
       },
+      "policy_owner": {
+         "description": "Threshold Policy Owner (for UCS Central)",
+         "type": "string",
+         "enum": [
+            "ucs-central"
+         ]
+      },
       "threshold_classes": {
          "description": "Threshold Policy - Threshold Classes",
          "type": "array",
@@ -8682,6 +8689,130 @@
                         "description": "Threshold Policy - Threshold Class - Stat Class",
                         "type": "string",
                         "enum": [
+                           "cache_mem_stats"
+                        ]
+                     },
+                     "threshold_definitions": {
+                        "description": "Threshold Policy - Threshold Class - Threshold Definitions",
+                        "type": "array",
+                        "items": {
+                           "type": "object",
+                           "properties": {
+                              "property_type": {
+                                 "description": "Threshold Policy - Threshold Class - Threshold Definition - Property Type",
+                                 "type": "string",
+                                 "enum": [
+                                    "l_cache_unit_correctable_errors",
+                                    "l_cache_unit_uncorrectable_errors",
+                                    "mem_testcorrectable_errors"
+                                 ]
+                              },
+                              "normal_value": {
+                                 "description": "Threshold Policy - Threshold Class - Threshold Definition - Normal Value",
+                                 "type": "string",
+                                 "default": "0"
+                              },
+                              "alarm_triggers_above": {
+                                 "description": "Threshold Policy - Threshold Class - Threshold Definition - Alarm Triggers (Above Normal Value)",
+                                 "type": "array",
+                                 "items": {
+                                    "type": "object",
+                                    "properties": {
+                                       "severity": {
+                                          "description": "Threshold Policy - Threshold Class - Threshold Definition - Alarm Triggers (Above Normal Value) - Severity",
+                                          "type": "string",
+                                          "enum": [
+                                             "condition",
+                                             "critical",
+                                             "info",
+                                             "major",
+                                             "minor",
+                                             "warning"
+                                          ]
+                                       },
+                                       "down": {
+                                          "description": "Threshold Policy - Threshold Class - Threshold Definition - Alarm Triggers (Above Normal Value) - Down",
+                                          "type": "string",
+                                          "default": "0"
+                                       },
+                                       "up": {
+                                          "description": "Threshold Policy - Threshold Class - Threshold Definition - Alarm Triggers (Above Normal Value) - Up",
+                                          "type": "string",
+                                          "default": "0"
+                                       }
+                                    },
+                                    "additionalProperties": false,
+                                    "required": [
+                                       "severity"
+                                    ]
+                                 },
+                                 "minItems": 1
+                              },
+                              "alarm_triggers_below": {
+                                 "description": "Threshold Policy - Threshold Class - Threshold Definition - Alarm Triggers (Below Normal Value)",
+                                 "type": "array",
+                                 "items": {
+                                    "type": "object",
+                                    "properties": {
+                                       "severity": {
+                                          "description": "Threshold Policy - Threshold Class - Threshold Definition - Alarm Triggers (Below Normal Value) - Severity",
+                                          "type": "string",
+                                          "enum": [
+                                             "condition",
+                                             "critical",
+                                             "info",
+                                             "major",
+                                             "minor",
+                                             "warning"
+                                          ]
+                                       },
+                                       "down": {
+                                          "description": "Threshold Policy - Threshold Class - Threshold Definition - Alarm Triggers (Below Normal Value) - Deescalating",
+                                          "type": "string",
+                                          "default": "0"
+                                       },
+                                       "up": {
+                                          "description": "Threshold Policy - Threshold Class - Threshold Definition - Alarm Triggers (Below Normal Value) - Escalating",
+                                          "type": "string",
+                                          "default": "0"
+                                       }
+                                    },
+                                    "additionalProperties": false,
+                                    "required": [
+                                       "severity"
+                                    ]
+                                 },
+                                 "minItems": 1
+                              }
+                           },
+                           "additionalProperties": false,
+                           "required": [
+                              "property_type"
+                           ]
+                        },
+                        "minItems": 1
+                     }
+                  }
+               },
+               {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                     "group",
+                     "stat_class"
+                  ],
+                  "properties": {
+                     "group": {
+                        "description": "Threshold Policy - Threshold Class - Group",
+                        "type": "string",
+                        "enum": [
+                           "processor"
+                        ]
+                     },
+                     "stat_class": {
+                        "description": "Threshold Policy - Threshold Class - Stat Class",
+                        "type": "string",
+                        "enum": [
                            "env_stats"
                         ]
                      },
@@ -8939,6 +9070,641 @@
                         "description": "Threshold Policy - Threshold Class - Stat Class",
                         "type": "string",
                         "enum": [
+                           "exec_stats"
+                        ]
+                     },
+                     "threshold_definitions": {
+                        "description": "Threshold Policy - Threshold Class - Threshold Definitions",
+                        "type": "array",
+                        "items": {
+                           "type": "object",
+                           "properties": {
+                              "property_type": {
+                                 "description": "Threshold Policy - Threshold Class - Threshold Definition - Property Type",
+                                 "type": "string",
+                                 "enum": [
+                                    "decode_unit_correctable_errors",
+                                    "decode_unit_uncorrectable_errors",
+                                    "execution_unit_correctable_errors",
+                                    "execution_unit_uncorrectable_errors",
+                                    "instruction_fetch_unit_correctable_errors",
+                                    "instruction_fetch_unit_uncorrectable_errors",
+                                    "load_store_unit_correctable_errors",
+                                    "load_store_unit_uncorrectable_errors"
+                                 ]
+                              },
+                              "normal_value": {
+                                 "description": "Threshold Policy - Threshold Class - Threshold Definition - Normal Value",
+                                 "type": "string",
+                                 "default": "0"
+                              },
+                              "alarm_triggers_above": {
+                                 "description": "Threshold Policy - Threshold Class - Threshold Definition - Alarm Triggers (Above Normal Value)",
+                                 "type": "array",
+                                 "items": {
+                                    "type": "object",
+                                    "properties": {
+                                       "severity": {
+                                          "description": "Threshold Policy - Threshold Class - Threshold Definition - Alarm Triggers (Above Normal Value) - Severity",
+                                          "type": "string",
+                                          "enum": [
+                                             "condition",
+                                             "critical",
+                                             "info",
+                                             "major",
+                                             "minor",
+                                             "warning"
+                                          ]
+                                       },
+                                       "down": {
+                                          "description": "Threshold Policy - Threshold Class - Threshold Definition - Alarm Triggers (Above Normal Value) - Down",
+                                          "type": "string",
+                                          "default": "0"
+                                       },
+                                       "up": {
+                                          "description": "Threshold Policy - Threshold Class - Threshold Definition - Alarm Triggers (Above Normal Value) - Up",
+                                          "type": "string",
+                                          "default": "0"
+                                       }
+                                    },
+                                    "additionalProperties": false,
+                                    "required": [
+                                       "severity"
+                                    ]
+                                 },
+                                 "minItems": 1
+                              },
+                              "alarm_triggers_below": {
+                                 "description": "Threshold Policy - Threshold Class - Threshold Definition - Alarm Triggers (Below Normal Value)",
+                                 "type": "array",
+                                 "items": {
+                                    "type": "object",
+                                    "properties": {
+                                       "severity": {
+                                          "description": "Threshold Policy - Threshold Class - Threshold Definition - Alarm Triggers (Below Normal Value) - Severity",
+                                          "type": "string",
+                                          "enum": [
+                                             "condition",
+                                             "critical",
+                                             "info",
+                                             "major",
+                                             "minor",
+                                             "warning"
+                                          ]
+                                       },
+                                       "down": {
+                                          "description": "Threshold Policy - Threshold Class - Threshold Definition - Alarm Triggers (Below Normal Value) - Deescalating",
+                                          "type": "string",
+                                          "default": "0"
+                                       },
+                                       "up": {
+                                          "description": "Threshold Policy - Threshold Class - Threshold Definition - Alarm Triggers (Below Normal Value) - Escalating",
+                                          "type": "string",
+                                          "default": "0"
+                                       }
+                                    },
+                                    "additionalProperties": false,
+                                    "required": [
+                                       "severity"
+                                    ]
+                                 },
+                                 "minItems": 1
+                              }
+                           },
+                           "additionalProperties": false,
+                           "required": [
+                              "property_type"
+                           ]
+                        },
+                        "minItems": 1
+                     }
+                  }
+               },
+               {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                     "group",
+                     "stat_class"
+                  ],
+                  "properties": {
+                     "group": {
+                        "description": "Threshold Policy - Threshold Class - Group",
+                        "type": "string",
+                        "enum": [
+                           "processor"
+                        ]
+                     },
+                     "stat_class": {
+                        "description": "Threshold Policy - Threshold Class - Stat Class",
+                        "type": "string",
+                        "enum": [
+                           "io_stats"
+                        ]
+                     },
+                     "threshold_definitions": {
+                        "description": "Threshold Policy - Threshold Class - Threshold Definitions",
+                        "type": "array",
+                        "items": {
+                           "type": "object",
+                           "properties": {
+                              "property_type": {
+                                 "description": "Threshold Policy - Threshold Class - Threshold Definition - Property Type",
+                                 "type": "string",
+                                 "enum": [
+                                    "pcie_bank_correctable_errors",
+                                    "pcie_bank_uncorrectable_errors",
+                                    "satacorrectable_errors",
+                                    "satauncorrectable_errors",
+                                    "smncorrectable_errors",
+                                    "smnuncorrectable_errors",
+                                    "usbcorrectable_errors",
+                                    "usbuncorrectable_errors"
+                                 ]
+                              },
+                              "normal_value": {
+                                 "description": "Threshold Policy - Threshold Class - Threshold Definition - Normal Value",
+                                 "type": "string",
+                                 "default": "0"
+                              },
+                              "alarm_triggers_above": {
+                                 "description": "Threshold Policy - Threshold Class - Threshold Definition - Alarm Triggers (Above Normal Value)",
+                                 "type": "array",
+                                 "items": {
+                                    "type": "object",
+                                    "properties": {
+                                       "severity": {
+                                          "description": "Threshold Policy - Threshold Class - Threshold Definition - Alarm Triggers (Above Normal Value) - Severity",
+                                          "type": "string",
+                                          "enum": [
+                                             "condition",
+                                             "critical",
+                                             "info",
+                                             "major",
+                                             "minor",
+                                             "warning"
+                                          ]
+                                       },
+                                       "down": {
+                                          "description": "Threshold Policy - Threshold Class - Threshold Definition - Alarm Triggers (Above Normal Value) - Down",
+                                          "type": "string",
+                                          "default": "0"
+                                       },
+                                       "up": {
+                                          "description": "Threshold Policy - Threshold Class - Threshold Definition - Alarm Triggers (Above Normal Value) - Up",
+                                          "type": "string",
+                                          "default": "0"
+                                       }
+                                    },
+                                    "additionalProperties": false,
+                                    "required": [
+                                       "severity"
+                                    ]
+                                 },
+                                 "minItems": 1
+                              },
+                              "alarm_triggers_below": {
+                                 "description": "Threshold Policy - Threshold Class - Threshold Definition - Alarm Triggers (Below Normal Value)",
+                                 "type": "array",
+                                 "items": {
+                                    "type": "object",
+                                    "properties": {
+                                       "severity": {
+                                          "description": "Threshold Policy - Threshold Class - Threshold Definition - Alarm Triggers (Below Normal Value) - Severity",
+                                          "type": "string",
+                                          "enum": [
+                                             "condition",
+                                             "critical",
+                                             "info",
+                                             "major",
+                                             "minor",
+                                             "warning"
+                                          ]
+                                       },
+                                       "down": {
+                                          "description": "Threshold Policy - Threshold Class - Threshold Definition - Alarm Triggers (Below Normal Value) - Deescalating",
+                                          "type": "string",
+                                          "default": "0"
+                                       },
+                                       "up": {
+                                          "description": "Threshold Policy - Threshold Class - Threshold Definition - Alarm Triggers (Below Normal Value) - Escalating",
+                                          "type": "string",
+                                          "default": "0"
+                                       }
+                                    },
+                                    "additionalProperties": false,
+                                    "required": [
+                                       "severity"
+                                    ]
+                                 },
+                                 "minItems": 1
+                              }
+                           },
+                           "additionalProperties": false,
+                           "required": [
+                              "property_type"
+                           ]
+                        },
+                        "minItems": 1
+                     }
+                  }
+               },
+               {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                     "group",
+                     "stat_class"
+                  ],
+                  "properties": {
+                     "group": {
+                        "description": "Threshold Policy - Threshold Class - Group",
+                        "type": "string",
+                        "enum": [
+                           "processor"
+                        ]
+                     },
+                     "stat_class": {
+                        "description": "Threshold Policy - Threshold Class - Stat Class",
+                        "type": "string",
+                        "enum": [
+                           "misc_stats"
+                        ]
+                     },
+                     "threshold_definitions": {
+                        "description": "Threshold Policy - Threshold Class - Threshold Definitions",
+                        "type": "array",
+                        "items": {
+                           "type": "object",
+                           "properties": {
+                              "property_type": {
+                                 "description": "Threshold Policy - Threshold Class - Threshold Definition - Property Type",
+                                 "type": "string",
+                                 "enum": [
+                                    "coherent_slave_correctable_errors",
+                                    "coherent_slave_uncorrectable_errors",
+                                    "floating_point_unit_correctable_errors",
+                                    "floating_point_unit_uncorrectable_errors",
+                                    "mpmgmnt_controller_correctable_errors",
+                                    "mpmgmnt_controller_uncorrectable_errors",
+                                    "parameter_block_correctable_errors",
+                                    "parameter_block_uncorrectable_errors"
+                                 ]
+                              },
+                              "normal_value": {
+                                 "description": "Threshold Policy - Threshold Class - Threshold Definition - Normal Value",
+                                 "type": "string",
+                                 "default": "0"
+                              },
+                              "alarm_triggers_above": {
+                                 "description": "Threshold Policy - Threshold Class - Threshold Definition - Alarm Triggers (Above Normal Value)",
+                                 "type": "array",
+                                 "items": {
+                                    "type": "object",
+                                    "properties": {
+                                       "severity": {
+                                          "description": "Threshold Policy - Threshold Class - Threshold Definition - Alarm Triggers (Above Normal Value) - Severity",
+                                          "type": "string",
+                                          "enum": [
+                                             "condition",
+                                             "critical",
+                                             "info",
+                                             "major",
+                                             "minor",
+                                             "warning"
+                                          ]
+                                       },
+                                       "down": {
+                                          "description": "Threshold Policy - Threshold Class - Threshold Definition - Alarm Triggers (Above Normal Value) - Down",
+                                          "type": "string",
+                                          "default": "0"
+                                       },
+                                       "up": {
+                                          "description": "Threshold Policy - Threshold Class - Threshold Definition - Alarm Triggers (Above Normal Value) - Up",
+                                          "type": "string",
+                                          "default": "0"
+                                       }
+                                    },
+                                    "additionalProperties": false,
+                                    "required": [
+                                       "severity"
+                                    ]
+                                 },
+                                 "minItems": 1
+                              },
+                              "alarm_triggers_below": {
+                                 "description": "Threshold Policy - Threshold Class - Threshold Definition - Alarm Triggers (Below Normal Value)",
+                                 "type": "array",
+                                 "items": {
+                                    "type": "object",
+                                    "properties": {
+                                       "severity": {
+                                          "description": "Threshold Policy - Threshold Class - Threshold Definition - Alarm Triggers (Below Normal Value) - Severity",
+                                          "type": "string",
+                                          "enum": [
+                                             "condition",
+                                             "critical",
+                                             "info",
+                                             "major",
+                                             "minor",
+                                             "warning"
+                                          ]
+                                       },
+                                       "down": {
+                                          "description": "Threshold Policy - Threshold Class - Threshold Definition - Alarm Triggers (Below Normal Value) - Deescalating",
+                                          "type": "string",
+                                          "default": "0"
+                                       },
+                                       "up": {
+                                          "description": "Threshold Policy - Threshold Class - Threshold Definition - Alarm Triggers (Below Normal Value) - Escalating",
+                                          "type": "string",
+                                          "default": "0"
+                                       }
+                                    },
+                                    "additionalProperties": false,
+                                    "required": [
+                                       "severity"
+                                    ]
+                                 },
+                                 "minItems": 1
+                              }
+                           },
+                           "additionalProperties": false,
+                           "required": [
+                              "property_type"
+                           ]
+                        },
+                        "minItems": 1
+                     }
+                  }
+               },
+               {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                     "group",
+                     "stat_class"
+                  ],
+                  "properties": {
+                     "group": {
+                        "description": "Threshold Policy - Threshold Class - Group",
+                        "type": "string",
+                        "enum": [
+                           "processor"
+                        ]
+                     },
+                     "stat_class": {
+                        "description": "Threshold Policy - Threshold Class - Stat Class",
+                        "type": "string",
+                        "enum": [
+                           "pcibus_stats"
+                        ]
+                     },
+                     "threshold_definitions": {
+                        "description": "Threshold Policy - Threshold Class - Threshold Definitions",
+                        "type": "array",
+                        "items": {
+                           "type": "object",
+                           "properties": {
+                              "property_type": {
+                                 "description": "Threshold Policy - Threshold Class - Threshold Definition - Property Type",
+                                 "type": "string",
+                                 "enum": [
+                                    "fchcorrectable_errors",
+                                    "fchuncorrectable_errors",
+                                    "north_bridge_io_correctable_errors",
+                                    "north_bridge_io_uncorrectable_errors"
+                                 ]
+                              },
+                              "normal_value": {
+                                 "description": "Threshold Policy - Threshold Class - Threshold Definition - Normal Value",
+                                 "type": "string",
+                                 "default": "0"
+                              },
+                              "alarm_triggers_above": {
+                                 "description": "Threshold Policy - Threshold Class - Threshold Definition - Alarm Triggers (Above Normal Value)",
+                                 "type": "array",
+                                 "items": {
+                                    "type": "object",
+                                    "properties": {
+                                       "severity": {
+                                          "description": "Threshold Policy - Threshold Class - Threshold Definition - Alarm Triggers (Above Normal Value) - Severity",
+                                          "type": "string",
+                                          "enum": [
+                                             "condition",
+                                             "critical",
+                                             "info",
+                                             "major",
+                                             "minor",
+                                             "warning"
+                                          ]
+                                       },
+                                       "down": {
+                                          "description": "Threshold Policy - Threshold Class - Threshold Definition - Alarm Triggers (Above Normal Value) - Down",
+                                          "type": "string",
+                                          "default": "0"
+                                       },
+                                       "up": {
+                                          "description": "Threshold Policy - Threshold Class - Threshold Definition - Alarm Triggers (Above Normal Value) - Up",
+                                          "type": "string",
+                                          "default": "0"
+                                       }
+                                    },
+                                    "additionalProperties": false,
+                                    "required": [
+                                       "severity"
+                                    ]
+                                 },
+                                 "minItems": 1
+                              },
+                              "alarm_triggers_below": {
+                                 "description": "Threshold Policy - Threshold Class - Threshold Definition - Alarm Triggers (Below Normal Value)",
+                                 "type": "array",
+                                 "items": {
+                                    "type": "object",
+                                    "properties": {
+                                       "severity": {
+                                          "description": "Threshold Policy - Threshold Class - Threshold Definition - Alarm Triggers (Below Normal Value) - Severity",
+                                          "type": "string",
+                                          "enum": [
+                                             "condition",
+                                             "critical",
+                                             "info",
+                                             "major",
+                                             "minor",
+                                             "warning"
+                                          ]
+                                       },
+                                       "down": {
+                                          "description": "Threshold Policy - Threshold Class - Threshold Definition - Alarm Triggers (Below Normal Value) - Deescalating",
+                                          "type": "string",
+                                          "default": "0"
+                                       },
+                                       "up": {
+                                          "description": "Threshold Policy - Threshold Class - Threshold Definition - Alarm Triggers (Below Normal Value) - Escalating",
+                                          "type": "string",
+                                          "default": "0"
+                                       }
+                                    },
+                                    "additionalProperties": false,
+                                    "required": [
+                                       "severity"
+                                    ]
+                                 },
+                                 "minItems": 1
+                              }
+                           },
+                           "additionalProperties": false,
+                           "required": [
+                              "property_type"
+                           ]
+                        },
+                        "minItems": 1
+                     }
+                  }
+               },
+               {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                     "group",
+                     "stat_class"
+                  ],
+                  "properties": {
+                     "group": {
+                        "description": "Threshold Policy - Threshold Class - Group",
+                        "type": "string",
+                        "enum": [
+                           "processor"
+                        ]
+                     },
+                     "stat_class": {
+                        "description": "Threshold Policy - Threshold Class - Stat Class",
+                        "type": "string",
+                        "enum": [
+                           "pmustats"
+                        ]
+                     },
+                     "threshold_definitions": {
+                        "description": "Threshold Policy - Threshold Class - Threshold Definitions",
+                        "type": "array",
+                        "items": {
+                           "type": "object",
+                           "properties": {
+                              "property_type": {
+                                 "description": "Threshold Policy - Threshold Class - Threshold Definition - Property Type",
+                                 "type": "string",
+                                 "enum": [
+                                    "system_management_unit_correctable_errors",
+                                    "system_management_unit_uncorrectable_errors"
+                                 ]
+                              },
+                              "normal_value": {
+                                 "description": "Threshold Policy - Threshold Class - Threshold Definition - Normal Value",
+                                 "type": "string",
+                                 "default": "0"
+                              },
+                              "alarm_triggers_above": {
+                                 "description": "Threshold Policy - Threshold Class - Threshold Definition - Alarm Triggers (Above Normal Value)",
+                                 "type": "array",
+                                 "items": {
+                                    "type": "object",
+                                    "properties": {
+                                       "severity": {
+                                          "description": "Threshold Policy - Threshold Class - Threshold Definition - Alarm Triggers (Above Normal Value) - Severity",
+                                          "type": "string",
+                                          "enum": [
+                                             "condition",
+                                             "critical",
+                                             "info",
+                                             "major",
+                                             "minor",
+                                             "warning"
+                                          ]
+                                       },
+                                       "down": {
+                                          "description": "Threshold Policy - Threshold Class - Threshold Definition - Alarm Triggers (Above Normal Value) - Down",
+                                          "type": "string",
+                                          "default": "0"
+                                       },
+                                       "up": {
+                                          "description": "Threshold Policy - Threshold Class - Threshold Definition - Alarm Triggers (Above Normal Value) - Up",
+                                          "type": "string",
+                                          "default": "0"
+                                       }
+                                    },
+                                    "additionalProperties": false,
+                                    "required": [
+                                       "severity"
+                                    ]
+                                 },
+                                 "minItems": 1
+                              },
+                              "alarm_triggers_below": {
+                                 "description": "Threshold Policy - Threshold Class - Threshold Definition - Alarm Triggers (Below Normal Value)",
+                                 "type": "array",
+                                 "items": {
+                                    "type": "object",
+                                    "properties": {
+                                       "severity": {
+                                          "description": "Threshold Policy - Threshold Class - Threshold Definition - Alarm Triggers (Below Normal Value) - Severity",
+                                          "type": "string",
+                                          "enum": [
+                                             "condition",
+                                             "critical",
+                                             "info",
+                                             "major",
+                                             "minor",
+                                             "warning"
+                                          ]
+                                       },
+                                       "down": {
+                                          "description": "Threshold Policy - Threshold Class - Threshold Definition - Alarm Triggers (Below Normal Value) - Deescalating",
+                                          "type": "string",
+                                          "default": "0"
+                                       },
+                                       "up": {
+                                          "description": "Threshold Policy - Threshold Class - Threshold Definition - Alarm Triggers (Below Normal Value) - Escalating",
+                                          "type": "string",
+                                          "default": "0"
+                                       }
+                                    },
+                                    "additionalProperties": false,
+                                    "required": [
+                                       "severity"
+                                    ]
+                                 },
+                                 "minItems": 1
+                              }
+                           },
+                           "additionalProperties": false,
+                           "required": [
+                              "property_type"
+                           ]
+                        },
+                        "minItems": 1
+                     }
+                  }
+               },
+               {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                     "group",
+                     "stat_class"
+                  ],
+                  "properties": {
+                     "group": {
+                        "description": "Threshold Policy - Threshold Class - Group",
+                        "type": "string",
+                        "enum": [
+                           "processor"
+                        ]
+                     },
+                     "stat_class": {
+                        "description": "Threshold Policy - Threshold Class - Stat Class",
+                        "type": "string",
+                        "enum": [
                            "runtime"
                         ]
                      },
@@ -8956,6 +9722,129 @@
                                     "load_avg",
                                     "load_max",
                                     "load_min"
+                                 ]
+                              },
+                              "normal_value": {
+                                 "description": "Threshold Policy - Threshold Class - Threshold Definition - Normal Value",
+                                 "type": "string",
+                                 "default": "0"
+                              },
+                              "alarm_triggers_above": {
+                                 "description": "Threshold Policy - Threshold Class - Threshold Definition - Alarm Triggers (Above Normal Value)",
+                                 "type": "array",
+                                 "items": {
+                                    "type": "object",
+                                    "properties": {
+                                       "severity": {
+                                          "description": "Threshold Policy - Threshold Class - Threshold Definition - Alarm Triggers (Above Normal Value) - Severity",
+                                          "type": "string",
+                                          "enum": [
+                                             "condition",
+                                             "critical",
+                                             "info",
+                                             "major",
+                                             "minor",
+                                             "warning"
+                                          ]
+                                       },
+                                       "down": {
+                                          "description": "Threshold Policy - Threshold Class - Threshold Definition - Alarm Triggers (Above Normal Value) - Down",
+                                          "type": "string",
+                                          "default": "0"
+                                       },
+                                       "up": {
+                                          "description": "Threshold Policy - Threshold Class - Threshold Definition - Alarm Triggers (Above Normal Value) - Up",
+                                          "type": "string",
+                                          "default": "0"
+                                       }
+                                    },
+                                    "additionalProperties": false,
+                                    "required": [
+                                       "severity"
+                                    ]
+                                 },
+                                 "minItems": 1
+                              },
+                              "alarm_triggers_below": {
+                                 "description": "Threshold Policy - Threshold Class - Threshold Definition - Alarm Triggers (Below Normal Value)",
+                                 "type": "array",
+                                 "items": {
+                                    "type": "object",
+                                    "properties": {
+                                       "severity": {
+                                          "description": "Threshold Policy - Threshold Class - Threshold Definition - Alarm Triggers (Below Normal Value) - Severity",
+                                          "type": "string",
+                                          "enum": [
+                                             "condition",
+                                             "critical",
+                                             "info",
+                                             "major",
+                                             "minor",
+                                             "warning"
+                                          ]
+                                       },
+                                       "down": {
+                                          "description": "Threshold Policy - Threshold Class - Threshold Definition - Alarm Triggers (Below Normal Value) - Deescalating",
+                                          "type": "string",
+                                          "default": "0"
+                                       },
+                                       "up": {
+                                          "description": "Threshold Policy - Threshold Class - Threshold Definition - Alarm Triggers (Below Normal Value) - Escalating",
+                                          "type": "string",
+                                          "default": "0"
+                                       }
+                                    },
+                                    "additionalProperties": false,
+                                    "required": [
+                                       "severity"
+                                    ]
+                                 },
+                                 "minItems": 1
+                              }
+                           },
+                           "additionalProperties": false,
+                           "required": [
+                              "property_type"
+                           ]
+                        },
+                        "minItems": 1
+                     }
+                  }
+               },
+               {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                     "group",
+                     "stat_class"
+                  ],
+                  "properties": {
+                     "group": {
+                        "description": "Threshold Policy - Threshold Class - Group",
+                        "type": "string",
+                        "enum": [
+                           "processor"
+                        ]
+                     },
+                     "stat_class": {
+                        "description": "Threshold Policy - Threshold Class - Stat Class",
+                        "type": "string",
+                        "enum": [
+                           "security_stats"
+                        ]
+                     },
+                     "threshold_definitions": {
+                        "description": "Threshold Policy - Threshold Class - Threshold Definitions",
+                        "type": "array",
+                        "items": {
+                           "type": "object",
+                           "properties": {
+                              "property_type": {
+                                 "description": "Threshold Policy - Threshold Class - Threshold Definition - Property Type",
+                                 "type": "string",
+                                 "enum": [
+                                    "pspcorrectable_errors",
+                                    "pspuncorrectable_errors"
                                  ]
                               },
                               "normal_value": {

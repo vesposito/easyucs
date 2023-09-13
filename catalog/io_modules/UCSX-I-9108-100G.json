@@ -1,0 +1,49 @@
+{
+  "model_short_name": "9108-100G",
+  "rear_file_name": "UCSX-I-9108-100G.png",
+  "rear_file_size": [2283,267],
+  "rear_ports": {
+    "x/1": {
+      "port_coord": [428, 61],
+      "port_type": "qsfp28",
+      "port_size": [111, 52]
+    },
+    "x/2": {
+      "port_coord": [428, 163],
+      "port_type": "qsfp28",
+      "port_size": [111, 52]
+    },
+    "x/3": {
+      "port_coord": [582, 61],
+      "port_type": "qsfp28",
+      "port_size": [111, 52]
+    },
+    "x/4": {
+      "port_coord": [582, 163],
+      "port_type": "qsfp28",
+      "port_size": [111, 52]
+    },
+    "x/5": {
+      "port_coord": [1583, 61],
+      "port_type": "qsfp28",
+      "port_size": [111, 52]
+    },
+    "x/6": {
+      "port_coord": [1583, 163],
+      "port_type": "qsfp28",
+      "port_size": [111, 52]
+    },
+    "x/7": {
+      "port_coord": [1737, 61],
+      "port_type": "qsfp28",
+      "port_size": [111, 52]
+    },
+    "x/8": {
+      "port_coord": [1737, 163],
+      "port_type": "qsfp28",
+      "port_size": [111, 52]
+    }
+  },
+  "imm_compatible": true,
+  "imm_min_required_version": "4.2(2b)"
+}

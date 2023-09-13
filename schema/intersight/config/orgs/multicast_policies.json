@@ -1,0 +1,146 @@
+{
+   "id": "intersight_config_orgs_multicast_policies#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS intersight config orgs multicast_policies section",
+   "description": "EasyUCS intersight config orgs multicast_policies section JSON schema",
+   "type": "object",
+   "properties": {
+      "comment": {
+         "description": "Multicast Policy Comments",
+         "type": "string",
+         "default": ""
+      },
+      "descr": {
+         "description": "Multicast Policy Description",
+         "type": "string",
+         "default": "",
+         "pattern": "^$|^[a-zA-Z0-9]+[\\x00-\\xFF]*$",
+         "maxLength": 1024
+      },
+      "name": {
+         "description": "Multicast Policy Name",
+         "type": "string",
+         "default": "",
+         "pattern": "^[a-zA-Z0-9_.:-]{1,64}$"
+      },
+      "tags": {
+         "description": "Multicast Policy Tags",
+         "type": "array",
+         "items": {
+            "description": "Multicast Policy Tag",
+            "type": "object",
+            "properties": {
+               "key": {
+                  "description": "Multicast Policy Tag Key",
+                  "type": "string",
+                  "default": "",
+                  "minLength": 1,
+                  "maxLength": 128
+               },
+               "value": {
+                  "description": "Multicast Policy Tag Value",
+                  "type": "string",
+                  "default": "",
+                  "minLength": 0,
+                  "maxLength": 256
+               }
+            },
+            "additionalProperties": false,
+            "required": [
+               "key",
+               "value"
+            ]
+         },
+         "minItems": 1
+      },
+      "igmp_snooping_querier_state": {
+         "description": "Multicast Policy IGMP Snooping Querier State",
+         "type": "string",
+         "default": "Disabled",
+         "enum": [
+            "Disabled",
+            "Enabled"
+         ]
+      },
+      "igmp_snooping_state": {
+         "description": "Multicast Policy IGMP Snooping State",
+         "type": "string",
+         "default": "Enabled",
+         "enum": [
+            "Disabled",
+            "Enabled"
+         ]
+      },
+      "querier_ip_address": {
+         "description": "Multicast Policy IGMP Snooping Querier IPv4 Address",
+         "type": "string",
+         "default": "0.0.0.0",
+         "format": "ipv4"
+      },
+      "querier_ip_address_peer": {
+         "description": "Multicast Policy IGMP Snooping Peer Querier IPv4 Address",
+         "type": "string",
+         "default": "0.0.0.0",
+         "format": "ipv4"
+      },
+      "source_ip_proxy_state": {
+         "description": "Multicast Policy IGMP Source IP Proxy State",
+         "type": "string",
+         "default": "Enabled",
+         "enum": [
+            "Disabled",
+            "Enabled"
+         ]
+      }
+   },
+   "additionalProperties": false,
+   "required": [
+      "name"
+   ],
+   "if": {
+      "properties": {
+         "igmp_snooping_querier_state": {
+            "enum": [
+               "Enabled"
+            ]
+         }
+      },
+      "required": [
+         "igmp_snooping_querier_state"
+      ]
+   },
+   "then": {
+      "properties": {
+         "igmp_snooping_state": {
+            "enum": [
+               "Enabled"
+            ]
+         }
+      },
+      "required": [
+         "igmp_snooping_state",
+         "querier_ip_address"
+      ]
+   },
+   "else": {
+      "properties": {
+         "igmp_snooping_state": {
+            "enum": [
+               "Disabled",
+               "Enabled"
+            ]
+         },
+         "name": {
+            "type": "string"
+         },
+         "descr": {
+            "type": "string"
+         },
+         "igmp_snooping_querier_state": {
+            "enum": [
+               "Disabled"
+            ]
+         }
+      }
+   }
+}

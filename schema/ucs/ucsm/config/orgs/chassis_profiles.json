@@ -22,7 +22,14 @@
          "default": "",
          "pattern": "^[ !#$%&\\(\\)\\*\\+,\\-\\./:;\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{0,256}$"
       },
-      "type" : {
+      "policy_owner": {
+         "description": "Chassis Profile Owner (for UCS Central)",
+         "type": "string",
+         "enum": [
+            "ucs-central"
+         ]
+      },
+      "type": {
          "description": "Chassis Profile - Type",
          "type": "string",
          "enum": [
@@ -31,36 +38,36 @@
             "updating-template"
          ]
       },
-      "disk_zoning_policy" : {
+      "disk_zoning_policy": {
          "description": "Chassis Profile - Disk Zoning Policy",
          "type": "string",
          "pattern": "^[\\-\\.:_a-zA-Z0-9]{0,16}$"
       },
-      "chassis_firmware_policy" : {
+      "chassis_firmware_policy": {
          "description": "Chassis Profile - Chassis Firmware Policy",
          "type": "string",
          "pattern": "^[\\-\\.:_a-zA-Z0-9]{0,16}$"
       },
-      "compute_connection_policy" : {
+      "compute_connection_policy": {
          "description": "Chassis Profile - Compute Connection Policy",
          "type": "string",
          "pattern": "^[\\-\\.:_a-zA-Z0-9]{0,16}$"
       },
-      "chassis_maintenance_policy" : {
+      "chassis_maintenance_policy": {
          "description": "Chassis Profile - Chassis Maintenance Policy",
          "type": "string",
          "pattern": "^[\\-\\.:_a-zA-Z0-9]{0,16}$"
       },
-      "sas_expander_configuration_policy" : {
+      "sas_expander_configuration_policy": {
          "description": "Chassis Profile - SAS Expander Configuration Policy",
          "type": "string",
          "pattern": "^[\\-\\.:_a-zA-Z0-9]{0,16}$"
       },
-      "chassis_assignment_id" : {
+      "chassis_assignment_id": {
          "description": "Chassis Profile - Assigned Chassis ID",
          "type": "string"
       },
-      "restrict_migration" : {
+      "restrict_migration": {
          "description": "Chassis Profile - Restrict Migration",
          "type": "string",
          "default": "false",
@@ -71,23 +78,23 @@
             "yes"
          ]
       },
-      "chassis_profile_template" : {
+      "chassis_profile_template": {
          "description": "Chassis Profile - Chassis Profile Template",
          "type": "string"
       },
-      "suffix_start_number" : {
+      "suffix_start_number": {
          "description": "Chassis Profile - Suffix Start Number",
          "type": "string",
          "default": "1"
       },
-      "number_of_instances" : {
+      "number_of_instances": {
          "description": "Chassis Profile - Number Of Instances",
          "type": "string",
          "default": "1"
       }
    },
-   "additionalProperties":false,
-   "required":[
+   "additionalProperties": false,
+   "required": [
       "name",
       "type"
    ]

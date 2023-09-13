@@ -1,0 +1,133 @@
+{
+   "id": "intersight_config_orgs_wwnn_pools#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS intersight config orgs wwnn_pools section",
+   "description": "EasyUCS intersight config orgs wwnn_pools section JSON schema",
+   "type": "object",
+   "properties": {
+      "comment": {
+         "description": "WWNN Pool Comments",
+         "type": "string",
+         "default": ""
+      },
+      "descr": {
+         "description": "WWNN Pool Description",
+         "type": "string",
+         "default": "",
+         "pattern": "^$|^[a-zA-Z0-9]+[\\x00-\\xFF]*$",
+         "maxLength": 1024
+      },
+      "name": {
+         "description": "WWNN Pool Name",
+         "type": "string",
+         "default": "",
+         "pattern": "^[a-zA-Z0-9_.:-]{1,64}$"
+      },
+      "tags": {
+         "description": "WWNN Pool Tags",
+         "type": "array",
+         "items": {
+            "description": "WWNN Pool Tag",
+            "type": "object",
+            "properties": {
+               "key": {
+                  "description": "WWNN Pool Tag Key",
+                  "type": "string",
+                  "default": "",
+                  "minLength": 1,
+                  "maxLength": 128
+               },
+               "value": {
+                  "description": "WWNN Pool Tag Value",
+                  "type": "string",
+                  "default": "",
+                  "minLength": 0,
+                  "maxLength": 256
+               }
+            },
+            "additionalProperties": false,
+            "required": [
+               "key",
+               "value"
+            ]
+         },
+         "minItems": 1
+      },
+      "wwnn_blocks": {
+         "description": "Blocks of WWNNs in WWNN Pool",
+         "type": "array",
+         "items": {
+            "type": "object",
+            "oneOf": [
+               {
+                  "properties": {
+                     "from": {
+                        "description": "First WWNN of Block",
+                        "type": "string",
+                        "default": "20:00:00:25:B5:00:00:00",
+                        "pattern": "^(([A-Fa-f0-9][A-Fa-f0-9]:){7}[A-Fa-f0-9][A-Fa-f0-9])$|^0$"
+                     },
+                     "to": {
+                        "description": "Last WWNN of Block",
+                        "type": "string",
+                        "default": "20:00:00:25:B5:00:00:00",
+                        "pattern": "^(([A-Fa-f0-9][A-Fa-f0-9]:){7}[A-Fa-f0-9][A-Fa-f0-9])$|^0$"
+                     }
+                  },
+                  "additionalProperties": false,
+                  "required": [
+                     "from",
+                     "to"
+                  ]
+               },
+               {
+                  "properties": {
+                     "from": {
+                        "description": "First WWNN of Block",
+                        "type": "string",
+                        "default": "20:00:00:25:B5:00:00:00",
+                        "pattern": "^(([A-Fa-f0-9][A-Fa-f0-9]:){7}[A-Fa-f0-9][A-Fa-f0-9])$|^0$"
+                     },
+                     "size": {
+                        "description": "Size of WWNN Block",
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 1024
+                     }
+                  },
+                  "additionalProperties": false,
+                  "required": [
+                     "from",
+                     "size"
+                  ]
+               }
+            ]
+         },
+         "minItems": 1
+      },
+      "reservations": {
+         "description": "Reservations in WWNN Pool",
+         "type": "array",
+         "items": {
+            "type": "object",
+            "properties": {
+               "identity": {
+                  "description": "Identity of WWNN being reserved",
+                  "type": "string",
+                  "default": "20:00:00:25:B5:00:00:00",
+                  "pattern": "^(([A-Fa-f0-9][A-Fa-f0-9]:){7}[A-Fa-f0-9][A-Fa-f0-9])$|^0$"
+               }
+            },
+            "additionalProperties": false,
+            "required": [
+               "identity"
+            ]
+         },
+         "minItems": 1
+      }
+   },
+   "additionalProperties": false,
+   "required": [
+      "name"
+   ]
+}

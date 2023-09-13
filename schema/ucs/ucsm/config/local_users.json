@@ -1,80 +1,84 @@
 {
-   "id":"ucs_system_config_local_users#",
-   "$schema":"http://json-schema.org/draft-07/schema#",
-   "title":"EasyUCS ucs system config local_users section",
-   "description":"EasyUCS ucs system config local_users section JSON schema",
-   "type":"object",
-   "properties":{
+   "id": "ucs_system_config_local_users#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS ucs system config local_users section",
+   "description": "EasyUCS ucs system config local_users section JSON schema",
+   "type": "object",
+   "properties": {
       "comment": {
          "description": "Local User Comments",
          "type": "string",
          "default": ""
       },
-      "id":{
-         "description":"Local User Login ID (account name)",
-         "type":"string",
+      "id": {
+         "description": "Local User Login ID (account name)",
+         "type": "string",
          "pattern": "^[a-zA-Z][a-zA-Z0-9_.-]{0,31}$"
       },
-      "password":{
-         "description":"Local User Password",
-         "type":"string",
+      "password": {
+         "description": "Local User Password",
+         "type": "string",
          "pattern": "^[!\"\"#%&'\\(\\)\\*\\+,\\-\\./:;<>@\\[\\\\\\]\\^_`\\{\\|\\}~a-zA-Z0-9]{0,80}$"
       },
-      "first_name":{
-         "description":"Local User First Name",
-         "type":"string"
+      "encrypted_password": {
+         "description": "Local User Encrypted Password",
+         "type": "string"
       },
-      "last_name":{
-         "description":"Local User Last Name",
-         "type":"string"
+      "first_name": {
+         "description": "Local User First Name",
+         "type": "string"
       },
-      "email":{
-         "description":"Local User Email Address",
-         "type":"string",
-         "format":"email"
+      "last_name": {
+         "description": "Local User Last Name",
+         "type": "string"
       },
-      "phone":{
-         "description":"Local User Phone Number",
-         "type":"string"
+      "email": {
+         "description": "Local User Email Address",
+         "type": "string",
+         "format": "email"
       },
-      "account_status":{
-         "description":"Local User Account Status",
-         "type":"string",
-         "default":"active",
-         "enum":[
+      "phone": {
+         "description": "Local User Phone Number",
+         "type": "string"
+      },
+      "account_status": {
+         "description": "Local User Account Status",
+         "type": "string",
+         "default": "active",
+         "enum": [
             "active",
             "inactive"
          ]
       },
-      "expiration":{
-         "description":"Local User's Account Expiration Date",
-         "type":"string"
+      "expiration": {
+         "description": "Local User's Account Expiration Date",
+         "type": "string"
       },
-      "ssh_key":{
-         "description":"Local User's SSH Key",
-         "type":"string"
+      "ssh_key": {
+         "description": "Local User's SSH Key",
+         "type": "string"
       },
-      "locales":{
-         "description":"Local User's assigned Locale(s)",
-         "type":"array",
-         "items":{
-            "description":"Local User's assigned Locale",
-            "type":"string"
+      "locales": {
+         "description": "Local User's assigned Locale(s)",
+         "type": "array",
+         "items": {
+            "description": "Local User's assigned Locale",
+            "type": "string"
          },
-         "minItems":1
+         "minItems": 1
       },
-      "roles":{
-         "description":"Local User's assigned Role(s)",
-         "type":"array",
-         "items":{
-            "description":"Local User's assigned Role",
-            "type":"string"
+      "roles": {
+         "description": "Local User's assigned Role(s)",
+         "type": "array",
+         "items": {
+            "description": "Local User's assigned Role",
+            "type": "string"
          },
-         "minItems":1
+         "minItems": 1
       }
    },
-   "required":[
+   "required": [
       "id"
    ],
-   "additionalProperties":false
+   "additionalProperties": false
 }

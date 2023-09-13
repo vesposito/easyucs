@@ -10,16 +10,12 @@ from netaddr import EUI, IPAddress
 from ucsmsdk.mometa.dpsec.DpsecMac import DpsecMac
 from ucsmsdk.mometa.epqos.EpqosDefinition import EpqosDefinition
 from ucsmsdk.mometa.epqos.EpqosEgress import EpqosEgress
-from ucsmsdk.mometa.fabric.FabricBreakout import FabricBreakout
-from ucsmsdk.mometa.fabric.FabricDceSwSrvEp import FabricDceSwSrvEp
-from ucsmsdk.mometa.fabric.FabricEthEstcEp import FabricEthEstcEp
-from ucsmsdk.mometa.fabric.FabricEthEstcPc import FabricEthEstcPc
-from ucsmsdk.mometa.fabric.FabricEthEstcPcEp import FabricEthEstcPcEp
-from ucsmsdk.mometa.fabric.FabricEthLanEp import FabricEthLanEp
-from ucsmsdk.mometa.fabric.FabricEthLanPc import FabricEthLanPc
-from ucsmsdk.mometa.fabric.FabricEthLanPcEp import FabricEthLanPcEp
+from ucsmsdk.mometa.fabric.FabricEthLanFlowMonitoring import FabricEthLanFlowMonitoring
 from ucsmsdk.mometa.fabric.FabricEthLinkProfile import FabricEthLinkProfile
-from ucsmsdk.mometa.fabric.FabricEthTargetEp import FabricEthTargetEp
+from ucsmsdk.mometa.fabric.FabricEthMon import FabricEthMon
+from ucsmsdk.mometa.fabric.FabricEthMonDestEp import FabricEthMonDestEp
+from ucsmsdk.mometa.fabric.FabricEthMonSrcEp import FabricEthMonSrcEp
+from ucsmsdk.mometa.fabric.FabricFcMonSrcEp import FabricFcMonSrcEp
 from ucsmsdk.mometa.fabric.FabricEthVlanPc import FabricEthVlanPc
 from ucsmsdk.mometa.fabric.FabricEthVlanPortEp import FabricEthVlanPortEp
 from ucsmsdk.mometa.fabric.FabricLacpPolicy import FabricLacpPolicy
@@ -47,6 +43,7 @@ from ucsmsdk.mometa.qosclass.QosclassEthBE import QosclassEthBE
 from ucsmsdk.mometa.qosclass.QosclassEthClassified import QosclassEthClassified
 from ucsmsdk.mometa.qosclass.QosclassFc import QosclassFc
 from ucsmsdk.mometa.qosclass.QosclassSlowDrain import QosclassSlowDrain
+from ucsmsdk.mometa.vnic.VnicDynamicCon import VnicDynamicCon
 from ucsmsdk.mometa.vnic.VnicDynamicConPolicy import VnicDynamicConPolicy
 from ucsmsdk.mometa.vnic.VnicDynamicConPolicyRef import VnicDynamicConPolicyRef
 from ucsmsdk.mometa.vnic.VnicEther import VnicEther
@@ -54,678 +51,25 @@ from ucsmsdk.mometa.vnic.VnicEtherIf import VnicEtherIf
 from ucsmsdk.mometa.vnic.VnicIScsiLCP import VnicIScsiLCP
 from ucsmsdk.mometa.vnic.VnicLanConnPolicy import VnicLanConnPolicy
 from ucsmsdk.mometa.vnic.VnicLanConnTempl import VnicLanConnTempl
+from ucsmsdk.mometa.vnic.VnicUsnicConPolicy import VnicUsnicConPolicy
 from ucsmsdk.mometa.vnic.VnicUsnicConPolicyRef import VnicUsnicConPolicyRef
 from ucsmsdk.mometa.vnic.VnicVlan import VnicVlan
+from ucsmsdk.mometa.vnic.VnicVmqConPolicy import VnicVmqConPolicy
 from ucsmsdk.mometa.vnic.VnicVmqConPolicyRef import VnicVmqConPolicyRef
 from ucsmsdk.mometa.vnic.VnicVnicBehPolicy import VnicVnicBehPolicy
 
 import common
 from config.ucs.object import UcsSystemConfigObject
-from config.ucs.ucsm.san import UcsSystemFcoeStoragePort, UcsSystemFcoeUplinkPort
-
-
-class UcsSystemLanUplinkPort(UcsSystemConfigObject):
-    _CONFIG_NAME = "LAN Uplink Port"
-
-    def __init__(self, parent=None, json_content=None, fabric_eth_lan_ep=None):
-        UcsSystemConfigObject.__init__(self, parent=parent)
-        self.fabric = None
-        self.slot_id = None
-        self.port_id = None
-        self.aggr_id = None
-        self.user_label = None
-        self.flow_control_policy = None
-        self.link_profile = None
-        self.admin_speed = None
-        self.admin_state = None
-        self.fec = None
-
-        if self._config.load_from == "live":
-            if fabric_eth_lan_ep is not None:
-                self.fabric = fabric_eth_lan_ep.switch_id
-                self.slot_id = fabric_eth_lan_ep.slot_id
-                if fabric_eth_lan_ep.aggr_port_id:
-                    self.aggr_id = fabric_eth_lan_ep.aggr_port_id if int(fabric_eth_lan_ep.aggr_port_id) else None
-                else:
-                    self.aggr_id = None
-                if self.aggr_id:
-                    self.aggr_id = fabric_eth_lan_ep.port_id
-                    self.port_id = fabric_eth_lan_ep.aggr_port_id
-                else:
-                    self.port_id = fabric_eth_lan_ep.port_id
-                self.user_label = fabric_eth_lan_ep.usr_lbl
-                self.flow_control_policy = fabric_eth_lan_ep.flow_ctrl_policy
-                self.link_profile = fabric_eth_lan_ep.eth_link_profile_name
-                self.admin_speed = fabric_eth_lan_ep.admin_speed
-                self.admin_state = fabric_eth_lan_ep.admin_state
-                self.fec = fabric_eth_lan_ep.fec
-
-        elif self._config.load_from == "file":
-            if json_content is not None:
-                if not self.get_attributes_from_json(json_content=json_content):
-                    self.logger(level="error",
-                                message="Unable to get attributes from JSON content for " + self._CONFIG_NAME)
-
-        self.clean_object()
-
-    def push_object(self, commit=True):
-        if commit:
-            if self.aggr_id:
-                self.logger(message="Pushing " + self._CONFIG_NAME + " configuration: " + self.fabric + "/" +
-                                    self.slot_id + '/' + self.port_id + "/" + self.aggr_id)
-            else:
-                self.logger(message="Pushing " + self._CONFIG_NAME + " configuration: " + self.fabric + " " +
-                                    self.slot_id + '/' + self.port_id)
-        else:
-            self.logger(message="Adding to the handle " + self._CONFIG_NAME + " configuration: " + self.fabric + " " +
-                                self.slot_id + '/' + self.port_id + ", waiting for a commit")
-        parent_mo = "fabric/lan/" + self.fabric.upper()
-
-        if self.aggr_id:
-            mo_fabric_sub_group = FabricSubGroup(parent_mo_or_dn=parent_mo, aggr_port_id=self.port_id,
-                                                 slot_id=self.slot_id)
-            FabricEthLanEp(parent_mo_or_dn=mo_fabric_sub_group, slot_id=self.slot_id, port_id=self.aggr_id,
-                           usr_lbl=self.user_label, flow_ctrl_policy=self.flow_control_policy,
-                           eth_link_profile_name=self.link_profile,
-                           admin_state=self.admin_state)
-            self._handle.add_mo(mo=mo_fabric_sub_group, modify_present=True)
-
-            if commit:
-                if self.commit(detail=self.fabric + "/" + self.slot_id + '/' + self.port_id + '/' + self.aggr_id) != True:
-                    return False
-        else:
-
-            mo_fabric_eth_lan_ep = FabricEthLanEp(parent_mo_or_dn=parent_mo, slot_id=self.slot_id, port_id=self.port_id,
-                                                  usr_lbl=self.user_label, flow_ctrl_policy=self.flow_control_policy,
-                                                  eth_link_profile_name=self.link_profile, admin_speed=self.admin_speed,
-                                                  admin_state=self.admin_state, fec=self.fec)
-
-            self._handle.add_mo(mo=mo_fabric_eth_lan_ep, modify_present=True)
-
-            if commit:
-                if self.commit(detail=self.fabric + "/" + self.slot_id + '/' + self.port_id) != True:
-                    return False
-        return True
-
-
-class UcsSystemAppliancePort(UcsSystemConfigObject):
-    _CONFIG_NAME = "Appliance Port"
-
-    def __init__(self, parent=None, json_content=None, fabric_eth_estc_ep=None):
-        UcsSystemConfigObject.__init__(self, parent=parent)
-        self.fabric = None
-        self.slot_id = None
-        self.port_id = None
-        self.aggr_id = None
-        self.user_label = None
-        self.flow_control_policy = None
-        self.network_control_policy = None
-        self.admin_speed = None
-        self.admin_state = None
-        self.priority = None
-        self.pin_group = None
-        self.vlan_port_mode = None
-        self.appliance_vlans = []
-        self.native_vlan = None
-        self.ethernet_target_endpoint = []
-        self.fec = None
-
-        if self._config.load_from == "live":
-            if fabric_eth_estc_ep is not None:
-                self.fabric = fabric_eth_estc_ep.switch_id
-                self.slot_id = fabric_eth_estc_ep.slot_id
-                self.aggr_id = fabric_eth_estc_ep.aggr_port_id if int(fabric_eth_estc_ep.aggr_port_id) else None
-                if self.aggr_id:
-                    self.aggr_id = fabric_eth_estc_ep.port_id
-                    self.port_id = fabric_eth_estc_ep.aggr_port_id
-                else:
-                    self.port_id = fabric_eth_estc_ep.port_id
-                self.user_label = fabric_eth_estc_ep.usr_lbl
-                self.flow_control_policy = fabric_eth_estc_ep.flow_ctrl_policy
-                self.network_control_policy = fabric_eth_estc_ep.nw_ctrl_policy_name
-                self.admin_speed = fabric_eth_estc_ep.admin_speed
-                self.admin_state = fabric_eth_estc_ep.admin_state
-                self.priority = fabric_eth_estc_ep.prio
-                self.pin_group = fabric_eth_estc_ep.pin_group_name
-                self.vlan_port_mode = fabric_eth_estc_ep.port_mode
-                self.fec = fabric_eth_estc_ep.fec
-
-                if "fabricEthTargetEp" in self._config.sdk_objects:
-                    target = [target for target in self._config.sdk_objects["fabricEthTargetEp"] if "eth-estc/" +
-                              self.fabric + "/phys-eth-slot-" + self.slot_id + "-port-" + self.port_id in target.dn]
-                    if target:
-                        if len(target) == 1:
-                            self.ethernet_target_endpoint.append({})
-                            self.ethernet_target_endpoint[0]["name"] = target[0].name
-                            self.ethernet_target_endpoint[0]["mac_address"] = target[0].mac_address
-
-                if "fabricEthVlanPortEp" in self._config.sdk_objects:
-                    vlans = [vlan for vlan in self._config.sdk_objects["fabricEthVlanPortEp"] if "eth-estc/" +
-                             self.fabric + "/phys-eth-slot-" + self.slot_id + "-port-" + self.port_id in vlan.ep_dn]
-                    if vlans:
-                        for vlan in vlans:
-                            if vlan.is_native in ["yes", "true"]:
-                                self.native_vlan = vlan.dn.split("net-")[1].split("/")[0]
-                            else:
-                                self.appliance_vlans.append(vlan.dn.split("net-")[1].split("/")[0])
-
-        elif self._config.load_from == "file":
-            if json_content is not None:
-                if not self.get_attributes_from_json(json_content=json_content):
-                    self.logger(level="error",
-                                message="Unable to get attributes from JSON content for " + self._CONFIG_NAME)
-
-                # We need to set all values that are not present in the config file to None
-                for element in self.ethernet_target_endpoint:
-                    for value in ["name", "mac_address"]:
-                        if value not in element:
-                            element[value] = None
-
-        self.clean_object()
-
-    def push_object(self, commit=True):
-        if commit:
-            self.logger(message="Pushing " + self._CONFIG_NAME + " configuration: " + self.fabric + " " + self.slot_id +
-                                '/' + self.port_id)
-        else:
-            self.logger(message="Adding to the handle " + self._CONFIG_NAME + " configuration: " + self.fabric + " " +
-                                self.slot_id + '/' + self.port_id + ", waiting for a commit")
-
-        parent_mo = "fabric/eth-estc/" + self.fabric.upper()
-
-        if self.aggr_id:
-            self.logger(message="Pushing " + self._CONFIG_NAME + " configuration: " + self.fabric + "/" + self.slot_id +
-                                '/' + self.port_id + '/' + self.aggr_id)
-            mo_fabric_sub_group = FabricSubGroup(parent_mo_or_dn=parent_mo, aggr_port_id=self.port_id,
-                                                 slot_id=self.slot_id)
-            mo_fabric_eth_estc_ep = FabricEthEstcEp(parent_mo_or_dn=mo_fabric_sub_group, slot_id=self.slot_id,
-                                                    port_id=self.aggr_id, port_mode=self.vlan_port_mode,
-                                                    prio=self.priority,
-                                                    pin_group_name=self.pin_group,
-                                                    nw_ctrl_policy_name=self.network_control_policy,
-                                                    flow_ctrl_policy=self.flow_control_policy,
-                                                    usr_lbl=self.user_label, admin_state=self.admin_state)
-            self._handle.add_mo(mo=mo_fabric_sub_group, modify_present=True)
-
-            if commit:
-                if self.commit(detail=self.fabric + "/" + self.slot_id + '/' + self.port_id + '/' + self.aggr_id) != True:
-                    return False
-
-        else:
-            self.logger(message="Pushing " + self._CONFIG_NAME + " configuration: " + self.fabric + "/" + self.slot_id +
-                                '/' + self.port_id)
-            mo_fabric_eth_estc_ep = FabricEthEstcEp(parent_mo_or_dn=parent_mo, slot_id=self.slot_id,
-                                                    port_id=self.port_id, port_mode=self.vlan_port_mode,
-                                                    admin_speed=self.admin_speed, prio=self.priority,
-                                                    pin_group_name=self.pin_group,
-                                                    nw_ctrl_policy_name=self.network_control_policy,
-                                                    flow_ctrl_policy=self.flow_control_policy, usr_lbl=self.user_label,
-                                                    admin_state=self.admin_state, fec=self.fec)
-            self._handle.add_mo(mo=mo_fabric_eth_estc_ep, modify_present=True)
-
-            if commit:
-                if self.commit(detail=self.fabric + "/" + self.slot_id + '/' + self.port_id) != True:
-                    return False
-
-        if self.ethernet_target_endpoint:
-            FabricEthTargetEp(parent_mo_or_dn=mo_fabric_eth_estc_ep, name=self.ethernet_target_endpoint[0]["name"],
-                              mac_address=self.ethernet_target_endpoint[0]["mac_address"])
-            self._handle.add_mo(mo=mo_fabric_eth_estc_ep, modify_present=True)
-
-            if commit:
-                self.commit(detail="ethernet_target_endpoint: " + self.ethernet_target_endpoint[0]["name"])
-
-        if self.native_vlan or self.appliance_vlans:
-            if self.appliance_vlans and isinstance(self.appliance_vlans, list):
-                for vlan in self.appliance_vlans:
-                    mo_fabric_vlan = FabricVlan(parent_mo_or_dn="fabric/eth-estc", name=vlan)
-                    FabricEthVlanPortEp(parent_mo_or_dn=mo_fabric_vlan, is_native="no", switch_id=self.fabric.upper(),
-                                        port_id=self.port_id, slot_id=self.slot_id)
-                    self._handle.add_mo(mo=mo_fabric_vlan, modify_present=True)
-
-                    if commit:
-                        self.commit(detail="appliance_vlans: " + vlan)
-
-            if self.native_vlan:
-                mo_fabric_vlan = FabricVlan(parent_mo_or_dn="fabric/eth-estc", name=self.native_vlan)
-                FabricEthVlanPortEp(parent_mo_or_dn=mo_fabric_vlan, is_native="yes", switch_id=self.fabric.upper(),
-                                    port_id=self.port_id, slot_id=self.slot_id)
-                self._handle.add_mo(mo=mo_fabric_vlan, modify_present=True)
-
-                if commit:
-                    self.commit(detail="native_vlan: " + self.native_vlan)
-
-        return True
-
-
-class UcsSystemServerPort(UcsSystemConfigObject):
-    _CONFIG_NAME = "Server Port"
-
-    def __init__(self, parent=None, json_content=None, fabric_dce_sw_srv_ep=None):
-        UcsSystemConfigObject.__init__(self, parent=parent)
-        self.fabric = None
-        self.slot_id = None
-        self.port_id = None
-        self.aggr_id = None
-        self.user_label = None
-        self.admin_state = None
-
-        if self._config.load_from == "live":
-            if fabric_dce_sw_srv_ep is not None:
-                self.fabric = fabric_dce_sw_srv_ep.switch_id
-                self.slot_id = fabric_dce_sw_srv_ep.slot_id
-                if fabric_dce_sw_srv_ep.aggr_port_id:
-                    self.aggr_id = fabric_dce_sw_srv_ep.aggr_port_id if int(fabric_dce_sw_srv_ep.aggr_port_id) else None
-                else:
-                    self.aggr_id = None
-                if self.aggr_id:
-                    self.aggr_id = fabric_dce_sw_srv_ep.port_id
-                    self.port_id = fabric_dce_sw_srv_ep.aggr_port_id
-                else:
-                    self.port_id = fabric_dce_sw_srv_ep.port_id
-                self.user_label = fabric_dce_sw_srv_ep.usr_lbl
-                self.admin_state = fabric_dce_sw_srv_ep.admin_state
-
-        elif self._config.load_from == "file":
-            if json_content is not None:
-                if not self.get_attributes_from_json(json_content=json_content):
-                    self.logger(level="error",
-                                message="Unable to get attributes from JSON content for " + self._CONFIG_NAME)
-
-        self.clean_object()
-
-    def push_object(self, commit=True):
-        if commit:
-            if self.aggr_id:
-                self.logger(message="Pushing " + self._CONFIG_NAME + " configuration: " + self.fabric + " " +
-                                    self.slot_id + '/' + self.port_id + '/' + self.aggr_id)
-            else:
-                self.logger(message="Pushing " + self._CONFIG_NAME + " configuration: " + self.fabric + " " +
-                                    self.slot_id + '/' + self.port_id)
-        else:
-            self.logger(message="Adding to the handle " + self._CONFIG_NAME + " configuration: " + self.fabric + " " +
-                                self.slot_id + '/' + self.port_id + ", waiting for a commit")
-
-        parent_mo = "fabric/server/sw-" + self.fabric.upper()
-
-        if not self.is_port_member_of_server_port_channel():
-            if self.aggr_id:
-                mo_fabric_sub_group = FabricSubGroup(parent_mo_or_dn=parent_mo, aggr_port_id=self.port_id,
-                                                     slot_id=self.slot_id)
-                FabricDceSwSrvEp(parent_mo_or_dn=mo_fabric_sub_group, slot_id=self.slot_id, port_id=self.aggr_id,
-                                 usr_lbl=self.user_label, admin_state=self.admin_state)
-                self._handle.add_mo(mo=mo_fabric_sub_group, modify_present=True)
-
-                if commit:
-                    if self.commit(
-                            detail=self.fabric + "/" + self.slot_id + '/' + self.port_id + "/" + self.aggr_id) != True:
-                        return False
-
-            else:
-                mo_fabric_dce_sw_srv_ep = FabricDceSwSrvEp(parent_mo_or_dn=parent_mo, slot_id=self.slot_id,
-                                                           port_id=self.port_id, usr_lbl=self.user_label,
-                                                           admin_state=self.admin_state)
-                self._handle.add_mo(mo=mo_fabric_dce_sw_srv_ep, modify_present=True)
-
-                if commit:
-                    if self.commit(detail=self.fabric + "/" + self.slot_id + '/' + self.port_id) != True:
-                        return False
-
-        return True
-
-    def is_port_member_of_server_port_channel(self, fabric="", slot_id="", port_id="", aggr_id=""):
-        """
-        Check if a port is a member of a Server port-channel. Used by push_object()
-
-        :param fabric: <class 'str'>: Fabric of the port to check
-        :param slot_id: <class 'str'>: Slot id of the port to check
-        :param port_id: <class 'str'>: Port id of the port to check
-        :param aggr_id: <class 'str'>: Aggr id of the port to check (for breakout ports)
-        :return: True if the port is a member of a Server port-channel, False otherwise
-        """
-
-        fabric = self.fabric if not fabric else fabric
-        slot_id = self.slot_id if not slot_id else slot_id
-        port_id = self.port_id if not port_id else port_id
-        aggr_id = self.aggr_id if not aggr_id else port_id
-
-        # Query on the live system
-        if aggr_id:
-            ep_dn = "sys/switch-" + fabric.upper() + "/slot-" + slot_id + "/switch-ether/aggr-port-" + aggr_id +\
-                    "/port-" + port_id
-        else:
-            ep_dn = "sys/switch-" + fabric.upper() + "/slot-" + slot_id + "/switch-ether/port-" + port_id
-
-        interfaces = self._device.query(mode="classid", target="fabricDceSwSrvPcEp",
-                                        filter_str="(ep_dn,'" + ep_dn + "',type='eq')")
-        if len(interfaces) == 0:
-            if aggr_id:
-                self.logger(level="debug",
-                            message="Port " + slot_id + "/" + aggr_id + "/" + port_id + " of fabric " + fabric +
-                                    " is not a member of a Server port-channel")
-            else:
-                self.logger(level="debug",
-                            message="Port " + slot_id + "/" + port_id + " of fabric " + fabric +
-                                    " is not a member of a Server port-channel")
-            return False
-        elif len(interfaces) == 1:
-            if aggr_id:
-                self.logger(level="debug",
-                            message="Port " + slot_id + "/" + aggr_id + "/" + port_id + " of fabric " + fabric +
-                                    " is already a member of a Server port-channel")
-            else:
-                self.logger(level="debug",
-                            message="Port " + slot_id + "/" + port_id + " of fabric " + fabric +
-                                    " is already a member of a Server port-channel")
-            return True
-        else:
-            if aggr_id:
-                self.logger(level="error",
-                            message="Something wrong happened while trying to identify if port " + slot_id + "/"
-                                    + port_id + "/" + aggr_id + " of fabric " + fabric +
-                                    " is a member of a Server port-channel")
-            else:
-                self.logger(level="error",
-                            message="Something wrong happened while trying to identify if port " + slot_id + "/"
-                                    + port_id + " of fabric " + fabric + " is a member of a Server port-channel")
-
-
-class UcsSystemLanPortChannel(UcsSystemConfigObject):
-    _CONFIG_NAME = "LAN Port-Channel"
-
-    def __init__(self, parent=None, json_content=None, fabric_eth_lan_pc=None):
-        UcsSystemConfigObject.__init__(self, parent=parent)
-        self.name = None
-        self.descr = None
-        self.fabric = None
-        self.pc_id = None
-        self.interfaces = []
-        self.lacp_policy = None
-        self.flow_control_policy = None
-        self.admin_speed = None
-        self.admin_state = None
-
-        if self._config.load_from == "live":
-            if fabric_eth_lan_pc is not None:
-                self.name = fabric_eth_lan_pc.name
-                self.descr = fabric_eth_lan_pc.descr
-                self.fabric = fabric_eth_lan_pc.switch_id
-                self.pc_id = fabric_eth_lan_pc.port_id
-                self.lacp_policy = fabric_eth_lan_pc.lacp_policy_name
-                self.flow_control_policy = fabric_eth_lan_pc.flow_ctrl_policy
-                self.admin_speed = fabric_eth_lan_pc.admin_speed
-                self.admin_state = fabric_eth_lan_pc.admin_state
-
-                if "fabricEthLanPcEp" in self._config.sdk_objects:
-                    interfaces = [interface for interface in self._config.sdk_objects["fabricEthLanPcEp"]
-                                  if self.fabric + "/pc-" + self.pc_id + "/" in interface.dn]
-                    if interfaces:
-                        for interface_pc_ep in interfaces:
-                            interface = {}
-                            interface["aggr_id"] = None
-                            interface["slot_id"] = None
-                            interface["port_id"] = None
-                            interface["admin_state"] = None
-                            interface["link_profile"] = None
-                            interface["user_label"] = None
-
-                            interface.update({"slot_id": interface_pc_ep.slot_id})
-                            interface.update({"admin_state": interface_pc_ep.admin_state})
-                            if interface_pc_ep.aggr_port_id:
-                                interface["aggr_id"] =\
-                                    interface_pc_ep.aggr_port_id if int(interface_pc_ep.aggr_port_id) else None
-                            else:
-                                interface["aggr_id"] = None
-                            if interface["aggr_id"]:
-                                interface.update({"aggr_id": interface_pc_ep.port_id})
-                                interface.update({"port_id": interface_pc_ep.aggr_port_id})
-                            else:
-                                interface.update({"port_id": interface_pc_ep.port_id})
-                                interface.update({"link_profile": interface_pc_ep.eth_link_profile_name})
-                                interface.update({"user_label": interface_pc_ep.usr_lbl})
-                                del interface["aggr_id"]
-                            self.interfaces.append(interface)
-
-        elif self._config.load_from == "file":
-            if json_content is not None:
-                if not self.get_attributes_from_json(json_content=json_content):
-                    self.logger(level="error",
-                                message="Unable to get attributes from JSON content for " + self._CONFIG_NAME)
-
-                # We need to set all values that are not present in the config file to None
-                for element in self.interfaces:
-                    for value in ["aggr_id", "slot_id", "port_id", "admin_state", "link_profile", "user_label"]:
-                        if value not in element:
-                            element[value] = None
-        self.clean_object()
-
-    def push_object(self, commit=True):
-        if commit:
-            self.logger(message="Pushing " + self._CONFIG_NAME + " configuration with id: " + self.pc_id +
-                                " on fabric " + self.fabric)
-        else:
-            self.logger(message="Adding to the handle " + self._CONFIG_NAME + " configuration with id: " + self.pc_id +
-                                " on fabric " + self.fabric + ", waiting for a commit")
-
-        # Creating Port-Channel object
-        parent_mo = "fabric/lan/" + self.fabric.upper()
-        mo_fabric_eth_lan_pc = FabricEthLanPc(parent_mo_or_dn=parent_mo, port_id=self.pc_id, descr=self.descr,
-                                              name=self.name, lacp_policy_name=self.lacp_policy,
-                                              flow_ctrl_policy=self.flow_control_policy, admin_speed=self.admin_speed,
-                                              admin_state=self.admin_state)
-        self._handle.add_mo(mo=mo_fabric_eth_lan_pc, modify_present=True)
-
-        if commit:
-            if self.commit(detail=self.pc_id) != True:
-                return False
-
-        # Adding interfaces to Port-Channel object
-        if self.interfaces:
-            for interface in self.interfaces:
-                if interface["aggr_id"]:
-                    mo_fabric_sub_group = FabricSubGroup(parent_mo_or_dn=mo_fabric_eth_lan_pc,
-                                                         aggr_port_id=interface["port_id"],
-                                                         slot_id=interface['slot_id'])
-                    FabricEthLanPcEp(parent_mo_or_dn=mo_fabric_sub_group, port_id=interface['aggr_id'],
-                                     eth_link_profile_name=interface['link_profile'], usr_lbl=interface['user_label'],
-                                     slot_id=interface['slot_id'], admin_state=interface['admin_state'])
-                    detail = interface['slot_id'] + "/" + interface['port_id'] + "/" + interface['aggr_id']
-                else:
-                    FabricEthLanPcEp(parent_mo_or_dn=mo_fabric_eth_lan_pc, slot_id=interface['slot_id'],
-                                     port_id=interface['port_id'], eth_link_profile_name=interface['link_profile'],
-                                     usr_lbl=interface['user_label'], admin_state=interface['admin_state'])
-                    detail = interface['slot_id'] + "/" + interface['port_id']
-
-                self._handle.add_mo(mo=mo_fabric_eth_lan_pc, modify_present=True)
-                if commit:
-                    if self.commit(detail="interface: " + detail) != True:
-                        return False
-
-        return True
-
-
-class UcsSystemAppliancePortChannel(UcsSystemConfigObject):
-    _CONFIG_NAME = "Appliance Port-Channel"
-
-    def __init__(self, parent=None, json_content=None, fabric_eth_estc_pc=None):
-        UcsSystemConfigObject.__init__(self, parent=parent)
-        self.name = None
-        self.descr = None
-        self.fabric = None
-        self.pc_id = None
-        self.lacp_policy = None
-        self.flow_control_policy = None
-        self.admin_speed = None
-        self.admin_state = None
-        self.interfaces = []
-        self.protocol = None
-        self.network_control_policy = None
-        self.priority = None
-        self.pin_group = None
-        self.vlan_port_mode = None
-        self.appliance_vlans = []
-        self.native_vlan = None
-        self.ethernet_target_endpoint = []
-
-        if self._config.load_from == "live":
-            if fabric_eth_estc_pc is not None:
-                self.name = fabric_eth_estc_pc.name
-                self.descr = fabric_eth_estc_pc.descr
-                self.fabric = fabric_eth_estc_pc.switch_id
-                self.pc_id = fabric_eth_estc_pc.port_id
-                self.lacp_policy = fabric_eth_estc_pc.lacp_policy_name
-                self.flow_control_policy = fabric_eth_estc_pc.flow_ctrl_policy
-                self.admin_speed = fabric_eth_estc_pc.admin_speed
-                self.admin_state = fabric_eth_estc_pc.admin_state
-                self.protocol = fabric_eth_estc_pc.protocol
-                self.priority = fabric_eth_estc_pc.prio
-                self.network_control_policy = fabric_eth_estc_pc.nw_ctrl_policy_name
-                self.pin_group = fabric_eth_estc_pc.pin_group_name
-                self.vlan_port_mode = fabric_eth_estc_pc.port_mode
-
-                if "fabricEthEstcPcEp" in self._config.sdk_objects:
-                    interfaces = [interface for interface in self._config.sdk_objects["fabricEthEstcPcEp"]
-                                  if self.fabric + "/pc-" + self.pc_id + "/" in interface.dn]
-                    if interfaces:
-                        for interface_pc_ep in interfaces:
-                            interface = {}
-                            interface["aggr_id"] = None
-                            interface["slot_id"] = None
-                            interface["port_id"] = None
-                            interface["admin_state"] = None
-                            interface["user_label"] = None
-
-                            interface.update({"slot_id": interface_pc_ep.slot_id})
-                            interface.update({"admin_state": interface_pc_ep.admin_state})
-                            interface["aggr_id"] = interface_pc_ep.aggr_port_id if int(
-                                interface_pc_ep.aggr_port_id) else None
-                            if interface["aggr_id"]:
-                                interface.update({"aggr_id": interface_pc_ep.port_id})
-                                interface.update({"port_id": interface_pc_ep.aggr_port_id})
-                            else:
-                                interface.update({"port_id": interface_pc_ep.port_id})
-                                interface.update({"user_label": interface_pc_ep.usr_lbl})
-                                del interface["aggr_id"]
-                            self.interfaces.append(interface)
-
-                if "fabricEthTargetEp" in self._config.sdk_objects:
-                    target = [target for target in self._config.sdk_objects["fabricEthTargetEp"]
-                              if "eth-estc/" + self.fabric + "/pc-" + self.pc_id + "/eth-target" in target.dn]
-                    if target:
-                        if len(target) == 1:
-                            self.ethernet_target_endpoint.append({})
-                            self.ethernet_target_endpoint[0]["name"] = target[0].name
-                            self.ethernet_target_endpoint[0]["mac_address"] = target[0].mac_address
-
-                if "fabricEthVlanPc" in self._config.sdk_objects:
-                    vlans = [vlan for vlan in self._config.sdk_objects["fabricEthVlanPc"]
-                             if "eth-estc/" + self.fabric + "/pc-" + self.pc_id + "/" in vlan.ep_dn]
-                    if vlans:
-                        for vlan in vlans:
-                            if vlan.is_native in ["yes", "true"]:
-                                self.native_vlan = vlan.dn.split('/')[2].split('net-')[1]
-                            else:
-                                self.appliance_vlans.append(vlan.dn.split('/')[2].split('net-')[1])
-
-        elif self._config.load_from == "file":
-            if json_content is not None:
-                if not self.get_attributes_from_json(json_content=json_content):
-                    self.logger(level="error",
-                                message="Unable to get attributes from JSON content for " + self._CONFIG_NAME)
-
-                # We need to set all values that are not present in the config file to None
-                for element in self.interfaces:
-                    for value in ["aggr_id", "slot_id", "port_id", "admin_state", "user_label"]:
-                        if value not in element:
-                            element[value] = None
-
-                for element in self.ethernet_target_endpoint:
-                    for value in ["name", "mac_address"]:
-                        if value not in element:
-                            element[value] = None
-
-        self.clean_object()
-
-    def push_object(self, commit=True):
-        if commit:
-            self.logger(message="Pushing " + self._CONFIG_NAME + " configuration: " + str(self.name) + " - id: "
-                                + self.pc_id + " on fabric " + self.fabric)
-        else:
-            self.logger(message="Adding to the handle " + self._CONFIG_NAME + " configuration: " + str(self.name) +
-                                " - id: " + self.pc_id + " on fabric " + self.fabric + ", waiting for a commit")
-
-        # Creating Port-Channel object
-        parent_mo = "fabric/eth-estc/" + self.fabric.upper()
-        mo_fabric_eth_estc_pc = FabricEthEstcPc(parent_mo_or_dn=parent_mo, port_id=self.pc_id, descr=self.descr,
-                                                port_mode=self.vlan_port_mode, admin_speed=self.admin_speed,
-                                                name=self.name, prio=self.priority, pin_group_name=self.pin_group,
-                                                nw_ctrl_policy_name=self.network_control_policy,
-                                                flow_ctrl_policy=self.flow_control_policy, protocol=self.protocol,
-                                                lacp_policy_name=self.lacp_policy, admin_state=self.admin_state)
-        self._handle.add_mo(mo=mo_fabric_eth_estc_pc, modify_present=True)
-
-        if commit:
-            if self.commit(detail=self.pc_id) != True:
-                return False
-
-        # Adding interfaces to Port-Channel object
-        if self.interfaces:
-            for interface in self.interfaces:
-                if "aggr_id" in interface:
-                    mo_fabric_sub_group = FabricSubGroup(parent_mo_or_dn=mo_fabric_eth_estc_pc,
-                                                         aggr_port_id=interface["port_id"],
-                                                         slot_id=interface['slot_id'])
-                    FabricEthEstcPcEp(parent_mo_or_dn=mo_fabric_sub_group, port_id=interface['aggr_id'],
-                                      slot_id=interface['slot_id'], admin_state=interface['admin_state'])
-                    detail = interface['slot_id'] + "/" + interface['port_id'] + "/" + interface['aggr_id']
-
-                else:
-                    FabricEthEstcPcEp(parent_mo_or_dn=mo_fabric_eth_estc_pc, slot_id=interface['slot_id'],
-                                      port_id=interface['port_id'], usr_lbl=interface['user_label'],
-                                      admin_state=interface['admin_state'])
-                    detail = interface['slot_id'] + "/" + interface['port_id']
-
-                self._handle.add_mo(mo=mo_fabric_eth_estc_pc, modify_present=True)
-                if commit:
-                    self.commit(detail="interface:" + detail)
-
-        if self.ethernet_target_endpoint:
-            FabricEthTargetEp(parent_mo_or_dn=mo_fabric_eth_estc_pc, name=self.ethernet_target_endpoint[0]["name"],
-                              mac_address=self.ethernet_target_endpoint[0]["mac_address"])
-            self._handle.add_mo(mo=mo_fabric_eth_estc_pc, modify_present=True)
-
-            if commit:
-                self.commit(detail="ethernet_target_endpoint: " + self.ethernet_target_endpoint[0]["name"])
-
-        if self.native_vlan or self.appliance_vlans:
-            if self.appliance_vlans and isinstance(self.appliance_vlans, list):
-                for vlan in self.appliance_vlans:
-                    mo_fabric_vlan = FabricVlan(parent_mo_or_dn="fabric/eth-estc", name=vlan)
-                    FabricEthVlanPc(parent_mo_or_dn=mo_fabric_vlan, is_native="no", switch_id=self.fabric.upper(),
-                                    port_id=self.pc_id)
-                    self._handle.add_mo(mo=mo_fabric_vlan, modify_present=True)
-
-                    if commit:
-                        self.commit(detail="appliance_vlans: " + vlan)
-
-            if self.native_vlan:
-                mo_fabric_vlan = FabricVlan(parent_mo_or_dn="fabric/eth-estc", name=self.native_vlan)
-                FabricEthVlanPc(parent_mo_or_dn=mo_fabric_vlan, is_native="yes", switch_id=self.fabric.upper(),
-                                port_id=self.pc_id)
-                self._handle.add_mo(mo=mo_fabric_vlan, modify_present=True)
-
-                if commit:
-                    self.commit(detail="native_vlan: " + self.native_vlan)
-
-        return True
+from config.ucs.ucsm.servers import UcsSystemEthernetAdapterPolicy, UcsSystemThresholdPolicy
 
 
 class UcsSystemApplianceVlan(UcsSystemConfigObject):
     _CONFIG_NAME = "Appliance VLAN"
+    _CONFIG_SECTION_NAME = "appliance_vlans"
     _UCS_SDK_OBJECT_NAME = "fabricVlan"
 
     def __init__(self, parent=None, json_content=None, fabric_vlan=None):
-        UcsSystemConfigObject.__init__(self, parent=parent)
+        UcsSystemConfigObject.__init__(self, parent=parent, ucs_sdk_object=fabric_vlan)
         self.fabric = None
         self.native_vlan = None
         self.primary_vlan_name = None
@@ -787,7 +131,7 @@ class UcsSystemApplianceVlan(UcsSystemConfigObject):
             for organization in self.org_permissions:
                 complete_org_path = ""
                 for part in organization.split("/"):
-                    if "org-" not in part:
+                    if not part.startswith("org-"):
                         complete_org_path += "org-"
                     complete_org_path += part + "/"
                 complete_org_path = complete_org_path[:-1]  # Remove the trailing "/"
@@ -806,10 +150,11 @@ class UcsSystemApplianceVlan(UcsSystemConfigObject):
 
 class UcsSystemVlan(UcsSystemConfigObject):
     _CONFIG_NAME = "VLAN"
+    _CONFIG_SECTION_NAME = "vlans"
     _UCS_SDK_OBJECT_NAME = "fabricVlan"
 
     def __init__(self, parent=None, json_content=None, fabric_vlan=None):
-        UcsSystemConfigObject.__init__(self, parent=parent)
+        UcsSystemConfigObject.__init__(self, parent=parent, ucs_sdk_object=fabric_vlan)
         self.fabric = None
         self.multicast_policy_name = None
         self.native_vlan = None
@@ -817,6 +162,8 @@ class UcsSystemVlan(UcsSystemConfigObject):
         self.sharing_type = None
         self.id = None
         self.name = None
+        self.lan_uplink_ports = []
+        self.lan_port_channels = []
         self.org_permissions = []
 
         # Range purpose
@@ -840,6 +187,45 @@ class UcsSystemVlan(UcsSystemConfigObject):
                     if self.sharing_type in ["community", "isolated"]:
                         self.primary_vlan_name = fabric_vlan.pub_nw_name
 
+                if "fabricEthVlanPortEp" in self._config.sdk_objects:
+                    interfaces = [lan_uplink_port for lan_uplink_port in self._config.sdk_objects["fabricEthVlanPortEp"]
+                                  if "fabric/lan/net-" + self.name + "/" in lan_uplink_port.dn]
+                    if interfaces:
+                        for eth_vlan_port_ep in interfaces:
+                            lan_uplink_port = {}
+                            lan_uplink_port["aggr_id"] = None
+                            lan_uplink_port["slot_id"] = None
+                            lan_uplink_port["port_id"] = None
+                            lan_uplink_port["fabric"] = None
+                            lan_uplink_port["native_vlan"] = None
+
+                            lan_uplink_port.update({"fabric": eth_vlan_port_ep.switch_id})
+                            lan_uplink_port.update({"slot_id": eth_vlan_port_ep.slot_id})
+                            lan_uplink_port["aggr_id"] = eth_vlan_port_ep.aggr_port_id if \
+                                int(eth_vlan_port_ep.aggr_port_id) else None
+                            if lan_uplink_port["aggr_id"]:
+                                lan_uplink_port.update({"aggr_id": eth_vlan_port_ep.port_id})
+                                lan_uplink_port.update({"port_id": eth_vlan_port_ep.aggr_port_id})
+                            else:
+                                lan_uplink_port.update({"port_id": eth_vlan_port_ep.port_id})
+                            lan_uplink_port.update({"native_vlan": eth_vlan_port_ep.is_native})
+                            self.lan_uplink_ports.append(lan_uplink_port)
+
+                if "fabricEthVlanPc" in self._config.sdk_objects:
+                    port_channels = [port_channel for port_channel in self._config.sdk_objects["fabricEthVlanPc"]
+                                     if "fabric/lan/net-" + self.name + "/pc" in port_channel.dn]
+                    if port_channels:
+                        for eth_vlan_pc in port_channels:
+                            port_channel = {}
+                            port_channel["pc_id"] = None
+                            port_channel["fabric"] = None
+                            port_channel["native_vlan"] = None
+
+                            port_channel.update({"pc_id": eth_vlan_pc.port_id})
+                            port_channel.update({"fabric": eth_vlan_pc.switch_id})
+                            port_channel.update({"native_vlan": eth_vlan_pc.is_native})
+                            self.lan_port_channels.append(port_channel)
+
                 if "fabricVlanReq" in self._config.sdk_objects:
                     for vlan_req in self._config.sdk_objects["fabricVlanReq"]:
                         if vlan_req.name == self.name:
@@ -851,6 +237,17 @@ class UcsSystemVlan(UcsSystemConfigObject):
                 if not self.get_attributes_from_json(json_content=json_content):
                     self.logger(level="error",
                                 message="Unable to get attributes from JSON content for " + self._CONFIG_NAME)
+
+                # We need to set all values that are not present in the config file to None
+                for element in self.lan_uplink_ports:
+                    for value in ["aggr_id", "slot_id", "port_id", "fabric", "native_vlan"]:
+                        if value not in element:
+                            element[value] = None
+
+                for element in self.lan_port_channels:
+                    for value in ["pc_id", "fabric", "native_vlan"]:
+                        if value not in element:
+                            element[value] = None
 
         self.clean_object()
 
@@ -871,11 +268,35 @@ class UcsSystemVlan(UcsSystemConfigObject):
                                     default_net=self.native_vlan, pub_nw_name=self.primary_vlan_name)
         self._handle.add_mo(mo=mo_fabric_vlan, modify_present=True)
 
+        if self.lan_uplink_ports:
+            for port in self.lan_uplink_ports:
+                if port["fabric"]:
+                    port["fabric"] = port["fabric"].upper()
+                if port["aggr_id"]:
+                    mo_fabric_sub_group = FabricSubGroup(parent_mo_or_dn=mo_fabric_vlan,
+                                                         aggr_port_id=port["port_id"], slot_id=port["slot_id"])
+                    FabricEthVlanPortEp(parent_mo_or_dn=mo_fabric_sub_group, port_id=port["aggr_id"],
+                                        slot_id=port["slot_id"], switch_id=port["fabric"],
+                                        is_native=port["native_vlan"])
+                else:
+                    FabricEthVlanPortEp(parent_mo_or_dn=mo_fabric_vlan, port_id=port["port_id"],
+                                        slot_id=port["slot_id"], switch_id=port["fabric"],
+                                        is_native=port["native_vlan"])
+                self._handle.add_mo(mo=mo_fabric_vlan, modify_present=True)
+
+        if self.lan_port_channels:
+            for port_channel in self.lan_port_channels:
+                if port_channel["fabric"]:
+                    port_channel["fabric"] = port_channel["fabric"].upper()
+                FabricEthVlanPc(parent_mo_or_dn=mo_fabric_vlan, port_id=port_channel["pc_id"],
+                                switch_id=port_channel["fabric"], is_native=port_channel["native_vlan"])
+                self._handle.add_mo(mo=mo_fabric_vlan, modify_present=True)
+
         if self.org_permissions:
             for organization in self.org_permissions:
                 complete_org_path = ""
                 for part in organization.split("/"):
-                    if "org-" not in part:
+                    if not part.startswith("org-"):
                         complete_org_path += "org-"
                     complete_org_path += part + "/"
                 complete_org_path = complete_org_path[:-1]  # Remove the trailing "/"
@@ -894,9 +315,11 @@ class UcsSystemVlan(UcsSystemConfigObject):
 
 class UcsSystemLanPinGroup(UcsSystemConfigObject):
     _CONFIG_NAME = "LAN Pin Group"
+    _CONFIG_SECTION_NAME = "lan_pin_groups"
+    _UCS_SDK_OBJECT_NAME = "fabricLanPinGroup"
 
     def __init__(self, parent=None, json_content=None, fabric_lan_pin_group=None):
-        UcsSystemConfigObject.__init__(self, parent=parent)
+        UcsSystemConfigObject.__init__(self, parent=parent, ucs_sdk_object=fabric_lan_pin_group)
         self.name = None
         self.descr = None
         self.interfaces = []
@@ -920,8 +343,8 @@ class UcsSystemLanPinGroup(UcsSystemConfigObject):
                                 interface["slot_id"] = None
                                 interface["port_id"] = None
                                 if "aggr-port" in interface_ep_pc.ep_dn:
-                                    interface.update({"port_id": interface_ep_pc.ep_dn.split('/')[4].split('-')[4]})
-                                    interface.update({"aggr_id": interface_ep_pc.ep_dn.split('/')[3].split('-')[4]})
+                                    interface.update({"port_id": interface_ep_pc.ep_dn.split('/')[3].split('-')[4]})
+                                    interface.update({"aggr_id": interface_ep_pc.ep_dn.split('/')[4].split('-')[4]})
                                     interface.update({"slot_id": interface_ep_pc.ep_dn.split('/')[3].split('-')[1]})
                                 else:
                                     interface.update({"port_id": interface_ep_pc.ep_dn.split('/')[3].split('-')[4]})
@@ -964,26 +387,28 @@ class UcsSystemLanPinGroup(UcsSystemConfigObject):
 
         if self.interfaces:
             for interface in self.interfaces:
-                if interface["port_id"] and interface["pc_id"]:
+                if (interface["port_id"] is not None) and (interface["pc_id"] is not None):
                     self.logger(level="error", message="You can only choose a port_id & port_id or pc_id for an " +
                                                        "interface in LAN Pin Group : " + str(self.name))
                 else:
                     # Normal behaviour
-                    if interface["pc_id"]:
+                    interface_dn = None
+                    detail = ""
+                    if interface["pc_id"] is not None:
                         interface_dn = parent_mo + "/" + interface['fabric'] + "/pc-" + interface['pc_id']
                         detail = interface['fabric'] + "/pc-" + interface['pc_id']
 
-                    elif interface["port_id"] and interface["slot_id"]:
-                        if interface["aggr_id"]:
+                    elif (interface["port_id"] is not None) and (interface["slot_id"] is not None):
+                        if interface["aggr_id"] is not None:
                             # FIXME: usage of aggr_id as port identifier or sub-interface identifier ???
                             interface_dn = parent_mo + "/" + interface['fabric'] + "/slot-" + interface['slot_id'] +\
-                                           "-aggr-port-" + interface['aggr_id'] + "/phys-slot-" + interface['slot_id']\
-                                           + "-port-" + interface['port_id']
+                                "-aggr-port-" + interface['port_id'] + "/phys-slot-" + interface['slot_id']\
+                                + "-port-" + interface['aggr_id']
                             detail = interface['fabric'] + "/" + interface['slot_id'] + "/" + interface['port_id'] +\
-                                     "/" + interface['aggr_id']
+                                "/" + interface['aggr_id']
                         else:
                             interface_dn = parent_mo + "/" + interface['fabric'] + "/phys-slot-" + interface['slot_id']\
-                                           + "-port-" + interface['port_id']
+                                + "-port-" + interface['port_id']
                             detail = interface['fabric'] + "/" + interface['slot_id'] + "/" + interface['port_id']
 
                     FabricLanPinTarget(parent_mo_or_dn=mo_fabric_lan_pin_group, ep_dn=interface_dn,
@@ -991,17 +416,18 @@ class UcsSystemLanPinGroup(UcsSystemConfigObject):
                     self._handle.add_mo(mo=mo_fabric_lan_pin_group, modify_present=True)
 
                     if commit:
-                        self.commit(detail="interface:" + detail)
+                        self.commit(detail="interface: " + detail)
 
         return True
 
 
 class UcsSystemVlanGroup(UcsSystemConfigObject):
     _CONFIG_NAME = "VLAN Group"
+    _CONFIG_SECTION_NAME = "vlan_groups"
     _UCS_SDK_OBJECT_NAME = "fabricNetGroup"
 
     def __init__(self, parent=None, json_content=None, fabric_net_group=None):
-        UcsSystemConfigObject.__init__(self, parent=parent)
+        UcsSystemConfigObject.__init__(self, parent=parent, ucs_sdk_object=fabric_net_group)
         self.name = None
         self.vlans = []
         self.native_vlan = None
@@ -1020,6 +446,10 @@ class UcsSystemVlanGroup(UcsSystemConfigObject):
                     if vlans:
                         for vlan in vlans:
                             if vlan.name != self.native_vlan:
+                                if vlan.config_issues in ["named-vlan-unresolved"]:
+                                    self.logger(level="warning",
+                                                message="Unable to resolve referenced VLAN '" + str(vlan.name) +
+                                                        "' from VLAN Group '" + self.name + "'")
                                 self.vlans.append(vlan.name)
 
                 if "fabricEthVlanPortEp" in self._config.sdk_objects:
@@ -1042,7 +472,6 @@ class UcsSystemVlanGroup(UcsSystemConfigObject):
                                 lan_uplink_port.update({"port_id": eth_vlan_port_ep.aggr_port_id})
                             else:
                                 lan_uplink_port.update({"port_id": eth_vlan_port_ep.port_id})
-                                del lan_uplink_port["aggr_id"]
                             self.lan_uplink_ports.append(lan_uplink_port)
 
                 if "fabricEthVlanPc" in self._config.sdk_objects:
@@ -1147,7 +576,7 @@ class UcsSystemVlanGroup(UcsSystemConfigObject):
             for organization in self.org_permissions:
                 complete_org_path = ""
                 for part in organization.split("/"):
-                    if "org-" not in part:
+                    if not part.startswith("org-"):
                         complete_org_path += "org-"
                     complete_org_path += part + "/"
                 complete_org_path = complete_org_path[:-1]  # Remove the trailing "/"
@@ -1165,9 +594,10 @@ class UcsSystemVlanGroup(UcsSystemConfigObject):
 
 class UcsSystemQosSystemClass(UcsSystemConfigObject):
     _CONFIG_NAME = "QoS System Class"
+    _CONFIG_SECTION_NAME = "qos_system_class"
 
     def __init__(self, parent=None, json_content=None, qos_class=None):
-        UcsSystemConfigObject.__init__(self, parent=parent)
+        UcsSystemConfigObject.__init__(self, parent=parent, ucs_sdk_object=qos_class)
         self.priority = None
         self.state = None
         self.cos = None
@@ -1314,6 +744,7 @@ class UcsSystemQosSystemClass(UcsSystemConfigObject):
 
 class UcsSystemSlowDrainTimers(UcsSystemConfigObject):
     _CONFIG_NAME = "Slow Drain Timers"
+    _CONFIG_SECTION_NAME = "slow_drain_timers"
     _UCS_SDK_OBJECT_NAME = "qosclassSlowDrain"
 
     def __init__(self, parent=None, json_content=None):
@@ -1358,280 +789,29 @@ class UcsSystemSlowDrainTimers(UcsSystemConfigObject):
         return True
 
 
-class UcsSystemUnifiedStoragePort(UcsSystemFcoeStoragePort, UcsSystemAppliancePort):
-    _CONFIG_NAME = "Unified Storage Port"
-
-    def __init__(self, parent=None, json_content=None, ether_pio=None):
-        UcsSystemConfigObject.__init__(self, parent=parent)
-        self.fabric = None
-        self.slot_id = None
-        self.port_id = None
-        self.aggr_id = None
-        self.user_label = None
-        self.flow_control_policy = None
-        self.network_control_policy = None
-        self.admin_speed = None
-        self.admin_state = None
-        self.priority = None
-        self.pin_group = None
-        self.vlan_port_mode = None
-        self.appliance_vlans = []
-        self.native_vlan = None
-        self.ethernet_target_endpoint = []
-        self.vsan = None
-        self.vsan_fabric = None
-
-        if self._config.load_from == "live":
-            if ether_pio is not None and ether_pio.if_role == "fcoe-nas-storage":
-                self.fabric = ether_pio.switch_id
-                self.slot_id = ether_pio.slot_id
-                self.aggr_id = ether_pio.aggr_port_id if int(ether_pio.aggr_port_id) else None
-                if self.aggr_id:
-                    self.aggr_id = ether_pio.port_id
-                    self.port_id = ether_pio.aggr_port_id
-                else:
-                    self.port_id = ether_pio.port_id
-
-                # Appliance port
-                fabric_eth_estc_ep = None
-                if "fabricEthEstcEp" in self._config.sdk_objects:
-                    for port in self._config.sdk_objects["fabricEthEstcEp"]:
-                        if self.aggr_id and self.aggr_id == port.port_id and self.fabric == port.switch_id and \
-                                self.slot_id == port.slot_id and self.port_id == port.aggr_port_id:
-                            fabric_eth_estc_ep = port
-                        elif self.fabric == port.switch_id and self.slot_id == port.slot_id and \
-                                self.port_id == port.port_id:
-                            fabric_eth_estc_ep = port
-
-                if fabric_eth_estc_ep is not None:
-                    UcsSystemAppliancePort.__init__(self, parent=parent, fabric_eth_estc_ep=fabric_eth_estc_ep)
-                else:
-                    self.logger(level='error', message="Impossible to find fabricEthEstcEp object corresponding to " +
-                                                       "Unified Storage Port")
-
-                # FCoE Storage Port
-                fabric_fcoe_estc_ep = None
-                if "fabricFcoeEstcEp" in self._config.sdk_objects:
-                    for port in self._config.sdk_objects["fabricFcoeEstcEp"]:
-                        if self.aggr_id and self.aggr_id == port.port_id and self.fabric == port.switch_id and \
-                                self.slot_id == port.slot_id and self.port_id == port.aggr_port_id:
-                            fabric_fcoe_estc_ep = port
-                        elif self.fabric == port.switch_id and self.slot_id == port.slot_id and \
-                                self.port_id == port.port_id:
-                            fabric_fcoe_estc_ep = port
-
-                if fabric_fcoe_estc_ep is not None:
-                    UcsSystemFcoeStoragePort.__init__(self, parent=parent, fabric_fcoe_estc_ep=fabric_fcoe_estc_ep)
-                else:
-                    self.logger(level='error', message="Impossible to find fabricFcoeEstcEp object corresponding to " +
-                                                       "Unified Storage Port")
-
-        elif self._config.load_from == "file":
-            if json_content is not None:
-                if not self.get_attributes_from_json(json_content=json_content):
-                    self.logger(level="error",
-                                message="Unable to get attributes from JSON content for " + self._CONFIG_NAME)
-
-                # We need to set all values that are not present in the config file to None
-                for element in self.ethernet_target_endpoint:
-                    for value in ["name", "mac_address"]:
-                        if value not in element:
-                            element[value] = None
-
-        self.clean_object()
-
-    def push_object(self, commit=True):
-        if commit:
-            self.logger(message="Pushing " + self._CONFIG_NAME + " configuration: " + self.fabric + " " + self.slot_id +
-                                '/' + self.port_id)
-        else:
-            self.logger(message="Adding to the handle " + self._CONFIG_NAME + " configuration: " + self.fabric + " " +
-                                self.slot_id + '/' + self.port_id + ", waiting for a commit")
-
-        UcsSystemFcoeStoragePort.push_object(self=self, commit=commit)
-        UcsSystemAppliancePort.push_object(self=self, commit=commit)
-
-        return True
-
-
-class UcsSystemUnifiedUplinkPort(UcsSystemLanUplinkPort, UcsSystemFcoeUplinkPort):
-    _CONFIG_NAME = "Unified Uplink Port"
-
-    def __init__(self, parent=None, json_content=None, ether_pio=None):
-        UcsSystemConfigObject.__init__(self, parent=parent)
-        self.fabric = None
-        self.slot_id = None
-        self.port_id = None
-        self.aggr_id = None
-        self.user_label = None
-        self.flow_control_policy = None
-        self.link_profile = None
-        self.admin_speed = None
-        self.admin_state = None
-        self.fec = None
-
-        if self._config.load_from == "live":
-            if ether_pio is not None and ether_pio.if_role == "network-fcoe-uplink":
-                self.fabric = ether_pio.switch_id
-                self.slot_id = ether_pio.slot_id
-                self.aggr_id = ether_pio.aggr_port_id if int(ether_pio.aggr_port_id) else None
-                if self.aggr_id:
-                    self.aggr_id = ether_pio.port_id
-                    self.port_id = ether_pio.aggr_port_id
-                else:
-                    self.port_id = ether_pio.port_id
-            else:
-                return None
-
-            # Lan Uplink port
-            if "fabricEthLanEp" in self._config.sdk_objects:
-                fabric_eth_lan_ep = None
-                for port in self._config.sdk_objects["fabricEthLanEp"]:
-                    if self.aggr_id and self.aggr_id == port.port_id and self.fabric == port.switch_id \
-                            and self.slot_id == port.slot_id and self.port_id == port.aggr_port_id:
-                        fabric_eth_lan_ep = port
-                    elif self.fabric == port.switch_id and self.slot_id == port.slot_id \
-                            and self.port_id == port.port_id:
-                        fabric_eth_lan_ep = port
-
-            if fabric_eth_lan_ep is not None:
-                UcsSystemLanUplinkPort.__init__(self, parent=parent, fabric_eth_lan_ep=fabric_eth_lan_ep)
-            else:
-                # Trying to see if LAN Uplink port is part of a LAN Port-Channel
-                if "fabricEthLanPcEp" in self._config.sdk_objects:
-                    fabric_eth_lan_pc_ep = None
-                    for port in self._config.sdk_objects["fabricEthLanPcEp"]:
-                        if self.aggr_id and self.aggr_id == port.port_id and self.fabric == port.switch_id \
-                                and self.slot_id == port.slot_id and self.port_id == port.aggr_port_id:
-                            fabric_eth_lan_pc_ep = port
-                        elif self.fabric == port.switch_id and self.slot_id == port.slot_id \
-                                and self.port_id == port.port_id:
-                            fabric_eth_lan_pc_ep = port
-
-                if fabric_eth_lan_pc_ep is None:
-                    # We only warn if we have found neither a corresponding fabricEthLanEp nor a fabricEthLanPcEp
-                    self.logger('error', "Impossible to find fabricEthLanEp")
-
-                # Otherwise we simply ignore the port if it is part of a LAN Port-Channel, since its extra attributes
-                # will be fetched in the appropriate Port-Channel section
-
-            # FCoE Uplink Port
-            if "fabricFcoeSanEp" in self._config.sdk_objects:
-                fabric_fcoe_san_ep = None
-                for port in self._config.sdk_objects["fabricFcoeSanEp"]:
-                    if self.aggr_id and self.aggr_id == port.port_id and self.fabric == port.switch_id \
-                            and self.slot_id == port.slot_id and self.port_id == port.aggr_port_id:
-                        fabric_fcoe_san_ep = port
-                    elif self.fabric == port.switch_id and self.slot_id == port.slot_id \
-                            and self.port_id == port.port_id:
-                        fabric_fcoe_san_ep = port
-
-            if fabric_fcoe_san_ep is not None:
-                UcsSystemFcoeUplinkPort.__init__(self, parent=parent, fabric_fcoe_san_ep=fabric_fcoe_san_ep)
-            else:
-                # Trying to see if FCoE Uplink port is part of a FCoE Port-Channel
-                if "fabricFcoeSanPcEp" in self._config.sdk_objects:
-                    fabric_fcoe_san_pc_ep = None
-                    for port in self._config.sdk_objects["fabricFcoeSanPcEp"]:
-                        if self.aggr_id and self.aggr_id == port.port_id and self.fabric == port.switch_id \
-                                and self.slot_id == port.slot_id and self.port_id == port.aggr_port_id:
-                            fabric_fcoe_san_pc_ep = port
-                        elif self.fabric == port.switch_id and self.slot_id == port.slot_id \
-                                and self.port_id == port.port_id:
-                            fabric_fcoe_san_pc_ep = port
-
-                if fabric_fcoe_san_pc_ep is None:
-                    # We only warn if we have found neither a corresponding fabricFcoeSanEp nor a fabricFcoeSanPcEp
-                    self.logger('error', "Impossible to find fabricFcoeSanEp")
-
-                # Otherwise we simply ignore the port if it is part of a FCoE Port-Channel, since its extra attributes
-                # will be fetched in the appropriate Port-Channel section
-
-        elif self._config.load_from == "file":
-            if json_content is not None:
-                if not self.get_attributes_from_json(json_content=json_content):
-                    self.logger(level="error",
-                                message="Unable to get attributes from JSON content for " + self._CONFIG_NAME)
-
-        self.clean_object()
-
-    def push_object(self, commit=True):
-        if commit:
-            self.logger(message="Pushing " + self._CONFIG_NAME + " configuration: " + self.fabric + " " + self.slot_id +
-                                '/' + self.port_id)
-        else:
-            self.logger(message="Adding to the handle " + self._CONFIG_NAME + " configuration: " + self.fabric + " " +
-                                self.slot_id + '/' + self.port_id + ", waiting for a commit")
-
-        UcsSystemFcoeUplinkPort.push_object(self=self, commit=commit)
-        UcsSystemLanUplinkPort.push_object(self=self, commit=commit)
-
-        return True
-
-
-class UcsSystemBreakoutPort(UcsSystemConfigObject):
-    _CONFIG_NAME = "Breakout Port"
-    _UCS_SDK_OBJECT_NAME = "fabricBreakout"
-
-    def __init__(self, parent=None, json_content=None, fabric_breakout=None):
-        UcsSystemConfigObject.__init__(self, parent=parent)
-        self.fabric = None
-        self.slot_id = None
-        self.port_id = None
-        self.breakout_type = None
-
-        if self._config.load_from == "live":
-            if fabric_breakout is not None:
-                self.fabric = fabric_breakout.dn.split('/')[2]
-                self.slot_id = fabric_breakout.slot_id
-                self.port_id = fabric_breakout.port_id
-                self.breakout_type = fabric_breakout.breakout_type
-
-        elif self._config.load_from == "file":
-            if json_content is not None:
-                if not self.get_attributes_from_json(json_content=json_content):
-                    self.logger(level="error",
-                                message="Unable to get attributes from JSON content for " + self._CONFIG_NAME)
-
-        self.clean_object()
-
-    def push_object(self, commit=True):
-        if commit:
-            self.logger(message="Pushing " + self._CONFIG_NAME + " configuration: " + self.fabric + " " + self.slot_id +
-                                '/' + self.port_id)
-        else:
-            self.logger(message="Adding to the handle " + self._CONFIG_NAME + " configuration: " + self.fabric + " " +
-                                self.slot_id + '/' + self.port_id + ", waiting for a commit")
-
-        parent_mo = "fabric/Cabling/" + self.fabric.upper()
-        mo_fabric_breakout = FabricBreakout(parent_mo_or_dn=parent_mo, port_id=self.port_id, slot_id=self.slot_id,
-                                            breakout_type=self.breakout_type)
-
-        self._handle.add_mo(mo=mo_fabric_breakout, modify_present=True)
-
-        if commit:
-            if self.commit(detail=self.fabric + " " + self.slot_id + '/' + self.port_id) != True:
-                return False
-        return True
-
-
 class UcsSystemIpPool(UcsSystemConfigObject):
     _CONFIG_NAME = "IP Pool"
+    _CONFIG_SECTION_NAME = "ip_pools"
     _UCS_SDK_OBJECT_NAME = "ippoolPool"
 
     def __init__(self, parent=None, json_content=None, ippool_pool=None):
-        UcsSystemConfigObject.__init__(self, parent=parent)
+        UcsSystemConfigObject.__init__(self, parent=parent, ucs_sdk_object=ippool_pool)
         self.descr = None
         self.name = None
         self.order = None
         self.ip_blocks = []
         self.ipv6_blocks = []
+        self.operational_state = {}
 
         if self._config.load_from == "live":
             if ippool_pool is not None:
                 self.name = ippool_pool.name
                 self.descr = ippool_pool.descr
                 self.order = ippool_pool.assignment_order
+                self.operational_state = {
+                    "size": ippool_pool.size,
+                    "assigned": ippool_pool.assigned
+                }
 
                 if "ippoolBlock" in self._parent._config.sdk_objects:
                     for pool_block in self._config.sdk_objects["ippoolBlock"]:
@@ -1676,6 +856,10 @@ class UcsSystemIpPool(UcsSystemConfigObject):
                     for value in ["gateway", "primary_dns", "secondary_dns", "prefix", "to", "from", "size"]:
                         if value not in element:
                             element[value] = None
+
+                for value in ["assigned", "size"]:
+                    if value not in self.operational_state:
+                        self.operational_state[value] = None
 
         self.clean_object()
 
@@ -1748,7 +932,7 @@ class UcsSystemIpPool(UcsSystemConfigObject):
                                     return False
 
                             else:
-                                # The print value of commit is True so we log the error if it is not the expected error
+                                # The print value of commit is True, so we log the error if it is not the expected error
                                 self.logger(level="error", message="Error in configuring " +
                                                                    self._CONFIG_NAME + ": " + err.error_descr)
                             return False
@@ -1801,7 +985,7 @@ class UcsSystemIpPool(UcsSystemConfigObject):
                                     return False
 
                             else:
-                                # The print value of commit is True so we log the error if it is not the expected error
+                                # The print value of commit is True, so we log the error if it is not the expected error
                                 self.logger(level="error", message="Error in configuring " +
                                                                    self._CONFIG_NAME + ": " + err.error_descr)
                             return False
@@ -1811,20 +995,26 @@ class UcsSystemIpPool(UcsSystemConfigObject):
 
 class UcsSystemMacPool(UcsSystemConfigObject):
     _CONFIG_NAME = "MAC Pool"
+    _CONFIG_SECTION_NAME = "mac_pools"
     _UCS_SDK_OBJECT_NAME = "macpoolPool"
 
     def __init__(self, parent=None, json_content=None, macpool_pool=None):
-        UcsSystemConfigObject.__init__(self, parent=parent)
+        UcsSystemConfigObject.__init__(self, parent=parent, ucs_sdk_object=macpool_pool)
         self.descr = None
         self.name = None
         self.order = None
         self.mac_blocks = []
+        self.operational_state = {}
 
         if self._config.load_from == "live":
             if macpool_pool is not None:
                 self.name = macpool_pool.name
                 self.descr = macpool_pool.descr
                 self.order = macpool_pool.assignment_order
+                self.operational_state = {
+                    "size": macpool_pool.size,
+                    "assigned": macpool_pool.assigned
+                }
 
                 if "macpoolBlock" in self._parent._config.sdk_objects:
                     for pool_block in self._config.sdk_objects["macpoolBlock"]:
@@ -1849,6 +1039,10 @@ class UcsSystemMacPool(UcsSystemConfigObject):
                                   ]:
                         if value not in element:
                             element[value] = None
+
+                for value in ["assigned", "size"]:
+                    if value not in self.operational_state:
+                        self.operational_state[value] = None
 
         self.clean_object()
 
@@ -1892,10 +1086,11 @@ class UcsSystemMacPool(UcsSystemConfigObject):
 
 class UcsSystemVnicTemplate(UcsSystemConfigObject):
     _CONFIG_NAME = "vNIC Template"
+    _CONFIG_SECTION_NAME = "vnic_templates"
     _UCS_SDK_OBJECT_NAME = "vnicLanConnTempl"
 
     def __init__(self, parent=None, json_content=None, vnic_lan_conn_templ=None):
-        UcsSystemConfigObject.__init__(self, parent=parent)
+        UcsSystemConfigObject.__init__(self, parent=parent, ucs_sdk_object=vnic_lan_conn_templ)
         self.name = None
         self.fabric = None
         self.descr = None
@@ -1906,7 +1101,7 @@ class UcsSystemVnicTemplate(UcsSystemConfigObject):
         self.cdn_name = None
         self.target = []
         self.mtu = None
-        self.mac_pool = None
+        self.mac_address_pool = None
         self.template_type = None
         self.pin_group = None
         self.stats_threshold_policy = None
@@ -1916,6 +1111,7 @@ class UcsSystemVnicTemplate(UcsSystemConfigObject):
         self.vlan_native = None
         self.vlans = []
         self.vlan_groups = []
+        self.operational_state = None
 
         if self._config.load_from == "live":
             if vnic_lan_conn_templ is not None:
@@ -1929,31 +1125,56 @@ class UcsSystemVnicTemplate(UcsSystemConfigObject):
                 self.cdn_name = vnic_lan_conn_templ.admin_cdn_name
                 self.target = vnic_lan_conn_templ.target.split(',')
                 self.mtu = vnic_lan_conn_templ.mtu
-                self.mac_pool = vnic_lan_conn_templ.ident_pool_name
+                self.mac_address_pool = vnic_lan_conn_templ.ident_pool_name
                 self.template_type = vnic_lan_conn_templ.templ_type
                 self.pin_group = vnic_lan_conn_templ.pin_to_group_name
                 self.stats_threshold_policy = vnic_lan_conn_templ.stats_policy_name
                 self.network_control_policy = vnic_lan_conn_templ.nw_ctrl_policy_name
+                self.operational_state = {}
 
                 # Looking for the connection_policy
                 if "vnicDynamicConPolicyRef" in self._parent._config.sdk_objects and not self.connection_policy:
                     for policy in self._config.sdk_objects["vnicDynamicConPolicyRef"]:
                         if self._parent._dn:
-                            if self._parent._dn + "/lan-conn-templ" + self.name in policy.dn:
+                            if self._parent._dn + "/lan-conn-templ-" + self.name + "/" in policy.dn:
                                 self.connection_policy = "dynamic-vnic"
                                 self.connection_policy_name = policy.con_policy_name
+                            self.operational_state.update(
+                                self.get_operational_state(
+                                    policy_dn=policy.oper_con_policy_name,
+                                    separator="/dynamic-con-",
+                                    policy_name="connection_policy"
+                                )
+                            )
+                            break
                 if "vnicUsnicConPolicyRef" in self._parent._config.sdk_objects and not self.connection_policy:
                     for policy in self._config.sdk_objects["vnicUsnicConPolicyRef"]:
                         if self._parent._dn:
-                            if self._parent._dn + "/lan-conn-templ" + self.name in policy.dn:
-                                self.connection_policy = "usNIC"
+                            if self._parent._dn + "/lan-conn-templ-" + self.name + "/" in policy.dn:
+                                self.connection_policy = "usnic"
                                 self.connection_policy_name = policy.con_policy_name
+                            self.operational_state.update(
+                                self.get_operational_state(
+                                    policy_dn=policy.oper_con_policy_name,
+                                    separator="/usnic-con-",
+                                    policy_name="connection_policy"
+                                )
+                            )
+                            break
                 if "vnicVmqConPolicyRef" in self._parent._config.sdk_objects and not self.connection_policy:
                     for policy in self._config.sdk_objects["vnicVmqConPolicyRef"]:
                         if self._parent._dn:
-                            if self._parent._dn + "/lan-conn-templ" + self.name in policy.dn:
-                                self.connection_policy = "VMQ"
+                            if self._parent._dn + "/lan-conn-templ-" + self.name + "/" in policy.dn:
+                                self.connection_policy = "vmq"
                                 self.connection_policy_name = policy.con_policy_name
+                            self.operational_state.update(
+                                self.get_operational_state(
+                                    policy_dn=policy.oper_con_policy_name,
+                                    separator="/vmq-con-",
+                                    policy_name="connection_policy"
+                                )
+                            )
+                            break
 
                 if "vnicEtherIf" in self._config.sdk_objects:
                     if self._parent._dn:
@@ -1973,11 +1194,52 @@ class UcsSystemVnicTemplate(UcsSystemConfigObject):
                             for vlan in vlans:
                                 self.vlan_groups.append(vlan.name)
 
+                # Fetching the operational state of the referenced policies
+                self.operational_state.update(
+                    self.get_operational_state(
+                        policy_dn=vnic_lan_conn_templ.oper_nw_ctrl_policy_name,
+                        separator="/nwctrl-",
+                        policy_name="network_control_policy"
+                    )
+                )
+                self.operational_state.update(
+                    self.get_operational_state(
+                        policy_dn=vnic_lan_conn_templ.oper_peer_redundancy_templ_name,
+                        separator="/lan-conn-templ-",
+                        policy_name="peer_redundancy_template"
+                    )
+                )
+                self.operational_state.update(
+                    self.get_operational_state(
+                        policy_dn=vnic_lan_conn_templ.oper_qos_policy_name,
+                        separator="/ep-qos-",
+                        policy_name="qos_policy"
+                    )
+                )
+                self.operational_state.update(
+                    self.get_operational_state(
+                        policy_dn=vnic_lan_conn_templ.oper_stats_policy_name,
+                        separator="/thr-policy-",
+                        policy_name="stats_threshold_policy"
+                    )
+                )
+
         elif self._config.load_from == "file":
             if json_content is not None:
                 if not self.get_attributes_from_json(json_content=json_content):
                     self.logger(level="error",
                                 message="Unable to get attributes from JSON content for " + self._CONFIG_NAME)
+
+                for policy in ["mac_address_pool", "network_control_policy", "peer_redundancy_template", "qos_policy",
+                               "stats_threshold_policy"]:
+                    if not self.operational_state:
+                        self.operational_state = {}
+                    if policy not in self.operational_state:
+                        self.operational_state[policy] = None
+                    else:
+                        for value in ["name", "org"]:
+                            if value not in self.operational_state[policy]:
+                                self.operational_state[policy][value] = None
 
         self.clean_object()
 
@@ -2012,7 +1274,7 @@ class UcsSystemVnicTemplate(UcsSystemConfigObject):
                                                  qos_policy_name=self.qos_policy,
                                                  peer_redundancy_templ_name=self.peer_redundancy_template,
                                                  templ_type=self.template_type, mtu=self.mtu,
-                                                 ident_pool_name=self.mac_pool,
+                                                 ident_pool_name=self.mac_address_pool,
                                                  pin_to_group_name=self.pin_group,
                                                  stats_policy_name=self.stats_threshold_policy)
 
@@ -2052,10 +1314,11 @@ class UcsSystemVnicTemplate(UcsSystemConfigObject):
 
 class UcsSystemQosPolicy(UcsSystemConfigObject):
     _CONFIG_NAME = "QoS Policy"
+    _CONFIG_SECTION_NAME = "qos_policies"
     _UCS_SDK_OBJECT_NAME = "epqosDefinition"
 
     def __init__(self, parent=None, json_content=None, epqos_definition=None):
-        UcsSystemConfigObject.__init__(self, parent=parent)
+        UcsSystemConfigObject.__init__(self, parent=parent, ucs_sdk_object=epqos_definition)
         self.name = None
         self.descr = None
         self.rate = None
@@ -2096,7 +1359,7 @@ class UcsSystemQosPolicy(UcsSystemConfigObject):
             parent_mo = self._parent._dn
         else:
             self.logger(level="error",
-                        message="Impossible to find the parent dn of " + self._CONFIG_NAME + " : " + self.policy_name)
+                        message="Impossible to find the parent dn of " + self._CONFIG_NAME + " : " + self.name)
             return False
 
         mo_epqos_definition = EpqosDefinition(parent_mo_or_dn=parent_mo, descr=self.descr, name=self.name)
@@ -2111,9 +1374,11 @@ class UcsSystemQosPolicy(UcsSystemConfigObject):
 
 class UcsSystemUdldLinkPolicy(UcsSystemConfigObject):
     _CONFIG_NAME = "UDLD Link Policy"
+    _CONFIG_SECTION_NAME = "udld_link_policies"
+    _UCS_SDK_OBJECT_NAME = "fabricUdldLinkPolicy"
 
     def __init__(self, parent=None, json_content=None, fabric_udld_link_policy=None):
-        UcsSystemConfigObject.__init__(self, parent=parent)
+        UcsSystemConfigObject.__init__(self, parent=parent, ucs_sdk_object=fabric_udld_link_policy)
         self.name = None
         self.mode = None
         self.admin_state = None
@@ -2152,9 +1417,11 @@ class UcsSystemUdldLinkPolicy(UcsSystemConfigObject):
 
 class UcsSystemLinkProfile(UcsSystemConfigObject):
     _CONFIG_NAME = "Link Profile"
+    _CONFIG_SECTION_NAME = "link_profiles"
+    _UCS_SDK_OBJECT_NAME = "fabricEthLinkProfile"
 
     def __init__(self, parent=None, json_content=None, fabric_eth_link_profile=None):
-        UcsSystemConfigObject.__init__(self, parent=parent)
+        UcsSystemConfigObject.__init__(self, parent=parent, ucs_sdk_object=fabric_eth_link_profile)
         self.name = None
         self.udld_link_policy = None
 
@@ -2190,71 +1457,11 @@ class UcsSystemLinkProfile(UcsSystemConfigObject):
         return True
 
 
-class UcsSystemApplianceNetworkControlPolicy(UcsSystemConfigObject):
-    _CONFIG_NAME = "Appliance Network Control Policy"
-
-    def __init__(self, parent=None, json_content=None, nwctrl_definition=None):
-        UcsSystemConfigObject.__init__(self, parent=parent)
-        self.name = None
-        self.cdp_admin_state = None
-        self.action_on_uplink_fail = None
-        self.mac_register_mode = None
-        self.descr = None
-        self.mac_security_forge = None
-        self.lldp_receive = None
-        self.lldp_transmit = None
-
-        if self._config.load_from == "live":
-            if nwctrl_definition is not None:
-                self.name = nwctrl_definition.name
-                self.cdp_admin_state = nwctrl_definition.cdp
-                self.action_on_uplink_fail = nwctrl_definition.uplink_fail_action
-                self.mac_register_mode = nwctrl_definition.mac_register_mode
-                self.descr = nwctrl_definition.descr
-                self.lldp_receive = nwctrl_definition.lldp_receive
-                self.lldp_transmit = nwctrl_definition.lldp_transmit
-
-                if "dpsecMac" in self._config.sdk_objects:
-                    for dpsec_mac in self._config.sdk_objects["dpsecMac"]:
-                        if "fabric/eth-estc/nwctrl-" + self.name in dpsec_mac.dn:
-                            self.mac_security_forge = dpsec_mac.forge
-
-        elif self._config.load_from == "file":
-            if json_content is not None:
-                if not self.get_attributes_from_json(json_content=json_content):
-                    self.logger(level="error",
-                                message="Unable to get attributes from JSON content for " + self._CONFIG_NAME)
-
-        self.clean_object()
-
-    def push_object(self, commit=True):
-        if commit:
-            self.logger(message="Pushing " + self._CONFIG_NAME + " configuration: " + str(self.name))
-        else:
-            self.logger(message="Adding to the handle " + self._CONFIG_NAME + " configuration: " + str(self.name) +
-                                ", waiting for a commit")
-
-        parent_mo = "fabric/eth-estc"
-        mo_nwctrl_definition = NwctrlDefinition(parent_mo_or_dn=parent_mo, cdp=self.cdp_admin_state,
-                                                lldp_receive=self.lldp_receive, name=self.name,
-                                                uplink_fail_action=self.action_on_uplink_fail,
-                                                lddp_transmit=self.lldp_transmit, descr=self.descr,
-                                                mac_register_mode=self.mac_register_mode)
-        DpsecMac(parent_mo_or_dn=mo_nwctrl_definition, descr=self.descr, name="", forge=self.mac_security_forge)
-
-        self._handle.add_mo(mo=mo_nwctrl_definition, modify_present=True)
-        if commit:
-            if self.commit(detail=self.name) != True:
-                return False
-        return True
-
-
-class UcsSystemNetworkControlPolicy(UcsSystemConfigObject):
-    _CONFIG_NAME = "Network Control Policy"
+class UcsSystemGenericNetworkControlPolicy(UcsSystemConfigObject):
     _UCS_SDK_OBJECT_NAME = "nwctrlDefinition"
 
     def __init__(self, parent=None, json_content=None, nwctrl_definition=None):
-        UcsSystemConfigObject.__init__(self, parent=parent)
+        UcsSystemConfigObject.__init__(self, parent=parent, ucs_sdk_object=nwctrl_definition)
         self.name = None
         self.cdp_admin_state = None
         self.action_on_uplink_fail = None
@@ -2274,10 +1481,20 @@ class UcsSystemNetworkControlPolicy(UcsSystemConfigObject):
                 self.lldp_receive = nwctrl_definition.lldp_receive
                 self.lldp_transmit = nwctrl_definition.lldp_transmit
 
-                if "dpsecMac" in self._parent._config.sdk_objects:
+                # This check is for Network Control Policy
+                if self._parent.__class__.__name__ == "UcsSystemOrg":
+                    if "dpsecMac" in self._parent._config.sdk_objects:
+                        for dpsec_mac in self._config.sdk_objects["dpsecMac"]:
+                            if self._parent._dn + "/nwctrl-" + self.name + "/" in dpsec_mac.dn:
+                                self.mac_security_forge = dpsec_mac.forge
+                                break
+
+                # This check is for Appliance Network Control Policy
+                elif "dpsecMac" in self._config.sdk_objects:
                     for dpsec_mac in self._config.sdk_objects["dpsecMac"]:
-                        if self._parent._dn + "/nwctrl-" + self.name in dpsec_mac.dn:
+                        if "fabric/eth-estc/nwctrl-" + self.name in dpsec_mac.dn:
                             self.mac_security_forge = dpsec_mac.forge
+                            break
 
         elif self._config.load_from == "file":
             if json_content is not None:
@@ -2294,7 +1511,11 @@ class UcsSystemNetworkControlPolicy(UcsSystemConfigObject):
             self.logger(message="Adding to the handle " + self._CONFIG_NAME + " configuration: " + str(self.name) +
                                 ", waiting for a commit")
 
-        if hasattr(self._parent, '_dn'):
+        if self._parent.__class__.__name__ != "UcsSystemOrg":
+            # This is for Appliance Network Control Policy
+            parent_mo = "fabric/eth-estc"
+        elif hasattr(self._parent, '_dn'):
+            # This is for Network Control Policy
             parent_mo = self._parent._dn
         else:
             self.logger(level="error",
@@ -2315,12 +1536,23 @@ class UcsSystemNetworkControlPolicy(UcsSystemConfigObject):
         return True
 
 
+class UcsSystemApplianceNetworkControlPolicy(UcsSystemGenericNetworkControlPolicy):
+    _CONFIG_NAME = "Appliance Network Control Policy"
+    _CONFIG_SECTION_NAME = "appliance_network_control_policies"
+
+
+class UcsSystemNetworkControlPolicy(UcsSystemGenericNetworkControlPolicy):
+    _CONFIG_NAME = "Network Control Policy"
+    _CONFIG_SECTION_NAME = "network_control_policies"
+
+
 class UcsSystemDefaultVnicBehavior(UcsSystemConfigObject):
     _CONFIG_NAME = "Default vNIC Behavior"
+    _CONFIG_SECTION_NAME = "default_vnic_behavior"
     _UCS_SDK_OBJECT_NAME = "vnicVnicBehPolicy"
 
     def __init__(self, parent=None, json_content=None, vnic_vnic_beh_policy=None):
-        UcsSystemConfigObject.__init__(self, parent=parent)
+        UcsSystemConfigObject.__init__(self, parent=parent, ucs_sdk_object=vnic_vnic_beh_policy)
         self.action = None
         self.vnic_template = None
 
@@ -2362,11 +1594,12 @@ class UcsSystemDefaultVnicBehavior(UcsSystemConfigObject):
 
 class UcsSystemFlowControlPolicy(UcsSystemConfigObject):
     _CONFIG_NAME = "Flow Control Policy"
+    _CONFIG_SECTION_NAME = "flow_control_policies"
     _UCS_SDK_OBJECT_NAME = "flowctrlItem"
     # Note: This policy is in orgs in UCS Manager but does not use orgs in its DN.
 
     def __init__(self, parent=None, json_content=None, flowctrl_item=None):
-        UcsSystemConfigObject.__init__(self, parent=parent)
+        UcsSystemConfigObject.__init__(self, parent=parent, ucs_sdk_object=flowctrl_item)
         self.name = None
         self.priority = None
         self.receive = None
@@ -2407,14 +1640,16 @@ class UcsSystemFlowControlPolicy(UcsSystemConfigObject):
 
 class UcsSystemMulticastPolicy(UcsSystemConfigObject):
     _CONFIG_NAME = "Multicast Policy"
+    _CONFIG_SECTION_NAME = "multicast_policies"
     _UCS_SDK_OBJECT_NAME = "fabricMulticastPolicy"
 
     def __init__(self, parent=None, json_content=None, fabric_multicast_policy=None):
-        UcsSystemConfigObject.__init__(self, parent=parent)
+        UcsSystemConfigObject.__init__(self, parent=parent, ucs_sdk_object=fabric_multicast_policy)
         self.name = None
         self.descr = None
         self.igmp_snooping_state = None
         self.igmp_snooping_querier_state = None
+        self.igmp_source_ip_proxy_state = None
         self.fi_a_querier_ip_address = None
         self.fi_b_querier_ip_address = None
 
@@ -2424,6 +1659,7 @@ class UcsSystemMulticastPolicy(UcsSystemConfigObject):
                 self.descr = fabric_multicast_policy.descr
                 self.igmp_snooping_state = fabric_multicast_policy.snooping_state
                 self.igmp_snooping_querier_state = fabric_multicast_policy.querier_state
+                self.igmp_source_ip_proxy_state = fabric_multicast_policy.source_ip_proxy_state
 
                 if self.igmp_snooping_querier_state == "enabled":
                     self.fi_a_querier_ip_address = fabric_multicast_policy.querier_ip_addr
@@ -2454,6 +1690,7 @@ class UcsSystemMulticastPolicy(UcsSystemConfigObject):
         mo_fabric_multicast_policy = FabricMulticastPolicy(parent_mo_or_dn=parent_mo, name=self.name, descr=self.descr,
                                                            querier_state=self.igmp_snooping_querier_state,
                                                            snooping_state=self.igmp_snooping_state,
+                                                           source_ip_proxy_state=self.igmp_source_ip_proxy_state,
                                                            querier_ip_addr_peer=self.fi_b_querier_ip_address,
                                                            querier_ip_addr=self.fi_a_querier_ip_address)
 
@@ -2466,10 +1703,11 @@ class UcsSystemMulticastPolicy(UcsSystemConfigObject):
 
 class UcsSystemLinkProtocolPolicy(UcsSystemConfigObject):
     _CONFIG_NAME = "Link Protocol Policy"
+    _CONFIG_SECTION_NAME = "link_protocol_policy"
     _UCS_SDK_OBJECT_NAME = "fabricUdldPolicy"
 
     def __init__(self, parent=None, json_content=None, fabric_udld_policy=None):
-        UcsSystemConfigObject.__init__(self, parent=parent)
+        UcsSystemConfigObject.__init__(self, parent=parent, ucs_sdk_object=fabric_udld_policy)
         self.message_interval = None
         self.recovery_action = None
 
@@ -2490,7 +1728,7 @@ class UcsSystemLinkProtocolPolicy(UcsSystemConfigObject):
         if commit:
             self.logger(message="Pushing " + self._CONFIG_NAME + " configuration")
         else:
-            self.logger(message="Adding to the handle " + self._CONFIG_NAME + " configuration: " + str(self.name) +
+            self.logger(message="Adding to the handle " + self._CONFIG_NAME + " configuration" +
                                 ", waiting for a commit")
 
         if hasattr(self._parent, '_dn'):
@@ -2511,10 +1749,11 @@ class UcsSystemLinkProtocolPolicy(UcsSystemConfigObject):
 
 class UcsSystemLacpPolicy(UcsSystemConfigObject):
     _CONFIG_NAME = "LACP Policy"
+    _CONFIG_SECTION_NAME = "lacp_policies"
     _UCS_SDK_OBJECT_NAME = "fabricLacpPolicy"
 
     def __init__(self, parent=None, json_content=None, fabric_lacp_policy=None):
-        UcsSystemConfigObject.__init__(self, parent=parent)
+        UcsSystemConfigObject.__init__(self, parent=parent, ucs_sdk_object=fabric_lacp_policy)
         self.name = None
         self.descr = None
         self.suspend_individual = None
@@ -2560,10 +1799,24 @@ class UcsSystemLacpPolicy(UcsSystemConfigObject):
 
 class UcsSystemLanConnectivityPolicy(UcsSystemConfigObject):
     _CONFIG_NAME = "LAN Connectivity Policy"
+    _CONFIG_SECTION_NAME = "lan_connectivity_policies"
     _UCS_SDK_OBJECT_NAME = "vnicLanConnPolicy"
+    _POLICY_MAPPING_TABLE = {
+        "vnics": [
+            {
+                "adapter_policy": UcsSystemEthernetAdapterPolicy,
+                "mac_address_pool": UcsSystemMacPool,
+                "network_control_policy": UcsSystemNetworkControlPolicy,
+                "pin_group": UcsSystemLanPinGroup,
+                "qos_policy": UcsSystemQosPolicy,
+                "stats_threshold_policy": UcsSystemThresholdPolicy,
+                "vnic_template": UcsSystemVnicTemplate
+            }
+        ]
+    }
 
     def __init__(self, parent=None, json_content=None, vnic_lan_conn_policy=None):
-        UcsSystemConfigObject.__init__(self, parent=parent)
+        UcsSystemConfigObject.__init__(self, parent=parent, ucs_sdk_object=vnic_lan_conn_policy)
         self.name = None
         self.descr = None
         self.vnics = []
@@ -2577,13 +1830,16 @@ class UcsSystemLanConnectivityPolicy(UcsSystemConfigObject):
                 if "vnicEther" in self._parent._config.sdk_objects:
                     for vnic_ether in self._config.sdk_objects["vnicEther"]:
                         if self._parent._dn:
-                            if self._parent._dn + "/lan-conn-pol-" + self.name in vnic_ether.dn:
-                                vnic = {}
+                            if self._parent._dn + "/lan-conn-pol-" + self.name + "/" in vnic_ether.dn:
+                                oper_state = {}
+                                vnic = {"_object_type": "vnics"}
                                 vnic.update({"name": vnic_ether.name})
                                 vnic.update({"adapter_policy": vnic_ether.adaptor_profile_name})
                                 vnic.update({"order": vnic_ether.order})
+
                                 if vnic_ether.nw_templ_name:
-                                    vnic.update({"template": vnic_ether.nw_templ_name})
+                                    vnic.update({"vnic_template": vnic_ether.nw_templ_name})
+                                    vnic.update({"redundancy_pair": vnic_ether.redundancy_pair_type})
                                 else:
                                     vnic.update({"fabric": vnic_ether.switch_id})
                                     vnic.update({"mac_address_pool": vnic_ether.ident_pool_name})
@@ -2595,55 +1851,148 @@ class UcsSystemLanConnectivityPolicy(UcsSystemConfigObject):
                                     vnic.update({"cdn_source": vnic_ether.cdn_source})
                                     vnic.update({"cdn_name": vnic_ether.admin_cdn_name})
                                     vnic.update({"pin_group": vnic_ether.pin_to_group_name})
+                                    vnic.update({"stats_threshold_policy": vnic_ether.stats_policy_name})
 
-                                    vnic.update({"connection_policy_name": None})
+                                    vnic.update({"dynamic_vnic_connection_policy": None})
+                                    vnic.update({"usnic_connection_policy": None})
+                                    vnic.update({"vmq_connection_policy": None})
                                     if "vnicDynamicConPolicyRef" in self._parent._config.sdk_objects:
                                         for conn_policy in self._config.sdk_objects["vnicDynamicConPolicyRef"]:
                                             if self._parent._dn + "/lan-conn-pol-" + self.name + '/ether-' + \
                                                     vnic['name'] + '/' in conn_policy.dn:
-                                                vnic.update({"connection_policy": "dynamic-vnic"})
-                                                vnic.update({"connection_policy_name": conn_policy.con_policy_name})
+                                                vnic.update(
+                                                    {"dynamic_vnic_connection_policy": conn_policy.con_policy_name})
+                                                # Added the operational state of connection policy for manual type
+                                                oper_state.update(
+                                                    self.get_operational_state(
+                                                        policy_dn=conn_policy.oper_con_policy_name,
+                                                        separator="/dynamic-con-",
+                                                        policy_name="dynamic_vnic_connection_policy"
+                                                    )
+                                                )
+                                                break
                                     if "vnicUsnicConPolicyRef" in self._parent._config.sdk_objects \
-                                            and not vnic['connection_policy_name']:
+                                            and not vnic['usnic_connection_policy']:
                                         for conn_policy in self._config.sdk_objects["vnicUsnicConPolicyRef"]:
                                             if self._parent._dn + "/lan-conn-pol-" + self.name + '/ether-' + \
                                                     vnic['name'] + '/' in conn_policy.dn:
-                                                vnic.update({"connection_policy": "usnic"})
-                                                vnic.update({"connection_policy_name": conn_policy.con_policy_name})
+                                                vnic.update({"usnic_connection_policy": conn_policy.con_policy_name})
+                                                # Added the operational state of connection policy for manual type
+                                                oper_state.update(
+                                                    self.get_operational_state(
+                                                        policy_dn=conn_policy.oper_con_policy_name,
+                                                        separator="/usnic-con-",
+                                                        policy_name="usnic_connection_policy"
+                                                    )
+                                                )
+                                                break
                                     if "vnicVmqConPolicyRef" in self._parent._config.sdk_objects \
-                                            and not vnic['connection_policy_name']:
+                                            and not vnic['vmq_connection_policy']:
                                         for conn_policy in self._config.sdk_objects["vnicVmqConPolicyRef"]:
                                             if self._parent._dn + "/lan-conn-pol-" + self.name + '/ether-' + \
                                                     vnic['name'] + '/' in conn_policy.dn:
-                                                vnic.update({"connection_policy": "vmq"})
-                                                vnic.update({"connection_policy_name": conn_policy.con_policy_name})
+                                                vnic.update({"vmq_connection_policy": conn_policy.con_policy_name})
+                                                # Added the operational state of connection policy for manual type
+                                                oper_state.update(
+                                                    self.get_operational_state(
+                                                        policy_dn=conn_policy.oper_con_policy_name,
+                                                        separator="/vmq-con-",
+                                                        policy_name="vmq_connection_policy"
+                                                    )
+                                                )
+                                                break
 
                                     if "vnicEtherIf" in self._parent._config.sdk_objects:
                                         vnic.update({"vlans": []})
-                                        for conn_policy in self._config.sdk_objects["vnicEtherIf"]:
+                                        for vnic_ether_if in self._config.sdk_objects["vnicEtherIf"]:
                                             if self._parent._dn + "/lan-conn-pol-" + self.name + '/ether-' + \
-                                                    vnic['name'] + '/' in conn_policy.dn:
-                                                if conn_policy.default_net == "yes":
-                                                    vnic.update({"vlan_native": conn_policy.name})
+                                                    vnic['name'] + '/' in vnic_ether_if.dn:
+                                                if vnic_ether_if.default_net == "yes":
+                                                    vnic.update({"vlan_native": vnic_ether_if.name})
                                                 else:
-                                                    vnic['vlans'].append(conn_policy.name)
+                                                    vnic['vlans'].append(vnic_ether_if.name)
+
+                                    if "fabricNetGroupRef" in self._parent._config.sdk_objects:
+                                        vnic.update({"vlan_groups": []})
+                                        for fabric_net_group_ref in self._config.sdk_objects["fabricNetGroupRef"]:
+                                            if self._parent._dn + "/lan-conn-pol-" + self.name + '/ether-' + \
+                                                    vnic['name'] + '/' in fabric_net_group_ref.dn:
+                                                vnic['vlan_groups'].append(fabric_net_group_ref.name)
+
+                                # Fetching the operational state of the referenced policies
+                                oper_state.update(
+                                    self.get_operational_state(
+                                        policy_dn=vnic_ether.oper_adaptor_profile_name,
+                                        separator="/eth-profile-",
+                                        policy_name="adapter_policy"
+                                    )
+                                )
+                                oper_state.update(
+                                    self.get_operational_state(
+                                        policy_dn=vnic_ether.oper_nw_ctrl_policy_name,
+                                        separator="/nwctrl-",
+                                        policy_name="network_control_policy"
+                                    )
+                                )
+                                oper_state.update(
+                                    self.get_operational_state(
+                                        policy_dn=vnic_ether.oper_pin_to_group_name,
+                                        separator="/lan-pin-group-",
+                                        policy_name="pin_group"
+                                    )
+                                )
+                                oper_state.update(
+                                    self.get_operational_state(
+                                        policy_dn=vnic_ether.oper_qos_policy_name,
+                                        separator="/ep-qos-",
+                                        policy_name="qos_policy"
+                                    )
+                                )
+                                oper_state.update(
+                                    self.get_operational_state(
+                                        policy_dn=vnic_ether.oper_stats_policy_name,
+                                        separator="/thr-policy-",
+                                        policy_name="stats_threshold_policy"
+                                    )
+                                )
+                                oper_state.update(
+                                    self.get_operational_state(
+                                        policy_dn=vnic_ether.oper_nw_templ_name,
+                                        separator="/lan-conn-templ-",
+                                        policy_name="vnic_template"
+                                    )
+                                )
+
+                                vnic['operational_state'] = oper_state
 
                                 self.vnics.append(vnic)
 
                 if "vnicIScsiLCP" in self._parent._config.sdk_objects:
                     for vnic_iscsi_lcp in self._config.sdk_objects["vnicIScsiLCP"]:
                         if self._parent._dn:
-                            if self._parent._dn + "/lan-conn-pol-" + self.name in vnic_iscsi_lcp.dn:
+                            if self._parent._dn + "/lan-conn-pol-" + self.name + "/" in vnic_iscsi_lcp.dn:
+                                oper_state = {}
                                 vnic = {}
                                 vnic.update({"name": vnic_iscsi_lcp.name})
                                 vnic.update({"overlay_vnic": vnic_iscsi_lcp.vnic_name})
                                 vnic.update({"iscsi_adapter_policy": vnic_iscsi_lcp.adaptor_profile_name})
                                 vnic.update({"mac_address_pool": vnic_iscsi_lcp.ident_pool_name})
+
                                 if "vnicVlan" in self._parent._config.sdk_objects:
                                     for vnicvlan in self._config.sdk_objects["vnicVlan"]:
                                         if self._parent._dn + "/lan-conn-pol-" + self.name + '/iscsi-' + \
                                                 vnic['name'] + '/' in vnicvlan.dn:
                                             vnic.update({"vlan": vnicvlan.vlan_name})
+                                            break
+                                oper_state.update(
+                                    self.get_operational_state(
+                                        policy_dn=vnic_iscsi_lcp.oper_adaptor_profile_name,
+                                        separator="/iscsi-profile-",
+                                        policy_name="iscsi_adapter_policy"
+                                    )
+                                )
+                                vnic['operational_state'] = oper_state
+
                                 self.iscsi_vnics.append(vnic)
 
         elif self._config.load_from == "file":
@@ -2653,16 +2002,41 @@ class UcsSystemLanConnectivityPolicy(UcsSystemConfigObject):
                                 message="Unable to get attributes from JSON content for " + self._CONFIG_NAME)
 
                 for element in self.vnics:
-                    for value in ["vlans", "connection_policy", "connection_policy_name", "template", "adapter_policy",
-                                  "name", "cdn_source", "cdn_name", "order", "fabric",
-                                  "mac_address_pool", "mtu", "qos_policy", "network_control_policy",
-                                  "vlan_native", "pin_group", "mac_address"]:
+                    for value in ["adapter_policy", "cdn_name", "cdn_source", "dynamic_vnic_connection_policy",
+                                  "fabric", "mac_address", "mac_address_pool", "mtu", "name", "network_control_policy",
+                                  "order", "operational_state", "pin_group", "qos_policy", "redundancy_pair",
+                                  "stats_threshold_policy", "usnic_connection_policy", "vlans", "vlan_groups",
+                                  "vlan_native", "vmq_connection_policy", "vnic_template"]:
                         if value not in element:
                             element[value] = None
+
+                    for policy in ["adapter_policy", "mac_address_pool", "network_control_policy", "pin_group",
+                                   "qos_policy", "stats_threshold_policy", "vnic_template"]:
+                        if element["operational_state"]:
+                            if policy not in element["operational_state"]:
+                                element["operational_state"][policy] = None
+                            else:
+                                for value in ["name", "org"]:
+                                    if value not in element["operational_state"][policy]:
+                                        element["operational_state"][policy][value] = None
+
+                    # Flagging this as a vNIC
+                    element["_object_type"] = "vnics"
+
                 for element in self.iscsi_vnics:
-                    for value in ["vlan", "mac_address_pool", "overlay_vnic", "name", "iscsi_adapter_policy"]:
+                    for value in ["vlan", "mac_address_pool", "overlay_vnic", "name", "iscsi_adapter_policy",
+                                  "operational_state"]:
                         if value not in element:
                             element[value] = None
+
+                    if element["operational_state"]:
+                        for policy in ["iscsi_adapter_policy"]:
+                            if policy not in element["operational_state"]:
+                                element["operational_state"][policy] = None
+                            else:
+                                for value in ["name", "org"]:
+                                    if value not in element["operational_state"][policy]:
+                                        element["operational_state"][policy][value] = None
 
         self.clean_object()
 
@@ -2688,10 +2062,11 @@ class UcsSystemLanConnectivityPolicy(UcsSystemConfigObject):
 
         if self.vnics:
             for vnic in self.vnics:
-                if vnic['template']:
+                if vnic['vnic_template']:
                     mo_vnic_ether = VnicEther(parent_mo_or_dn=mo_vnic_lan_conn_policy,
                                               adaptor_profile_name=vnic['adapter_policy'],
-                                              nw_templ_name=vnic['template'],
+                                              nw_templ_name=vnic['vnic_template'],
+                                              # redundancy_pair_type=vnic['redundancy_pair'],
                                               name=vnic['name'],
                                               order=vnic['order'])
                     self._handle.add_mo(mo=mo_vnic_ether, modify_present=True)
@@ -2718,7 +2093,8 @@ class UcsSystemLanConnectivityPolicy(UcsSystemConfigObject):
                                               nw_ctrl_policy_name=vnic['network_control_policy'],
                                               cdn_source=vnic['cdn_source'],
                                               admin_cdn_name=vnic['cdn_name'],
-                                              pin_to_group_name=vnic['pin_group'])
+                                              pin_to_group_name=vnic['pin_group'],
+                                              stats_policy_name=vnic["stats_threshold_policy"])
                     self._handle.add_mo(mo=mo_vnic_ether, modify_present=True)
                     # We need to commit the interface first and then add the vlan and connection policy to it
                     if commit:
@@ -2727,21 +2103,18 @@ class UcsSystemLanConnectivityPolicy(UcsSystemConfigObject):
                             continue
 
                     # Creating connection_policy
-                    if vnic["connection_policy"] and vnic["connection_policy_name"]:
-                        connection_policy = vnic['connection_policy']
-                        connection_policy_name = vnic['connection_policy_name']
-                        if connection_policy == "dynamic-vnic":
-                            # connection_policy = "SRIOV-VMFEX"
-                            VnicDynamicConPolicyRef(parent_mo_or_dn=mo_vnic_ether,
-                                                    con_policy_name=connection_policy_name)
-                        elif connection_policy == "usNIC" or connection_policy == "usnic":
-                            # connection_policy = "SRIOV-USNIC"
-                            VnicUsnicConPolicyRef(parent_mo_or_dn=mo_vnic_ether,
-                                                  con_policy_name=connection_policy_name)
-                        elif connection_policy == "VMQ" or connection_policy == "vmq":
-                            # connection_policy = "VMQ"
-                            VnicVmqConPolicyRef(parent_mo_or_dn=mo_vnic_ether,
-                                                con_policy_name=connection_policy_name)
+                    if vnic["dynamic_vnic_connection_policy"]:
+                        # connection_policy = "SRIOV-VMFEX"
+                        VnicDynamicConPolicyRef(parent_mo_or_dn=mo_vnic_ether,
+                                                con_policy_name=vnic["dynamic_vnic_connection_policy"])
+                    elif vnic["usnic_connection_policy"]:
+                        # connection_policy = "SRIOV-USNIC"
+                        VnicUsnicConPolicyRef(parent_mo_or_dn=mo_vnic_ether,
+                                              con_policy_name=vnic["usnic_connection_policy"])
+                    elif vnic["vmq_connection_policy"]:
+                        # connection_policy = "VMQ"
+                        VnicVmqConPolicyRef(parent_mo_or_dn=mo_vnic_ether,
+                                            con_policy_name=vnic["vmq_connection_policy"])
 
                     # Adding the vlans
                     if vnic['vlan_native']:
@@ -2755,6 +2128,13 @@ class UcsSystemLanConnectivityPolicy(UcsSystemConfigObject):
                                                            name=vlan,
                                                            default_net="no")
                             self._handle.add_mo(mo_vnic_ether_if, modify_present=True)
+
+                    # Adding the vlan groups
+                    if vnic['vlan_groups']:
+                        for vlan_group in vnic['vlan_groups']:
+                            mo_fabric_net_group_ref = FabricNetGroupRef(parent_mo_or_dn=mo_vnic_ether,
+                                                                        name=vlan_group)
+                            self._handle.add_mo(mo_fabric_net_group_ref, modify_present=True)
 
                 self._handle.add_mo(mo=mo_vnic_ether, modify_present=True)
 
@@ -2773,12 +2153,250 @@ class UcsSystemLanConnectivityPolicy(UcsSystemConfigObject):
                 return False
         return True
 
+
+class UcsSystemLanTrafficMonitoringSession(UcsSystemConfigObject):
+    _CONFIG_NAME = "LAN Traffic Monitoring Session"
+    _CONFIG_SECTION_NAME = "lan_traffic_monitoring_sessions"
+    _UCS_SDK_OBJECT_NAME = "fabricEthMon"
+
+    def __init__(self, parent=None, json_content=None, fabric_eth_mon=None):
+        UcsSystemConfigObject.__init__(self, parent=parent, ucs_sdk_object=fabric_eth_mon)
+        self.admin_state = None
+        self.admin_speed = None
+        self.destination = []
+        self.fabric = None
+        self.name = None
+        self.sources = []
+        self.span_control_packets = None
+        if self._config.load_from == "live":
+            if fabric_eth_mon is not None:
+                self.admin_state = fabric_eth_mon.admin_state
+                self.fabric = fabric_eth_mon.id
+                self.name = fabric_eth_mon.name
+                self.span_control_packets = fabric_eth_mon.span_ctrl_pkts
+                directions = {}
+                uplink_port_type_list = ["uplink-port", "fcoeuplink-port", "storage", "nas-port"]
+                port_channel_type_list = ["port-channel", "fcoeuplink-portchannel"]
+
+                if "fabricEthMonDestEp" in self._config.sdk_objects:
+                    # Based on fabric ID and session name, fetching the destination details of a monitoring session
+                    for fabric_eth_mon_dest_ep in self._config.sdk_objects["fabricEthMonDestEp"]:
+                        fabric = fabric_eth_mon_dest_ep.switch_id
+                        name = fabric_eth_mon_dest_ep.dn.split("/")[3].replace("eth-mon-", "")
+                        if self.fabric == fabric and self.name == name:
+                            self.admin_speed = fabric_eth_mon_dest_ep.admin_speed
+                            destination = {"slot_id": fabric_eth_mon_dest_ep.slot_id}
+                            if fabric_eth_mon_dest_ep.aggr_port_id not in ["", "0"]:
+                                destination.update({"aggr_id": fabric_eth_mon_dest_ep.port_id})
+                                destination.update({"port_id": fabric_eth_mon_dest_ep.aggr_port_id})
+                            else:
+                                destination.update({"aggr_id": None})
+                                destination.update({"port_id": fabric_eth_mon_dest_ep.port_id})
+                            self.destination.append(destination)
+                            break
+
+                # To get direction field of all sources in a monitoring session
+                if "fabricEthMonSrcEp" in self._config.sdk_objects:
+                    for src_ep_obj in self._config.sdk_objects["fabricEthMonSrcEp"]:
+                        directions[src_ep_obj.dn] = src_ep_obj.direction
+                if "fabricFcMonSrcEp" in self._config.sdk_objects:
+                    for src_ep_obj in self._config.sdk_objects["fabricFcMonSrcEp"]:
+                        directions[src_ep_obj.dn] = src_ep_obj.direction
+
+                # Fetching details of all types of sources in monitoring session
+                # ToDo: Include support for vm-vnic source
+                if "fabricEthMonSrcRef" in self._config.sdk_objects:
+                    # Based on the source type fetching all the required fields
+                    for fabric_eth_mon_src_ref in self._config.sdk_objects["fabricEthMonSrcRef"]:
+                        source_type = fabric_eth_mon_src_ref.source_type
+                        source_dn = fabric_eth_mon_src_ref.source_dn.split("/")
+                        monitoring_session_name = source_dn[-1].replace("mon-src-", "")
+                        fabric = fabric_eth_mon_src_ref.dn.split("/")[2]
+                        if self.fabric == fabric and self.name == monitoring_session_name:
+                            source_dict = {"source_type": source_type}
+                            if fabric_eth_mon_src_ref.source_dn in directions:
+                                source_dict["direction"] = directions[fabric_eth_mon_src_ref.source_dn]
+                            if source_type in uplink_port_type_list:
+                                if "-aggr-port-" in source_dn[3]:
+                                    source_dict["slot_id"] = source_dn[-2].split("-slot-")[1].split("-port-")[0]
+                                    source_dict["aggr_id"] = source_dn[-2].split("-slot-")[1].split("-port-")[1]
+                                    source_dict["port_id"] = source_dn[-3].split("-aggr-port-")[1]
+                                else:
+                                    source_dict["slot_id"] = source_dn[-2].split("-slot-")[1].split("-port-")[0]
+                                    source_dict["port_id"] = source_dn[-2].split("-slot-")[1].split("-port-")[1]
+                            elif source_type in port_channel_type_list:
+                                source_dict["pc_id"] = source_dn[-2].split("pc-")[-1]
+                            elif source_type == "vlan":
+                                source_dict["vlan"] = source_dn[-2].split("net-")[-1]
+                                if fabric_eth_mon_src_ref.source_dn.startswith("fabric/lan/" + self.fabric):
+                                    source_dict["fabric"] = self.fabric
+                                else:
+                                    source_dict["fabric"] = "dual"
+                            elif source_type == "vnic":
+                                source_dict["org"] = "/".join([i.replace("org-", "", 1) for i in source_dn])
+                                source_dict["service_profile"] = source_dn[-3].replace("ls-", "")
+                                source_dict["vnic"] = source_dn[-2].replace("ether-", "")
+                            elif source_type == "vhba":
+                                source_dict["org"] = "/".join(
+                                    [i.replace("org-", "") for i in source_dn if i.startswith("org-")])
+                                source_dict["service_profile"] = source_dn[-3].replace("ls-", "")
+                                source_dict["vhba"] = source_dn[-2].replace("fc-", "")
+                            self.sources.append(source_dict)
+
+        elif self._config.load_from == "file":
+            if json_content is not None:
+                if not self.get_attributes_from_json(json_content=json_content):
+                    self.logger(level="error",
+                                message="Unable to get attributes from JSON content for " + self._CONFIG_NAME)
+
+                for element in self.destination:
+                    for value in ["aggr_id", "port_id", "slot_id"]:
+                        if value not in element:
+                            element[value] = None
+
+                for element in self.sources:
+                    for value in ["aggr_id", "direction", "fabric", "org", "pc_id", "port_id", "service_profile",
+                                  "slot_id", "source_type", "vhba", "vlan", "vnic"]:
+                        if value not in element:
+                            element[value] = None
+
+        self.clean_object()
+
+    def push_object(self, commit=True):
+        if commit:
+            self.logger(message="Pushing " + self._CONFIG_NAME + " configuration: " + str(self.name))
+        else:
+            self.logger(message="Adding to the handle " + self._CONFIG_NAME + " configuration: " + str(self.name) +
+                                ", waiting for a commit")
+
+        parent_mo = "fabric/lanmon/" + self.fabric
+        mo_fabric_eth_mon = FabricEthMon(name=self.name, parent_mo_or_dn=parent_mo, admin_state=self.admin_state,
+                                         span_ctrl_pkts=self.span_control_packets, id=self.fabric)
+        self._handle.add_mo(mo=mo_fabric_eth_mon, modify_present=True)
+        if commit:
+            if self.commit(detail=self.name) != True:
+                return False
+
+        if self.destination:
+            if self.destination[0].get("aggr_id"):
+                mo_fabric_sub_group = FabricSubGroup(parent_mo_or_dn=mo_fabric_eth_mon,
+                                                     slot_id=self.destination[0].get("slot_id"),
+                                                     aggr_port_id=self.destination[0].get("port_id"))
+                FabricEthMonDestEp(parent_mo_or_dn=mo_fabric_sub_group, admin_speed=self.admin_speed,
+                                   slot_id=self.destination[0].get("slot_id"),
+                                   port_id=self.destination[0].get("aggr_id"))
+                dst_descr = self.destination[0].get("slot_id") + "/" + self.destination[0].get("port_id") + "/" + \
+                            self.destination[0].get("aggr_id")
+                self._handle.add_mo(mo=mo_fabric_sub_group, modify_present=True)
+            else:
+                mo_fabric_eth_mon_dest_ep = FabricEthMonDestEp(parent_mo_or_dn=mo_fabric_eth_mon,
+                                                               admin_speed=self.admin_speed,
+                                                               slot_id=self.destination[0].get("slot_id"),
+                                                               port_id=self.destination[0].get("port_id"))
+                dst_descr = self.destination[0].get("slot_id") + "/" + self.destination[0].get("port_id")
+
+                self._handle.add_mo(mo=mo_fabric_eth_mon_dest_ep, modify_present=True)
+            if commit:
+                if self.commit(detail="Destination Port " + dst_descr) != True:
+                    return False
+
+        source_status_failed = False
+        if self.sources:
+            for source in self.sources:
+                if "direction" in source:
+                    if source["source_type"] != "vhba":
+                        parent_dn = ""
+                        src_descr = ""
+                        if source["source_type"] == "uplink-port":
+                            # For LAN Uplink Port source type
+                            parent_dn += "fabric/lan/" + self.fabric
+                            if source["aggr_id"]:
+                                parent_dn += ("/slot-" + source["slot_id"] + "-aggr-port-" + source["port_id"] +
+                                              "/phys-slot-" + source["slot_id"] + "-port-" + source["aggr_id"])
+                                src_descr = source["slot_id"] + "/" + source["port_id"] + "/" + source["aggr_id"]
+                            else:
+                                parent_dn += "/phys-slot-" + source["slot_id"] + "-port-" + source["port_id"]
+                                src_descr = source["slot_id"] + "/" + source["port_id"]
+                        elif source["source_type"] == "port-channel":
+                            # For LAN Port-Channel source type
+                            parent_dn += "fabric/lan/" + self.fabric + "/pc-" + source["pc_id"]
+                            src_descr = source["pc_id"]
+                        elif source["source_type"] == "nas-port":
+                            # For Appliance Port source type
+                            parent_dn += "fabric/eth-estc/" + self.fabric
+                            if source["aggr_id"]:
+                                parent_dn += ("/slot-" + source["slot_id"] + "-aggr-port-" + source["port_id"] +
+                                              "/phys-eth-slot-" + source["slot_id"] + "-port-" + source["aggr_id"])
+                                src_descr = source["slot_id"] + "/" + source["port_id"] + "/" + source["aggr_id"]
+                            else:
+                                parent_dn += "/phys-eth-slot-" + source["slot_id"] + "-port-" + source["port_id"]
+                                src_descr = source["slot_id"] + "/" + source["port_id"]
+                        elif source["source_type"] == "fcoeuplink-port":
+                            # For FCoE Uplink Port source type
+                            parent_dn += "fabric/san/" + self.fabric
+                            if source["aggr_id"]:
+                                parent_dn += ("/slot-" + source["slot_id"] + "-aggr-port-" + source["port_id"] +
+                                              "/phys-fcoesanep-slot-" + source["slot_id"] + "-port-" +
+                                              source["aggr_id"])
+                                src_descr = source["slot_id"] + "/" + source["port_id"] + "/" + source["aggr_id"]
+                            else:
+                                parent_dn += "/phys-fcoesanep-slot-" + source["slot_id"] + "-port-" + source["port_id"]
+                                src_descr = source["slot_id"] + "/" + source["port_id"]
+                        elif source["source_type"] == "fcoeuplink-portchannel":
+                            # For FCoE Port-Channel source type
+                            parent_dn += "fabric/san/" + self.fabric + "/fcoesanpc-" + source["pc_id"]
+                            src_descr = source["pc_id"]
+                        elif source["source_type"] == "storage":
+                            # For FCoE Storage Port source type
+                            parent_dn += "fabric/fc-estc/" + self.fabric
+                            if source["aggr_id"]:
+                                parent_dn += ("/slot-" + source["slot_id"] + "-aggr-port-" + source["port_id"] +
+                                              "/phys-fcoe-slot-" + source["slot_id"] + "-port-" + source["aggr_id"])
+                                src_descr = source["slot_id"] + "/" + source["port_id"] + "/" + source["aggr_id"]
+                            else:
+                                parent_dn += "/phys-fcoe-slot-" + source["slot_id"] + "-port-" + source["port_id"]
+                                src_descr = source["slot_id"] + "/" + source["port_id"]
+                        elif source["source_type"] == "vlan":
+                            # For VLAN source type
+                            if source["fabric"] == "dual":
+                                parent_dn += "fabric/lan/net-" + source["vlan"]
+                                src_descr = source["vlan"]
+                            else:
+                                parent_dn += "fabric/lan/" + source["fabric"] + "/net-" + source["vlan"]
+                                src_descr = source["fabric"] + "/" + source["vlan"]
+                        elif source["source_type"] == "vnic":
+                            # For vNIC source type
+                            parent_dn += '/'.join([org.replace("", "org-", 1) for org in source["org"].split("/")])
+                            parent_dn += "/ls-" + source["service_profile"] + "/ether-" + source["vnic"]
+                            src_descr = source["org"] + "/" + source["service_profile"] + " - " + source["vnic"]
+
+                        mo_fabric_eth_mon_src_ep = FabricEthMonSrcEp(parent_mo_or_dn=parent_dn, name=self.name,
+                                                                     direction=source["direction"])
+                        self._handle.add_mo(mo=mo_fabric_eth_mon_src_ep, modify_present=True)
+                    else:
+                        # For vHBA source type
+                        parent_dn = '/'.join([org.replace("", "org-", 1) for org in source["org"].split("/")])
+                        parent_dn += "/ls-" + source["service_profile"] + "/fc-" + source["vhba"]
+                        src_descr = source["org"] + "/" + source["service_profile"] + " - " + source["vhba"]
+
+                        mo_fabric_fc_mon_src_ep = FabricFcMonSrcEp(parent_mo_or_dn=parent_dn, name=self.name,
+                                                                   direction=source["direction"])
+                        self._handle.add_mo(mo=mo_fabric_fc_mon_src_ep, modify_present=True)
+                    if commit:
+                        if self.commit(detail="Source " + source["source_type"] + " " + src_descr) != True:
+                            source_status_failed = True
+        if source_status_failed:
+            return False
+
+
 class UcsSystemDynamicVnicConnectionPolicy(UcsSystemConfigObject):
     _CONFIG_NAME = "Dynamic vNIC Connection Policy"
+    _CONFIG_SECTION_NAME = "dynamic_vnic_connection_policies"
     _UCS_SDK_OBJECT_NAME = "vnicDynamicConPolicy"
+    _UCS_SDK_SPECIFIC_OBJECT_NAME = "vnicDynamicCon"
 
     def __init__(self, parent=None, json_content=None, vnic_dynamic_con_policy=None):
-        UcsSystemConfigObject.__init__(self, parent=parent)
+        UcsSystemConfigObject.__init__(self, parent=parent, ucs_sdk_object=vnic_dynamic_con_policy)
         self.name = None
         self.descr = None
         self.number_dynamic_vnics = None
@@ -2792,6 +2410,80 @@ class UcsSystemDynamicVnicConnectionPolicy(UcsSystemConfigObject):
                 self.number_dynamic_vnics = vnic_dynamic_con_policy.dynamic_eth
                 self.adapter_policy = vnic_dynamic_con_policy.adaptor_profile_name
                 self.protection = vnic_dynamic_con_policy.protection
+
+                if self._parent._dn:
+                    if self._parent.__class__.__name__ == "UcsSystemServiceProfile":
+                        # We are in presence of a Specific Dynamic vNIC Connection Policy under a Service Profile object
+                        self.name = None
+
+        elif self._config.load_from == "file":
+            if json_content is not None:
+                if not self.get_attributes_from_json(json_content=json_content):
+                    self.logger(level="error",
+                                message="Unable to get attributes from JSON content for " + self._CONFIG_NAME)
+
+        self.clean_object()
+
+    def push_object(self, commit=True):
+        detail = str(self.name)
+        if self._parent.__class__.__name__ == "UcsSystemServiceProfile":
+            # We are in presence of a Specific Dynamic vNIC Connection Policy under a Service Profile object
+            detail = "Service Profile " + str(self._parent.name)
+        if commit:
+            self.logger(message="Pushing " + self._CONFIG_NAME + " configuration: " + detail)
+        else:
+            self.logger(message="Adding to the handle " + self._CONFIG_NAME + " configuration: " + detail +
+                                ", waiting for a commit")
+
+        if hasattr(self._parent, '_dn'):
+            parent_mo = self._parent._dn
+        else:
+            self.logger(level="error",
+                        message="Impossible to find the parent dn of " + self._CONFIG_NAME + " : " + self.name)
+            return False
+
+        if self._parent.__class__.__name__ == "UcsSystemServiceProfile":
+            # We are in presence of a Specific Dynamic vNIC Connection Policy under a Service Profile object
+            mo_vnic_dynamic_con_policy = VnicDynamicCon(
+                parent_mo_or_dn=parent_mo, descr=self.descr, dynamic_eth=self.number_dynamic_vnics,
+                adaptor_profile_name=self.adapter_policy, protection=self.protection
+            )
+        else:
+            # We are in presence of a regular Dynamic vNIC Connection Policy under an Org object
+            mo_vnic_dynamic_con_policy = VnicDynamicConPolicy(
+                parent_mo_or_dn=parent_mo, descr=self.descr, name=self.name, dynamic_eth=self.number_dynamic_vnics,
+                adaptor_profile_name=self.adapter_policy, protection=self.protection
+            )
+
+        self._handle.add_mo(mo=mo_vnic_dynamic_con_policy, modify_present=True)
+        if commit:
+            detail = str(self.name)
+            if self._parent.__class__.__name__ == "UcsSystemServiceProfile":
+                # We are in presence of a Specific Dynamic vNIC Connection Policy under a Service Profile object
+                detail = "Service Profile " + str(self._parent.name)
+            if self.commit(detail=detail) != True:
+                return False
+        return True
+
+
+class UcsSystemUsnicConnectionPolicy(UcsSystemConfigObject):
+    _CONFIG_NAME = "usNIC Connection Policy"
+    _CONFIG_SECTION_NAME = "usnic_connection_policies"
+    _UCS_SDK_OBJECT_NAME = "vnicUsnicConPolicy"
+
+    def __init__(self, parent=None, json_content=None, vnic_usnic_con_policy=None):
+        UcsSystemConfigObject.__init__(self, parent=parent, ucs_sdk_object=vnic_usnic_con_policy)
+        self.name = None
+        self.descr = None
+        self.number_of_usnics = None
+        self.adapter_policy = None
+
+        if self._config.load_from == "live":
+            if vnic_usnic_con_policy is not None:
+                self.name = vnic_usnic_con_policy.name
+                self.descr = vnic_usnic_con_policy.descr
+                self.number_of_usnics = vnic_usnic_con_policy.usnic_count
+                self.adapter_policy = vnic_usnic_con_policy.adaptor_profile_name
 
         elif self._config.load_from == "file":
             if json_content is not None:
@@ -2815,14 +2507,113 @@ class UcsSystemDynamicVnicConnectionPolicy(UcsSystemConfigObject):
                         message="Impossible to find the parent dn of " + self._CONFIG_NAME + " : " + self.name)
             return False
 
-        mo_vnic_dynamic_con_policy = VnicDynamicConPolicy(parent_mo_or_dn=parent_mo,
-                                                          descr=self.descr,
-                                                          name=self.name,
-                                                          dynamic_eth=self.number_dynamic_vnics,
-                                                          adaptor_profile_name=self.adapter_policy,
-                                                          protection=self.protection)
+        mo_vnic_usnic_con_policy = VnicUsnicConPolicy(parent_mo_or_dn=parent_mo, descr=self.descr, name=self.name,
+                                                      usnic_count=self.number_of_usnics,
+                                                      adaptor_profile_name=self.adapter_policy)
 
-        self._handle.add_mo(mo=mo_vnic_dynamic_con_policy, modify_present=True)
+        self._handle.add_mo(mo=mo_vnic_usnic_con_policy, modify_present=True)
         if commit:
             if self.commit(detail=self.name) != True:
                 return False
+
+
+class UcsSystemVmqConnectionPolicy(UcsSystemConfigObject):
+    _CONFIG_NAME = "VMQ Connection Policy"
+    _CONFIG_SECTION_NAME = "vmq_connection_policies"
+    _UCS_SDK_OBJECT_NAME = "vnicVmqConPolicy"
+
+    def __init__(self, parent=None, json_content=None, vnic_vmq_con_policy=None):
+        UcsSystemConfigObject.__init__(self, parent=parent, ucs_sdk_object=vnic_vmq_con_policy)
+        self.name = None
+        self.descr = None
+        self.multi_queue = None
+        self.number_of_sub_vnics = None
+        self.number_of_vmqs = None
+        self.number_of_interrupts = None
+        self.adapter_policy = None
+
+        if self._config.load_from == "live":
+            if vnic_vmq_con_policy is not None:
+                self.name = vnic_vmq_con_policy.name
+                self.descr = vnic_vmq_con_policy.descr
+                self.multi_queue = vnic_vmq_con_policy.multi_queue
+                if self.multi_queue in ["disabled"]:
+                    self.number_of_vmqs = vnic_vmq_con_policy.vmq_count
+                    self.number_of_interrupts = vnic_vmq_con_policy.intr_count
+                elif self.multi_queue in ["enabled"]:
+                    self.adapter_policy = vnic_vmq_con_policy.adaptor_profile_name
+                    self.number_of_sub_vnics = vnic_vmq_con_policy.vmmq_sub_vnics
+
+        elif self._config.load_from == "file":
+            if json_content is not None:
+                if not self.get_attributes_from_json(json_content=json_content):
+                    self.logger(level="error",
+                                message="Unable to get attributes from JSON content for " + self._CONFIG_NAME)
+
+        self.clean_object()
+
+    def push_object(self, commit=True):
+        if commit:
+            self.logger(message="Pushing " + self._CONFIG_NAME + " configuration: " + str(self.name))
+        else:
+            self.logger(message="Adding to the handle " + self._CONFIG_NAME + " configuration: " + str(self.name) +
+                                ", waiting for a commit")
+
+        if hasattr(self._parent, '_dn'):
+            parent_mo = self._parent._dn
+        else:
+            self.logger(level="error",
+                        message="Impossible to find the parent dn of " + self._CONFIG_NAME + " : " + self.name)
+            return False
+
+        mo_vnic_vmq_con_policy = VnicVmqConPolicy(parent_mo_or_dn=parent_mo, descr=self.descr, name=self.name,
+                                                  multi_queue=self.multi_queue,
+                                                  adaptor_profile_name=self.adapter_policy,
+                                                  intr_count=self.number_of_interrupts,
+                                                  vmmq_sub_vnics=self.number_of_sub_vnics,
+                                                  vmq_count=self.number_of_vmqs)
+
+        self._handle.add_mo(mo=mo_vnic_vmq_con_policy, modify_present=True)
+        if commit:
+            if self.commit(detail=self.name) != True:
+                return False
+
+
+class UcsSystemNetflowMonitoring(UcsSystemConfigObject):
+    _CONFIG_NAME = "NetFlow Monitoring"
+    _CONFIG_SECTION_NAME = "netflow_monitoring"
+    _UCS_SDK_OBJECT_NAME = "fabricEthLanFlowMonitoring"
+
+    def __init__(self, parent=None, json_content=None, fabric_eth_lan_flow_monitoring=None):
+        UcsSystemConfigObject.__init__(self, parent=parent, ucs_sdk_object=fabric_eth_lan_flow_monitoring)
+        self.admin_state = None
+        if self._config.load_from == "live":
+            if fabric_eth_lan_flow_monitoring is not None:
+                self.admin_state = fabric_eth_lan_flow_monitoring.admin_state
+
+            # TODO: Complete support for NetFlow Monitoring
+
+        elif self._config.load_from == "file":
+            if json_content is not None:
+                if not self.get_attributes_from_json(json_content=json_content):
+                    self.logger(level="error",
+                                message="Unable to get attributes from JSON content for " + self._CONFIG_NAME)
+
+        self.clean_object()
+
+    def push_object(self, commit=True):
+        if commit:
+            self.logger(message="Pushing " + self._CONFIG_NAME + " configuration")
+        else:
+            self.logger(message="Adding to the handle " + self._CONFIG_NAME + " configuration" +
+                                ", waiting for a commit")
+
+        parent_mo = "fabric/lanmon"
+        mo_fabric_eth_lan_flow_monitoring = FabricEthLanFlowMonitoring(parent_mo_or_dn=parent_mo,
+                                                                       admin_state=self.admin_state)
+        self._handle.add_mo(mo=mo_fabric_eth_lan_flow_monitoring, modify_present=True)
+        if commit:
+            if self.commit(detail="Admin State") != True:
+                return False
+
+        return True

@@ -1,0 +1,119 @@
+{
+   "id": "ucs_central_config_local_disk_config_policies#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS ucs central config orgs local_disk_config_policies section",
+   "description": "EasyUCS ucs central config orgs local_disk_config_policies section JSON schema",
+   "type": "object",
+   "properties": {
+      "comment": {
+         "description": "Local Disk Configuration Policy Comments",
+         "type": "string",
+         "default": ""
+      },
+      "name": {
+         "description": "Local Disk Configuration Policy Name",
+         "type": "string",
+         "default": "",
+         "pattern": "^[\\-\\.:_a-zA-Z0-9]{1,16}$"
+      },
+      "descr": {
+         "description": "Description of Local Disk Configuration Policy",
+         "type": "string",
+         "default": "",
+         "pattern": "^[ !#$%&\\(\\)\\*\\+,\\-\\./:;\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{0,256}$"
+      },
+      "mode": {
+         "description": "Local Disk Configuration Policy - Mode",
+         "type": "string",
+         "default": "any-configuration",
+         "enum": [
+            "any-configuration",
+            "best-effort-mirrored",
+            "best-effort-mirrored-striped",
+            "best-effort-striped",
+            "best-effort-striped-dual-parity",
+            "best-effort-striped-parity",
+            "default",
+            "dual-disk",
+            "no-local-storage",
+            "no-raid",
+            "raid-mirrored",
+            "raid-mirrored-striped",
+            "raid-striped",
+            "raid-striped-dual-parity",
+            "raid-striped-dual-parity-striped",
+            "raid-striped-parity",
+            "raid-striped-parity-striped",
+            "raid0",
+            "RAID0",
+            "raid1",
+            "RAID1",
+            "raid5",
+            "RAID5",
+            "raid6",
+            "RAID6",
+            "raid10",
+            "RAID10",
+            "raid50",
+            "RAID50",
+            "raid60",
+            "RAID60",
+            "single-disk"
+         ]
+      },
+      "protect_configuration": {
+         "description": "Local Disk Configuration Policy - Protect Configuration",
+         "type": "string",
+         "default": "yes",
+         "enum": [
+            "false",
+            "no",
+            "true",
+            "yes"
+         ]
+      },
+      "flexflash_state": {
+         "description": "Local Disk Configuration Policy - FlexFlash State",
+         "type": "string",
+         "default": "disable",
+         "enum": [
+            "disable",
+            "enable"
+         ]
+      },
+      "flexflash_raid_reporting_state": {
+         "description": "Local Disk Configuration Policy - FlexFlash RAID Reporting State",
+         "type": "string",
+         "default": "disable",
+         "enum": [
+            "disable",
+            "enable"
+         ]
+      },
+      "tags": {
+         "description": "Local Disk Configuration Policy - Tags",
+         "type": "array",
+         "items": {
+            "description": "Local Disk Configuration Policy - Tag",
+            "type": "object",
+            "properties": {
+               "type": {
+                  "description": "Local Disk Configuration Policy - Tag - Type",
+                  "type": "string",
+                  "pattern": "^[ !#$%&\\(\\)\\*\\+,\\-\\.:;=\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{1,32}$"
+               },
+               "value": {
+                  "description": "Local Disk Configuration Policy - Tag - Value",
+                  "type": "string"
+               }
+            },
+            "additionalProperties": false,
+            "required": [
+               "type",
+               "value"
+            ]
+         }
+      }
+   },
+   "additionalProperties": false
+}

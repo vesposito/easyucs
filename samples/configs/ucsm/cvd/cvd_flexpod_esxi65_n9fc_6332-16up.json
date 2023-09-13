@@ -8,8 +8,8 @@
             "subcategory":"FlexPod",
             "name":"FlexPod Datacenter with VMware vSphere 6.5, NetApp AFF A-Series and Fibre Channel (6332-16UP)",
             "url":"https://www.cisco.com/c/en/us/td/docs/unified_computing/ucs/UCS_CVDs/flexpod_esxi65_n9fc.html",
-            "easyucs_version":"0.9.0",
-            "revision": "1.0"
+            "easyucs_version":"0.9.8.2",
+            "revision": "1.2"
          }
       ]
    },
@@ -345,12 +345,12 @@
                      {
                         "name":"Fabric-A",
                         "adapter_policy":"VMWare",
-                        "template":"vHBA-Template-A"
+                        "vhba_template":"vHBA-Template-A"
                      },
                      {
                         "name":"Fabric-B",
                         "adapter_policy":"VMWare",
-                        "template":"vHBA-Template-B"
+                        "vhba_template":"vHBA-Template-B"
                      }
                   ]
                }
@@ -491,7 +491,7 @@
                   "vlan_native":"Native-VLAN",
                   "cdn_source":"vnic-name",
                   "mtu":"9000",
-                  "mac_pool":"MAC-Pool-A",
+                  "mac_address_pool":"MAC-Pool-A",
                   "network_control_policy":"Enable-CDP-LLDP"
                },
                {
@@ -499,7 +499,7 @@
                   "fabric":"B-A",
                   "redundancy_type":"secondary",
                   "peer_redundancy_template":"Infra-A",
-                  "mac_pool":"MAC-Pool-B"
+                  "mac_address_pool":"MAC-Pool-B"
                }
             ],
             "lan_connectivity_policies":[
@@ -508,12 +508,12 @@
                   "vnics":[
                      {
                         "name":"00-Infra-A",
-                        "template":"Infra-A",
+                        "vnic_template":"Infra-A",
                         "adapter_policy":"VMWare"
                      },
                      {
                         "name":"01-Infra-B",
-                        "template":"Infra-B",
+                        "vnic_template":"Infra-B",
                         "adapter_policy":"VMWare"
                      }
                   ]

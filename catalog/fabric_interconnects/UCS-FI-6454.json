@@ -24,6 +24,11 @@
     {
       "name": "UCS-PSU-6332-DC",
       "description": "UCS 6332/6454 power supply/-48VDC (930 W)"
+    },
+    {
+      "name": "UCSC-PSU-BLKP",
+      "type": "blank",
+      "description": "Power supply blanking panel/filler"
     }
   ],
   "rear_ports": {
@@ -299,7 +304,7 @@
     }
   },
   "imm_compatible": true,
-  "imm_min_required_version": "4.1(2a)",
+  "imm_min_required_version": "4.1(3b)",
   "spec_sheet_url": "https://www.cisco.com/c/dam/en/us/products/collateral/servers-unified-computing/ucs-b-series-blade-servers/6400-specsheet.pdf",
   "data_sheet_url": "https://www.cisco.com/c/en/us/products/collateral/servers-unified-computing/datasheet-c78-741116.html",
   "specs": {

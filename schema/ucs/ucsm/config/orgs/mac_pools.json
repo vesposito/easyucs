@@ -1,79 +1,100 @@
 {
-   "id":"ucs_system_config_mac_pools#",
-   "$schema":"http://json-schema.org/draft-07/schema#",
-   "title":"EasyUCS ucs system config orgs mac_pools section",
-   "description":"EasyUCS ucs system config orgs mac_pools section JSON schema",
-   "type":"object",
-   "properties":{
+   "id": "ucs_system_config_mac_pools#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS ucs system config orgs mac_pools section",
+   "description": "EasyUCS ucs system config orgs mac_pools section JSON schema",
+   "type": "object",
+   "properties": {
       "comment": {
          "description": "MAC Pool Comments",
          "type": "string",
          "default": ""
       },
-      "name":{
-         "description":"MAC Pool Name",
-         "type":"string",
-         "default":"",
-         "pattern":"^[\\-\\.:_a-zA-Z0-9]{1,32}$"
+      "name": {
+         "description": "MAC Pool Name",
+         "type": "string",
+         "default": "",
+         "pattern": "^[\\-\\.:_a-zA-Z0-9]{1,32}$"
       },
-      "descr":{
-         "description":"Description of MAC Pool",
-         "type":"string",
-         "default":"",
-         "pattern":"^[ !#$%&\\(\\)\\*\\+,\\-\\./:;\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{0,256}$"
+      "descr": {
+         "description": "Description of MAC Pool",
+         "type": "string",
+         "default": "",
+         "pattern": "^[ !#$%&\\(\\)\\*\\+,\\-\\./:;\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{0,256}$"
       },
-      "order":{
-         "description":"Assignment Order of MAC Pool",
-         "type":"string",
-         "default":"default",
-         "enum":[
+      "policy_owner": {
+         "description": "MAC Pool Policy Owner (for UCS Central)",
+         "type": "string",
+         "enum": [
+            "ucs-central"
+         ]
+      },
+      "operational_state": {
+         "description": "Operational state",
+         "type": "object",
+         "properties": {
+            "assigned": {
+               "description": "Number of identities that have been assigned",
+               "type": "string"
+            },
+            "size": {
+               "description": "Total size of the pool, aggregating all blocks",
+               "type": "string"
+            }
+         }
+      },
+      "order": {
+         "description": "Assignment Order of MAC Pool",
+         "type": "string",
+         "default": "default",
+         "enum": [
             "default",
             "sequential"
          ]
       },
-      "mac_blocks":{
-         "description":"Blocks of MAC Addresses in MAC Pool",
-         "type":"array",
-         "items":{
-            "type":"object",
+      "mac_blocks": {
+         "description": "Blocks of MAC Addresses in MAC Pool",
+         "type": "array",
+         "items": {
+            "type": "object",
             "oneOf": [
                {
-                  "properties":{
-                     "from":{
-                        "description":"First MAC Address of Block",
-                        "type":"string",
-                        "default":"00:25:B5:00:00:00",
-                        "pattern":"^(([0-9a-fA-F][0-9a-fA-F]:){5}([0-9a-fA-F][0-9a-fA-F]))$|^0$"
+                  "properties": {
+                     "from": {
+                        "description": "First MAC Address of Block",
+                        "type": "string",
+                        "default": "00:25:B5:00:00:00",
+                        "pattern": "^(([0-9a-fA-F][0-9a-fA-F]:){5}([0-9a-fA-F][0-9a-fA-F]))$|^0$"
                      },
-                     "to":{
-                        "description":"Last MAC Address of Block",
-                        "type":"string",
-                        "default":"00:25:B5:00:00:00",
-                        "pattern":"^(([0-9a-fA-F][0-9a-fA-F]:){5}([0-9a-fA-F][0-9a-fA-F]))$|^0$"
+                     "to": {
+                        "description": "Last MAC Address of Block",
+                        "type": "string",
+                        "default": "00:25:B5:00:00:00",
+                        "pattern": "^(([0-9a-fA-F][0-9a-fA-F]:){5}([0-9a-fA-F][0-9a-fA-F]))$|^0$"
                      }
                   },
-                  "additionalProperties":false,
+                  "additionalProperties": false,
                   "required": [
                      "from",
                      "to"
                   ]
                },
                {
-                  "properties":{
-                     "from":{
-                        "description":"First MAC Address of Block",
-                        "type":"string",
-                        "default":"00:25:B5:00:00:00",
-                        "pattern":"^(([0-9a-fA-F][0-9a-fA-F]:){5}([0-9a-fA-F][0-9a-fA-F]))$|^0$"
+                  "properties": {
+                     "from": {
+                        "description": "First MAC Address of Block",
+                        "type": "string",
+                        "default": "00:25:B5:00:00:00",
+                        "pattern": "^(([0-9a-fA-F][0-9a-fA-F]:){5}([0-9a-fA-F][0-9a-fA-F]))$|^0$"
                      },
-                     "size":{
-                        "description":"Size of MAC Address Block",
-                        "type":"string",
-                        "default":"1",
-                        "pattern":"^[1-9]$|^[1-9][0-9]$|^[1-9][0-9][0-9]$|^1000$"
+                     "size": {
+                        "description": "Size of MAC Address Block",
+                        "type": "string",
+                        "default": "1",
+                        "pattern": "^[1-9]$|^[1-9][0-9]$|^[1-9][0-9][0-9]$|^1000$"
                      }
                   },
-                  "additionalProperties":false,
+                  "additionalProperties": false,
                   "required": [
                      "from",
                      "size"
@@ -81,11 +102,11 @@
                }
             ]
          },
-         "minItems":1
+         "minItems": 1
       }
    },
-   "additionalProperties":false,
-   "required":[
+   "additionalProperties": false,
+   "required": [
       "name"
    ]
 }

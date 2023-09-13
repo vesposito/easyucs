@@ -1,0 +1,83 @@
+{
+   "id": "intersight_config_orgs_ipmi_over_lan_policies#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS intersight config orgs ipmi_over_lan_policies section",
+   "description": "EasyUCS intersight config orgs ipmi_over_lan_policies section JSON schema",
+   "type": "object",
+   "properties": {
+      "comment": {
+         "description": "IPMI over LAN Policy Comments",
+         "type": "string",
+         "default": ""
+      },
+      "descr": {
+         "description": "IPMI over LAN Policy Description",
+         "type": "string",
+         "default": "",
+         "pattern": "^$|^[a-zA-Z0-9]+[\\x00-\\xFF]*$",
+         "maxLength": 1024
+      },
+      "name": {
+         "description": "IPMI over LAN Policy Name",
+         "type": "string",
+         "default": "",
+         "pattern": "^[a-zA-Z0-9_.:-]{1,64}$"
+      },
+      "tags": {
+         "description": "IPMI over LAN Policy Tags",
+         "type": "array",
+         "items": {
+            "description": "IPMI over LAN Policy Tag",
+            "type": "object",
+            "properties": {
+               "key": {
+                  "description": "IPMI over LAN Policy Tag Key",
+                  "type": "string",
+                  "default": "",
+                  "minLength": 1,
+                  "maxLength": 128
+               },
+               "value": {
+                  "description": "IPMI over LAN Policy Tag Value",
+                  "type": "string",
+                  "default": "",
+                  "minLength": 0,
+                  "maxLength": 256
+               }
+            },
+            "additionalProperties": false,
+            "required": [
+               "key",
+               "value"
+            ]
+         },
+         "minItems": 1
+      },
+      "enabled": {
+         "description": "IPMI over LAN Policy Admin State",
+         "type": "boolean",
+         "default": true
+      },
+      "privilege_level": {
+         "description": "IPMI over LAN Policy Privilege Level",
+         "type": "string",
+         "default": "admin",
+         "enum": [
+            "admin",
+            "read-only",
+            "user"
+         ],
+         "minItems": 1
+      },
+      "encryption_key": {
+         "description": "IPMI over LAN Policy Encryption Key",
+         "type": "string",
+         "default": "",
+         "pattern": "^[a-fA-F0-9]*$"
+      }
+   },
+   "additionalProperties": false,
+   "required": [
+      "name"
+   ]
+}

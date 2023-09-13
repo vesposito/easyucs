@@ -20,7 +20,7 @@
          "description": "vHBA Template - Fabric",
          "type": "string",
          "default": "A",
-         "enum":  [
+         "enum": [
             "A",
             "B"
          ]
@@ -30,6 +30,13 @@
          "type": "string",
          "default": "",
          "pattern": "^[ !#$%&\\(\\)\\*\\+,\\-\\./:;\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{0,256}$"
+      },
+      "policy_owner": {
+         "description": "vHBA Template Owner (for UCS Central)",
+         "type": "string",
+         "enum": [
+            "ucs-central"
+         ]
       },
       "redundancy_type": {
          "description": "vHBA Template - Redundancy Pair Type",
@@ -91,6 +98,76 @@
          "type": "string",
          "default": "",
          "pattern": "^[\\-\\.:_a-zA-Z0-9]{0,32}$"
+      },
+      "operational_state": {
+         "description": "vHBA Template - Operational State",
+         "type": "object",
+         "properties": {
+            "peer_redundancy_template": {
+               "description": "vHBA Template - Operational State - Peer Redundancy Template",
+               "type": "object",
+               "properties": {
+                  "name": {
+                     "description": "vHBA Template - Operational State - Peer Redundancy Template - Name",
+                     "type": "string",
+                     "default": ""
+                  },
+                  "org": {
+                     "description": "vHBA Template - Operational State - Peer Redundancy Template - Org",
+                     "type": "string",
+                     "default": ""
+                  }
+               },
+               "additionalProperties": false,
+               "required": [
+                  "name",
+                  "org"
+               ]
+            },
+            "qos_policy": {
+               "description": "vHBA Template - Operational State - QoS Policy",
+               "type": "object",
+               "properties": {
+                  "name": {
+                     "description": "vHBA Template - Operational State - QoS Policy - Name",
+                     "type": "string",
+                     "default": ""
+                  },
+                  "org": {
+                     "description": "vHBA Template - Operational State - QoS Policy - Org",
+                     "type": "string",
+                     "default": ""
+                  }
+               },
+               "additionalProperties": false,
+               "required": [
+                  "name",
+                  "org"
+               ]
+            },
+            "stats_threshold_policy": {
+               "description": "vHBA Template - Operational State - Stats Threshold Policy",
+               "type": "object",
+               "properties": {
+                  "name": {
+                     "description": "vHBA Template - Operational State - Stats Threshold Policy - Name",
+                     "type": "string",
+                     "default": ""
+                  },
+                  "org": {
+                     "description": "vHBA Template - Operational State - Stats Threshold Policy - Org",
+                     "type": "string",
+                     "default": ""
+                  }
+               },
+               "additionalProperties": false,
+               "required": [
+                  "name",
+                  "org"
+               ]
+            }
+         },
+         "additionalProperties": false
       }
    },
    "additionalProperties": false,

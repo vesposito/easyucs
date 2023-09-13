@@ -5,6 +5,7 @@
 
 import re
 
+from __init__ import __version__
 from draw.ucs.chassis import UcsSystemDrawInfraChassis
 from draw.ucs.neighbor import UcsSystemDrawInfraNeighborsLan, UcsSystemDrawInfraNeighborsSan
 from draw.ucs.rack import UcsSystemDrawInfraRack, UcsSystemDrawInfraRackEnclosure
@@ -51,6 +52,11 @@ class UcsSystemInventoryManager(GenericUcsInventoryManager):
             self.logger(level="error", message="Could not find any inventory to draw!")
             return False
 
+        if self.parent.task is not None:
+            self.parent.task.taskstep_manager.start_taskstep(
+                name="GenerateReportDrawInventoryUcsSystem",
+                description="Drawing inventory of device " + self.parent.target)
+
         chassis_front_draw_list = []
         chassis_rear_draw_list = []
         for chassis in inventory.chassis:
@@ -78,8 +84,10 @@ class UcsSystemInventoryManager(GenericUcsInventoryManager):
             rack_enclosure_front_draw_list.append(rack_enclosure._draw_front)
             rack_enclosure_rear_draw_list.append(rack_enclosure._draw_rear)
         # We only keep the racks that have been fully created -> json file and picture
-        rack_enclosure_front_draw_list = [rack_enclosure for rack_enclosure in rack_enclosure_front_draw_list if rack_enclosure.picture_size]
-        rack_enclosure_rear_draw_list = [rack_enclosure for rack_enclosure in rack_enclosure_rear_draw_list if rack_enclosure.picture_size]
+        rack_enclosure_front_draw_list = [rack_enclosure for rack_enclosure in rack_enclosure_front_draw_list if
+                                          rack_enclosure.picture_size]
+        rack_enclosure_rear_draw_list = [rack_enclosure for rack_enclosure in rack_enclosure_rear_draw_list if
+                                         rack_enclosure.picture_size]
 
         fi_rear_draw_list = []
         for fi in inventory.fabric_interconnects:
@@ -189,12 +197,11 @@ class UcsSystemInventoryManager(GenericUcsInventoryManager):
             else:
                 rack_draw._parent._draw_infra = None
 
-
         for rack_enclosure_draw in rack_enclosure_rear_draw_list:
             if fi_rear_draw_list:
                 infra = UcsSystemDrawInfraRackEnclosure(rack_enclosure=rack_enclosure_draw, fi_list=fi_rear_draw_list,
-                                               fex_list=fex_rear_draw_list,
-                                               parent=fi_rear_draw_list[0]._parent)
+                                                        fex_list=fex_rear_draw_list,
+                                                        parent=fi_rear_draw_list[0]._parent)
                 if hasattr(infra, "_file_name"):
                     # If wires are present
                     rack_enclosure_draw._parent._draw_infra = infra
@@ -203,17 +210,22 @@ class UcsSystemInventoryManager(GenericUcsInventoryManager):
             else:
                 rack_enclosure_draw._parent._draw_infra = None
 
+        if self.parent.task is not None:
+            self.parent.task.taskstep_manager.stop_taskstep(
+                name="GenerateReportDrawInventoryUcsSystem", status="successful",
+                status_message="Finished drawing inventory of device " + self.parent.target)
+
+        return True
+
     def export_draw(self, uuid=None, export_format="png", directory=None, export_clear_pictures=False):
         """
-        Export all the drawings
-
-        :param uuid: The UUID of the drawn inventory to be exported. If not specified, the most recent inventory will be used
+        Export all the drawings generated from an inventory
+        :param uuid: The UUID of the drawn inventory to be exported. If not specified, most recent will be used
         :param export_format: "png" by default, not used for now
-        :param directory:
-        :param export_clear_pictures : Export the pictures without colored ports
-        :return:
+        :param directory: directory to export the pictures to
+        :param export_clear_pictures : Also export the pictures without colored ports
+        :return: True if successful, False otherwise
         """
-
         if uuid is None:
             self.logger(level="debug",
                         message="No inventory UUID specified in inventory save draw request. Using latest.")
@@ -259,7 +271,7 @@ class UcsSystemInventoryManager(GenericUcsInventoryManager):
             if hasattr(rack, "_draw_infra"):
                 if rack._draw_infra:
                     rack._draw_infra.save_image(output_directory=directory, format=export_format)
-                    
+
         for rack_enclosure in inventory.rack_enclosures:
             if hasattr(rack_enclosure, "_draw_front"):
                 if rack_enclosure._draw_front:
@@ -269,7 +281,8 @@ class UcsSystemInventoryManager(GenericUcsInventoryManager):
                     rack_enclosure._draw_rear.save_image(output_directory=directory, format=export_format)
                     if export_clear_pictures:
                         if hasattr(rack_enclosure._draw_rear, "clear_version"):
-                            rack_enclosure._draw_rear.clear_version.save_image(output_directory=directory, format=export_format)
+                            rack_enclosure._draw_rear.clear_version.save_image(output_directory=directory,
+                                                                               format=export_format)
             if hasattr(rack_enclosure, "_draw_infra"):
                 if rack_enclosure._draw_infra:
                     rack_enclosure._draw_infra.save_image(output_directory=directory, format=export_format)
@@ -310,17 +323,63 @@ class UcsSystemInventoryManager(GenericUcsInventoryManager):
             for infra in inventory._draw_infra_rack_enclosure_service_profiles:
                 infra.save_image(output_directory=directory, format=export_format)
 
-    def fetch_inventory(self):
+        return True
+
+    def fetch_inventory(self, force=False):
+        """
+        Fetches inventory from a live UCS System device
+        :return: Inventory UUID if successful, None otherwise
+        """
         self.logger(message="Fetching inventory from live device (can take several minutes)")
         inventory = UcsSystemInventory(parent=self)
-        inventory.origin = "live"
+        inventory.metadata.origin = "live"
+        inventory.metadata.easyucs_version = __version__
         inventory.load_from = "live"
-        inventory._fetch_sdk_objects()
-        self.logger(level="debug", message="Finished fetching UCS SDK objects for inventory")
+        inventory._fetch_sdk_objects(force=force)
 
-        # add device connector
-        if True: # todo add condition of version?
-            inventory.device_connector.append(UcsSystemDeviceConnector(parent=inventory))
+        # If any of the mandatory tasksteps fails then return None
+        from api.api_server import easyucs
+        if easyucs and self.parent.task and \
+                easyucs.task_manager.is_any_taskstep_failed(uuid=self.parent.task.metadata.uuid):
+            self.logger(level="error", message="Failed to fetch one or more SDK objects. Stopping the inventory fetch.")
+            return None
+
+        self.logger(level="debug", message="Finished fetching " + self.parent.metadata.device_type_long +
+                                           " SDK objects for inventory")
+
+        # Fetch device connector info.
+        # We only do this if UCSM user has admin privileges as it is required for Device Connector API
+        if "admin" in self.parent.handle.priv.split(","):
+            if self.parent.task is not None:
+                self.parent.task.taskstep_manager.start_taskstep(
+                    name="FetchInventoryUcsSystemDeviceConnector",
+                    description="Fetching " + self.parent.metadata.device_type_long + " Device Connector Inventory")
+            device_connector = UcsSystemDeviceConnector(parent=inventory)
+            if device_connector.version:
+                inventory.device_connector.append(device_connector)
+                if self.parent.task is not None:
+                    self.parent.task.taskstep_manager.stop_taskstep(
+                        name="FetchInventoryUcsSystemDeviceConnector", status="successful",
+                        status_message="Successfully fetched " + self.parent.metadata.device_type_long +
+                                       " Device Connector Inventory")
+            else:
+                self.logger(level="warning", message="Error while fetching " + self.parent.metadata.device_type_long +
+                                                     " Device Connector Inventory")
+                if self.parent.task is not None:
+                    self.parent.task.taskstep_manager.stop_taskstep(
+                        name="FetchInventoryUcsSystemDeviceConnector", status="failed",
+                        status_message="Error while fetching " + self.parent.metadata.device_type_long +
+                                       " Device connector Inventory")
+        else:
+            self.logger(level="debug", message="Skipped fetching " + self.parent.metadata.device_type_long +
+                                               " Device Connector Inventory as user " + self.parent.username +
+                                               " does not have admin privileges")
+            if self.parent.task is not None:
+                self.parent.task.taskstep_manager.skip_taskstep(
+                    name="FetchInventoryUcsSystemDeviceConnector",
+                    status_message="Skipped fetching " + self.parent.metadata.device_type_long +
+                                " Device Connector Inventory as user " + self.parent.username +
+                                " does not have admin privileges")
 
         if "networkElement" in inventory.sdk_objects.keys():
             for network_element in sorted(inventory.sdk_objects["networkElement"], key=lambda fi: fi.dn):
@@ -328,7 +387,6 @@ class UcsSystemInventoryManager(GenericUcsInventoryManager):
 
             # Verifying that Info Policy is enabled before trying to fetch neighbors
             self.logger(level="debug", message="Verifying that Info Policy is enabled")
-            info_policy_state = None
             try:
                 info_policy = self.parent.handle.query_dn("sys/info-policy")
                 info_policy_state = info_policy.state
@@ -340,23 +398,38 @@ class UcsSystemInventoryManager(GenericUcsInventoryManager):
                     inventory.lan_neighbors = inventory._get_lan_neighbors()
                     inventory.san_neighbors = inventory._get_san_neighbors()
 
-            except Exception:
-                self.logger(level="warning", message="Unable to get Info Policy State")
+            except Exception as err:
+                self.logger(level="warning", message="Unable to get Info Policy State: " + str(err))
 
         if "equipmentChassis" in inventory.sdk_objects.keys():
-            for equipment_chassis in sorted(inventory.sdk_objects["equipmentChassis"], key=lambda chassis: [int(t) if t.isdigit() else t.lower() for t in re.split('(\d+)', chassis.id)]):
+            for equipment_chassis in sorted(inventory.sdk_objects["equipmentChassis"],
+                                            key=lambda chassis: [int(t) if t.isdigit() else t.lower() for t in
+                                                                 re.split('(\d+)', chassis.id)]):
+                # We filter out chassis that have "identity-unestablishable" in their presence attribute
+                if hasattr(equipment_chassis, "presence") and "identity-unestablishable" in equipment_chassis.presence:
+                    continue
                 inventory.chassis.append(UcsSystemChassis(parent=inventory, equipment_chassis=equipment_chassis))
 
         if "equipmentFex" in inventory.sdk_objects.keys():
-            for equipment_fex in sorted(inventory.sdk_objects["equipmentFex"], key=lambda fex: [int(t) if t.isdigit() else t.lower() for t in re.split('(\d+)', fex.id)]):
+            for equipment_fex in sorted(inventory.sdk_objects["equipmentFex"],
+                                        key=lambda fex: [int(t) if t.isdigit() else t.lower() for t in
+                                                         re.split('(\d+)', fex.id)]):
                 inventory.fabric_extenders.append(UcsSystemFex(parent=inventory, equipment_fex=equipment_fex))
 
         if "equipmentRackEnclosure" in inventory.sdk_objects.keys():
-            for equipment_rack_enclosure in sorted(inventory.sdk_objects["equipmentRackEnclosure"], key=lambda enclosure: [int(t) if t.isdigit() else t.lower() for t in re.split('(\d+)', enclosure.id)]):
-                inventory.rack_enclosures.append(UcsSystemRackEnclosure(parent=inventory, equipment_rack_enclosure=equipment_rack_enclosure))
+            for equipment_rack_enclosure in sorted(inventory.sdk_objects["equipmentRackEnclosure"],
+                                                   key=lambda enclosure: [int(t) if t.isdigit() else t.lower() for t in
+                                                                          re.split('(\d+)', enclosure.id)]):
+                inventory.rack_enclosures.append(
+                    UcsSystemRackEnclosure(parent=inventory, equipment_rack_enclosure=equipment_rack_enclosure))
 
         if "computeRackUnit" in inventory.sdk_objects.keys():
-            for compute_rack_unit in sorted(inventory.sdk_objects["computeRackUnit"], key=lambda rack: [int(t) if t.isdigit() else t.lower() for t in re.split('(\d+)', rack.id)]):
+            for compute_rack_unit in sorted(inventory.sdk_objects["computeRackUnit"],
+                                            key=lambda rack: [int(t) if t.isdigit() else t.lower() for t in
+                                                              re.split('(\d+)', rack.id)]):
+                # We filter out rack servers that have "identity-unestablishable" in their presence attribute
+                if hasattr(compute_rack_unit, "presence") and "identity-unestablishable" in compute_rack_unit.presence:
+                    continue
                 # We filter out rack servers that are inside enclosures (e.g. for UCS C4200)
                 if compute_rack_unit.enclosure_id in ["0", None]:
                     inventory.rack_units.append(UcsSystemRack(parent=inventory, compute_rack_unit=compute_rack_unit))
@@ -415,19 +488,46 @@ class UcsImcInventoryManager(GenericUcsInventoryManager):
         GenericUcsInventoryManager.__init__(self, parent=parent)
         self.inventory_class_name = UcsImcInventory
 
-    def fetch_inventory(self):
+    def fetch_inventory(self, force=False):
         self.logger(message="Fetching inventory from live device (can take several minutes)")
         inventory = UcsImcInventory(parent=self)
-        inventory.origin = "live"
+        inventory.metadata.origin = "live"
+        inventory.metadata.easyucs_version = __version__
         inventory.load_from = "live"
-        inventory._fetch_sdk_objects()
-        self.logger(level="debug", message="Finished fetching UCS SDK objects for inventory")
+        inventory._fetch_sdk_objects(force=force)
 
-        # add device connector
-        if True:  # todo add condition of version?
-            inventory.device_connector.append(UcsImcDeviceConnector(parent=inventory))
+        # If any of the mandatory tasksteps fails then return None
+        from api.api_server import easyucs
+        if easyucs and self.parent.task and \
+                easyucs.task_manager.is_any_taskstep_failed(uuid=self.parent.task.metadata.uuid):
+            self.logger(level="error", message="Failed to fetch one or more SDK objects. Stopping the inventory fetch.")
+            return None
 
-        if "equipmentRackEnclosure" in inventory.sdk_objects and len(inventory.sdk_objects["equipmentRackEnclosure"]) > 0:
+        self.logger(level="debug", message="Finished fetching " + self.parent.metadata.device_type_long +
+                                           " SDK objects for inventory")
+
+        # Add device connector
+        if self.parent.task is not None:
+            self.parent.task.taskstep_manager.start_taskstep(
+                name="FetchInventoryUcsImcDeviceConnector",
+                description="Fetching " + self.parent.metadata.device_type_long + " Device Connector Inventory")
+        device_connector = UcsImcDeviceConnector(parent=inventory)
+        if device_connector.version:
+            inventory.device_connector.append(device_connector)
+            if self.parent.task is not None:
+                self.parent.task.taskstep_manager.stop_taskstep(
+                    name="FetchInventoryUcsImcDeviceConnector", status="successful",
+                    status_message="Successfully fetched " + self.parent.metadata.device_type_long +
+                                   " Device Connector Inventory")
+        else:
+            if self.parent.task is not None:
+                self.parent.task.taskstep_manager.stop_taskstep(
+                    name="FetchInventoryUcsImcDeviceConnector", status="failed",
+                    status_message="Error while fetching " + self.parent.metadata.device_type_long +
+                                   " Device connector Inventory")
+
+        if "equipmentRackEnclosure" in inventory.sdk_objects and len(
+                inventory.sdk_objects["equipmentRackEnclosure"]) > 0:
             # Server is a server node inside a rack enclosure
             inventory.rack_enclosures.append(
                 UcsImcRackEnclosure(parent=inventory,
@@ -463,7 +563,7 @@ class UcsImcInventoryManager(GenericUcsInventoryManager):
         if "device_connector" in inventory_json:
             for device_connector in inventory_json["device_connector"]:
                 inventory.device_connector.append(UcsImcDeviceConnector(parent=inventory,
-                                                                           device_connector=device_connector))
+                                                                        device_connector=device_connector))
 
         if "rack_enclosures" in inventory_json:
             for equipment_rack_enclosure in inventory_json["rack_enclosures"]:
@@ -501,6 +601,11 @@ class UcsImcInventoryManager(GenericUcsInventoryManager):
         if inventory is None:
             return False
 
+        if self.parent.task is not None:
+            self.parent.task.taskstep_manager.start_taskstep(
+                name="GenerateReportDrawInventoryUcsImc",
+                description="Drawing inventory of device " + self.parent.target)
+
         # rack_front_draw_list = []
         # rack_rear_draw_list = []
         for rack in inventory.rack_units:
@@ -514,15 +619,21 @@ class UcsImcInventoryManager(GenericUcsInventoryManager):
         for chassis in inventory.chassis:
             chassis._generate_draw()
 
+        if self.parent.task is not None:
+            self.parent.task.taskstep_manager.stop_taskstep(
+                name="GenerateReportDrawInventoryUcsImc", status="successful",
+                status_message="Finished drawing inventory of device " + self.parent.target)
+
+        return True
+
     def export_draw(self, uuid=None, export_format="png", directory=None, export_clear_pictures=False):
         """
         Export all the drawings
-
-        :param uuid: The UUID of the drawn inventory to be exported. If not specified, the most recent inventory will be used
+        :param uuid: The UUID of the drawn inventory to be exported. If not specified, most recent will be used
         :param export_format: "png" by default, not used for now
         :param directory:
         :param export_clear_pictures: not used
-        :return:
+        :return: True if successful, False otherwise
         """
 
         if uuid is None:
@@ -565,22 +676,36 @@ class UcsImcInventoryManager(GenericUcsInventoryManager):
                 if rack_enclosure._draw_rear:
                     rack_enclosure._draw_rear.save_image(output_directory=directory, format=export_format)
 
+        return True
+
 
 class UcsCentralInventoryManager(GenericUcsInventoryManager):
     def __init__(self, parent=None):
         GenericUcsInventoryManager.__init__(self, parent=parent)
         self.inventory_class_name = UcsCentralInventory
 
-    def fetch_inventory(self):
+    def fetch_inventory(self, force=False):
         self.logger(message="Fetching inventory from live device (can take several minutes)")
         inventory = UcsCentralInventory(parent=self)
-        inventory.origin = "live"
+        inventory.metadata.origin = "live"
+        inventory.metadata.easyucs_version = __version__
         inventory.load_from = "live"
-        inventory._fetch_sdk_objects()
-        self.logger(level="debug", message="Finished fetching UCS SDK objects for inventory")
+        inventory._fetch_sdk_objects(force=force)
+
+        # If any of the mandatory tasksteps fails then return None
+        from api.api_server import easyucs
+        if easyucs and self.parent.task and \
+                easyucs.task_manager.is_any_taskstep_failed(uuid=self.parent.task.metadata.uuid):
+            self.logger(level="error", message="Failed to fetch one or more SDK objects. Stopping the inventory fetch.")
+            return None
+
+        self.logger(level="debug", message="Finished fetching " + self.parent.metadata.device_type_long +
+                                           " SDK objects for inventory")
 
         if "computeSystem" in inventory.sdk_objects.keys():
-            for compute_system in sorted(inventory.sdk_objects["computeSystem"], key=lambda domain: [int(t) if t.isdigit() else t.lower() for t in re.split('(\d+)', domain.id)]):
+            for compute_system in sorted(inventory.sdk_objects["computeSystem"],
+                                         key=lambda domain: [int(t) if t.isdigit() else t.lower() for t in
+                                                             re.split('(\d+)', domain.id)]):
                 inventory.domains.append(UcsCentralDomain(parent=inventory, compute_system=compute_system))
 
         # Removing the list of SDK objects fetched from the live UCS device
@@ -605,4 +730,3 @@ class UcsCentralInventoryManager(GenericUcsInventoryManager):
                 inventory.domains.append(UcsCentralDomain(parent=inventory, compute_system=compute_system))
 
         return True
-

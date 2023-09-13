@@ -51,6 +51,13 @@ class UcsSystemStorageController(UcsStorageController, UcsSystemInventoryObject)
         UcsSystemInventoryObject.__init__(self, parent=parent, ucs_sdk_object=storage_controller)
 
         if self._inventory.load_from == "live":
+            # If M.2 drives are detected on the PCH controller of an M5 server, then this is a UCS-MSTOR-M2 adapter
+            if self.model and "Lewisburg" in self.model and self.disks:
+                for disk in self.disks:
+                    if "M.2" in disk.name or disk.sku.startswith("UCS-M2"):
+                        self.sku = "UCS-MSTOR-M2"
+                        break
+
             self.driver_name = None
             self.driver_version = None
         elif self._inventory.load_from == "file":
@@ -635,6 +642,8 @@ class UcsSystemStorageLocalDisk(UcsStorageLocalDisk, UcsSystemInventoryObject):
                 self.size_marketing = "100GB"
             elif self.size_marketing == "118GB":
                 self.size_marketing = "120GB"
+            elif self.size_marketing == "238GB":
+                self.size_marketing = "240GB"
             elif self.size_marketing == "398GB":
                 self.size_marketing = "400GB"
             elif self.size_marketing == "801GB":
@@ -712,6 +721,8 @@ class UcsSystemStorageLocalDisk(UcsStorageLocalDisk, UcsSystemInventoryObject):
                 self.size_marketing = "1TB"
             elif self.sku in ["UCS-SD480GSAS-EV"]:
                 self.size_marketing = "480GB"
+            elif self.sku in ["UCS-HD24TB10K4KN"]:
+                self.size_marketing = "2.4TB"
 
             ssd_stats = None
             if self.drive_state == "SSD":
@@ -779,7 +790,11 @@ class UcsSystemStorageLocalDisk(UcsStorageLocalDisk, UcsSystemInventoryObject):
 
     def _find_corresponding_storage_ssd_stats(self):
         if "storageSsdHealthStats" not in self._inventory.sdk_objects.keys():
-            return False
+            return None
+
+        # We avoid logging in case this is a UCS Central device as there is no storageSsdHealthStats
+        if self._device.metadata.device_type in ["ucsc"]:
+            return None
 
         # We check if we already have fetched the list of storageSsdHealthStats objects
         if self._inventory.sdk_objects["storageSsdHealthStats"] is not None:
@@ -800,11 +815,11 @@ class UcsSystemStorageLocalDisk(UcsStorageLocalDisk, UcsSystemInventoryObject):
                     self.logger(level="info", message="SSD stats of disk with id " + self.id + " for controller " +
                                                       self._parent.dn + " are not available.")
 
-                return False
+                return None
             else:
                 return storage_ssd_stats_list[0]
 
-        return False
+        return None
 
 
 class UcsImcStorageLocalDisk(UcsStorageLocalDisk, UcsImcInventoryObject):
@@ -905,6 +920,8 @@ class UcsImcStorageLocalDisk(UcsStorageLocalDisk, UcsImcInventoryObject):
                 self.size_marketing = "100GB"
             elif self.size_marketing == "118GB":
                 self.size_marketing = "120GB"
+            elif self.size_marketing == "238GB":
+                self.size_marketing = "240GB"
             elif self.size_marketing == "398GB":
                 self.size_marketing = "400GB"
             elif self.size_marketing == "801GB":
@@ -1016,7 +1033,10 @@ class UcsSystemStorageControllerNvmeDrive(UcsStorageNvmeDrive, UcsSystemInventor
             self.temperature = None
             if self.pci_slot:
                 if any(x in self.pci_slot for x in ["FRONT", "REAR"]):
-                    self.slot_type = "sff-nvme"
+                    if "UcsSystemBlade" in self._parent.__class__.__name__ and self._parent.model in ["UCSB-B200-M6"]:
+                        self.slot_type = "sff-7mm-m6-nvme"
+                    else:
+                        self.slot_type = "sff-nvme"
                 else:
                     self.slot_type = "pcie-nvme"
 
@@ -1089,6 +1109,11 @@ class UcsSystemStorageControllerNvmeDrive(UcsStorageNvmeDrive, UcsSystemInventor
                     elif self.size_marketing == "7.7TB":
                         self.size_marketing = "7.6TB"
 
+            # Manual fix for missing connection protocol for some NVMe drives
+            if self.connection_protocol == "unspecified":
+                if "NVME" in getattr(storage_controller, "type", ""):
+                    self.connection_protocol = "NVME"
+
             nvme_stats = self._find_corresponding_storage_nvme_stats()
             if nvme_stats:
                 self.temperature = nvme_stats.temperature
@@ -1117,7 +1142,7 @@ class UcsSystemStorageControllerNvmeDrive(UcsStorageNvmeDrive, UcsSystemInventor
 
     def _find_corresponding_storage_embedded_storage(self):
         if "storageEmbeddedStorage" not in self._inventory.sdk_objects.keys():
-            return False
+            return None
 
         # We check if we already have fetched the list of storageEmbeddedStorage objects
         if self._inventory.sdk_objects["storageEmbeddedStorage"] is not None:
@@ -1130,15 +1155,19 @@ class UcsSystemStorageControllerNvmeDrive(UcsStorageNvmeDrive, UcsSystemInventor
                 self.logger(level="debug",
                             message="Could not find the corresponding storageEmbeddedStorage for object with DN " +
                                     self.dn + " of model \"" + self.model + "\" with ID " + self.id)
-                return False
+                return None
             else:
                 return storage_embedded_storage_list[0]
 
-        return False
+        return None
 
     def _find_corresponding_storage_nvme_stats(self):
         if "storageNvmeStats" not in self._inventory.sdk_objects.keys():
-            return False
+            return None
+
+        # We avoid logging in case this is a UCS Central device as there is no storageNvmeStats
+        if self._device.metadata.device_type in ["ucsc"]:
+            return None
 
         # We check if we already have fetched the list of storageNvmeStats objects
         if self._inventory.sdk_objects["storageNvmeStats"] is not None:
@@ -1158,11 +1187,11 @@ class UcsSystemStorageControllerNvmeDrive(UcsStorageNvmeDrive, UcsSystemInventor
                     self.logger(level="info", message="NVMe stats of disk with id " + self.id + " for server " +
                                                       self._parent.dn + " are not available.")
 
-                return False
+                return None
             else:
                 return storage_nvme_stats_list[0]
 
-        return False
+        return None
 
 
 class UcsImcStorageControllerNvmeDrive(UcsStorageNvmeDrive, UcsImcInventoryObject):

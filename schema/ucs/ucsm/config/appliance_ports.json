@@ -1,51 +1,51 @@
 {
-   "id":"ucs_system_config_appliance_ports#",
-   "$schema":"http://json-schema.org/draft-07/schema#",
-   "title":"EasyUCS ucs system config appliance_ports section",
-   "description":"EasyUCS ucs system config appliance_ports section JSON schema",
-   "type":"object",
-   "properties":{
+   "id": "ucs_system_config_appliance_ports#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS ucs system config appliance_ports section",
+   "description": "EasyUCS ucs system config appliance_ports section JSON schema",
+   "type": "object",
+   "properties": {
       "comment": {
          "description": "Appliance Port Comments",
          "type": "string",
          "default": ""
       },
-      "fabric":{
-         "description":"Fabric ID of Appliance Port (\"A\" or \"B\")",
-         "type":"string",
-         "enum":[
+      "fabric": {
+         "description": "Fabric ID of Appliance Port (\"A\" or \"B\")",
+         "type": "string",
+         "enum": [
             "a",
             "A",
             "b",
             "B"
          ]
       },
-      "slot_id":{
-         "description":"Slot ID of Appliance Port",
-         "type":"string",
-         "pattern":"^[1-4]$"
+      "slot_id": {
+         "description": "Slot ID of Appliance Port",
+         "type": "string",
+         "pattern": "^[1-4]$"
       },
-      "port_id":{
-         "description":"Port ID of Appliance Port",
-         "type":"string",
-         "pattern":"^[1-9]$|^[1-9][0-9]$|^10[0-8]$"
+      "port_id": {
+         "description": "Port ID of Appliance Port",
+         "type": "string",
+         "pattern": "^[1-9]$|^[1-9][0-9]$|^10[0-8]$"
       },
-      "aggr_id":{
-         "description":"Aggregate ID of Appliance Port (for Breakout Ports)",
-         "type":"string",
-         "pattern":"^[1-4]$"
+      "aggr_id": {
+         "description": "Aggregate ID of Appliance Port (for Breakout Ports)",
+         "type": "string",
+         "pattern": "^[1-4]$"
       },
-      "user_label":{
-         "description":"User Label of Appliance Port",
-         "type":"string",
-         "default":"",
-         "pattern":"^[ !#$%&\\(\\)\\*\\+,\\-\\./:;\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{0,32}$"
+      "user_label": {
+         "description": "User Label of Appliance Port",
+         "type": "string",
+         "default": "",
+         "pattern": "^[ !#$%&\\(\\)\\*\\+,\\-\\./:;\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{0,32}$"
       },
-      "priority":{
-         "description":"Priority of Appliance Port",
-         "type":"string",
-         "default":"best-effort",
-         "enum":[
+      "priority": {
+         "description": "Priority of Appliance Port",
+         "type": "string",
+         "default": "best-effort",
+         "enum": [
             "best-effort",
             "bronze",
             "fc",
@@ -54,25 +54,25 @@
             "silver"
          ]
       },
-      "pin_group":{
-         "description":"LAN Pin Group of Appliance Port",
-         "type":"string"
+      "pin_group": {
+         "description": "LAN Pin Group of Appliance Port",
+         "type": "string"
       },
-      "network_control_policy":{
-         "description":"Network Control Policy of Appliance Port",
-         "type":"string",
-         "pattern":"^[\\-\\.:_a-zA-Z0-9]{0,16}$"
+      "network_control_policy": {
+         "description": "Network Control Policy of Appliance Port",
+         "type": "string",
+         "pattern": "^[\\-\\.:_a-zA-Z0-9]{0,16}$"
       },
-      "flow_control_policy":{
-         "description":"Flow Control Policy of Appliance Port",
-         "type":"string",
-         "pattern":"^[\\-\\.:_a-zA-Z0-9]{0,16}$"
+      "flow_control_policy": {
+         "description": "Flow Control Policy of Appliance Port",
+         "type": "string",
+         "pattern": "^[\\-\\.:_a-zA-Z0-9]{0,16}$"
       },
-      "admin_speed":{
-         "description":"Admin Speed of Appliance Port",
-         "type":"string",
+      "admin_speed": {
+         "description": "Admin Speed of Appliance Port",
+         "type": "string",
          "default": "auto",
-         "enum":[
+         "enum": [
             "1gbps",
             "10gbps",
             "25gbps",
@@ -81,11 +81,11 @@
             "auto"
          ]
       },
-      "admin_state":{
-         "description":"Admin State of Appliance Port",
-         "type":"string",
-         "default":"enabled",
-         "enum":[
+      "admin_state": {
+         "description": "Admin State of Appliance Port",
+         "type": "string",
+         "default": "enabled",
+         "enum": [
             "disabled",
             "enabled"
          ]
@@ -100,60 +100,60 @@
             "cl91"
          ]
       },
-      "vlan_port_mode":{
-         "description":"VLAN Port Mode of Appliance Port",
-         "type":"string",
-         "default":"trunk",
-         "enum":[
+      "vlan_port_mode": {
+         "description": "VLAN Port Mode of Appliance Port",
+         "type": "string",
+         "default": "trunk",
+         "enum": [
             "access",
             "trunk"
          ]
       },
-      "appliance_vlans":{
-         "description":"VLAN Name(s) assigned to Appliance Port",
-         "type":"array",
-         "items":{
-            "description":"VLAN Name assigned to Appliance Port",
-            "type":"string",
-            "pattern":"^[\\-\\.:_a-zA-Z0-9]{1,32}$"
+      "appliance_vlans": {
+         "description": "VLAN Name(s) assigned to Appliance Port",
+         "type": "array",
+         "items": {
+            "description": "VLAN Name assigned to Appliance Port",
+            "type": "string",
+            "pattern": "^[\\-\\.:_a-zA-Z0-9]{1,32}$"
          },
-         "minItems":1
+         "minItems": 1
       },
-      "native_vlan":{
-         "description":"(Optional) Name of native VLAN assigned to Appliance Port",
-         "type":"string",
-         "pattern":"^[\\-\\.:_a-zA-Z0-9]{1,32}$"
+      "native_vlan": {
+         "description": "(Optional) Name of native VLAN assigned to Appliance Port",
+         "type": "string",
+         "pattern": "^[\\-\\.:_a-zA-Z0-9]{1,32}$"
       },
-      "ethernet_target_endpoint":{
-         "description":"Ethernet Target Endpoint list of Appliance Port",
-         "type":"array",
-         "items":{
-            "description":"Ethernet Target Endpoint of Appliance Port",
-            "type":"object",
-            "properties":{
-               "name":{
-                  "description":"Name of Ethernet Target Endpoint of Appliance Port",
-                  "type":"string",
-                  "pattern":"^[\\-\\.:_a-zA-Z0-9]{1,16}$"
+      "ethernet_target_endpoint": {
+         "description": "Ethernet Target Endpoint list of Appliance Port",
+         "type": "array",
+         "items": {
+            "description": "Ethernet Target Endpoint of Appliance Port",
+            "type": "object",
+            "properties": {
+               "name": {
+                  "description": "Name of Ethernet Target Endpoint of Appliance Port",
+                  "type": "string",
+                  "pattern": "^[\\-\\.:_a-zA-Z0-9]{1,16}$"
                },
-               "mac_address":{
-                  "description":"MAC Address of Ethernet Target Endpoint of Appliance Port",
-                  "type":"string",
-                  "default":"00:00:00:00:00:00",
-                  "pattern":"^(([0-9a-fA-F][0-9a-fA-F]:){5}([0-9a-fA-F][0-9a-fA-F]))$|^0$"
+               "mac_address": {
+                  "description": "MAC Address of Ethernet Target Endpoint of Appliance Port",
+                  "type": "string",
+                  "default": "00:00:00:00:00:00",
+                  "pattern": "^(([0-9a-fA-F][0-9a-fA-F]:){5}([0-9a-fA-F][0-9a-fA-F]))$|^0$"
                }
             },
-            "additionalProperties":false,
-            "required":[
+            "additionalProperties": false,
+            "required": [
                "name"
             ]
          },
-         "minItems":1,
-         "maxItems":1
+         "minItems": 1,
+         "maxItems": 1
       }
    },
-   "additionalProperties":false,
-   "required":[
+   "additionalProperties": false,
+   "required": [
       "fabric",
       "slot_id",
       "port_id"

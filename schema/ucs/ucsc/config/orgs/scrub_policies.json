@@ -1,0 +1,81 @@
+{
+   "id": "ucs_central_config_scrub_policies#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS ucs central config orgs scrub_policies section",
+   "description": "EasyUCS ucs central config orgs scrub_policies section JSON schema",
+   "type": "object",
+   "properties": {
+      "comment": {
+         "description": "Scrub Policy Comments",
+         "type": "string",
+         "default": ""
+      },
+      "name": {
+         "description": "Scrub Policy Name",
+         "type": "string",
+         "default": "",
+         "pattern": "^[\\-\\.:_a-zA-Z0-9]{1,16}$"
+      },
+      "descr": {
+         "description": "Description of Scrub Policy",
+         "type": "string",
+         "default": "",
+         "pattern": "^[ !#$%&\\(\\)\\*\\+,\\-\\./:;\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{0,256}$"
+      },
+      "disk_scrub": {
+         "description": "Scrub Policy - Disk Scrub",
+         "type": "string",
+         "default": "no",
+         "enum": [
+            "no",
+            "yes"
+         ]
+      },
+      "flexflash_scrub": {
+         "description": "Scrub Policy - FlexFlash Scrub",
+         "type": "string",
+         "default": "no",
+         "enum": [
+            "no",
+            "yes"
+         ]
+      },
+      "bios_settings_scrub": {
+         "description": "Scrub Policy - BIOS Settings Scrub",
+         "type": "string",
+         "default": "no",
+         "enum": [
+            "no",
+            "yes"
+         ]
+      },
+      "tags": {
+         "description": "Scrub Policy - Tags",
+         "type": "array",
+         "items": {
+            "description": "Scrub Policy - Tag",
+            "type": "object",
+            "properties": {
+               "type": {
+                  "description": "Scrub Policy - Tag - Type",
+                  "type": "string",
+                  "pattern": "^[ !#$%&\\(\\)\\*\\+,\\-\\.:;=\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{1,32}$"
+               },
+               "value": {
+                  "description": "Scrub Policy - Tag - Value",
+                  "type": "string"
+               }
+            },
+            "additionalProperties": false,
+            "required": [
+               "type",
+               "value"
+            ]
+         }
+      }
+   },
+   "additionalProperties": false,
+   "required": [
+      "name"
+   ]
+}

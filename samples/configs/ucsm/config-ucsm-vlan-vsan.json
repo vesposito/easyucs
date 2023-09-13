@@ -1,137 +1,137 @@
 {
-   "easyucs":{
-      "metadata":[
+   "easyucs": {
+      "metadata": [
          {
             "file_type": "config",
             "device_type": "ucsm",
-            "category":"custom",
-            "subcategory":"samples",
-            "name":"UCS Manager VLAN/VSAN-related sections configuration sample",
-            "easyucs_version":"0.9.0",
-            "revision": "1.0"
+            "category": "samples",
+            "subcategory": "VLANs/VSANs",
+            "name": "UCS Manager VLAN/VSAN-related sections configuration sample",
+            "easyucs_version": "0.9.0",
+            "revision": "1.1"
          }
       ]
    },
-   "config":{
-      "vsans":[
+   "config": {
+      "vsans": [
          {
-            "name":"BACKUP",
-            "id":"20",
-            "fcoe_vlan_id":"1020",
-            "fabric":"A"
+            "name": "BACKUP",
+            "id": "20",
+            "fcoe_vlan_id": "1020",
+            "fabric": "A"
          },
          {
-            "name":"PROD",
-            "id":"10",
-            "fcoe_vlan_id":"19",
-            "fabric":"A"
+            "name": "PROD",
+            "id": "10",
+            "fcoe_vlan_id": "19",
+            "fabric": "A"
          },
          {
-            "name":"BACKUP",
-            "id":"21",
-            "fcoe_vlan_id":"1021",
-            "fabric":"B"
+            "name": "BACKUP",
+            "id": "21",
+            "fcoe_vlan_id": "1021",
+            "fabric": "B"
          },
          {
-            "name":"PROD",
-            "id":"11",
-            "fcoe_vlan_id":"1011",
-            "fabric":"B"
+            "name": "PROD",
+            "id": "11",
+            "fcoe_vlan_id": "1011",
+            "fabric": "B"
          }
       ],
-      "appliance_vlans":[
+      "appliance_vlans": [
          {
-            "name":"testA",
-            "id":"231",
-            "fabric":"A",
-            "sharing_type":"isolated",
-            "primary_vlan_name":"testGlobal"
+            "name": "testA",
+            "id": "231",
+            "fabric": "A",
+            "sharing_type": "isolated",
+            "primary_vlan_name": "testGlobal"
          },
          {
-            "name":"testGlobal",
-            "id":"230",
-            "fabric":"dual",
-            "sharing_type":"primary",
-            "primary_vlan_name":"testGlobal",
+            "name": "testGlobal",
+            "id": "230",
+            "fabric": "dual",
+            "sharing_type": "primary",
+            "primary_vlan_name": "testGlobal",
             "org_permissions": [
                "root"
             ]
          }
       ],
-      "vlan_groups":[
+      "vlan_groups": [
          {
-            "name":"test",
-            "native_vlan":"ESX-100",
-            "vlans":[
+            "name": "test",
+            "native_vlan": "ESX-100",
+            "vlans": [
                "ESX-101",
                "ESX-102"
             ],
-            "lan_uplink_ports":[
+            "lan_uplink_ports": [
                {
-                  "fabric":"A",
-                  "slot_id":"1",
-                  "port_id":"5"
+                  "fabric": "A",
+                  "slot_id": "1",
+                  "port_id": "5"
                },
                {
-                  "fabric":"A",
-                  "slot_id":"1",
-                  "port_id":"6"
+                  "fabric": "A",
+                  "slot_id": "1",
+                  "port_id": "6"
                }
             ],
-            "lan_port_channels":[
+            "lan_port_channels": [
                {
-                  "fabric":"A",
-                  "pc_id":"13"
+                  "fabric": "A",
+                  "pc_id": "13"
                },
                {
-                  "fabric":"B",
-                  "pc_id":"14"
+                  "fabric": "B",
+                  "pc_id": "14"
                }
             ]
          }
       ],
-      "storage_vsans":[
+      "storage_vsans": [
          {
-            "name":"BACKUP2",
-            "id":"201",
-            "fcoe_vlan_id":"1080",
-            "fabric":"A"
+            "name": "BACKUP2",
+            "id": "201",
+            "fcoe_vlan_id": "1080",
+            "fabric": "A"
          },
          {
-            "name":"PROD2",
-            "id":"11",
-            "fcoe_vlan_id":"1011",
-            "fabric":"B"
+            "name": "PROD2",
+            "id": "11",
+            "fcoe_vlan_id": "1011",
+            "fabric": "B"
          },
          {
-            "name":"TOTO",
-            "id":"109",
-            "fcoe_vlan_id":"901",
-            "fabric":"dual"
+            "name": "TOTO",
+            "id": "109",
+            "fcoe_vlan_id": "901",
+            "fabric": "dual"
          }
       ],
-      "vlans":[
+      "vlans": [
          {
-            "name":"vlan300",
-            "id":"300",
-            "native_vlan":"yes"
+            "name": "vlan300",
+            "id": "300",
+            "native_vlan": "yes"
          },
          {
-            "name":"vlan400",
-            "id":"400",
-            "sharing_type":"primary",
-            "fabric":"A",
-            "multicast_policy_name":"default",
+            "name": "vlan400",
+            "id": "400",
+            "sharing_type": "primary",
+            "fabric": "A",
+            "multicast_policy_name": "default",
             "org_permissions": [
                "TEST"
             ]
          },
          {
-            "name":"vlan401",
-            "id":"401",
-            "fabric":"A",
-            "sharing_type":"isolated",
-            "primary_vlan_name":"vlan400"
+            "name": "vlan401",
+            "id": "401",
+            "fabric": "A",
+            "sharing_type": "isolated",
+            "primary_vlan_name": "vlan400"
          },
          {
             "prefix": "vlan-",
@@ -139,9 +139,9 @@
             "id_to": "450"
          }
       ],
-      "orgs":[
+      "orgs": [
          {
-            "name":"root",
+            "name": "root",
             "orgs": [
                {
                   "name": "TEST"

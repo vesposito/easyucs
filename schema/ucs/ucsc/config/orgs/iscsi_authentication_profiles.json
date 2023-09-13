@@ -1,0 +1,68 @@
+{
+   "id": "ucs_central_config_iscsi_authentication_profiles#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS ucs central config iscsi_authentication_profiles section",
+   "description": "EasyUCS ucs central config iscsi_authentication_profiles section JSON schema",
+   "type": "object",
+   "properties": {
+      "comment": {
+         "description": "iSCSI Authentication Profile Comments",
+         "type": "string",
+         "default": ""
+      },
+      "name": {
+         "description": "iSCSI Authentication Profile Name",
+         "type": "string",
+         "default": "",
+         "pattern": "^[\\-\\.:_a-zA-Z0-9]{1,16}$"
+      },
+      "descr": {
+         "description": "Description of iSCSI Authentication Profile",
+         "type": "string",
+         "default": "",
+         "pattern": "^[ !#$%&\\(\\)\\*\\+,\\-\\./:;\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{0,256}$"
+      },
+      "user_id": {
+         "description": "User ID of iSCSI Authentication Profile",
+         "type": "string"
+      },
+      "password": {
+         "description": "Password of iSCSI Authentication Profile",
+         "type": "string",
+         "pattern": "^[!\"\"#%&'\\(\\)\\*\\+,\\-\\./:;<>@\\[\\\\\\]\\^_`\\{\\|\\}~a-zA-Z0-9]{12,16}$"
+      },
+      "encrypted_password": {
+         "description": "Encrypted Password of iSCSI Authentication Profile",
+         "type": "string"
+      },
+      "tags": {
+         "description": "iSCSI Authentication Profile - Tags",
+         "type": "array",
+         "items": {
+            "description": "iSCSI Authentication Profile - Tag",
+            "type": "object",
+            "properties": {
+               "type": {
+                  "description": "iSCSI Authentication Profile - Tag - Type",
+                  "type": "string",
+                  "pattern": "^[ !#$%&\\(\\)\\*\\+,\\-\\.:;=\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{1,32}$"
+               },
+               "value": {
+                  "description": "iSCSI Authentication Profile - Tag - Value",
+                  "type": "string"
+               }
+            },
+            "additionalProperties": false,
+            "required": [
+               "type",
+               "value"
+            ]
+         }
+      }
+   },
+   "additionalProperties": false,
+   "required": [
+      "name",
+      "user_id"
+   ]
+}

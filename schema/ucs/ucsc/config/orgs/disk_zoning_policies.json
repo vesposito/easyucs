@@ -1,0 +1,218 @@
+{
+   "id": "ucs_central_config_disk_zoning_policies#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS ucs central config orgs disk_zoning_policies section",
+   "description": "EasyUCS ucs central config orgs disk_zoning_policies section JSON schema",
+   "type": "object",
+   "properties": {
+      "comment": {
+         "description": "Disk Zoning Policy Comments",
+         "type": "string",
+         "default": ""
+      },
+      "name": {
+         "description": "Disk Zoning Policy Name",
+         "type": "string",
+         "default": "",
+         "pattern": "^[\\-\\.:_a-zA-Z0-9]{1,16}$"
+      },
+      "descr": {
+         "description": "Description of Disk Zoning Policy",
+         "type": "string",
+         "default": "",
+         "pattern": "^[ !#$%&\\(\\)\\*\\+,\\-\\./:;\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{0,256}$"
+      },
+      "preserve_config": {
+         "description": "Disk Zoning Policy - Preserve Config",
+         "type": "string",
+         "default": "false",
+         "enum": [
+            "false",
+            "no",
+            "true",
+            "yes"
+         ]
+      },
+      "disks_zoned": {
+         "description": "Disk Zoning Policy - Disks Zoned",
+         "type": "array",
+         "items": {
+            "description": "Disk Zoning Policy - Disk Zoned",
+            "type": "object",
+            "oneOf": [
+               {
+                  "properties": {
+                     "ownership": {
+                        "description": "Disk Zoning Policy - Ownership",
+                        "type": "string",
+                        "default": "unassigned",
+                        "enum": [
+                           "chassis-global-spare",
+                           "chassis-global-hot-spare",
+                           "dedicated",
+                           "shared",
+                           "unassigned"
+                        ]
+                     },
+                     "drive_path": {
+                        "description": "Disk Zoning Policy - Drive Path",
+                        "type": "string",
+                        "default": "path-both",
+                        "enum": [
+                           "PATH-0",
+                           "PATH-1",
+                           "PATH-BOTH",
+                           "path-0",
+                           "path-1",
+                           "path-both"
+                        ]
+                     },
+                     "disk_slot": {
+                        "description": "Disk Zoning Policy - Disk Slot",
+                        "type": "string",
+                        "pattern": "^[1-9]$|^[1-6][0-9]$"
+                     },
+                     "server": {
+                        "description": "Disk Zoning Policy - Server ID",
+                        "type": "string",
+                        "pattern": "^[1-2]$"
+                     },
+                     "controller": {
+                        "description": "Disk Zoning Policy - Controller ID",
+                        "type": "string",
+                        "pattern": "^[1-2]$"
+                     }
+                  },
+                  "additionalProperties": false,
+                  "required": [
+                     "disk_slot"
+                  ],
+                  "if": {
+                     "properties": {
+                        "ownership": {
+                           "enum": [
+                              "dedicated"
+                           ]
+                        }
+                     },
+                     "required": [
+                        "ownership"
+                     ]
+                  },
+                  "then": {
+                     "required": [
+                        "server",
+                        "controller"
+                     ]
+                  },
+                  "else": {
+                  }
+               },
+               {
+                  "properties": {
+                     "ownership": {
+                        "description": "Disk Zoning Policy - Ownership",
+                        "type": "string",
+                        "default": "unassigned",
+                        "enum": [
+                           "chassis-global-spare",
+                           "chassis-global-hot-spare",
+                           "dedicated",
+                           "shared",
+                           "unassigned"
+                        ]
+                     },
+                     "drive_path": {
+                        "description": "Disk Zoning Policy - Drive Path",
+                        "type": "string",
+                        "default": "path-both",
+                        "enum": [
+                           "PATH-0",
+                           "PATH-1",
+                           "PATH-BOTH",
+                           "path-0",
+                           "path-1",
+                           "path-both"
+                        ]
+                     },
+                     "disk_slot_range_start": {
+                        "description": "Disk Zoning Policy - Disk Slot Range Start",
+                        "type": "string",
+                        "pattern": "^[1-9]$|^[1-6][0-9]$"
+                     },
+                     "disk_slot_range_stop": {
+                        "description": "Disk Zoning Policy - Disk Slot Range Stop",
+                        "type": "string",
+                        "pattern": "^[1-9]$|^[1-6][0-9]$"
+                     },
+                     "server": {
+                        "description": "Disk Zoning Policy - Server ID",
+                        "type": "string",
+                        "pattern": "^[1-2]$"
+                     },
+                     "controller": {
+                        "description": "Disk Zoning Policy - Controller ID",
+                        "type": "string",
+                        "pattern": "^[1-2]$"
+                     }
+                  },
+                  "additionalProperties": false,
+                  "required": [
+                     "disk_slot_range_start",
+                     "disk_slot_range_stop"
+                  ],
+                  "if": {
+                     "properties": {
+                        "ownership": {
+                           "enum": [
+                              "dedicated"
+                           ]
+                        }
+                     },
+                     "required": [
+                        "ownership"
+                     ]
+                  },
+                  "then": {
+                     "required": [
+                        "server",
+                        "controller"
+                     ]
+                  },
+                  "else": {
+                  }
+               }
+            ]
+         },
+         "minItems": 1
+      },
+      "tags": {
+         "description": "Disk Zoning Policy - Tags",
+         "type": "array",
+         "items": {
+            "description": "Disk Zoning Policy - Tag",
+            "type": "object",
+            "properties": {
+               "type": {
+                  "description": "Disk Zoning Policy - Tag - Type",
+                  "type": "string",
+                  "pattern": "^[ !#$%&\\(\\)\\*\\+,\\-\\.:;=\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{1,32}$"
+               },
+               "value": {
+                  "description": "Disk Zoning Policy - Tag - Value",
+                  "type": "string"
+               }
+            },
+            "additionalProperties": false,
+            "required": [
+               "type",
+               "value"
+            ]
+         }
+      }
+   },
+   "additionalProperties": false,
+   "required": [
+      "name"
+   ]
+}

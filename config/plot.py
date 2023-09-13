@@ -3,35 +3,39 @@
 
 """ plot.py: Easy UCS Deployment Tool """
 
+import copy
 import json
 import math
 import os
 
+import matplotlib
+
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import networkx as nx
 from PIL import Image
 
-from config.ucs.ucsm.servers import UcsSystemServiceProfile, UcsSystemBiosPolicy, UcsSystemBootPolicy, \
-    UcsSystemMaintenancePolicy, UcsSystemLocalDiskConfPolicy, UcsSystemVnicVhbaPlacementPolicy, UcsSystemVmediaPolicy, \
-    UcsSystemSerialOverLanPolicy, UcsSystemThresholdPolicy,UcsSystemPowerControlPolicy,UcsSystemScrubPolicy,\
-    UcsSystemKvmManagementPolicy, UcsSystemGraphicsCardPolicy, UcsSystemPowerSyncPolicy, UcsSystemIpmiAccessProfile, \
-    UcsSystemUuidPool, UcsSystemServerPool, UcsSystemHostFirmwarePackage
+from config.ucs.ucsm.profiles import UcsSystemServiceProfile, UcsSystemStorageProfile
+from config.ucs.ucsm.servers import UcsSystemBiosPolicy, UcsSystemBootPolicy, UcsSystemGraphicsCardPolicy, \
+    UcsSystemHostFirmwarePackage, UcsSystemLocalDiskConfPolicy, UcsSystemScrubPolicy, UcsSystemVmediaPolicy, \
+    UcsSystemKvmManagementPolicy, UcsSystemVnicVhbaPlacementPolicy, UcsSystemSerialOverLanPolicy, \
+    UcsSystemIpmiAccessProfile, UcsSystemMaintenancePolicy, UcsSystemThresholdPolicy, UcsSystemPowerControlPolicy, \
+    UcsSystemPowerSyncPolicy, UcsSystemUuidPool, UcsSystemServerPool
 from config.ucs.ucsm.lan import UcsSystemLanConnectivityPolicy, UcsSystemDynamicVnicConnectionPolicy
 from config.ucs.ucsm.san import UcsSystemSanConnectivityPolicy, UcsSystemWwnnPool
-from config.ucs.ucsm.storage import UcsSystemStorageProfile
+
 
 # All shapes : https://matplotlib.org/api/markers_api.html
 # Color examples : https://matplotlib.org/examples/color/named_colors.html
 
 
-class UcsSystemConfigPlot():
+class UcsSystemConfigPlot:
     def __init__(self, parent=None, config=None):
         # Parent is a config manager
         self.parent = parent
         self.config = config
 
         self.target = self.parent.parent.target
-
 
     def logger(self, level='info', message="No message"):
         self.parent.logger(level=level, message=message)
@@ -119,15 +123,21 @@ class UcsSystemServiceProfileConfigPlot(UcsSystemConfigPlot):
         :return: True if draw is successful, False otherwise
         """
 
-        def parse_org(org, service_profile_list):
+        def parse_org(org, service_profile_list, global_templates):
             if org.service_profiles is not None:
                 for service_profile in org.service_profiles:
                     if not service_profile.service_profile_template:
                         service_profile_list.append(service_profile)
+                    elif service_profile.policy_owner in ["ucs-central"]:
+                        # We are facing a Global Service Profile that has been instantiated from a Global SP Template
+                        if service_profile.service_profile_template not in global_templates.keys():
+                            global_templates[service_profile.service_profile_template] = [service_profile]
+                        else:
+                            global_templates[service_profile.service_profile_template].append(service_profile)
             if hasattr(org, "orgs"):
                 if org.orgs is not None:
                     for suborg in org.orgs:
-                        parse_org(suborg, service_profile_list)
+                        parse_org(suborg, service_profile_list, global_templates)
 
         if self.config is None:
             # We could not find any config
@@ -136,9 +146,17 @@ class UcsSystemServiceProfileConfigPlot(UcsSystemConfigPlot):
             return False
 
         service_profile_list = []
+        global_templates = {}
         # Searching for all Service Profiles (template or not) that are not from a template in all orgs
         for org in self.config.orgs:
-            parse_org(org, service_profile_list)
+            parse_org(org, service_profile_list, global_templates)
+
+        for gsp_temp_name in global_templates.keys():
+            # Get the GSP spawned from the global template
+            first_child = copy.copy(global_templates[gsp_temp_name][0])
+            first_child.name = gsp_temp_name.split("ucs-central/")[1]
+            first_child.type = ""
+            service_profile_list.append(first_child)
 
         # Parsing all service profiles and draw plot
         for service_profile in service_profile_list:
@@ -265,12 +283,10 @@ class UcsSystemServiceProfileConfigPlot(UcsSystemConfigPlot):
         for service_profile, plot in self.service_profile_plots.items():
             if "template" in service_profile.type:
                 file_name = directory + "/" + self.target + "_" + service_profile._parent._dn.replace("/", "_") + \
-                       "_Service_Profile_Template_" + "_".join(
-                    service_profile.name.split(" "))
+                            "_Service_Profile_Template_" + "_".join(service_profile.name.split(" "))
             else:
                 file_name = directory + "/" + self.target + "_" + service_profile._parent._dn.replace("/", "_") + \
-                            "_Service_Profile_" + "_".join(
-                    service_profile.name.split(" "))
+                            "_Service_Profile_" + "_".join(service_profile.name.split(" "))
 
             file = file_name + '_original.' + export_format
             # plot.show()
@@ -378,8 +394,7 @@ class UcsSystemOrgConfigPlot(UcsSystemConfigPlot):
                 temp_pos[1] += 0.08
             pos[p] = tuple(temp_pos)
             del temp_pos
-
-            labels_dict[p] = p.replace("org-", "").split("/")[-1]
+            labels_dict[p] = p.split("/")[-1].replace("org-", "", 1)
 
         nx.draw_networkx_labels(G, pos,
                                 labels=labels_dict)

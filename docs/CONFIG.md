@@ -1,6 +1,6 @@
 # Working with configuration files
 
-Configuration files can be pushed or fetched to/from a UCS device. They are JSON-formatted files that are meant to be **human-readable** with each section corresponding to a UCS feature.
+Configuration files can be pushed or fetched to/from a device. They are JSON-formatted files that are meant to be **human-readable** with each section corresponding to a feature.
 
 You can find configuration samples in the **samples** directory. 
 This directory contains:
@@ -8,7 +8,7 @@ This directory contains:
 * **CVD** configurations for quick deployment of FlashStack/FlexPod/VersaStack
 * **sample** configurations grouped by topic. See [below](./CONFIG.md#Samples-for-UCS-System) for more info
 
-[Fetching a live configuration](CONFIG.md#fetch-configurations) from a UCS device is also a good solution to get started.
+[Fetching a live configuration](CONFIG.md#fetch-configurations) from a device is also a good solution to get started.
 
 ## Deploy configurations
 
@@ -35,8 +35,8 @@ The second argument is the type of action:
 ```
 Action:
   {fetch,push}  Config actions
-    fetch       Fetch a config from a UCS device
-    push        Push a config to a UCS device
+    fetch       Fetch a config from a device
+    push        Push a config to a device
 ```
 
 ##### Arguments for a config push 
@@ -44,13 +44,17 @@ Action:
 List of arguments :
   
   - **-h**, --help            | show this help message and exit
-  - **-i IP**, --ip IP        | UCS IP address
+  - **-i IP**, --ip IP        | Device IP address
   - **-u USERNAME**, --username USERNAME
-                        | UCS Account Username
+                        | Device Account Username
   - **-p PASSWORD**, --password PASSWORD
-                        | UCS Account Password
-  - **-t** {**ucsm**,**cimc**, **ucsc**}, --ucstype {ucsm,cimc,ucsc}
-                        | UCS system type ("ucsm", "cimc" or "ucsc")
+                        | Device Account Password
+  - **-a API_KEY**, --api_key API_KEY
+                       | Device Account API Key
+  - **-k SECRET_KEY_PATH**, --secret_key_path SECRET_KEY_PATH
+                       | Device Account Secret Key (path to file)
+  - **-t** {**ucsm**,**cimc**, **ucsc**, **intersight**}, --device_type {ucsm,cimc,ucsc,intersight}
+                        | Device type ("ucsm", "cimc", "ucsc" or "intersight")
   - **-v**, --verbose         | Print debug log
   - **-l LOGFILE**, --logfile LOGFILE
                         | Print log in a file
@@ -61,49 +65,30 @@ List of arguments :
   - **-y**, --yes             | Answer yes to all questions
 
 
-###Using the Web Graphical User Interface (GUI)
+### Using the Web Graphical User Interface (GUI)
 
-The Web GUI is hosted by your machine, in order to launch it you need to use the file **[easyucs_gui.py](./easyucs_gui.py)**.
+The Web GUI is hosted by your machine, in order to launch it you need to use the file **[easyucs_api.py](../easyucs_api.py)**.
 
 ```
-python easyucs_gui.py
+python easyucs_api.py
 ```
 
 
 The result of this command will be something like:
 
 ```
- * Serving Flask app "easyucs_gui" (lazy loading)
- * Environment: production
-   WARNING: Do not use the development server in a production environment.
-   Use a production WSGI server instead.
- * Debug mode: off
- * Running on http://127.0.0.1:5000/ (Press CTRL+C to quit)
+2023-09-04 18:15:04,870 :: INFO :: EasyUCS :: manager.py :: in task_scheduler :: Successfully started task scheduler
+WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.
+ * Running on http://localhost:5001
+Press CTRL+C to quit
 ```
 
-It means that the GUI is available on your local machine at the URL http://127.0.0.1:5000/
+It means that the GUI is available on your local machine at the URL http://127.0.0.1:5001/
 
-The GUI can be used to deploy configurations on all types of UCS devices.
+The GUI can be used to deploy configurations on all types of devices.
 
-Open a web browser and enter the given URL. Select the UCS device type you want to use (UCS System, UCS IMC or UCS Central).
+![GUI Devices](img/gui_devices.png)
 
-Enter the credentials of your UCS device. You also have the option to perform a "reset" and/or an initial "setup" for it.
-
-If the "setup" box is selected you **must** enter the DHCP IP Address(es) that are given to your UCS device.
-
-![GUI 1](img/GUI1_850.png)
-
-Next you have to choose the configuration to push on your UCS Device. 
-You can either select a file on your computer or use a "remote" file from the **samples** directory. 
-Those remote files are JSON transcriptions of some CVDs and Best Practices.
-
-![GUI 2](img/GUI2_850.png)
-
-The last part of the GUI is the "Run Script" button, the progress bar and the log console.
-In the log console you can choose what level of logs you want. Level "info" is selected by default.
-The auto scrolling of this console is also an option.
-
-![GUI 3](img/GUI3_850.png)
 
 ## Fetch configurations
 
@@ -133,8 +118,8 @@ The second argument is the type of action:
 ```
 Action:
   {fetch,push}  Config actions
-    fetch       Fetch a config from a UCS device
-    push        Push a config to a UCS device
+    fetch       Fetch a config from a device
+    push        Push a config to a device
 ```
 
 #### Arguments for a config fetch
@@ -142,13 +127,17 @@ Action:
 List of arguments :
 
 - **-h**, --help            | show this help message and exit
-- **-i IP**, --ip IP        | UCS IP address
+- **-i IP**, --ip IP        | Device IP address
 - **-u USERNAME**, --username USERNAME
-                    | UCS Account Username
+                      | Device Account Username
 - **-p PASSWORD**, --password PASSWORD
-                    | UCS Account Password
-- **-t** {**ucsm**,**cimc**,**ucsc**}, --ucstype {ucsm,cimc,ucsc}
-                    | UCS system type ("ucsm", "cimc" or "ucsc")
+                      | Device Account Password
+- **-a API_KEY**, --api_key API_KEY
+                     | Device Account API Key
+- **-k SECRET_KEY_PATH**, --secret_key_path SECRET_KEY_PATH
+                     | Device Account Secret Key (path to file)
+- **-t** {**ucsm**,**cimc**, **ucsc**, **intersight**}, --device_type {ucsm,cimc,ucsc,intersight}
+                      | Device type ("ucsm", "cimc", "ucsc" or "intersight")
 - **-v**, --verbose         | Print debug log
 - **-l LOGFILE**, --logfile LOGFILE
                     | Print log in a file
@@ -172,7 +161,7 @@ Each JSON file is structured with two sections : "easyucs" and "config"
 ```
 ### "easyucs" section
 
-An "easyucs" section is a composed of a "metadata" and a potential "options" sections. 
+An "easyucs" section is composed of a "metadata" and a potential "options" sections. 
 
 #### Metadata
 
@@ -240,9 +229,9 @@ Example options section:
 
 ### "config" section
 
-This section is composed of all the features of a UCS Device configuration.
+This section is composed of all the features of a Device configuration.
 
-Each configuration feature is formatted the same way: a list of dictionaries featuring all of the items constituent of this feature.
+Each configuration feature is formatted the same way: a list of dictionaries featuring all the items constituent of this feature.
 
 Example config section:
 ```json5
@@ -272,9 +261,9 @@ Example config section:
 }
 ```
 
-Some features are placed under an org to respect the hierarchy of the features (in UCS Manager or UCS Central). 
+Some features are placed under an org to respect the hierarchy of the features (in UCS Manager/UCS Central or Intersight). 
 
-Note: An org can be placed under an org and so on. The first org must be named "root".
+Note: In UCS Manager/Central, an org can be placed under an org and so on. The first org must be named "root".
 
 Example orgs section:
 ```json5
@@ -322,12 +311,12 @@ Example orgs section:
 For an IMC Device, all the features are on the same level.
 
 You can find the list of all the features and where to find them on the sample config files below. 
-To find the list of all the required items and all possible values for each features, please refer to the JSON Schema files
+To find the list of all the required items and all possible values for each feature, please refer to the JSON Schema files
 (not available for UCS IMC yet).
 
 ## Samples for UCS System
 
-### Features outside of an organization
+### Features outside an organization
 
 **config-ucsm-policies.json**
 
@@ -433,7 +422,7 @@ To find the list of all the required items and all possible values for each feat
 
 - switching_mode
 
-### Features inside of an organization
+### Features inside an organization
 
 **config-ucsm-org-pools.json**
 
@@ -449,7 +438,7 @@ To find the list of all the required items and all possible values for each feat
 
 - wwxn_pools
 
-- iqn_suffix_pools
+- iqn_pools
 
 **config-ucsm-org-srv-pools.json**
 
@@ -482,6 +471,8 @@ To find the list of all the required items and all possible values for each feat
 - kvm_management_policies
 
 - serial_over_lan_policies
+
+- spdm_certificate_policies
 
 - vnic_vhba_placement_policies
 
@@ -559,7 +550,7 @@ To find the list of all the required items and all possible values for each feat
 
 ## Samples for UCS Central
 
-### Features inside of a domain group
+### Features inside a domain group
 
 **config-ucsc-domain_group-vlan-vsan.json**
 
@@ -571,7 +562,7 @@ To find the list of all the required items and all possible values for each feat
 
 - vlan_groups
 
-### Features inside of an organization
+### Features inside an organization
 
 **config-ucsc-org-pools.json**
 
@@ -586,5 +577,9 @@ To find the list of all the required items and all possible values for each feat
 - wwpn_pools
 
 ## Samples for UCS IMC
+
+Coming Soon
+
+## Samples for Intersight
 
 Coming Soon

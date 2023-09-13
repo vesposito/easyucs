@@ -88,7 +88,7 @@ class GenericUcsDrawBlade(GenericUcsDrawEquipment):
         disk_list = []
         for disk in self._parent.nvme_drives:
             # Prevent potential disk with ID 0 to be used in Draw (happens sometimes with B200 M2)
-            if disk.id != "0" and disk.slot_type == "sff-nvme":
+            if disk.id != "0" and disk.slot_type in ["sff-nvme", "sff-7mm-m6-nvme"]:
                 if disk.id in [str(i["id"]) for i in self.json_file["disks_slots"]]:
                     disk_list.append(UcsSystemDrawStorageLocalDisk(parent=disk, parent_draw=self))
                     self.disk_slots_used.append(int(disk.id))

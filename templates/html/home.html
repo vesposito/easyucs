@@ -1,0 +1,202 @@
+{% extends "/html/base.html" %}
+
+{% block css %}
+<link rel="stylesheet" href="/static/plugins/datatables-bs4/css/dataTables.bootstrap4.min.css">
+<link rel="stylesheet" href="/static/plugins/datatables-select/css/select.bootstrap4.min.css">
+<link rel="stylesheet" href="/static/plugins/datatables-responsive/css/responsive.bootstrap4.min.css">
+<link rel="stylesheet" href="/static/plugins/datatables-buttons/css/buttons.bootstrap4.min.css">
+{% endblock %}
+
+{% block modals %}
+<div class="modal fade" id="newDeviceModal" tabindex="-1" role="dialog" aria-labelledby="newDeviceModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="newDeviceModalLabel">Create New Device</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form id = "createDeviceForm">
+          <div class="form-group">
+            <label for="device_type" class="col-form-label">Device Type:</label>
+            <select name="device_type" id="device_type" class="form-control" onchange="completeDeviceForm(this.value)">
+              <option hidden disabled selected value> -- Select an option -- </option>
+              <option value="ucsm">UCS System</option>
+              <option value="cimc">UCS IMC</option>
+              <option value="ucsc">UCS Central</option>
+              <option value="intersight">Intersight</option>
+            </select>
+          </div>
+          <div id="target-input-container" class="d-none form-group">
+            <label for="target" class="col-form-label">Target:</label>
+            <input type="text" name="target" class="form-control" id="target" placeholder="10.60.11.12">
+          </div>
+          <div id="intersight-device-form" class="d-none">
+            <div class="form-group">
+              <label for="key_id" class="col-form-label">Key ID:</label>
+              <input type="text" name="key_id" class="form-control" id="key_id" placeholder="ab32810b3e952006541c4aab8/57842fd63e9520038472105e8f2dac7564612d30ae6e83">
+            </div>
+            <div class="form-group">
+              <label for="private_key" class="col-form-label">Private Key:</label>
+              <textarea style="white-space: pre-line;" type="text" name="private_key" class="form-control" id="private_key" placeholder="-----BEGIN EC PRIVATE KEY-----&#10;MIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgP13mv5gJcy2iuXkk&#10;0XQxQRFaiPBbXz25aZiHjP4pmHyhRANCAASPHN4M1YmJC+0QBU1KloACJIhqsj48&#10;Vn/WhrcQ1Tv9oMrzYBPgExVGfRhORb6eCiYwY0UpUN36LQ6gmgDHzA1i&#10;-----END EC PRIVATE KEY-----&#10;" rows="5"></textarea>
+            </div>
+          </div>
+          <div id="ucs-device-form" class="d-none">
+            <div class="form-group">
+              <label for="username" class="col-form-label">Username:</label>
+              <input type="text" name="username" class="form-control" id="username" placeholder="admin">
+            </div>
+            <div class="form-group">
+              <label for="password" class="col-form-label">Password:</label>
+              <input type="password" name="password" class="form-control" id="password">
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        <button type="submit" class="btn btn-primary" onclick="createDevice()">Create device</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="editDeviceModal" tabindex="-1" role="dialog" aria-labelledby="edit_device_label" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="edit_device_label">Edit Device</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form id = "editDeviceForm">
+          <div class="form-group">
+            <label for="edit_target" class="col-form-label">Target:</label>
+            <input type="text" name="target" class="form-control" id="edit_target" placeholder="10.60.11.12">
+          </div>
+          <div id="intersight-device-edit-form" class="d-none">
+            <div class="form-group">
+              <label for="edit_key_id" class="col-form-label">Key ID:</label>
+              <input type="text" name="key_id" class="form-control" id="edit_key_id" placeholder="ab32810b3e952006541c4aab8/57842fd63e9520038472105e8f2dac7564612d30ae6e83">
+            </div>
+            <div class="form-group">
+              <label for="edit_private_key" class="col-form-label">Private Key:</label>
+              <textarea style="white-space: pre-line;" type="text" name="private_key" class="form-control" id="edit_private_key" placeholder="-----BEGIN EC PRIVATE KEY-----&#10;MIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgP13mv5gJcy2iuXkk&#10;0XQxQRFaiPBbXz25aZiHjP4pmHyhRANCAASPHN4M1YmJC+0QBU1KloACJIhqsj48&#10;Vn/WhrcQ1Tv9oMrzYBPgExVGfRhORb6eCiYwY0UpUN36LQ6gmgDHzA1i&#10;-----END EC PRIVATE KEY-----&#10;" rows="5"></textarea>
+            </div>
+          </div>
+          <div id="ucs-device-edit-form" class="d-none">
+            <div class="form-group">
+              <label for="edit_username" class="col-form-label">Username:</label>
+              <input type="text" name="username" class="form-control" id="edit_username" placeholder="admin">
+            </div>
+            <div class="form-group">
+              <label for="edit_password" class="col-form-label">Password:</label>
+              <input type="password" name="password" class="form-control" id="edit_password">
+            </div>
+          </div>
+          <div id="edit-bypass-version-checks-form" class="d-none">
+            <div class="form-group">
+              <label for="edit_bypass_version_checks" class="form-check-label font-weight-bold">Bypass version checks:</label>
+              <input type="checkbox" name="bypass_version_checks" class="col-sm-2 form-check-input" id="edit_bypass_version_checks">
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+        <button id = "editDeviceSubmitButton" type="submit" class="btn btn-primary">Save changes</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="claimToIntersightMultipleDevicesModal" tabindex="-1" role="dialog" aria-labelledby="claim_to_intersight_label" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="claimToIntersightModalLabel">Claim Multiple Devices To Intersight</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form id="claimToIntersightMultipleDevicesForm">
+          <div class="form-group">
+            <label for="target_device" class="col-form-label">Target Device:</label>
+            <select class="form-control" name="intersight_device_uuid" id="target_device">
+            </select>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        <button type="submit" class="btn btn-primary" onclick="claimToIntersightMultipleDevices()">Claim</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="content-header">
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-sm-3">
+        <button id="modalBtn" class="btn btn-primary" onclick="toggleNewDeviceModal()">
+          <i class="fas fa-plus"></i>
+          Add device
+        </button>
+      </div>
+      <div class="col-sm-6">
+        <div id="deviceSearchContainer" class="input-group">
+          <input id = "deviceSearch" type="search" class="form-control" placeholder="Search for a device..." oninput = "onSearchChanged()">
+          <div class="input-group-append">
+            <button type="submit" class="btn btn-default">
+              <i class="fa fa-search"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="col-sm-3">
+        <div class="btn-group float-sm-right">
+          <button id="btnToggleGridView" type="button" class="btn btn-default active" onclick = "toggleDeviceView('grid')">
+            <i class="fas fa-th-large"></i>
+          </button>
+          <button id="btnToggleTableView" type="button" class="btn btn-default" onclick = "toggleDeviceView('table')">
+            <i class="fas fa-table"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<section class="content">
+  <div class = "container-fluid">
+    <div id="deviceViewContainer" class = "row"></div>
+  </div>
+</section>
+{% endblock %}
+
+{% block javascript%}
+<script src="/static/plugins/moment/moment.min.js"></script>
+<script src="/static/plugins/datatables/jquery.dataTables.min.js"></script>
+<script src="/static/plugins/datatables-bs4/js/dataTables.bootstrap4.min.js"></script>
+<script src="/static/plugins/datatables-responsive/js/dataTables.responsive.min.js"></script>
+<script src="/static/plugins/datatables-responsive/js/responsive.bootstrap4.min.js"></script>
+<script src="/static/plugins/datatables-buttons/js/dataTables.buttons.min.js"></script>
+<script src="/static/plugins/datatables-buttons/js/buttons.bootstrap4.min.js"></script>
+<script src="/static/plugins/datatables-select/js/dataTables.select.min.js"></script>
+<script src="/static/plugins/datatables-select/js/select.bootstrap4.min.js"></script>
+<script src="/static/plugins/jszip/jszip.min.js"></script>
+<script src="/static/plugins/pdfmake/pdfmake.min.js"></script>
+<script src="/static/plugins/datatables-buttons/js/buttons.html5.min.js"></script>
+<script src="/static/plugins/datatables-buttons/js/buttons.print.min.js"></script>
+<script src="/static/plugins/datatables-buttons/js/buttons.colVis.min.js"></script>
+<script src="/static/plugins/datatables-datetime-moment/datetime-moment.js"></script>
+<!-- Page-specific JS -->
+<script src="/static/js/home.js" crossorigin="anonymous"></script>
+{% endblock %}

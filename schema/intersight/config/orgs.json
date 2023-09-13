@@ -1,0 +1,657 @@
+{
+   "id": "intersight_config_orgs#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS intersight config orgs section",
+   "description": "EasyUCS intersight config orgs section JSON schema",
+   "type": "object",
+   "properties": {
+      "comment": {
+         "description": "Org Comments",
+         "type": "string",
+         "default": ""
+      },
+      "name": {
+         "description": "Org Name",
+         "type": "string",
+         "default": ""
+      },
+      "descr": {
+         "description": "Org Description",
+         "type": "string",
+         "default": ""
+      },
+      "tags": {
+         "description": "Org Tags",
+         "type": "array",
+         "items": {
+            "description": "Org Tag",
+            "type": "object",
+            "properties": {
+               "key": {
+                  "description": "Org Tag Key",
+                  "type": "string",
+                  "default": "",
+                  "minLength": 1,
+                  "maxLength": 128
+               },
+               "value": {
+                  "description": "Org Tag Value",
+                  "type": "string",
+                  "default": "",
+                  "minLength": 0,
+                  "maxLength": 256
+               }
+            },
+            "additionalProperties": false,
+            "required": [
+               "key",
+               "value"
+            ]
+         },
+         "minItems": 1
+      },
+      "resource_groups": {
+         "description": "Org - Assigned Resource Groups",
+         "type": "array",
+         "items": {
+            "description": "Org - Assigned Resource Group",
+            "type": "string"
+         },
+         "minItems": 1
+      },
+      "adapter_configuration_policies": {
+         "description": "EasyUCS config/orgs/adapter_configuration_policies section",
+         "type": "array",
+         "items": {
+            "description:": "EasyUCS config/orgs/adapter_configuration_policies element",
+            "type": "object",
+            "$ref": "orgs/adapter_configuration_policies.json"
+         },
+         "minItems": 1
+      },
+      "bios_policies": {
+         "description": "EasyUCS config/orgs/bios_policies section",
+         "type": "array",
+         "items": {
+            "description:": "EasyUCS config/orgs/bios_policies element",
+            "type": "object",
+            "$ref": "orgs/bios_policies.json"
+         },
+         "minItems": 1
+      },
+      "boot_policies": {
+         "description": "EasyUCS config/orgs/boot_policies section",
+         "type": "array",
+         "items": {
+            "description:": "EasyUCS config/orgs/boot_policies element",
+            "type": "object",
+            "$ref": "orgs/boot_policies.json"
+         },
+         "minItems": 1
+      },
+      "certificate_management_policies": {
+         "description": "EasyUCS config/orgs/certificate_management_policies section",
+         "type": "array",
+         "items": {
+            "description:": "EasyUCS config/orgs/certificate_management_policies element",
+            "type": "object",
+            "$ref": "orgs/certificate_management_policies.json"
+         },
+         "minItems": 1
+      },
+      "device_connector_policies": {
+         "description": "EasyUCS config/orgs/device_connector_policies section",
+         "type": "array",
+         "items": {
+            "description:": "EasyUCS config/orgs/device_connector_policies element",
+            "type": "object",
+            "$ref": "orgs/device_connector_policies.json"
+         },
+         "minItems": 1
+      },
+      "drive_security_policies": {
+         "description": "EasyUCS config/orgs/drive_security_policies section",
+         "type": "array",
+         "items": {
+            "description:": "EasyUCS config/orgs/drive_security_policies element",
+            "type": "object",
+            "$ref": "orgs/drive_security_policies.json"
+         },
+         "minItems": 1
+      },
+      "ethernet_adapter_policies": {
+         "description": "EasyUCS config/orgs/ethernet_adapter_policies section",
+         "type": "array",
+         "items": {
+            "description:": "EasyUCS config/orgs/ethernet_adapter_policies element",
+            "type": "object",
+            "$ref": "orgs/ethernet_adapter_policies.json"
+         },
+         "minItems": 1
+      },
+      "ethernet_network_control_policies": {
+         "description": "EasyUCS config/orgs/ethernet_network_control_policies section",
+         "type": "array",
+         "items": {
+            "description:": "EasyUCS config/orgs/ethernet_network_control_policies element",
+            "type": "object",
+            "$ref": "orgs/ethernet_network_control_policies.json"
+         },
+         "minItems": 1
+      },
+      "ethernet_network_group_policies": {
+         "description": "EasyUCS config/orgs/ethernet_network_group_policies section",
+         "type": "array",
+         "items": {
+            "description:": "EasyUCS config/orgs/ethernet_network_group_policies element",
+            "type": "object",
+            "$ref": "orgs/ethernet_network_group_policies.json"
+         },
+         "minItems": 1
+      },
+      "ethernet_network_policies": {
+         "description": "EasyUCS config/orgs/ethernet_network_policies section",
+         "type": "array",
+         "items": {
+            "description:": "EasyUCS config/orgs/ethernet_network_policies element",
+            "type": "object",
+            "$ref": "orgs/ethernet_network_policies.json"
+         },
+         "minItems": 1
+      },
+      "ethernet_qos_policies": {
+         "description": "EasyUCS config/orgs/ethernet_qos_policies section",
+         "type": "array",
+         "items": {
+            "description:": "EasyUCS config/orgs/ethernet_qos_policies element",
+            "type": "object",
+            "$ref": "orgs/ethernet_qos_policies.json"
+         },
+         "minItems": 1
+      },
+      "fc_zone_policies": {
+         "description": "EasyUCS config/orgs/fc_zone_policies section",
+         "type": "array",
+         "items": {
+            "description:": "EasyUCS config/orgs/fc_zone_policies element",
+            "type": "object",
+            "$ref": "orgs/fc_zone_policies.json"
+         },
+         "minItems": 1
+      },
+      "fibre_channel_adapter_policies": {
+         "description": "EasyUCS config/orgs/fibre_channel_adapter_policies section",
+         "type": "array",
+         "items": {
+            "description:": "EasyUCS config/orgs/fibre_channel_adapter_policies element",
+            "type": "object",
+            "$ref": "orgs/fibre_channel_adapter_policies.json"
+         },
+         "minItems": 1
+      },
+      "fibre_channel_network_policies": {
+         "description": "EasyUCS config/orgs/fibre_channel_network_policies section",
+         "type": "array",
+         "items": {
+            "description:": "EasyUCS config/orgs/fibre_channel_network_policies element",
+            "type": "object",
+            "$ref": "orgs/fibre_channel_network_policies.json"
+         },
+         "minItems": 1
+      },
+      "fibre_channel_qos_policies": {
+         "description": "EasyUCS config/orgs/fibre_channel_qos_policies section",
+         "type": "array",
+         "items": {
+            "description:": "EasyUCS config/orgs/fibre_channel_qos_policies element",
+            "type": "object",
+            "$ref": "orgs/fibre_channel_qos_policies.json"
+         },
+         "minItems": 1
+      },
+      "firmware_policies": {
+         "description": "EasyUCS config/orgs/firmware_policies section",
+         "type": "array",
+         "items": {
+            "description:": "EasyUCS config/orgs/firmware_policies element",
+            "type": "object",
+            "$ref": "orgs/firmware_policies.json"
+         },
+         "minItems": 1
+      },
+      "flow_control_policies": {
+         "description": "EasyUCS config/orgs/flow_control_policies section",
+         "type": "array",
+         "items": {
+            "description:": "EasyUCS config/orgs/flow_control_policies element",
+            "type": "object",
+            "$ref": "orgs/flow_control_policies.json"
+         },
+         "minItems": 1
+      },
+      "imc_access_policies": {
+         "description": "EasyUCS config/orgs/imc_access_policies section",
+         "type": "array",
+         "items": {
+            "description:": "EasyUCS config/orgs/imc_access_policies element",
+            "type": "object",
+            "$ref": "orgs/imc_access_policies.json"
+         },
+         "minItems": 1
+      },
+      "ip_pools": {
+         "description": "EasyUCS config/orgs/ip_pools section",
+         "type": "array",
+         "items": {
+            "description:": "EasyUCS config/orgs/ip_pools element",
+            "type": "object",
+            "$ref": "orgs/ip_pools.json"
+         },
+         "minItems": 1
+      },
+      "ipmi_over_lan_policies": {
+         "description": "EasyUCS config/orgs/ipmi_over_lan_policies section",
+         "type": "array",
+         "items": {
+            "description:": "EasyUCS config/orgs/ipmi_over_lan_policies element",
+            "type": "object",
+            "$ref": "orgs/ipmi_over_lan_policies.json"
+         },
+         "minItems": 1
+      },
+      "iqn_pools": {
+         "description": "EasyUCS config/orgs/iqn_pools section",
+         "type": "array",
+         "items": {
+            "description:": "EasyUCS config/orgs/iqn_pools element",
+            "type": "object",
+            "$ref": "orgs/iqn_pools.json"
+         },
+         "minItems": 1
+      },
+      "iscsi_adapter_policies": {
+         "description": "EasyUCS config/orgs/iscsi_adapter_policies section",
+         "type": "array",
+         "items": {
+            "description:": "EasyUCS config/orgs/iscsi_adapter_policies element",
+            "type": "object",
+            "$ref": "orgs/iscsi_adapter_policies.json"
+         },
+         "minItems": 1
+      },
+      "iscsi_boot_policies": {
+         "description": "EasyUCS config/orgs/iscsi_boot_policies section",
+         "type": "array",
+         "items": {
+            "description:": "EasyUCS config/orgs/iscsi_boot_policies element",
+            "type": "object",
+            "$ref": "orgs/iscsi_boot_policies.json"
+         },
+         "minItems": 1
+      },
+      "iscsi_static_target_policies": {
+         "description": "EasyUCS config/orgs/iscsi_static_target_policies section",
+         "type": "array",
+         "items": {
+            "description:": "EasyUCS config/orgs/iscsi_static_target_policies element",
+            "type": "object",
+            "$ref": "orgs/iscsi_static_target_policies.json"
+         },
+         "minItems": 1
+      },
+      "lan_connectivity_policies": {
+         "description": "EasyUCS config/orgs/lan_connectivity_policies section",
+         "type": "array",
+         "items": {
+            "description:": "EasyUCS config/orgs/lan_connectivity_policies element",
+            "type": "object",
+            "$ref": "orgs/lan_connectivity_policies.json"
+         },
+         "minItems": 1
+      },
+      "ldap_policies": {
+         "description": "EasyUCS config/orgs/ldap_policies section",
+         "type": "array",
+         "items": {
+            "description:": "EasyUCS config/orgs/ldap_policies element",
+            "type": "object",
+            "$ref": "orgs/ldap_policies.json"
+         },
+         "minItems": 1
+      },
+      "link_aggregation_policies": {
+         "description": "EasyUCS config/orgs/link_aggregation_policies section",
+         "type": "array",
+         "items": {
+            "description:": "EasyUCS config/orgs/link_aggregation_policies element",
+            "type": "object",
+            "$ref": "orgs/link_aggregation_policies.json"
+         },
+         "minItems": 1
+      },
+      "link_control_policies": {
+         "description": "EasyUCS config/orgs/link_control_policies section",
+         "type": "array",
+         "items": {
+            "description:": "EasyUCS config/orgs/link_control_policies element",
+            "type": "object",
+            "$ref": "orgs/link_control_policies.json"
+         },
+         "minItems": 1
+      },
+      "local_user_policies": {
+         "description": "EasyUCS config/orgs/local_user_policies section",
+         "type": "array",
+         "items": {
+            "description:": "EasyUCS config/orgs/local_user_policies element",
+            "type": "object",
+            "$ref": "orgs/local_user_policies.json"
+         },
+         "minItems": 1
+      },
+      "mac_pools": {
+         "description": "EasyUCS config/orgs/mac_pools section",
+         "type": "array",
+         "items": {
+            "description:": "EasyUCS config/orgs/mac_pools element",
+            "type": "object",
+            "$ref": "orgs/mac_pools.json"
+         },
+         "minItems": 1
+      },
+      "multicast_policies": {
+         "description": "EasyUCS config/orgs/multicast_policies section",
+         "type": "array",
+         "items": {
+            "description:": "EasyUCS config/orgs/multicast_policies element",
+            "type": "object",
+            "$ref": "orgs/multicast_policies.json"
+         },
+         "minItems": 1
+      },
+      "network_connectivity_policies": {
+         "description": "EasyUCS config/orgs/network_connectivity_policies section",
+         "type": "array",
+         "items": {
+            "description:": "EasyUCS config/orgs/network_connectivity_policies element",
+            "type": "object",
+            "$ref": "orgs/network_connectivity_policies.json"
+         },
+         "minItems": 1
+      },
+      "ntp_policies": {
+         "description": "EasyUCS config/orgs/ntp_policies section",
+         "type": "array",
+         "items": {
+            "description:": "EasyUCS config/orgs/ntp_policies element",
+            "type": "object",
+            "$ref": "orgs/ntp_policies.json"
+         },
+         "minItems": 1
+      },
+      "persistent_memory_policies": {
+         "description": "EasyUCS config/orgs/persistent_memory_policies section",
+         "type": "array",
+         "items": {
+            "description:": "EasyUCS config/orgs/persistent_memory_policies element",
+            "type": "object",
+            "$ref": "orgs/persistent_memory_policies.json"
+         },
+         "minItems": 1
+      },
+      "port_policies": {
+         "description": "EasyUCS config/orgs/port_policies section",
+         "type": "array",
+         "items": {
+            "description:": "EasyUCS config/orgs/port_policies element",
+            "type": "object",
+            "$ref": "orgs/port_policies.json"
+         },
+         "minItems": 1
+      },
+      "power_policies": {
+         "description": "EasyUCS config/orgs/power_policies section",
+         "type": "array",
+         "items": {
+            "description:": "EasyUCS config/orgs/power_policies element",
+            "type": "object",
+            "$ref": "orgs/power_policies.json"
+         },
+         "minItems": 1
+      },
+      "resource_pools": {
+         "description": "EasyUCS config/orgs/resource_pools section",
+         "type": "array",
+         "items": {
+            "description:": "EasyUCS config/orgs/resource_pools element",
+            "type": "object",
+            "$ref": "orgs/resource_pools.json"
+         },
+         "minItems": 1
+      },
+      "san_connectivity_policies": {
+         "description": "EasyUCS config/orgs/san_connectivity_policies section",
+         "type": "array",
+         "items": {
+            "description:": "EasyUCS config/orgs/san_connectivity_policies element",
+            "type": "object",
+            "$ref": "orgs/san_connectivity_policies.json"
+         },
+         "minItems": 1
+      },
+      "sd_card_policies": {
+         "description": "EasyUCS config/orgs/sd_card_policies section",
+         "type": "array",
+         "items": {
+            "description:": "EasyUCS config/orgs/sd_card_policies element",
+            "type": "object",
+            "$ref": "orgs/sd_card_policies.json"
+         },
+         "minItems": 1
+      },
+      "serial_over_lan_policies": {
+         "description": "EasyUCS config/orgs/serial_over_lan_policies section",
+         "type": "array",
+         "items": {
+            "description:": "EasyUCS config/orgs/serial_over_lan_policies element",
+            "type": "object",
+            "$ref": "orgs/serial_over_lan_policies.json"
+         },
+         "minItems": 1
+      },
+      "smtp_policies": {
+         "description": "EasyUCS config/orgs/smtp_policies section",
+         "type": "array",
+         "items": {
+            "description:": "EasyUCS config/orgs/smtp_policies element",
+            "type": "object",
+            "$ref": "orgs/smtp_policies.json"
+         },
+         "minItems": 1
+      },
+      "snmp_policies": {
+         "description": "EasyUCS config/orgs/snmp_policies section",
+         "type": "array",
+         "items": {
+            "description:": "EasyUCS config/orgs/snmp_policies element",
+            "type": "object",
+            "$ref": "orgs/snmp_policies.json"
+         },
+         "minItems": 1
+      },
+      "ssh_policies": {
+         "description": "EasyUCS config/orgs/ssh_policies section",
+         "type": "array",
+         "items": {
+            "description:": "EasyUCS config/orgs/ssh_policies element",
+            "type": "object",
+            "$ref": "orgs/ssh_policies.json"
+         },
+         "minItems": 1
+      },
+      "storage_policies": {
+         "description": "EasyUCS config/orgs/storage_policies section",
+         "type": "array",
+         "items": {
+            "description:": "EasyUCS config/orgs/storage_policies element",
+            "type": "object",
+            "$ref": "orgs/storage_policies.json"
+         },
+         "minItems": 1
+      },
+      "switch_control_policies": {
+         "description": "EasyUCS config/orgs/switch_control_policies section",
+         "type": "array",
+         "items": {
+            "description:": "EasyUCS config/orgs/switch_control_policies element",
+            "type": "object",
+            "$ref": "orgs/switch_control_policies.json"
+         },
+         "minItems": 1
+      },
+      "syslog_policies": {
+         "description": "EasyUCS config/orgs/syslog_policies section",
+         "type": "array",
+         "items": {
+            "description:": "EasyUCS config/orgs/syslog_policies element",
+            "type": "object",
+            "$ref": "orgs/syslog_policies.json"
+         },
+         "minItems": 1
+      },
+      "system_qos_policies": {
+         "description": "EasyUCS config/orgs/system_qos_policies section",
+         "type": "array",
+         "items": {
+            "description:": "EasyUCS config/orgs/system_qos_policies element",
+            "type": "object",
+            "$ref": "orgs/system_qos_policies.json"
+         },
+         "minItems": 1
+      },
+      "thermal_policies": {
+         "description": "EasyUCS config/orgs/thermal_policies section",
+         "type": "array",
+         "items": {
+            "description:": "EasyUCS config/orgs/thermal_policies element",
+            "type": "object",
+            "$ref": "orgs/thermal_policies.json"
+         },
+         "minItems": 1
+      },
+      "ucs_chassis_profiles": {
+         "description": "EasyUCS config/orgs/ucs_chassis_profiles section",
+         "type": "array",
+         "items": {
+            "description:": "EasyUCS config/orgs/ucs_chassis_profiles element",
+            "type": "object",
+            "$ref": "orgs/ucs_chassis_profiles.json"
+         },
+         "minItems": 1
+      },
+      "ucs_domain_profiles": {
+         "description": "EasyUCS config/orgs/ucs_domain_profiles section",
+         "type": "array",
+         "items": {
+            "description:": "EasyUCS config/orgs/ucs_domain_profiles element",
+            "type": "object",
+            "$ref": "orgs/ucs_domain_profiles.json"
+         },
+         "minItems": 1
+      },
+      "ucs_server_profiles": {
+         "description": "EasyUCS config/orgs/ucs_server_profiles section",
+         "type": "array",
+         "items": {
+            "description:": "EasyUCS config/orgs/ucs_server_profiles element",
+            "type": "object",
+            "$ref": "orgs/ucs_server_profiles.json"
+         },
+         "minItems": 1
+      },
+      "ucs_server_profile_templates": {
+         "description": "EasyUCS config/orgs/ucs_server_profile_templates section",
+         "type": "array",
+         "items": {
+            "description:": "EasyUCS config/orgs/ucs_server_profile_templates element",
+            "type": "object",
+            "$ref": "orgs/ucs_server_profile_templates.json"
+         },
+         "minItems": 1
+      },
+      "uuid_pools": {
+         "description": "EasyUCS config/orgs/uuid_pools section",
+         "type": "array",
+         "items": {
+            "description:": "EasyUCS config/orgs/uuid_pools element",
+            "type": "object",
+            "$ref": "orgs/uuid_pools.json"
+         },
+         "minItems": 1
+      },
+      "virtual_kvm_policies": {
+         "description": "EasyUCS config/orgs/virtual_kvm_policies section",
+         "type": "array",
+         "items": {
+            "description:": "EasyUCS config/orgs/virtual_kvm_policies element",
+            "type": "object",
+            "$ref": "orgs/virtual_kvm_policies.json"
+         },
+         "minItems": 1
+      },
+      "virtual_media_policies": {
+         "description": "EasyUCS config/orgs/virtual_media_policies section",
+         "type": "array",
+         "items": {
+            "description:": "EasyUCS config/orgs/virtual_media_policies element",
+            "type": "object",
+            "$ref": "orgs/virtual_media_policies.json"
+         },
+         "minItems": 1
+      },
+      "vlan_policies": {
+         "description": "EasyUCS config/orgs/vlan_policies section",
+         "type": "array",
+         "items": {
+            "description:": "EasyUCS config/orgs/vlan_policies element",
+            "type": "object",
+            "$ref": "orgs/vlan_policies.json"
+         },
+         "minItems": 1
+      },
+      "vsan_policies": {
+         "description": "EasyUCS config/orgs/vsan_policies section",
+         "type": "array",
+         "items": {
+            "description:": "EasyUCS config/orgs/vsan_policies element",
+            "type": "object",
+            "$ref": "orgs/vsan_policies.json"
+         },
+         "minItems": 1
+      },
+      "wwnn_pools": {
+         "description": "EasyUCS config/orgs/wwnn_pools section",
+         "type": "array",
+         "items": {
+            "description:": "EasyUCS config/orgs/wwnn_pools element",
+            "type": "object",
+            "$ref": "orgs/wwnn_pools.json"
+         },
+         "minItems": 1
+      },
+      "wwpn_pools": {
+         "description": "EasyUCS config/orgs/wwpn_pools section",
+         "type": "array",
+         "items": {
+            "description:": "EasyUCS config/orgs/wwpn_pools element",
+            "type": "object",
+            "$ref": "orgs/wwpn_pools.json"
+         },
+         "minItems": 1
+      }
+   },
+   "additionalProperties": false,
+   "required": [
+      "name"
+   ]
+}

@@ -57,6 +57,30 @@
                   "pattern": "^[\\-\\./:_a-zA-Z0-9]{1,128}$"
                },
                "minItems": 1
+            },
+            "tags": {
+               "description": "Appliance VLAN - Tags",
+               "type": "array",
+               "items": {
+                  "description": "Appliance VLAN - Tag",
+                  "type": "object",
+                  "properties": {
+                     "type": {
+                        "description": "Appliance VLAN - Tag - Type",
+                        "type": "string",
+                        "pattern": "^[ !#$%&\\(\\)\\*\\+,\\-\\.:;=\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{1,32}$"
+                     },
+                     "value": {
+                        "description": "Appliance VLAN - Tag - Value",
+                        "type": "string"
+                     }
+                  },
+                  "additionalProperties": false,
+                  "required": [
+                     "type",
+                     "value"
+                  ]
+               }
             }
          },
          "additionalProperties": false,
@@ -122,6 +146,30 @@
                   "pattern": "^[\\-\\./:_a-zA-Z0-9]{1,128}$"
                },
                "minItems": 1
+            },
+            "tags": {
+               "description": "Appliance VLAN - Tags",
+               "type": "array",
+               "items": {
+                  "description": "Appliance VLAN - Tag",
+                  "type": "object",
+                  "properties": {
+                     "type": {
+                        "description": "Appliance VLAN - Tag - Type",
+                        "type": "string",
+                        "pattern": "^[ !#$%&\\(\\)\\*\\+,\\-\\.:;=\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{1,32}$"
+                     },
+                     "value": {
+                        "description": "Appliance VLAN - Tag - Value",
+                        "type": "string"
+                     }
+                  },
+                  "additionalProperties": false,
+                  "required": [
+                     "type",
+                     "value"
+                  ]
+               }
             }
          },
          "additionalProperties": false,

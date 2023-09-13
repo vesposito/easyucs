@@ -1,0 +1,103 @@
+{
+   "id": "intersight_config_orgs_ethernet_network_control_policies#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS intersight config orgs ethernet_network_control_policies section",
+   "description": "EasyUCS intersight config orgs ethernet_network_control_policies section JSON schema",
+   "type": "object",
+   "properties": {
+      "comment": {
+         "description": "Ethernet Network Control Policy Comments",
+         "type": "string",
+         "default": ""
+      },
+      "descr": {
+         "description": "Ethernet Network Control Policy Description",
+         "type": "string",
+         "default": "",
+         "pattern": "^$|^[a-zA-Z0-9]+[\\x00-\\xFF]*$",
+         "maxLength": 1024
+      },
+      "name": {
+         "description": "Ethernet Network Control Policy Name",
+         "type": "string",
+         "default": "",
+         "pattern": "^[a-zA-Z0-9_.:-]{1,64}$"
+      },
+      "tags": {
+         "description": "Ethernet Network Control Policy Tags",
+         "type": "array",
+         "items": {
+            "description": "Ethernet Network Control Policy Tag",
+            "type": "object",
+            "properties": {
+               "key": {
+                  "description": "Ethernet Network Control Policy Tag Key",
+                  "type": "string",
+                  "default": "",
+                  "minLength": 1,
+                  "maxLength": 128
+               },
+               "value": {
+                  "description": "Ethernet Network Control Policy Tag Value",
+                  "type": "string",
+                  "default": "",
+                  "minLength": 0,
+                  "maxLength": 256
+               }
+            },
+            "additionalProperties": false,
+            "required": [
+               "key",
+               "value"
+            ]
+         },
+         "minItems": 1
+      },
+      "action_on_uplink_fail": {
+         "description": "Ethernet Network Control Policy - Action On Uplink Fail",
+         "type": "string",
+         "default": "linkDown",
+         "enum": [
+            "linkDown",
+            "warning"
+         ]
+      },
+      "cdp_enable": {
+         "description": "Ethernet Network Control Policy - CDP Enabled",
+         "type": "boolean",
+         "default": false
+      },
+      "lldp_receive_enable": {
+         "description": "Ethernet Network Control Policy - LLDP Receive Enabled",
+         "type": "boolean",
+         "default": false
+      },
+      "lldp_transmit_enable": {
+         "description": "Ethernet Network Control Policy - LLDP Transmit Enabled",
+         "type": "boolean",
+         "default": false
+      },
+      "mac_register_mode": {
+         "description": "Ethernet Network Control Policy - MAC Register Mode",
+         "type": "string",
+         "default": "nativeVlanOnly",
+         "enum": [
+            "allVlans",
+            "nativeVlanOnly"
+         ]
+      },
+      "mac_security_forge": {
+         "description": "Ethernet Network Control Policy MAC Security - Allow/Deny Forged MAC Addresses",
+         "type": "string",
+         "default": "allow",
+         "enum": [
+            "allow",
+            "deny"
+         ]
+      }
+   },
+   "additionalProperties": false,
+   "required": [
+      "name"
+   ]
+}

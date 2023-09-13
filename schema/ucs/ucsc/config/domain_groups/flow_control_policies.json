@@ -1,0 +1,75 @@
+{
+   "id": "ucs_central_config_flow_control_policies#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS ucs central config domain groups flow_control_policies section",
+   "description": "EasyUCS ucs central config domain groups flow_control_policies section JSON schema",
+   "type": "object",
+   "properties": {
+      "comment": {
+         "description": "Flow Control Policy Comments",
+         "type": "string",
+         "default": ""
+      },
+      "name": {
+         "description": "Flow Control Policy Name",
+         "type": "string",
+         "default": "",
+         "pattern": "^[\\-\\.:_a-zA-Z0-9]{1,16}$"
+      },
+      "priority": {
+         "description": "Flow Control Policy - Priority",
+         "type": "string",
+         "default": "auto",
+         "enum": [
+            "auto",
+            "on"
+         ]
+      },
+      "receive": {
+         "description": "Flow Control Policy - Receive",
+         "type": "string",
+         "default": "off",
+         "enum": [
+            "off",
+            "on"
+         ]
+      },
+      "send": {
+         "description": "Flow Control Policy - Send",
+         "type": "string",
+         "default": "off",
+         "enum": [
+            "off",
+            "on"
+         ]
+      },
+      "tags": {
+         "description": "Flow Control Policy - Tags",
+         "type": "array",
+         "items": {
+            "description": "Flow Control Policy - Tag",
+            "type": "object",
+            "properties": {
+               "type": {
+                  "description": "Flow Control Policy - Tag - Type",
+                  "type": "string",
+                  "pattern": "^[ !#$%&\\(\\)\\*\\+,\\-\\.:;=\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{1,32}$"
+               },
+               "value": {
+                  "description": "Flow Control Policy - Tag - Value",
+                  "type": "string"
+               }
+            },
+            "additionalProperties": false,
+            "required": [
+               "type",
+               "value"
+            ]
+         }
+      }
+   },
+   "additionalProperties": false,
+   "required": [
+      "name"
+   ]
+}

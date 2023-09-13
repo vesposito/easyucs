@@ -11,19 +11,26 @@
          "default": ""
       },
       "name": {
-         "description": "IPMI Access Profiles Name",
+         "description": "IPMI Access Profile Name",
          "type": "string",
          "default": "",
          "pattern": "^[\\-\\.:_a-zA-Z0-9]{1,16}$"
       },
       "descr": {
-         "description": "Description of IPMI Access Profiles",
+         "description": "Description of IPMI Access Profile",
          "type": "string",
          "default": "",
          "pattern": "^[ !#$%&\\(\\)\\*\\+,\\-\\./:;\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{0,256}$"
       },
+      "policy_owner": {
+         "description": "IPMI Access Profile Owner (for UCS Central)",
+         "type": "string",
+         "enum": [
+            "ucs-central"
+         ]
+      },
       "ipmi_over_lan": {
-         "description": "IPMI Access Profiles - IPMI/Red Fish Over LAN",
+         "description": "IPMI Access Profile - IPMI/Red Fish Over LAN",
          "type": "string",
          "default": "enable",
          "enum": [
@@ -32,41 +39,45 @@
          ]
       },
       "users": {
-         "description": "IPMI Access Profiles - Users",
+         "description": "IPMI Access Profile - Users",
          "type": "array",
          "items": {
             "type": "object",
             "properties": {
                "name": {
-                  "description": "IPMI Access Profiles - Users - Name",
+                  "description": "IPMI Access Profile - Users - Name",
                   "type": "string",
                   "default": "",
                   "pattern": "^[\\-\\.:_a-zA-Z0-9]{1,15}$"
                },
                "password": {
-                  "description": "IPMI Access Profiles - Users - Password",
+                  "description": "IPMI Access Profile - Users - Password",
                   "type": "string",
                   "default": "",
                   "pattern": "^[!\"\"#%&'\\(\\)\\*\\+,\\-\\./:;<>@\\[\\\\\\]\\^_`\\{\\|\\}~a-zA-Z0-9]{1,20}$"
                },
+               "encrypted_password": {
+                  "description": "IPMI Access Profile - Users - Encrypted Password",
+                  "type": "string"
+               },
                "descr": {
-                  "description": "IPMI Access Profiles - Users - Description",
+                  "description": "IPMI Access Profile - Users - Description",
                   "type": "string",
                   "default": "",
                   "pattern": "^[ !#$%&\\(\\)\\*\\+,\\-\\./:;\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{0,256}$"
                },
-                "role": {
-                  "description": "IPMI Access Profiles - Users - Role",
+               "role": {
+                  "description": "IPMI Access Profile - Users - Role",
                   "type": "string",
                   "default": "readonly",
-                   "enum": [
-                      "admin",
-                      "readonly",
-                      "read_only",
-                      "read-only",
-                      "read only"
-                   ]
-                }
+                  "enum": [
+                     "admin",
+                     "readonly",
+                     "read_only",
+                     "read-only",
+                     "read only"
+                  ]
+               }
             },
             "additionalProperties": false,
             "required": [

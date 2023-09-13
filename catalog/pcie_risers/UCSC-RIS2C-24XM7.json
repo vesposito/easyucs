@@ -1,0 +1,17 @@
+{
+   "model_short_name": "",
+   "rear_file_name": "UCSC-RIS2C-24XM7.png",
+   "rear_file_size": [651,393],
+   "pcie_slots": [
+      {
+         "id": 5,
+         "width": "full",
+         "coord": [28, 143]
+      },
+      {
+         "id": 4,
+         "width": "full",
+         "coord": [28, 267]
+      }
+   ]
+}

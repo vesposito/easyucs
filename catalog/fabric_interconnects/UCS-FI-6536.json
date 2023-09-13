@@ -1,0 +1,245 @@
+{
+  "model_short_name": "6536",
+  "rear_file_name": "UCS-FI-6536_rear.png",
+  "front_file_name": "UCS-FI-6536_front.png",
+  "rear_file_size": [2924,270],
+  "front_file_size": [2924,274],
+  "expansion_modules_slots": [],
+  "expansion_modules_models": [],
+  "psus_slots": [
+    {
+      "id": 1,
+      "coord": [172,13]
+    },
+    {
+      "id": 2,
+      "coord": [2418,13]
+    }
+  ],
+  "psus_models": [
+    {
+      "name": "UCS-PSU-6536-AC",
+      "description": "UCS 6536 platinum power supply/100-240VAC (1100 W)"
+    },
+    {
+      "name": "UCS-PSU-6536-BLK",
+      "type": "blank",
+      "description": "Power supply blanking panel/filler"
+    }
+  ],
+  "rear_ports": {
+    "1": {
+      "port_coord": [263,65],
+      "port_type": "qsfp28",
+      "port_size": [111,49]
+    },
+    "2": {
+      "port_coord": [263,165],
+      "port_type": "qsfp28",
+      "port_size": [111,49]
+    },
+    "3": {
+      "port_coord": [401,65],
+      "port_type": "qsfp28",
+      "port_size": [111,49]
+    },
+    "4": {
+      "port_coord": [401,165],
+      "port_type": "qsfp28",
+      "port_size": [111,49]
+    },
+    "5": {
+      "port_coord": [539,65],
+      "port_type": "qsfp28",
+      "port_size": [111,49]
+    },
+    "6": {
+      "port_coord": [539,165],
+      "port_type": "qsfp28",
+      "port_size": [111,49]
+    },
+    "7": {
+      "port_coord": [677,65],
+      "port_type": "qsfp28",
+      "port_size": [111,49]
+    },
+    "8": {
+      "port_coord": [677,165],
+      "port_type": "qsfp28",
+      "port_size": [111,49]
+    },
+    "9": {
+      "port_coord": [815,65],
+      "port_type": "qsfp28",
+      "port_size": [111,49]
+    },
+    "10": {
+      "port_coord": [815,165],
+      "port_type": "qsfp28",
+      "port_size": [111,49]
+    },
+    "11": {
+      "port_coord": [953,65],
+      "port_type": "qsfp28",
+      "port_size": [111,49]
+    },
+    "12": {
+      "port_coord": [953,165],
+      "port_type": "qsfp28",
+      "port_size": [111,49]
+    },
+    "13": {
+      "port_coord": [1091,65],
+      "port_type": "qsfp28",
+      "port_size": [111,49]
+    },
+    "14": {
+      "port_coord": [1091,165],
+      "port_type": "qsfp28",
+      "port_size": [111,49]
+    },
+    "15": {
+      "port_coord": [1229,65],
+      "port_type": "qsfp28",
+      "port_size": [111,49]
+    },
+    "16": {
+      "port_coord": [1229,165],
+      "port_type": "qsfp28",
+      "port_size": [111,49]
+    },
+    "17": {
+      "port_coord": [1367,65],
+      "port_type": "qsfp28",
+      "port_size": [111,49]
+    },
+    "18": {
+      "port_coord": [1367,165],
+      "port_type": "qsfp28",
+      "port_size": [111,49]
+    },
+    "19": {
+      "port_coord": [1505,65],
+      "port_type": "qsfp28",
+      "port_size": [111,49]
+    },
+    "20": {
+      "port_coord": [1505,165],
+      "port_type": "qsfp28",
+      "port_size": [111,49]
+    },
+    "21": {
+      "port_coord": [1643,65],
+      "port_type": "qsfp28",
+      "port_size": [111,49]
+    },
+    "22": {
+      "port_coord": [1643,165],
+      "port_type": "qsfp28",
+      "port_size": [111,49]
+    },
+    "23": {
+      "port_coord": [1781,65],
+      "port_type": "qsfp28",
+      "port_size": [111,49]
+    },
+    "24": {
+      "port_coord": [1781,165],
+      "port_type": "qsfp28",
+      "port_size": [111,49]
+    },
+    "25": {
+      "port_coord": [1919,65],
+      "port_type": "qsfp28",
+      "port_size": [111,49]
+    },
+    "26": {
+      "port_coord": [1919,165],
+      "port_type": "qsfp28",
+      "port_size": [111,49]
+    },
+    "27": {
+      "port_coord": [2057,65],
+      "port_type": "qsfp28",
+      "port_size": [111,49]
+    },
+    "28": {
+      "port_coord": [2057,165],
+      "port_type": "qsfp28",
+      "port_size": [111,49]
+    },
+    "29": {
+      "port_coord": [2195,65],
+      "port_type": "qsfp28",
+      "port_size": [111,49]
+    },
+    "30": {
+      "port_coord": [2195,165],
+      "port_type": "qsfp28",
+      "port_size": [111,49]
+    },
+    "31": {
+      "port_coord": [2333,65],
+      "port_type": "qsfp28",
+      "port_size": [111,49]
+    },
+    "32": {
+      "port_coord": [2333,165],
+      "port_type": "qsfp28",
+      "port_size": [111,49]
+    },
+    "33": {
+      "port_coord": [2471,65],
+      "port_type": "qsfp28",
+      "port_size": [111,49]
+    },
+    "34": {
+      "port_coord": [2471,165],
+      "port_type": "qsfp28",
+      "port_size": [111,49]
+    },
+    "35": {
+      "port_coord": [2609,65],
+      "port_type": "qsfp28",
+      "port_size": [111,49]
+    },
+    "36": {
+      "port_coord": [2609,165],
+      "port_type": "qsfp28",
+      "port_size": [111,49]
+    }
+  },
+  "imm_compatible": true,
+  "imm_min_required_version": "4.2(2a)",
+  "spec_sheet_url": "https://www.cisco.com/c/dam/en/us/products/collateral/servers-unified-computing/ucs-x-series-modular-system/cisco-ucs-6536-fabric-interconnect-spec-sheet.pdf",
+  "data_sheet_url": "https://www.cisco.com/c/en/us/products/collateral/servers-unified-computing/ucs6536-fabric-interconnect-ds.html",
+  "specs": {
+    "descr": "The Cisco UCS 6536 36-Port Fabric Interconnect is a One-Rack-Unit (1RU) 100 Gigabit Ethernet and FCoE switch offering up to 7.42 Tbps throughput and up to 36 ports. The switch has 32 fixed 100-Gbps Ethernet ports and 4 unified ports that can support 40/100-Gbps Ethernet or 8/16/32-Gbps Fibre Channel via Breakout. All Ethernet ports are capable of supporting FCoE.",
+    "form_factor": "1RU",
+    "throughput": {
+      "gbps": 7420,
+      "mpps": 2400
+    },
+    "latency": "<1 µs",
+    "power_typical": 348,
+    "power_maximum": 800,
+    "power_maximum_dc": 800,
+    "dimensions": {
+      "centimeters": {
+        "height": 4.4,
+        "width": 43.9,
+        "depth": 62.7
+      },
+      "inches": {
+        "height": 1.72,
+        "width": 17.3,
+        "depth": 24.7
+      },
+      "rack_units": 1
+    },
+    "weight": {
+      "lb": 25.5,
+      "kg": 11.6
+    }
+  }
+}

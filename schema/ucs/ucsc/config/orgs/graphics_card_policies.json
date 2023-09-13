@@ -1,0 +1,64 @@
+{
+   "id": "ucs_central_config_graphics_card_policies#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS ucs central config graphics_card_policies section",
+   "description": "EasyUCS ucs central config graphics_card_policies section JSON schema",
+   "type": "object",
+   "properties": {
+      "comment": {
+         "description": "Graphics Card Policy Comments",
+         "type": "string",
+         "default": ""
+      },
+      "name": {
+         "description": "Graphics Card Policy Name",
+         "type": "string",
+         "default": "",
+         "pattern": "^[\\-\\.:_a-zA-Z0-9]{1,16}$"
+      },
+      "descr": {
+         "description": "Description of Graphics Card Policy",
+         "type": "string",
+         "default": "",
+         "pattern": "^[ !#$%&\\(\\)\\*\\+,\\-\\./:;\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{0,256}$"
+      },
+      "graphics_card_mode": {
+         "description": "Graphics Card Mode of Graphics Card Policy",
+         "type": "string",
+         "default": "any-configuration",
+         "enum": [
+            "any-configuration",
+            "compute",
+            "graphics"
+         ]
+      },
+      "tags": {
+         "description": "Graphics Card Policy - Tags",
+         "type": "array",
+         "items": {
+            "description": "Graphics Card Policy - Tag",
+            "type": "object",
+            "properties": {
+               "type": {
+                  "description": "Graphics Card Policy - Tag - Type",
+                  "type": "string",
+                  "pattern": "^[ !#$%&\\(\\)\\*\\+,\\-\\.:;=\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{1,32}$"
+               },
+               "value": {
+                  "description": "Graphics Card Policy - Tag - Value",
+                  "type": "string"
+               }
+            },
+            "additionalProperties": false,
+            "required": [
+               "type",
+               "value"
+            ]
+         }
+      }
+   },
+   "additionalProperties": false,
+   "required": [
+      "name"
+   ]
+}

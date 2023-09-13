@@ -43,6 +43,42 @@
          "description": "Device Connector Proxy Password",
          "type": "string",
          "default": ""
+      },
+      "read_only": {
+         "description": "Device Connector Read Only",
+         "type": "string",
+         "default": "false",
+         "enum": [
+            "true",
+            "false"
+         ]
+      },
+      "enabled": {
+         "description": "Device Connector State",
+         "type": "string",
+         "default": "true",
+         "enum": [
+            "true",
+            "false"
+         ]
+      },
+      "tunneled_kvm": {
+         "description": "Device Connector Tunneled KVM",
+         "type": "string",
+         "default": "true",
+         "enum": [
+            "true",
+            "false"
+         ]
+      },
+      "configuration_from_intersight_only": {
+         "description": "Device Connector Configuration from Intersight Only",
+         "type": "string",
+         "default": "false",
+         "enum": [
+            "true",
+            "false"
+         ]
       }
    },
    "additionalProperties": false

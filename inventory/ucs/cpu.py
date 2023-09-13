@@ -36,6 +36,8 @@ class UcsCpu(GenericUcsInventoryObject):
                     self.family_name = "AMD EPYC 7001 Series processors"
                 elif self.model_short_name[-1] == "2":
                     self.family_name = "AMD EPYC 7002 Series processors"
+                elif self.model_short_name[-1] == "3":
+                    self.family_name = "AMD EPYC 7003 Series processors"
 
             else:
                 # We have an Intel processor. Getting its model short name
@@ -59,7 +61,7 @@ class UcsCpu(GenericUcsInventoryObject):
                         elif self.model_short_name[:5] == "E7-88":
                             self.family_name = "Intel Xeon E7-8800 Series processors"
                 else:
-                    # We might have an M5 Intel CPU
+                    # We might have an M5/M6 Intel CPU
                     regex2 = r"Xeon\(R\) .* (\d*\w?) CPU"
                     res2 = re.search(regex2, self.model)
                     if res2 is not None:
@@ -68,6 +70,17 @@ class UcsCpu(GenericUcsInventoryObject):
                             self.family_name = "Intel Xeon Processor Scalable Family"
                         elif self.model_short_name[1:2] == "2":
                             self.family_name = "2nd Gen Intel Xeon Processor Scalable Family"
+                        elif self.model_short_name[1:2] == "3":
+                            self.family_name = "3rd Gen Intel Xeon Processor Scalable Family"
+
+                    else:
+                        # We might have an M7 Intel CPU
+                        regex2 = r"Xeon\(R\) .* (\d*\w?\+?)"
+                        res2 = re.search(regex2, self.model)
+                        if res2 is not None:
+                            self.model_short_name = res2.group(1)
+                            if self.model_short_name[1:2] == "4":
+                                self.family_name = "4th Gen Intel Xeon Processor Scalable Family"
 
                 if self.model_short_name is not None:
                     if self.model_short_name[:5] == "E5-24":

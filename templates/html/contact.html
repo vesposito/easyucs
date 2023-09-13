@@ -1,0 +1,68 @@
+{% extends "/html/base.html" %}
+
+{% block content %}
+<!-- Content Header (Page header) -->
+<section class="content-header">
+  <div class="container-fluid">
+    <div class="row mb-2">
+      <div class="col-sm-6">
+        <h1>Contact</h1>
+      </div>
+      <div class="col-sm-6">
+        <ol class="breadcrumb float-sm-right">
+          <li class="breadcrumb-item"><a href="#">Home</a></li>
+          <li class="breadcrumb-item active">Contact</li>
+        </ol>
+      </div>
+    </div>
+  </div><!-- /.container-fluid -->
+</section>
+
+<!-- Main content -->
+<section class="content">
+  <div class="container-fluid">
+    <div class = "row">
+      <div class = "col-md-12">
+        <!-- Default box -->
+        <div class="card">
+          <div class="card-body row">
+            <div class="col-5 text-center d-flex align-items-center justify-content-center">
+              <div class="">
+                <h2>Easy<strong>UCS</strong> <small>{{version}}</small></h2>
+                <p class="lead mb-5">You have questions, comments, or recommendations?<br>
+                  We're just one click away!<br>
+                  Fill in the form to share your message.
+                </p>
+                <a href = "https://github.com/vesposito/easyucs" target="_blank">> Find the project on GitHub</a> <br>
+                <a href = "https://github.com/vesposito/easyucs/issues" target="_blank">> Found an issue? Open one in our GitHub</a>
+              </div>
+            </div>
+            <div class="col-7">
+              <form class="form-group" action="mailto:easyucs@external.cisco.com?" target="_blank" method="get" enctype="text/plain">
+                <div class="form-group">
+                  <label for="subject">Subject</label>
+                  <input name="subject" type="text" id="subject" placeholder = "Your subject here..." class="form-control" />
+                </div>
+                <div class="form-group">
+                  <label for="body">Message</label>
+                  <textarea name="body" id="body" class="form-control" placeholder = "Your message here..." rows="4"></textarea>
+                </div>
+                <div class="form-group">
+                  <input type="submit" class="btn btn-primary" value="Send message">
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</section>
+<!-- /.content -->
+{% endblock %}
+
+{% block javascript%}
+<!-- Page-specific JS -->
+<script src="/static/js/contact.js" crossorigin="anonymous"></script>
+{% endblock %}

@@ -5,16 +5,16 @@
    "description": "EasyUCS ucsm device section JSON schema",
    "type": "object",
    "properties": {
-      "target":{
-         "description":"The UCS ucsm Device IP or hostname targeted",
-         "type":"string"
+      "target": {
+         "description": "The UCS Manager Device IP or hostname targeted",
+         "type": "string"
       },
       "username": {
-         "description": "Username to use for the UCS ucsm Device",
+         "description": "Username to use for the UCS Manager Device",
          "type": "string"
       },
       "password": {
-         "description": "Password of the user to use for the UCS ucsm Device",
+         "description": "Password of the user to use for the UCS Manager Device",
          "type": "string"
       }
    },

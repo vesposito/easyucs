@@ -2,8 +2,7 @@
 # !/usr/bin/env python
 
 """ storage.py: Easy UCS Deployment Tool """
-from __init__ import __author__, __copyright__,  __version__, __status__
-
+from __init__ import __author__, __copyright__, __version__, __status__
 
 from draw.object import GenericUcsDrawEquipment
 from PIL import Image, ImageDraw, ImageFont
@@ -48,20 +47,18 @@ class UcsSystemDrawStorageController:
     def _get_disks(self):
         disk_list = []
         for disk in self._parent.disks:
-            # We handle the rear slot disks present on C240 M5 models
-            if "M5" in self.parent_draw._parent.sku:
-                if "Front" in self.parent_draw.__class__.__name__:
-                    if "disks_slots" in self.parent_draw.json_file:
-                        if int(disk.id) not in [int(disk['id']) for disk in self.parent_draw.json_file["disks_slots"]]:
-                            continue
-                    else:
+            if "Front" in self.parent_draw.__class__.__name__:
+                if "disks_slots" in self.parent_draw.json_file:
+                    if int(disk.id) not in [int(disk['id']) for disk in self.parent_draw.json_file["disks_slots"]]:
                         continue
-                if "Rear" in self.parent_draw.__class__.__name__:
-                    if "disks_slots_rear" in self.parent_draw.json_file:
-                        if int(disk.id) not in [int(disk['id']) for disk in self.parent_draw.json_file["disks_slots_rear"]]:
-                            continue
-                    else:
-                            continue
+                else:
+                    continue
+            if "Rear" in self.parent_draw.__class__.__name__:
+                if "disks_slots_rear" in self.parent_draw.json_file:
+                    if int(disk.id) not in [int(disk['id']) for disk in self.parent_draw.json_file["disks_slots_rear"]]:
+                        continue
+                else:
+                    continue
 
             # We handle the internal slot disks present on C480 M5 models
             if ("DrawRackFront" in self.parent_draw.__class__.__name__) \
@@ -122,7 +119,7 @@ class UcsSystemDrawStorageController:
                             for slot in self.parent_draw.json_file["disks_slots"]:
                                 if slot["id"] == int(slot_id):
                                     coord = slot["coord"]
-                            coord_offset = self.parent_draw.picture_offset[0] + coord[0],\
+                            coord_offset = self.parent_draw.picture_offset[0] + coord[0], \
                                            self.parent_draw.picture_offset[1] + coord[1]
                             if self.parent_draw.__class__.__name__ == "GenericUcsDrawBlade":
                                 self.parent_draw.parent_draw.paste_layer(img, coord_offset)
@@ -164,7 +161,7 @@ class UcsSystemDrawStorageController:
                             for slot in self.parent_draw.json_file["disks_slots_rear"]:
                                 if slot["id"] == int(slot_id):
                                     coord = slot["coord"]
-                            coord_offset = self.parent_draw.picture_offset[0] + coord[0],\
+                            coord_offset = self.parent_draw.picture_offset[0] + coord[0], \
                                            self.parent_draw.picture_offset[1] + coord[1]
                             self.parent_draw.paste_layer(img, coord_offset)
 
@@ -182,11 +179,12 @@ class UcsSystemDrawStorageLocalDisk(GenericUcsDrawEquipment):
             self.sku = None
 
         if self._parent.connection_protocol == "NVME":
-            self.device_type = self._parent.connection_protocol + " " + self._parent.drive_type
+            self.device_type = self._parent.connection_protocol + " " + str(self._parent.drive_type)
         elif self._parent.rotational_speed_marketing:
-            self.device_type = str(self._parent.rotational_speed_marketing) + " " + self._parent.connection_protocol
+            self.device_type = str(self._parent.rotational_speed_marketing) + " " + \
+                               str(self._parent.connection_protocol)
         else:
-            self.device_type = self._parent.drive_type + " " + self._parent.connection_protocol
+            self.device_type = str(self._parent.drive_type) + " " + str(self._parent.connection_protocol)
         self.disk_size = self._parent.size_marketing
 
         self.disk_info = self._get_disk_info()
@@ -234,7 +232,7 @@ class UcsSystemDrawStorageLocalDisk(GenericUcsDrawEquipment):
         if hasattr(self.parent_draw, "parent_draw"):
             if self.parent_draw.parent_draw.__class__.__name__ == "GenericUcsDrawBlade":
                 if isinstance(self.parent_draw, GenericUcsDrawStorageEnclosure):
-                    if (self.parent_draw.parent_draw._parent.sku == "UCSC-C3X60-SVRNB")\
+                    if (self.parent_draw.parent_draw._parent.sku == "UCSC-C3X60-SVRNB") \
                             or (self.parent_draw.parent_draw._parent.sku == "UCSC-C3K-M4SRB"):
                         return self.parent_draw.parent_draw.parent_draw.picture_offset[0] + self.disk_info["coord"][0],\
                                self.parent_draw.parent_draw.parent_draw.picture_offset[1] + self.disk_info["coord"][1]
@@ -250,10 +248,11 @@ class UcsSystemDrawStorageLocalDisk(GenericUcsDrawEquipment):
                    self.parent_draw.picture_offset[1] + self.disk_info["coord"][1]
 
     def _get_disk_info(self):
-        if hasattr(self.parent_draw, "parent_draw"):
+        if hasattr(self.parent_draw, "parent_draw") and self.device_type != "NVME SSD":
             if "DrawRackRear" in self.parent_draw.parent_draw.__class__.__name__:
                 if any(x in self.parent_draw.parent_draw._parent.sku
-                       for x in ["UCSC-C240-M5", "HX240C-M5", "HXAF240C-M5", "UCSC-C240-M5SD"]):
+                       for x in ["UCSC-C240-M5", "HX240C-M5", "HXAF240C-M5", "UCSC-C240-M5SD", "UCSC-C240-M6",
+                                 "UCSC-C245-M6", "UCSC-C240-M7"]):
                     for disk in self.parent_draw.parent_draw.json_file["disks_slots_rear"]:
                         if self.id == disk['id']:
                             return disk
@@ -276,7 +275,9 @@ class UcsSystemDrawStorageLocalDisk(GenericUcsDrawEquipment):
                     if self.id == disk['id']:
                         return disk
 
-            elif hasattr(self.parent_draw.parent_draw, "json_file") and not "disks_slots" in self.parent_draw.parent_draw.json_file:
+            elif self.parent_draw.parent_draw.__class__.__name__ not in ["UcsSystemDrawChassisFront"] and \
+                    (hasattr(self.parent_draw.parent_draw, "json_file") and "disks_slots" not in
+                     self.parent_draw.parent_draw.json_file):
                 return None
 
             elif "disks_slots" in self.parent_draw.json_file:
@@ -296,7 +297,7 @@ class UcsSystemDrawStorageLocalDisk(GenericUcsDrawEquipment):
                 return None
 
         # For NVME disks (no storage controller as parent)
-        elif hasattr(self, "parent_draw"):
+        elif hasattr(self, "parent_draw") and self.device_type == "NVME SSD":
             if "DrawRackRear" in self.parent_draw.__class__.__name__:
                 if any(x in self.parent_draw._parent.sku
                        for x in ["UCSC-C240-M5", "HX240C-M5", "HXAF240C-M5"]):
@@ -316,7 +317,7 @@ class UcsSystemDrawStorageLocalDisk(GenericUcsDrawEquipment):
 
         else:
             if "DrawRackRear" in self.parent_draw.__class__.__name__:
-                for disk in self.parent_draw.json_file["disks_slots"]:
+                for disk in self.parent_draw.json_file["disks_slots_rear"]:
                     if self.id == disk['id']:
                         return disk
             elif "DrawRackFront" in self.parent_draw.__class__.__name__:
@@ -324,7 +325,7 @@ class UcsSystemDrawStorageLocalDisk(GenericUcsDrawEquipment):
                     if self.id == disk['id']:
                         return disk
             self.parent_draw.logger(level="error", message="Disk with id " + str(self.id) + " of rack server " +
-                                                           self._parent.id + ", no match found in the json file")
+                                                           self._parent._parent.id + ", no match found in the json file")
             return None
 
     def draw_disk_information(self):
@@ -354,14 +355,14 @@ class UcsSystemDrawStorageLocalDisk(GenericUcsDrawEquipment):
                 self.sku = "UNKNOWN"
 
         if self.device_type is None:
-            self.logger(level="warning", message="Disk with id " + str(self.id) + " of server " + self._parent.id +
-                                                 " has an unknown device type!")
+            self.logger(level="warning", message="Disk with id " + str(self.id) + " of server " +
+                                                 self._parent._parent.id + " has an unknown device type!")
             warning = True
             self.device_type = ""
 
         if self.disk_size is None:
-            self.logger(level="warning", message="Disk with id " + str(self.id) + " of server " + self._parent.id +
-                                                 " has an unknown size!")
+            self.logger(level="warning", message="Disk with id " + str(self.id) + " of server " +
+                                                 self._parent._parent.id + " has an unknown size!")
             warning = True
             self.disk_size = ""
 
@@ -397,6 +398,26 @@ class UcsSystemDrawStorageLocalDisk(GenericUcsDrawEquipment):
                 (center_square[1][0] + 20, round((center_square[1][1] - center_square[0][1]) / 2 - h / 2)),
                 text_right, fill=fill_color, font=font)
 
+        elif self.format == "sff_7mm_m6":
+            center_square = [[211, 0], [252, 48]]
+            fill_color = "black"
+            if warning:
+                fill_color = fill_color_sku_warning
+            font_size = 11
+            font = ImageFont.truetype('arial.ttf', font_size)
+
+            text_left = self.sku
+            w, h = self.draw.textsize(text_left, font=font)
+            self.draw.text(
+                (center_square[0][0] - 20 - w, round((center_square[1][1] - center_square[0][1]) / 2 - h / 2)),
+                text_left, fill=fill_color, font=font)
+
+            text_right = self.disk_size + " " + self.device_type
+            w, h = self.draw.textsize(text_right, font=font)
+            self.draw.text(
+                (center_square[1][0] + 20, round((center_square[1][1] - center_square[0][1]) / 2 - h / 2)),
+                text_right, fill=fill_color, font=font)
+
         elif self.format == "lff":
             fill_color = "white"
             if warning:
@@ -411,8 +432,8 @@ class UcsSystemDrawStorageLocalDisk(GenericUcsDrawEquipment):
 
             text = self.sku + " / " + self.disk_size
             w, h = self.draw.textsize(text, font=font)
-            self.draw.text((round(frame_dim[0]/2 + start_frame_coord[0] - w/2),
-                            round(frame_dim[1]/2 + start_frame_coord[1] - h/2)), text,
+            self.draw.text((round(frame_dim[0] / 2 + start_frame_coord[0] - w / 2),
+                            round(frame_dim[1] / 2 + start_frame_coord[1] - h / 2)), text,
                            fill=fill_color, font=font)
 
         elif self.format == "lff_m5":
@@ -495,7 +516,8 @@ class UcsSystemDrawStorageLocalDisk(GenericUcsDrawEquipment):
             w_1, h_1 = self.draw.textsize(text_1, font=font_1)
             text_2 = ''.join(self.sku.split('-')[1:])
             w_2, h_2 = self.draw.textsize(text_2, font=font_2)
-            text_3 = self._parent.connection_protocol + ' ' + self._parent.drive_type
+            text_3 = (self._parent.connection_protocol if self._parent.connection_protocol else "") + ' ' + \
+                     (self._parent.drive_type if self._parent.drive_type else "")
             w_3, h_3 = self.draw.textsize(text_3, font=font_3)
 
             self.draw.text((round(frame_dim[0] / 2 + start_frame_coord[0] - w_1 / 2), 372), text_1,

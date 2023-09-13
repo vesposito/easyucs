@@ -1,0 +1,75 @@
+{
+   "id": "intersight_config_orgs_link_aggregation_policies#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS intersight config orgs link_aggregation_policies section",
+   "description": "EasyUCS intersight config orgs link_aggregation_policies section JSON schema",
+   "type": "object",
+   "properties": {
+      "comment": {
+         "description": "Link Aggregation Policy Comments",
+         "type": "string",
+         "default": ""
+      },
+      "descr": {
+         "description": "Link Aggregation Policy Description",
+         "type": "string",
+         "default": "",
+         "pattern": "^$|^[a-zA-Z0-9]+[\\x00-\\xFF]*$",
+         "maxLength": 1024
+      },
+      "name": {
+         "description": "Link Aggregation Policy Name",
+         "type": "string",
+         "default": "",
+         "pattern": "^[a-zA-Z0-9_.:-]{1,64}$"
+      },
+      "tags": {
+         "description": "Link Aggregation Policy Tags",
+         "type": "array",
+         "items": {
+            "description": "Link Aggregation Policy Tag",
+            "type": "object",
+            "properties": {
+               "key": {
+                  "description": "Link Aggregation Policy Tag Key",
+                  "type": "string",
+                  "default": "",
+                  "minLength": 1,
+                  "maxLength": 128
+               },
+               "value": {
+                  "description": "Link Aggregation Policy Tag Value",
+                  "type": "string",
+                  "default": "",
+                  "minLength": 0,
+                  "maxLength": 256
+               }
+            },
+            "additionalProperties": false,
+            "required": [
+               "key",
+               "value"
+            ]
+         },
+         "minItems": 1
+      },
+      "lacp_rate": {
+         "description": "Link Aggregation Policy LACP Rate",
+         "type": "string",
+         "default": "normal",
+         "enum": [
+            "fast",
+            "normal"
+         ]
+      },
+      "suspend_individual": {
+         "description": "Link Aggregation Policy Suspend Individual",
+         "type": "boolean",
+         "default": false
+      }
+   },
+   "additionalProperties": false,
+   "required": [
+      "name"
+   ]
+}

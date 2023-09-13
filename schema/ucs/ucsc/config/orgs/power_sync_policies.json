@@ -1,0 +1,67 @@
+{
+   "id": "ucs_central_config_power_sync_policies#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS ucs central config power_sync_policies section",
+   "description": "EasyUCS ucs central config power_sync_policies section JSON schema",
+   "type": "object",
+   "properties": {
+      "comment": {
+         "description": "Power Sync Policy Comments",
+         "type": "string",
+         "default": ""
+      },
+      "name": {
+         "description": "Power Sync Policy Name",
+         "type": "string",
+         "default": "",
+         "pattern": "^[\\-\\.:_a-zA-Z0-9]{1,16}$"
+      },
+      "descr": {
+         "description": "Description of Power Sync Policy",
+         "type": "string",
+         "default": "",
+         "pattern": "^[ !#$%&\\(\\)\\*\\+,\\-\\./:;\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{0,256}$"
+      },
+      "sync_option": {
+         "description": "Sync Option of Power Sync Policy",
+         "type": "string",
+         "default": "default",
+         "enum": [
+            "always-sync",
+            "always",
+            "default-sync",
+            "default",
+            "initial-only-sync",
+            "initial"
+         ]
+      },
+      "tags": {
+         "description": "Power Sync Policy - Tags",
+         "type": "array",
+         "items": {
+            "description": "Power Sync Policy - Tag",
+            "type": "object",
+            "properties": {
+               "type": {
+                  "description": "Power Sync Policy - Tag - Type",
+                  "type": "string",
+                  "pattern": "^[ !#$%&\\(\\)\\*\\+,\\-\\.:;=\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{1,32}$"
+               },
+               "value": {
+                  "description": "Power Sync Policy - Tag - Value",
+                  "type": "string"
+               }
+            },
+            "additionalProperties": false,
+            "required": [
+               "type",
+               "value"
+            ]
+         }
+      }
+   },
+   "additionalProperties": false,
+   "required": [
+      "name"
+   ]
+}

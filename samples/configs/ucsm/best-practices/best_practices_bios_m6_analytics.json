@@ -1,0 +1,59 @@
+{
+   "easyucs":{
+      "metadata":[
+         {
+            "file_type": "config",
+            "device_type": "ucsm",
+            "category":"best-practices",
+            "subcategory":"BIOS",
+            "name":"UCS Manager BIOS Policy for Data Analytics on Cisco UCS M6 Servers",
+            "url":"https://www.cisco.com/c/en/us/products/collateral/servers-unified-computing/ucs-b-series-blade-servers/performance-tuning-guide-ucs-m6-servers.html",
+            "easyucs_version":"0.9.8",
+            "revision": "1.1"
+         }
+      ]
+   },
+   "config":{
+      "orgs":[
+         {
+            "name":"root",
+            "bios_policies": [
+               {
+                  "name":"Analytics-M6",
+                  "descr": "BIOS Policy for Data Analytics on Cisco UCS M6 Servers",
+                  "intel_hyperthreading_tech":"platform-default",
+  				  "intel_virtualization_technology":"platform-default",
+				  "cpu_performance":"platform-default",
+                  "hardware_prefetcher": "platform-default",
+                  "adjacent_cache_line_prefetcher": "platform-default",
+                  "dcu_ip_prefetcher": "platform-default",
+                  "dcu_streamer_prefetch": "platform-default",
+                  "llc_prefetch": "platform-default",
+                  "intel_vt_for_directed_io": "disabled",
+                  "enhanced_cpu_performance": "auto",
+                  "intel_turbo_boost_tech": "platform-default",
+                  "processor_c1e": "enabled",
+                  "processor_c6_report": "enabled",
+                  "energy_efficient_turbo": "enabled",
+                  "energy_performance_tuning": "platform-default",
+                  "package_c_state_limit": "platform-default",
+                  "workload_configuration": "balanced",
+                  "upi_prefetch": "platform-default",
+                  "xpt_prefetch": "platform-default",
+                  "upi_link_enablement": "platform-default",
+                  "upi_power_manangement": "platform-default",
+                  "upi_link_speed": "platform-default",
+                  "sub_numa_clustering": "platform-default",
+                  "uncore_frequency_scaling": "platform-default",
+                  "llc_dead_line": "platform-default",
+                  "numa_optimized": "platform-default",
+                  "imc_inteleave": "platform-default",
+                  "memory_ras_configuration": "platform-default",
+                  "memory_refresh_rate": "platform-default",
+                  "patrol_scrub": "platform-default"
+               }
+            ]
+         }
+      ]
+   }
+}

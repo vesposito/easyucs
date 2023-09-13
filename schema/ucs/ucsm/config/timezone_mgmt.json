@@ -1,29 +1,36 @@
 {
-   "id":"ucs_system_config_timezone_mgmt#",
-   "$schema":"http://json-schema.org/draft-07/schema#",
-   "title":"EasyUCS ucs system config timezone_mgmt section",
-   "description":"EasyUCS ucs system config timezone_mgmt section JSON schema",
-   "type":"object",
-   "properties":{
+   "id": "ucs_system_config_timezone_mgmt#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS ucs system config timezone_mgmt section",
+   "description": "EasyUCS ucs system config timezone_mgmt section JSON schema",
+   "type": "object",
+   "properties": {
       "comment": {
          "description": "Timezone Management Comments",
          "type": "string",
          "default": ""
       },
-      "zone":{
-         "description":"Time Zone",
-         "type":"string",
-         "default":""
+      "policy_owner": {
+         "description": "Timezone Management Owner (for UCS Central)",
+         "type": "string",
+         "enum": [
+            "ucs-central"
+         ]
       },
-      "ntp":{
-         "description":"NTP servers list",
-         "type":"array",
-         "items":{
-            "description":"NTP server",
-            "type":"string"
+      "zone": {
+         "description": "Time Zone",
+         "type": "string",
+         "default": ""
+      },
+      "ntp": {
+         "description": "NTP servers list",
+         "type": "array",
+         "items": {
+            "description": "NTP server",
+            "type": "string"
          },
-         "minItems":1
+         "minItems": 1
       }
    },
-   "additionalProperties":false
+   "additionalProperties": false
 }

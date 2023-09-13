@@ -1,53 +1,60 @@
 {
-   "id":"ucs_system_config_maintenance_policies#",
-   "$schema":"http://json-schema.org/draft-07/schema#",
-   "title":"EasyUCS ucs system config orgs maintenance_policies section",
-   "description":"EasyUCS ucs system config orgs maintenance_policies section JSON schema",
-   "type":"object",
-   "properties":{
+   "id": "ucs_system_config_maintenance_policies#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS ucs system config orgs maintenance_policies section",
+   "description": "EasyUCS ucs system config orgs maintenance_policies section JSON schema",
+   "type": "object",
+   "properties": {
       "comment": {
          "description": "Maintenance Policy Comments",
          "type": "string",
          "default": ""
       },
-      "name":{
-         "description":"Maintenance Policy Name",
-         "type":"string",
-         "default":"",
-         "pattern":"^[\\-\\.:_a-zA-Z0-9]{1,16}$"
+      "name": {
+         "description": "Maintenance Policy Name",
+         "type": "string",
+         "default": "",
+         "pattern": "^[\\-\\.:_a-zA-Z0-9]{1,16}$"
       },
-      "descr":{
-         "description":"Description of Maintenance Policy",
-         "type":"string",
-         "default":"",
-         "pattern":"^[ !#$%&\\(\\)\\*\\+,\\-\\./:;\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{0,256}$"
+      "descr": {
+         "description": "Description of Maintenance Policy",
+         "type": "string",
+         "default": "",
+         "pattern": "^[ !#$%&\\(\\)\\*\\+,\\-\\./:;\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{0,256}$"
       },
-      "soft_shutdown_timer":{
-         "description":"Maintenance Policy Soft Shutdown Timer (in seconds)",
-         "type":"string",
-         "default":"150",
-         "enum":[
+      "policy_owner": {
+         "description": "Maintenance Policy Owner (for UCS Central)",
+         "type": "string",
+         "enum": [
+            "ucs-central"
+         ]
+      },
+      "soft_shutdown_timer": {
+         "description": "Maintenance Policy Soft Shutdown Timer (in seconds)",
+         "type": "string",
+         "default": "150",
+         "enum": [
             "150",
             "300",
             "600",
             "never"
          ]
       },
-      "reboot_policy":{
-         "description":"Maintenance Policy Reboot Policy",
-         "type":"string",
-         "default":"immediate",
-         "enum":[
+      "reboot_policy": {
+         "description": "Maintenance Policy Reboot Policy",
+         "type": "string",
+         "default": "immediate",
+         "enum": [
             "immediate",
             "timer-automatic",
             "user-ack"
          ]
       },
-      "on_next_boot":{
-         "description":"Maintenance Policy On Next Boot option",
-         "type":"string",
-         "default":"off",
-         "enum":[
+      "on_next_boot": {
+         "description": "Maintenance Policy On Next Boot option",
+         "type": "string",
+         "default": "off",
+         "enum": [
             "false",
             "no",
             "off",
@@ -56,11 +63,11 @@
             "yes"
          ]
       },
-      "schedule":{
-         "description":"Maintenance Policy Schedule",
-         "type":"string",
-         "default":"",
-         "pattern":"^[\\-\\.:_a-zA-Z0-9]{1,16}$"
+      "schedule": {
+         "description": "Maintenance Policy Schedule",
+         "type": "string",
+         "default": "",
+         "pattern": "^[\\-\\.:_a-zA-Z0-9]{1,16}$"
       },
       "storage_config_deployment_policy": {
          "description": "Maintenance Policy Storage Config. Deployment Policy",
@@ -72,8 +79,8 @@
          ]
       }
    },
-   "additionalProperties":false,
-   "required":[
+   "additionalProperties": false,
+   "required": [
       "name"
    ]
 }

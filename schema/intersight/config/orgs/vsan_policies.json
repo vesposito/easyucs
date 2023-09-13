@@ -1,0 +1,119 @@
+{
+   "id": "intersight_config_orgs_vsan_policies#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS intersight config orgs vsan_policies section",
+   "description": "EasyUCS intersight config orgs vsan_policies section JSON schema",
+   "type": "object",
+   "properties": {
+      "comment": {
+         "description": "VSAN Policy Comments",
+         "type": "string",
+         "default": ""
+      },
+      "descr": {
+         "description": "VSAN Policy Description",
+         "type": "string",
+         "default": "",
+         "pattern": "^$|^[a-zA-Z0-9]+[\\x00-\\xFF]*$",
+         "maxLength": 1024
+      },
+      "name": {
+         "description": "VSAN Policy Name",
+         "type": "string",
+         "default": "",
+         "pattern": "^[a-zA-Z0-9_.:-]{1,64}$"
+      },
+      "tags": {
+         "description": "VSAN Policy Tags",
+         "type": "array",
+         "items": {
+            "description": "VSAN Policy Tag",
+            "type": "object",
+            "properties": {
+               "key": {
+                  "description": "VSAN Policy Tag Key",
+                  "type": "string",
+                  "default": "",
+                  "minLength": 1,
+                  "maxLength": 128
+               },
+               "value": {
+                  "description": "VSAN Policy Tag Value",
+                  "type": "string",
+                  "default": "",
+                  "minLength": 0,
+                  "maxLength": 256
+               }
+            },
+            "additionalProperties": false,
+            "required": [
+               "key",
+               "value"
+            ]
+         },
+         "minItems": 1
+      },
+      "uplink_trunking": {
+         "description": "VSAN Policy - FC Uplink Trunking",
+         "type": "boolean",
+         "default": false
+      },
+      "vsans": {
+         "description": "VSAN Policy - VSANs",
+         "type": "array",
+         "items": {
+            "description": "VSAN Policy - VSAN",
+            "type": "object",
+            "properties": {
+               "name": {
+                  "description": "VSAN Policy - VSAN Name",
+                  "type": "string",
+                  "default": ""
+               },
+               "id": {
+                  "description": "VSAN Policy - VSAN ID",
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 4093
+               },
+               "fcoe_vlan_id": {
+                  "description": "VSAN Policy - FCoE VLAN ID",
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 4093
+               },
+               "scope": {
+                  "description": "VSAN Policy - VSAN Scope",
+                  "type": "string",
+                  "default": "Uplink",
+                  "enum": [
+                     "Common",
+                     "Storage",
+                     "Uplink"
+                  ]
+               },
+               "zoning": {
+                  "description": "VSAN Policy - FC Zoning Admin State",
+                  "type": "string",
+                  "default": "Disabled",
+                  "enum": [
+                     "Disabled",
+                     "Enabled"
+                  ]
+               }
+            },
+            "additionalProperties": false,
+            "required": [
+               "name",
+               "id",
+               "fcoe_vlan_id"
+            ]
+         },
+         "minItems": 1
+      }
+   },
+   "additionalProperties": false,
+   "required": [
+      "name"
+   ]
+}

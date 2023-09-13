@@ -50,7 +50,8 @@ class UcsSystemDrawInfraNeighbors(GenericUcsDrawObject):
         self.neighbors_dict = self.sort_neighbors()
 
         self.fi_a.picture_offset = self._get_picture_offset("fi_a")
-        self.fi_b.picture_offset = self._get_picture_offset("fi_b")
+        if self.fi_b:
+            self.fi_b.picture_offset = self._get_picture_offset("fi_b")
 
         # As we drop the picture before, we need to recreate it and drop it again after pasting the layer
         self.fi_a._get_picture()
@@ -60,11 +61,12 @@ class UcsSystemDrawInfraNeighbors(GenericUcsDrawObject):
         self.paste_layer(self.fi_a.picture, self.fi_a.picture_offset)
         self.fi_a.picture = None
 
-        self.fi_b._get_picture()
-        if self.fi_b._parent.sku == "UCS-FI-M-6324":
-            self.fi_b.picture = self.fi_b.rotate_object(picture=self.fi_b.picture)
-        self.paste_layer(self.fi_b.picture, self.fi_b.picture_offset)
-        self.fi_b.picture = None
+        if self.fi_b:
+            self.fi_b._get_picture()
+            if self.fi_b._parent.sku == "UCS-FI-M-6324":
+                self.fi_b.picture = self.fi_b.rotate_object(picture=self.fi_b.picture)
+            self.paste_layer(self.fi_b.picture, self.fi_b.picture_offset)
+            self.fi_b.picture = None
 
         for key, neighbor in self.neighbors_dict.items():
             neighbor.picture_offset = self._get_picture_offset("neighbor", key, neighbor)
@@ -76,12 +78,13 @@ class UcsSystemDrawInfraNeighbors(GenericUcsDrawObject):
         self.fi_a.expansion_modules = self.fi_a.get_expansion_modules()
         self.fi_a.fill_blanks()
 
-        self.fi_b.draw = self.draw
-        self.fi_b.background = self.background
-        self.fi_b.ports = []
-        self.fi_b.draw_ports(call_from_infra=True)
-        self.fi_b.expansion_modules = self.fi_b.get_expansion_modules()
-        self.fi_b.fill_blanks()
+        if self.fi_b:
+            self.fi_b.draw = self.draw
+            self.fi_b.background = self.background
+            self.fi_b.ports = []
+            self.fi_b.draw_ports(call_from_infra=True)
+            self.fi_b.expansion_modules = self.fi_b.get_expansion_modules()
+            self.fi_b.fill_blanks()
 
         self.wires = []
         self.set_wire()
@@ -165,15 +168,16 @@ class UcsSystemDrawInfraNeighbors(GenericUcsDrawObject):
                                                             line_type="straight",
                                                             easyucs_fabric_port=draw_fi_port.port))
                         # self.wires = remove_not_completed_in_list(self.wires)
-                for draw_fi_port in self.fi_b.ports:
-                    if draw_fi_port.port == peer_port:
-                        point_fi = draw_fi_port.coord[0] + round(draw_fi_port.size[0] / 2), \
-                                   draw_fi_port.coord[1] + round(draw_fi_port.size[1] / 2)
-                        self.wires.append(UcsSystemDrawWire(parent_draw=self, points=(point_neighbor, point_fi),
-                                                            width=self.WIDTH_PORT_RECTANGLE_DEFAULT,
-                                                            line_type="straight",
-                                                            easyucs_fabric_port=draw_fi_port.port))
-                        # self.wires = remove_not_completed_in_list(self.wires)
+                if self.fi_b:
+                    for draw_fi_port in self.fi_b.ports:
+                        if draw_fi_port.port == peer_port:
+                            point_fi = draw_fi_port.coord[0] + round(draw_fi_port.size[0] / 2), \
+                                       draw_fi_port.coord[1] + round(draw_fi_port.size[1] / 2)
+                            self.wires.append(UcsSystemDrawWire(parent_draw=self, points=(point_neighbor, point_fi),
+                                                                width=self.WIDTH_PORT_RECTANGLE_DEFAULT,
+                                                                line_type="straight",
+                                                                easyucs_fabric_port=draw_fi_port.port))
+                            # self.wires = remove_not_completed_in_list(self.wires)
 
     def sort_neighbors(self):
         pass

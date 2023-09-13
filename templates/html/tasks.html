@@ -1,0 +1,78 @@
+{% extends "/html/base.html" %}
+
+{% block css %}
+<link rel="stylesheet" href="/static/plugins/datatables-bs4/css/dataTables.bootstrap4.min.css">
+<link rel="stylesheet" href="/static/plugins/datatables-select/css/select.bootstrap4.min.css">
+<link rel="stylesheet" href="/static/plugins/datatables-responsive/css/responsive.bootstrap4.min.css">
+<link rel="stylesheet" href="/static/plugins/datatables-buttons/css/buttons.bootstrap4.min.css">
+{% endblock %}
+
+{% block content %}
+<div class="content-header">
+  <div class="container-fluid">
+    <div class="row mb-2">
+      <div class="col-sm-6">
+        <h1 class="m-0">Tasks launched:</h1>
+      </div><!-- /.col -->
+      <div class="col-sm-6">
+        <ol class="breadcrumb float-sm-right">
+          <li class="breadcrumb-item"><a href="/">Home</a></li>
+          <li class="breadcrumb-item active">Tasks</li>
+        </ol>
+      </div><!-- /.col -->
+    </div>
+  </div>
+</div>
+
+<section class="content">
+  <div class="container-fluid">
+    <div id="tasksViewContainer" class="row">
+      <div class="col-md-12">
+        <div class="tab-content" id="nav-tabContent">
+          <div class="card">
+            <div class="card-body">
+              <form id="taskActionForm" onchange="">
+                <table id="taskTable" class="table table-bordered table-striped table-hover">
+                  <thead>
+                  <tr>
+                    <th><input type="checkbox" id="taskTable_selectAll" name="select_all" value="1" onclick=""></th>
+                    <th>Status</th>
+                    <th>Name</th>
+                    <th>Created</th>
+                    <th>Status description</th>
+                    <th>Started</th>
+                    <th>Launched on</th>
+                  </tr>
+                  </thead>
+                  <tbody>
+                  </tbody>
+                </table>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block javascript%}
+<script src="/static/plugins/moment/moment.min.js"></script>
+<script src="/static/plugins/datatables/jquery.dataTables.min.js"></script>
+<script src="/static/plugins/datatables-bs4/js/dataTables.bootstrap4.min.js"></script>
+<script src="/static/plugins/datatables-responsive/js/dataTables.responsive.min.js"></script>
+<script src="/static/plugins/datatables-responsive/js/responsive.bootstrap4.min.js"></script>
+<script src="/static/plugins/datatables-buttons/js/dataTables.buttons.min.js"></script>
+<script src="/static/plugins/datatables-buttons/js/buttons.bootstrap4.min.js"></script>
+<script src="/static/plugins/datatables-select/js/dataTables.select.min.js"></script>
+<script src="/static/plugins/datatables-select/js/select.bootstrap4.min.js"></script>
+<script src="/static/plugins/jszip/jszip.min.js"></script>
+<script src="/static/plugins/pdfmake/pdfmake.min.js"></script>
+<script src="/static/plugins/datatables-buttons/js/buttons.html5.min.js"></script>
+<script src="/static/plugins/datatables-buttons/js/buttons.print.min.js"></script>
+<script src="/static/plugins/datatables-buttons/js/buttons.colVis.min.js"></script>
+<script src="/static/plugins/datatables-datetime-moment/datetime-moment.js"></script>
+<!-- Page-specific JS -->
+<script src="/static/js/tasks.js" crossorigin="anonymous"></script>
+{% endblock %}

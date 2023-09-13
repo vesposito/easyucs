@@ -1,0 +1,354 @@
+{
+   "id": "intersight_config_orgs_persistent_memory_policies#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS intersight config orgs persistent_memory_policies section",
+   "description": "EasyUCS intersight config orgs persistent_memory_policies section JSON schema",
+   "type": "object",
+   "properties": {
+      "comment": {
+         "description": "Persistent Memory Policy Comments",
+         "type": "string",
+         "default": ""
+      },
+      "descr": {
+         "description": "Persistent Memory Policy Description",
+         "type": "string",
+         "default": "",
+         "pattern": "^$|^[a-zA-Z0-9]+[\\x00-\\xFF]*$",
+         "maxLength": 1024
+      },
+      "name": {
+         "description": "Persistent Memory Policy Name",
+         "type": "string",
+         "default": "",
+         "pattern": "^[a-zA-Z0-9_.:-]{1,64}$"
+      },
+      "tags": {
+         "description": "Persistent Memory Policy Tags",
+         "type": "array",
+         "items": {
+            "description": "Persistent Memory Policy Tag",
+            "type": "object",
+            "properties": {
+               "key": {
+                  "description": "Persistent Memory Policy Tag Key",
+                  "type": "string",
+                  "default": "",
+                  "minLength": 1,
+                  "maxLength": 128
+               },
+               "value": {
+                  "description": "Persistent Memory Policy Tag Value",
+                  "type": "string",
+                  "default": "",
+                  "minLength": 0,
+                  "maxLength": 256
+               }
+            },
+            "additionalProperties": false,
+            "required": [
+               "key",
+               "value"
+            ]
+         },
+         "minItems": 1
+      },
+      "management_mode": {
+         "description": "Persistent Memory Policy Management Mode Type",
+         "type": "string",
+         "default": "configured-from-intersight",
+         "enum": [
+            "configured-from-intersight",
+            "configured-from-operating-system"
+         ]
+      },
+      "local_security": {
+         "description": "Persistent Memory Policy Security",
+         "type": "object",
+         "items": {
+            "properties": {
+               "is_secure_passphrase_set": {
+                  "description": "Persistent Memory Policy - Local Security - Security PassPhrase",
+                  "type": "boolean",
+                  "default": true
+               },
+               "enable_security_passphrase": {
+                  "description": "Persistent Memory Policy - Local Security - Enable Security Passphrase",
+                  "type": "boolean",
+                  "default": true
+               }
+            }
+         }
+      },
+      "goals": {
+         "description": "Persistent Memory Policy Goals",
+         "type": "object",
+         "properties": {
+            "enable_goal": {
+               "description": "Persistent Memory Policy - Goal - Enabled State",
+               "type": "boolean",
+               "default": true
+            },
+            "memory_mode_percentage": {
+               "description": "Persistent memory Policy - Goal - Memory Mode Percentage ",
+               "type": "integer",
+               "default": 0,
+               "minimum": 0,
+               "maximum": 100
+            },
+            "persistent_memory_type": {
+               "description": "Persistent Memory Policy - Goal - Persistent Memory Type ",
+               "type": "string",
+               "default": "app-direct",
+               "enum": [
+                  "app-direct",
+                  "app-direct-non-interleaved"
+               ]
+            }
+         }
+      },
+      "retain_namespaces": {
+         "description": "Persistent Memory Policy - Retain Namespaces",
+         "type": "boolean",
+         "default": true
+      },
+      "logical_namespaces": {
+         "oneOf": [
+            {
+               "description": "Persistent Memory Policy - Logical Namespaces for app-direct",
+               "type": "array",
+               "items": {
+                  "type": "object",
+                  "description": "Persistent Memory Policy - Logical Namespace",
+                  "properties": {
+                     "name": {
+                        "type": "string",
+                        "description": "Persistent Memory Policy - Logical Namespace - Name",
+                        "default": "",
+                        "pattern": "^[a-zA-Z0-9_.:-]{1,64}$"
+                     },
+                     "socket_id": {
+                        "description": "Persistent Memory Policy - Logical Namespace - Socket ID ",
+                        "type": "integer",
+                        "default": "1",
+                        "minimum": 1,
+                        "maximum": 4
+                     },
+                     "socket_memory_id": {
+                        "description": "Persistent Memory Policy - Logical Namespace - Socket Memory ID  *'Not Applicable' - The socket memory ID is not applicable if app-direct persistent memory type is selected in the goal.",
+                        "type": "string",
+                        "default": "Not Applicable",
+                        "enum": [
+                           "Not Applicable"
+                        ]
+                     },
+                     "capacity": {
+                        "description": "Persistent Memory Policy - Logical Namespace - Capacity GiB",
+                        "type": "integer",
+                        "default": "",
+                        "minimum": 1,
+                        "maximum": 9223372036854776000
+                     },
+                     "mode": {
+                        "description": "Persistent Memory Policy - Logical Namespace - Mode",
+                        "type": "string",
+                        "default": "raw",
+                        "enum": [
+                           "raw",
+                           "block"
+                        ]
+                     }
+                  },
+                  "required": [
+                     "name",
+                     "capacity"
+                  ]
+               }
+            },
+            {
+               "description": "Persistent Memory Policy - Persistent Memory Logical Namespaces for  app-direct-non-interleaved",
+               "type": "array",
+               "items": {
+                  "type": "object",
+                  "description": "Persistent Memory Policy - Logical Namespace",
+                  "properties": {
+                     "name": {
+                        "type": "string",
+                        "description": "Persistent Memory Policy - Logical Namespace - Name",
+                        "default": "",
+                        "pattern": "^[a-zA-Z0-9_.:-]{1,64}$"
+                     },
+                     "socket_id": {
+                        "description": "Persistent Memory Policy - Logical Namespace - Socket ID",
+                        "type": "integer",
+                        "default": "1",
+                        "minimum": 1,
+                        "maximum": 4
+                     },
+                     "socket_memory_id": {
+                        "description": "Persistent Memory Policy - Logical Namespace - Socket Memory ID",
+                        "type": "string",
+                        "default": "2",
+                        "enum": [
+                           "2",
+                           "4",
+                           "6",
+                           "8",
+                           "10",
+                           "12"
+                        ]
+                     },
+                     "capacity": {
+                        "description": "Persistent Memory Policy - Logical Namespace - Capacity GiB",
+                        "type": "integer",
+                        "default": "",
+                        "minimum": 1,
+                        "maximum": 9223372036854776000
+                     },
+                     "mode": {
+                        "description": "Persistent Memory Policy - Logical Namespace - Mode",
+                        "type": "string",
+                        "default": "raw",
+                        "enum": [
+                           "raw",
+                           "block"
+                        ]
+                     }
+                  },
+                  "required": [
+                     "name",
+                     "capacity"
+                  ]
+               },
+               "minItems": 1
+            }
+         ]
+      }
+   },
+   "additionalProperties": false,
+   "required": [
+      "name"
+   ],
+   "allOf": [
+      {
+         "$comment": "Below is for setting constraints for management_mode with value configured-from-operating-system",
+         "if": {
+            "properties": {
+               "management_mode": {
+                  "enum": [
+                     "configured-from-operating-system"
+                  ]
+               }
+            },
+            "required": [
+               "management_mode"
+            ]
+         },
+         "then": {
+            "not": {
+               "anyOf": [
+                  {
+                     "required": [
+                        "local_security"
+                     ]
+                  },
+                  {
+                     "required": [
+                        "goals"
+                     ]
+                  },
+                  {
+                     "required": [
+                        "retain_namespaces"
+                     ]
+                  },
+                  {
+                     "required": [
+                        "logical_namespaces"
+                     ]
+                  }
+               ]
+            }
+         }
+      },
+      {
+         "$comment": "Below is for setting constraints for management_mode with value configured-from-intersight",
+         "if": {
+            "properties": {
+               "management_mode": {
+                  "enum": [
+                     "configured-from-intersight"
+                  ]
+               }
+            },
+            "required": [
+               "management_mode"
+            ]
+         },
+         "then": {
+            "anyOf": [
+               {
+                  "required": [
+                     "local_security"
+                  ]
+               },
+               {
+                  "required": [
+                     "goals"
+                  ]
+               },
+               {
+                  "required": [
+                     "retain_namespaces"
+                  ]
+               },
+               {
+                  "required": [
+                     "logical_namespaces"
+                  ]
+               }
+            ]
+         }
+      },
+      {
+         "$comment": "Below is for setting constraints for persistent_memory_type with value app-direct",
+         "if": {
+            "properties": {
+               "persistent_memory_type": {
+                  "enum": [
+                     "app-direct"
+                  ]
+               }
+            },
+            "required": [
+               "persistent_memory_type"
+            ]
+         },
+         "then": {
+            "required": [
+               "logical_namespaces"
+            ]
+         }
+      },
+      {
+         "$comment": "Below is for setting constraints for persistent_memory_type with value app-direct-non-interleaved",
+         "if": {
+            "properties": {
+               "persistent_memory_policies": {
+                  "enum": [
+                     "app-direct-non-interleaved"
+                  ]
+               }
+            },
+            "required": [
+               "persistent_memory_type"
+            ]
+         },
+         "then": {
+            "required": [
+               "logical_namespaces"
+            ]
+         }
+      }
+   ]
+} 

@@ -16,6 +16,13 @@
          "default": "",
          "pattern": "^[\\-\\.:_a-zA-Z0-9]{1,16}$"
       },
+      "policy_owner": {
+         "description": "vNIC/vHBA Placement Policy Owner (for UCS Central)",
+         "type": "string",
+         "enum": [
+            "ucs-central"
+         ]
+      },
       "virtual_slot_mapping_scheme": {
          "description": "Assignment Order of vNIC/vHBA Placement Policy",
          "type": "string",

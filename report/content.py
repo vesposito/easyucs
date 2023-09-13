@@ -12,6 +12,14 @@ from docx.oxml import shared, OxmlElement, ns
 from docx.shared import Cm, Pt, RGBColor
 from matplotlib import colors
 
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.units import cm
+from reportlab.platypus import Paragraph, PageBreak, KeepTogether, Table, TableStyle, Spacer
+from reportlab.platypus import Image as img
+from reportlab.lib.enums import TA_LEFT, TA_CENTER, TA_RIGHT
+from reportlab.platypus.tableofcontents import TableOfContents
+from PIL import Image
+
 
 class GenericReportElement:
     def __init__(self, order_id, parent):
@@ -22,9 +30,9 @@ class GenericReportElement:
 
     def __find_report(self):
         current_object = self.parent
-        while hasattr(current_object, 'parent') and not hasattr(current_object, 'timestamp'):
+        while hasattr(current_object, 'parent') and not hasattr(current_object, 'uuid'):
             current_object = current_object.parent
-        if hasattr(current_object, 'timestamp'):
+        if hasattr(current_object, 'uuid'):
             return current_object
         else:
             return None
@@ -56,13 +64,20 @@ class GenericReportHeading(GenericReportContent):
         # self.logger(level="debug", message="Adding " + self.__class__.__name__ + " in word")
         self.report.document.add_heading(text=self.string, level=self.indent)
 
+    def add_in_json_report(self, content):
+        content["Title"] = self.string.replace("\n", "")
+
+    def add_in_pdf_report(self):
+        heading_style = ParagraphStyle('heading', alignment=TA_LEFT)
+        self.report.pdf_element_list.append(Paragraph(self.string, heading_style))
+
     def __find_indent(self):
         indent = 1
         current_object = self.parent
-        while hasattr(current_object, 'parent') and not hasattr(current_object, 'timestamp'):
+        while hasattr(current_object, 'parent') and not hasattr(current_object, 'uuid'):
             current_object = current_object.parent
             indent += 1
-        if hasattr(current_object, 'timestamp'):
+        if hasattr(current_object, 'uuid'):
             return indent
         else:
             return None
@@ -93,6 +108,27 @@ class GenericReportImage(GenericReportContent):
                                                                           "it to the report")
         else:
             self.paragraph.add_run().add_picture(self.path, width=Cm(self.size))
+
+    def add_in_json_report(self, content):
+        content["ImagePath"] = self.path.replace("\n", "")
+
+    def add_in_pdf_report(self):
+        if self.not_found:
+            description_style = ParagraphStyle('description', alignment=TA_CENTER)
+            self.report.pdf_element_list.append(Paragraph("Picture Not Found", description_style))
+        else:
+            max_width = 33.972500000000004
+            max_height = 38.20583333333334
+            img1 = Image.open(self.path)
+            width = img1.width * 2.54 / 96
+            height = img1.height * 2.54 / 96
+            # If the width and height of the image can't fit in a page we find the aspect ratio and downsize the image
+            if width > max_width or height > max_height:
+                ratio = min(max_width / width, max_height / height)
+                width = width * ratio
+                height = height * ratio
+            image = img(self.path, width/2 * cm, height/2 * cm)
+            self.report.pdf_element_list.append(KeepTogether(image))
 
 
 class GenericReportText(GenericReportContent):
@@ -129,7 +165,7 @@ class GenericReportText(GenericReportContent):
             new_run = shared.OxmlElement('w:r')
             rPr = shared.OxmlElement('w:rPr')
 
-            # Join all the xml elements together add add the required text to the w:r element
+            # Join all the xml elements together and add the required text to the w:r element
             new_run.append(rPr)
             new_run.text = self.string
             hyperlink.append(new_run)
@@ -149,6 +185,277 @@ class GenericReportText(GenericReportContent):
         string.font.name = self.font
         a, b, c = colors.to_rgb(self.color)
         string.font.color.rgb = RGBColor(int(a * 255), int(b * 255), int(c * 255))
+
+    def add_in_json_report(self, content):
+        content["Text"] = self.string.replace("\n", "")
+        if self.hyper_link:
+            content["Hyperlink"] = self.hyper_link
+
+    def add_in_pdf_report(self):
+        self.report.pdf_element_list.append(Spacer(1, 1))
+        FONT_NAME = "Helvetica"
+        if self.bolded:
+            FONT_NAME = "Helvetica-Bold"
+            self.report.pdf_element_list.append(Spacer(1, 10))
+        if self.italicized:
+            FONT_NAME = "Helvetica-Oblique"
+            self.report.pdf_element_list.append(Spacer(1, 10))
+
+        heading_style = ParagraphStyle("title", alignment=int(bool(self.centered)), fontSize=self.font_size,
+                                       textColor=self.color, fontName=FONT_NAME)
+        self.report.pdf_element_list.append(Paragraph(self.string, heading_style))
+
+
+class GenericReportAdmonition(GenericReportContent):
+    def __init__(self, order_id, parent, centered=False, font_size=10, level="info", string1="", string2=""):
+        """
+        :param order_id:
+        :param parent:
+        :param centered:
+        :param font_size:
+        :param level:
+        :param string1:
+        :param string2:
+        """
+
+        GenericReportContent.__init__(self, order_id=order_id, parent=parent, centered=centered)
+        self.font_size = font_size
+        self.level = level
+        self.string1 = string1
+        self.string2 = string2
+
+        if self.string1:
+            if not self.string1.endswith("\n"):
+                self.string1 += "\n"
+
+        if level == "ok":
+            self.style = "Admonition OK"
+        if level == "info":
+            self.style = "Admonition Info"
+        if level == "warning":
+            self.style = "Admonition Warning"
+        if level == "error":
+            self.style = "Admonition Error"
+
+    def add_in_word_report(self):
+        # self.logger(level="debug", message="Adding " + self.__class__.__name__ + " in word")
+        table = self.report.document.add_table(rows=1, cols=2, style=self.style)
+
+        # Icons: https://www.iconarchive.com/show/small-n-flat-icons-by-paomedia.3.html
+        pic = "report/icons/" + self.level + ".png"
+        paragraph = table.rows[0].cells[0].paragraphs[0]
+        paragraph.alignment = 1
+        run = paragraph.add_run()
+        run.add_picture(pic, width=Pt(32), height=Pt(32))
+
+        paragraph = table.rows[0].cells[1].paragraphs[0]
+        run1 = paragraph.add_run(self.string1)
+        run1.bold = True
+        if self.string2:
+            run2 = paragraph.add_run(self.string2)
+            run2.bold = False
+
+        # Set autofit - For more info : https://github.com/python-openxml/python-docx/issues/209
+        table.rows[0].cells[0]._tc.tcPr.tcW.type = 'auto'
+        table.rows[0].cells[1].width = Cm(13)
+
+        # Change to keep the table on one page 1/2 - Put all the value at False (default values)
+        table.style.paragraph_format.keep_together = False
+        table.style.paragraph_format.keep_with_next = False
+
+        # Change the font size
+        for row in table.rows:
+            for cell in row.cells:
+                paragraphs = cell.paragraphs
+                for paragraph in paragraphs:
+                    for run in paragraph.runs:
+                        run.font.size = Pt(self.font_size)
+
+        # Change to keep the table on one page 2/2
+        # Put the entire table at "keep together" and then put all the rows, except the last one, at "keep with next"
+        # Tips found here : https://wordribbon.tips.net/T012975_Keeping_Tables_on_One_Page
+        table.style.paragraph_format.keep_together = True
+        for row in table.rows[:-1]:
+            for cell in row.cells:
+                paragraphs = cell.paragraphs
+                for paragraph in paragraphs:
+                    paragraph.paragraph_format.keep_with_next = True
+
+    def add_in_json_report(self, content):
+        # TODO: Organize the json properly
+        content["String1"] = self.string1.replace("\n", "")
+        content["String2"] = self.string2.replace("\n", "")
+        content["Admonition"] = self.style
+
+    def add_in_pdf_report(self):
+        # self.report.pdf_element_list.append(Paragraph("<br/><br/>"))
+        self.report.pdf_element_list.append(Spacer(1, 10))
+        pic = "report/icons/" + self.level + ".png"
+        data = []
+        table = []
+        image = img(pic, 1 * cm, 1 * cm)
+        data.append(image)
+        texts = '<font size="9" fontname = "Helvetica-Bold">' + self.string1+'</font><br/>'
+        if self.string2:
+            texts = texts + '<font size = "9">' + self.string2 + '</font>'
+        paragraph = Paragraph(texts)
+        data.append(paragraph)
+        table.append(data)
+        tables = Table(table, colWidths=(1.5*cm, 12*cm))
+        table_style = TableStyle([("ALIGN", (0, 0), (1, 1), "LEFT"),
+                                  ("VALIGN", (0, 0), (1, 1), "MIDDLE")])
+        if self.level == "ok":
+            table_style.add("BACKGROUND", (0, 0), (1, 1), "#eaf1dd")
+            table_style.add("BOX", (0, 0), (-1, -1), 0.10, "#30cb6b")
+        if self.level == "info":
+            table_style.add("BACKGROUND", (0, 0), (1, 1), "#dbe5f1")
+            table_style.add("BOX", (0, 0), (-1, -1), 0.10, "#4b81c0")
+        if self.level == "warning":
+            table_style.add("BACKGROUND", (0, 0), (1, 1), "#fce9da")
+            table_style.add("BOX", (0, 0), (-1, -1), 0.10, "#edc41d")
+        if self.level == "error":
+            table_style.add("BACKGROUND", (0, 0), (1, 1), "#f1dcdb")
+            table_style.add("BOX", (0, 0), (-1, -1), 0.10, "#de4a39")
+        tables.setStyle(table_style)
+        self.report.pdf_element_list.append(KeepTogether(tables))
+
+
+class GenericReportAdmonitionSummary(GenericReportContent):
+    def __init__(self, order_id, parent, centered=False, font_size=10, level="info", string_bullets=[]):
+        """
+        :param order_id:
+        :param parent:
+        :param centered:
+        :param font_size:
+        :param level:
+        :param string_bullets:
+        """
+
+        GenericReportContent.__init__(self, order_id=order_id, parent=parent, centered=centered)
+        self.font_size = font_size
+        self.level = level
+        self.string_bullets = string_bullets
+
+        if level == "ok":
+            self.style = "Admonition OK"
+        if level == "info":
+            self.style = "Admonition Info"
+        if level == "warning":
+            self.style = "Admonition Warning"
+        if level == "error":
+            self.style = "Admonition Error"
+
+    def add_in_word_report(self):
+        # self.logger(level="debug", message="Adding " + self.__class__.__name__ + " in word")
+        table = self.report.document.add_table(rows=1, cols=2, style=self.style)
+
+        # Icons: https://www.iconarchive.com/show/small-n-flat-icons-by-paomedia.3.html
+        pic = "report/icons/" + self.level + ".png"
+        paragraph = table.rows[0].cells[0].paragraphs[0]
+        paragraph.alignment = 1
+        run = paragraph.add_run()
+        run.add_picture(pic, width=Pt(32), height=Pt(32))
+
+        paragraph = table.rows[0].cells[0].add_paragraph()
+        paragraph.alignment = 1
+        run_text = paragraph.add_run()
+        run_text.add_text(self.level.capitalize())
+        run_text.bold = True
+
+        paragraph = table.rows[0].cells[1].paragraphs[0]
+        run_text = paragraph.add_run()
+        if self.level == "error":
+            run_text.add_text("Your configuration contains the following " + str(len(self.string_bullets)) +
+                              " unsupported critical item(s):")
+        elif self.level == "warning":
+            run_text.add_text("Your configuration contains the following " + str(self.level) + " item(s):")
+
+        for string_bullet in sorted(self.string_bullets):
+            paragraph = table.rows[0].cells[1].add_paragraph()
+            paragraph.style = 'List Bullet'
+            run1 = paragraph.add_run(string_bullet)
+            run1.bold = True
+
+        # Set autofit - For more info : https://github.com/python-openxml/python-docx/issues/209
+        table.rows[0].cells[0]._tc.tcPr.tcW.type = 'auto'
+        table.rows[0].cells[1].width = Cm(13)
+
+        # Change to keep the table on one page 1/2 - Put all the value at False (default values)
+        table.style.paragraph_format.keep_together = False
+        table.style.paragraph_format.keep_with_next = False
+
+        # Change the font size
+        for row in table.rows:
+            for cell in row.cells:
+                paragraphs = cell.paragraphs
+                for paragraph in paragraphs:
+                    for run in paragraph.runs:
+                        run.font.size = Pt(self.font_size)
+
+        # Change to keep the table on one page 2/2
+        # Put the entire table at "keep together" and then put all the rows, except the last one, at "keep with next"
+        # Tips found here : https://wordribbon.tips.net/T012975_Keeping_Tables_on_One_Page
+        table.style.paragraph_format.keep_together = True
+        for row in table.rows[:-1]:
+            for cell in row.cells:
+                paragraphs = cell.paragraphs
+                for paragraph in paragraphs:
+                    paragraph.paragraph_format.keep_with_next = True
+
+    def add_in_json_report(self, content):
+        # TODO: Organize the json properly
+        content["StringBullets"] = self.string_bullets
+        content["Admonition"] = self.style
+
+    def add_in_pdf_report(self):
+        pic = "report/icons/" + self.level + ".png"
+        data = []
+        table = []
+        firstCell = []
+        secondCell = []
+
+        # self.report.pdf_element_list.append(Paragraph("<br/><br/>"))
+        self.report.pdf_element_list.append(Spacer(1, 25))
+
+        image = img(pic, 1 * cm, 1 * cm)
+        admonition_style = ParagraphStyle('description', alignment=TA_CENTER,  fontName='Helvetica-Bold', fontSize=9)
+        bullet_style = ParagraphStyle('description', fontName='Helvetica-Bold', fontSize=9, bulletText="•")
+        firstCell.append(image)
+        firstCell.append(Paragraph(self.level.capitalize(), admonition_style))
+
+        description_style = ParagraphStyle('description', fontSize=9, leading=17)
+
+        if self.level == "error":
+            secondCell.append(Paragraph("Your configuration contains the following " + str(len(self.string_bullets)) +
+                              " unsupported critical item(s):", description_style))
+        elif self.level == "warning":
+            secondCell.append(Paragraph("Your configuration contains the following " +
+                                        str(self.level) + " item(s):", description_style))
+        for string_bullet in sorted(self.string_bullets):
+            t = Paragraph(string_bullet, bullet_style)
+            secondCell.append(t)
+
+        data.append(firstCell)
+        data.append(secondCell)
+        table.append(data)
+
+        tables = Table(table, colWidths=(2*cm, 12*cm))
+        table_style = TableStyle([("ALIGN", (0, 0), (-1, -1), "CENTER"),
+                                  ("VALIGN", (0, 0), (1, 1), "MIDDLE")])
+        if self.level == "ok":
+            table_style.add("BACKGROUND", (0, 0), (1, 1), "#eaf1dd")
+            table_style.add("BOX", (0, 0), (-1, -1), 0.10, "#30cb6b")
+        if self.level == "info":
+            table_style.add("BACKGROUND", (0, 0), (1, 1), "#dbe5f1")
+            table_style.add("BOX", (0, 0), (-1, -1), 0.10, "#4b81c0")
+        if self.level == "warning":
+            table_style.add("BACKGROUND", (0, 0), (1, 1), "#fce9da")
+            table_style.add("BOX", (0, 0), (-1, -1), 0.10, "#edc41d")
+        if self.level == "error":
+            table_style.add("BACKGROUND", (0, 0), (1, 1), "#f1dcdb")
+            table_style.add("BOX", (0, 0), (-1, -1), 0.10, "#de4a39")
+        tables.setStyle(table_style)
+        self.report.pdf_element_list.append(KeepTogether(tables))
 
 
 class ReportFrontPage(GenericReportElement):
@@ -194,6 +501,41 @@ class ReportFrontPage(GenericReportElement):
         # Add the first header
         self.paragraph = self.report.document.add_paragraph()
         # self.report.document.add_heading(self.report.title, level=0)
+
+    def add_in_json_report(self, content):
+        # TODO: Organize the json properly
+        content["Title"] = self.title.replace("\n", "")
+        content["Description"] = self.description.replace("\n", "")
+
+    def add_in_pdf_report(self):
+        page_breaks = 26
+        count_break = 0
+        styles = getSampleStyleSheet()
+        title_list = self.title.split()
+        description_list = self.description.split("-")
+        for i in range(0, int(page_breaks / 2) - 7):
+            self.report.pdf_element_list.append(Paragraph("<br/><br/><br/>", styles['Normal']))
+            count_break += 1
+
+        heading_style = ParagraphStyle('title', fontSize=28, alignment=1, leading=24, fontName='Helvetica-Bold')
+        self.report.pdf_element_list.append(Paragraph(title_list[0], heading_style))
+        if len(title_list) == 4:
+            self.report.pdf_element_list.append(Paragraph(title_list[1] + " " + title_list[2] + " " + title_list[3],
+                                                          heading_style))
+
+        self.report.pdf_element_list.append(Paragraph("<br/><br/><br/>", styles['Normal']))
+
+        description_style = ParagraphStyle('description', alignment=TA_CENTER, fontName='Helvetica-Oblique')
+        self.report.pdf_element_list.append(Paragraph(description_list[0], description_style))
+        self.report.pdf_element_list.append(Paragraph(description_list[1], description_style))
+
+        for i in range(count_break, page_breaks - 11):
+            self.report.pdf_element_list.append(Paragraph("<br/><br/><br/>", styles['Normal']))
+
+        author_style = ParagraphStyle('author', alignment=TA_RIGHT)
+        self.report.pdf_element_list.append(Paragraph(self.authors, author_style))
+
+        self.report.pdf_element_list.append(PageBreak())
 
 
 class ReportTableOfContents(GenericReportElement):
@@ -244,6 +586,19 @@ class ReportTableOfContents(GenericReportElement):
                 self.section_list.append(title)
             if hasattr(element, "content_list"):
                 self.generate_list(list=element.content_list, indent=indent + 1)
+
+    def add_in_pdf_report(self):
+        paragraph_style = ParagraphStyle('TOCTitle', fontSize=15, alignment=TA_CENTER, fontName='Helvetica-Bold',
+                                         textColor='#6a88c1')
+        self.report.pdf_element_list.append(Paragraph("Table of Contents", paragraph_style))
+        toc = TableOfContents()
+        toc.levelStyles = [
+            ParagraphStyle(fontName='Times-Bold', fontSize=13, name='Heading1', leftIndent=20, firstLineIndent=-20,
+                           spaceBefore=10, leading=5),
+            ParagraphStyle(fontSize=10, name='Heading2', leftIndent=30, firstLineIndent=-20, spaceBefore=5, leading=5),
+            ParagraphStyle(fontSize=10, name='Heading3', leftIndent=40, firstLineIndent=-20, spaceBefore=5, leading=5)
+        ]
+        self.report.pdf_element_list.append(toc)
 
     def update_toc(self, full_filename):
         if "win" in sys.platform:

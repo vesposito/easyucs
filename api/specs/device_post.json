@@ -1,0 +1,10 @@
+{
+   "oneOf": [
+      {
+         "$ref": "easyucs.json#/components/schemas/device_post_user_password"
+      },
+      {
+         "$ref": "easyucs.json#/components/schemas/device_post_private_key"
+      }
+   ]
+}

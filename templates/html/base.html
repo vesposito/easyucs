@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>EasyUCS</title>
+
+  <!-- Favicon: -->
+  <link rel="icon" type="image/png" href="/static/img/EasyUCS_Logo.png" />
+  <!-- Google Font: Source Sans Pro -->
+  <link rel="stylesheet" href="/static/fonts/SansPro/SansPro.css">
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="/static/plugins/fontawesome-free/css/all.min.css">
+  <!-- Theme style -->
+  <link rel="stylesheet" href="/static/plugins/adminlte/css/adminlte.min.css">
+  <!-- overlayScrollbars -->
+  <link rel="stylesheet" href="/static/plugins/overlayScrollbars/css/OverlayScrollbars.min.css">
+
+  <link href="/static/css/base.css" rel="stylesheet" />
+
+  {% block css %}
+  {% endblock %}
+</head>
+<body class="hold-transition sidebar-mini layout-fixed layout-navbar-fixed">
+<div class="wrapper">
+
+  <!-- Preloader -->
+  <div class="preloader flex-column justify-content-center align-items-center">
+    <img class="animation__shake" src="/static/img/loader_2.gif" alt="Loader" height="250" width="250">
+  </div>
+
+  <!-- Navbar -->
+  <nav class="main-header navbar navbar-expand navbar-white navbar-light">
+    <!-- Left navbar links -->
+    <ul class="navbar-nav">
+      <li class="nav-item">
+        <a class="nav-link" data-widget="pushmenu" href="#" role="button"><i class="fas fa-bars"></i></a>
+      </li>
+      <li class="nav-item d-none d-sm-inline-block">
+        <a href="/" class="nav-link">Home</a>
+      </li>
+      <li class="nav-item d-none d-sm-inline-block">
+        <a href="/contact" class="nav-link">Contact</a>
+      </li>
+    </ul>
+
+    <!-- Right navbar links -->
+    <ul class="navbar-nav ml-auto">
+      <!-- Navbar Search -->
+      <!--
+      <li class="nav-item">
+        <a class="nav-link" data-widget="navbar-search" href="#" role="button">
+          <i class="fas fa-search"></i>
+        </a>
+        <div class="navbar-search-block">
+          <form class="form-inline">
+            <div class="input-group input-group-sm">
+              <input class="form-control form-control-navbar" type="search" placeholder="Search" aria-label="Search">
+              <div class="input-group-append">
+                <button class="btn btn-navbar" type="submit">
+                  <i class="fas fa-search"></i>
+                </button>
+                <button class="btn btn-navbar" type="button" data-widget="navbar-search">
+                  <i class="fas fa-times"></i>
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </li>
+      -->
+
+      <!-- Tasks Dropdown Menu -->
+      <li class="nav-item dropdown">
+        <a class="nav-link" data-toggle="dropdown" href="#" onclick="cleanTaskNotification();">
+          <i class="far fa-bell"></i>
+          <span id="new-task-badge" class="badge badge-warning navbar-badge"></span>
+        </a>
+        <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right" style = "overflow: hidden">
+          <span id = "taskDropdownTitle" class="dropdown-item dropdown-header">Last Tasks</span>
+          <div class="dropdown-divider"></div>
+        
+          <div id="right-panel-container" class="w-100 overflow-auto" style="max-height: 80vh;">
+            <div id="tasksPendingContainer" class="flex-row justify-content-center align-items-center w-100 p-2 bg-warning">
+              <div class="px-1" style="font-size:1.1rem"><i class="far fa-clock"></i></div>
+              <div class="px-1">
+                <span>Tasks in the queue: <b id="tasksPendingNumber"> </b></span>
+              </div>
+            </div>
+            <div id="taskCardsContainer" class="w-100 p-3">
+            </div>
+          </div>
+          <div class="dropdown-divider"></div>
+          <a id = "taskDropdownFooter" href="/tasks" class="dropdown-item dropdown-footer">See All Tasks</a>
+        </div>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" data-widget="fullscreen" href="#" role="button">
+          <i class="fas fa-expand-arrows-alt"></i>
+        </a>
+      </li>
+      <!--
+      <li class="nav-item">
+        <a class="nav-link" data-widget="control-sidebar" data-slide="true" href="#" role="button">
+          <i class="fas fa-th-large"></i>
+        </a>
+      </li>
+      -->
+    </ul>
+  </nav>
+  <!-- /.navbar -->
+
+  <!-- Main Sidebar Container -->
+  <aside class="main-sidebar sidebar-dark-primary elevation-4">
+    <!-- Logo -->
+    <a href="/" class="brand-link logo-switch">
+      <img src="/static/img/EasyUCS_Logo.png" alt="EasyUCS Logo Small" class="brand-image-xl logo-xs" style="left: 12px">
+      <img src="/static/img/EasyUCS_Logo_long.png" alt="EasyUCS Logo Large" class="brand-image-xs logo-xl" >
+      <span class="brand-text font-weight-light" style = "margin-left: 100px;">{{version}}</span>
+
+    </a>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+
+      <!-- SidebarSearch Form -->
+      <!-- 
+        <div class="form-inline">
+        <div class="input-group" data-widget="sidebar-search">
+          <input class="form-control form-control-sidebar" type="search" placeholder="Search" aria-label="Search">
+          <div class="input-group-append">
+            <button class="btn btn-sidebar">
+              <i class="fas fa-search fa-fw"></i>
+            </button>
+          </div>
+        </div>
+      </div> 
+      -->
+
+      <!-- Sidebar Menu -->
+      <nav class="mt-2">
+        <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
+          <li class="nav-header">DEVICES</li>
+          <li class="nav-item">
+            <a id="navLinkDevices" href="/" class="nav-link">
+              <i class="nav-icon fa-solid fa-server"></i>
+              <p>
+                Devices
+              </p>
+            </a>
+          </li>
+          <li id="navItemConfigCatalog" class="nav-item">
+            <a id="navLinkConfigCatalog" href="" class="nav-link">
+              <i class="nav-icon fas fa-copy"></i>
+              <p>
+                Config Catalog
+                <i class="fas fa-angle-left right"></i>
+              </p>
+            </a>
+            <ul id = "ConfigCatalogMenuContainer" class="nav nav-treeview">
+            </ul>
+          </li>
+        </ul>
+      </nav>
+      <!-- /.sidebar-menu -->
+    </div>
+    <!-- /.sidebar -->
+  </aside>
+
+  {% block modals %}
+  {% endblock %}
+  <!-- Content Wrapper. Contains page content -->
+  <div class="content-wrapper">
+    {% block content %}{% endblock %}
+    <div id = "placeholder-log-open"></div>
+  </div>
+  <!-- /.content-wrapper -->
+
+  <!-- Control Sidebar -->
+  <aside class="control-sidebar control-sidebar-dark">
+    <!-- Control sidebar content goes here -->
+  </aside>
+  <!-- /.control-sidebar -->
+</div>
+
+<div id = "log-button" class = "fixed-bottom w-100 d-flex flex-row justify-content-center" style = "pointer-events: none;">
+  <div type="button" class = "btn btn-secondary shadow text-center border-bottom-0 rounded-top p-1" style = "width: 125px; pointer-events:auto;" onclick = "openLogOffcanvas()">
+    <i class="fas fa-caret-up pr-2"></i>
+    Show Logs
+  </div>
+</div>
+
+<!-- Wrapper for logs -->
+<div id = "log-canvas" class="card rounded-0 w-100 m-0 border-dark fixed-bottom log-offcanvas">
+  <div class="card-body overflow-auto">
+    <div class = "row h-100">
+      <div class = "col-md-3">
+        <div class="d-flex h-100 flex-column justify-content-between">
+          <h3 class = "m-0">Logs</h3>
+          <div id = "logLevelBtnGroup" class = "btn-group mw-100 overflow-auto py-2" role="group">
+            <button type = "button" class="btn btn-default" id="log_critical" onclick="toggleLogLevel(this)">Critical</button>
+            <button type = "button" class="btn btn-default" id="log_error" onclick="toggleLogLevel(this)">Error</button>
+            <button type = "button" class="btn btn-default" id="log_warning" onclick="toggleLogLevel(this)">Warning</button>
+            <button type = "button" class="btn btn-default" id="log_info" onclick="toggleLogLevel(this)">Info</button>
+            <button type = "button" class="btn btn-primary" id="log_debug" onclick="toggleLogLevel(this)">Debug</button>
+          </div>
+          <span class="py-2">
+                <span class = "pr-2"> Auto scrolling: </span> 
+                <div class="btn-group" id="toggle_event_editing">
+                  <button id = "btn_autoscroll_on" type="button" class="btn btn-primary locked_active" onclick = "toggleLogAutoscroll(true)">ON</button>
+                  <button id = "btn_autoscroll_off" type="button" class="btn btn-default unlocked_inactive" onclick = "toggleLogAutoscroll(false)">OFF</button>
+                </div>
+          </span>
+        </div>
+      </div>
+      <div class = "col-md-8 h-100">
+        <textarea class="form-control no-resize" rows="6" id="log-content"></textarea>
+      </div>
+      <div class = "col-md-1">
+        <button type="button" class="close" onclick = "closeLogOffcanvas()">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- jQuery -->
+<script src="/static/plugins/jquery/jquery.min.js"></script>
+<!-- jQuery UI 1.11.4 -->
+<script src="/static/plugins/jquery-ui/jquery-ui.min.js"></script>
+<!-- Lodash -->
+<script src="/static/plugins/lodash/lodash.min.js"></script>
+<!-- Bootstrap 4 -->
+<script src="/static/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+<!-- overlayScrollbars -->
+<script src="/static/plugins/overlayScrollbars/js/jquery.overlayScrollbars.min.js"></script>
+<!-- AdminLTE App -->
+<script src="/static/plugins/adminlte/js/adminlte.js"></script>
+<!-- Swal Alerts -->
+<script src="/static/plugins/sweetalert2/sweetalert2.all.min.js"></script>
+
+<script src="/static/js/base.js" crossorigin="anonymous"></script>
+{% block javascript %}{% endblock %}
+</body>
+</html>

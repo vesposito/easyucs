@@ -1,0 +1,205 @@
+{
+   "id": "intersight_config_orgs_virtual_media_policies#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS intersight config orgs virtual_media_policies section",
+   "description": "EasyUCS intersight config orgs virtual_media_policies section JSON schema",
+   "type": "object",
+   "properties": {
+      "comment": {
+         "description": "Virtual Media Policy Comments",
+         "type": "string",
+         "default": ""
+      },
+      "descr": {
+         "description": "Virtual Media Policy Description",
+         "type": "string",
+         "default": "",
+         "pattern": "^$|^[a-zA-Z0-9]+[\\x00-\\xFF]*$",
+         "maxLength": 1024
+      },
+      "name": {
+         "description": "Virtual Media Policy Name",
+         "type": "string",
+         "default": "",
+         "pattern": "^[a-zA-Z0-9_.:-]{1,64}$"
+      },
+      "tags": {
+         "description": "Virtual Media Policy Tags",
+         "type": "array",
+         "items": {
+            "description": "Virtual Media Policy Tag",
+            "type": "object",
+            "properties": {
+               "key": {
+                  "description": "Virtual Media Policy Tag Key",
+                  "type": "string",
+                  "default": "",
+                  "minLength": 1,
+                  "maxLength": 128
+               },
+               "value": {
+                  "description": "Virtual Media Policy Tag Value",
+                  "type": "string",
+                  "default": "",
+                  "minLength": 0,
+                  "maxLength": 256
+               }
+            },
+            "additionalProperties": false,
+            "required": [
+               "key",
+               "value"
+            ]
+         },
+         "minItems": 1
+      },
+      "enable_low_power_usb": {
+         "description": "Virtual Media Policy Enable Low Power USB",
+         "type": "boolean",
+         "default": true
+      },
+      "enable_virtual_media": {
+         "description": "Virtual Media Policy Enable Virtual Media",
+         "type": "boolean",
+         "default": true
+      },
+      "enable_virtual_media_encryption": {
+         "description": "Virtual Media Policy Enable Virtual Media Encryption",
+         "type": "boolean",
+         "default": false
+      },
+      "vmedia_mounts": {
+         "description": "Virtual Media Policy vMedia Mounts (Mappings)",
+         "type": "array",
+         "items": {
+            "description": "Virtual Media Policy vMedia Mount (Mapping)",
+            "type": "object",
+            "properties": {
+               "authentication_protocol": {
+                  "description": "Virtual Media Policy - vMedia Mount - Authentication Protocol",
+                  "type": "string",
+                  "default": "none",
+                  "enum": [
+                     "none",
+                     "ntlm",
+                     "ntlmi",
+                     "ntlmssp",
+                     "ntlmsspi",
+                     "ntlmv2",
+                     "ntlmv2i"
+                  ]
+               },
+               "device_type": {
+                  "description": "Virtual Media Policy - vMedia Mount - Device Type",
+                  "type": "string",
+                  "default": "cdd",
+                  "enum": [
+                     "cdd",
+                     "hdd"
+                  ]
+               },
+               "file_location": {
+                  "description": "Virtual Media Policy - vMedia Mount - File Location",
+                  "type": "string",
+                  "default": ""
+               },
+               "hostname": {
+                  "description": "Virtual Media Policy - vMedia Mount - Hostname",
+                  "type": "string",
+                  "default": ""
+               },
+               "mount_options": {
+                  "description": "Virtual Media Policy - vMedia Mount - Mount Options",
+                  "type": "string",
+                  "default": "",
+                  "minLength": 0,
+                  "maxLength": 248
+               },
+               "name": {
+                  "description": "Virtual Media Policy - vMedia Mount - Name",
+                  "type": "string",
+                  "default": "",
+                  "minLength": 0,
+                  "maxLength": 255
+               },
+               "password": {
+                  "description": "Virtual Media Policy - vMedia Mount - Password",
+                  "type": "string",
+                  "default": "",
+                  "minLength": 0,
+                  "maxLength": 255
+               },
+               "encrypted_password": {
+                  "description": "Virtual Media Policy - vMedia Mount - Encrypted Password",
+                  "type": "string"
+               },
+               "protocol": {
+                  "description": "Virtual Media Policy - vMedia Mount - Protocol",
+                  "type": "string",
+                  "default": "nfs",
+                  "enum": [
+                     "cifs",
+                     "http",
+                     "https",
+                     "nfs"
+                  ]
+               },
+               "remote_file": {
+                  "description": "Virtual Media Policy - vMedia Mount - Remote File",
+                  "type": "string",
+                  "default": "",
+                  "minLength": 0,
+                  "maxLength": 235,
+                  "pattern": "^$|^[ !#$%\\(\\)\\+,\\-\\.:\\?@\\[\\]_\\{\\}=~a-zA-Z0-9]+$"
+               },
+               "remote_path": {
+                  "description": "Virtual Media Policy - vMedia Mount - Remote Path",
+                  "type": "string",
+                  "default": "",
+                  "pattern": "^$|^[ !#$%\\(\\)\\+,\\-\\.\\/:\\?@\\[\\]_\\{\\}=~a-zA-Z0-9]+$"
+               },
+               "username": {
+                  "description": "Virtual Media Policy - vMedia Mount - Username",
+                  "type": "string",
+                  "default": "",
+                  "minLength": 0,
+                  "maxLength": 255
+               }
+            },
+            "additionalProperties": false,
+            "$comment": "Below is for only allowing file_location OR hostname/remote_path/remote_file",
+            "if": {
+               "required": [
+                  "file_location"
+               ]
+            },
+            "then": {
+               "not": {
+                  "anyOf": [
+                     {
+                        "required": [
+                           "hostname"
+                        ]
+                     },
+                     {
+                        "required": [
+                           "remote_file"
+                        ]
+                     },
+                     {
+                        "required": [
+                           "remote_path"
+                        ]
+                     }
+                  ]
+               }
+            }
+         },
+         "minItems": 1
+      }
+   },
+   "additionalProperties": false,
+   "required": [
+      "name"
+   ]
+}

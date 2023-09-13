@@ -50,7 +50,10 @@
          "items": {
             "description:": "EasyUCS config/orgs/boot_policies element",
             "type": "object",
-            "$ref": "orgs/boot_policies.json"
+            "$ref": "orgs/boot_policies.json",
+            "required": [
+               "name"
+            ]
          },
          "minItems": 1
       },
@@ -152,7 +155,10 @@
          "items": {
             "description:": "EasyUCS config/orgs/dynamic_vnic_connection_policies element",
             "type": "object",
-            "$ref": "orgs/dynamic_vnic_connection_policies.json"
+            "$ref": "orgs/dynamic_vnic_connection_policies.json",
+            "required": [
+               "name"
+            ]
          },
          "minItems": 1
       },
@@ -226,13 +232,13 @@
          },
          "minItems": 1
       },
-      "iqn_suffix_pools": {
-         "description": "EasyUCS config/orgs/iqn_suffix_pools section",
+      "iqn_pools": {
+         "description": "EasyUCS config/orgs/iqn_pools section",
          "type": "array",
          "items": {
-            "description:": "EasyUCS config/orgs/iqn_suffix_pools element",
+            "description:": "EasyUCS config/orgs/iqn_pools element",
             "type": "object",
-            "$ref": "orgs/iqn_suffix_pools.json"
+            "$ref": "orgs/iqn_pools.json"
          },
          "minItems": 1
       },
@@ -303,7 +309,10 @@
          "items": {
             "description:": "EasyUCS config/orgs/local_disk_config_policies element",
             "type": "object",
-            "$ref": "orgs/local_disk_config_policies.json"
+            "$ref": "orgs/local_disk_config_policies.json",
+            "required": [
+               "name"
+            ]
          },
          "minItems": 1
       },
@@ -433,7 +442,10 @@
          "items": {
             "description": "EasyUCS config/orgs/serial_over_lan_policies element",
             "type": "object",
-            "$ref": "orgs/serial_over_lan_policies.json"
+            "$ref": "orgs/serial_over_lan_policies.json",
+            "required": [
+               "name"
+            ]
          },
          "minItems": 1
       },
@@ -477,6 +489,16 @@
          },
          "minItems": 1
       },
+      "spdm_certificate_policies": {
+         "description": "EasyUCS config/orgs/spdm_certificate_policies section",
+         "type": "array",
+         "items": {
+            "description:": "EasyUCS config/orgs/spdm_certificate_policies element",
+            "type": "object",
+            "$ref": "orgs/spdm_certificate_policies.json"
+         },
+         "minItems": 1
+      },
       "storage_connection_policies": {
          "description": "EasyUCS config/orgs/storage_connection_policies section",
          "type": "array",
@@ -493,7 +515,10 @@
          "items": {
             "description": "EasyUCS config/orgs/storage_profiles element",
             "type": "object",
-            "$ref": "orgs/storage_profiles.json"
+            "$ref": "orgs/storage_profiles.json",
+            "required": [
+               "name"
+            ]
          },
          "minItems": 1
       },
@@ -504,6 +529,16 @@
             "description": "EasyUCS config/orgs/threshold_policies element",
             "type": "object",
             "$ref": "orgs/threshold_policies.json"
+         },
+         "minItems": 1
+      },
+      "usnic_connection_policies": {
+         "description": "EasyUCS config/orgs/usnic_connection_policies section",
+         "type": "array",
+         "items": {
+            "description:": "EasyUCS config/orgs/usnic_connection_policies element",
+            "type": "object",
+            "$ref": "orgs/usnic_connection_policies.json"
          },
          "minItems": 1
       },
@@ -533,7 +568,20 @@
          "items": {
             "description:": "EasyUCS config/orgs/vmedia_policies element",
             "type": "object",
-            "$ref": "orgs/vmedia_policies.json"
+            "$ref": "orgs/vmedia_policies.json",
+            "required": [
+               "name"
+            ]
+         },
+         "minItems": 1
+      },
+      "vmq_connection_policies": {
+         "description": "EasyUCS config/orgs/vmq_connection_policies section",
+         "type": "array",
+         "items": {
+            "description:": "EasyUCS config/orgs/vmq_connection_policies element",
+            "type": "object",
+            "$ref": "orgs/vmq_connection_policies.json"
          },
          "minItems": 1
       },

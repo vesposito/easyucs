@@ -25,6 +25,10 @@
          "type": "string",
          "pattern": "^[!\"\"#%&'\\(\\)\\*\\+,\\-\\./:;<>@\\[\\\\\\]\\^_`\\{\\|\\}~a-zA-Z0-9]{0,128}$"
       },
+      "encrypted_password": {
+         "description": "Encrypted Local User Password",
+         "type": "string"
+      },
       "first_name": {
          "description": "Local User First Name",
          "type": "string"

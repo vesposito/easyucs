@@ -1,0 +1,127 @@
+{
+   "id": "ucs_central_config_chassis_profiles#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS ucs central config chassis_profiles section",
+   "description": "EasyUCS ucs central config chassis_profiles section JSON schema",
+   "type": "object",
+   "properties": {
+      "comment": {
+         "description": "Chassis Profile Comments",
+         "type": "string",
+         "default": ""
+      },
+      "name": {
+         "description": "Chassis Profile Name",
+         "type": "string",
+         "default": "",
+         "pattern": "^[\\-\\.:_a-zA-Z0-9]{1,16}$"
+      },
+      "descr": {
+         "description": "Description of Chassis Profile",
+         "type": "string",
+         "default": "",
+         "pattern": "^[ !#$%&\\(\\)\\*\\+,\\-\\./:;\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{0,256}$"
+      },
+      "label": {
+         "description": "Label of Chassis Profile",
+         "type": "string",
+         "default": "",
+         "pattern": "^[ !#$%&\\(\\)\\*\\+,\\-\\./:;\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{0,32}$"
+      },
+      "type": {
+         "description": "Chassis Profile - Type",
+         "type": "string",
+         "enum": [
+            "initial-template",
+            "instance",
+            "updating-template"
+         ]
+      },
+      "disk_zoning_policy": {
+         "description": "Chassis Profile - Disk Zoning Policy",
+         "type": "string",
+         "pattern": "^[\\-\\.:_a-zA-Z0-9]{0,16}$"
+      },
+      "chassis_firmware_policy": {
+         "description": "Chassis Profile - Chassis Firmware Policy",
+         "type": "string",
+         "pattern": "^[\\-\\.:_a-zA-Z0-9]{0,16}$"
+      },
+      "compute_connection_policy": {
+         "description": "Chassis Profile - Compute Connection Policy",
+         "type": "string",
+         "pattern": "^[\\-\\.:_a-zA-Z0-9]{0,16}$"
+      },
+      "chassis_maintenance_policy": {
+         "description": "Chassis Profile - Chassis Maintenance Policy",
+         "type": "string",
+         "pattern": "^[\\-\\.:_a-zA-Z0-9]{0,16}$"
+      },
+      "chassis_assignment_id": {
+         "description": "Chassis Profile - Assigned Chassis ID",
+         "type": "string"
+      },
+      "restrict_migration": {
+         "description": "Chassis Profile - Restrict Migration",
+         "type": "string",
+         "default": "false",
+         "enum": [
+            "false",
+            "no",
+            "true",
+            "yes"
+         ]
+      },
+      "chassis_profile_template": {
+         "description": "Chassis Profile - Chassis Profile Template",
+         "type": "string"
+      },
+      "suffix_start_number": {
+         "description": "Chassis Profile - Suffix Start Number",
+         "type": "string",
+         "default": "1"
+      },
+      "number_of_instances": {
+         "description": "Chassis Profile - Number Of Instances",
+         "type": "string",
+         "default": "1"
+      },
+      "tags": {
+         "description": "Chassis Profile - Tags",
+         "type": "array",
+         "items": {
+            "description": "Chassis Profile - Tag",
+            "type": "object",
+            "properties": {
+               "type": {
+                  "description": "Chassis Profile - Tag - Type",
+                  "type": "string",
+                  "pattern": "^[ !#$%&\\(\\)\\*\\+,\\-\\.:;=\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{1,32}$"
+               },
+               "value": {
+                  "description": "Chassis Profile - Tag - Value",
+                  "type": "string"
+               }
+            },
+            "additionalProperties": false,
+            "required": [
+               "type",
+               "value"
+            ]
+         }
+      }
+   },
+   "additionalProperties": false,
+   "required": [
+      "name",
+      "type"
+   ],
+   "dependencies": {
+      "suffix_start_number": [
+         "number_of_instances"
+      ],
+      "number_of_instances": [
+         "suffix_start_number"
+      ]
+   }
+}

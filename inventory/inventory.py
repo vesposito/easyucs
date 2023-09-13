@@ -3,21 +3,22 @@
 
 """ inventory.py: Easy UCS Deployment Tool """
 
-import time
 import uuid
+
+from repository.metadata import InventoryMetadata
 
 
 class GenericInventory:
     def __init__(self, parent=None):
         self.custom = False
         self.device = parent.parent
-        self.device_version = ""
         self.load_from = None
-        self.origin = None
-        self.status = None
         self.parent = parent
-        self.timestamp = time.strftime("%a, %d %b %Y %H:%M:%S", time.localtime())
+        self.status = None
         self.uuid = uuid.uuid4()
+
+        # Needs to be created after UUID
+        self.metadata = InventoryMetadata(parent=self)
 
         self._parent_having_logger = self._find_logger()
 

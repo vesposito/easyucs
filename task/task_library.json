@@ -1,0 +1,833 @@
+{
+   "ClaimToIntersightUcsImc": {
+      "description": "Claim UCS IMC to Intersight",
+      "device_type": "cimc",
+      "steps": [
+         {
+            "name": "ConnectUcsImcDevice",
+            "order": 1,
+            "weight": 1
+         },
+         {
+            "name": "ConnectIntersightDevice",
+            "order": 2,
+            "weight": 1
+         },
+         {
+            "name": "ClaimDeviceToIntersight",
+            "order": 3,
+            "weight": 1
+         },
+         {
+            "name": "RefreshIntersightClaimStatus",
+            "order": 4,
+            "weight": 2
+         },
+         {
+            "name": "DisconnectUcsImcDevice",
+            "optional": true,
+            "order": 5,
+            "weight": 1
+         },
+         {
+            "name": "DisconnectIntersightDevice",
+            "optional": true,
+            "order": 6,
+            "weight": 1
+         }
+      ]
+   },
+   "ClaimToIntersightUcsSystem": {
+      "description": "Claim UCS System to Intersight",
+      "device_type": "ucsm",
+      "steps": [
+         {
+            "name": "ConnectUcsSystemDevice",
+            "order": 1,
+            "weight": 1
+         },
+         {
+            "name": "ConnectIntersightDevice",
+            "order": 2,
+            "weight": 1
+         },
+         {
+            "name": "ClaimDeviceToIntersight",
+            "order": 3,
+            "weight": 1
+         },
+         {
+            "name": "RefreshIntersightClaimStatus",
+            "order": 4,
+            "weight": 2
+         },
+         {
+            "name": "DisconnectUcsSystemDevice",
+            "optional": true,
+            "order": 5,
+            "weight": 1
+         },
+         {
+            "name": "DisconnectIntersightDevice",
+            "optional": true,
+            "order": 6,
+            "weight": 1
+         }
+      ]
+   },
+   "ClearIntersightClaimStatusUcsImc": {
+      "description": "Clear UCS IMC Intersight Claim Status",
+      "device_type": "cimc",
+      "steps": [
+         {
+            "name": "ConnectUcsImcDevice",
+            "order": 1,
+            "weight": 1
+         },
+         {
+            "name": "ClearIntersightClaimStatus",
+            "order": 2,
+            "weight": 1
+         },
+         {
+            "name": "DisconnectUcsImcDevice",
+            "optional": true,
+            "order": 3,
+            "weight": 1
+         }
+      ]
+   },
+   "ClearIntersightClaimStatusUcsSystem": {
+      "description": "Clear UCS System Intersight Claim Status",
+      "device_type": "ucsm",
+      "steps": [
+         {
+            "name": "ConnectUcsSystemDevice",
+            "order": 1,
+            "weight": 1
+         },
+         {
+            "name": "ClearIntersightClaimStatus",
+            "order": 2,
+            "weight": 1
+         },
+         {
+            "name": "DisconnectUcsSystemDevice",
+            "optional": true,
+            "order": 3,
+            "weight": 1
+         }
+      ]
+   },
+   "ClearSelLogsUcsImc": {
+      "description": "Clear UCS IMC SEL Logs",
+      "device_type": "cimc",
+      "steps": [
+         {
+            "name": "ConnectUcsImcDevice",
+            "order": 1,
+            "weight": 1
+         },
+         {
+            "name": "ClearSelLogsUcsImc",
+            "order": 2,
+            "weight": 3
+         },
+         {
+            "name": "DisconnectUcsImcDevice",
+            "optional": true,
+            "order": 3,
+            "weight": 1
+         }
+      ]
+   },
+   "ClearSelLogsUcsSystem": {
+      "description": "Clear UCS System SEL Logs",
+      "device_type": "ucsm",
+      "steps": [
+         {
+            "name": "ConnectUcsSystemDevice",
+            "order": 1,
+            "weight": 1
+         },
+         {
+            "name": "ClearSelLogsUcsSystem",
+            "order": 2,
+            "weight": 3
+         },
+         {
+            "name": "DisconnectUcsSystemDevice",
+            "optional": true,
+            "order": 3,
+            "weight": 1
+         }
+      ]
+   },
+   "FetchBackupUcsCentral": {
+      "description": "Fetch backup from UCS Central",
+      "device_type": "ucsc",
+      "steps": [
+         {
+            "name": "ConnectUcsCentralDevice",
+            "order": 1,
+            "weight": 1
+         },
+         {
+            "name": "FetchBackupUcsCentralDevice",
+            "order": 2,
+            "weight": 3
+         },
+         {
+            "name": "DisconnectUcsCentralDevice",
+            "optional": true,
+            "order": 3,
+            "weight": 1
+         }
+      ]
+   },
+   "FetchBackupUcsImc": {
+      "description": "Fetch backup from UCS IMC",
+      "device_type": "cimc",
+      "steps": [
+         {
+            "name": "ConnectUcsImcDevice",
+            "order": 1,
+            "weight": 1
+         },
+         {
+            "name": "FetchBackupUcsImcDevice",
+            "order": 2,
+            "weight": 3
+         },
+         {
+            "name": "DisconnectUcsImcDevice",
+            "optional": true,
+            "order": 3,
+            "weight": 1
+         }
+      ]
+   },
+   "FetchBackupUcsSystem": {
+      "description": "Fetch backup from UCS System",
+      "device_type": "ucsm",
+      "steps": [
+         {
+            "name": "ConnectUcsSystemDevice",
+            "order": 1,
+            "weight": 1
+         },
+         {
+            "name": "FetchBackupUcsSystemDevice",
+            "order": 2,
+            "weight": 3
+         },
+         {
+            "name": "DisconnectUcsSystemDevice",
+            "optional": true,
+            "order": 3,
+            "weight": 1
+         }
+      ]
+   },
+   "FetchConfigIntersight": {
+      "description": "Fetch config from Intersight",
+      "device_type": "intersight",
+      "steps": [
+         {
+            "name": "ConnectIntersightDevice",
+            "order": 1,
+            "weight": 1
+         },
+         {
+            "name": "FetchConfigIntersightSdkObjects",
+            "order": 2,
+            "weight": 4
+         },
+         {
+            "name": "DisconnectIntersightDevice",
+            "optional": true,
+            "order": 3,
+            "weight": 1
+         }
+      ]
+   },
+   "FetchConfigInventoryUcsCentral": {
+      "description": "Fetch config & inventory from UCS Central",
+      "device_type": "ucsc",
+      "steps": [
+         {
+            "name": "ConnectUcsCentralDevice",
+            "order": 1,
+            "weight": 1
+         },
+         {
+            "name": "FetchConfigUcsCommonSdkObjects",
+            "order": 2,
+            "weight": 1
+         },
+         {
+            "name": "FetchConfigUcsCentralSdkObjects",
+            "order": 3,
+            "weight": 5
+         },
+         {
+            "name": "FetchInventoryUcsCommonSdkObjects",
+            "order": 4,
+            "weight": 2
+         },
+         {
+            "name": "FetchInventoryUcsCentralSdkObjects",
+            "order": 5,
+            "weight": 3
+         },
+         {
+            "name": "FetchInventoryUcsCentralCatalogSdkObjects",
+            "order": 6,
+            "weight": 2
+         },
+         {
+            "name": "DisconnectUcsCentralDevice",
+            "optional": true,
+            "order": 7,
+            "weight": 1
+         }
+      ]
+   },
+   "FetchConfigInventoryUcsSystem": {
+      "description": "Fetch config & inventory from UCS System",
+      "device_type": "ucsm",
+      "steps": [
+         {
+            "name": "ConnectUcsSystemDevice",
+            "order": 1,
+            "weight": 1
+         },
+         {
+            "name": "FetchConfigUcsCommonSdkObjects",
+            "order": 2,
+            "weight": 1
+         },
+         {
+            "name": "FetchConfigUcsSystemSdkObjects",
+            "order": 3,
+            "weight": 5
+         },
+         {
+            "name": "FetchInventoryUcsCommonSdkObjects",
+            "order": 4,
+            "weight": 2
+         },
+         {
+            "name": "FetchInventoryUcsSystemSdkObjects",
+            "order": 5,
+            "weight": 3
+         },
+         {
+            "name": "FetchInventoryUcsSystemCatalogSdkObjects",
+            "order": 6,
+            "weight": 2
+         },
+         {
+            "name": "FetchInventoryUcsSystemDeviceConnector",
+            "optional": true,
+            "order": 7,
+            "weight": 1
+         },
+         {
+            "name": "DisconnectUcsSystemDevice",
+            "optional": true,
+            "order": 8,
+            "weight": 1
+         }
+      ]
+   },
+   "FetchConfigUcsCentral": {
+      "description": "Fetch config from UCS Central",
+      "device_type": "ucsc",
+      "steps": [
+         {
+            "name": "ConnectUcsCentralDevice",
+            "order": 1,
+            "weight": 1
+         },
+         {
+            "name": "FetchConfigUcsCommonSdkObjects",
+            "order": 2,
+            "weight": 1
+         },
+         {
+            "name": "FetchConfigUcsCentralSdkObjects",
+            "order": 3,
+            "weight": 5
+         },
+         {
+            "name": "DisconnectUcsCentralDevice",
+            "optional": true,
+            "order": 4,
+            "weight": 1
+         }
+      ]
+   },
+   "FetchConfigUcsImc": {
+      "description": "Fetch config from UCS IMC",
+      "device_type": "cimc",
+      "steps": [
+         {
+            "name": "ConnectUcsImcDevice",
+            "order": 1,
+            "weight": 1
+         },
+         {
+            "name": "FetchConfigUcsCommonSdkObjects",
+            "order": 2,
+            "weight": 1
+         },
+         {
+            "name": "FetchConfigUcsImcSdkObjects",
+            "order": 3,
+            "weight": 5
+         },
+         {
+            "name": "DisconnectUcsImcDevice",
+            "optional": true,
+            "order": 4,
+            "weight": 1
+         }
+      ]
+   },
+   "FetchConfigUcsSystem": {
+      "description": "Fetch config from UCS System",
+      "device_type": "ucsm",
+      "steps": [
+         {
+            "name": "ConnectUcsSystemDevice",
+            "order": 1,
+            "weight": 1
+         },
+         {
+            "name": "FetchConfigUcsCommonSdkObjects",
+            "order": 2,
+            "weight": 1
+         },
+         {
+            "name": "FetchConfigUcsSystemSdkObjects",
+            "order": 3,
+            "weight": 5
+         },
+         {
+            "name": "DisconnectUcsSystemDevice",
+            "optional": true,
+            "order": 4,
+            "weight": 1
+         }
+      ]
+   },
+   "FetchInventoryIntersight": {
+      "description": "Fetch inventory from Intersight",
+      "device_type": "intersight",
+      "steps": [
+         {
+            "name": "ConnectIntersightDevice",
+            "order": 1,
+            "weight": 1
+         },
+         {
+            "name": "FetchInventoryIntersightSdkObjects",
+            "order": 2,
+            "weight": 4
+         },
+         {
+            "name": "DisconnectIntersightDevice",
+            "optional": true,
+            "order": 3,
+            "weight": 1
+         }
+      ]
+   },
+   "FetchInventoryUcsCentral": {
+      "description": "Fetch inventory from UCS Central",
+      "device_type": "ucsc",
+      "steps": [
+         {
+            "name": "ConnectUcsCentralDevice",
+            "order": 1,
+            "weight": 1
+         },
+         {
+            "name": "FetchInventoryUcsCommonSdkObjects",
+            "order": 2,
+            "weight": 2
+         },
+         {
+            "name": "FetchInventoryUcsCentralSdkObjects",
+            "order": 3,
+            "weight": 3
+         },
+         {
+            "name": "FetchInventoryUcsCentralCatalogSdkObjects",
+            "order": 4,
+            "weight": 2
+         },
+         {
+            "name": "DisconnectUcsCentralDevice",
+            "optional": true,
+            "order": 5,
+            "weight": 1
+         }
+      ]
+   },
+   "FetchInventoryUcsImc": {
+      "description": "Fetch inventory from UCS IMC",
+      "device_type": "cimc",
+      "steps": [
+         {
+            "name": "ConnectUcsImcDevice",
+            "order": 1,
+            "weight": 1
+         },
+         {
+            "name": "FetchInventoryUcsCommonSdkObjects",
+            "order": 2,
+            "weight": 2
+         },
+         {
+            "name": "FetchInventoryUcsImcSdkObjects",
+            "order": 3,
+            "weight": 3
+         },
+         {
+            "name": "FetchInventoryUcsImcCatalogSdkObjects",
+            "order": 4,
+            "weight": 2
+         },
+         {
+            "name": "FetchInventoryUcsImcDeviceConnector",
+            "optional": true,
+            "order": 5,
+            "weight": 1
+         },
+         {
+            "name": "DisconnectUcsImcDevice",
+            "optional": true,
+            "order": 6,
+            "weight": 1
+         }
+      ]
+   },
+   "FetchInventoryUcsSystem": {
+      "description": "Fetch inventory from UCS System",
+      "device_type": "ucsm",
+      "steps": [
+         {
+            "name": "ConnectUcsSystemDevice",
+            "order": 1,
+            "weight": 1
+         },
+         {
+            "name": "FetchInventoryUcsCommonSdkObjects",
+            "order": 2,
+            "weight": 2
+         },
+         {
+            "name": "FetchInventoryUcsSystemSdkObjects",
+            "order": 3,
+            "weight": 3
+         },
+         {
+            "name": "FetchInventoryUcsSystemCatalogSdkObjects",
+            "order": 4,
+            "weight": 2
+         },
+         {
+            "name": "FetchInventoryUcsSystemDeviceConnector",
+            "optional": true,
+            "order": 5,
+            "weight": 1
+         },
+         {
+            "name": "DisconnectUcsSystemDevice",
+            "optional": true,
+            "order": 6,
+            "weight": 1
+         }
+      ]
+   },
+   "GenerateReportUcsImc": {
+      "description": "Generate report for UCS IMC",
+      "device_type": "cimc",
+      "steps": [
+         {
+            "name": "GenerateReportDrawInventoryUcsImc",
+            "order": 1,
+            "weight": 2
+         },
+         {
+            "name": "GenerateReportDevice",
+            "order": 2,
+            "weight": 1
+         }
+      ]
+   },
+   "GenerateReportUcsSystem": {
+      "description": "Generate report for UCS System",
+      "device_type": "ucsm",
+      "steps": [
+         {
+            "name": "GenerateReportDrawInventoryUcsSystem",
+            "order": 1,
+            "weight": 2
+         },
+         {
+            "name": "GenerateReportDrawConfigUcsSystem",
+            "order": 2,
+            "weight": 1
+         },
+         {
+            "name": "GenerateReportDevice",
+            "order": 3,
+            "weight": 3
+         }
+      ]
+   },
+   "PushConfigIntersight": {
+      "description": "Push config to Intersight",
+      "device_type": "intersight",
+      "steps": [
+         {
+            "name": "ConnectIntersightDevice",
+            "order": 1,
+            "weight": 1
+         },
+         {
+            "name": "PushOrgsSectionIntersight",
+            "order": 2,
+            "weight": 10
+         },
+         {
+            "name": "PushAdminSectionIntersight",
+            "order": 3,
+            "weight": 2
+         },
+         {
+            "name": "DisconnectIntersightDevice",
+            "optional": true,
+            "order": 4,
+            "weight": 1
+         },
+         {
+            "name": "GenerateReportDevice",
+            "order": 5,
+            "weight": 1
+         }
+      ]
+   },
+   "PushConfigUcsImc": {
+      "description": "Push config to UCS IMC",
+      "device_type": "cimc",
+      "steps": [
+         {
+            "name": "ConnectUcsImcDevice",
+            "order": 1,
+            "weight": 1
+         },
+         {
+            "name": "StepTwo",
+            "order": 2,
+            "weight": 4
+         },
+         {
+            "name": "DisconnectUcsImcDevice",
+            "optional": true,
+            "order": 4,
+            "weight": 1
+         }
+      ]
+   },
+   "PushConfigUcsCentral": {
+      "description": "Push config to UCS Central",
+      "device_type": "ucsc",
+      "steps": [
+         {
+            "name": "ConnectUcsCentralDevice",
+            "order": 1,
+            "weight": 1
+         },
+         {
+            "name": "StepTwo",
+            "order": 2,
+            "weight": 1
+         },
+         {
+            "name": "DisconnectUcsCentralDevice",
+            "optional": true,
+            "order": 3,
+            "weight": 1
+         },
+         {
+            "name": "GenerateReportDevice",
+            "order": 4,
+            "weight": 1
+         }
+      ]
+   },
+   "PushConfigUcsSystem": {
+      "description": "Push config to UCS System",
+      "device_type": "ucsm",
+      "steps": [
+         {
+            "name": "ConnectUcsSystemDevice",
+            "order": 1,
+            "weight": 1
+         },
+         {
+            "name": "ResetDeviceUcsSystem",
+            "order": 2,
+            "weight": 1
+         },
+         {
+            "name": "WaitForRebootAfterResetUcsSystem",
+            "order": 3,
+            "weight": 5
+         },
+         {
+            "name": "InitialSetupUcsSystem",
+            "order": 4,
+            "weight": 2
+         },
+         {
+            "name": "WaitForClusterElectionUcsSystem",
+            "order": 5,
+            "weight": 2
+         },
+         {
+            "name": "WaitForClusterHaReadyUcsSystem",
+            "order": 6,
+            "weight": 2
+         },
+         {
+            "name": "PushAdminSectionUcsSystem",
+            "order": 7,
+            "weight": 1
+         },
+         {
+            "name": "PushEquipmentSectionUcsSystem",
+            "order": 8,
+            "weight": 1
+         },
+         {
+            "name": "PushVlanVsanSectionUcsSystem",
+            "order": 9,
+            "weight": 1
+         },
+         {
+            "name": "PushFiPortsSectionUcsSystem",
+            "order": 10,
+            "weight": 1
+         },
+         {
+            "name": "WaitForRebootAfterPushFiPortsUcsSystem",
+            "order": 11,
+            "weight": 5
+         },
+         {
+            "name": "WaitForClusterHaReadyAfterPushFiPortsUcsSystem",
+            "order": 12,
+            "weight": 2
+         },
+         {
+            "name": "WaitForFiPortsFsmStateUcsSystem",
+            "order": 13,
+            "weight": 2
+         },
+         {
+            "name": "PushFiPortChannelsSectionUcsSystem",
+            "order": 14,
+            "weight": 1
+         },
+         {
+            "name": "PushOrgsSectionUcsSystem",
+            "order": 15,
+            "weight": 3
+         },
+         {
+            "name": "DisconnectUcsSystemDevice",
+            "optional": true,
+            "order": 16,
+            "weight": 1
+         },
+         {
+            "name": "GenerateReportDevice",
+            "order": 17,
+            "weight": 1
+         }
+      ]
+   },
+   "TestConnectionIntersight": {
+      "description": "Test Intersight device connection",
+      "device_type": "intersight",
+      "steps": [
+         {
+            "name": "ConnectIntersightDevice",
+            "order": 1,
+            "weight": 1
+         },
+         {
+            "name": "DisconnectIntersightDevice",
+            "optional": true,
+            "order": 2,
+            "weight": 1
+         }
+      ]
+   },
+   "TestConnectionUcsImc": {
+      "description": "Test UCS IMC device connection",
+      "device_type": "cimc",
+      "steps": [
+         {
+            "name": "ConnectUcsImcDevice",
+            "order": 1,
+            "weight": 1
+         },
+         {
+            "name": "DisconnectUcsImcDevice",
+            "optional": true,
+            "order": 2,
+            "weight": 1
+         }
+      ]
+   },
+   "TestConnectionUcsCentral": {
+      "description": "Test UCS Central device connection",
+      "device_type": "ucsc",
+      "steps": [
+         {
+            "name": "ConnectUcsCentralDevice",
+            "order": 1,
+            "weight": 1
+         },
+         {
+            "name": "DisconnectUcsCentralDevice",
+            "optional": true,
+            "order": 2,
+            "weight": 1
+         }
+      ]
+   },
+   "TestConnectionUcsSystem": {
+      "description": "Test UCS System device connection",
+      "device_type": "ucsm",
+      "steps": [
+         {
+            "name": "ConnectUcsSystemDevice",
+            "order": 1,
+            "weight": 1
+         },
+         {
+            "name": "DisconnectUcsSystemDevice",
+            "optional": true,
+            "order": 2,
+            "weight": 1
+         }
+      ]
+   }
+}

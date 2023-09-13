@@ -1,0 +1,32 @@
+{
+  "model_short_name": "Emulex LPe35002 2x32G",
+  "rear_file_name": "UCSC-P-B7D32GF.png",
+  "rear_file_name_half": "UCSC-P-B7D32GF_half.png",
+  "rear_file_size": [593,75],
+  "rear_file_size_half": [389,75],
+  "rear_ports": {
+    "x/2": {
+      "port_coord": [279, 10],
+      "port_type": "sfp+",
+      "port_size": [82, 55]
+    },
+    "x/1": {
+      "port_coord": [385, 10],
+      "port_type": "sfp+",
+      "port_size": [82, 55]
+    }
+  },
+  "rear_ports_half": {
+    "x/2": {
+      "port_coord": [77, 10],
+      "port_type": "sfp+",
+      "port_size": [82, 55]
+    },
+    "x/1": {
+      "port_coord": [183, 10],
+      "port_type": "sfp+",
+      "port_size": [82, 55]
+    }
+  },
+  "data_sheet_url": "https://www.cisco.com/c/dam/en/us/products/collateral/servers-unified-computing/ucs-c-series-rack-servers/productbrief-broadcom-lpe35000-ucs-mds-pb100.pdf"
+}

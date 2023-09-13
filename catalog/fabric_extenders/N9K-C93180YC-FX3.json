@@ -1,0 +1,332 @@
+{
+  "model_short_name": "93180YC-FX3",
+  "rear_file_name": "N9K-C93180YC-FX3_rear.png",
+  "front_file_name": "N9K-C93180YC-FX3_front.png",
+  "rear_file_size": [2925,268],
+  "front_file_size": [2925,268],
+  "rear_ports": {
+    "1": {
+      "port_coord": [225,51],
+      "port_type": "sfp28",
+      "port_size": [83,60]
+    },
+    "2": {
+      "port_coord": [225,144],
+      "port_type": "sfp28",
+      "port_size": [83,60]
+    },
+    "3": {
+      "port_coord": [310,51],
+      "port_type": "sfp28",
+      "port_size": [83,60]
+    },
+    "4": {
+      "port_coord": [310,144],
+      "port_type": "sfp28",
+      "port_size": [83,60]
+    },
+    "5": {
+      "port_coord": [396,51],
+      "port_type": "sfp28",
+      "port_size": [83,60]
+    },
+    "6": {
+      "port_coord": [396,144],
+      "port_type": "sfp28",
+      "port_size": [83,60]
+    },
+    "7": {
+      "port_coord": [481,51],
+      "port_type": "sfp28",
+      "port_size": [83,60]
+    },
+    "8": {
+      "port_coord": [481,144],
+      "port_type": "sfp28",
+      "port_size": [83,60]
+    },
+    "9": {
+      "port_coord": [566,51],
+      "port_type": "sfp28",
+      "port_size": [83,60]
+    },
+    "10": {
+      "port_coord": [566,144],
+      "port_type": "sfp28",
+      "port_size": [83,60]
+    },
+    "11": {
+      "port_coord": [652,51],
+      "port_type": "sfp28",
+      "port_size": [83,60]
+    },
+    "12": {
+      "port_coord": [652,144],
+      "port_type": "sfp28",
+      "port_size": [83,60]
+    },
+    "13": {
+      "port_coord": [737,51],
+      "port_type": "sfp28",
+      "port_size": [83,60]
+    },
+    "14": {
+      "port_coord": [737,144],
+      "port_type": "sfp28",
+      "port_size": [83,60]
+    },
+    "15": {
+      "port_coord": [822,51],
+      "port_type": "sfp28",
+      "port_size": [83,60]
+    },
+    "16": {
+      "port_coord": [822,144],
+      "port_type": "sfp28",
+      "port_size": [83,60]
+    },
+    "17": {
+      "port_coord": [921,51],
+      "port_type": "sfp28",
+      "port_size": [83,60]
+    },
+    "18": {
+      "port_coord": [921,144],
+      "port_type": "sfp28",
+      "port_size": [83,60]
+    },
+    "19": {
+      "port_coord": [1006,51],
+      "port_type": "sfp28",
+      "port_size": [83,60]
+    },
+    "20": {
+      "port_coord": [1006,144],
+      "port_type": "sfp28",
+      "port_size": [83,60]
+    },
+    "21": {
+      "port_coord": [1092,51],
+      "port_type": "sfp28",
+      "port_size": [83,60]
+    },
+    "22": {
+      "port_coord": [1092,144],
+      "port_type": "sfp28",
+      "port_size": [83,60]
+    },
+    "23": {
+      "port_coord": [1177,51],
+      "port_type": "sfp28",
+      "port_size": [83,60]
+    },
+    "24": {
+      "port_coord": [1177,144],
+      "port_type": "sfp28",
+      "port_size": [83,60]
+    },
+    "25": {
+      "port_coord": [1262,51],
+      "port_type": "sfp28",
+      "port_size": [83,60]
+    },
+    "26": {
+      "port_coord": [1262,144],
+      "port_type": "sfp28",
+      "port_size": [83,60]
+    },
+    "27": {
+      "port_coord": [1347,51],
+      "port_type": "sfp28",
+      "port_size": [83,60]
+    },
+    "28": {
+      "port_coord": [1347,144],
+      "port_type": "sfp28",
+      "port_size": [83,60]
+    },
+    "29": {
+      "port_coord": [1430,51],
+      "port_type": "sfp28",
+      "port_size": [83,60]
+    },
+    "30": {
+      "port_coord": [1430,144],
+      "port_type": "sfp28",
+      "port_size": [83,60]
+    },
+    "31": {
+      "port_coord": [1516,51],
+      "port_type": "sfp28",
+      "port_size": [83,60]
+    },
+    "32": {
+      "port_coord": [1516,144],
+      "port_type": "sfp28",
+      "port_size": [83,60]
+    },
+    "33": {
+      "port_coord": [1612,51],
+      "port_type": "sfp28",
+      "port_size": [83,60]
+    },
+    "34": {
+      "port_coord": [1612,144],
+      "port_type": "sfp28",
+      "port_size": [83,60]
+    },
+    "35": {
+      "port_coord": [1698,51],
+      "port_type": "sfp28",
+      "port_size": [83,60]
+    },
+    "36": {
+      "port_coord": [1698,144],
+      "port_type": "sfp28",
+      "port_size": [83,60]
+    },
+    "37": {
+      "port_coord": [1783,51],
+      "port_type": "sfp28",
+      "port_size": [83,60]
+    },
+    "38": {
+      "port_coord": [1783,144],
+      "port_type": "sfp28",
+      "port_size": [83,60]
+    },
+    "39": {
+      "port_coord": [1869,51],
+      "port_type": "sfp28",
+      "port_size": [83,60]
+    },
+    "40": {
+      "port_coord": [1869,144],
+      "port_type": "sfp28",
+      "port_size": [83,60]
+    },
+	"41": {
+      "port_coord": [1954,51],
+      "port_type": "sfp28",
+      "port_size": [83,60]
+    },
+	"42": {
+      "port_coord": [1954,144],
+      "port_type": "sfp28",
+      "port_size": [83,60]
+    },
+	"43": {
+      "port_coord": [2039,51],
+      "port_type": "sfp28",
+      "port_size": [83,60]
+    },
+	"44": {
+      "port_coord": [2039,144],
+      "port_type": "sfp28",
+      "port_size": [83,60]
+    },
+	"45": {
+      "port_coord": [2125,51],
+      "port_type": "sfp28",
+      "port_size": [83,60]
+    },
+	"46": {
+      "port_coord": [2125,144],
+      "port_type": "sfp28",
+      "port_size": [83,60]
+    },
+	"47": {
+      "port_coord": [2210,51],
+      "port_type": "sfp28",
+      "port_size": [83,60]
+    },
+	"48": {
+      "port_coord": [2210,144],
+      "port_type": "sfp28",
+      "port_size": [83,60]
+    },
+    "1/1": {
+      "port_coord": [2314,48],
+      "port_type": "qsfp28",
+      "port_size": [111,56]
+    },
+    "1/2": {
+      "port_coord": [2314,150],
+      "port_type": "qsfp28",
+      "port_size": [111,56]
+    },
+    "1/3": {
+      "port_coord": [2458,48],
+      "port_type": "qsfp28",
+      "port_size": [111,56]
+    },
+    "1/4": {
+      "port_coord": [2458,150],
+      "port_type": "qsfp28",
+      "port_size": [111,56]
+    },
+    "1/5": {
+      "port_coord": [2603,48],
+      "port_type": "qsfp28",
+      "port_size": [111,56]
+    },
+    "1/6": {
+      "port_coord": [2603,150],
+      "port_type": "qsfp28",
+      "port_size": [111,56]
+    }
+  },
+  "psus_slots": [
+    {
+      "id": 1,
+      "coord": [220,15]
+    },
+    {
+      "id": 2,
+      "coord": [1895,15]
+    }
+  ],
+  "psus_models": [
+    {
+      "name": "NXA-PAC-650W-PE",
+      "description": "Nexus 9000 650W AC PS, Port-side Exhaust"
+    },
+    {
+      "name": "UCSC-PSU-BLKP",
+      "type": "blank",
+      "description": "Power supply blanking panel/filler"
+    }
+  ],
+  "imm_compatible": true,
+  "imm_min_required_version": "4.2(1d)",
+  "data_sheet_url": "https://www.cisco.com/c/en/us/products/collateral/switches/nexus-9000-series-switches/datasheet-c78-744052.html",
+  "specs": {
+    "descr": "The Cisco Nexus 93180YC-FX3 54-Port Switch is a One-Rack-Unit (1RU) 1/10/25/40/100 Gigabit Ethernet and FCoE switch offering up to 3.6 Tbps throughput and up to 54 ports. The switch has 48 fixed 1/10/25-Gbps SFP28 server ports and 6 40/100-Gbps uplink QSFP28 ports. All Ethernet ports are capable of supporting FCoE.",
+    "form_factor": "1RU",
+    "throughput": {
+      "gbps": 3600,
+      "mpps": 1200
+    },
+    "latency": "<1 µs",
+    "power_typical": 375,
+    "power_maximum": 600,
+    "power_maximum_dc": 600,
+    "dimensions": {
+      "centimeters": {
+        "height": 4.4,
+        "width": 43.9,
+        "depth": 49.6
+      },
+      "inches": {
+        "height": 1.72,
+        "width": 17.3,
+        "depth": 19.6
+      },
+      "rack_units": 1
+    },
+    "weight": {
+      "lb": 26.88,
+      "kg": 12.2
+    }
+  }
+}

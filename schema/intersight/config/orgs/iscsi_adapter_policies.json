@@ -1,0 +1,82 @@
+{
+   "id": "intersight_config_orgs_iscsi_adapter_policies#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS intersight config orgs iscsi_adapter_policies section",
+   "description": "EasyUCS intersight config orgs iscsi_adapter_policies section JSON schema",
+   "type": "object",
+   "properties": {
+      "comment": {
+         "description": "iSCSI Adapter Policy Comments",
+         "type": "string",
+         "default": ""
+      },
+      "descr": {
+         "description": "iSCSI Adapter Policy Description",
+         "type": "string",
+         "default": "",
+         "pattern": "^$|^[a-zA-Z0-9]+[\\x00-\\xFF]*$",
+         "maxLength": 1024
+      },
+      "name": {
+         "description": "iSCSI Adapter Policy Name",
+         "type": "string",
+         "default": "",
+         "pattern": "^[a-zA-Z0-9_.:-]{1,64}$"
+      },
+      "tags": {
+         "description": "iSCSI Adapter Policy Tags",
+         "type": "array",
+         "items": {
+            "description": "iSCSI Adapter Policy Tag",
+            "type": "object",
+            "properties": {
+               "key": {
+                  "description": "iSCSI Adapter Policy Tag Key",
+                  "type": "string",
+                  "default": "",
+                  "minLength": 1,
+                  "maxLength": 128
+               },
+               "value": {
+                  "description": "iSCSI Adapter Policy Tag Value",
+                  "type": "string",
+                  "default": "",
+                  "minLength": 0,
+                  "maxLength": 256
+               }
+            },
+            "additionalProperties": false,
+            "required": [
+               "key",
+               "value"
+            ]
+         },
+         "minItems": 1
+      },
+      "tcp_connection_timeout": {
+         "description": "The number of seconds to wait until Cisco UCS assumes that the initial login has failed and the iSCSI adapter is unavailable",
+         "type": "integer",
+         "default": 15,
+         "minimum": 0,
+         "maximum": 255
+      },
+      "dhcp_timeout": {
+         "description": "The number of seconds to wait before the initiator assumes that the DHCP server is unavailable",
+         "type": "integer",
+         "default": 60,
+         "minimum": 60,
+         "maximum": 300
+      },
+      "lun_busy_retry_count": {
+         "description": "The number of times to retry the connection in case of a failure during iSCSI LUN discovery",
+         "type": "integer",
+         "default": 15,
+         "minimum": 0,
+         "maximum": 60
+      }
+   },
+   "additionalProperties": false,
+   "required": [
+      "name"
+   ]
+}

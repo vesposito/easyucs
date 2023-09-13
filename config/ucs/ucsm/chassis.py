@@ -26,10 +26,11 @@ import urllib
 
 class UcsSystemChassisMaintenancePolicy(UcsSystemConfigObject):
     _CONFIG_NAME = "Chassis Maintenance Policy"
+    _CONFIG_SECTION_NAME = "chassis_maintenance_policies"
     _UCS_SDK_OBJECT_NAME = "cpmaintMaintPolicy"
 
     def __init__(self, parent=None, json_content=None, cpmaint_maint_policy=None):
-        UcsSystemConfigObject.__init__(self, parent=parent)
+        UcsSystemConfigObject.__init__(self, parent=parent, ucs_sdk_object=cpmaint_maint_policy)
         self.name = None
         self.descr = None
 
@@ -72,10 +73,11 @@ class UcsSystemChassisMaintenancePolicy(UcsSystemConfigObject):
 
 class UcsSystemComputeConnectionPolicy(UcsSystemConfigObject):
     _CONFIG_NAME = "Compute Connection Policy"
+    _CONFIG_SECTION_NAME = "compute_connection_policies"
     _UCS_SDK_OBJECT_NAME = "equipmentComputeConnPolicy"
 
     def __init__(self, parent=None, json_content=None, equipment_compute_conn_policy=None):
-        UcsSystemConfigObject.__init__(self, parent=parent)
+        UcsSystemConfigObject.__init__(self, parent=parent, ucs_sdk_object=equipment_compute_conn_policy)
         self.name = None
         self.descr = None
         self.server_sioc_connectivity = None
@@ -123,10 +125,11 @@ class UcsSystemComputeConnectionPolicy(UcsSystemConfigObject):
 
 class UcsSystemChassisFirmwarePackage(UcsSystemConfigObject):
     _CONFIG_NAME = "Chassis Firmware Package"
+    _CONFIG_SECTION_NAME = "chassis_firmware_packages"
     _UCS_SDK_OBJECT_NAME = "firmwareChassisPack"
 
     def __init__(self, parent=None, json_content=None, firmware_chassis_pack=None):
-        UcsSystemConfigObject.__init__(self, parent=parent)
+        UcsSystemConfigObject.__init__(self, parent=parent, ucs_sdk_object=firmware_chassis_pack)
         self.descr = None
         self.name = None
         self.chassis_package = None
@@ -169,10 +172,9 @@ class UcsSystemChassisFirmwarePackage(UcsSystemConfigObject):
             return False
 
         override_default_exclusion = "no"
-        # TODO Check if still relevant
         # It is the only way to remove "local-disk" value in the excluded content (checked by default)
-        # if 'local-disk' not in self.exclude:
-        #     override_default_exclusion = "yes"
+        if 'local-disk' not in self.excluded_components:
+            override_default_exclusion = "yes"
         # Same in UcsSystemHostFirmwarePackage
 
         mo_firmware_chassis_pack = FirmwareChassisPack(parent_mo_or_dn=parent_mo,
@@ -201,10 +203,11 @@ class UcsSystemChassisFirmwarePackage(UcsSystemConfigObject):
 
 class UcsSystemDiskZoningPolicy(UcsSystemConfigObject):
     _CONFIG_NAME = "Disk Zoning Policy"
+    _CONFIG_SECTION_NAME = "disk_zoning_policies"
     _UCS_SDK_OBJECT_NAME = "lstorageDiskZoningPolicy"
 
     def __init__(self, parent=None, json_content=None, lstorage_disk_zoning_policy=None):
-        UcsSystemConfigObject.__init__(self, parent=parent)
+        UcsSystemConfigObject.__init__(self, parent=parent, ucs_sdk_object=lstorage_disk_zoning_policy)
         self.descr = None
         self.name = None
         self.preserve_config = None
@@ -222,7 +225,8 @@ class UcsSystemDiskZoningPolicy(UcsSystemConfigObject):
                             if self._parent._dn + "/disk-zoning-policy-" + self.name + "/" in disk_slot.dn:
                                 disk = {}
                                 disk.update({"ownership": disk_slot.ownership})
-                                disk.update({"drive_path": disk_slot.drive_path.lower()})
+                                disk.update(
+                                    {"drive_path": disk_slot.drive_path.lower() if disk_slot.drive_path else None})
                                 disk.update({"disk_slot": disk_slot.id})
                                 # disk.update({"disk_slot_range_start": disk_slot.id.split("-")[0]})
                                 # disk.update({"disk_slot_range_stop": disk_slot.id.split("-")[1]})
@@ -232,6 +236,7 @@ class UcsSystemDiskZoningPolicy(UcsSystemConfigObject):
                                                 disk_slot.id + "/" in controller_ref.dn:
                                             disk.update({"controller": controller_ref.controller_id})
                                             disk.update({"server": controller_ref.server_id})
+                                            break
                                 self.disks_zoned.append(disk)
 
         elif self._config.load_from == "file":
@@ -301,10 +306,11 @@ class UcsSystemDiskZoningPolicy(UcsSystemConfigObject):
 
 class UcsSystemChassisProfile(UcsSystemConfigObject):
     _CONFIG_NAME = "Chassis Profile"
+    _CONFIG_SECTION_NAME = "chassis_profiles"
     _UCS_SDK_OBJECT_NAME = "equipmentChassisProfile"
 
     def __init__(self, parent=None, json_content=None, equipment_chassis_profile=None):
-        UcsSystemConfigObject.__init__(self, parent=parent)
+        UcsSystemConfigObject.__init__(self, parent=parent, ucs_sdk_object=equipment_chassis_profile)
         self.descr = None
         self.name = None
         self.type = None
@@ -331,18 +337,24 @@ class UcsSystemChassisProfile(UcsSystemConfigObject):
                 if self.chassis_profile_template:
                     # We first try to get the CP Template object by using the operSrcTemplName attribute value
                     if equipment_chassis_profile.oper_src_templ_name:
-                        mo_template_cp = self._device.query(mode="dn",
-                                                            target=equipment_chassis_profile.oper_src_templ_name)
-                        if mo_template_cp:
-                            parent_template_type = mo_template_cp.type
+                        mo_template_cp_list = [cp for cp in self._config.sdk_objects["equipmentChassisProfile"] if
+                                               cp.dn == equipment_chassis_profile.oper_src_templ_name]
+                        if mo_template_cp_list == 1:
+                            parent_template_type = mo_template_cp_list[0].type
                     else:
                         # If the operSrcTemplName attribute is not set (e.g. with UCS Central), we try to find the CP
                         # Template using a query for its name. In case it is the only object with this name, we use it
-                        filter_str = '(name, "' + self.chassis_profile_template + '", type="eq")'
-                        mo_template_cp = self._device.query(mode="classid", target="equipmentChassisProfile",
-                                                            filter_str=filter_str)
-                        if len(mo_template_cp) == 1:
-                            parent_template_type = mo_template_cp[0].type
+                        mo_template_cp_list = [cp for cp in self._config.sdk_objects["equipmentChassisProfile"] if
+                                               cp.name == self.chassis_profile_template]
+                        if len(mo_template_cp_list) == 1:
+                            parent_template_type = mo_template_cp_list[0].type
+
+                    if self.policy_owner in ["ucs-central"]:
+                        # if the source template name is a Global Chassis Template from UCS Central
+                        self.chassis_profile_template = "ucs-central/" + self.chassis_profile_template
+                    elif self._parent._dn not in equipment_chassis_profile.oper_src_templ_name:
+                        # if the source template name is not located in the same org
+                        self.chassis_profile_template = equipment_chassis_profile.oper_src_templ_name
 
                 if parent_template_type != "updating-template":
                     self.disk_zoning_policy = equipment_chassis_profile.disk_zoning_policy_name
@@ -358,6 +370,7 @@ class UcsSystemChassisProfile(UcsSystemConfigObject):
                                     if binding.chassis_dn:
                                         self.chassis_assignment_id = binding.chassis_dn.split("-")[1]
                                     self.restrict_migration = binding.restrict_migration
+                                    break
 
         elif self._config.load_from == "file":
             if json_content is not None:
@@ -381,14 +394,11 @@ class UcsSystemChassisProfile(UcsSystemConfigObject):
                         message="Impossible to find the parent dn of " + self._CONFIG_NAME + " : " + str(self.name))
             return False
 
-        mo_equipment_chassis_profile = EquipmentChassisProfile(parent_mo_or_dn=parent_mo,
-                                                               disk_zoning_policy_name=self.disk_zoning_policy,
-                                                               descr=self.descr, type=self.type, name=self.name,
-                                                               chassis_fw_policy_name=self.chassis_firmware_policy,
-                                                               compute_conn_policy_name=self.compute_connection_policy,
-                                                               maint_policy_name=self.chassis_maintenance_policy,
-                                                               sas_expander_config_policy_name=
-                                                               self.sas_expander_configuration_policy)
+        mo_equipment_chassis_profile = EquipmentChassisProfile(
+            parent_mo_or_dn=parent_mo, disk_zoning_policy_name=self.disk_zoning_policy, descr=self.descr, type=self.
+            type, name=self.name, chassis_fw_policy_name=self.chassis_firmware_policy,
+            compute_conn_policy_name=self.compute_connection_policy, maint_policy_name=self.chassis_maintenance_policy,
+            sas_expander_config_policy_name=self.sas_expander_configuration_policy)
 
         if self.type == "instance" and self.chassis_assignment_id:
             EquipmentBinding(parent_mo_or_dn=mo_equipment_chassis_profile,
@@ -425,8 +435,15 @@ class UcsSystemChassisProfile(UcsSystemConfigObject):
                 dn.attr_set("value", str(self.name + str(i)))
                 dn_set.child_add(dn)
 
+            # If the template is not in the same organization we have to write the path to it
+            # Example = "org-root/org-DevTeam/cp-Template"
+            if "org-root/" in self.chassis_profile_template:
+                source_dn = self.chassis_profile_template
+            else:
+                source_dn = parent_mo + "/cp-" + self.chassis_profile_template
+
             elem = equipment_instantiate_n_named_template(cookie=self._handle.cookie,
-                                                          dn=parent_mo + "/cp-" + self.chassis_profile_template,
+                                                          dn=source_dn,
                                                           in_error_on_existing="false", in_name_set=dn_set,
                                                           in_target_org=parent_mo, in_hierarchical="false")
 
@@ -439,8 +456,8 @@ class UcsSystemChassisProfile(UcsSystemConfigObject):
                     self._handle.process_xml_elem(elem)
                     self.logger(level='debug',
                                 message=self.number_of_instances + " " + self._CONFIG_NAME + " instantiated from " +
-                                        str(self.chassis_profile_template) + " starting with " + str(self.name) +
-                                        self.suffix_start_number)
+                                str(self.chassis_profile_template) + " starting with " + str(self.name) +
+                                self.suffix_start_number)
                     return True
                 except ConnectionRefusedError:
                     self.logger(level="error", message="Connection refused while trying to instantiate from " +
@@ -455,8 +472,15 @@ class UcsSystemChassisProfile(UcsSystemConfigObject):
                                     self.chassis_profile_template))
 
         else:
+            # If the template is not in the same organization we have to write the path to it
+            # Example = "org-root/org-DevTeam/cp-Template"
+            if "org-root/" in self.chassis_profile_template:
+                source_dn = self.chassis_profile_template
+            else:
+                source_dn = parent_mo + "/cp-" + self.chassis_profile_template
+
             elem = equipment_instantiate_template(cookie=self._handle.cookie,
-                                                  dn=parent_mo + "/cp-" + self.chassis_profile_template,
+                                                  dn=source_dn,
                                                   in_error_on_existing="false",
                                                   in_chassis_profile_name=self.name,
                                                   in_target_org=parent_mo, in_hierarchical="false")
@@ -470,7 +494,7 @@ class UcsSystemChassisProfile(UcsSystemConfigObject):
                     self._handle.process_xml_elem(elem)
                     self.logger(level='debug',
                                 message=self._CONFIG_NAME + " " + str(self.name) + " instantiated from " +
-                                        str(self.chassis_profile_template))
+                                str(self.chassis_profile_template))
 
                     # We now need to associate the instantiated Chassis Profile to the Chassis ID if provided
                     if self.type == "instance" and self.chassis_assignment_id:
@@ -501,10 +525,11 @@ class UcsSystemChassisProfile(UcsSystemConfigObject):
 
 class UcsSystemSasExpanderConfigurationPolicy(UcsSystemConfigObject):
     _CONFIG_NAME = "SAS Expander Configuration Policy"
+    _CONFIG_SECTION_NAME = "sas_expander_configuration_policies"
     _UCS_SDK_OBJECT_NAME = "lstorageSasExpanderConfigPolicy"
 
     def __init__(self, parent=None, json_content=None, ls_storage_sas_expander_config_policy=None):
-        UcsSystemConfigObject.__init__(self, parent=parent)
+        UcsSystemConfigObject.__init__(self, parent=parent, ucs_sdk_object=ls_storage_sas_expander_config_policy)
         self.descr = None
         self.name = None
         self.mixed_mode = None

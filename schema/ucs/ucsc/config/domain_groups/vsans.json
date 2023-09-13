@@ -45,6 +45,30 @@
             "disabled",
             "enabled"
          ]
+      },
+      "tags": {
+         "description": "VSAN - Tags",
+         "type": "array",
+         "items": {
+            "description": "VSAN - Tag",
+            "type": "object",
+            "properties": {
+               "type": {
+                  "description": "VSAN - Tag - Type",
+                  "type": "string",
+                  "pattern": "^[ !#$%&\\(\\)\\*\\+,\\-\\.:;=\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{1,32}$"
+               },
+               "value": {
+                  "description": "VSAN - Tag - Value",
+                  "type": "string"
+               }
+            },
+            "additionalProperties": false,
+            "required": [
+               "type",
+               "value"
+            ]
+         }
       }
    },
    "additionalProperties": false,

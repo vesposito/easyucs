@@ -8,8 +8,8 @@
             "subcategory":"VersaStack",
             "name":"VersaStack for Data Center with All-Flash Storage and VMware vSphere 6.0",
             "url":"https://www.cisco.com/c/en/us/td/docs/unified_computing/ucs/UCS_CVDs/Versastack_vmw6_flash.html",
-            "easyucs_version":"0.9.0",
-            "revision": "1.0"
+            "easyucs_version":"0.9.8.2",
+            "revision": "1.2"
          }
       ]
    },
@@ -462,7 +462,7 @@
                   ],
                   "vlan_native":"Native-VLAN",
                   "mtu":"9000",
-                  "mac_pool":"MAC_Pool_A",
+                  "mac_address_pool":"MAC_Pool_A",
                   "network_control_policy":"Enable_CDP"
                },
                {
@@ -477,7 +477,7 @@
                   ],
                   "vlan_native":"Native-VLAN",
                   "mtu":"9000",
-                  "mac_pool":"MAC_Pool_B",
+                  "mac_address_pool":"MAC_Pool_B",
                   "network_control_policy":"Enable_CDP"
                }
             ],
@@ -638,12 +638,12 @@
                   "vnics":[
                      {
                         "name":"vNIC-A",
-                        "template":"vNIC_Template_A",
+                        "vnic_template":"vNIC_Template_A",
                         "adapter_policy":"VMWare"
                      },
                      {
                         "name":"vNIC-B",
-                        "template":"vNIC_Template_B",
+                        "vnic_template":"vNIC_Template_B",
                         "adapter_policy":"VMWare"
                      }
                   ],
@@ -651,12 +651,12 @@
                   "vhbas":[
                      {
                         "name":"Fabric-A",
-                        "template":"vHBA_Template_A",
+                        "vhba_template":"vHBA_Template_A",
                         "adapter_policy":"VMWare"
                      },
                      {
                         "name":"Fabric-B",
-                        "template":"vHBA_Template_B",
+                        "vhba_template":"vHBA_Template_B",
                         "adapter_policy":"VMWare"
                      }
                   ],
@@ -699,12 +699,12 @@
                   "vnics":[
                      {
                         "name":"vNIC-A",
-                        "template":"vNIC_Template_A",
+                        "vnic_template":"vNIC_Template_A",
                         "adapter_policy":"VMWare"
                      },
                      {
                         "name":"vNIC-B",
-                        "template":"vNIC_Template_B",
+                        "vnic_template":"vNIC_Template_B",
                         "adapter_policy":"VMWare"
                      }
                   ],
@@ -712,12 +712,12 @@
                   "vhbas":[
                      {
                         "name":"Fabric-A",
-                        "template":"vHBA_Template_A",
+                        "vhba_template":"vHBA_Template_A",
                         "adapter_policy":"VMWare"
                      },
                      {
                         "name":"Fabric-B",
-                        "template":"vHBA_Template_B",
+                        "vhba_template":"vHBA_Template_B",
                         "adapter_policy":"VMWare"
                      }
                   ],

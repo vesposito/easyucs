@@ -1,30 +1,37 @@
 {
-   "id":"ucs_system_config_link_profiles#",
-   "$schema":"http://json-schema.org/draft-07/schema#",
-   "title":"EasyUCS ucs system config link_profiles section",
-   "description":"EasyUCS ucs system config link_profiles section JSON schema",
-   "type":"object",
-   "properties":{
+   "id": "ucs_system_config_link_profiles#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS ucs system config link_profiles section",
+   "description": "EasyUCS ucs system config link_profiles section JSON schema",
+   "type": "object",
+   "properties": {
       "comment": {
          "description": "Link Profile Comments",
          "type": "string",
          "default": ""
       },
-      "name":{
-         "description":"Link Profile Name",
-         "type":"string",
-         "default":"",
-         "pattern":"^[\\-\\.:_a-zA-Z0-9]{1,16}$"
+      "name": {
+         "description": "Link Profile Name",
+         "type": "string",
+         "default": "",
+         "pattern": "^[\\-\\.:_a-zA-Z0-9]{1,16}$"
       },
-      "udld_link_policy":{
-         "description":"Link Profile UDLD Link Policy",
-         "type":"string",
-         "default":"default",
-         "pattern":"^[\\-\\.:_a-zA-Z0-9]{1,16}$"
+      "policy_owner": {
+         "description": "Link Profile Owner (for UCS Central)",
+         "type": "string",
+         "enum": [
+            "ucs-central"
+         ]
+      },
+      "udld_link_policy": {
+         "description": "Link Profile UDLD Link Policy",
+         "type": "string",
+         "default": "default",
+         "pattern": "^[\\-\\.:_a-zA-Z0-9]{1,16}$"
       }
    },
-   "additionalProperties":false,
-   "required":[
+   "additionalProperties": false,
+   "required": [
       "name",
       "udld_link_policy"
    ]

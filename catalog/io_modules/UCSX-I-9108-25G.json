@@ -1,0 +1,49 @@
+{
+  "model_short_name": "9108-25G",
+  "rear_file_name": "UCSX-I-9108-25G.png",
+  "rear_file_size": [2283,267],
+  "rear_ports": {
+    "x/1": {
+      "port_coord": [354, 157],
+      "port_type": "sfp28",
+      "port_size": [86, 56]
+    },
+    "x/2": {
+      "port_coord": [441, 157],
+      "port_type": "sfp28",
+      "port_size": [86, 56]
+    },
+    "x/3": {
+      "port_coord": [527, 157],
+      "port_type": "sfp28",
+      "port_size": [86, 56]
+    },
+    "x/4": {
+      "port_coord": [614, 157],
+      "port_type": "sfp28",
+      "port_size": [86, 56]
+    },
+    "x/5": {
+      "port_coord": [1584, 157],
+      "port_type": "sfp28",
+      "port_size": [86, 56]
+    },
+    "x/6": {
+      "port_coord": [1670, 157],
+      "port_type": "sfp28",
+      "port_size": [86, 56]
+    },
+    "x/7": {
+      "port_coord": [1757, 157],
+      "port_type": "sfp28",
+      "port_size": [86, 56]
+    },
+    "x/8": {
+      "port_coord": [1844, 157],
+      "port_type": "sfp28",
+      "port_size": [86, 56]
+    }
+  },
+  "imm_compatible": true,
+  "imm_min_required_version": "4.2(1d)"
+}

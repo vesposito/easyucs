@@ -45,25 +45,26 @@ class UcsSystemDrawAdaptor(GenericUcsDrawEquipment):
             if "orientation" in self.parent_draw.json_file["pcie_slots"][0]:
                 self.orientation = self.parent_draw.json_file["pcie_slots"][0]["orientation"]
         elif self._parent.pci_slot not in ["MLOM", "OCP"]:  # not MLOM or OCP
-            for slot in self.parent_draw.json_file["pcie_slots"]:
-                if slot["id"] == int(self._parent.pci_slot):
-                    if "width" in slot:
-                        self.width = slot['width']
-                    if "orientation" in slot:
-                        self.orientation = slot['orientation']
+            if self.parent_draw.json_file.get("pcie_slots"):
+                for slot in self.parent_draw.json_file["pcie_slots"]:
+                    if slot["id"] == int(self._parent.pci_slot):
+                        if "width" in slot:
+                            self.width = slot['width']
+                        if "orientation" in slot:
+                            self.orientation = slot['orientation']
 
         if self.json_file:
             if self.width == "half":
-                file_name = self.json_file["rear_file_name_half"]
+                file_name = self.json_file.get("rear_file_name_half")
             else:
-                file_name = self.json_file["rear_file_name"]
+                file_name = self.json_file.get("rear_file_name")
 
             try:
-                self.picture = Image.open("catalog/adaptors/img/" + file_name, 'r')
+                self.picture = Image.open("catalog/adaptors/img/" + str(file_name), 'r')
                 self.picture_size = tuple(self.picture.size)
             except FileNotFoundError:
                 self.logger(level="error",
-                            message="Image file " "catalog/adaptors/img/" + file_name + " not found")
+                            message="Image file " "catalog/adaptors/img/" + str(file_name) + " not found")
                 return False
 
             if self.picture and self.orientation:
@@ -79,6 +80,7 @@ class UcsSystemDrawAdaptor(GenericUcsDrawEquipment):
             return False
 
     def _get_picture_offset(self):
+        coord = None
         if self._parent.pci_slot == "MLOM":  # for MLOM Slot
             coord = self.parent_draw.json_file["mlom_slots"][0]["coord"]
         elif self._parent.pci_slot == "OCP":  # for OCP Slot
@@ -86,10 +88,13 @@ class UcsSystemDrawAdaptor(GenericUcsDrawEquipment):
         elif "SIOC" in self._parent.pci_slot:  # for PCIe slot in UCS-S3260-PCISIOC
             coord = self.parent_draw.json_file["pcie_slots"][0]["coord"]
         else:  # for PCIe Slot
-            for slot in self.parent_draw.json_file["pcie_slots"]:
-                if slot["id"] == int(self._parent.pci_slot):
-                    coord = slot["coord"]
-        return self.parent_draw.picture_offset[0] + coord[0], self.parent_draw.picture_offset[1] + coord[1]
+            if self.parent_draw.json_file.get("pcie_slots"):
+                for slot in self.parent_draw.json_file["pcie_slots"]:
+                    if slot["id"] == int(self._parent.pci_slot):
+                        coord = slot["coord"]
+        if coord:
+            return self.parent_draw.picture_offset[0] + coord[0], self.parent_draw.picture_offset[1] + coord[1]
+        return False
 
     def draw_ports(self):
         for port in self._parent.ports:

@@ -2618,10 +2618,8 @@ class UcsImcBootOrder(UcsImcConfigObject):
                                 self.configured_one_time_boot_device = \
                                     self._config.sdk_objects["oneTimePrecisionBootDevice"][0].device
 
-                    if "lsbootVirtualMedia" and "lsbootLan" and "lsbootStorage" and "lsbootEfi" \
-                            in self._config.sdk_objects:
-                        if self._config.sdk_objects["lsbootVirtualMedia"] or self._config.sdk_objects["lsbootLan"] \
-                                or self._config.sdk_objects["lsbootStorage"] or self._config.sdk_objects["lsbootEfi"]:
+                    if "lsbootVirtualMedia" in self._config.sdk_objects:
+                        if self._config.sdk_objects.get("lsbootVirtualMedia"):
                             for boot_device in self._config.sdk_objects["lsbootVirtualMedia"]:
                                 device = {}
                                 if boot_device.access == "read-only":
@@ -2630,32 +2628,30 @@ class UcsImcBootOrder(UcsImcConfigObject):
                                     device["type"] = boot_device.type + "-fdd"
                                 device["order"] = boot_device.order
                                 self.basic_boot_devices.append(device)
+                    if "lsbootLan" in self._config.sdk_objects:
+                        if self._config.sdk_objects.get("lsbootLan"):
                             for boot_device in self._config.sdk_objects["lsbootLan"]:
                                 device = {}
                                 device["type"] = boot_device.type
                                 device["order"] = boot_device.order
                                 self.basic_boot_devices.append(device)
+                    if "lsbootStorage" in self._config.sdk_objects:
+                        if self._config.sdk_objects.get("lsbootStorage"):
                             for boot_device in self._config.sdk_objects["lsbootStorage"]:
                                 device = {}
                                 device["type"] = boot_device.type
                                 device["order"] = boot_device.order
                                 self.basic_boot_devices.append(device)
+                    if "lsbootEfi" in self._config.sdk_objects:
+                        if self._config.sdk_objects.get("lsbootEfi"):
                             for boot_device in self._config.sdk_objects["lsbootEfi"]:
                                 device = {}
                                 device["type"] = boot_device.type
                                 device["order"] = boot_device.order
                                 self.basic_boot_devices.append(device)
 
-                    if "lsbootVMedia" and "lsbootPxe" and "lsbootHdd" and "lsbootSd" and "lsbootUsb" and "lsbootSan" \
-                            and "lsbootIscsi" and "lsbootPchStorage" and "lsbootUefiShell" and "lsbootNVMe" \
-                            in self._config.sdk_objects:
-                        if self._config.sdk_objects["lsbootVMedia"] or self._config.sdk_objects["lsbootPxe"] \
-                                or self._config.sdk_objects["lsbootHdd"] or self._config.sdk_objects["lsbootSd"] \
-                                or self._config.sdk_objects["lsbootUsb"] or self._config.sdk_objects["lsbootSan"] \
-                                or self._config.sdk_objects["lsbootIscsi"] \
-                                or self._config.sdk_objects["lsbootPchStorage"] \
-                                or self._config.sdk_objects["lsbootUefiShell"] \
-                                or self._config.sdk_objects["lsbootNVMe"]:
+                    if "lsbootVMedia" in self._config.sdk_objects:
+                        if self._config.sdk_objects.get("lsbootVMedia"):
                             for boot_device in self._config.sdk_objects["lsbootVMedia"]:
                                 device = {}
                                 device["type"] = boot_device.type
@@ -2664,6 +2660,8 @@ class UcsImcBootOrder(UcsImcConfigObject):
                                 device["state"] = boot_device.state
                                 device["order"] = boot_device.order
                                 self.advanced_boot_devices.append(device)
+                    if "lsbootPxe" in self._config.sdk_objects:
+                        if self._config.sdk_objects.get("lsbootPxe"):
                             for boot_device in self._config.sdk_objects["lsbootPxe"]:
                                 device = {}
                                 device["type"] = boot_device.type
@@ -2673,6 +2671,8 @@ class UcsImcBootOrder(UcsImcConfigObject):
                                 device["state"] = boot_device.state
                                 device["order"] = boot_device.order
                                 self.advanced_boot_devices.append(device)
+                    if "lsbootHdd" in self._config.sdk_objects:
+                        if self._config.sdk_objects.get("lsbootHdd"):
                             for boot_device in self._config.sdk_objects["lsbootHdd"]:
                                 device = {}
                                 device["type"] = boot_device.type
@@ -2681,6 +2681,8 @@ class UcsImcBootOrder(UcsImcConfigObject):
                                 device["state"] = boot_device.state
                                 device["order"] = boot_device.order
                                 self.advanced_boot_devices.append(device)
+                    if "lsbootSd" in self._config.sdk_objects:
+                        if self._config.sdk_objects.get("lsbootSd"):
                             for boot_device in self._config.sdk_objects["lsbootSd"]:
                                 device = {}
                                 device["type"] = boot_device.type
@@ -2689,6 +2691,8 @@ class UcsImcBootOrder(UcsImcConfigObject):
                                 device["state"] = boot_device.state
                                 device["order"] = boot_device.order
                                 self.advanced_boot_devices.append(device)
+                    if "lsbootUsb" in self._config.sdk_objects:
+                        if self._config.sdk_objects.get("lsbootUsb"):
                             for boot_device in self._config.sdk_objects["lsbootUsb"]:
                                 device = {}
                                 device["type"] = boot_device.type
@@ -2696,6 +2700,8 @@ class UcsImcBootOrder(UcsImcConfigObject):
                                 device["state"] = boot_device.state
                                 device["order"] = boot_device.order
                                 self.advanced_boot_devices.append(device)
+                    if "lsbootSan" in self._config.sdk_objects:
+                        if self._config.sdk_objects.get("lsbootSan"):
                             for boot_device in self._config.sdk_objects["lsbootSan"]:
                                 device = {}
                                 device["type"] = boot_device.type
@@ -2705,6 +2711,8 @@ class UcsImcBootOrder(UcsImcConfigObject):
                                 device["state"] = boot_device.state
                                 device["order"] = boot_device.order
                                 self.advanced_boot_devices.append(device)
+                    if "lsbootIscsi" in self._config.sdk_objects:
+                        if self._config.sdk_objects.get("lsbootIscsi"):
                             for boot_device in self._config.sdk_objects["lsbootIscsi"]:
                                 device = {}
                                 device["type"] = boot_device.type
@@ -2714,6 +2722,8 @@ class UcsImcBootOrder(UcsImcConfigObject):
                                 device["state"] = boot_device.state
                                 device["order"] = boot_device.order
                                 self.advanced_boot_devices.append(device)
+                    if "lsbootPchStorage" in self._config.sdk_objects:
+                        if self._config.sdk_objects.get("lsbootPchStorage"):
                             for boot_device in self._config.sdk_objects["lsbootPchStorage"]:
                                 device = {}
                                 device["type"] = boot_device.type
@@ -2721,6 +2731,8 @@ class UcsImcBootOrder(UcsImcConfigObject):
                                 device["state"] = boot_device.state
                                 device["order"] = boot_device.order
                                 self.advanced_boot_devices.append(device)
+                    if "lsbootUefiShell" in self._config.sdk_objects:
+                        if self._config.sdk_objects.get("lsbootUefiShell"):
                             for boot_device in self._config.sdk_objects["lsbootUefiShell"]:
                                 device = {}
                                 device["type"] = boot_device.type
@@ -2728,6 +2740,8 @@ class UcsImcBootOrder(UcsImcConfigObject):
                                 device["state"] = boot_device.state
                                 device["order"] = boot_device.order
                                 self.advanced_boot_devices.append(device)
+                    if "lsbootNVMe" in self._config.sdk_objects:
+                        if self._config.sdk_objects.get("lsbootNVMe"):
                             for boot_device in self._config.sdk_objects["lsbootNVMe"]:
                                 device = {}
                                 device["type"] = boot_device.type

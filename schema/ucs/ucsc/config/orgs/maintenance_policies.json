@@ -1,0 +1,103 @@
+{
+   "id": "ucs_central_config_maintenance_policies#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS ucs central config orgs maintenance_policies section",
+   "description": "EasyUCS ucs central config orgs maintenance_policies section JSON schema",
+   "type": "object",
+   "properties": {
+      "comment": {
+         "description": "Maintenance Policy Comments",
+         "type": "string",
+         "default": ""
+      },
+      "name": {
+         "description": "Maintenance Policy Name",
+         "type": "string",
+         "default": "",
+         "pattern": "^[\\-\\.:_a-zA-Z0-9]{1,16}$"
+      },
+      "descr": {
+         "description": "Description of Maintenance Policy",
+         "type": "string",
+         "default": "",
+         "pattern": "^[ !#$%&\\(\\)\\*\\+,\\-\\./:;\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{0,256}$"
+      },
+      "soft_shutdown_timer": {
+         "description": "Maintenance Policy Soft Shutdown Timer (in seconds)",
+         "type": "string",
+         "default": "150",
+         "enum": [
+            "150",
+            "300",
+            "600",
+            "never"
+         ]
+      },
+      "reboot_policy": {
+         "description": "Maintenance Policy Reboot Policy",
+         "type": "string",
+         "default": "immediate",
+         "enum": [
+            "immediate",
+            "timer-automatic",
+            "user-ack"
+         ]
+      },
+      "on_next_boot": {
+         "description": "Maintenance Policy On Next Boot option",
+         "type": "string",
+         "default": "off",
+         "enum": [
+            "false",
+            "no",
+            "off",
+            "on",
+            "true",
+            "yes"
+         ]
+      },
+      "schedule": {
+         "description": "Maintenance Policy Schedule",
+         "type": "string",
+         "default": "",
+         "pattern": "^[\\-\\.:_a-zA-Z0-9]{1,16}$"
+      },
+      "storage_config_deployment_policy": {
+         "description": "Maintenance Policy Storage Config. Deployment Policy",
+         "type": "string",
+         "default": "user-ack",
+         "enum": [
+            "immediate",
+            "user-ack"
+         ]
+      },
+      "tags": {
+         "description": "Maintenance Policy - Tags",
+         "type": "array",
+         "items": {
+            "description": "Maintenance Policy - Tag",
+            "type": "object",
+            "properties": {
+               "type": {
+                  "description": "Maintenance Policy - Tag - Type",
+                  "type": "string",
+                  "pattern": "^[ !#$%&\\(\\)\\*\\+,\\-\\.:;=\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{1,32}$"
+               },
+               "value": {
+                  "description": "Maintenance Policy - Tag - Value",
+                  "type": "string"
+               }
+            },
+            "additionalProperties": false,
+            "required": [
+               "type",
+               "value"
+            ]
+         }
+      }
+   },
+   "additionalProperties": false,
+   "required": [
+      "name"
+   ]
+}

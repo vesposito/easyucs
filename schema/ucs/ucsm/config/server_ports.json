@@ -1,57 +1,57 @@
 {
-   "id":"ucs_system_config_server_ports#",
-   "$schema":"http://json-schema.org/draft-07/schema#",
-   "title":"EasyUCS ucs system config server_ports section",
-   "description":"EasyUCS ucs system config server_ports section JSON schema",
-   "type":"object",
-   "properties":{
+   "id": "ucs_system_config_server_ports#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS ucs system config server_ports section",
+   "description": "EasyUCS ucs system config server_ports section JSON schema",
+   "type": "object",
+   "properties": {
       "comment": {
          "description": "Server Port Comments",
          "type": "string",
          "default": ""
       },
-      "fabric":{
-         "description":"Fabric ID of Server Port (\"A\" or \"B\")",
-         "type":"string",
-         "enum":[
+      "fabric": {
+         "description": "Fabric ID of Server Port (\"A\" or \"B\")",
+         "type": "string",
+         "enum": [
             "a",
             "A",
             "b",
             "B"
          ]
       },
-      "slot_id":{
-         "description":"Slot ID of Server Port",
-         "type":"string",
-         "pattern":"^[1-4]$"
+      "slot_id": {
+         "description": "Slot ID of Server Port",
+         "type": "string",
+         "pattern": "^[1-4]$"
       },
-      "port_id":{
-         "description":"Port ID of Server Port",
-         "type":"string",
-         "pattern":"^[1-9]$|^[1-9][0-9]$|^1[0-9][0-9]$|^200$"
+      "port_id": {
+         "description": "Port ID of Server Port",
+         "type": "string",
+         "pattern": "^[1-9]$|^[1-9][0-9]$|^1[0-9][0-9]$|^200$"
       },
-      "aggr_id":{
-         "description":"Aggregate ID of Server Port (for Breakout Ports)",
-         "type":"string",
-         "pattern":"^[1-4]$"
+      "aggr_id": {
+         "description": "Aggregate ID of Server Port (for Breakout Ports)",
+         "type": "string",
+         "pattern": "^[1-4]$"
       },
-      "user_label":{
-         "description":"User Label of Server Port",
-         "type":"string",
-         "pattern":"^[ !#$%&\\(\\)\\*\\+,\\-\\./:;\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{0,32}$"
+      "user_label": {
+         "description": "User Label of Server Port",
+         "type": "string",
+         "pattern": "^[ !#$%&\\(\\)\\*\\+,\\-\\./:;\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{0,32}$"
       },
-      "admin_state":{
-         "description":"Admin State of Server Port",
-         "type":"string",
-         "default":"enabled",
-         "enum":[
+      "admin_state": {
+         "description": "Admin State of Server Port",
+         "type": "string",
+         "default": "enabled",
+         "enum": [
             "disabled",
             "enabled"
          ]
       }
    },
-   "additionalProperties":false,
-   "required":[
+   "additionalProperties": false,
+   "required": [
       "fabric",
       "slot_id",
       "port_id"

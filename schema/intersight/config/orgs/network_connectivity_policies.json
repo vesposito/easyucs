@@ -1,0 +1,128 @@
+{
+   "id": "intersight_config_orgs_network_connectivity_policies#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS intersight config orgs network_connectivity_policies section",
+   "description": "EasyUCS intersight config orgs network_connectivity_policies section JSON schema",
+   "type": "object",
+   "properties": {
+      "comment": {
+         "description": "Network Connectivity Policy Comments",
+         "type": "string",
+         "default": ""
+      },
+      "descr": {
+         "description": "Network Connectivity Policy Description",
+         "type": "string",
+         "default": "",
+         "pattern": "^$|^[a-zA-Z0-9]+[\\x00-\\xFF]*$",
+         "maxLength": 1024
+      },
+      "name": {
+         "description": "Network Connectivity Policy Name",
+         "type": "string",
+         "default": "",
+         "pattern": "^[a-zA-Z0-9_.:-]{1,64}$"
+      },
+      "tags": {
+         "description": "Network Connectivity Policy Tags",
+         "type": "array",
+         "items": {
+            "description": "Network Connectivity Policy Tag",
+            "type": "object",
+            "properties": {
+               "key": {
+                  "description": "Network Connectivity Policy Tag Key",
+                  "type": "string",
+                  "default": "",
+                  "minLength": 1,
+                  "maxLength": 128
+               },
+               "value": {
+                  "description": "Network Connectivity Policy Tag Value",
+                  "type": "string",
+                  "default": "",
+                  "minLength": 0,
+                  "maxLength": 256
+               }
+            },
+            "additionalProperties": false,
+            "required": [
+               "key",
+               "value"
+            ]
+         },
+         "minItems": 1
+      },
+      "enable_dynamic_dns": {
+         "description": "Network Connectivity Policy Enable Dynamic DNS",
+         "type": "boolean",
+         "default": false
+      },
+      "dynamic_dns_domain": {
+         "description": "Network Connectivity Policy Dynamic DNS Domain",
+         "type": "string",
+         "default": ""
+      },
+      "obtain_ipv4_dns_from_dhcp": {
+         "description": "Network Connectivity Policy Obtain IPv4 DNS From DHCP",
+         "type": "boolean",
+         "default": false
+      },
+      "preferred_ipv4_dns_server": {
+         "description": "Network Connectivity Policy Preferred IPv4 DNS Server",
+         "type": "string",
+         "default": "0.0.0.0"
+      },
+      "alternate_ipv4_dns_server": {
+         "description": "Network Connectivity Policy Alternate IPv4 DNS Server",
+         "type": "string",
+         "default": "0.0.0.0"
+      },
+      "enable_ipv6": {
+         "description": "Network Connectivity Policy Enable IPv6",
+         "type": "boolean",
+         "default": false
+      },
+      "obtain_ipv6_dns_from_dhcp": {
+         "description": "Network Connectivity Policy Obtain IPv6 DNS From DHCP",
+         "type": "boolean",
+         "default": false
+      },
+      "preferred_ipv6_dns_server": {
+         "description": "Network Connectivity Policy Preferred IPv4 DNS Server",
+         "type": "string",
+         "default": "::"
+      },
+      "alternate_ipv6_dns_server": {
+         "description": "Network Connectivity Policy Alternate IPv4 DNS Server",
+         "type": "string",
+         "default": "::"
+      }
+   },
+   "additionalProperties": false,
+   "required": [
+      "name",
+      "obtain_ipv4_dns_from_dhcp"
+   ],
+   "allOf": [
+      {
+         "if": {
+            "properties": {
+               "enable_ipv6": {
+                  "enum": [
+                     true
+                  ]
+               }
+            },
+            "required": [
+               "enable_ipv6"
+            ]
+         },
+         "then": {
+            "required": [
+               "obtain_ipv6_dns_from_dhcp"
+            ]
+         }
+      }
+   ]
+}

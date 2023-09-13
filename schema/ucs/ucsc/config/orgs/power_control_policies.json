@@ -1,0 +1,89 @@
+{
+   "id": "ucs_central_config_power_control_policies#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS ucs central config power_control_policies section",
+   "description": "EasyUCS ucs central config power_control_policies section JSON schema",
+   "type": "object",
+   "properties": {
+      "comment": {
+         "description": "Power Control Policy Comments",
+         "type": "string",
+         "default": ""
+      },
+      "name": {
+         "description": "Power Control Policy Name",
+         "type": "string",
+         "default": "",
+         "pattern": "^[\\-\\.:_a-zA-Z0-9]{1,16}$"
+      },
+      "descr": {
+         "description": "Description of Power Control Policy",
+         "type": "string",
+         "default": "",
+         "pattern": "^[ !#$%&\\(\\)\\*\\+,\\-\\./:;\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{0,256}$"
+      },
+      "fan_speed_policy": {
+         "description": "Fan Speed Policy of Power Control Policy",
+         "type": "string",
+         "default": "any",
+         "enum": [
+            "any",
+            "balanced",
+            "err",
+            "high-power",
+            "low-power",
+            "max-power",
+            "na",
+            "no-update",
+            "not-supported",
+            "performance"
+         ]
+      },
+      "power_capping": {
+         "description": "Power Capping of Power Control Policy",
+         "type": "string",
+         "default": "5",
+         "enum": [
+            "no-cap",
+            "1",
+            "2",
+            "3",
+            "4",
+            "5",
+            "6",
+            "7",
+            "8",
+            "9",
+            "10"
+         ]
+      },
+      "tags": {
+         "description": "Power Control Policy - Tags",
+         "type": "array",
+         "items": {
+            "description": "Power Control Policy - Tag",
+            "type": "object",
+            "properties": {
+               "type": {
+                  "description": "Power Control Policy - Tag - Type",
+                  "type": "string",
+                  "pattern": "^[ !#$%&\\(\\)\\*\\+,\\-\\.:;=\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{1,32}$"
+               },
+               "value": {
+                  "description": "Power Control Policy - Tag - Value",
+                  "type": "string"
+               }
+            },
+            "additionalProperties": false,
+            "required": [
+               "type",
+               "value"
+            ]
+         }
+      }
+   },
+   "additionalProperties": false,
+   "required": [
+      "name"
+   ]
+}

@@ -1,0 +1,804 @@
+{
+   "id": "intersight_config_orgs_lan_connectivity_policies#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS intersight config orgs lan_connectivity_policies section",
+   "description": "EasyUCS intersight config orgs lan_connectivity_policies section JSON schema",
+   "type": "object",
+   "properties": {
+      "comment": {
+         "description": "LAN Connectivity Policy Comments",
+         "type": "string",
+         "default": ""
+      },
+      "descr": {
+         "description": "LAN Connectivity Policy Description",
+         "type": "string",
+         "default": "",
+         "pattern": "^$|^[a-zA-Z0-9]+[\\x00-\\xFF]*$",
+         "maxLength": 1024
+      },
+      "name": {
+         "description": "LAN Connectivity Policy Name",
+         "type": "string",
+         "default": "",
+         "pattern": "^[a-zA-Z0-9_.:-]{1,64}$"
+      },
+      "tags": {
+         "description": "LAN Connectivity Policy Tags",
+         "type": "array",
+         "items": {
+            "description": "LAN Connectivity Policy Tag",
+            "type": "object",
+            "properties": {
+               "key": {
+                  "description": "LAN Connectivity Policy Tag Key",
+                  "type": "string",
+                  "default": "",
+                  "minLength": 1,
+                  "maxLength": 128
+               },
+               "value": {
+                  "description": "LAN Connectivity Policy Tag Value",
+                  "type": "string",
+                  "default": "",
+                  "minLength": 0,
+                  "maxLength": 256
+               }
+            },
+            "additionalProperties": false,
+            "required": [
+               "key",
+               "value"
+            ]
+         },
+         "minItems": 1
+      },
+      "enable_azure_stack_host_qos": {
+         "description": "LAN Connectivity Policy Enable AzureStack Host QoS",
+         "type": "boolean",
+         "default": false
+      },
+      "iqn_allocation_type": {
+         "description": "LAN Connectivity Policy IQN Allocation Type",
+         "type": "string",
+         "default": "",
+         "enum": [
+            "pool",
+            "static"
+         ]
+      },
+      "iqn_identifier": {
+         "description": "LAN Connectivity Policy Static IQN Identifier",
+         "type": "string",
+         "default": "",
+         "pattern": "^$|^(?:iqn\\.[0-9]{4}-[0-9]{2}(?:\\.[A-Za-z](?:[A-Za-z0-9\\-]*[A-Za-z0-9])?)+(?::.*)?|eui\\.[0-9A-Fa-f]{16})"
+      },
+      "iqn_pool": {
+         "description": "LAN Connectivity Policy IQN Pool Name",
+         "type": "string",
+         "default": "",
+         "pattern": "^[a-zA-Z0-9_.:-]{1,64}$"
+      },
+      "target_platform": {
+         "description": "LAN Connectivity Policy Target Platform",
+         "type": "string",
+         "default": "Standalone",
+         "enum": [
+            "FI-Attached",
+            "Standalone"
+         ]
+      },
+      "vnic_placement_mode": {
+         "description": "LAN Connectivity Policy vNIC Placement Mode",
+         "type": "string",
+         "default": "custom",
+         "enum": [
+            "auto",
+            "custom"
+         ]
+      },
+      "vnics": {
+         "oneOf": [
+            {
+               "description": "LAN Connectivity Policy vNICs - for FI-Attached Servers",
+               "type": "array",
+               "items": {
+                  "type": "object",
+                  "description": "LAN Connectivity Policy - vNIC",
+                  "properties": {
+                     "cdn_source": {
+                        "description": "LAN Connectivity Policy - vNIC CDN Source",
+                        "type": "string",
+                        "default": "vnic",
+                        "enum": [
+                           "user",
+                           "vnic"
+                        ]
+                     },
+                     "cdn_value": {
+                        "description": "LAN Connectivity Policy - vNIC CDN Value",
+                        "type": "string",
+                        "default": "",
+                        "maxLength": 31,
+                        "pattern": "^[a-zA-Z0-9\\-\\._:]*$"
+                     },
+                     "enable_failover": {
+                        "description": "LAN Connectivity Policy - vNIC Enable Failover",
+                        "type": "boolean",
+                        "default": false
+                     },
+                     "ethernet_adapter_policy": {
+                        "description": "LAN Connectivity Policy - vNIC Ethernet Adapter Policy",
+                        "type": "string",
+                        "default": "",
+                        "pattern": "^[a-zA-Z0-9_.:-]{1,64}$"
+                     },
+                     "ethernet_network_control_policy": {
+                        "description": "LAN Connectivity Policy - vNIC Ethernet Network Control Policy",
+                        "type": "string",
+                        "default": "",
+                        "pattern": "^[a-zA-Z0-9_.:-]{1,64}$"
+                     },
+                     "ethernet_network_group_policy": {
+                        "description": "LAN Connectivity Policy - vNIC Ethernet Network Group Policy",
+                        "type": "string",
+                        "default": "",
+                        "pattern": "^[a-zA-Z0-9_.:-]{1,64}$"
+                     },
+                     "ethernet_qos_policy": {
+                        "description": "LAN Connectivity Policy - vNIC Ethernet QoS Policy",
+                        "type": "string",
+                        "default": "",
+                        "pattern": "^[a-zA-Z0-9_.:-]{1,64}$"
+                     },
+                     "iscsi_boot_policy": {
+                        "description": "LAN Connectivity Policy - vNIC iSCSI Boot Policy",
+                        "type": "string",
+                        "default": "",
+                        "pattern": "^[a-zA-Z0-9_.:-]{1,64}$"
+                     },
+                     "mac_address_allocation_type": {
+                        "description": "LAN Connectivity Policy - vNIC MAC Address Allocation Type",
+                        "type": "string",
+                        "default": "pool",
+                        "enum": [
+                           "pool",
+                           "static"
+                        ]
+                     },
+                     "mac_address_pool": {
+                        "description": "LAN Connectivity Policy - vNIC MAC Address Pool Name",
+                        "type": "string",
+                        "default": "",
+                        "pattern": "^[a-zA-Z0-9_.:-]{1,64}$"
+                     },
+                     "mac_address_static": {
+                        "description": "LAN Connectivity Policy - vNIC MAC Address Static",
+                        "type": "string",
+                        "default": "",
+                        "pattern": "^(([0-9a-fA-F][0-9a-fA-F]:){5}([0-9a-fA-F][0-9a-fA-F]))$|^0$"
+                     },
+                     "name": {
+                        "description": "LAN Connectivity Policy - vNIC Name",
+                        "type": "string",
+                        "default": "",
+                        "maxLength": 31,
+                        "pattern": "^[a-zA-Z0-9-._:]+$"
+                     },
+                     "pci_link": {
+                        "description": "LAN Connectivity Policy - vNIC PCI Link",
+                        "type": "integer",
+                        "default": 0,
+                        "maximum": 1
+                     },
+                     "pci_order": {
+                        "description": "LAN Connectivity Policy - vNIC PCI Order",
+                        "type": "integer",
+                        "default": 0
+                     },
+                     "pin_group_name": {
+                        "description": "LAN Connectivity Policy - Pin Group Name",
+                        "type": "string",
+                        "default": "",
+                        "pattern": "^$|^[a-zA-Z0-9_.:-]{1,64}$"
+                     },
+                     "slot_id": {
+                        "description": "LAN Connectivity Policy - vNIC Slot ID",
+                        "type": "string",
+                        "default": "",
+                        "pattern": "^$|^([1-9]|1[0-5]|MLOM)$"
+                     },
+                     "switch_id": {
+                        "description": "LAN Connectivity Policy - vNIC Switch ID",
+                        "type": "string",
+                        "default": "A",
+                        "enum": [
+                           "A",
+                           "B"
+                        ]
+                     },
+                     "usnic_settings": {
+                        "description": "LAN Connectivity Policy - vNIC usNIC Settings",
+                        "type": "object",
+                        "properties": {
+                           "number_of_usnics": {
+                              "description": "LAN Connectivity Policy - vNIC usNIC Settings - Number of usNICs",
+                              "type": "integer",
+                              "default": 0,
+                              "minimum": 0,
+                              "maximum": 225
+                           },
+                           "usnic_adapter_policy": {
+                              "description": "LAN Connectivity Policy - vNIC usNIC Settings - usNIC Adapter Policy Name",
+                              "type": "string",
+                              "default": "",
+                              "pattern": "^[a-zA-Z0-9_.:-]{1,64}$"
+                           }
+                        },
+                        "additionalProperties": false
+                     },
+                     "vmq_settings": {
+                        "description": "LAN Connectivity Policy - vNIC VMQ Settings",
+                        "type": "object",
+                        "properties": {
+                           "enable_virtual_machine_multi_queue": {
+                              "description": "LAN Connectivity Policy - vNIC VMQ Settings - Enable Virtual Machine Multi-Queue",
+                              "type": "boolean",
+                              "default": false
+                           },
+                           "number_of_interrupts": {
+                              "description": "LAN Connectivity Policy - vNIC VMQ Settings - Number of Interrupts",
+                              "type": "integer",
+                              "default": 16,
+                              "minimum": 1,
+                              "maximum": 514
+                           },
+                           "number_of_sub_vnics": {
+                              "description": "LAN Connectivity Policy - vNIC VMQ Settings - Number of Sub vNICs",
+                              "type": "integer",
+                              "default": 64,
+                              "minimum": 0,
+                              "maximum": 64
+                           },
+                           "number_of_virtual_machine_queues": {
+                              "description": "LAN Connectivity Policy - vNIC VMQ Settings - Number of Virtual Machine Queues",
+                              "type": "integer",
+                              "default": 4,
+                              "minimum": 1,
+                              "maximum": 128
+                           },
+                           "vmmq_adapter_policy": {
+                              "description": "LAN Connectivity Policy - vNIC VMQ Settings - VMMQ Adapter Policy Name",
+                              "type": "string",
+                              "default": "",
+                              "pattern": "^[a-zA-Z0-9_.:-]{1,64}$"
+                           }
+                        },
+                        "additionalProperties": false,
+                        "allOf": [
+                           {
+                              "$comment": "Below is for setting constraints for enable_virtual_machine_multi_queue with value true",
+                              "if": {
+                                 "properties": {
+                                    "enable_virtual_machine_multi_queue": {
+                                       "enum": [
+                                          true
+                                       ]
+                                    }
+                                 },
+                                 "required": [
+                                    "enable_virtual_machine_multi_queue"
+                                 ]
+                              },
+                              "then": {
+                                 "not": {
+                                    "anyOf": [
+                                       {
+                                          "required": [
+                                             "number_of_interrupts"
+                                          ]
+                                       },
+                                       {
+                                          "required": [
+                                             "number_of_virtual_machine_queues"
+                                          ]
+                                       }
+                                    ]
+                                 }
+                              }
+                           },
+                           {
+                              "$comment": "Below is for setting constraints for enable_virtual_machine_multi_queue with value false",
+                              "if": {
+                                 "properties": {
+                                    "enable_virtual_machine_multi_queue": {
+                                       "enum": [
+                                          false
+                                       ]
+                                    }
+                                 },
+                                 "required": [
+                                    "enable_virtual_machine_multi_queue"
+                                 ]
+                              },
+                              "then": {
+                                 "not": {
+                                    "anyOf": [
+                                       {
+                                          "required": [
+                                             "number_of_sub_vnics"
+                                          ]
+                                       },
+                                       {
+                                          "required": [
+                                             "vmmq_adapter_policy"
+                                          ]
+                                       }
+                                    ]
+                                 }
+                              }
+                           }
+                        ]
+                     }
+                  },
+                  "additionalProperties": false,
+                  "required": [
+                     "name",
+                     "switch_id",
+                     "ethernet_adapter_policy",
+                     "ethernet_qos_policy",
+                     "mac_address_allocation_type"
+                  ],
+                  "allOf": [
+                     {
+                        "$comment": "Below is for setting constraints for mac_address_allocation_type with value pool",
+                        "if": {
+                           "properties": {
+                              "mac_address_allocation_type": {
+                                 "enum": [
+                                    "pool"
+                                 ]
+                              }
+                           },
+                           "required": [
+                              "mac_address_allocation_type"
+                           ]
+                        },
+                        "then": {
+                           "allOf": [
+                              {
+                                 "not": {
+                                    "required": [
+                                       "mac_address_static"
+                                    ]
+                                 }
+                              }
+                           ]
+                        }
+                     },
+                     {
+                        "$comment": "Below is for setting constraints for mac_address_allocation_type with value static",
+                        "if": {
+                           "properties": {
+                              "mac_address_allocation_type": {
+                                 "enum": [
+                                    "static"
+                                 ]
+                              }
+                           },
+                           "required": [
+                              "mac_address_allocation_type"
+                           ]
+                        },
+                        "then": {
+                           "allOf": [
+                              {
+                                 "required": [
+                                    "mac_address_static"
+                                 ]
+                              },
+                              {
+                                 "not": {
+                                    "required": [
+                                       "mac_address_pool"
+                                    ]
+                                 }
+                              }
+                           ]
+                        }
+                     },
+                     {
+                        "$comment": "Below is for setting constraints for cdn_source with value user",
+                        "if": {
+                           "properties": {
+                              "cdn_source": {
+                                 "enum": [
+                                    "user"
+                                 ]
+                              }
+                           },
+                           "required": [
+                              "cdn_source"
+                           ]
+                        },
+                        "then": {
+                           "required": [
+                              "cdn_value"
+                           ]
+                        }
+                     },
+                     {
+                        "$comment": "Below is for setting constraints for usnic_settings & vmq_settings being exlusive",
+                        "if": {
+                           "required": [
+                              "usnic_settings"
+                           ]
+                        },
+                        "then": {
+                           "not": {
+                              "required": [
+                                 "vmq_settings"
+                              ]
+                           }
+                        }
+                     }
+                  ]
+               },
+               "minItems": 1
+            },
+            {
+               "description": "LAN Connectivity Policy vNICs - for Standalone Servers",
+               "type": "array",
+               "items": {
+                  "type": "object",
+                  "description": "LAN Connectivity Policy - vNIC",
+                  "properties": {
+                     "cdn_source": {
+                        "description": "LAN Connectivity Policy - vNIC CDN Source",
+                        "type": "string",
+                        "default": "vnic",
+                        "enum": [
+                           "user",
+                           "vnic"
+                        ]
+                     },
+                     "cdn_value": {
+                        "description": "LAN Connectivity Policy - vNIC CDN Value",
+                        "type": "string",
+                        "default": "",
+                        "maxLength": 31,
+                        "pattern": "^[a-zA-Z0-9\\-\\._:]*$"
+                     },
+                     "ethernet_adapter_policy": {
+                        "description": "LAN Connectivity Policy - vNIC Ethernet Adapter Policy",
+                        "type": "string",
+                        "default": "",
+                        "pattern": "^[a-zA-Z0-9_.:-]{1,64}$"
+                     },
+                     "ethernet_network_policy": {
+                        "description": "LAN Connectivity Policy - vNIC Ethernet Network Policy",
+                        "type": "string",
+                        "default": "",
+                        "pattern": "^[a-zA-Z0-9_.:-]{1,64}$"
+                     },
+                     "ethernet_qos_policy": {
+                        "description": "LAN Connectivity Policy - vNIC Ethernet QoS Policy",
+                        "type": "string",
+                        "default": "",
+                        "pattern": "^[a-zA-Z0-9_.:-]{1,64}$"
+                     },
+                     "name": {
+                        "description": "LAN Connectivity Policy - vNIC Name",
+                        "type": "string",
+                        "default": "",
+                        "maxLength": 31,
+                        "pattern": "^[a-zA-Z0-9-._:]+$"
+                     },
+                     "pci_link": {
+                        "description": "LAN Connectivity Policy - vNIC PCI Link",
+                        "type": "integer",
+                        "default": 0,
+                        "maximum": 1
+                     },
+                     "pci_order": {
+                        "description": "LAN Connectivity Policy - vNIC PCI Order",
+                        "type": "integer",
+                        "default": 0
+                     },
+                     "slot_id": {
+                        "description": "LAN Connectivity Policy - vNIC Slot ID",
+                        "type": "string",
+                        "default": "",
+                        "pattern": "^$|^([1-9]|1[0-5]|MLOM)$"
+                     },
+                     "uplink_port": {
+                        "description": "LAN Connectivity Policy - vNIC Uplink Port",
+                        "type": "integer",
+                        "default": 0,
+                        "minimum": 0,
+                        "maximum": 3
+                     },
+                     "usnic_settings": {
+                        "description": "LAN Connectivity Policy - vNIC usNIC Settings",
+                        "type": "object",
+                        "properties": {
+                           "class_of_service": {
+                              "description": "LAN Connectivity Policy - vNIC usNIC Settings - Class of Service",
+                              "type": "integer",
+                              "default": 5,
+                              "minimum": 0,
+                              "maximum": 6
+                           },
+                           "number_of_usnics": {
+                              "description": "LAN Connectivity Policy - vNIC usNIC Settings - Number of usNICs",
+                              "type": "integer",
+                              "default": 0,
+                              "minimum": 0,
+                              "maximum": 225
+                           },
+                           "usnic_adapter_policy": {
+                              "description": "LAN Connectivity Policy - vNIC usNIC Settings - usNIC Adapter Policy Name",
+                              "type": "string",
+                              "default": "",
+                              "pattern": "^[a-zA-Z0-9_.:-]{1,64}$"
+                           }
+                        },
+                        "additionalProperties": false
+                     },
+                     "vmq_settings": {
+                        "description": "LAN Connectivity Policy - vNIC VMQ Settings",
+                        "type": "object",
+                        "properties": {
+                           "enable_virtual_machine_multi_queue": {
+                              "description": "LAN Connectivity Policy - vNIC VMQ Settings - Enable Virtual Machine Multi-Queue",
+                              "type": "boolean",
+                              "default": false
+                           },
+                           "number_of_interrupts": {
+                              "description": "LAN Connectivity Policy - vNIC VMQ Settings - Number of Interrupts",
+                              "type": "integer",
+                              "default": 16,
+                              "minimum": 1,
+                              "maximum": 514
+                           },
+                           "number_of_sub_vnics": {
+                              "description": "LAN Connectivity Policy - vNIC VMQ Settings - Number of Sub vNICs",
+                              "type": "integer",
+                              "default": 64,
+                              "minimum": 0,
+                              "maximum": 64
+                           },
+                           "number_of_virtual_machine_queues": {
+                              "description": "LAN Connectivity Policy - vNIC VMQ Settings - Number of Virtual Machine Queues",
+                              "type": "integer",
+                              "default": 4,
+                              "minimum": 1,
+                              "maximum": 128
+                           },
+                           "vmmq_adapter_policy": {
+                              "description": "LAN Connectivity Policy - vNIC VMQ Settings - VMMQ Adapter Policy Name",
+                              "type": "string",
+                              "default": "",
+                              "pattern": "^[a-zA-Z0-9_.:-]{1,64}$"
+                           }
+                        },
+                        "additionalProperties": false,
+                        "allOf": [
+                           {
+                              "$comment": "Below is for setting constraints for enable_virtual_machine_multi_queue with value true",
+                              "if": {
+                                 "properties": {
+                                    "enable_virtual_machine_multi_queue": {
+                                       "enum": [
+                                          true
+                                       ]
+                                    }
+                                 },
+                                 "required": [
+                                    "enable_virtual_machine_multi_queue"
+                                 ]
+                              },
+                              "then": {
+                                 "not": {
+                                    "anyOf": [
+                                       {
+                                          "required": [
+                                             "number_of_interrupts"
+                                          ]
+                                       },
+                                       {
+                                          "required": [
+                                             "number_of_virtual_machine_queues"
+                                          ]
+                                       }
+                                    ]
+                                 }
+                              }
+                           },
+                           {
+                              "$comment": "Below is for setting constraints for enable_virtual_machine_multi_queue with value false",
+                              "if": {
+                                 "properties": {
+                                    "enable_virtual_machine_multi_queue": {
+                                       "enum": [
+                                          false
+                                       ]
+                                    }
+                                 },
+                                 "required": [
+                                    "enable_virtual_machine_multi_queue"
+                                 ]
+                              },
+                              "then": {
+                                 "not": {
+                                    "anyOf": [
+                                       {
+                                          "required": [
+                                             "number_of_sub_vnics"
+                                          ]
+                                       },
+                                       {
+                                          "required": [
+                                             "vmmq_adapter_policy"
+                                          ]
+                                       }
+                                    ]
+                                 }
+                              }
+                           }
+                        ]
+                     }
+                  },
+                  "additionalProperties": false,
+                  "required": [
+                     "name",
+                     "slot_id",
+                     "ethernet_adapter_policy",
+                     "ethernet_network_policy"
+                  ],
+                  "allOf": [
+                     {
+                        "$comment": "Below is for setting constraints for cdn_source with value user",
+                        "if": {
+                           "properties": {
+                              "cdn_source": {
+                                 "enum": [
+                                    "user"
+                                 ]
+                              }
+                           },
+                           "required": [
+                              "cdn_source"
+                           ]
+                        },
+                        "then": {
+                           "required": [
+                              "cdn_value"
+                           ]
+                        }
+                     },
+                     {
+                        "$comment": "Below is for setting constraints for usnic_settings & vmq_settings being exlusive",
+                        "if": {
+                           "required": [
+                              "usnic_settings"
+                           ]
+                        },
+                        "then": {
+                           "not": {
+                              "required": [
+                                 "vmq_settings"
+                              ]
+                           }
+                        }
+                     }
+                  ]
+               },
+               "minItems": 1
+            }
+         ]
+      }
+   },
+   "additionalProperties": false,
+   "required": [
+      "name",
+      "target_platform"
+   ],
+   "allOf": [
+      {
+         "$comment": "Below is for setting constraints for target_platform with value Standalone",
+         "if": {
+            "properties": {
+               "target_platform": {
+                  "enum": [
+                     "Standalone"
+                  ]
+               }
+            },
+            "required": [
+               "target_platform"
+            ]
+         },
+         "then": {
+            "not": {
+               "anyOf": [
+                  {
+                     "required": [
+                        "iqn_allocation_type"
+                     ]
+                  },
+                  {
+                     "required": [
+                        "iqn_identifier"
+                     ]
+                  },
+                  {
+                     "required": [
+                        "iqn_pool"
+                     ]
+                  }
+               ]
+            },
+            "properties": {
+               "vhba_placement_mode": {
+                  "not": {
+                     "enum": [
+                        "auto"
+                     ]
+                  }
+               }
+            }
+         }
+      },
+      {
+         "$comment": "Below is for setting constraints for iqn_allocation_type with value pool",
+         "if": {
+            "properties": {
+               "iqn_allocation_type": {
+                  "enum": [
+                     "pool"
+                  ]
+               }
+            },
+            "required": [
+               "iqn_allocation_type"
+            ]
+         },
+         "then": {
+            "required": [
+               "iqn_pool"
+            ],
+            "not": {
+               "required": [
+                  "iqn_identifier"
+               ]
+            }
+         }
+      },
+      {
+         "$comment": "Below is for setting constraints for iqn_allocation_type with value static",
+         "if": {
+            "properties": {
+               "iqn_allocation_type": {
+                  "enum": [
+                     "static"
+                  ]
+               }
+            },
+            "required": [
+               "iqn_allocation_type"
+            ]
+         },
+         "then": {
+            "required": [
+               "iqn_identifier"
+            ],
+            "not": {
+               "required": [
+                  "iqn_pool"
+               ]
+            }
+         }
+      }
+   ]
+}

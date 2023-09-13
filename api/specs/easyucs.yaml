@@ -1,0 +1,2856 @@
+openapi: 3.0.3
+info:
+  version: '0.9.8.5'
+  title: EasyUCS API
+  description: Description of EasyUCS API
+servers:
+  - url: 'http://127.0.0.1:5001/api/v1'
+components:
+  schemas:
+    alternative_follow_up_emails:
+      type: array
+      description: List of desired alternate follow up emails for the feedback
+      items:
+        $ref: '#/components/schemas/email'
+    backup_type:
+      type: string
+      description: Type of the backup
+      enum:
+        - bmc
+        - cimc1
+        - cimc2
+        - cmc
+        - config-all
+        - config-logical
+        - config-system
+        - full-state
+        - vic
+      example: full-state
+    backup_uuid:
+      type: string
+      description: UUID of the backup
+      example: 3a1f3ab9-66fe-4b09-8cef-ead52ce21e7a
+    bypass_version_checks:
+      type: boolean
+      description: Whether the device needs to bypass the version check or not
+      example: false
+    cached_orgs:
+      type: object
+      description: List of cached orgs from last successful connection with their respective descriptions
+      example: { 'default': 'This is the default org' }
+    cancel:
+      type: string
+      description: Whether to cancel upload or not
+      example: false
+    category:
+      type: string
+      description: Category of the config
+      enum:
+        - best-practices
+        - custom
+        - cvd
+      example: cvd
+    config_uuid:
+      type: string
+      description: UUID of the config
+      example: 3a1f3ab9-66fe-4b09-8cef-ead52ce21e7a
+    comment:
+      type: string
+      description: Comments in the feedback
+      example: I loved the tool
+    description:
+      type: string
+      description: Description of the object
+      example: EasyUCS
+    device_connector_claim_status:
+      type: string
+      description: Status of the device connector claim
+      example: claimed
+      enum:
+        - claimed
+        - unclaimed
+    device_connector_ownership_name:
+      type: string
+      description: Name of the Intersight account to which the device is claimed
+      example: EasyUCS
+    device_connector_ownership_user:
+      type: string
+      description: Email of the Intersight user who performed the device claim
+      example: abcd.xyz@cisco.com
+    device_name:
+      type: string
+      description: Name of the device
+      example: UCS-DEMO
+    device_reset:
+      type: boolean
+      description: Reset device during config push
+      example: false
+    device_type:
+      type: string
+      enum:
+        - cimc
+        - ucsm
+        - ucsc
+        - intersight
+      description: Device type
+      example: ucsm
+    device_type_long:
+      type: string
+      description: Device type (complete name)
+      example: UCS System
+    device_uuid:
+      type: string
+      description: UUID of the device
+      example: 9fcfe5dd-3b3f-481e-9036-9bb4169fd4ee
+    device_version:
+      type: string
+      description: Version of the device
+      example: 4.1(3b)
+    easyucs_version:
+      type: string
+      description: Version of EasyUCS
+      example: 0.9.7.4
+    email:
+      type: string
+      description: Email address
+      example: abcd.xyz@cisco.com
+    evaluation:
+      type: string
+      description: Evaludation of the tool
+      example: Excellent
+      enum:
+        - Excellent
+        - Poor
+        - Fair
+        - Good
+    feedback_type:
+      type: string
+      description: Type of feedback
+      example: Bug
+      enum:
+        - Evaluation
+        - Bug
+    fi_ip_list:
+      type: array
+      description: List of DHCP IP addresses of Fabric Interconnects for initial setup
+      items:
+        type: string
+        description: DHCP IP address of FI for initial setup
+        example: 192.168.0.1
+    filter_attribute:
+      type: string
+      description: The attribute of the filter
+      example: device_version
+    filter_type:
+      type: string
+      description: The type of filter
+      example: "=="
+      enum:
+        - "=="
+        - "!="
+        - ">"
+        - ">="
+        - "<"
+        - "<="
+    filter_value:
+      type: string
+      description: The value of the filter
+      example: "4.1(3e)"
+    follow_up:
+      type: boolean
+      description: Follow up on the feedback
+      example: false
+    force:
+      type: boolean
+      description: Whether the fetch operation should bypass failed SDK objects
+      example: false
+    inventory_uuid:
+      type: string
+      description: UUID of the inventory
+      example: 3a1f3ab9-66fe-4b09-8cef-ead52ce21e7a
+    is_hidden:
+      type: boolean
+      description: Whether the object is hidden
+      example: false
+    is_reachable:
+      type: boolean
+      description: Status of the device connection
+      example: false
+    is_system:
+      type: boolean
+      description: Whether the object is a system object (non-deleteable)
+      example: false
+    encryption_key:
+      type: string
+      description: Backup Encryption Key for encrypting/decrypting the backup file
+      example: abcd1234#
+      minLength: 4
+      maxLength: 32
+    key_id:
+      type: string
+      description: API Key ID of the device
+      example: ab32810b3e952006541c4aab8/57842fd63e9520038472105e8f2dac7564612d30ae6e83
+    language:
+      type: string
+      description: Language of the report
+      example: en
+      enum:
+        - en
+        - fr
+    name:
+      type: string
+      description: Name of the object
+      example: EasyUCS
+    optional:
+      type: boolean
+      description: Whether the taskstep is optional or mandatory
+      example: false
+    order:
+      type: integer
+      description: Order of the task steps
+      example: 1
+      minimum: 1
+    order_by_attribute:
+      type: string
+      description: The attribute to order the query by
+      example: timestamp
+    order_by_direction:
+      type: string
+      description: The direction with which to order the query
+      example: desc
+      enum:
+        - asc
+        - desc
+    origin:
+      type: string
+      description: Origin of the object
+      enum:
+        - file
+        - live
+      example: live
+    output_format:
+      type: string
+      description: Output format of the report
+      example: docx
+      enum:
+        - docx
+        - json
+        - pdf
+    output_formats:
+      type: array
+      description: List of desired output formats for the generated report
+      items:
+        $ref: '#/components/schemas/output_format'
+    page_layout:
+      type: string
+      description: Page layout of the report
+      example: letter
+      enum:
+        - a4
+        - letter
+    password:
+      type: string
+      description: Password associated with the device
+      example: C1sco
+    private_key:
+      type: string
+      description: Private key associated with the device
+      example: "-----BEGIN EC PRIVATE KEY-----\nMIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgP13mv5gJcy2iuXkk\r0XQxQRFaiPBbXz25aZiHjP4pmHyhRANCAASPHN4M1YmJC+0QBU1KloACJIhqsj48\nVn/WhrcQ1Tv9oMrzYBPgExVGfRhORb6eCiYwY0UpUN36LQ6gmgDHzA1i\n-----END EC PRIVATE KEY-----\n"
+    progress:
+      type: integer
+      description: Progress of the task
+      example: 15
+    recursive:
+      type: string
+      description: Recursively iterate over the path
+      example: true
+    report_type:
+      type: string
+      description: Type of report
+      example: classic
+      enum:
+        - classic
+    report_uuid:
+      type: string
+      description: UUID of the report
+      example: 783670e4-c03c-40a8-89cf-2eb9eacc2c6a
+    revision:
+      type: string
+      description: Revision of the config
+      example: '1.0'
+    size:
+      type: string
+      description: Size of the report
+      example: full
+      enum:
+        - full
+        - short
+    status:
+      type: string
+      description: Status of the object
+      example: success
+      enum:
+        - failed
+        - in_progress
+        - skipped
+        - successful
+    status_message:
+      type: string
+      description: Status message of the object
+      example: Successfully pushed configuration to device
+    steps:
+      type: array
+      description: List of task steps
+      items:
+        type: object
+        properties:
+          description:
+            $ref: '#/components/schemas/description'
+          name:
+            $ref: '#/components/schemas/name'
+          optional:
+            $ref: '#/components/schemas/optional'
+          order:
+            $ref: '#/components/schemas/order'
+          status:
+            $ref: '#/components/schemas/status'
+          status_message:
+            $ref: '#/components/schemas/status_message'
+          timestamp_start:
+            $ref: '#/components/schemas/timestamp'
+          timestamp_stop:
+            $ref: '#/components/schemas/timestamp'
+          uuid:
+            $ref: '#/components/schemas/uuid'
+          weight:
+            $ref: '#/components/schemas/weight'
+    subcategory:
+      type: string
+      description: Sub-Category of the config
+      example: FlexPod
+    system_usage:
+      type: string
+      description: Usage of system object
+      example: catalog
+      enum:
+        - catalog
+    tags:
+      type: array
+      description: List of tags associated with the object
+      items:
+        type: object
+        description: Tag associated with the object
+        properties:
+          key:
+            type: string
+            description: Key of the tag
+            example: site
+          value:
+            type: string
+            description: Value of the tag
+            example: San-Francisco
+    target:
+      type: string
+      description: IP address / Hostname of the device
+      example: 1.2.3.4
+    task_uuid:
+      type: string
+      description: UUID of the task
+      example: 2569339d-4201-4133-bd97-cd74aee78617
+    timestamp:
+      type: string
+      description: Timestamp of the creation of the object
+      example: '2022-06-15T09:17:43.418Z'
+    timestamp_last_connected:
+      type: string
+      description: Timestamp of the last successful connection
+      example: '2022-06-15T09:17:43.418Z'
+    update_existing_intersight_objects:
+      type: boolean
+      description: Use update existing objects info for determining whether to overwrite existing objects in Intersight. If set to True, the commits should overwrite existing object attributes in Intersight
+      example: false
+    url:
+      type: string
+      description: URL of the config
+      example: https://www.cisco.com/c/en/us/solutions/design-zone/data-center-design-guides/data-center-design-guides-all.html
+    username:
+      type: string
+      description: Username associated with the device
+      example: admin
+    uuid:
+      type: string
+      description: UUID of the object
+      example: 73725f7b-c205-4d42-8924-cf4f68ce1a8c
+    weight:
+      type: integer
+      description: Weight of the task step
+      example: 2
+    actions_get:
+      type: array
+      description: List of actions supported by inventory/config
+      items:
+        type: string
+        description: Action
+        example: fetch
+        enum:
+          - fetch
+    actions_backup_get:
+      type: array
+      description: List of actions supported by backup
+      items:
+        type: string
+        description: Action
+        example: download
+        enum:
+          - download
+    actions_config_get:
+      type: array
+      description: List of actions supported by config
+      items:
+        type: string
+        description: Action
+        example: push
+        enum:
+          - download
+          - push
+    actions_device_get:
+      type: array
+      description: List of actions supported by device
+      items:
+        type: string
+        description: Action
+        example: reset
+        enum:
+          - clear_intersight_claim_status
+          - clear_sel_logs
+          - clear_user_sessions
+          - decommission_all_rack_servers
+          - erase_all_virtual_drives
+          - erase_all_flexflash
+          - regenerate_certificate
+          - reset
+          - set_all_drives_status
+    actions_inventory_get:
+      type: array
+      description: List of actions supported by inventory
+      items:
+        type: string
+        description: Action
+        example: download
+        enum:
+          - download
+    actions_report_get:
+      type: array
+      description: List of actions supported by report
+      items:
+        type: string
+        description: Action
+        example: generate
+        enum:
+          - download
+          - generate
+    actions_task_get:
+      type: array
+      description: List of actions supported by task
+      items:
+        type: string
+        description: Action
+        example: cancel
+        enum:
+          - cancel
+    backup_delete_post:
+      type: object
+      required:
+        - backup_uuids
+      properties:
+        backup_uuids:
+          type: array
+          items:
+            $ref: '#/components/schemas/backup_uuid'
+    backup_fetch_post:
+      type: object
+      properties:
+        backup_type:
+          $ref: '#/components/schemas/backup_type'
+      additionalProperties: false
+    backup_get:
+      type: object
+      required:
+        - device_uuid
+        - easyucs_version
+        - is_hidden
+        - is_system
+        - timestamp
+        - uuid
+      properties:
+        backup_type:
+          $ref: '#/components/schemas/backup_type'
+        device_uuid:
+          $ref: '#/components/schemas/device_uuid'
+        device_version:
+          $ref: '#/components/schemas/device_version'
+        easyucs_version:
+          $ref: '#/components/schemas/easyucs_version'
+        is_hidden:
+          $ref: '#/components/schemas/is_hidden'
+        is_system:
+          $ref: '#/components/schemas/is_system'
+        name:
+          $ref: '#/components/schemas/name'
+        origin:
+          $ref: '#/components/schemas/origin'
+        system_usage:
+          $ref: '#/components/schemas/system_usage'
+        tags:
+          $ref: '#/components/schemas/tags'
+        timestamp:
+          $ref: '#/components/schemas/timestamp'
+        uuid:
+          $ref: '#/components/schemas/uuid'
+    config_get:
+      type: object
+      required:
+        - device_uuid
+        - easyucs_version
+        - is_hidden
+        - timestamp
+        - uuid
+      properties:
+        category:
+          $ref: '#/components/schemas/category'
+        device_uuid:
+          $ref: '#/components/schemas/device_uuid'
+        device_version:
+          $ref: '#/components/schemas/device_version'
+        easyucs_version:
+          $ref: '#/components/schemas/easyucs_version'
+        is_hidden:
+          $ref: '#/components/schemas/is_hidden'
+        is_system:
+          $ref: '#/components/schemas/is_system'
+        name:
+          $ref: '#/components/schemas/name'
+        origin:
+          $ref: '#/components/schemas/origin'
+        revision:
+          $ref: '#/components/schemas/revision'
+        subcategory:
+          $ref: '#/components/schemas/subcategory'
+        system_usage:
+          $ref: '#/components/schemas/system_usage'
+        tags:
+          $ref: '#/components/schemas/tags'
+        timestamp:
+          $ref: '#/components/schemas/timestamp'
+        url:
+          $ref: '#/components/schemas/url'
+        uuid:
+          $ref: '#/components/schemas/uuid'
+    config_delete_post:
+      type: object
+      required:
+        - config_uuids
+      properties:
+        config_uuids:
+          type: array
+          items:
+            $ref: '#/components/schemas/config_uuid'
+    config_push_post:
+      type: object
+      properties:
+        fi_ip_list:
+          $ref: '#/components/schemas/fi_ip_list'
+        reset:
+          $ref: '#/components/schemas/device_reset'
+      additionalProperties: false
+    device_claim_to_intersight_post:
+      type: object
+      required:
+        - intersight_device_uuid
+      properties:
+        intersight_device_uuid:
+          $ref: '#/components/schemas/device_uuid'
+      additionalProperties: false
+    device_get:
+      type: object
+      required:
+        - device_name
+        - device_type
+        - device_type_long
+        - device_uuid
+        - easyucs_version
+        - is_hidden
+        - target
+        - timestamp
+      properties:
+        cached_orgs:
+          $ref: '#/components/schemas/cached_orgs'
+        device_connector_claim_status:
+          $ref: '#/components/schemas/device_connector_claim_status'
+        device_connector_ownership_name:
+          $ref: '#/components/schemas/device_connector_ownership_name'
+        device_connector_ownership_user:
+          $ref: '#/components/schemas/device_connector_ownership_user'
+        device_name:
+          $ref: '#/components/schemas/device_name'
+        device_type:
+          $ref: '#/components/schemas/device_type'
+        device_type_long:
+          $ref: '#/components/schemas/device_type_long'
+        device_uuid:
+          $ref: '#/components/schemas/device_uuid'
+        device_version:
+          $ref: '#/components/schemas/device_version'
+        easyucs_version:
+          $ref: '#/components/schemas/easyucs_version'
+        is_hidden:
+          $ref: '#/components/schemas/is_hidden'
+        is_reachable:
+          $ref: '#/components/schemas/is_reachable'
+        is_system:
+          $ref: '#/components/schemas/is_system'
+        key_id:
+          $ref: '#/components/schemas/key_id'
+        system_usage:
+          $ref: '#/components/schemas/system_usage'
+        tags:
+          $ref: '#/components/schemas/tags'
+        target:
+          $ref: '#/components/schemas/target'
+        timestamp:
+          $ref: '#/components/schemas/timestamp'
+        timestamp_last_connected:
+          $ref: '#/components/schemas/timestamp_last_connected'
+        username:
+          $ref: '#/components/schemas/username'
+    device_logs_get:
+      type: string
+      example: "2021-08-12 18:49:18,595 :: info :: ucs.cisco.com :: device.py :: in connect :: Trying to connect to UCS System: ucs.cisco.com"
+    device_post_user_password:
+      type: object
+      required:
+        - device_type
+        - password
+        - target
+        - username
+      properties:
+        device_type:
+          allOf:
+            - $ref: '#/components/schemas/device_type'
+            - example: ucsm
+            - enum:
+              - cimc
+              - ucsm
+              - ucsc
+        bypass_version_checks:
+          $ref: '#/components/schemas/bypass_version_checks'
+        password:
+          $ref: '#/components/schemas/password'
+        tags:
+          $ref: '#/components/schemas/tags'
+        target:
+          $ref: '#/components/schemas/target'
+        username:
+          $ref: '#/components/schemas/username'
+      additionalProperties: false
+    device_post_private_key:
+      type: object
+      required:
+        - device_type
+        - key_id
+        - private_key
+      properties:
+        device_type:
+          allOf:
+            - $ref: '#/components/schemas/device_type'
+            - example: intersight
+            - enum:
+              - intersight
+        bypass_version_checks:
+          $ref: '#/components/schemas/bypass_version_checks'
+        key_id:
+          $ref: '#/components/schemas/key_id'
+        private_key:
+          $ref: '#/components/schemas/private_key'
+        tags:
+          $ref: '#/components/schemas/tags'
+        target:
+          $ref: '#/components/schemas/target'
+      additionalProperties: false
+    device_put_user_password:
+      type: object
+      properties:
+        bypass_version_checks:
+          $ref: '#/components/schemas/bypass_version_checks'
+        password:
+          $ref: '#/components/schemas/password'
+        target:
+          $ref: '#/components/schemas/target'
+        tags:
+          $ref: '#/components/schemas/tags'
+        username:
+          $ref: '#/components/schemas/username'
+      additionalProperties: false
+    device_put_private_key:
+      type: object
+      properties:
+        bypass_version_checks:
+          $ref: '#/components/schemas/bypass_version_checks'
+        key_id:
+          $ref: '#/components/schemas/key_id'
+        private_key:
+          $ref: '#/components/schemas/private_key'
+        tags:
+          $ref: '#/components/schemas/tags'
+        target:
+          $ref: '#/components/schemas/target'
+      additionalProperties: false
+    device_send_feedback_post:
+      type: object
+      required:
+        - feedback_type
+        - comment
+      properties:
+        feedback_type:
+          $ref: '#/components/schemas/feedback_type'
+        comment:
+          $ref: '#/components/schemas/comment'
+        follow_up:
+          $ref: '#/components/schemas/follow_up'
+        alternative_follow_up_emails:
+          $ref: '#/components/schemas/alternative_follow_up_emails'
+        evaluation:
+          $ref: '#/components/schemas/evaluation'
+    devices_actions_claim_to_intersight_post:
+      type: object
+      required:
+        - device_uuids
+        - intersight_device_uuid
+      properties:
+        device_uuids:
+          type: array
+          items:
+            $ref: '#/components/schemas/device_uuid'
+        intersight_device_uuid:
+          $ref: '#/components/schemas/device_uuid'
+      additionalProperties: false
+    devices_actions_delete_post:
+      type: object
+      required:
+        - device_uuids
+      properties:
+        device_uuids:
+          type: array
+          items:
+            $ref: '#/components/schemas/device_uuid'
+      additionalProperties: false
+    devices_types_get:
+      type: object
+      description: List of actions supported by all device types
+      properties:
+        cimc:
+          type: object
+          description: Properties of device type cimc
+          properties:
+            display_name:
+              type: string
+              description: Display name of device type
+              example: UCS IMC
+            available_actions:
+              $ref: '#/components/schemas/actions_device_get'
+        intersight:
+          type: object
+          description: Properties of device type intersight
+          properties:
+            display_name:
+              type: string
+              description: Display name of device type
+              example: Intersight
+            available_actions:
+              $ref: '#/components/schemas/actions_device_get'
+        ucsc:
+          type: object
+          description: Properties of device type ucsc
+          properties:
+            display_name:
+              type: string
+              description: Display name of device type
+              example: UCS Central
+            available_actions:
+              $ref: '#/components/schemas/actions_device_get'
+        ucsm:
+          type: object
+          description: Properties of device type ucsm
+          properties:
+            display_name:
+              type: string
+              description: Display name of device type
+              example: UCS System
+            available_actions:
+              $ref: '#/components/schemas/actions_device_get'
+    easyucs_backup_download_post:
+      type: object
+      required:
+        - encryption_key
+      properties:
+        encryption_key:
+          $ref: '#/components/schemas/encryption_key'
+    easyucs_backup_restore_post:
+      type: object
+      required:
+        - encryption_key
+        - backup_file
+      properties:
+        backup_file:
+            type: string
+            format: binary
+        encryption_key:
+          $ref: '#/components/schemas/encryption_key'
+    easyucs_settings_put:
+      type: object
+      properties:
+        update_existing_intersight_objects:
+          "$ref": "#/components/schemas/update_existing_intersight_objects"
+    fetch:
+      type: object
+      properties:
+        force:
+          "$ref": "#/components/schemas/force"
+    inventory_delete_post:
+      type: object
+      required:
+        - inventory_uuids
+      properties:
+        inventory_uuids:
+          type: array
+          items:
+            $ref: '#/components/schemas/inventory_uuid'
+    inventory_get:
+      type: object
+      required:
+        - device_uuid
+        - easyucs_version
+        - is_hidden
+        - timestamp
+        - uuid
+      properties:
+        device_uuid:
+          $ref: '#/components/schemas/device_uuid'
+        device_version:
+          $ref: '#/components/schemas/device_version'
+        easyucs_version:
+          $ref: '#/components/schemas/easyucs_version'
+        is_hidden:
+          $ref: '#/components/schemas/is_hidden'
+        is_system:
+          $ref: '#/components/schemas/is_system'
+        name:
+          $ref: '#/components/schemas/name'
+        origin:
+          $ref: '#/components/schemas/origin'
+        system_usage:
+          $ref: '#/components/schemas/system_usage'
+        tags:
+          $ref: '#/components/schemas/tags'
+        timestamp:
+          $ref: '#/components/schemas/timestamp'
+        uuid:
+          $ref: '#/components/schemas/uuid'
+    report_delete_post:
+      type: object
+      required:
+        - report_uuids
+      properties:
+        report_uuids:
+          type: array
+          items:
+            $ref: '#/components/schemas/report_uuid'
+    report_generate_post:
+      type: object
+      required:
+        - inventory_uuid
+        - config_uuid
+      properties:
+        inventory_uuid:
+          $ref: '#/components/schemas/inventory_uuid'
+        config_uuid:
+          $ref: '#/components/schemas/config_uuid'
+        language:
+          $ref: '#/components/schemas/language'
+        output_formats:
+          $ref: '#/components/schemas/output_formats'
+        page_layout:
+          $ref: '#/components/schemas/page_layout'
+        size:
+          $ref: '#/components/schemas/size'
+      additionalProperties: false
+    report_get:
+      type: object
+      required:
+        - device_uuid
+        - easyucs_version
+        - is_hidden
+        - timestamp
+        - uuid
+      properties:
+        config_uuid:
+          $ref: '#/components/schemas/config_uuid'
+        device_uuid:
+          $ref: '#/components/schemas/device_uuid'
+        device_version:
+          $ref: '#/components/schemas/device_version'
+        easyucs_version:
+          $ref: '#/components/schemas/easyucs_version'
+        inventory_uuid:
+          $ref: '#/components/schemas/inventory_uuid'
+        is_hidden:
+          $ref: '#/components/schemas/is_hidden'
+        is_system:
+          $ref: '#/components/schemas/is_system'
+        language:
+          $ref: '#/components/schemas/language'
+        name:
+          $ref: '#/components/schemas/name'
+        origin:
+          $ref: '#/components/schemas/origin'
+        output_format:
+          $ref: '#/components/schemas/output_format'
+        page_layout:
+          $ref: '#/components/schemas/page_layout'
+        report_type:
+          $ref: '#/components/schemas/report_type'
+        size:
+          $ref: '#/components/schemas/size'
+        system_usage:
+          $ref: '#/components/schemas/system_usage'
+        tags:
+          $ref: '#/components/schemas/tags'
+        timestamp:
+          $ref: '#/components/schemas/timestamp'
+        uuid:
+          $ref: '#/components/schemas/uuid'
+    task_get:
+      type: object
+      required:
+        - device_name
+        - device_uuid
+        - easyucs_version
+        - name
+        - progress
+        - status
+        - status_message
+        - timestamp
+        - timestamp_start
+        - timestamp_stop
+      properties:
+        description:
+          $ref: '#/components/schemas/description'
+        device_name:
+          $ref: '#/components/schemas/device_name'
+        device_uuid:
+          $ref: '#/components/schemas/device_uuid'
+        device_version:
+          $ref: '#/components/schemas/device_version'
+        easyucs_version:
+          $ref: '#/components/schemas/easyucs_version'
+        name:
+          $ref: '#/components/schemas/name'
+        progress:
+          $ref: '#/components/schemas/progress'
+        status:
+          $ref: '#/components/schemas/status'
+        status_message:
+          $ref: '#/components/schemas/status_message'
+        timestamp:
+          $ref: '#/components/schemas/timestamp'
+        timestamp_start:
+          $ref: '#/components/schemas/timestamp'
+        timestamp_stop:
+          $ref: '#/components/schemas/timestamp'
+        uuid:
+          $ref: '#/components/schemas/task_uuid'
+    task_detail_get:
+      type: object
+      required:
+        - device_name
+        - device_uuid
+        - easyucs_version
+        - name
+        - progress
+        - status
+        - status_message
+        - timestamp_start
+        - timestamp_stop
+      properties:
+        description:
+          $ref: '#/components/schemas/description'
+        device_name:
+          $ref: '#/components/schemas/device_name'
+        device_uuid:
+          $ref: '#/components/schemas/device_uuid'
+        device_version:
+          $ref: '#/components/schemas/device_version'
+        easyucs_version:
+          $ref: '#/components/schemas/easyucs_version'
+        name:
+          $ref: '#/components/schemas/name'
+        progress:
+          $ref: '#/components/schemas/progress'
+        status:
+          $ref: '#/components/schemas/status'
+        status_message:
+          $ref: '#/components/schemas/status_message'
+        steps:
+          $ref: '#/components/schemas/steps'
+        timestamp_start:
+          $ref: '#/components/schemas/timestamp'
+        timestamp_stop:
+          $ref: '#/components/schemas/timestamp'
+        uuid:
+          $ref: '#/components/schemas/task_uuid'
+  responses:
+    200OK:
+      description: Operation successful
+    400ClientError:
+      description: Invalid request
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: Invalid Request
+    404NotFound:
+      description: Ressource not found
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: Resource not found
+    500ServerError:
+      description: Internal Server Error
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: Internal Server Error
+  parameters:
+    backup_uuid:
+      name: backup_uuid
+      in: path
+      required: true
+      description: UUID of the backup
+      schema:
+       $ref: '#/components/schemas/backup_uuid'
+    cancel:
+      name: cancel
+      in: query
+      description: Whether to cancel upload or not
+      schema:
+        $ref: '#/components/schemas/cancel'
+    config_uuid:
+      name: config_uuid
+      in: path
+      required: true
+      description: UUID of the config
+      schema:
+       $ref: '#/components/schemas/config_uuid'
+    device_uuid:
+      name: device_uuid
+      in: path
+      required: true
+      description: UUID of the device
+      schema:
+       $ref: '#/components/schemas/device_uuid'
+    filter_attribute:
+      name: filter_attribute
+      in: query
+      description: Attribute on which we want to filter the query
+      schema:
+        $ref: '#/components/schemas/filter_attribute'
+    filter_type:
+      name: filter_type
+      in: query
+      description: Type of filter to use
+      schema:
+        $ref: '#/components/schemas/filter_type'
+    filter_value:
+      name: filter_value
+      in: query
+      description: Value of the filter
+      schema:
+        $ref: '#/components/schemas/filter_value'
+    inventory_uuid:
+      name: inventory_uuid
+      in: path
+      required: true
+      description: UUID of the inventory
+      schema:
+       $ref: '#/components/schemas/inventory_uuid'
+    order_by_attribute:
+      name: order_by_attribute
+      in: query
+      description: Attribute on which we want to order the query
+      schema:
+        $ref: '#/components/schemas/order_by_attribute'
+    order_by_direction:
+      name: order_by_direction
+      in: query
+      description: Direction with which the query will ve returned
+      schema:
+        $ref: '#/components/schemas/order_by_direction'
+    page_number:
+      name: page_number
+      in: query
+      description: Page number
+      schema:
+        type: integer
+    page_size:
+      name: page_size
+      in: query
+      description: Number of objects returned
+      schema:
+        type: integer
+    recursive:
+      name: recursive
+      in: query
+      description: Whether to recursively iterate over the path
+      schema:
+        $ref: '#/components/schemas/recursive'
+    report_uuid:
+      name: report_uuid
+      in: path
+      required: true
+      description: UUID of the report
+      schema:
+       $ref: '#/components/schemas/report_uuid'
+    task_uuid:
+      name: task_uuid
+      in: path
+      required: true
+      description: UUID of the task
+      schema:
+       $ref: '#/components/schemas/task_uuid'
+tags:
+  - name: backups
+    description: Everything about backups
+  - name: configs
+    description: Everything about configs
+  - name: devices
+    description: Everything about devices
+  - name: easyucs
+    description: Everything about EasyUCS
+  - name: inventories
+    description: Everything about inventories
+  - name: reports
+    description: Everything about reports
+  - name: tasks
+    description: Everything about tasks
+paths:
+  '/backups':
+    get:
+      tags:
+        - backups
+      summary: Get all backups
+      description: Returns a list containing all backups in EasyUCS. The list supports paging.
+      parameters:
+        - $ref: '#/components/parameters/filter_attribute'
+        - $ref: '#/components/parameters/filter_type'
+        - $ref: '#/components/parameters/filter_value'
+        - $ref: '#/components/parameters/order_by_attribute'
+        - $ref: '#/components/parameters/order_by_direction'
+        - $ref: '#/components/parameters/page_size'
+        - $ref: '#/components/parameters/page_number'
+      responses:
+        '200':
+          description: A list of backups
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  backups:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/backup_get'
+                additionalProperties: false
+        '400':
+          $ref: '#/components/responses/400ClientError'
+        '500':
+          $ref: '#/components/responses/500ServerError'
+  '/configs':
+    get:
+      tags:
+        - configs
+      summary: Get all configs
+      description: Returns a list containing all configs in EasyUCS. The list supports paging.
+      parameters:
+        - $ref: '#/components/parameters/filter_attribute'
+        - $ref: '#/components/parameters/filter_type'
+        - $ref: '#/components/parameters/filter_value'
+        - $ref: '#/components/parameters/order_by_attribute'
+        - $ref: '#/components/parameters/order_by_direction'
+        - $ref: '#/components/parameters/page_size'
+        - $ref: '#/components/parameters/page_number'
+      responses:
+        '200':
+          description: A list of configs
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  configs:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/config_get'
+                additionalProperties: false
+        '400':
+          $ref: '#/components/responses/400ClientError'
+        '500':
+          $ref: '#/components/responses/500ServerError'
+  '/devices':
+    get:
+      tags:
+        - devices
+      summary: Get all devices
+      description: Returns a list containing all devices in EasyUCS. The list supports paging.
+      parameters:
+        - $ref: '#/components/parameters/filter_attribute'
+        - $ref: '#/components/parameters/filter_type'
+        - $ref: '#/components/parameters/filter_value'
+        - $ref: '#/components/parameters/order_by_attribute'
+        - $ref: '#/components/parameters/order_by_direction'
+        - $ref: '#/components/parameters/page_size'
+        - $ref: '#/components/parameters/page_number'
+      responses:
+        '200':
+          description: A list of devices
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  devices:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/device_get'
+                additionalProperties: false
+        '400':
+          $ref: '#/components/responses/400ClientError'
+        '500':
+          $ref: '#/components/responses/500ServerError'
+    post:
+      tags:
+        - devices
+      summary: Create a new device
+      description: Creates a new device in EasyUCS.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: '#/components/schemas/device_post_user_password'
+                - $ref: '#/components/schemas/device_post_private_key'
+      responses:
+        '200':
+          description: New device succesfully created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  device:
+                    $ref: '#/components/schemas/device_get'
+                additionalProperties: false
+        '400':
+          $ref: '#/components/responses/400ClientError'
+        '500':
+          $ref: '#/components/responses/500ServerError'
+  '/inventories':
+    get:
+      tags:
+        - inventories
+      summary: Get all inventories
+      description: Returns a list containing all inventories in EasyUCS. The list supports paging.
+      parameters:
+        - $ref: '#/components/parameters/filter_attribute'
+        - $ref: '#/components/parameters/filter_type'
+        - $ref: '#/components/parameters/filter_value'
+        - $ref: '#/components/parameters/order_by_attribute'
+        - $ref: '#/components/parameters/order_by_direction'
+        - $ref: '#/components/parameters/page_size'
+        - $ref: '#/components/parameters/page_number'
+      responses:
+        '200':
+          description: A list of inventories
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  inventories:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/inventory_get'
+                additionalProperties: false
+        '400':
+          $ref: '#/components/responses/400ClientError'
+        '500':
+          $ref: '#/components/responses/500ServerError'
+  '/reports':
+    get:
+      tags:
+        - reports
+      summary: Get all reports
+      description: Returns a list containing all reports in EasyUCS. The list supports paging.
+      parameters:
+        - $ref: '#/components/parameters/filter_attribute'
+        - $ref: '#/components/parameters/filter_type'
+        - $ref: '#/components/parameters/filter_value'
+        - $ref: '#/components/parameters/order_by_attribute'
+        - $ref: '#/components/parameters/order_by_direction'
+        - $ref: '#/components/parameters/page_size'
+        - $ref: '#/components/parameters/page_number'
+      responses:
+        '200':
+          description: A list of reports
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  reports:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/report_get'
+                additionalProperties: false
+        '400':
+          $ref: '#/components/responses/400ClientError'
+        '500':
+          $ref: '#/components/responses/500ServerError'
+  '/devices/types':
+    get:
+      tags:
+        - devices
+      summary: Get the list of all device types and their available actions
+      description: Returns the list of all device types in EasyUCS and their available actions
+      responses:
+        '200':
+          description: A list of device types and their available actions
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  types:
+                    $ref: '#/components/schemas/devices_types_get'
+                additionalProperties: false
+        '400':
+          $ref: '#/components/responses/400ClientError'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+        '500':
+          $ref: '#/components/responses/500ServerError'
+  '/devices/actions/claim_to_intersight':
+    post:
+      tags:
+        - devices
+      summary: Claims a list of devices to Intersight
+      description: Claims a list of devices to Intersight in EasyUCS.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/devices_actions_claim_to_intersight_post'
+      responses:
+        '200':
+          description: A list of task UUIDs
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  tasks:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/task_uuid'
+                additionalProperties: false
+        '400':
+          $ref: '#/components/responses/400ClientError'
+        '500':
+          $ref: '#/components/responses/500ServerError'
+  '/devices/actions/delete':
+    post:
+      tags:
+        - devices
+      summary: Deletes a list of devices
+      description: Deletes a list of devices in EasyUCS.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/devices_actions_delete_post'
+      responses:
+        '200':
+          description: Devices successfully deleted
+        '400':
+          $ref: '#/components/responses/400ClientError'
+        '500':
+          $ref: '#/components/responses/500ServerError'
+  '/devices/{device_uuid}':
+    get:
+      tags:
+        - devices
+      summary: Get a specific device
+      description: Returns a specific device in EasyUCS
+      parameters:
+        - $ref: '#/components/parameters/device_uuid'
+      responses:
+        '200':
+          description: A device
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  device:
+                    $ref: '#/components/schemas/device_get'
+        '400':
+          $ref: '#/components/responses/400ClientError'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+        '500':
+          $ref: '#/components/responses/500ServerError'
+    delete:
+      tags:
+        - devices
+      summary: Delete a device
+      description: Deletes a device from EasyUCS
+      parameters:
+        - name: device_uuid
+          in: path
+          required: true
+          description: UUID of the device to delete
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Device deleted
+        '400':
+          $ref: '#/components/responses/400ClientError'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+        '500':
+          $ref: '#/components/responses/500ServerError'
+    put:
+      tags:
+        - devices
+      summary: Modify a device
+      description: Modifies a device in EasyUCS
+      parameters:
+        - name: device_uuid
+          in: path
+          required: true
+          description: UUID of the device to modify
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: '#/components/schemas/device_put_user_password'
+                - $ref: '#/components/schemas/device_put_private_key'
+      responses:
+        '200':
+          description: Device modified
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  device:
+                    $ref: '#/components/schemas/device_get'
+        '400':
+          $ref: '#/components/responses/400ClientError'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+        '500':
+          $ref: '#/components/responses/500ServerError'
+  '/devices/{device_uuid}/actions':
+    get:
+      tags:
+        - devices
+      summary: Get the list of actions for a device
+      description: Returns the list of actions for a given device in EasyUCS
+      parameters:
+        - $ref: '#/components/parameters/device_uuid'
+      responses:
+        '200':
+          description: A list of device actions
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  actions:
+                    $ref: '#/components/schemas/actions_device_get'
+                additionalProperties: false
+        '400':
+          $ref: '#/components/responses/400ClientError'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+        '500':
+          $ref: '#/components/responses/500ServerError'
+  '/devices/{device_uuid}/actions/claim_to_intersight':
+    post:
+      tags:
+        - devices
+      summary: Claims device to Intersight
+      description: Claims device to a given Intersight instance
+      parameters:
+        - $ref: '#/components/parameters/device_uuid'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/device_claim_to_intersight_post'
+      responses:
+        '200':
+          description: The corresponding task to follow progress
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  task:
+                    $ref: '#/components/schemas/task_uuid'
+                additionalProperties: false
+        '400':
+          $ref: '#/components/responses/400ClientError'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+        '500':
+          $ref: '#/components/responses/500ServerError'
+  '/devices/{device_uuid}/actions/clear_intersight_claim_status':
+    post:
+      tags:
+        - devices
+      summary: Clears Intersight Claim Status of given UCS device
+      description: Clears Intersight Claim Status of given UCS device
+      parameters:
+        - $ref: '#/components/parameters/device_uuid'
+      responses:
+        '200':
+          description: The corresponding task to follow progress
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  task:
+                    $ref: '#/components/schemas/task_uuid'
+                additionalProperties: false
+        '400':
+          $ref: '#/components/responses/400ClientError'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+        '500':
+          $ref: '#/components/responses/500ServerError'
+  '/devices/{device_uuid}/actions/clear_sel_logs':
+    post:
+      tags:
+        - devices
+      summary: Clears SEL logs of given UCS device
+      description: Clears SEL logs of given UCS device
+      parameters:
+        - $ref: '#/components/parameters/device_uuid'
+      responses:
+        '200':
+          description: The corresponding task to follow progress
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  task:
+                    $ref: '#/components/schemas/task_uuid'
+                additionalProperties: false
+        '400':
+          $ref: '#/components/responses/400ClientError'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+        '500':
+          $ref: '#/components/responses/500ServerError'
+  '/devices/{device_uuid}/actions/fetch_config_and_inventory':
+    post:
+      tags:
+        - configs
+        - inventories
+        - devices
+      summary: Fetch a config and inventory from a device
+      description: Fetches a config and inventory from a given device in EasyUCS
+      parameters:
+        - $ref: '#/components/parameters/device_uuid'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/fetch'
+      responses:
+        '200':
+          description: The corresponding task to follow progress
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  task:
+                    $ref: '#/components/schemas/task_uuid'
+                additionalProperties: false
+        '400':
+          $ref: '#/components/responses/400ClientError'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+        '500':
+          $ref: '#/components/responses/500ServerError'
+  '/devices/{device_uuid}/actions/send_feedback':
+    post:
+      tags:
+        - devices
+      summary: Sends a feedback to Intersight
+      description: Sends the feedback to the Intersight
+      parameters:
+        - $ref: '#/components/parameters/device_uuid'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/device_send_feedback_post'
+      responses:
+        '200':
+          description: Feedback sent
+        '400':
+          $ref: '#/components/responses/400ClientError'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+        '500':
+          $ref: '#/components/responses/500ServerError'
+  '/devices/{device_uuid}/actions/test_connection':
+    post:
+      tags:
+        - devices
+      summary: Test the connection to the device
+      description: Test the connection to the device
+      parameters:
+        - $ref: '#/components/parameters/device_uuid'
+      responses:
+        '200':
+          description: The corresponding task to follow progress
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  task:
+                    $ref: '#/components/schemas/task_uuid'
+                additionalProperties: false
+        '400':
+          $ref: '#/components/responses/400ClientError'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+        '500':
+          $ref: '#/components/responses/500ServerError'
+  '/devices/{device_uuid}/backups':
+    get:
+      tags:
+        - backups
+      summary: Get backups for a specific device
+      description: Returns a list of backups for a specific device in EasyUCS
+      parameters:
+        - $ref: '#/components/parameters/device_uuid'
+        - $ref: '#/components/parameters/filter_attribute'
+        - $ref: '#/components/parameters/filter_type'
+        - $ref: '#/components/parameters/filter_value'
+        - $ref: '#/components/parameters/order_by_attribute'
+        - $ref: '#/components/parameters/order_by_direction'
+        - $ref: '#/components/parameters/page_size'
+        - $ref: '#/components/parameters/page_number'
+      responses:
+        '200':
+          description: A list of backups of the requested device
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  backups:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/backup_get'
+                additionalProperties: false
+        '400':
+          $ref: '#/components/responses/400ClientError'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+        '500':
+          $ref: '#/components/responses/500ServerError'
+  '/devices/{device_uuid}/backups/actions':
+    get:
+      tags:
+        - backups
+      summary: Get the list of backup actions for a device
+      description: Returns the list of backup actions for a given device in EasyUCS
+      parameters:
+        - $ref: '#/components/parameters/device_uuid'
+      responses:
+        '200':
+          description: A list of backup actions
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  actions:
+                    $ref: '#/components/schemas/actions_get'
+                additionalProperties: false
+        '400':
+          $ref: '#/components/responses/400ClientError'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+        '500':
+          $ref: '#/components/responses/500ServerError'
+  '/devices/{device_uuid}/backups/actions/delete':
+    post:
+      tags:
+        - backups
+      summary: Deletes a list of backups from a device
+      description: Deletes a list of backups from a device in EasyUCS.
+      parameters:
+        - $ref: '#/components/parameters/device_uuid'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/backup_delete_post'
+      responses:
+        '200':
+          description: Backups successfully deleted
+        '400':
+          $ref: '#/components/responses/400ClientError'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+        '500':
+          $ref: '#/components/responses/500ServerError'
+  '/devices/{device_uuid}/backups/actions/fetch':
+    post:
+      tags:
+        - backups
+      summary: Fetch a backup from a device
+      description: Fetches a backup from a given device in EasyUCS
+      parameters:
+        - $ref: '#/components/parameters/device_uuid'
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/backup_fetch_post'
+      responses:
+        '200':
+          description: The corresponding task to follow progress
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  task:
+                    $ref: '#/components/schemas/task_uuid'
+                additionalProperties: false
+        '400':
+          $ref: '#/components/responses/400ClientError'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+        '500':
+          $ref: '#/components/responses/500ServerError'
+  '/devices/{device_uuid}/backups/{backup_uuid}':
+    get:
+      tags:
+        - backups
+      summary: Get a specific backup for a device
+      description: Returns a specific backup for a given device in EasyUCS
+      parameters:
+        - $ref: '#/components/parameters/device_uuid'
+        - $ref: '#/components/parameters/backup_uuid'
+      responses:
+        '200':
+          description: A backup
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  backup:
+                    $ref: '#/components/schemas/backup_get'
+                additionalProperties: false
+        '400':
+          $ref: '#/components/responses/400ClientError'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+        '500':
+          $ref: '#/components/responses/500ServerError'
+    delete:
+      tags:
+        - backups
+      summary: Delete a backup from a device
+      description: Deletes a backup from EasyUCS
+      parameters:
+        - $ref: '#/components/parameters/device_uuid'
+        - $ref: '#/components/parameters/backup_uuid'
+      responses:
+        '200':
+          description: backup deleted
+        '400':
+          $ref: '#/components/responses/400ClientError'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+        '500':
+          $ref: '#/components/responses/500ServerError'
+  '/devices/{device_uuid}/backups/{backup_uuid}/actions':
+    get:
+      tags:
+        - backups
+      summary: Get the list of backup actions for a specific backup of a device
+      description: Returns the list of backup actions for a given backup of a given device in EasyUCS
+      parameters:
+        - $ref: '#/components/parameters/device_uuid'
+        - $ref: '#/components/parameters/backup_uuid'
+      responses:
+        '200':
+          description: A list of backup actions
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  actions:
+                    $ref: '#/components/schemas/actions_backup_get'
+                additionalProperties: false
+        '400':
+          $ref: '#/components/responses/400ClientError'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+        '500':
+          $ref: '#/components/responses/500ServerError'
+  '/devices/{device_uuid}/backups/{backup_uuid}/actions/download':
+    get:
+      tags:
+        - backups
+      summary: Download a backup of a device
+      description: Downloads a backup of a given device in EasyUCS
+      parameters:
+        - $ref: '#/components/parameters/device_uuid'
+        - $ref: '#/components/parameters/backup_uuid'
+      responses:
+        '200':
+          description: The corresponding file
+          content:
+            application/json:
+              schema:
+                type: string
+                format: binary
+        '400':
+          $ref: '#/components/responses/400ClientError'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+        '500':
+          $ref: '#/components/responses/500ServerError'
+  '/devices/{device_uuid}/configs':
+    get:
+      tags:
+        - configs
+      summary: Get configs for a specific device
+      description: Returns a list of configs for a specific device in EasyUCS
+      parameters:
+        - $ref: '#/components/parameters/device_uuid'
+        - $ref: '#/components/parameters/filter_attribute'
+        - $ref: '#/components/parameters/filter_type'
+        - $ref: '#/components/parameters/filter_value'
+        - $ref: '#/components/parameters/order_by_attribute'
+        - $ref: '#/components/parameters/order_by_direction'
+        - $ref: '#/components/parameters/page_size'
+        - $ref: '#/components/parameters/page_number'
+      responses:
+        '200':
+          description: A list of configs of the requested device
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  configs:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/config_get'
+                additionalProperties: false
+        '400':
+          $ref: '#/components/responses/400ClientError'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+        '500':
+          $ref: '#/components/responses/500ServerError'
+    post:
+      tags:
+        - configs
+      summary: Create a new config for a specific device
+      description: Creates a new config for a specific device in EasyUCS
+      parameters:
+        - $ref: '#/components/parameters/device_uuid'
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                config_file:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: New config successfully created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  config:
+                    $ref: '#/components/schemas/config_get'
+                additionalProperties: false
+        '400':
+          $ref: '#/components/responses/400ClientError'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+        '500':
+          $ref: '#/components/responses/500ServerError'
+  '/devices/{device_uuid}/configs/actions':
+    get:
+      tags:
+        - configs
+      summary: Get the list of config actions for a device
+      description: Returns the list of config actions for a given device in EasyUCS
+      parameters:
+        - $ref: '#/components/parameters/device_uuid'
+      responses:
+        '200':
+          description: A list of config actions
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  actions:
+                    $ref: '#/components/schemas/actions_get'
+                additionalProperties: false
+        '400':
+          $ref: '#/components/responses/400ClientError'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+        '500':
+          $ref: '#/components/responses/500ServerError'
+  '/devices/{device_uuid}/configs/actions/delete':
+    post:
+      tags:
+        - configs
+      summary: Deletes a list of configs from a device
+      description: Deletes a list of configs from a device in EasyUCS.
+      parameters:
+        - $ref: '#/components/parameters/device_uuid'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/config_delete_post'
+      responses:
+        '200':
+          description: Configs successfully deleted
+        '400':
+          $ref: '#/components/responses/400ClientError'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+        '500':
+          $ref: '#/components/responses/500ServerError'
+  '/devices/{device_uuid}/configs/actions/fetch':
+    post:
+      tags:
+        - configs
+      summary: Fetch a config from a device
+      description: Fetches a config from a given device in EasyUCS
+      parameters:
+        - $ref: '#/components/parameters/device_uuid'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/fetch'
+      responses:
+        '200':
+          description: The corresponding task to follow progress
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  task:
+                    $ref: '#/components/schemas/task_uuid'
+                additionalProperties: false
+        '400':
+          $ref: '#/components/responses/400ClientError'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+        '500':
+          $ref: '#/components/responses/500ServerError'
+  '/devices/{device_uuid}/configs/{config_uuid}':
+    get:
+      tags:
+        - configs
+      summary: Get a specific config for a device
+      description: Returns a specific config for a given device in EasyUCS
+      parameters:
+        - $ref: '#/components/parameters/device_uuid'
+        - $ref: '#/components/parameters/config_uuid'
+      responses:
+        '200':
+          description: A config
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  config:
+                    $ref: '#/components/schemas/config_get'
+                additionalProperties: false
+        '400':
+          $ref: '#/components/responses/400ClientError'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+        '500':
+          $ref: '#/components/responses/500ServerError'
+    delete:
+      tags:
+        - configs
+      summary: Delete a config from a device
+      description: Deletes a config from EasyUCS
+      parameters:
+        - $ref: '#/components/parameters/device_uuid'
+        - $ref: '#/components/parameters/config_uuid'
+      responses:
+        '200':
+          description: Config deleted
+        '400':
+          $ref: '#/components/responses/400ClientError'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+        '500':
+          $ref: '#/components/responses/500ServerError'
+  '/devices/{device_uuid}/configs/{config_uuid}/actions':
+    get:
+      tags:
+        - configs
+      summary: Get the list of config actions for a specific config of a device
+      description: Returns the list of config actions for a given config of a given device in EasyUCS
+      parameters:
+        - $ref: '#/components/parameters/device_uuid'
+        - $ref: '#/components/parameters/config_uuid'
+      responses:
+        '200':
+          description: A list of config actions
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  actions:
+                    $ref: '#/components/schemas/actions_config_get'
+                additionalProperties: false
+        '400':
+          $ref: '#/components/responses/400ClientError'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+        '500':
+          $ref: '#/components/responses/500ServerError'
+  '/devices/{device_uuid}/configs/{config_uuid}/profiles':
+    get:
+      tags:
+        - configs
+      summary: Get all the service profiles
+      description: Get all the service profiles in hierarchical structure
+      parameters:
+        - $ref: '#/components/parameters/device_uuid'
+        - $ref: '#/components/parameters/config_uuid'
+      responses:
+        '200':
+          description: All the service profiles
+        '400':
+          $ref: '#/components/responses/400ClientError'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+        '500':
+          $ref: '#/components/responses/500ServerError'
+  '/devices/{device_uuid}/configs/{config_uuid}/actions/download':
+    get:
+      tags:
+        - configs
+      summary: Download a config of a device
+      description: Downloads a config of a given device in EasyUCS
+      parameters:
+        - $ref: '#/components/parameters/device_uuid'
+        - $ref: '#/components/parameters/config_uuid'
+      responses:
+        '200':
+          description: The corresponding file
+          content:
+            application/json:
+              schema:
+                type: string
+                format: binary
+        '400':
+          $ref: '#/components/responses/400ClientError'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+        '500':
+          $ref: '#/components/responses/500ServerError'
+  '/devices/{device_uuid}/configs/{config_uuid}/actions/push':
+    post:
+      tags:
+        - configs
+      summary: Push a config to a device
+      description: Pushes a config to a given device in EasyUCS
+      parameters:
+        - $ref: '#/components/parameters/device_uuid'
+        - $ref: '#/components/parameters/config_uuid'
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/config_push_post'
+      responses:
+        '200':
+          description: The corresponding task to follow progress
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  task:
+                    $ref: '#/components/schemas/task_uuid'
+                additionalProperties: false
+        '400':
+          $ref: '#/components/responses/400ClientError'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+        '500':
+          $ref: '#/components/responses/500ServerError'
+  '/devices/{device_uuid}/inventories':
+    get:
+      tags:
+        - inventories
+      summary: Get inventories for a specific device
+      description: Returns a list of inventories for a specific device in EasyUCS
+      parameters:
+        - $ref: '#/components/parameters/device_uuid'
+        - $ref: '#/components/parameters/filter_attribute'
+        - $ref: '#/components/parameters/filter_type'
+        - $ref: '#/components/parameters/filter_value'
+        - $ref: '#/components/parameters/order_by_attribute'
+        - $ref: '#/components/parameters/order_by_direction'
+        - $ref: '#/components/parameters/page_size'
+        - $ref: '#/components/parameters/page_number'
+      responses:
+        '200':
+          description: A list of inventories of the requested device
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  inventories:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/inventory_get'
+                additionalProperties: false
+        '400':
+          $ref: '#/components/responses/400ClientError'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+        '500':
+          $ref: '#/components/responses/500ServerError'
+    post:
+      tags:
+        - inventories
+      summary: Create a new inventory for a specific device
+      description: Creates a new inventory for a specific device in EasyUCS
+      parameters:
+        - $ref: '#/components/parameters/device_uuid'
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                inventory_file:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: New inventory succesfully created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  inventory:
+                    $ref: '#/components/schemas/inventory_get'
+                additionalProperties: false
+        '400':
+          $ref: '#/components/responses/400ClientError'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+        '500':
+          $ref: '#/components/responses/500ServerError'
+  '/devices/{device_uuid}/inventories/actions':
+    get:
+      tags:
+        - inventories
+      summary: Get the list of inventory actions for a device
+      description: Returns the list of inventory actions for a given device in EasyUCS
+      parameters:
+        - $ref: '#/components/parameters/device_uuid'
+      responses:
+        '200':
+          description: A list of inventory actions
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  actions:
+                    $ref: '#/components/schemas/actions_get'
+                additionalProperties: false
+        '400':
+          $ref: '#/components/responses/400ClientError'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+        '500':
+          $ref: '#/components/responses/500ServerError'
+  '/devices/{device_uuid}/inventories/actions/delete':
+    post:
+      tags:
+        - inventories
+      summary: Deletes a list of inventories from a device
+      description: Deletes a list of inventories from a device in EasyUCS.
+      parameters:
+        - $ref: '#/components/parameters/device_uuid'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/inventory_delete_post'
+      responses:
+        '200':
+          description: Inventories successfully deleted
+        '400':
+          $ref: '#/components/responses/400ClientError'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+        '500':
+          $ref: '#/components/responses/500ServerError'
+  '/devices/{device_uuid}/inventories/actions/fetch':
+    post:
+      tags:
+        - inventories
+      summary: Fetch an inventory from a device
+      description: Fetches an inventory from a given device in EasyUCS
+      parameters:
+        - $ref: '#/components/parameters/device_uuid'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/fetch'
+      responses:
+        '200':
+          description: The corresponding task to follow progress
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  task:
+                    $ref: '#/components/schemas/task_uuid'
+                additionalProperties: false
+        '400':
+          $ref: '#/components/responses/400ClientError'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+        '500':
+          $ref: '#/components/responses/500ServerError'
+  '/devices/{device_uuid}/inventories/{inventory_uuid}':
+    get:
+      tags:
+        - inventories
+      summary: Get a specific inventory for a device
+      description: Returns a specific inventory for a given device in EasyUCS
+      parameters:
+        - $ref: '#/components/parameters/device_uuid'
+        - $ref: '#/components/parameters/inventory_uuid'
+      responses:
+        '200':
+          description: An inventory
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  inventory:
+                    $ref: '#/components/schemas/inventory_get'
+                additionalProperties: false
+        '400':
+          $ref: '#/components/responses/400ClientError'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+        '500':
+          $ref: '#/components/responses/500ServerError'
+    delete:
+      tags:
+        - inventories
+      summary: Delete a inventory from a device
+      description: Deletes a inventory from EasyUCS
+      parameters:
+        - $ref: '#/components/parameters/device_uuid'
+        - $ref: '#/components/parameters/inventory_uuid'
+      responses:
+        '200':
+          description: inventory deleted
+        '400':
+          $ref: '#/components/responses/400ClientError'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+        '500':
+          $ref: '#/components/responses/500ServerError'
+  '/devices/{device_uuid}/inventories/{inventory_uuid}/actions':
+    get:
+      tags:
+        - inventories
+      summary: Get the list of inventory actions for a specific inventory of a device
+      description: Returns the list of inventory actions for a given inventory of a given device in EasyUCS
+      parameters:
+        - $ref: '#/components/parameters/device_uuid'
+        - $ref: '#/components/parameters/inventory_uuid'
+      responses:
+        '200':
+          description: A list of inventory actions
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  actions:
+                    $ref: '#/components/schemas/actions_inventory_get'
+                additionalProperties: false
+        '400':
+          $ref: '#/components/responses/400ClientError'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+        '500':
+          $ref: '#/components/responses/500ServerError'
+  '/devices/{device_uuid}/inventories/{inventory_uuid}/actions/download':
+    get:
+      tags:
+        - inventories
+      summary: Download an inventory of a device
+      description: Downloads an inventory of a given device in EasyUCS
+      parameters:
+        - $ref: '#/components/parameters/device_uuid'
+        - $ref: '#/components/parameters/inventory_uuid'
+      responses:
+        '200':
+          description: The corresponding file
+          content:
+            application/json:
+              schema:
+                type: string
+                format: binary
+        '400':
+          $ref: '#/components/responses/400ClientError'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+        '500':
+          $ref: '#/components/responses/500ServerError'
+  '/devices/{device_uuid}/logs':
+    get:
+      tags:
+        - devices
+      summary: Get the logs stored in the device's log buffer
+      description: Returns the logs stored in the log buffer of a given device in EasyUCS
+      parameters:
+        - $ref: '#/components/parameters/device_uuid'
+      responses:
+        '200':
+          description: A string of logs
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  logs:
+                    $ref: '#/components/schemas/device_logs_get'
+                additionalProperties: false
+        '400':
+          $ref: '#/components/responses/400ClientError'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+        '500':
+          $ref: '#/components/responses/500ServerError'
+  '/devices/{device_uuid}/orgs':
+    get:
+      tags:
+        - devices
+      summary: Get the orgs
+      description: Returns the orgs cached in the device metadata
+      parameters:
+        - $ref: '#/components/parameters/device_uuid'
+      responses:
+        '200':
+          description: A list of orgs
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  orgs:
+                    $ref: '#/components/schemas/cached_orgs'
+                additionalProperties: false
+        '400':
+          $ref: '#/components/responses/400ClientError'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+        '500':
+          $ref: '#/components/responses/500ServerError'
+  '/devices/{device_uuid}/reports':
+    get:
+      tags:
+        - reports
+      summary: Get reports for a specific device
+      description: Returns a list of reports for a specific device in EasyUCS
+      parameters:
+        - $ref: '#/components/parameters/device_uuid'
+        - $ref: '#/components/parameters/filter_attribute'
+        - $ref: '#/components/parameters/filter_type'
+        - $ref: '#/components/parameters/filter_value'
+        - $ref: '#/components/parameters/order_by_attribute'
+        - $ref: '#/components/parameters/order_by_direction'
+        - $ref: '#/components/parameters/page_size'
+        - $ref: '#/components/parameters/page_number'
+      responses:
+        '200':
+          description: A list of reports of the requested device
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  reports:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/report_get'
+                additionalProperties: false
+        '400':
+          $ref: '#/components/responses/400ClientError'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+        '500':
+          $ref: '#/components/responses/500ServerError'
+  '/devices/{device_uuid}/reports/actions':
+    get:
+      tags:
+        - reports
+      summary: Get the list of report actions for a device
+      description: Returns the list of report actions for a given device in EasyUCS
+      parameters:
+        - $ref: '#/components/parameters/device_uuid'
+      responses:
+        '200':
+          description: A list of report actions
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  actions:
+                    $ref: '#/components/schemas/actions_report_get'
+                additionalProperties: false
+        '400':
+          $ref: '#/components/responses/400ClientError'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+        '500':
+          $ref: '#/components/responses/500ServerError'
+  '/devices/{device_uuid}/reports/actions/delete':
+    post:
+      tags:
+        - reports
+      summary: Deletes a list of reports from a device
+      description: Deletes a list of reports from a device in EasyUCS.
+      parameters:
+        - $ref: '#/components/parameters/device_uuid'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/report_delete_post'
+      responses:
+        '200':
+          description: Reports successfully deleted
+        '400':
+          $ref: '#/components/responses/400ClientError'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+        '500':
+          $ref: '#/components/responses/500ServerError'
+  '/devices/{device_uuid}/reports/actions/generate':
+    post:
+      tags:
+        - reports
+      summary: Generate a report from a device
+      description: Generates one or more report(s) from a given device in EasyUCS
+      parameters:
+        - $ref: '#/components/parameters/device_uuid'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/report_generate_post'
+      responses:
+        '200':
+          description: The corresponding task to follow progress
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  task:
+                    $ref: '#/components/schemas/task_uuid'
+                additionalProperties: false
+        '400':
+          $ref: '#/components/responses/400ClientError'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+        '500':
+          $ref: '#/components/responses/500ServerError'
+  '/devices/{device_uuid}/reports/{report_uuid}':
+    get:
+      tags:
+        - reports
+      summary: Get a specific report for a device
+      description: Returns a specific report for a given device in EasyUCS
+      parameters:
+        - $ref: '#/components/parameters/device_uuid'
+        - $ref: '#/components/parameters/report_uuid'
+      responses:
+        '200':
+          description: A report
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  report:
+                    $ref: '#/components/schemas/report_get'
+                additionalProperties: false
+        '400':
+          $ref: '#/components/responses/400ClientError'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+        '500':
+          $ref: '#/components/responses/500ServerError'
+    delete:
+      tags:
+        - reports
+      summary: Delete a report from a device
+      description: Deletes a report from EasyUCS
+      parameters:
+        - $ref: '#/components/parameters/device_uuid'
+        - $ref: '#/components/parameters/report_uuid'
+      responses:
+        '200':
+          description: Report deleted
+        '400':
+          $ref: '#/components/responses/400ClientError'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+        '500':
+          $ref: '#/components/responses/500ServerError'
+  '/devices/{device_uuid}/reports/{report_uuid}/actions':
+    get:
+      tags:
+        - reports
+      summary: Get the list of report actions for a specific report of a device
+      description: Returns the list of report actions for a given report of a given device in EasyUCS
+      parameters:
+        - $ref: '#/components/parameters/device_uuid'
+        - $ref: '#/components/parameters/report_uuid'
+      responses:
+        '200':
+          description: A list of report actions
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  actions:
+                    $ref: '#/components/schemas/actions_report_get'
+                additionalProperties: false
+        '400':
+          $ref: '#/components/responses/400ClientError'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+        '500':
+          $ref: '#/components/responses/500ServerError'
+  '/devices/{device_uuid}/reports/{report_uuid}/actions/download':
+    get:
+      tags:
+        - reports
+      summary: Download a report of a device
+      description: Downloads a report of a given device in EasyUCS
+      parameters:
+        - $ref: '#/components/parameters/device_uuid'
+        - $ref: '#/components/parameters/report_uuid'
+      responses:
+        '200':
+          description: The corresponding file
+          content:
+            application/vnd.openxmlformats-officedocument.wordprocessingml.document:
+              schema:
+                type: string
+                format: binary
+        '400':
+          $ref: '#/components/responses/400ClientError'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+        '500':
+          $ref: '#/components/responses/500ServerError'
+  "/easyucs/backup/actions/download":
+    post:
+      tags:
+        - easyucs
+      summary: Download encrypted backup file
+      description: Downloads the encrypted backup tar file'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/easyucs_backup_download_post'
+      responses:
+        '200':
+          description: The corresponding backup tar file
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        '400':
+          $ref: '#/components/responses/400ClientError'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+        '500':
+          $ref: '#/components/responses/500ServerError'
+  "/easyucs/backup/actions/restore":
+    post:
+      tags:
+        - easyucs
+      summary: Restores a backup
+      description: Restores all the configurations from a backup file
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: "#/components/schemas/easyucs_backup_restore_post"
+      responses:
+        '200':
+          description: Restoring from backup file completed
+        '400':
+          $ref: '#/components/responses/400ClientError'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+        '500':
+          $ref: '#/components/responses/500ServerError'
+  "/easyucs/settings":
+    get:
+      tags:
+        - easyucs
+      summary: Get the settings
+      description: Returns the settings
+      responses:
+        '200':
+          description: Settings
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  settings:
+                    "$ref": "#/components/schemas/easyucs_settings_put"
+        '400':
+          "$ref": "#/components/responses/400ClientError"
+        '404':
+          "$ref": "#/components/responses/404NotFound"
+        '500':
+          "$ref": "#/components/responses/500ServerError"
+    put:
+      tags:
+        - easyucs
+      summary: Modify the settings
+      description: Modifies the settings
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/easyucs_settings_put"
+      responses:
+        '200':
+          description: Settings modified
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  settings:
+                    "$ref": "#/components/schemas/easyucs_settings_put"
+        '400':
+          "$ref": "#/components/responses/400ClientError"
+        '404':
+          "$ref": "#/components/responses/404NotFound"
+        '500':
+          "$ref": "#/components/responses/500ServerError"
+  '/tasks':
+    get:
+      tags:
+        - tasks
+      summary: Get all tasks
+      description: Returns a list containing all tasks in EasyUCS. The list supports paging.
+      parameters:
+        - $ref: '#/components/parameters/filter_attribute'
+        - $ref: '#/components/parameters/filter_type'
+        - $ref: '#/components/parameters/filter_value'
+        - $ref: '#/components/parameters/order_by_attribute'
+        - $ref: '#/components/parameters/order_by_direction'
+        - $ref: '#/components/parameters/page_size'
+        - $ref: '#/components/parameters/page_number'
+      responses:
+        '200':
+          description: A list of tasks
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  tasks:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/task_get'
+                additionalProperties: false
+        '400':
+          $ref: '#/components/responses/400ClientError'
+        '500':
+          $ref: '#/components/responses/500ServerError'
+  '/tasks/{task_uuid}':
+    get:
+      tags:
+        - tasks
+      summary: Get a specific task
+      description: Returns a specific task in EasyUCS
+      parameters:
+        - $ref: '#/components/parameters/task_uuid'
+      responses:
+        '200':
+          description: A task
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/task_detail_get'
+        '400':
+          $ref: '#/components/responses/400ClientError'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+        '500':
+          $ref: '#/components/responses/500ServerError'
+  '/tasks/{task_uuid}/actions':
+    get:
+      tags:
+        - tasks
+      summary: Get the list of tasks actions
+      description: Returns the list of task actions in EasyUCS
+      parameters:
+        - $ref: '#/components/parameters/task_uuid'
+      responses:
+        '200':
+          description: A list of task actions
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  actions:
+                    $ref: '#/components/schemas/actions_task_get'
+                additionalProperties: false
+        '400':
+          $ref: '#/components/responses/400ClientError'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+        '500':
+          $ref: '#/components/responses/500ServerError'
+  '/tasks/{task_uuid}/actions/cancel':
+    post:
+      tags:
+        - tasks
+      summary: Cancels a specific task
+      description: Cancels a specific task in EasyUCS
+      parameters:
+        - $ref: '#/components/parameters/task_uuid'
+      responses:
+        '200':
+          description: Task is cancelled
+        '400':
+          $ref: '#/components/responses/400ClientError'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+        '500':
+          $ref: '#/components/responses/500ServerError'

@@ -1,0 +1,44 @@
+{% extends "/html/base.html" %}
+{% block css %}
+<link rel="stylesheet" href="/static/plugins/jsoneditor/jsoneditor.min.css">
+{% endblock %}
+{% block content %}
+<div class="content-header">
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-sm-10 col-md-8">
+        <div id="objectDisplayContainer"></div>
+      </div>
+      <!-- /.col -->
+      <div class="col-sm-2 col-md-4">
+        <ol class="breadcrumb float-sm-right">
+          <li class="breadcrumb-item"><a href="/">Home</a></li>
+          <li class="breadcrumb-item"><a id="parent_device_breadcrumb_link"></a></li>
+          <li class="breadcrumb-item active">{{object_type}}</li>
+        </ol>
+      </div>
+      <!-- /.col -->
+    </div>
+  </div>
+</div>
+
+<section class="content">
+  <div class="container-fluid">
+    {% if object_type not in ["Report", "Backup"] %}
+    <div class = "row">
+      <div class = "col-md-12">
+        <div id = "json-display">
+        </div>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</section>
+
+{% endblock %}
+{% block javascript%}
+<script src="/static/plugins/jsoneditor/jsoneditor.min.js"></script>
+<!-- <script src="/static/plugins/jquery-json_viewer/jquery.json-editor.min.js"></script> -->
+<!-- Page-specific JS -->
+<script src="/static/js/object.js" crossorigin="anonymous"></script>
+{% endblock %}

@@ -73,7 +73,9 @@ class GenericUcsInventoryObject(GenericInventoryObject):
                 elif attribute_name in ucs_sdk_object.keys():
                     result = ucs_sdk_object[attribute_name]
                 else:
-                    if attribute_name not in ["usr_lbl"]:  # We don't log for those attributes
+                    if attribute_name not in ["usr_lbl"] and \
+                            (attribute_name not in ["raw_size"] and self._device.metadata.device_type in ["ucsc"]):
+                        # We don't log for those attributes
                         self.logger(level="debug",
                                     message="Attributes " + attribute_name + " or " + attribute_secondary_name +
                                             " do not exist in inventory file for object of class " +
@@ -139,7 +141,7 @@ class UcsSystemInventoryObject(GenericUcsInventoryObject):
 
     def _find_cap_provider(self):
         # We check if we already have fetched the list of catalog objects
-        if self._inventory.sdk_objects["catalog"] is not None and hasattr(self, "_UCS_SDK_CATALOG_OBJECT_NAME")\
+        if self._inventory.sdk_objects.get("catalog") is not None and hasattr(self, "_UCS_SDK_CATALOG_OBJECT_NAME") \
                 and hasattr(self, "model") and hasattr(self, "vendor") and hasattr(self, "revision"):
             # We return None if the "model" attribute is None as this probably indicates an improperly discovered object
             if self.model is None:
@@ -198,6 +200,10 @@ class UcsSystemInventoryObject(GenericUcsInventoryObject):
                     if hasattr(self, "model"):
                         if any(x in self.model for x in ["Lewisburg", "Patsburg", "Wellsburg"]):
                             return None
+
+                    # We also avoid logging in case this is a UCS Central device as there is no equipmentFruVariant
+                    if self._device.metadata.device_type in ["ucsc"]:
+                        return None
 
                     self.logger(
                         level="debug",
@@ -273,7 +279,8 @@ class UcsSystemInventoryObject(GenericUcsInventoryObject):
                                                         self._inventory.sdk_objects["firmwareStatus"] if self.dn +
                                                         "/fw-status" == firmware_status.dn]
                                 if (len(firmware_status_list)) == 1:
-                                    self.firmware_package_version =  firmware_status_list[0].package_version
+                                    if firmware_running_list[0].package_version != "":
+                                        self.firmware_package_version = firmware_status_list[0].package_version
                     return True
         return False
 
@@ -284,12 +291,12 @@ class UcsSystemInventoryObject(GenericUcsInventoryObject):
 
         # We fetch the object's name
         if hasattr(self._equipment_manufacturing_def, "name"):
-            if self._equipment_manufacturing_def.name != "":
+            if self._equipment_manufacturing_def.name not in ["", "N/A", "NA"]:
                 self.name = self._equipment_manufacturing_def.name
 
         # We fetch the object's part number
         if hasattr(self._equipment_manufacturing_def, "part_number"):
-            if self._equipment_manufacturing_def.part_number != "":
+            if self._equipment_manufacturing_def.part_number not in ["", "N/A", "NA"]:
                 self.part_number = self._equipment_manufacturing_def.part_number
 
         if self._equipment_fru_variant is not None:
@@ -302,9 +309,10 @@ class UcsSystemInventoryObject(GenericUcsInventoryObject):
             if hasattr(self._equipment_manufacturing_def, "sku"):
                 if self._equipment_manufacturing_def.sku not in ["", "N/A", "NA"]:
                     self.sku = self._equipment_manufacturing_def.sku
-            elif hasattr(self._equipment_manufacturing_def, "pid"):
-                if self._equipment_manufacturing_def.pid not in ["", "N/A", "NA"]:
-                    self.sku = self._equipment_manufacturing_def.pid
+            if self.sku is None:
+                if hasattr(self._equipment_manufacturing_def, "pid"):
+                    if self._equipment_manufacturing_def.pid not in ["", "N/A", "NA"]:
+                        self.sku = self._equipment_manufacturing_def.pid
 
         return True
 

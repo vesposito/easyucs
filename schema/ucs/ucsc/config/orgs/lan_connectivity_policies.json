@@ -1,0 +1,691 @@
+{
+   "id": "ucs_central_config_lan_connectivity_policies#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS ucs central config orgs lan_connectivity_policies section",
+   "description": "EasyUCS ucs central config orgs lan_connectivity_policies section JSON schema",
+   "type": "object",
+   "properties": {
+      "comment": {
+         "description": "LAN Connectivity Policy Comments",
+         "type": "string",
+         "default": ""
+      },
+      "name": {
+         "description": "LAN Connectivity Policy Name",
+         "type": "string",
+         "default": "",
+         "pattern": "^[\\-\\.:_a-zA-Z0-9]{1,16}$"
+      },
+      "descr": {
+         "description": "Description of LAN Connectivity Policy",
+         "type": "string",
+         "default": "",
+         "pattern": "^[ !#$%&\\(\\)\\*\\+,\\-\\./:;\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{0,256}$"
+      },
+      "vnics": {
+         "description": "LAN Connectivity Policy - vNICs",
+         "type": "array",
+         "items": {
+            "type": "object",
+            "oneOf": [
+               {
+                  "properties": {
+                     "name": {
+                        "description": "LAN Connectivity Policy - vNIC - Name",
+                        "type": "string",
+                        "default": "",
+                        "pattern": "^[\\-\\.:_a-zA-Z0-9]{1,16}$"
+                     },
+                     "adapter_policy": {
+                        "description": "LAN Connectivity Policy - vNIC - Adapter Policy",
+                        "type": "string",
+                        "default": "",
+                        "pattern": "^[\\-\\.:_a-zA-Z0-9]{0,16}$|^global-VMWarePassThru$"
+                     },
+                     "order": {
+                        "description": "LAN Connectivity Policy - vNIC - Order",
+                        "type": "string",
+                        "default": "0",
+                        "pattern": "^[0-9]$|^[1-9][0-9]$|^1[0-9][0-9]$|^2[0-4][0-9]$|^25[0-6]$|^unspecified$"
+                     },
+                     "vnic_template": {
+                        "description": "LAN Connectivity Policy - vNIC - Template",
+                        "type": "string",
+                        "default": "",
+                        "pattern": "^[\\-\\.:_a-zA-Z0-9]{0,16}$"
+                     },
+                     "redundancy_pair": {
+                        "description": "LAN Connectivity Policy - vNIC - Redundancy Pair",
+                        "type": "string",
+                        "default": "",
+                        "enum": [
+                           "none",
+                           "primary",
+                           "secondary"
+                        ]
+                     },
+                     "operational_state": {
+                        "description": "LAN Connectivity Policy - vNIC - Operational State of the vNIC",
+                        "type": "object",
+                        "properties": {
+                           "adapter_policy": {
+                              "description": "LAN Connectivity Policy - vNIC - Operational State - Adapter Policy",
+                              "type": "object",
+                              "properties": {
+                                 "name": {
+                                    "description": "LAN Connectivity Policy - vNIC - Operational State - Adapter Policy - Name",
+                                    "type": "string",
+                                    "default": ""
+                                 },
+                                 "org": {
+                                    "description": "LAN Connectivity Policy - vNIC - Operational State - Adapter Policy - Org",
+                                    "type": "string",
+                                    "default": ""
+                                 }
+                              },
+                              "additionalProperties": false,
+                              "required": [
+                                 "name",
+                                 "org"
+                              ]
+                           },
+                           "dynamic_vnic_connection_policy": {
+                              "description": "LAN Connectivity Policy - vNIC - Operational State - Dynamic vNIC Connection Policy",
+                              "type": "object",
+                              "properties": {
+                                 "name": {
+                                    "description": "LAN Connectivity Policy - vNIC - Operational State - Dynamic vNIC Connection Policy - Name",
+                                    "type": "string",
+                                    "default": ""
+                                 },
+                                 "org": {
+                                    "description": "LAN Connectivity Policy - vNIC - Operational State - Dynamic vNIC Connection Policy  - Org",
+                                    "type": "string",
+                                    "default": ""
+                                 }
+                              },
+                              "additionalProperties": false,
+                              "required": [
+                                 "name",
+                                 "org"
+                              ]
+                           },
+                           "usnic_connection_policy": {
+                              "description": "LAN Connectivity Policy - vNIC - Operational State - usNIC Connection Policy",
+                              "type": "object",
+                              "properties": {
+                                 "name": {
+                                    "description": "LAN Connectivity Policy - vNIC - Operational State - usNIC Connection Policy - Name",
+                                    "type": "string",
+                                    "default": ""
+                                 },
+                                 "org": {
+                                    "description": "LAN Connectivity Policy - vNIC - Operational State - usNIC Connection Policy  - Org",
+                                    "type": "string",
+                                    "default": ""
+                                 }
+                              },
+                              "additionalProperties": false,
+                              "required": [
+                                 "name",
+                                 "org"
+                              ]
+                           },
+                           "vmq_connection_policy": {
+                              "description": "LAN Connectivity Policy - vNIC - Operational State - VMQ Connection Policy",
+                              "type": "object",
+                              "properties": {
+                                 "name": {
+                                    "description": "LAN Connectivity Policy - vNIC - Operational State - VMQ Connection Policy - Name",
+                                    "type": "string",
+                                    "default": ""
+                                 },
+                                 "org": {
+                                    "description": "LAN Connectivity Policy - vNIC - Operational State - VMQ Connection Policy  - Org",
+                                    "type": "string",
+                                    "default": ""
+                                 }
+                              },
+                              "additionalProperties": false,
+                              "required": [
+                                 "name",
+                                 "org"
+                              ]
+                           },
+                           "network_control_policy": {
+                              "description": "LAN Connectivity Policy - vNIC - Operational State - Network Control Policy",
+                              "type": "object",
+                              "properties": {
+                                 "name": {
+                                    "description": "LAN Connectivity Policy - vNIC - Operational State - Network Control Policy - Name",
+                                    "type": "string",
+                                    "default": ""
+                                 },
+                                 "org": {
+                                    "description": "LAN Connectivity Policy - vNIC - Operational State - Network Control Policy - Org",
+                                    "type": "string",
+                                    "default": ""
+                                 }
+                              },
+                              "additionalProperties": false,
+                              "required": [
+                                 "name",
+                                 "org"
+                              ]
+                           },
+                           "qos_policy": {
+                              "description": "LAN Connectivity Policy - vNIC - Operational State - QoS Policy",
+                              "type": "object",
+                              "properties": {
+                                 "name": {
+                                    "description": "LAN Connectivity Policy - vNIC - Operational State - QoS Policy - Name",
+                                    "type": "string",
+                                    "default": ""
+                                 },
+                                 "org": {
+                                    "description": "LAN Connectivity Policy - vNIC - Operational State - QoS Policy - Org",
+                                    "type": "string",
+                                    "default": ""
+                                 }
+                              },
+                              "additionalProperties": false,
+                              "required": [
+                                 "name",
+                                 "org"
+                              ]
+                           },
+                           "stats_threshold_policy": {
+                              "description": "LAN Connectivity Policy - vNIC - Operational State - Stats Threshold Policy",
+                              "type": "object",
+                              "properties": {
+                                 "name": {
+                                    "description": "LAN Connectivity Policy - vNIC - Operational State - Stats Threshold Policy - Name",
+                                    "type": "string",
+                                    "default": ""
+                                 },
+                                 "org": {
+                                    "description": "LAN Connectivity Policy - vNIC - Operational State - Stats Threshold Policy - Org",
+                                    "type": "string",
+                                    "default": ""
+                                 }
+                              },
+                              "additionalProperties": false,
+                              "required": [
+                                 "name",
+                                 "org"
+                              ]
+                           },
+                           "vnic_template": {
+                              "description": "LAN Connectivity Policy - vNIC - Operational State - vNIC Template",
+                              "type": "object",
+                              "properties": {
+                                 "name": {
+                                    "description": "LAN Connectivity Policy - vNIC - Operational State - vNIC Template - Name",
+                                    "type": "string",
+                                    "default": ""
+                                 },
+                                 "org": {
+                                    "description": "LAN Connectivity Policy - vNIC - Operational State - vNIC Template - Org",
+                                    "type": "string",
+                                    "default": ""
+                                 }
+                              },
+                              "additionalProperties": false,
+                              "required": [
+                                 "name",
+                                 "org"
+                              ]
+                           }
+                        },
+                        "additionalProperties": false
+                     }
+                  },
+                  "additionalProperties": false,
+                  "required": [
+                     "name"
+                  ]
+               },
+               {
+                  "properties": {
+                     "name": {
+                        "description": "LAN Connectivity Policy - vNIC - Name",
+                        "type": "string",
+                        "default": "",
+                        "pattern": "^[\\-\\.:_a-zA-Z0-9]{1,16}$"
+                     },
+                     "adapter_policy": {
+                        "description": "LAN Connectivity Policy - vNIC - Adapter Policy",
+                        "type": "string",
+                        "default": "",
+                        "pattern": "^[\\-\\.:_a-zA-Z0-9]{0,16}$|^global-VMWarePassThru$"
+                     },
+                     "order": {
+                        "description": "LAN Connectivity Policy - vNIC - Order",
+                        "type": "string",
+                        "default": "0",
+                        "pattern": "^[0-9]$|^[1-9][0-9]$|^1[0-9][0-9]$|^2[0-4][0-9]$|^25[0-6]$|^unspecified$"
+                     },
+                     "fabric": {
+                        "description": "LAN Connectivity Policy - vNIC - Fabric",
+                        "type": "string",
+                        "default": "A",
+                        "enum": [
+                           "A",
+                           "A-B",
+                           "B",
+                           "B-A"
+                        ]
+                     },
+                     "mac_address_pool": {
+                        "description": "LAN Connectivity Policy - vNIC - MAC Address Pool",
+                        "type": "string",
+                        "default": ""
+                     },
+                     "mac_address": {
+                        "description": "LAN Connectivity Policy - vNIC - MAC Address",
+                        "type": "string",
+                        "enum": [
+                           "hardware-default"
+                        ]
+                     },
+                     "mtu": {
+                        "description": "LAN Connectivity Policy - vNIC - MTU",
+                        "type": "string",
+                        "default": "1500",
+                        "pattern": "^1[5-9][0-9][0-9]$|^[2-8][0-9][0-9][0-9]$|^9000$"
+                     },
+                     "qos_policy": {
+                        "description": "LAN Connectivity Policy - vNIC - QOS Policy",
+                        "type": "string",
+                        "default": "",
+                        "pattern": "^[\\-\\.:_a-zA-Z0-9]{0,16}$"
+                     },
+                     "network_control_policy": {
+                        "description": "LAN Connectivity Policy - vNIC - Network Control Policy",
+                        "type": "string",
+                        "default": "",
+                        "pattern": "^[\\-\\.:_a-zA-Z0-9]{0,16}$"
+                     },
+                     "cdn_source": {
+                        "description": "LAN Connectivity Policy - vNIC - CDN Source",
+                        "type": "string",
+                        "default": "vnic-name",
+                        "enum": [
+                           "user-defined",
+                           "vnic-name"
+                        ]
+                     },
+                     "cdn_name": {
+                        "description": "LAN Connectivity Policy - vNIC - CDN Name",
+                        "type": "string",
+                        "default": "",
+                        "pattern": "^[\\-\\.:_a-zA-Z0-9]{0,16}$"
+                     },
+                     "dynamic_vnic_connection_policy": {
+                        "description": "LAN Connectivity Policy - vNIC - Dynamic vNIC Connection Policy Name",
+                        "type": "string",
+                        "default": "",
+                        "pattern": "^[\\-\\.:_a-zA-Z0-9]{0,16}$"
+                     },
+                     "usnic_connection_policy": {
+                        "description": "LAN Connectivity Policy - vNIC - usNIC Connection Policy Name",
+                        "type": "string",
+                        "default": "",
+                        "pattern": "^[\\-\\.:_a-zA-Z0-9]{0,16}$"
+                     },
+                     "vmq_connection_policy": {
+                        "description": "LAN Connectivity Policy - vNIC - VMQ Connection Policy Name",
+                        "type": "string",
+                        "default": "",
+                        "pattern": "^[\\-\\.:_a-zA-Z0-9]{0,16}$"
+                     },
+                     "stats_threshold_policy": {
+                        "description": "LAN Connectivity Policy - vNIC - Stats Threshold Policy",
+                        "type": "string",
+                        "default": "default",
+                        "pattern": "^[\\-\\.:_a-zA-Z0-9]{0,16}$"
+                     },
+                     "vlan_native": {
+                        "description": "LAN Connectivity Policy - vNIC - VLAN Native",
+                        "type": "string",
+                        "default": "",
+                        "pattern": "^[\\-\\.:_a-zA-Z0-9]{1,32}$"
+                     },
+                     "vlans": {
+                        "description": "LAN Connectivity Policy - vNIC - VLANs",
+                        "type": "array",
+                        "items": {
+                           "description": "LAN Connectivity Policy - vNIC - VLAN",
+                           "type": "string",
+                           "default": "",
+                           "pattern": "^[\\-\\.:_a-zA-Z0-9]{1,32}$"
+                        }
+                     },
+                     "vlan_groups": {
+                        "description": "LAN Connectivity Policy - vNIC - VLAN Groups",
+                        "type": "array",
+                        "items": {
+                           "description": "LAN Connectivity Policy - vNIC - VLAN Group",
+                           "type": "string",
+                           "default": "",
+                           "pattern": "^[\\-\\.:_a-zA-Z0-9]{1,32}$"
+                        }
+                     },
+                     "operational_state": {
+                        "description": "LAN Connectivity Policy - vNIC - Operational State of the vNIC",
+                        "type": "object",
+                        "properties": {
+                           "adapter_policy": {
+                              "description": "LAN Connectivity Policy - vNIC - Operational State - Adapter Policy",
+                              "type": "object",
+                              "properties": {
+                                 "name": {
+                                    "description": "LAN Connectivity Policy - vNIC - Operational State - Adapter Policy - Name",
+                                    "type": "string",
+                                    "default": ""
+                                 },
+                                 "org": {
+                                    "description": "LAN Connectivity Policy - vNIC - Operational State - Adapter Policy - Org",
+                                    "type": "string",
+                                    "default": ""
+                                 }
+                              },
+                              "additionalProperties": false,
+                              "required": [
+                                 "name",
+                                 "org"
+                              ]
+                           },
+                           "dynamic_vnic_connection_policy": {
+                              "description": "LAN Connectivity Policy - vNIC - Operational State - Dynamic vNIC Connection Policy",
+                              "type": "object",
+                              "properties": {
+                                 "name": {
+                                    "description": "LAN Connectivity Policy - vNIC - Operational State - Dynamic vNIC Connection Policy - Name",
+                                    "type": "string",
+                                    "default": ""
+                                 },
+                                 "org": {
+                                    "description": "LAN Connectivity Policy - vNIC - Operational State - Dynamic vNIC Connection Policy  - Org",
+                                    "type": "string",
+                                    "default": ""
+                                 }
+                              },
+                              "additionalProperties": false,
+                              "required": [
+                                 "name",
+                                 "org"
+                              ]
+                           },
+                           "usnic_connection_policy": {
+                              "description": "LAN Connectivity Policy - vNIC - Operational State - usNIC Connection Policy",
+                              "type": "object",
+                              "properties": {
+                                 "name": {
+                                    "description": "LAN Connectivity Policy - vNIC - Operational State - usNIC Connection Policy - Name",
+                                    "type": "string",
+                                    "default": ""
+                                 },
+                                 "org": {
+                                    "description": "LAN Connectivity Policy - vNIC - Operational State - usNIC Connection Policy  - Org",
+                                    "type": "string",
+                                    "default": ""
+                                 }
+                              },
+                              "additionalProperties": false,
+                              "required": [
+                                 "name",
+                                 "org"
+                              ]
+                           },
+                           "vmq_connection_policy": {
+                              "description": "LAN Connectivity Policy - vNIC - Operational State - VMQ Connection Policy",
+                              "type": "object",
+                              "properties": {
+                                 "name": {
+                                    "description": "LAN Connectivity Policy - vNIC - Operational State - VMQ Connection Policy - Name",
+                                    "type": "string",
+                                    "default": ""
+                                 },
+                                 "org": {
+                                    "description": "LAN Connectivity Policy - vNIC - Operational State - VMQ Connection Policy  - Org",
+                                    "type": "string",
+                                    "default": ""
+                                 }
+                              },
+                              "additionalProperties": false,
+                              "required": [
+                                 "name",
+                                 "org"
+                              ]
+                           },
+                           "network_control_policy": {
+                              "description": "LAN Connectivity Policy - vNIC - Operational State - Network Control Policy",
+                              "type": "object",
+                              "properties": {
+                                 "name": {
+                                    "description": "LAN Connectivity Policy - vNIC - Operational State - Network Control Policy - Name",
+                                    "type": "string",
+                                    "default": ""
+                                 },
+                                 "org": {
+                                    "description": "LAN Connectivity Policy - vNIC - Operational State - Network Control Policy - Org",
+                                    "type": "string",
+                                    "default": ""
+                                 }
+                              },
+                              "additionalProperties": false,
+                              "required": [
+                                 "name",
+                                 "org"
+                              ]
+                           },
+                           "qos_policy": {
+                              "description": "LAN Connectivity Policy - vNIC - Operational State - QoS Policy",
+                              "type": "object",
+                              "properties": {
+                                 "name": {
+                                    "description": "LAN Connectivity Policy - vNIC - Operational State - QoS Policy - Name",
+                                    "type": "string",
+                                    "default": ""
+                                 },
+                                 "org": {
+                                    "description": "LAN Connectivity Policy - vNIC - Operational State - QoS Policy - Org",
+                                    "type": "string",
+                                    "default": ""
+                                 }
+                              },
+                              "additionalProperties": false,
+                              "required": [
+                                 "name",
+                                 "org"
+                              ]
+                           },
+                           "stats_threshold_policy": {
+                              "description": "LAN Connectivity Policy - vNIC - Operational State - Stats Threshold Policy",
+                              "type": "object",
+                              "properties": {
+                                 "name": {
+                                    "description": "LAN Connectivity Policy - vNIC - Operational State - Stats Threshold Policy - Name",
+                                    "type": "string",
+                                    "default": ""
+                                 },
+                                 "org": {
+                                    "description": "LAN Connectivity Policy - vNIC - Operational State - Stats Threshold Policy - Org",
+                                    "type": "string",
+                                    "default": ""
+                                 }
+                              },
+                              "additionalProperties": false,
+                              "required": [
+                                 "name",
+                                 "org"
+                              ]
+                           }
+                        },
+                        "additionalProperties": false
+                     }
+                  },
+                  "additionalProperties": false,
+                  "required": [
+                     "name"
+                  ]
+               }
+            ],
+            "if": {
+               "properties": {
+                  "cdn_source": {
+                     "enum": [
+                        "user-defined"
+                     ]
+                  }
+               },
+               "required": [
+                  "cdn_source"
+               ]
+            },
+            "then": {
+               "required": [
+                  "cdn_name"
+               ]
+            }
+         },
+         "minItems": 1
+      },
+      "iscsi_vnics": {
+         "description": "LAN Connectivity Policy - iSCSI vNICs",
+         "type": "array",
+         "items": {
+            "type": "object",
+            "properties": {
+               "name": {
+                  "description": "LAN Connectivity Policy - iSCSI vNIC - Name",
+                  "type": "string",
+                  "default": "",
+                  "pattern": "^[\\-\\.:_a-zA-Z0-9]{1,16}$"
+               },
+               "overlay_vnic": {
+                  "description": "LAN Connectivity Policy - iSCSI vNIC - Overlay vNIC",
+                  "type": "string",
+                  "default": "",
+                  "pattern": "^[\\-\\.:_a-zA-Z0-9]{0,16}$"
+               },
+               "iscsi_adapter_policy": {
+                  "description": "LAN Connectivity Policy - iSCSI vNIC - iSCSI Adapter Policy",
+                  "type": "string",
+                  "default": "",
+                  "pattern": "^[\\-\\.:_a-zA-Z0-9]{0,16}$"
+               },
+               "mac_address_pool": {
+                  "description": "LAN Connectivity Policy - iSCSI vNIC - MAC Address Assignment",
+                  "type": "string",
+                  "default": ""
+               },
+               "vlan": {
+                  "description": "LAN Connectivity Policy - iSCSI vNIC - VLAN",
+                  "type": "string",
+                  "default": "",
+                  "pattern": "^[\\-\\.:_a-zA-Z0-9]{0,32}$"
+               },
+               "ip_pool": {
+                  "description": "LAN Connectivity Policy - iSCSI vNIC - IP Pool",
+                  "type": "string",
+                  "default": ""
+               },
+               "iqn_pool": {
+                  "description": "LAN Connectivity Policy - iSCSI vNIC - IQN Pool",
+                  "type": "string",
+                  "default": ""
+               },
+               "authentication_profile": {
+                  "description": "LAN Connectivity Policy - iSCSI vNIC - Authentication Profile",
+                  "type": "string",
+                  "default": ""
+               },
+               "operational_state": {
+                  "description": "LAN Connectivity Policy - ISCSI vNIC - Operational State of the ISCSI vNIC",
+                  "type": "object",
+                  "properties": {
+                     "iscsi_adapter_policy": {
+                        "description": "LAN Connectivity Policy - ISCSI vNIC - Operational State - ISCSI Adapter Policy",
+                        "type": "object",
+                        "properties": {
+                           "name": {
+                              "description": "LAN Connectivity Policy - ISCSI vNIC - Operational State - ISCSI Adapter Policy - Name",
+                              "type": "string",
+                              "default": ""
+                           },
+                           "org": {
+                              "description": "LAN Connectivity Policy - ISCSI vNIC - Operational State - ISCSI Adapter Policy - Org",
+                              "type": "string",
+                              "default": ""
+                           }
+                        },
+                        "additionalProperties": false,
+                        "required": [
+                           "name",
+                           "org"
+                        ]
+                     },
+                     "authentication_profile": {
+                        "description": "LAN Connectivity Policy - ISCSI vNIC - Operational State - Authentication Profile",
+                        "type": "object",
+                        "properties": {
+                           "name": {
+                              "description": "LAN Connectivity Policy - ISCSI vNIC - Operational State - Authentication Profile - Name",
+                              "type": "string",
+                              "default": ""
+                           },
+                           "org": {
+                              "description": "LAN Connectivity Policy - ISCSI vNIC - Operational State - Authentication Profile  - Org",
+                              "type": "string",
+                              "default": ""
+                           }
+                        },
+                        "additionalProperties": false,
+                        "required": [
+                           "name",
+                           "org"
+                        ]
+                     }
+                  },
+                  "additionalProperties": false
+               }
+            },
+            "additionalProperties": false,
+            "required": [
+               "name"
+            ]
+         },
+         "minItems": 1
+      },
+      "tags": {
+         "description": "LAN Connectivity Policy - Tags",
+         "type": "array",
+         "items": {
+            "description": "LAN Connectivity Policy - Tag",
+            "type": "object",
+            "properties": {
+               "type": {
+                  "description": "LAN Connectivity Policy - Tag - Type",
+                  "type": "string",
+                  "pattern": "^[ !#$%&\\(\\)\\*\\+,\\-\\.:;=\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{1,32}$"
+               },
+               "value": {
+                  "description": "LAN Connectivity Policy - Tag - Value",
+                  "type": "string"
+               }
+            },
+            "additionalProperties": false,
+            "required": [
+               "type",
+               "value"
+            ]
+         }
+      }
+   },
+   "additionalProperties": false,
+   "required": [
+      "name"
+   ]
+}

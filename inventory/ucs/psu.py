@@ -39,8 +39,10 @@ class UcsSystemPsu(UcsPsu, UcsSystemInventoryObject):
         # Small fix for when PSU is not present in UCS catalog
         if hasattr(self, "sku"):
             if not self.sku:
-                if self.model in ["N2200-PAC-400W", "N2200-PAC-400W-B", "NXA-PAC-1200W-PE"]:
-                    self.sku = self.model
+                if self.model:
+                    if self.model in ["N2200-PAC-400W", "N2200-PAC-400W-B", "NXA-PAC-1100W-PE2", "NXA-PAC-1200W-PE"] \
+                            or self.model.startswith("UCSC-PSU"):
+                        self.sku = self.model
 
 
 class UcsImcPsu(UcsPsu, UcsImcInventoryObject):

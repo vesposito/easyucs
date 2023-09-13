@@ -1,0 +1,135 @@
+{
+   "id": "intersight_config_orgs_power_policies#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS intersight config orgs power_policies section",
+   "description": "EasyUCS intersight config orgs power_policies section JSON schema",
+   "type": "object",
+   "properties": {
+      "comment": {
+         "description": "Power Policy Comments",
+         "type": "string",
+         "default": ""
+      },
+      "descr": {
+         "description": "Power Policy Description",
+         "type": "string",
+         "default": "",
+         "pattern": "^$|^[a-zA-Z0-9]+[\\x00-\\xFF]*$",
+         "maxLength": 1024
+      },
+      "name": {
+         "description": "Power Adapter Policy Name",
+         "type": "string",
+         "default": "",
+         "pattern": "^[a-zA-Z0-9_.:-]{1,64}$"
+      },
+      "tags": {
+         "description": "Power Policy Tags",
+         "type": "array",
+         "items": {
+            "description": "Power Policy Tag",
+            "type": "object",
+            "properties": {
+               "key": {
+                  "description": "Power Policy Tag Key",
+                  "type": "string",
+                  "default": "",
+                  "minLength": 1,
+                  "maxLength": 128
+               },
+               "value": {
+                  "description": "Power Policy Tag Value",
+                  "type": "string",
+                  "default": "",
+                  "minLength": 0,
+                  "maxLength": 256
+               }
+            },
+            "additionalProperties": false,
+            "required": [
+               "key",
+               "value"
+            ]
+         },
+         "minItems": 1
+      },
+      "dynamic_power_rebalancing": {
+         "description": "Power Policy - Dynamic Power Rebalancing",
+         "type": "string",
+         "default": "Enabled",
+         "enum": [
+            "Disabled",
+            "Enabled"
+         ]
+      },
+      "extended_power_capacity": {
+         "description": "Power Policy - Extended Power Capacity",
+         "type": "string",
+         "default": "Enabled",
+         "enum": [
+            "Disabled",
+            "Enabled"
+         ]
+      },
+      "power_allocation": {
+         "description": "Power Policy - Power Allocation",
+         "type": "integer",
+         "default": 0,
+         "minimum": 0,
+         "maximum": 65535
+      },
+      "power_priority": {
+         "description": "Power Policy - Power Priority",
+         "type": "string",
+         "default": "Low",
+         "enum": [
+            "High",
+            "Low",
+            "Medium"
+         ]
+      },
+      "power_profiling": {
+         "description": "Power Policy - Power Profiling",
+         "type": "string",
+         "default": "Enabled",
+         "enum": [
+            "Disabled",
+            "Enabled"
+         ]
+      },
+      "power_restore": {
+         "description": "Power Policy - Power Restore",
+         "type": "string",
+         "default": "Always Off",
+         "enum": [
+            "Last State",
+            "Always On",
+            "Always Off"
+         ]
+      },
+      "power_redundancy": {
+         "description": "Power Policy - Power Redundancy",
+         "type": "string",
+         "default": "Grid",
+         "enum": [
+            "Grid",
+            "Not Redundant",
+            "N+1",
+            "N+2"
+         ]
+      },
+      "power_save_mode": {
+         "description": "Power Policy - Power Save Mode",
+         "type": "string",
+         "default": "Enabled",
+         "enum": [
+            "Disabled",
+            "Enabled"
+         ]
+      }
+   },
+   "additionalProperties": false,
+   "required": [
+      "name"
+   ]
+}

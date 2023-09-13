@@ -1,0 +1,262 @@
+{
+   "id": "intersight_config_orgs_snmp_policies#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS intersight config orgs snmp_policies section",
+   "description": "EasyUCS intersight config orgs snmp_policies section JSON schema",
+   "type": "object",
+   "properties": {
+      "comment": {
+         "description": "SNMP Policy Comments",
+         "type": "string",
+         "default": ""
+      },
+      "descr": {
+         "description": "SNMP Policy Description",
+         "type": "string",
+         "default": "",
+         "pattern": "^$|^[a-zA-Z0-9]+[\\x00-\\xFF]*$",
+         "maxLength": 1024
+      },
+      "name": {
+         "description": "SNMP Policy Name",
+         "type": "string",
+         "default": "",
+         "pattern": "^[a-zA-Z0-9_.:-]{1,64}$"
+      },
+      "tags": {
+         "description": "SNMP Policy Tags",
+         "type": "array",
+         "items": {
+            "description": "SNMP Policy Tag",
+            "type": "object",
+            "properties": {
+               "key": {
+                  "description": "SNMP Policy Tag Key",
+                  "type": "string",
+                  "default": "",
+                  "minLength": 1,
+                  "maxLength": 128
+               },
+               "value": {
+                  "description": "SNMP Policy Tag Value",
+                  "type": "string",
+                  "default": "",
+                  "minLength": 0,
+                  "maxLength": 256
+               }
+            },
+            "additionalProperties": false,
+            "required": [
+               "key",
+               "value"
+            ]
+         },
+         "minItems": 1
+      },
+      "access_community_string": {
+         "description": "SNMP Policy Access Community String",
+         "type": "string",
+         "default": ""
+      },
+      "community_access": {
+         "description": "SNMP Policy Community Access",
+         "type": "string",
+         "default": "Disabled",
+         "enum": [
+            "Disabled",
+            "Full",
+            "Limited"
+         ]
+      },
+      "enabled": {
+         "description": "SNMP Policy Admin State",
+         "type": "boolean",
+         "default": true
+      },
+      "engine_input_id": {
+         "description": "SNMP Policy Engine Input ID",
+         "type": "string",
+         "default": ""
+      },
+      "port": {
+         "description": "SNMP Policy Port",
+         "type": "integer",
+         "default": 161,
+         "minimum": 1,
+         "maximum": 65535
+      },
+      "system_contact": {
+         "description": "SNMP Policy System Contact",
+         "type": "string",
+         "default": "",
+         "maxLength": 64
+      },
+      "system_location": {
+         "description": "SNMP Policy System Location",
+         "type": "string",
+         "default": "",
+         "maxLength": 64
+      },
+      "trap_community_string": {
+         "description": "SNMP Policy Trap Community String",
+         "type": "string",
+         "default": "",
+         "maxLength": 18
+      },
+      "trap_destinations": {
+         "description": "SNMP Policy Trap Destinations",
+         "type": "array",
+         "items": {
+            "description": "SNMP Policy Trap Destination",
+            "type": "object",
+            "properties": {
+               "community": {
+                  "description": "SNMP Policy Trap Destination Community",
+                  "type": "string",
+                  "default": ""
+               },
+               "destination_address": {
+                  "description": "SNMP Policy Trap Destination Address",
+                  "type": "string",
+                  "default": ""
+               },
+               "enabled": {
+                  "description": "SNMP Policy Trap Destination Admin State",
+                  "type": "boolean",
+                  "default": true
+               },
+               "port": {
+                  "description": "SNMP Policy Trap Destination Port",
+                  "type": "integer",
+                  "default": 162,
+                  "minimum": 1,
+                  "maximum": 65535
+               },
+               "trap_type": {
+                  "description": "SNMP Policy Trap Destination Type",
+                  "type": "string",
+                  "default": "Trap",
+                  "enum": [
+                     "Inform",
+                     "Trap"
+                  ]
+               },
+               "user": {
+                  "description": "SNMP Policy Trap Destination User",
+                  "type": "string",
+                  "default": ""
+               },
+               "version": {
+                  "description": "SNMP Policy Trap Destination Version",
+                  "type": "string",
+                  "default": "V3",
+                  "enum": [
+                     "V2",
+                     "V3"
+                  ]
+               }
+            },
+            "additionalProperties": false,
+            "required": [
+               "destination_address"
+            ],
+            "allOf": [
+               {
+                  "$comment": "Below is for setting constraints for SNMP version 3",
+                  "if": {
+                     "properties": {
+                        "version": {
+                           "enum": [
+                              "V3"
+                           ]
+                        }
+                     },
+                     "required": [
+                        "version"
+                     ]
+                  },
+                  "then": {
+                     "allOf": [
+                        {
+                           "required": [
+                              "user"
+                           ]
+                        },
+                        {
+                           "properties": {
+                              "trap_type": {
+                                 "enum": [
+                                    "Trap",
+                                    "Inform"
+                                 ]
+                              }
+                           }
+                        }
+                     ]
+                  }
+               }
+            ]
+         },
+         "minItems": 1
+      },
+      "users": {
+         "description": "SNMP Policy Users",
+         "type": "array",
+         "items": {
+            "description": "SNMP Policy User",
+            "type": "object",
+            "properties": {
+               "auth_password": {
+                  "description": "SNMP Policy User Auth Password",
+                  "type": "string",
+                  "default": ""
+               },
+               "auth_type": {
+                  "description": "SNMP Policy User Auth Type",
+                  "type": "string",
+                  "default": "NA",
+                  "enum": [
+                     "MD5",
+                     "NA",
+                     "SHA"
+                  ]
+               },
+               "name": {
+                  "description": "SNMP Policy User Name",
+                  "type": "string",
+                  "default": ""
+               },
+               "privacy_password": {
+                  "description": "SNMP Policy User Privacy Password",
+                  "type": "string",
+                  "default": ""
+               },
+               "privacy_type": {
+                  "description": "SNMP Policy User Privacy Type",
+                  "type": "string",
+                  "default": "NA",
+                  "enum": [
+                     "AES",
+                     "NA"
+                  ]
+               },
+               "security_level": {
+                  "description": "SNMP Policy User Security Level",
+                  "type": "string",
+                  "default": "AuthPriv",
+                  "enum": [
+                     "AuthNoPriv",
+                     "AuthPriv"
+                  ]
+               }
+            },
+            "additionalProperties": false
+         },
+         "minItems": 1
+      }
+   },
+   "additionalProperties": false,
+   "required": [
+      "name"
+   ]
+}

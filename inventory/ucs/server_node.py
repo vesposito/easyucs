@@ -1,10 +1,9 @@
 # coding: utf-8
 # !/usr/bin/env python
 
-""" chassis.py: Easy UCS Deployment Tool """
+""" server_node.py: Easy UCS Deployment Tool """
 
-import json
-
+from common import read_json_file
 from inventory.ucs.adaptor import UcsImcAdaptor, UcsImcNetworkAdapter
 from inventory.ucs.cpu import UcsImcCpu
 from inventory.ucs.gpu import UcsImcGpu
@@ -59,23 +58,10 @@ class UcsServerNode(GenericUcsInventoryObject):
         """
         if self.sku is not None:
             # We use the catalog file to get the server node short name
-            try:
-                json_file = open("catalog/blades/" + self.sku + ".json")
-                blade_catalog = json.load(fp=json_file)
-                json_file.close()
-
+            blade_catalog = read_json_file(file_path="catalog/blades/" + self.sku + ".json", logger=self)
+            if blade_catalog:
                 if "model_short_name" in blade_catalog:
                     return blade_catalog["model_short_name"]
-
-            except FileNotFoundError:
-                if hasattr(self, "sku_scaled"):
-                    if self.sku_scaled:
-                        self.logger(level="error", message="Blade catalog file " + self.sku_scaled + ".json not found")
-                    else:
-                        self.logger(level="error", message="Blade catalog file " + self.sku + ".json not found")
-                else:
-                    self.logger(level="error", message="Blade catalog file " + self.sku + ".json not found")
-                return None
 
         return None
 
@@ -261,10 +247,37 @@ class UcsImcServerNode(UcsServerNode, UcsImcInventoryObject):
                 if current_driver["name"] in ["enic", "nenic"]:
                     # Finding the associated adaptors to set driver versions
                     for adaptor in self.adaptors:
-                        if adaptor.sku in ["UCSB-MLOM-40G-01", "UCSB-MLOM-40G-03", "UCSC-MLOM-C10T-02",
-                                           "UCSC-MLOM-C40Q-03", "UCSC-MLOM-CSC-02", "UCSC-PCIE-C10T-02",
-                                           "UCSC-PCIE-C40Q-02", "UCSC-PCIE-C40Q-03", "UCSC-PCIE-CSC-02",
-                                           "UCS-VIC-M82-8P"]:
+                        if adaptor.sku in [
+                            "UCSB-MLOM-40G-01",  # VIC 1240
+                            "UCS-VIC-M82-8P",  # VIC 1280
+                            "UCSB-MLOM-40G-03",  # VIC 1340
+                            "UCSB-VIC-M83-8P",  # VIC 1380
+                            "UCSB-MLOM-40G-04",  # VIC 1440
+                            "UCSB-VIC-M84-4P",  # VIC 1480
+                            "UCSB-ML-V5Q10G",  # VIC 15411
+                            "UCSC-PCIE-CSC-02",  # VIC 1225
+                            "UCSC-PCIE-C10T-02",  # VIC 1225T
+                            "UCSC-MLOM-CSC-02",  # VIC 1227
+                            "UCSC-MLOM-C10T-02",  # VIC 1227T
+                            "UCSC-PCIE-C40Q-02",  # VIC 1285
+                            "UCSC-PCIE-C40Q-03",  # VIC 1385
+                            "UCSC-MLOM-C40Q-03",  # VIC 1387
+                            "UCSC-PCIE-C25Q-04",  # VIC 1455
+                            "UCSC-MLOM-C25Q-04",  # VIC 1457
+                            "UCSC-M-V25-04",  # VIC 1467
+                            "UCSC-M-V100-04",  # VIC 1477
+                            "UCSC-PCIE-C100-04",  # VIC 1495
+                            "UCSC-MLOM-C100-04",  # VIC 1497
+                            "UCSC-P-V5Q50G",  # VIC 15425
+                            "UCSC-M-V5Q50G",  # VIC 15428
+                            "UCSC-P-V5D200G",  # VIC 15235
+                            "UCSC-M-V5D200G",  # VIC 15238
+                            "UCSX-V4-Q25GML",  # VIC 14425
+                            "UCSX-V4-Q25GME",  # VIC 14825
+                            "UCSX-ML-V5D200G",  # VIC 15231
+                            "UCSX-ML-V5Q50G",  # VIC 15420
+                            "UCSX-ME-V5Q50G"  # VIC 15422
+                        ]:
                             adaptor.driver_name_ethernet = current_driver["name"]
                             adaptor.driver_version_ethernet = current_driver["version"]
                             self.logger(level="debug",
@@ -276,10 +289,37 @@ class UcsImcServerNode(UcsServerNode, UcsImcInventoryObject):
                 if current_driver["name"] in ["fnic"]:
                     # Finding the associated adaptors to set driver versions
                     for adaptor in self.adaptors:
-                        if adaptor.sku in ["UCSB-MLOM-40G-01", "UCSB-MLOM-40G-03", "UCSC-MLOM-C10T-02",
-                                           "UCSC-MLOM-C40Q-03", "UCSC-MLOM-CSC-02", "UCSC-PCIE-C10T-02",
-                                           "UCSC-PCIE-C40Q-02", "UCSC-PCIE-C40Q-03", "UCSC-PCIE-CSC-02",
-                                           "UCS-VIC-M82-8P"]:
+                        if adaptor.sku in [
+                            "UCSB-MLOM-40G-01",  # VIC 1240
+                            "UCS-VIC-M82-8P",  # VIC 1280
+                            "UCSB-MLOM-40G-03",  # VIC 1340
+                            "UCSB-VIC-M83-8P",  # VIC 1380
+                            "UCSB-MLOM-40G-04",  # VIC 1440
+                            "UCSB-VIC-M84-4P",  # VIC 1480
+                            "UCSB-ML-V5Q10G",  # VIC 15411
+                            "UCSC-PCIE-CSC-02",  # VIC 1225
+                            "UCSC-PCIE-C10T-02",  # VIC 1225T
+                            "UCSC-MLOM-CSC-02",  # VIC 1227
+                            "UCSC-MLOM-C10T-02",  # VIC 1227T
+                            "UCSC-PCIE-C40Q-02",  # VIC 1285
+                            "UCSC-PCIE-C40Q-03",  # VIC 1385
+                            "UCSC-MLOM-C40Q-03",  # VIC 1387
+                            "UCSC-PCIE-C25Q-04",  # VIC 1455
+                            "UCSC-MLOM-C25Q-04",  # VIC 1457
+                            "UCSC-M-V25-04",  # VIC 1467
+                            "UCSC-M-V100-04",  # VIC 1477
+                            "UCSC-PCIE-C100-04",  # VIC 1495
+                            "UCSC-MLOM-C100-04",  # VIC 1497
+                            "UCSC-P-V5Q50G",  # VIC 15425
+                            "UCSC-M-V5Q50G",  # VIC 15428
+                            "UCSC-P-V5D200G",  # VIC 15235
+                            "UCSC-M-V5D200G",  # VIC 15238
+                            "UCSX-V4-Q25GML",  # VIC 14425
+                            "UCSX-V4-Q25GME",  # VIC 14825
+                            "UCSX-ML-V5D200G",  # VIC 15231
+                            "UCSX-ML-V5Q50G",  # VIC 15420
+                            "UCSX-ME-V5Q50G"  # VIC 15422
+                        ]:
                             adaptor.driver_name_fibre_channel = current_driver["name"]
                             adaptor.driver_version_fibre_channel = current_driver["version"]
                             self.logger(level="debug",

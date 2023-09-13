@@ -1,0 +1,187 @@
+{
+   "id": "ucs_system_config_san_traffic_monitoring_sessions#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS ucs system config san_traffic_monitoring_sessions section",
+   "description": "EasyUCS ucs system config san_traffic_monitoring_sessions section JSON schema",
+   "type": "object",
+   "properties": {
+      "admin_state": {
+         "description": "Admin state of the SAN Traffic Monitoring session",
+         "type": "string",
+         "default": "disabled",
+         "enum": [
+            "disabled",
+            "enabled"
+         ]
+      },
+      "admin_speed": {
+         "description": "Admin speed of the SAN Traffic Monitoring session",
+         "type": "string",
+         "default": "10gbps",
+         "enum": [
+            "1gbps",
+            "10gbps",
+            "20gbps",
+            "25gbps",
+            "40gbps",
+            "100gbps",
+            "auto",
+            "indeterminate"
+         ]
+      },
+      "destination": {
+         "description": "Destination Port of the SAN Traffic Monitoring session",
+         "type": "array",
+         "items": {
+            "description": "Destination Port of the SAN Traffic Monitoring session - element",
+            "type": "object",
+            "properties": {
+               "slot_id": {
+                  "description": "Slot ID of Destination Port",
+                  "type": "string",
+                  "pattern": "^[1-5]$"
+               },
+               "port_id": {
+                  "description": "Port ID of Destination Port",
+                  "type": "string",
+                  "pattern": "^[1-9]$|^[1-9][0-9]$|^10[0-8]$"
+               },
+               "aggr_id": {
+                  "description": "Aggregate ID of Destination Port (for Breakout Ports)",
+                  "type": "string",
+                  "pattern": "^[1-4]$"
+               }
+            },
+            "additionalProperties": false,
+            "required": [
+               "slot_id",
+               "port_id"
+            ]
+         },
+         "minItems": 1,
+         "maxItems": 1
+      },
+      "fabric": {
+         "description": "Fabric ID of the SAN Traffic Monitoring session (\"A\" or \"B\")",
+         "type": "string",
+         "enum": [
+            "a",
+            "A",
+            "b",
+            "B"
+         ]
+      },
+      "name": {
+         "description": "Name of the SAN Traffic Monitoring session",
+         "type": "string",
+         "default": "",
+         "pattern": "^[\\-\\.:_a-zA-Z0-9]{1,16}$"
+      },
+      "sources": {
+         "description": "All sources added to the SAN Traffic Monitoring session",
+         "type": "array",
+         "items": {
+            "description": "Source added to the SAN Traffic Monitoring session",
+            "type": "object",
+            "properties": {
+               "direction": {
+                  "description": "Direction of the source",
+                  "type": "string",
+                  "enum": [
+                     "both",
+                     "rx",
+                     "tx"
+                  ],
+                  "default": "rx"
+               },
+               "source_type": {
+                  "description": "Type of the source added",
+                  "type": "string",
+                  "enum": [
+                     "port-channel",
+                     "storage",
+                     "uplink-port",
+                     "vhba",
+                     "vsan"
+                  ]
+               },
+               "pc_id": {
+                  "description": "Port-Channel ID of Source Port",
+                  "type": "string",
+                  "pattern": "^[1-9]$|^[1-9][0-9]$|^1[0-9][0-9]$|^2[0-4][0-9]$|^25[0-6]$"
+               },
+               "slot_id": {
+                  "description": "Slot ID of Source Port",
+                  "type": "string",
+                  "pattern": "^[1-5]$"
+               },
+               "port_id": {
+                  "description": "Port ID of Source Port",
+                  "type": "string",
+                  "pattern": "^[1-9]$|^[1-9][0-9]$|^10[0-8]$"
+               },
+               "aggr_id": {
+                  "description": "Aggregate ID of Source Port (for Breakout Ports)",
+                  "type": "string",
+                  "pattern": "^[1-4]$"
+               },
+               "vsan": {
+                  "description": "Name of the Source VSAN",
+                  "type": "string",
+                  "pattern": "^[\\-\\.:_a-zA-Z0-9]{1,32}$"
+               },
+               "storage_vsan": {
+                  "description": "Name of the Source Storage VSAN",
+                  "type": "string",
+                  "pattern": "^[\\-\\.:_a-zA-Z0-9]{1,32}$"
+               },
+               "fabric": {
+                  "description": "Fabric ID of the Source VSAN (\"A\", \"B\" or \"dual\")",
+                  "type": "string",
+                  "enum": [
+                     "a",
+                     "A",
+                     "b",
+                     "B",
+                     "dual"
+                  ]
+               },
+               "vhba": {
+                  "description": "Name of the Source vHBA",
+                  "type": "string",
+                  "pattern": "^[\\-\\.:_a-zA-Z0-9]{1,16}$"
+               },
+               "service_profile": {
+                  "description": "Service profile name",
+                  "type": "string",
+                  "default": ""
+               },
+               "org": {
+                  "description": "Service profile org",
+                  "type": "string",
+                  "default": ""
+               }
+            },
+            "required": [
+               "direction",
+               "source_type"
+            ]
+         },
+         "minItems": 0
+      },
+      "span_control_packets": {
+         "description": "Admin Status of SPAN Control Packets",
+         "type": "string",
+         "default": "disabled",
+         "enum": [
+            "disabled",
+            "enabled"
+         ]
+      }
+  },
+   "additionalProperties": false,
+   "required": [
+      "name",
+      "fabric"
+   ]
+}

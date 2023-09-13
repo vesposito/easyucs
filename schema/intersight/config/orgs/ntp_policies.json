@@ -1,0 +1,97 @@
+{
+   "id": "intersight_config_orgs_ntp_policies#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS intersight config orgs ntp_policies section",
+   "description": "EasyUCS intersight config orgs ntp_policies section JSON schema",
+   "type": "object",
+   "properties": {
+      "comment": {
+         "description": "NTP Policy Comments",
+         "type": "string",
+         "default": ""
+      },
+      "descr": {
+         "description": "NTP Policy Description",
+         "type": "string",
+         "default": "",
+         "pattern": "^$|^[a-zA-Z0-9]+[\\x00-\\xFF]*$",
+         "maxLength": 1024
+      },
+      "name": {
+         "description": "NTP Policy Name",
+         "type": "string",
+         "default": "",
+         "pattern": "^[a-zA-Z0-9_.:-]{1,64}$"
+      },
+      "tags": {
+         "description": "NTP Policy Tags",
+         "type": "array",
+         "items": {
+            "description": "NTP Policy Tag",
+            "type": "object",
+            "properties": {
+               "key": {
+                  "description": "NTP Policy Tag Key",
+                  "type": "string",
+                  "default": "",
+                  "minLength": 1,
+                  "maxLength": 128
+               },
+               "value": {
+                  "description": "NTP Policy Tag Value",
+                  "type": "string",
+                  "default": "",
+                  "minLength": 0,
+                  "maxLength": 256
+               }
+            },
+            "additionalProperties": false,
+            "required": [
+               "key",
+               "value"
+            ]
+         },
+         "minItems": 1
+      },
+      "enabled": {
+         "description": "NTP Policy Admin State",
+         "type": "boolean",
+         "default": true
+      },
+      "ntp_servers": {
+         "description": "NTP Policy NTP Servers",
+         "type": "array",
+         "items": {
+            "description": "NTP Policy NTP Server",
+            "type": "string"
+         },
+         "minItems": 1
+      },
+      "timezone": {
+         "description": "NTP Policy Timezone",
+         "type": "string",
+         "default": ""
+      }
+   },
+   "additionalProperties": false,
+   "required": [
+      "name"
+   ],
+   "if": {
+      "properties": {
+         "enabled": {
+            "enum": [
+               true
+            ]
+         }
+      },
+      "required": [
+         "enabled"
+      ]
+   },
+   "then": {
+      "required": [
+         "ntp_servers"
+      ]
+   }
+}

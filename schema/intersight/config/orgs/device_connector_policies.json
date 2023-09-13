@@ -1,0 +1,67 @@
+{
+   "id": "intersight_config_orgs_device_connector_policies#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS intersight config orgs device_connector_policies section",
+   "description": "EasyUCS intersight config orgs device_connector_policies section JSON schema",
+   "type": "object",
+   "properties": {
+      "comment": {
+         "description": "Device Connector Policy Comments",
+         "type": "string",
+         "default": ""
+      },
+      "descr": {
+         "description": "Device Connector Policy Description",
+         "type": "string",
+         "default": "",
+         "pattern": "^$|^[a-zA-Z0-9]+[\\x00-\\xFF]*$",
+         "maxLength": 1024
+      },
+      "name": {
+         "description": "Device Connector Policy Name",
+         "type": "string",
+         "default": "",
+         "pattern": "^[a-zA-Z0-9_.:-]{1,64}$"
+      },
+      "tags": {
+         "description": "Device Connector Policy Tags",
+         "type": "array",
+         "items": {
+            "description": "Device Connector Policy Tag",
+            "type": "object",
+            "properties": {
+               "key": {
+                  "description": "Device Connector Policy Tag Key",
+                  "type": "string",
+                  "default": "",
+                  "minLength": 1,
+                  "maxLength": 128
+               },
+               "value": {
+                  "description": "Device Connector Policy Tag Value",
+                  "type": "string",
+                  "default": "",
+                  "minLength": 0,
+                  "maxLength": 256
+               }
+            },
+            "additionalProperties": false,
+            "required": [
+               "key",
+               "value"
+            ]
+         },
+         "minItems": 1
+      },
+      "configuration_from_intersight_only": {
+         "description": "Device Connector Policy Configuration From Intersight Only",
+         "type": "boolean",
+         "default": true
+      }
+   },
+   "additionalProperties": false,
+   "required": [
+      "name",
+      "configuration_from_intersight_only"
+   ]
+}

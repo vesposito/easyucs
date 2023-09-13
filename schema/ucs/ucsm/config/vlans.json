@@ -1,33 +1,40 @@
 {
-   "id":"ucs_system_config_vlans#",
-   "$schema":"http://json-schema.org/draft-07/schema#",
-   "title":"EasyUCS ucs system config vlans section",
-   "description":"EasyUCS ucs system config vlans section JSON schema",
-   "type":"object",
+   "id": "ucs_system_config_vlans#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS ucs system config vlans section",
+   "description": "EasyUCS ucs system config vlans section JSON schema",
+   "type": "object",
    "oneOf": [
       {
-         "properties":{
+         "properties": {
             "comment": {
                "description": "VLAN Comments",
                "type": "string",
                "default": ""
             },
-            "name":{
-               "description":"VLAN Name",
-               "type":"string",
-               "default":"",
-               "pattern":"^[\\-\\.:_a-zA-Z0-9]{1,32}$"
+            "name": {
+               "description": "VLAN Name",
+               "type": "string",
+               "default": "",
+               "pattern": "^[\\-\\.:_a-zA-Z0-9]{1,32}$"
             },
-            "id":{
-               "description":"VLAN ID",
-               "type":"string",
-               "pattern":"^[1-9]$|^[1-9][0-9]$|^[1-9][0-9][0-9]$|^[1-3][0-9][0-9][0-9]$|^40[0-3][0-9]$|^404[0-2]$|^404[8-9]$|^40[5-8][0-9]$|^409[0-3]$"
+            "policy_owner": {
+               "description": "VLAN Owner (for UCS Central)",
+               "type": "string",
+               "enum": [
+                  "ucs-central"
+               ]
             },
-            "fabric":{
-               "description":"VLAN Fabric",
-               "type":"string",
-               "default":"dual",
-               "enum":[
+            "id": {
+               "description": "VLAN ID",
+               "type": "string",
+               "pattern": "^[1-9]$|^[1-9][0-9]$|^[1-9][0-9][0-9]$|^[1-3][0-9][0-9][0-9]$|^40[0-3][0-9]$|^404[0-2]$|^404[8-9]$|^40[5-8][0-9]$|^409[0-3]$"
+            },
+            "fabric": {
+               "description": "VLAN Fabric",
+               "type": "string",
+               "default": "dual",
+               "enum": [
                   "a",
                   "A",
                   "b",
@@ -35,30 +42,30 @@
                   "dual"
                ]
             },
-            "sharing_type":{
-               "description":"VLAN Sharing Type",
-               "type":"string",
-               "default":"none",
-               "enum":[
+            "sharing_type": {
+               "description": "VLAN Sharing Type",
+               "type": "string",
+               "default": "none",
+               "enum": [
                   "community",
                   "isolated",
                   "none",
                   "primary"
                ]
             },
-            "primary_vlan_name":{
-               "description":"VLAN Primary VLAN Name",
-               "type":"string"
+            "primary_vlan_name": {
+               "description": "VLAN Primary VLAN Name",
+               "type": "string"
             },
-            "multicast_policy_name":{
-               "description":"VLAN Multicast Policy",
-               "type":"string"
+            "multicast_policy_name": {
+               "description": "VLAN Multicast Policy",
+               "type": "string"
             },
-            "native_vlan":{
-               "description":"Set VLAN as Native VLAN",
-               "type":"string",
-               "default":"no",
-               "enum":[
+            "native_vlan": {
+               "description": "Set VLAN as Native VLAN",
+               "type": "string",
+               "default": "no",
+               "enum": [
                   "yes",
                   "no"
                ]
@@ -73,42 +80,142 @@
                   "pattern": "^[\\-\\./:_a-zA-Z0-9]{1,128}$"
                },
                "minItems": 1
+            },
+            "lan_uplink_ports": {
+               "description": "VLAN Assigned LAN Uplink Ports List",
+               "type": "array",
+               "items": {
+                  "description": "VLAN Assigned LAN Uplink Port",
+                  "type": "object",
+                  "properties": {
+                     "fabric": {
+                        "description": "VLAN Assigned LAN Uplink Port Fabric ID",
+                        "type": "string",
+                        "enum": [
+                           "a",
+                           "A",
+                           "b",
+                           "B"
+                        ]
+                     },
+                     "slot_id": {
+                        "description": "VLAN Assigned LAN Uplink Port Slot ID",
+                        "type": "string",
+                        "pattern": "^[1-5]$"
+                     },
+                     "port_id": {
+                        "description": "VLAN Assigned LAN Uplink Port Port ID",
+                        "type": "string"
+                     },
+                     "aggr_id": {
+                        "description": "VLAN Assigned LAN Uplink Port Aggregate ID (for Breakout Ports)",
+                        "type": "string",
+                        "pattern": "^[1-4]$"
+                     },
+                     "native_vlan": {
+                        "description": "VLAN Assigned LAN Uplink Port Native VLAN flag",
+                        "type": "string",
+                        "default": "no",
+                        "enum": [
+                           "false",
+                           "no",
+                           "true",
+                           "yes"
+                        ]
+                     }
+                  },
+                  "additionalProperties": false,
+                  "required": [
+                     "fabric",
+                     "slot_id",
+                     "port_id"
+                  ]
+               },
+               "minItems": 1
+            },
+            "lan_port_channels": {
+               "description": "VLAN Assigned LAN Port-Channels List",
+               "type": "array",
+               "items": {
+                  "description": "VLAN Assigned LAN Port-Channel",
+                  "type": "object",
+                  "properties": {
+                     "fabric": {
+                        "description": "VLAN Assigned LAN Port-Channel Fabric ID",
+                        "type": "string",
+                        "enum": [
+                           "a",
+                           "A",
+                           "b",
+                           "B"
+                        ]
+                     },
+                     "pc_id": {
+                        "description": "VLAN Assigned LAN Port-Channel ID",
+                        "type": "string"
+                     },
+                     "native_vlan": {
+                        "description": "VLAN Assigned LAN Port-Channel Native VLAN flag",
+                        "type": "string",
+                        "default": "no",
+                        "enum": [
+                           "false",
+                           "no",
+                           "true",
+                           "yes"
+                        ]
+                     }
+                  },
+                  "additionalProperties": false,
+                  "required": [
+                     "fabric",
+                     "pc_id"
+                  ]
+               },
+               "minItems": 1
             }
          },
-         "additionalProperties":false,
-         "required":[
+         "additionalProperties": false,
+         "required": [
             "name",
             "id"
          ]
       },
       {
-         "properties":{
+         "properties": {
             "comment": {
                "description": "VLAN Range Comments",
                "type": "string",
                "default": ""
             },
-            "prefix":{
-               "description":"VLAN Prefix",
-               "type":"string",
-               "default":"",
-               "pattern":"^[\\-\\.:_a-zA-Z0-9]{1,32}$"
+            "prefix": {
+               "description": "VLAN Prefix",
+               "type": "string",
+               "default": "",
+               "pattern": "^[\\-\\.:_a-zA-Z0-9]{1,32}$"
             },
-            "id_from":{
-               "description":"VLAN ID range starting value",
-               "type":"string",
-               "pattern":"^[1-9]$|^[1-9][0-9]$|^[1-9][0-9][0-9]$|^[1-3][0-9][0-9][0-9]$|^40[0-2][0-9]$|^404[8-9]$|^40[5-8][0-9]$|^409[0-3]$"
+            "id_from": {
+               "description": "VLAN ID range starting value",
+               "type": "string",
+               "pattern": "^[1-9]$|^[1-9][0-9]$|^[1-9][0-9][0-9]$|^[1-3][0-9][0-9][0-9]$|^40[0-2][0-9]$|^404[8-9]$|^40[5-8][0-9]$|^409[0-3]$"
             },
-            "id_to":{
-               "description":"VLAN ID range ending value",
-               "type":"string",
-               "pattern":"^[1-9]$|^[1-9][0-9]$|^[1-9][0-9][0-9]$|^[1-3][0-9][0-9][0-9]$|^40[0-2][0-9]$|^404[8-9]$|^40[5-8][0-9]$|^409[0-3]$"
+            "id_to": {
+               "description": "VLAN ID range ending value",
+               "type": "string",
+               "pattern": "^[1-9]$|^[1-9][0-9]$|^[1-9][0-9][0-9]$|^[1-3][0-9][0-9][0-9]$|^40[0-2][0-9]$|^404[8-9]$|^40[5-8][0-9]$|^409[0-3]$"
             },
-            "fabric":{
-               "description":"VLAN Fabric",
-               "type":"string",
-               "default":"dual",
-               "enum":[
+            "policy_owner": {
+               "description": "VLAN Owner (for UCS Central)",
+               "type": "string",
+               "enum": [
+                  "ucs-central"
+               ]
+            },
+            "fabric": {
+               "description": "VLAN Fabric",
+               "type": "string",
+               "default": "dual",
+               "enum": [
                   "a",
                   "A",
                   "b",
@@ -116,35 +223,35 @@
                   "dual"
                ]
             },
-            "sharing_type":{
-               "description":"VLAN Sharing Type",
-               "type":"string",
-               "default":"none",
-               "enum":[
+            "sharing_type": {
+               "description": "VLAN Sharing Type",
+               "type": "string",
+               "default": "none",
+               "enum": [
                   "community",
                   "isolated",
                   "none",
                   "primary"
                ]
             },
-            "primary_vlan_name":{
-               "description":"VLAN Primary VLAN Name",
-               "type":"string"
+            "primary_vlan_name": {
+               "description": "VLAN Primary VLAN Name",
+               "type": "string"
             },
-            "multicast_policy_name":{
-               "description":"VLAN Multicast Policy",
-               "type":"string"
+            "multicast_policy_name": {
+               "description": "VLAN Multicast Policy",
+               "type": "string"
             },
-            "native_vlan":{
-               "description":"Set VLAN as Native VLAN",
-               "type":"string",
-               "default":"no",
-               "enum":[
+            "native_vlan": {
+               "description": "Set VLAN as Native VLAN",
+               "type": "string",
+               "default": "no",
+               "enum": [
                   "yes",
                   "no"
                ]
             },
-            "organizations": {
+            "org_permissions": {
                "description": "Organizations assigned to the VLAN",
                "type": "array",
                "items": {
@@ -154,10 +261,103 @@
                   "pattern": "^[\\-\\./:_a-zA-Z0-9]{1,128}$"
                },
                "minItems": 1
+            },
+            "lan_uplink_ports": {
+               "description": "VLAN Assigned LAN Uplink Ports List",
+               "type": "array",
+               "items": {
+                  "description": "VLAN Assigned LAN Uplink Port",
+                  "type": "object",
+                  "properties": {
+                     "fabric": {
+                        "description": "VLAN Assigned LAN Uplink Port Fabric ID",
+                        "type": "string",
+                        "enum": [
+                           "a",
+                           "A",
+                           "b",
+                           "B"
+                        ]
+                     },
+                     "slot_id": {
+                        "description": "VLAN Assigned LAN Uplink Port Slot ID",
+                        "type": "string",
+                        "pattern": "^[1-5]$"
+                     },
+                     "port_id": {
+                        "description": "VLAN Assigned LAN Uplink Port Port ID",
+                        "type": "string"
+                     },
+                     "aggr_id": {
+                        "description": "VLAN Assigned LAN Uplink Port Aggregate ID (for Breakout Ports)",
+                        "type": "string",
+                        "pattern": "^[1-4]$"
+                     },
+                     "native_vlan": {
+                        "description": "VLAN Assigned LAN Uplink Port Native VLAN flag",
+                        "type": "string",
+                        "default": "no",
+                        "enum": [
+                           "false",
+                           "no",
+                           "true",
+                           "yes"
+                        ]
+                     }
+                  },
+                  "additionalProperties": false,
+                  "required": [
+                     "fabric",
+                     "slot_id",
+                     "port_id"
+                  ]
+               },
+               "minItems": 1
+            },
+            "lan_port_channels": {
+               "description": "VLAN Assigned LAN Port-Channels List",
+               "type": "array",
+               "items": {
+                  "description": "VLAN Assigned LAN Port-Channel",
+                  "type": "object",
+                  "properties": {
+                     "fabric": {
+                        "description": "VLAN Assigned LAN Port-Channel Fabric ID",
+                        "type": "string",
+                        "enum": [
+                           "a",
+                           "A",
+                           "b",
+                           "B"
+                        ]
+                     },
+                     "pc_id": {
+                        "description": "VLAN Assigned LAN Port-Channel ID",
+                        "type": "string"
+                     },
+                     "native_vlan": {
+                        "description": "VLAN Assigned LAN Port-Channel Native VLAN flag",
+                        "type": "string",
+                        "default": "no",
+                        "enum": [
+                           "false",
+                           "no",
+                           "true",
+                           "yes"
+                        ]
+                     }
+                  },
+                  "additionalProperties": false,
+                  "required": [
+                     "fabric",
+                     "pc_id"
+                  ]
+               },
+               "minItems": 1
             }
-      },
-         "additionalProperties":false,
-         "required":[
+         },
+         "additionalProperties": false,
+         "required": [
             "prefix",
             "id_from",
             "id_to"

@@ -2,7 +2,7 @@
 # !/usr/bin/env python
 
 """ object.py: Easy UCS Deployment Tool """
-from __init__ import __author__, __copyright__,  __version__, __status__
+from __init__ import __author__, __copyright__,  __version__, __status__, EASYUCS_ROOT
 
 import json
 import os
@@ -71,7 +71,7 @@ class GenericDrawObject:
         if hasattr(current_object, '_logger_handle'):
             return current_object
         else:
-            print("WARNING: No logger found in inventory object")
+            print("WARNING: No logger found in draw object")
             return None
 
     def _find_folder_path(self):
@@ -103,7 +103,7 @@ class GenericDrawObject:
                                                self._parent.__class__.__name__ + " objects")
             return None
 
-        return folder_path
+        return os.path.abspath(os.path.join(EASYUCS_ROOT, folder_path)) + "/"
 
     def _get_picture(self):
         folder_path = self._find_folder_path()
@@ -189,9 +189,9 @@ class GenericDrawObject:
     def __find_inventory(self):
         # Method to find the Inventory object - it can be high up in the hierarchy of objects
         current_object = self
-        while hasattr(current_object, '_parent') and not hasattr(current_object, 'timestamp'):
+        while hasattr(current_object, '_parent') and not hasattr(current_object, 'uuid'):
             current_object = current_object._parent
-        if hasattr(current_object, 'timestamp'):
+        if hasattr(current_object, 'uuid'):
             return current_object
         else:
             return None
@@ -462,6 +462,12 @@ class GenericUcsDrawEquipment(GenericUcsDrawObject):
             self.canvas_width = self.picture_size[0]
             self.canvas_height = self.picture_size[1]
             self.picture_offset = self._get_picture_offset()
+            if self.picture_offset is False:
+                # We could not figure out where to place this picture. So we remove it entirely.
+                self.picture = None
+                self.canvas_width = 0
+                self.canvas_height = 0
+                self.picture_offset = 0
         else:
             self.canvas_width = 0
             self.canvas_height = 0

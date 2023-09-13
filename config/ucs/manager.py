@@ -4,15 +4,11 @@
 """ manager.py: Easy UCS Deployment Tool """
 
 import copy
-import json
-import os
 import re
 import time
 import urllib
 
-import jsonschema
 from imcsdk.imchandle import ImcHandle
-from packaging import version as packaging_version
 from ucsmsdk.mometa.fabric.FabricEthLanEp import FabricEthLanEp
 from ucsmsdk.ucsexception import UcsException
 from ucsmsdk.ucshandle import UcsHandle
@@ -29,29 +25,91 @@ from config.ucs.cimc.imc import UcsImcAdapterCard, UcsImcAdminNetwork, UcsImcBio
     UcsImcStorageFlexFlashController, UcsImcTimezoneMgmt, UcsImcVirtualMedia, UcsImcVKvmProperties
 from config.ucs.config import UcsImcConfig, UcsSystemConfig, UcsCentralConfig
 from config.ucs.device_connector import UcsDeviceConnector
-from config.ucs.ucsm.admin import UcsSystemDns, UcsSystemInformation,  UcsSystemManagementInterface, UcsSystemOrg,\
-    UcsSystemTimezoneMgmt, UcsSystemLocalUser, UcsSystemRole,  UcsSystemLocale, UcsSystemLocalUsersProperties,\
-    UcsSystemCommunicationServices, UcsSystemGlobalPolicies,  UcsSystemPreLoginBanner, UcsSystemBackupExportPolicy,\
-    UcsSystemSelPolicy, UcsSystemSwitchingMode,  UcsSystemUcsCentral, UcsSystemRadius, UcsSystemTacacs, UcsSystemLdap,\
-    UcsSystemCallHome,  UcsSystemPortAutoDiscoveryPolicy, UcsSystemSyslog, UcsSystemFaultPolicy, UcsSystemAuthentication
-from config.ucs.ucsm.lan import UcsSystemVlan, UcsSystemApplianceVlan, UcsSystemLanUplinkPort, UcsSystemLanPortChannel, \
-    UcsSystemServerPort, UcsSystemAppliancePort, UcsSystemAppliancePortChannel, UcsSystemLanPinGroup, \
-    UcsSystemVlanGroup, UcsSystemQosSystemClass, UcsSystemUnifiedStoragePort, UcsSystemUnifiedUplinkPort, \
-    UcsSystemBreakoutPort, UcsSystemUdldLinkPolicy, UcsSystemLinkProfile, UcsSystemApplianceNetworkControlPolicy, \
-    UcsSystemSlowDrainTimers
-from config.ucs.ucsm.san import UcsSystemVsan, UcsSystemStorageVsan, UcsSystemSanUplinkPort, UcsSystemSanStoragePort, \
-    UcsSystemFcoeUplinkPort, UcsSystemFcoeStoragePort, UcsSystemFcoePortChannel, UcsSystemSanPortChannel, \
-    UcsSystemSanPinGroup, UcsSystemSanUnifiedPort, UcsSystemFcZoneProfile
-from config.ucs.ucsc.system import UcsCentralDateTimeMgmt, UcsCentralDns, UcsCentralLocalUser, UcsCentralLocale,\
-    UcsCentralManagementInterface, UcsCentralPasswordProfile, UcsCentralRole, UcsCentralSnmp, UcsCentralSyslog,\
-    UcsCentralSystem
 from config.ucs.ucsc.domain_groups import UcsCentralDomainGroup
 from config.ucs.ucsc.orgs import UcsCentralOrg
+from config.ucs.ucsc.system import UcsCentralDateTimeMgmt, UcsCentralDns, UcsCentralLocalUser, UcsCentralLocale, \
+    UcsCentralManagementInterface, UcsCentralPasswordProfile, UcsCentralRole, UcsCentralSnmp, UcsCentralSyslog, \
+    UcsCentralSystem
+from config.ucs.ucsm.admin import UcsSystemAuthentication, UcsSystemBackupExportPolicy, UcsSystemCallHome, \
+    UcsSystemUcsCentral, UcsSystemCommunicationServices, UcsSystemDns, UcsSystemFaultPolicy, UcsSystemGlobalPolicies, \
+    UcsSystemInformation, UcsSystemKmipCertificationPolicy, UcsSystemLdap, UcsSystemLocalUser, \
+    UcsSystemLocalUsersProperties, UcsSystemLocale, UcsSystemManagementInterface, UcsSystemOrg, \
+    UcsSystemPortAutoDiscoveryPolicy, UcsSystemPreLoginBanner, UcsSystemRadius, UcsSystemRole, UcsSystemSelPolicy, \
+    UcsSystemSwitchingMode, UcsSystemSyslog, UcsSystemTacacs, UcsSystemTimezoneMgmt
+from config.ucs.ucsm.lan import UcsSystemApplianceNetworkControlPolicy, UcsSystemApplianceVlan, UcsSystemLanPinGroup, \
+    UcsSystemLanTrafficMonitoringSession, UcsSystemLinkProfile, UcsSystemNetflowMonitoring, UcsSystemQosSystemClass, \
+    UcsSystemSlowDrainTimers, UcsSystemUdldLinkPolicy, UcsSystemVlan, UcsSystemVlanGroup
+from config.ucs.ucsm.ports import UcsSystemLanUplinkPort, UcsSystemAppliancePort, UcsSystemServerPort, \
+    UcsSystemLanPortChannel, UcsSystemAppliancePortChannel, UcsSystemBreakoutPort, UcsSystemUnifiedStoragePort, \
+    UcsSystemUnifiedUplinkPort, UcsSystemFcoeUplinkPort, UcsSystemFcoeStoragePort, UcsSystemSanPortChannel, \
+    UcsSystemFcoePortChannel, UcsSystemSanUplinkPort, UcsSystemSanStoragePort, UcsSystemSanUnifiedPort
+from config.ucs.ucsm.san import UcsSystemFcZoneProfile, UcsSystemSanPinGroup, UcsSystemSanTrafficMonitoringSession, \
+    UcsSystemStorageVsan, UcsSystemVsan
 
 
 class GenericUcsConfigManager(GenericConfigManager):
     def __init__(self, parent=None):
         GenericConfigManager.__init__(self, parent=parent)
+
+    def _get_service_profiles_hierarchy(self, config_orgs, output_json_orgs):
+        """
+        Recursively fetches all the service profiles from all the orgs
+        :returns: nothing
+        """
+        for org in config_orgs:
+            json_org = {
+                "org_name": org.name
+            }
+            if org.descr:
+                json_org["descr"] = org.descr
+            if org.service_profiles:
+                json_org["service_profiles"] = []
+                for service_profile in org.service_profiles:
+                    dict_service_profile = {}
+                    for field in ["asset_tag", "assigned_server", "name", "policy_owner", "service_profile_template",
+                                  "type", "user_label"]:
+                        if field == "assigned_server":
+                            if hasattr(service_profile, "operational_state") and getattr(service_profile,
+                                                                                         "operational_state"):
+                                if field in service_profile.operational_state and \
+                                        service_profile.operational_state[field]:
+                                    dict_service_profile[field] = copy.copy(service_profile.operational_state[field])
+                                    for key in service_profile.operational_state[field]:
+                                        if not dict_service_profile[field][key]:
+                                            dict_service_profile[field].pop(key)
+                        elif hasattr(service_profile, field) and getattr(service_profile, field):
+                            dict_service_profile[field] = getattr(service_profile, field)
+                    json_org["service_profiles"].append(dict_service_profile)
+
+            output_json_orgs.append(json_org)
+            if org.orgs:
+                json_org["orgs"] = []
+                self._get_service_profiles_hierarchy(org.orgs, json_org["orgs"])
+
+                # Removing the orgs which does not have sub-orgs and profiles
+                indexes_to_be_removed = []
+                for index in range(len(json_org["orgs"])):
+                    if "orgs" not in json_org["orgs"][index] and "service_profiles" not in json_org["orgs"][index]:
+                        indexes_to_be_removed.append(index)
+                for index in sorted(indexes_to_be_removed, reverse=True):
+                    del json_org["orgs"][index]
+                if not json_org["orgs"]:
+                    del json_org["orgs"]
+
+    def get_profiles(self, config=None):
+        """
+        List all Service Profiles from a given config with some of their key attributes
+        :param config: The config from which all the service profiles/templates needs to be obtained
+        :return: All service profiles/templates from the config, [] otherwise
+        """
+        if config is None:
+            self.logger(level="error", message="Missing config in get service profiles request!")
+            return None
+
+        service_profiles_hierarchy = []
+        self._get_service_profiles_hierarchy(config.orgs, service_profiles_hierarchy)
+
+        return service_profiles_hierarchy
 
     def export_config_plots(self, config=None, export_format="png", directory=None):
         pass
@@ -125,12 +183,23 @@ class UcsSystemConfigManager(GenericUcsConfigManager):
             self.logger(level="error", message="No plots found. Unable to export plots.")
             return False
 
-    def fetch_config(self):
+        return True
+
+    def fetch_config(self, force=False):
         self.logger(message="Fetching config from live device (can take several minutes)")
         config = UcsSystemConfig(parent=self)
-        config.origin = "live"
+        config.metadata.origin = "live"
+        config.metadata.easyucs_version = __version__
         config.load_from = "live"
-        config._fetch_sdk_objects()
+        config._fetch_sdk_objects(force=force)
+
+        # If any of the mandatory tasksteps fails then return None
+        from api.api_server import easyucs
+        if easyucs and self.parent.task and \
+                easyucs.task_manager.is_any_taskstep_failed(uuid=self.parent.task.metadata.uuid):
+            self.logger(level="error", message="Failed to fetch one or more SDK objects. Stopping the config fetch.")
+            return None
+
         self.logger(level="debug", message="Finished fetching UCS SDK objects for config")
 
         # Put in order the items to append
@@ -144,8 +213,12 @@ class UcsSystemConfigManager(GenericUcsConfigManager):
 
         config.switching_mode.append(UcsSystemSwitchingMode(parent=config))
         config.communication_services.append(UcsSystemCommunicationServices(parent=config))
-        config.device_connector.append(UcsDeviceConnector(parent=config))
-        config.global_fault_policy.append(UcsSystemFaultPolicy(parent=config))
+        device_connector = UcsDeviceConnector(parent=config)
+        if device_connector.intersight_url:
+            config.device_connector.append(device_connector)
+        if "faultPolicy" in config.sdk_objects:
+            config.global_fault_policy.append(
+                UcsSystemFaultPolicy(parent=config, fault_policy=config.sdk_objects["faultPolicy"][0]))
         config.syslog.append(UcsSystemSyslog(parent=config))
         config.radius.append(UcsSystemRadius(parent=config))
         config.tacacs.append(UcsSystemTacacs(parent=config))
@@ -155,9 +228,14 @@ class UcsSystemConfigManager(GenericUcsConfigManager):
         config.backup_export_policy.append(UcsSystemBackupExportPolicy(parent=config))
         config.global_policies.append(UcsSystemGlobalPolicies(parent=config))
         config.dns.extend(UcsSystemDns(parent=config).dns)
+        if "mgmtKmipCertPolicy" in config.sdk_objects:
+            if config.sdk_objects["mgmtKmipCertPolicy"]:
+                config.kmip_client_cert_policy.append(UcsSystemKmipCertificationPolicy(parent=config))
         config.local_users_properties.append(UcsSystemLocalUsersProperties(parent=config))
         config.sel_policy.append(UcsSystemSelPolicy(parent=config))
-        config.port_auto_discovery_policy.append(UcsSystemPortAutoDiscoveryPolicy(parent=config))
+        if "computePortDiscPolicy" in config.sdk_objects:
+            config.port_auto_discovery_policy.append(UcsSystemPortAutoDiscoveryPolicy(
+                parent=config, compute_port_disc_policy=config.sdk_objects["computePortDiscPolicy"][0]))
 
         if "qosclassSlowDrain" in config.sdk_objects:
             if config.sdk_objects["qosclassSlowDrain"]:
@@ -208,8 +286,27 @@ class UcsSystemConfigManager(GenericUcsConfigManager):
                 config.appliance_network_control_policies.append(
                     UcsSystemApplianceNetworkControlPolicy(parent=config, nwctrl_definition=nwctrl_definition))
 
+        # Port configuration
+        # We start with Unified Uplink & Unified Storage ports, as those are special and group 2 roles in 1
+        for ether_pio in config.sdk_objects["etherPIo"]:
+            if ether_pio.if_role == "network-fcoe-uplink":
+                config.unified_uplink_ports.append(UcsSystemUnifiedUplinkPort(parent=config, ether_pio=ether_pio))
+
+        for ether_pio in config.sdk_objects["etherPIo"]:
+            if ether_pio.if_role == "fcoe-nas-storage":
+                config.unified_storage_ports.append(UcsSystemUnifiedStoragePort(parent=config, ether_pio=ether_pio))
+
         for fabric_eth_lan_ep in config.sdk_objects["fabricEthLanEp"]:
             config.lan_uplink_ports.append(UcsSystemLanUplinkPort(parent=config, fabric_eth_lan_ep=fabric_eth_lan_ep))
+
+        # We remove LAN Uplink ports that are already part of Unified Uplink ports
+        for unified_uplink_port in config.unified_uplink_ports:
+            for lan_uplink_port in config.lan_uplink_ports:
+                if (unified_uplink_port.fabric == lan_uplink_port.fabric) & (
+                        unified_uplink_port.slot_id == lan_uplink_port.slot_id) & (
+                        unified_uplink_port.port_id == lan_uplink_port.port_id) & (
+                        unified_uplink_port.aggr_id == lan_uplink_port.aggr_id):
+                    config.lan_uplink_ports.remove(lan_uplink_port)
 
         # We also add server ports that are part of a port-channel (fabricDceSwSrvPcEp) since they are auto created
         for fabric_dce_sw_srv_ep in sorted(config.sdk_objects["fabricDceSwSrvEp"] +
@@ -221,33 +318,52 @@ class UcsSystemConfigManager(GenericUcsConfigManager):
         for fabric_eth_estc_ep in config.sdk_objects["fabricEthEstcEp"]:
             config.appliance_ports.append(UcsSystemAppliancePort(parent=config, fabric_eth_estc_ep=fabric_eth_estc_ep))
 
+        # We remove Appliance ports that are already part of Unified Storage ports
+        for unified_storage_port in config.unified_storage_ports:
+            for appliance_port in config.appliance_ports:
+                if (unified_storage_port.fabric == appliance_port.fabric) & (
+                        unified_storage_port.slot_id == appliance_port.slot_id) & (
+                        unified_storage_port.port_id == appliance_port.port_id) & (
+                        unified_storage_port.aggr_id == appliance_port.aggr_id):
+                    config.appliance_ports.remove(appliance_port)
+
         for fabric_vlan in config.sdk_objects["fabricVlan"]:
             if fabric_vlan.dn.startswith("fabric/lan"):
                 config.vlans.append(UcsSystemVlan(parent=config, fabric_vlan=fabric_vlan))
             elif fabric_vlan.dn.startswith("fabric/eth-estc"):
                 config.appliance_vlans.append(UcsSystemApplianceVlan(parent=config, fabric_vlan=fabric_vlan))
-                
+
         for fabric_fc_san_ep in config.sdk_objects["fabricFcSanEp"]:
             config.san_uplink_ports.append(UcsSystemSanUplinkPort(parent=config, fabric_fc_san_ep=fabric_fc_san_ep))
 
         for fabric_fc_estc_ep in config.sdk_objects["fabricFcEstcEp"]:
             config.san_storage_ports.append(UcsSystemSanStoragePort(parent=config, fabric_fc_estc_ep=fabric_fc_estc_ep))
-            
+
         for fabric_fcoe_san_ep in config.sdk_objects["fabricFcoeSanEp"]:
             config.fcoe_uplink_ports.append(UcsSystemFcoeUplinkPort(parent=config,
                                                                     fabric_fcoe_san_ep=fabric_fcoe_san_ep))
+
+        # We remove FCoE Uplink ports that are already part of Unified Uplink ports
+        for unified_uplink_port in config.unified_uplink_ports:
+            for fcoe_uplink_port in config.fcoe_uplink_ports:
+                if (unified_uplink_port.fabric == fcoe_uplink_port.fabric) & (
+                        unified_uplink_port.slot_id == fcoe_uplink_port.slot_id) & (
+                        unified_uplink_port.port_id == fcoe_uplink_port.port_id) & (
+                        unified_uplink_port.aggr_id == fcoe_uplink_port.aggr_id):
+                    config.fcoe_uplink_ports.remove(fcoe_uplink_port)
 
         for fabric_fcoe_estc_ep in config.sdk_objects["fabricFcoeEstcEp"]:
             config.fcoe_storage_ports.append(UcsSystemFcoeStoragePort(parent=config,
                                                                       fabric_fcoe_estc_ep=fabric_fcoe_estc_ep))
 
-        for ether_pio in config.sdk_objects["etherPIo"]:
-            if ether_pio.if_role == "network-fcoe-uplink":
-                config.unified_uplink_ports.append(UcsSystemUnifiedUplinkPort(parent=config, ether_pio=ether_pio))
-        
-        for ether_pio in config.sdk_objects["etherPIo"]:
-            if ether_pio.if_role == "fcoe-nas-storage":
-                config.unified_storage_ports.append(UcsSystemUnifiedStoragePort(parent=config, ether_pio=ether_pio))
+        # We remove FCoE Storage ports that are already part of Unified Storage ports
+        for unified_storage_port in config.unified_storage_ports:
+            for fcoe_storage_port in config.fcoe_storage_ports:
+                if (unified_storage_port.fabric == fcoe_storage_port.fabric) & (
+                        unified_storage_port.slot_id == fcoe_storage_port.slot_id) & (
+                        unified_storage_port.port_id == fcoe_storage_port.port_id) & (
+                        unified_storage_port.aggr_id == fcoe_storage_port.aggr_id):
+                    config.fcoe_storage_ports.remove(fcoe_storage_port)
 
         for fabric_vsan in config.sdk_objects["fabricVsan"]:
             if fabric_vsan.dn.startswith("fabric/san"):
@@ -279,10 +395,10 @@ class UcsSystemConfigManager(GenericUcsConfigManager):
 
         for fabric_lan_pin_group in config.sdk_objects["fabricLanPinGroup"]:
             config.lan_pin_groups.append(UcsSystemLanPinGroup(parent=config, fabric_lan_pin_group=fabric_lan_pin_group))
-            
+
         for fabric_san_pin_group in config.sdk_objects["fabricSanPinGroup"]:
             config.san_pin_groups.append(UcsSystemSanPinGroup(parent=config, fabric_san_pin_group=fabric_san_pin_group))
-            
+
         if "fabricBreakout" in config.sdk_objects:
             for fabric_breakout in config.sdk_objects["fabricBreakout"]:
                 config.breakout_ports.append(UcsSystemBreakoutPort(parent=config, fabric_breakout=fabric_breakout))
@@ -302,9 +418,29 @@ class UcsSystemConfigManager(GenericUcsConfigManager):
                 if fi_b_fc_ports_presence and self.parent.fi_b_model not in ["N10-S6100", "N10-S6200"]:
                     config.san_unified_ports.append(UcsSystemSanUnifiedPort(parent=config, fabric="B"))
 
+        if "fabricEthMon" in config.sdk_objects:
+            for fabric_eth_mon in config.sdk_objects["fabricEthMon"]:
+                config.lan_traffic_monitoring_sessions.append(
+                    UcsSystemLanTrafficMonitoringSession(parent=config, fabric_eth_mon=fabric_eth_mon)
+                )
+
+        if "fabricFcMon" in config.sdk_objects:
+            for fabric_fc_mon in config.sdk_objects["fabricFcMon"]:
+                config.san_traffic_monitoring_sessions.append(
+                    UcsSystemSanTrafficMonitoringSession(parent=config, fabric_fc_mon=fabric_fc_mon)
+                )
+
+        if "fabricEthLanFlowMonitoring" in config.sdk_objects:
+            for fabric_eth_lan_flow_monitoring in config.sdk_objects["fabricEthLanFlowMonitoring"]:
+                config.netflow_monitoring.append(
+                    UcsSystemNetflowMonitoring(parent=config,
+                                               fabric_eth_lan_flow_monitoring=fabric_eth_lan_flow_monitoring)
+                )
+
         for org_org in sorted(config.sdk_objects["orgOrg"], key=lambda org: org.dn):
             if org_org.dn == "org-root":
                 config.orgs.append(UcsSystemOrg(parent=config, org_org=org_org))
+                break
 
         # Removing the list of SDK objects fetched from the live UCS device
         config.sdk_objects = None
@@ -322,12 +458,23 @@ class UcsSystemConfigManager(GenericUcsConfigManager):
                 self.logger(level="error", message="No config found. Unable to generate config plots.")
                 return False
 
+        if self.parent.task is not None:
+            self.parent.task.taskstep_manager.start_taskstep(
+                name="GenerateReportDrawConfigUcsSystem",
+                description="Generating plots for device " + self.parent.target)
         self.logger(level="debug", message="Generating plots for device " + self.parent.target + " using config: " +
                                            str(config.uuid))
 
         config.service_profile_plots = UcsSystemServiceProfileConfigPlot(parent=self, config=config)
         if config.orgs[0].orgs:  # If 'root' is not the only organization
             config.orgs_plot = UcsSystemOrgConfigPlot(parent=self, config=config)
+
+        if self.parent.task is not None:
+            self.parent.task.taskstep_manager.stop_taskstep(
+                name="GenerateReportDrawConfigUcsSystem", status="successful",
+                status_message="Finished generating plots for device " + self.parent.target)
+
+        return True
 
     def push_config(self, uuid=None, reset=False, fi_ip_list=[], bypass_version_checks=False):
         """
@@ -343,7 +490,7 @@ class UcsSystemConfigManager(GenericUcsConfigManager):
             config = self.get_latest_config()
         else:
             # Find the config that needs to be pushed
-            config_list = [config for config in self.config_list if config.uuid == uuid]
+            config_list = [config for config in self.config_list if str(config.uuid) == str(uuid)]
             if len(config_list) != 1:
                 self.logger(level="error", message="Failed to locate config with UUID " + str(uuid) + " for push")
                 return False
@@ -352,9 +499,17 @@ class UcsSystemConfigManager(GenericUcsConfigManager):
 
         if config:
             if reset:
+                if self.parent.task is not None:
+                    self.parent.task.taskstep_manager.start_taskstep(
+                        name="ResetDeviceUcsSystem",
+                        description="Resetting device " + self.parent.target)
                 # Check if the DHCP IP addresses are available before resetting
                 if not fi_ip_list:
-                    self.logger(level="error", message="No DHCP IP addresses given")
+                    message_str = "No DHCP IP addresses given"
+                    if self.parent.task is not None:
+                        self.parent.task.taskstep_manager.stop_taskstep(
+                            name="ResetDeviceUcsSystem", status="failed", status_message=message_str)
+                    self.logger(level="error", message=message_str)
                     return False
                 # TODO Check if IP addresses are valid
 
@@ -364,8 +519,11 @@ class UcsSystemConfigManager(GenericUcsConfigManager):
                         if user.id == "admin":
                             if not user.password:
                                 # Admin password is a mandatory input
-                                self.logger(level="error",
-                                            message="Reset aborted: Could not find password for user admin in config")
+                                message_str = "Reset aborted: Could not find password for user admin in config"
+                                if self.parent.task is not None:
+                                    self.parent.task.taskstep_manager.stop_taskstep(
+                                        name="ResetDeviceUcsSystem", status="failed", status_message=message_str)
+                                self.logger(level="error", message=message_str)
                                 return False
 
                 # Performing reset
@@ -389,8 +547,17 @@ class UcsSystemConfigManager(GenericUcsConfigManager):
                                          erase_flexflash=erase_flexflash,
                                          clear_sel_logs=clear_sel_logs,
                                          bypass_version_checks=bypass_version_checks):
-                    self.logger(level="error", message="Error while performing device reset")
+                    message_str = "Error while performing device reset"
+                    if self.parent.task is not None:
+                        self.parent.task.taskstep_manager.stop_taskstep(
+                            name="ResetDeviceUcsSystem", status="failed", status_message=message_str)
+                    self.logger(level="error", message=message_str)
                     return False
+
+                if self.parent.task is not None:
+                    self.parent.task.taskstep_manager.stop_taskstep(
+                        name="ResetDeviceUcsSystem", status="successful",
+                        status_message="Successfully reset device " + self.parent.target)
 
                 # Clearing device target, username & password since they might change in the new config
                 self.parent.target = ""
@@ -398,25 +565,57 @@ class UcsSystemConfigManager(GenericUcsConfigManager):
                 self.parent.password = ""
 
                 if self.parent.sys_mode == "cluster":
-                    self.logger(message="Waiting up to 780 seconds for both Fabric Interconnects to come back")
+                    message_str = "Waiting up to 780 seconds for both Fabric Interconnects to come back"
+                    self.logger(message=message_str)
                 elif self.parent.sys_mode == "stand-alone":
-                    self.logger(message="Waiting up to 780 seconds for Fabric Interconnect to come back")
+                    message_str = "Waiting up to 780 seconds for Fabric Interconnect to come back"
+                    self.logger(message=message_str)
+                if self.parent.task is not None:
+                    self.parent.task.taskstep_manager.start_taskstep(
+                        name="WaitForRebootAfterResetUcsSystem", description=message_str)
                 time.sleep(300)
 
                 if not self.parent.wait_for_reboot_after_reset(timeout=480, fi_ip_list=fi_ip_list):
-                    self.logger(level="error", message="Could not reconnect to Fabric Interconnect(s) after reset")
+                    message_str = "Could not reconnect to Fabric Interconnect(s) after reset"
+                    if self.parent.task is not None:
+                        self.parent.task.taskstep_manager.stop_taskstep(
+                            name="WaitForRebootAfterResetUcsSystem", status="failed", status_message=message_str)
+                    self.logger(level="error", message=message_str)
                     return False
                 self.parent.set_task_progression(20)
+                if self.parent.task is not None:
+                    self.parent.task.taskstep_manager.stop_taskstep(
+                        name="WaitForRebootAfterResetUcsSystem", status="successful",
+                        status_message="Successfully reconnected to Fabric Interconnect(s) after reset")
 
                 # Performing initial setup
-                self.logger(message="Performing initial setup using the following IP address(es): " + str(fi_ip_list))
+                message_str = "Performing initial setup using the following IP address(es): (" + \
+                              ", ".join(fi_ip_list) + ")"
+                if self.parent.task is not None:
+                    self.parent.task.taskstep_manager.start_taskstep(
+                        name="InitialSetupUcsSystem", description=message_str)
+                self.logger(message=message_str)
                 if not self.parent.initial_setup(fi_ip_list=fi_ip_list, config=config):
-                    self.logger(level="error", message="Error while performing initial setup")
+                    message_str = "Error while performing initial setup"
+                    if self.parent.task is not None:
+                        self.parent.task.taskstep_manager.stop_taskstep(
+                            name="InitialSetupUcsSystem", status="failed", status_message=message_str)
+                    self.logger(level="error", message=message_str)
                     return False
+                if self.parent.task is not None:
+                    self.parent.task.taskstep_manager.stop_taskstep(
+                        name="InitialSetupUcsSystem", status="successful",
+                        status_message="Successfully performed initial setup using the following IP address(es): (" +
+                                       ", ".join(fi_ip_list) + ")"
+                    )
 
                 # Wait loop for FI cluster election to complete
                 if self.parent.sys_mode == "cluster":
-                    self.logger(message="Waiting up to 240 seconds for cluster election to complete")
+                    message_str = "Waiting up to 240 seconds for cluster election to complete"
+                    if self.parent.task is not None:
+                        self.parent.task.taskstep_manager.start_taskstep(
+                            name="WaitForClusterElectionUcsSystem", description=message_str)
+                    self.logger(message=message_str)
                     time.sleep(80)
 
                     if config.system:
@@ -425,11 +624,19 @@ class UcsSystemConfigManager(GenericUcsConfigManager):
                         elif config.system[0].virtual_ipv6:
                             self.parent.target = config.system[0].virtual_ipv6
                     if not self.parent.target:
-                        self.logger(level="error", message="Could not determine target IP of the device")
+                        message_str = "Could not determine target IP of the device in the config"
+                        if self.parent.task is not None:
+                            self.parent.task.taskstep_manager.stop_taskstep(
+                                name="WaitForClusterElectionUcsSystem", status="failed", status_message=message_str)
+                        self.logger(level="error", message=message_str)
                         return False
 
                 elif self.parent.sys_mode == "stand-alone":
-                    self.logger(message="Waiting up to 180 seconds for initial configuration to complete")
+                    message_str = "Waiting up to 180 seconds for initial configuration to complete"
+                    if self.parent.task is not None:
+                        self.parent.task.taskstep_manager.start_taskstep(
+                            name="WaitForClusterElectionUcsSystem", description=message_str)
+                    self.logger(message=message_str)
                     time.sleep(20)
 
                     # TODO Handle Ipv6
@@ -440,13 +647,20 @@ class UcsSystemConfigManager(GenericUcsConfigManager):
                                     self.parent.target = management_interface.ip
 
                     if not self.parent.target:
-                        self.logger(level="error",
-                                          message="Could not determine target IP of the device in the config")
+                        message_str = "Could not determine target IP of the device in the config"
+                        if self.parent.task is not None:
+                            self.parent.task.taskstep_manager.stop_taskstep(
+                                name="WaitForClusterElectionUcsSystem", status="failed", status_message=message_str)
+                        self.logger(level="error", message=message_str)
                         return False
 
                 if not config.local_users:
                     # Could not find local_users in config - Admin password is a mandatory parameter - Exiting
-                    self.logger(level="error", message="Could not find users in config")
+                    message_str = "Could not find users in config"
+                    if self.parent.task is not None:
+                        self.parent.task.taskstep_manager.stop_taskstep(
+                            name="WaitForClusterElectionUcsSystem", status="failed", status_message=message_str)
+                    self.logger(level="error", message=message_str)
                     return False
 
                 # Going through all users to find admin
@@ -458,8 +672,12 @@ class UcsSystemConfigManager(GenericUcsConfigManager):
                                 self.parent.password = user.password
                             else:
                                 # Admin password is a mandatory input
-                                self.logger(level="warning",
-                                            message="Could not find password for user id admin in config.")
+                                message_str = "Could not find password for user id admin in config."
+                                if self.parent.task is not None:
+                                    self.parent.task.taskstep_manager.stop_taskstep(
+                                        name="WaitForClusterElectionUcsSystem", status="failed",
+                                        status_message=message_str)
+                                self.logger(level="warning", message=message_str)
                                 return False
 
                 # We need to refresh the UCS device handle so that it has the right attributes
@@ -470,31 +688,84 @@ class UcsSystemConfigManager(GenericUcsConfigManager):
 
                 if not common.check_web_page(device=self.parent, url="https://" + self.parent.target, str_match="Cisco",
                                              timeout=160):
-                    self.logger(level="error", message="Impossible to reconnect to UCS system")
+                    message_str = "Impossible to reconnect to UCS system"
+                    if self.parent.task is not None:
+                        self.parent.task.taskstep_manager.stop_taskstep(
+                            name="WaitForClusterElectionUcsSystem", status="failed", status_message=message_str)
+                    self.logger(level="error", message=message_str)
                     return False
                 self.parent.set_task_progression(40)
 
                 # Reconnecting and waiting for HA cluster to be ready (if in cluster mode)
                 # or FI to be ready (if in stand-alone mode)
                 if not self.parent.connect(bypass_version_checks=True, retries=3):
-                    self.logger(level="error", message="Impossible to reconnect to UCS system")
+                    message_str = "Impossible to reconnect to UCS system"
+                    if self.parent.task is not None:
+                        self.parent.task.taskstep_manager.stop_taskstep(
+                            name="WaitForClusterElectionUcsSystem", status="failed", status_message=message_str)
+                    self.logger(level="error", message=message_str)
                     return False
                 if self.parent.sys_mode == "cluster":
-                    self.logger(message="Waiting up to 300 seconds for UCS HA cluster to be ready...")
+                    if self.parent.task is not None:
+                        self.parent.task.taskstep_manager.stop_taskstep(
+                            name="WaitForClusterElectionUcsSystem", status="successful",
+                            status_message="Cluster election successfully completed and device reconnected")
+
+                    message_str = "Waiting up to 300 seconds for UCS HA cluster to be ready..."
+                    if self.parent.task is not None:
+                        self.parent.task.taskstep_manager.start_taskstep(
+                            name="WaitForClusterHaReadyUcsSystem", description=message_str)
+                    self.logger(message=message_str)
                     if not self.parent.wait_for_ha_cluster_ready(timeout=300):
-                        self.logger(level="error",
-                                    message="Timeout exceeded while waiting for UCS HA cluster to be in ready state")
+                        message_str = "Timeout exceeded while waiting for UCS HA cluster to be in ready state"
+                        if self.parent.task is not None:
+                            self.parent.task.taskstep_manager.stop_taskstep(
+                                name="WaitForClusterHaReadyUcsSystem", status="failed", status_message=message_str)
+                        self.logger(level="error", message=message_str)
                         return False
+                    if self.parent.task is not None:
+                        self.parent.task.taskstep_manager.stop_taskstep(
+                            name="WaitForClusterHaReadyUcsSystem", status="successful",
+                            status_message="UCS HA Cluster in ready state")
                 elif self.parent.sys_mode == "stand-alone":
-                    self.logger(message="Waiting up to 300 seconds for UCS stand-alone FI to be ready...")
+                    if self.parent.task is not None:
+                        self.parent.task.taskstep_manager.stop_taskstep(
+                            name="WaitForClusterElectionUcsSystem", status="successful",
+                            status_message="Initial configuration successfully completed and device reconnected")
+
+                    message_str = "Waiting up to 300 seconds for UCS stand-alone FI to be ready..."
+                    if self.parent.task is not None:
+                        self.parent.task.taskstep_manager.start_taskstep(
+                            name="WaitForClusterHaReadyUcsSystem", description=message_str)
+                    self.logger(message=message_str)
                     if not self.parent.wait_for_standalone_fi_ready(timeout=300):
-                        self.logger(level="error",
-                                    message="Timeout exceeded while waiting for UCS stand-alone FI to be ready")
+                        message_str = "Timeout exceeded while waiting for UCS stand-alone FI to be ready"
+                        if self.parent.task is not None:
+                            self.parent.task.taskstep_manager.stop_taskstep(
+                                name="WaitForClusterHaReadyUcsSystem", status="failed", status_message=message_str)
+                        self.logger(level="error", message=message_str)
                         return False
+                    if self.parent.task is not None:
+                        self.parent.task.taskstep_manager.stop_taskstep(
+                            name="WaitForClusterHaReadyUcsSystem", status="successful",
+                            status_message="UCS stand-alone FI in ready state")
                 self.parent.set_task_progression(45)
 
                 # We bypass version checks for the rest of the procedure as potential warning has already been made
                 bypass_version_checks = True
+
+            else:
+                if self.parent.task is not None:
+                    self.parent.task.taskstep_manager.skip_taskstep(
+                        name="ResetDeviceUcsSystem", status_message="Skipping device reset")
+                    self.parent.task.taskstep_manager.skip_taskstep(
+                        name="WaitForRebootAfterResetUcsSystem", status_message="Skipping device reset")
+                    self.parent.task.taskstep_manager.skip_taskstep(
+                        name="InitialSetupUcsSystem", status_message="Skipping device reset")
+                    self.parent.task.taskstep_manager.skip_taskstep(
+                        name="WaitForClusterElectionUcsSystem", status_message="Skipping device reset")
+                    self.parent.task.taskstep_manager.skip_taskstep(
+                        name="WaitForClusterHaReadyUcsSystem", status_message="Skipping device reset")
 
             # Pushing configuration to the device
             # We first make sure we are connected to the device
@@ -505,6 +776,9 @@ class UcsSystemConfigManager(GenericUcsConfigManager):
             self.logger(message="Pushing configuration " + str(config.uuid) + " to " + self.parent.target)
 
             # We push all config elements, in a specific optimized order to reduce number of reboots
+            if self.parent.task is not None:
+                self.parent.task.taskstep_manager.start_taskstep(
+                    name="PushAdminSectionUcsSystem", description="Pushing Admin section of config")
             self.logger(message="Now configuring Admin section")
             if config.system:
                 config.system[0].push_object()
@@ -550,17 +824,26 @@ class UcsSystemConfigManager(GenericUcsConfigManager):
             if config.authentication:
                 config.authentication[0].push_object()
 
+            if self.parent.task is not None:
+                self.parent.task.taskstep_manager.stop_taskstep(
+                    name="PushAdminSectionUcsSystem", status="successful",
+                    status_message="Successfully pushed Admin section of config")
             self.parent.set_task_progression(60)
 
+            if self.parent.task is not None:
+                self.parent.task.taskstep_manager.start_taskstep(
+                    name="PushEquipmentSectionUcsSystem", description="Pushing Equipment section of config")
             self.logger(message="Now configuring Equipment section")
             if config.global_policies:
                 config.global_policies[0].push_object()
+            if config.kmip_client_cert_policy:
+                config.kmip_client_cert_policy[0].push_object()
             if config.sel_policy:
                 config.sel_policy[0].push_object()
             if config.slow_drain_timers:
                 config.slow_drain_timers[0].push_object()
             for qos_system_class in config.qos_system_class:
-                if config.check_if_switching_mode_config_requires_reboot() and\
+                if config.check_if_switching_mode_config_requires_reboot() and \
                         self.parent.fi_a_model == "UCS-FI-6332-16UP":
                     self.logger(level="debug",
                                 message="The QoS System Class will be committed alongside the Switching Mode push")
@@ -571,15 +854,22 @@ class UcsSystemConfigManager(GenericUcsConfigManager):
             for switching_mode in config.switching_mode:
                 switching_mode.push_object()
 
+            if self.parent.task is not None:
+                self.parent.task.taskstep_manager.stop_taskstep(
+                    name="PushEquipmentSectionUcsSystem", status="successful",
+                    status_message="Successfully pushed Equipment section of config")
             self.parent.set_task_progression(65)
 
+            if self.parent.task is not None:
+                self.parent.task.taskstep_manager.start_taskstep(
+                    name="PushVlanVsanSectionUcsSystem", description="Pushing VLAN/VSAN section of config")
             self.logger(message="Now configuring VLAN/VSAN section")
             for vlan in config.vlans:
                 # Handling range of VLAN
                 if vlan.prefix:
                     start = int(vlan.id_from)
                     stop = int(vlan.id_to)
-                    for i in range(start, stop+1):
+                    for i in range(start, stop + 1):
                         vlan_temp = copy.deepcopy(vlan)
                         vlan_temp.id = str(i)
                         vlan_temp.name = vlan_temp.prefix + vlan_temp.id
@@ -592,7 +882,7 @@ class UcsSystemConfigManager(GenericUcsConfigManager):
                 if vlan.prefix:
                     start = int(vlan.id_from)
                     stop = int(vlan.id_to)
-                    for i in range(start, stop+1):
+                    for i in range(start, stop + 1):
                         vlan_temp = copy.deepcopy(vlan)
                         vlan_temp.id = str(i)
                         vlan_temp.name = vlan_temp.prefix + vlan_temp.id
@@ -606,8 +896,15 @@ class UcsSystemConfigManager(GenericUcsConfigManager):
             for storage_vsan in config.storage_vsans:
                 storage_vsan.push_object()
 
+            if self.parent.task is not None:
+                self.parent.task.taskstep_manager.stop_taskstep(
+                    name="PushVlanVsanSectionUcsSystem", status="successful",
+                    status_message="Successfully pushed VLAN/VSAN section of config")
             self.parent.set_task_progression(70)
 
+            if self.parent.task is not None:
+                self.parent.task.taskstep_manager.start_taskstep(
+                    name="PushFiPortsSectionUcsSystem", description="Pushing FI ports section of config")
             self.logger(message="Now configuring FI ports")
             # The following section might need a reboot of the FIs
             # We do not commit yet to avoid multiple configuration requests of the same port id
@@ -707,21 +1004,37 @@ class UcsSystemConfigManager(GenericUcsConfigManager):
                 need_reboot = False
                 self.logger(level="error", message="Unknown error in configuring FI ports")
 
+            if self.parent.task is not None:
+                self.parent.task.taskstep_manager.stop_taskstep(
+                    name="PushFiPortsSectionUcsSystem", status="successful",
+                    status_message="Successfully pushed FI ports section of config")
             self.parent.set_task_progression(75)
 
             # Reboot handling
             if need_reboot:
+                message_str = "Waiting up to 900 seconds for Fabric Interconnect to come back"
+                if self.parent.task is not None:
+                    self.parent.task.taskstep_manager.start_taskstep(
+                        name="WaitForRebootAfterPushFiPortsUcsSystem", description=message_str)
                 self.logger(message="Caution: The system will reboot in a few seconds!")
-                self.logger(message="Waiting up to 900 seconds for FIs to come back")
+                self.logger(message=message_str)
                 time.sleep(420)
 
                 if not common.check_web_page(device=self.parent, url="https://" + self.parent.target, str_match="Cisco",
                                              timeout=480):
-                    self.logger(level="error", message="Impossible to reconnect to UCS system")
+                    message_str = "Impossible to reconnect to UCS system"
+                    if self.parent.task is not None:
+                        self.parent.task.taskstep_manager.stop_taskstep(
+                            name="WaitForRebootAfterPushFiPortsUcsSystem", status="failed", status_message=message_str)
+                    self.logger(level="error", message=message_str)
                     return False
 
                 # Need to reconnect
                 self.parent.connect(bypass_version_checks=True)
+                if self.parent.task is not None:
+                    self.parent.task.taskstep_manager.stop_taskstep(
+                        name="WaitForRebootAfterPushFiPortsUcsSystem", status="successful",
+                        status_message="Successfully reconnected to Fabric Interconnect(s) after push of FI ports")
                 self.logger(message="Reconnected to system: " + self.parent.name + " running version: " +
                                     self.parent.version.version)
 
@@ -730,20 +1043,66 @@ class UcsSystemConfigManager(GenericUcsConfigManager):
                 # FI before reboot is complete. This lead to UCS Manager not knowing about those port type changes
                 # We only do this if we are in cluster mode
                 if self.parent.sys_mode == "cluster":
-                    self.logger(message="Waiting up to 300 seconds for UCS HA cluster to be ready...")
+                    message_str = "Waiting up to 300 seconds for UCS HA cluster to be ready..."
+                    if self.parent.task is not None:
+                        self.parent.task.taskstep_manager.start_taskstep(
+                            name="WaitForClusterHaReadyAfterPushFiPortsUcsSystem", description=message_str)
+                    self.logger(message=message_str)
                     if not self.parent.wait_for_ha_cluster_ready(timeout=300):
-                        self.logger(level="error",
-                                    message="Timeout exceeded while waiting for UCS HA cluster to be in ready state")
+                        message_str = "Timeout exceeded while waiting for UCS HA cluster to be in ready state"
+                        if self.parent.task is not None:
+                            self.parent.task.taskstep_manager.stop_taskstep(
+                                name="WaitForClusterHaReadyAfterPushFiPortsUcsSystem", status="failed",
+                                status_message=message_str)
+                        self.logger(level="error", message=message_str)
                         return False
+
+                    if self.parent.task is not None:
+                        self.parent.task.taskstep_manager.stop_taskstep(
+                            name="WaitForClusterHaReadyAfterPushFiPortsUcsSystem", status="successful",
+                            status_message="UCS HA Cluster in ready state")
 
                     # We now fetch the FSM state of the physical ports configuration to make sure it is 100%, in order
                     # to make sure the new port configuration has been taken into account before configuring anything
                     # else
-                    self.logger(message="Waiting up to 300 seconds for FSM state of physical ports to reach 100%...")
+                    message_str = "Waiting up to 300 seconds for FSM state of physical ports to reach 100%..."
+                    if self.parent.task is not None:
+                        self.parent.task.taskstep_manager.start_taskstep(
+                            name="WaitForFiPortsFsmStateUcsSystem", description=message_str)
+                    self.logger(message=message_str)
                     if not self.parent.wait_for_fsm_complete(ucs_sdk_object_class="swPhys", timeout=300):
-                        self.logger(level="error", message="Timeout exceeded while waiting for FSM state of physical " +
-                                                           "ports to reach 100%")
+                        message_str = "Timeout exceeded while waiting for FSM state of physical ports to reach 100%"
+                        if self.parent.task is not None:
+                            self.parent.task.taskstep_manager.stop_taskstep(
+                                name="WaitForFiPortsFsmStateUcsSystem", status="failed", status_message=message_str)
+                        self.logger(level="error", message=message_str)
                         return False
+
+                    if self.parent.task is not None:
+                        self.parent.task.taskstep_manager.stop_taskstep(
+                            name="WaitForFiPortsFsmStateUcsSystem", status="successful",
+                            status_message="UCS FI ports FSM state at 100%")
+
+                else:
+                    if self.parent.task is not None:
+                        self.parent.task.taskstep_manager.skip_taskstep(
+                            name="WaitForClusterHaReadyAfterPushFiPortsUcsSystem",
+                            status_message="Skipping wait for HA state as device is in stand-alone mode")
+                        self.parent.task.taskstep_manager.skip_taskstep(
+                            name="WaitForFiPortsFsmStateUcsSystem",
+                            status_message="Skipping wait for FI ports FSM state as device is in stand-alone mode")
+
+            else:
+                if self.parent.task is not None:
+                    self.parent.task.taskstep_manager.skip_taskstep(
+                        name="WaitForRebootAfterPushFiPortsUcsSystem",
+                        status_message="Skipping wait for reboot after FI ports config push as no reboot is required")
+                    self.parent.task.taskstep_manager.skip_taskstep(
+                        name="WaitForClusterHaReadyAfterPushFiPortsUcsSystem",
+                        status_message="Skipping wait for HA state as no reboot is required")
+                    self.parent.task.taskstep_manager.skip_taskstep(
+                        name="WaitForFiPortsFsmStateUcsSystem",
+                        status_message="Skipping wait for FI ports FSM state as no reboot is required")
 
             # End of section needing reboot of the FI
 
@@ -769,6 +1128,10 @@ class UcsSystemConfigManager(GenericUcsConfigManager):
                     time.sleep(20)
 
             self.parent.set_task_progression(85)
+
+            if self.parent.task is not None:
+                self.parent.task.taskstep_manager.start_taskstep(
+                    name="PushFiPortChannelsSectionUcsSystem", description="Pushing FI Port-Channels section of config")
 
             for lan_port_channel in config.lan_port_channels:
                 lan_port_channel.push_object()
@@ -797,10 +1160,32 @@ class UcsSystemConfigManager(GenericUcsConfigManager):
             for port_auto_discovery_policy in config.port_auto_discovery_policy:
                 port_auto_discovery_policy.push_object()
 
+            for lan_traffic_monitoring_session in config.lan_traffic_monitoring_sessions:
+                lan_traffic_monitoring_session.push_object()
+
+            for san_traffic_monitoring_session in config.san_traffic_monitoring_sessions:
+                san_traffic_monitoring_session.push_object()
+
+            for netflow_monitoring in config.netflow_monitoring:
+                netflow_monitoring.push_object()
+
+            if self.parent.task is not None:
+                self.parent.task.taskstep_manager.stop_taskstep(
+                    name="PushFiPortChannelsSectionUcsSystem", status="successful",
+                    status_message="Successfully pushed FI Port-Channels section of config")
             self.parent.set_task_progression(90)
+
+            if self.parent.task is not None:
+                self.parent.task.taskstep_manager.start_taskstep(
+                    name="PushOrgsSectionUcsSystem", description="Pushing Orgs section of config")
 
             for org in config.orgs:
                 org.push_object()
+
+            if self.parent.task is not None:
+                self.parent.task.taskstep_manager.stop_taskstep(
+                    name="PushOrgsSectionUcsSystem", status="successful",
+                    status_message="Successfully pushed Orgs section of config")
 
             # We handle UCS Central at the very end, because it might push config to the UCS system and create
             # connectivity issues
@@ -813,6 +1198,7 @@ class UcsSystemConfigManager(GenericUcsConfigManager):
             self.parent.disconnect()
             self.parent.set_task_progression(100)
 
+            return True
         else:
             self.logger(level="error", message="No config to push!")
             return False
@@ -845,6 +1231,9 @@ class UcsSystemConfigManager(GenericUcsConfigManager):
         if "roles" in config_json:
             for role in config_json["roles"]:
                 config.roles.append(UcsSystemRole(parent=config, json_content=role))
+        if "kmip_client_cert_policy" in config_json:
+            config.kmip_client_cert_policy.append(
+                UcsSystemKmipCertificationPolicy(parent=config, json_content=config_json["kmip_client_cert_policy"][0]))
         if "local_users_properties" in config_json:
             config.local_users_properties.append(
                 UcsSystemLocalUsersProperties(parent=config, json_content=config_json["local_users_properties"][0]))
@@ -984,6 +1373,19 @@ class UcsSystemConfigManager(GenericUcsConfigManager):
             for port_auto_discovery_policy in config_json["port_auto_discovery_policy"]:
                 config.port_auto_discovery_policy.append(
                     UcsSystemPortAutoDiscoveryPolicy(parent=config, json_content=port_auto_discovery_policy))
+        if "lan_traffic_monitoring_sessions" in config_json:
+            for lan_traffic_monitoring_session in config_json["lan_traffic_monitoring_sessions"]:
+                config.lan_traffic_monitoring_sessions.append(
+                    UcsSystemLanTrafficMonitoringSession(parent=config, json_content=lan_traffic_monitoring_session))
+        if "san_traffic_monitoring_sessions" in config_json:
+            for san_traffic_monitoring_session in config_json["san_traffic_monitoring_sessions"]:
+                config.san_traffic_monitoring_sessions.append(
+                    UcsSystemSanTrafficMonitoringSession(parent=config, json_content=san_traffic_monitoring_session))
+        if "netflow_monitoring" in config_json:
+            for netflow_monitoring in config_json["netflow_monitoring"]:
+                config.netflow_monitoring.append(
+                    UcsSystemNetflowMonitoring(parent=config, json_content=netflow_monitoring))
+
         if "orgs" in config_json:
             for org in config_json["orgs"]:
                 if "name" in org:
@@ -995,67 +1397,36 @@ class UcsSystemConfigManager(GenericUcsConfigManager):
 
         return True
 
-    def _validate_config_from_json(self, config_json=None):
-        """
-        Validates a config using the JSON schema definition
-        :param config_json: JSON content containing config to be validated
-        :return: True if config is valid, False otherwise
-        """
-
-        # Open JSON master schema for a UCS System config
-        json_file = open("schema/ucs/ucsm/master.json")
-        json_string = json_file.read()
-        json_file.close()
-        json_schema = json.loads(json_string)
-
-        schema_path = 'file:///{0}/'.format(
-            os.path.dirname(os.path.abspath("schema/ucs/ucsm/master.json")).replace("\\", "/"))
-        resolver = jsonschema.RefResolver(schema_path, json_schema)
-        format_checker = jsonschema.FormatChecker()
-
-        try:
-            jsonschema.validate(config_json, json_schema, resolver=resolver, format_checker=format_checker)
-        except jsonschema.ValidationError as err:
-            absolute_path = []
-            for path in err.absolute_path:
-                absolute_path.append(path)
-
-            # TODO: Improve error logging by providing a simple explanation when JSON file is not valid
-            self.logger(level="error", message="Invalid config JSON file in " + str(absolute_path))
-            self.logger(level="error", message="Failed to validate config JSON file using schema: " + str(err.message))
-            return False
-        except jsonschema.SchemaError as err:
-            self.logger(level="error", message="Failed to validate config JSON file due to schema error: " + str(err))
-            return False
-
-        # We now validate that the easyucs_version of the file is not greater than the running version of EasyUCS
-        easyucs_version_from_file = config_json["easyucs"]["metadata"][0]["easyucs_version"]
-        if packaging_version.parse(easyucs_version_from_file) > packaging_version.parse(__version__):
-            self.logger(level="error",
-                        message="Failed to validate config JSON file because it has been created using a more " +
-                                "recent version of EasyUCS (" + easyucs_version_from_file + " > " + __version__ + ")")
-            return False
-
-        return True
-
 
 class UcsImcConfigManager(GenericUcsConfigManager):
     def __init__(self, parent=None):
         GenericUcsConfigManager.__init__(self, parent=parent)
         self.config_class_name = UcsImcConfig
 
-    def fetch_config(self):
+    def get_profiles(self, config=None):
+        self.logger(level="error", message="Not available for device of type " + self.parent.metadata.device_type_long)
+
+    def fetch_config(self, force=False):
         self.logger(message="Fetching config from live device (can take several minutes)")
         config = UcsImcConfig(parent=self)
-        config.origin = "live"
+        config.metadata.origin = "live"
+        config.metadata.easyucs_version = __version__
         config.load_from = "live"
-        config._fetch_sdk_objects()
+        config._fetch_sdk_objects(force=force)
+
+        # If any of the mandatory tasksteps fails then return None
+        from api.api_server import easyucs
+        if easyucs and self.parent.task and \
+                easyucs.task_manager.is_any_taskstep_failed(uuid=self.parent.task.metadata.uuid):
+            self.logger(level="error", message="Failed to fetch one or more SDK objects. Stopping the config fetch.")
+            return None
+
         self.logger(level="debug", message="Finished fetching UCS SDK objects for config")
 
         # Put in order the items to append
         config.admin_networking.append(UcsImcAdminNetwork(parent=config))
         config.timezone_mgmt.append(UcsImcTimezoneMgmt(parent=config))
-        for local_user in config.sdk_objects["aaaUser"]:
+        for local_user in config.sdk_objects.get("aaaUser", []):
             if local_user.account_status != "inactive":
                 config.local_users.append(UcsImcLocalUser(parent=config, aaa_user=local_user))
         config.local_users_properties.append(UcsImcLocalUsersProperties(parent=config))
@@ -1063,10 +1434,12 @@ class UcsImcConfigManager(GenericUcsConfigManager):
         config.ip_blocking_properties.append(UcsImcIpBlockingProperties(parent=config))
         config.ip_filtering_properties.append(UcsImcIpFilteringProperties(parent=config))
         config.power_policies.append(UcsImcPowerPolicies(parent=config))
-        for adapter_card in config.sdk_objects["adaptorUnit"]:
+        for adapter_card in config.sdk_objects.get("adaptorUnit", []):
             config.adapter_cards.append(UcsImcAdapterCard(parent=config, adaptor_unit=adapter_card))
         config.communications_services.append(UcsImcCommunicationsServices(parent=config))
-        config.device_connector.append(UcsDeviceConnector(parent=config))
+        device_connector = UcsDeviceConnector(parent=config)
+        if device_connector.intersight_url:
+            config.device_connector.append(device_connector)
         config.chassis_inventory.append(UcsImcChassisInventory(parent=config))
         config.power_cap_configuration.append(UcsImcPowerCapConfiguration(parent=config))
         config.virtual_kvm_properties.append(UcsImcVKvmProperties(parent=config))
@@ -1074,7 +1447,7 @@ class UcsImcConfigManager(GenericUcsConfigManager):
         config.snmp.append(UcsImcSnmp(parent=config))
         config.logging_controls.append(UcsImcLoggingControls(parent=config))
         config.smtp_properties.append(UcsImcSmtpProperties(parent=config))
-        for platform_event_filter in config.sdk_objects["platformEventFilters"]:
+        for platform_event_filter in config.sdk_objects.get("platformEventFilters", []):
             config.platform_event_filters.append(UcsImcPlatformEventFilter(parent=config,
                                                                            platform_event_filter=platform_event_filter))
         # Delete empty filters
@@ -1090,10 +1463,10 @@ class UcsImcConfigManager(GenericUcsConfigManager):
         config.ldap_settings.append(UcsImcLdap(parent=config))
         config.boot_order_properties.append(UcsImcBootOrder(parent=config))
         config.dynamic_storage_zoning.append(UcsImcDynamicStorageZoning(parent=config))
-        for storage_controller in config.sdk_objects["storageController"]:
+        for storage_controller in config.sdk_objects.get("storageController", []):
             config.storage_controllers.append(UcsImcStorageController(parent=config,
                                                                       storage_controller=storage_controller))
-        for storage_flex_flash_controller in config.sdk_objects["storageFlexFlashController"]:
+        for storage_flex_flash_controller in config.sdk_objects.get("storageFlexFlashController", []):
             config.storage_flex_flash_controllers.append(
                 UcsImcStorageFlexFlashController(parent=config, storage_controller=storage_flex_flash_controller))
 
@@ -1276,6 +1649,12 @@ class UcsImcConfigManager(GenericUcsConfigManager):
                 config.local_users_properties[0].push_object()
             for local_user in config.local_users:
                 local_user.push_object()
+            if "clear_intersight_claim_status" in config.options.keys():
+                if config.options["clear_intersight_claim_status"] == "yes":
+                    self.parent.clear_intersight_claim_status()
+                    self.parent.connect()
+            if config.device_connector:
+                config.device_connector[0].push_object()
 
             self.parent.set_task_progression(60)
 
@@ -1338,6 +1717,11 @@ class UcsImcConfigManager(GenericUcsConfigManager):
             # We disconnect from the device
             self.parent.disconnect()
             self.parent.set_task_progression(100)
+
+            return True
+        else:
+            self.logger(level="error", message="No config to push!")
+            return False
 
     def _fill_config_from_json(self, config=None, config_json=None):
         """
@@ -1452,65 +1836,27 @@ class UcsImcConfigManager(GenericUcsConfigManager):
 
         return True
 
-    def _validate_config_from_json(self, config_json=None):
-        """
-        Validates a config using the JSON schema definition
-        :param config_json: JSON content containing config to be validated
-        :return: True if config is valid, False otherwise
-        """
-
-        # Open JSON master schema for a UCS CIMC config
-        json_file = open("schema/ucs/cimc/master.json")
-        json_string = json_file.read()
-        json_file.close()
-        json_schema = json.loads(json_string)
-
-        schema_path = 'file:///{0}/'.format(
-            os.path.dirname(os.path.abspath("schema/ucs/cimc/master.json")).replace("\\", "/"))
-        resolver = jsonschema.RefResolver(schema_path, json_schema)
-        format_checker = jsonschema.FormatChecker()
-
-        try:
-            jsonschema.validate(config_json, json_schema, resolver=resolver, format_checker=format_checker)
-        except jsonschema.ValidationError as err:
-            absolute_path = []
-            while True:
-                try:
-                    value = err.absolute_path.popleft()
-                    if value != 0:
-                        absolute_path.append(value)
-                except IndexError:
-                    break
-            # TODO: Improve error logging by providing a simple explanation when JSON file is not valid
-            self.logger(level="error", message="Invalid config JSON file in " + str(absolute_path))
-            self.logger(level="error", message="Failed to validate config JSON file using schema: " + str(err.message))
-            return False
-        except jsonschema.SchemaError as err:
-            self.logger(level="error", message="Failed to validate config JSON file due to schema error: " + str(err))
-            return False
-
-        # We now validate that the easyucs_version of the file is not greater than the running version of EasyUCS
-        easyucs_version_from_file = config_json["easyucs"]["metadata"][0]["easyucs_version"]
-        if packaging_version.parse(easyucs_version_from_file) > packaging_version.parse(__version__):
-            self.logger(level="error",
-                        message="Failed to validate config JSON file because it has been created using a more " +
-                                "recent version of EasyUCS (" + easyucs_version_from_file + " > " + __version__ + ")")
-            return False
-
-        return True
-
 
 class UcsCentralConfigManager(GenericUcsConfigManager):
     def __init__(self, parent=None):
         GenericUcsConfigManager.__init__(self, parent=parent)
         self.config_class_name = UcsCentralConfig
 
-    def fetch_config(self):
+    def fetch_config(self, force=False):
         self.logger(message="Fetching config from live device (can take several minutes)")
         config = UcsCentralConfig(parent=self)
-        config.origin = "live"
+        config.metadata.origin = "live"
+        config.metadata.easyucs_version = __version__
         config.load_from = "live"
-        config._fetch_sdk_objects()
+        config._fetch_sdk_objects(force=force)
+
+        # If any of the mandatory tasksteps fails then return None
+        from api.api_server import easyucs
+        if easyucs and self.parent.task and \
+                easyucs.task_manager.is_any_taskstep_failed(uuid=self.parent.task.metadata.uuid):
+            self.logger(level="error", message="Failed to fetch one or more SDK objects. Stopping the config fetch.")
+            return None
+
         self.logger(level="debug", message="Finished fetching UCS SDK objects for config")
 
         # Put in order the items to append
@@ -1540,9 +1886,16 @@ class UcsCentralConfigManager(GenericUcsConfigManager):
         for org_org in sorted(config.sdk_objects["orgOrg"], key=lambda org: org.dn):
             if org_org.dn == "org-root":
                 config.orgs.append(UcsCentralOrg(parent=config, org_org=org_org))
+                break
+
         for org_domain_group in sorted(config.sdk_objects["orgDomainGroup"], key=lambda org: org.dn):
             if org_domain_group.dn == "domaingroup-root":
                 config.domain_groups.append(UcsCentralDomainGroup(parent=config, org_domain_group=org_domain_group))
+                break
+
+        # Determining VxAN aliasing
+        if config._determine_vxan_aliasing():
+            self.logger(level="debug", message=self.parent.metadata.device_type_long + " config is using VxAN aliasing")
 
         # Removing the list of SDK objects fetched from the live UCS device
         config.sdk_objects = None
@@ -1610,6 +1963,11 @@ class UcsCentralConfigManager(GenericUcsConfigManager):
             self.parent.disconnect()
             self.parent.set_task_progression(100)
 
+            return True
+        else:
+            self.logger(level="error", message="No config to push!")
+            return False
+
     def _fill_config_from_json(self, config=None, config_json=None):
         """
         Fills config using parsed JSON config file
@@ -1666,56 +2024,15 @@ class UcsCentralConfigManager(GenericUcsConfigManager):
             for dg in config_json["domain_groups"]:
                 if "name" in dg:
                     if dg["name"] == "root":
-                        config.orgs.append(UcsCentralDomainGroup(parent=config, json_content=dg))
+                        config.domain_groups.append(UcsCentralDomainGroup(parent=config, json_content=dg))
                     else:
                         self.logger(level="error",
                                     message="Domain Group 'root' not found. Domain Group 'root' is mandatory. " +
                                             "No domain group configuration will be fetched")
-        return True
 
-    def _validate_config_from_json(self, config_json=None):
-        """
-        Validates a config using the JSON schema definition
-        :param config_json: JSON content containing config to be validated
-        :return: True if config is valid, False otherwise
-        """
-
-        # Open JSON master schema for a UCS Central config
-        json_file = open("schema/ucs/ucsc/master.json")
-        json_string = json_file.read()
-        json_file.close()
-        json_schema = json.loads(json_string)
-
-        schema_path = 'file:///{0}/'.format(
-            os.path.dirname(os.path.abspath("schema/ucs/ucsc/master.json")).replace("\\", "/"))
-        resolver = jsonschema.RefResolver(schema_path, json_schema)
-        format_checker = jsonschema.FormatChecker()
-
-        try:
-            jsonschema.validate(config_json, json_schema, resolver=resolver, format_checker=format_checker)
-        except jsonschema.ValidationError as err:
-            absolute_path = []
-            while True:
-                try:
-                    value = err.absolute_path.popleft()
-                    if value != 0:
-                        absolute_path.append(value)
-                except IndexError:
-                    break
-            # TODO: Improve error logging by providing a simple explanation when JSON file is not valid
-            self.logger(level="error", message="Invalid config JSON file in " + str(absolute_path))
-            self.logger(level="error", message="Failed to validate config JSON file using schema: " + str(err.message))
-            return False
-        except jsonschema.SchemaError as err:
-            self.logger(level="error", message="Failed to validate config JSON file due to schema error: " + str(err))
-            return False
-
-        # We now validate that the easyucs_version of the file is not greater than the running version of EasyUCS
-        easyucs_version_from_file = config_json["easyucs"]["metadata"][0]["easyucs_version"]
-        if packaging_version.parse(easyucs_version_from_file) > packaging_version.parse(__version__):
-            self.logger(level="error",
-                        message="Failed to validate config JSON file because it has been created using a more " +
-                                "recent version of EasyUCS (" + easyucs_version_from_file + " > " + __version__ + ")")
-            return False
+        # Determining VxAN aliasing
+        if config._determine_vxan_aliasing():
+            self.logger(level="debug",
+                        message=self.parent.metadata.device_type_long + " config is using VxAN aliasing")
 
         return True

@@ -1,48 +1,48 @@
 {
-   "id":"ucs_system_config_system#",
-   "$schema":"http://json-schema.org/draft-07/schema#",
-   "title":"EasyUCS ucs system config system section",
-   "description":"EasyUCS ucs system config system section JSON schema",
-   "type":"object",
-   "properties":{
+   "id": "ucs_system_config_system#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS ucs system config system section",
+   "description": "EasyUCS ucs system config system section JSON schema",
+   "type": "object",
+   "properties": {
       "comment": {
          "description": "UCS System Comments",
          "type": "string",
          "default": ""
       },
-      "name":{
-         "description":"UCS System Name",
-         "type":"string"
+      "name": {
+         "description": "UCS System Name",
+         "type": "string"
       },
-      "virtual_ip":{
-         "description":"UCS System Virtual IPv4 Address",
-         "type":"string",
-         "format":"ipv4"
+      "virtual_ip": {
+         "description": "UCS System Virtual IPv4 Address",
+         "type": "string",
+         "format": "ipv4"
       },
-      "virtual_ipv6":{
-         "description":"UCS System Virtual IPv6 Address",
-         "type":"string",
-         "format":"ipv6"
+      "virtual_ipv6": {
+         "description": "UCS System Virtual IPv6 Address",
+         "type": "string",
+         "format": "ipv6"
       },
-      "domain_name":{
-         "description":"UCS System Domain Name",
-         "type":"string"
+      "domain_name": {
+         "description": "UCS System Domain Name",
+         "type": "string"
       },
-      "owner":{
-         "description":"UCS System Owner",
-         "type":"string",
-         "default":""
+      "owner": {
+         "description": "UCS System Owner",
+         "type": "string",
+         "default": ""
       },
-      "site":{
-         "description":"UCS System Site",
-         "type":"string",
-         "default":""
+      "site": {
+         "description": "UCS System Site",
+         "type": "string",
+         "default": ""
       },
-      "descr":{
-         "description":"UCS System Description",
-         "type":"string",
-         "default":""
+      "descr": {
+         "description": "UCS System Description",
+         "type": "string",
+         "default": ""
       }
    },
-   "additionalProperties":false
+   "additionalProperties": false
 }

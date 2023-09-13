@@ -101,6 +101,30 @@
             ]
          },
          "minItems": 1
+      },
+      "tags": {
+         "description": "Domain Group Qualification Policy - Tags",
+         "type": "array",
+         "items": {
+            "description": "Domain Group Qualification Policy - Tag",
+            "type": "object",
+            "properties": {
+               "type": {
+                  "description": "Domain Group Qualification Policy - Tag - Type",
+                  "type": "string",
+                  "pattern": "^[ !#$%&\\(\\)\\*\\+,\\-\\.:;=\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{1,32}$"
+               },
+               "value": {
+                  "description": "Domain Group Qualification Policy - Tag - Value",
+                  "type": "string"
+               }
+            },
+            "additionalProperties": false,
+            "required": [
+               "type",
+               "value"
+            ]
+         }
       }
    },
    "additionalProperties": false,

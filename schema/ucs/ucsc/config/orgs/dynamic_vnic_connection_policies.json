@@ -1,0 +1,76 @@
+{
+   "id": "ucs_central_dynamic_vnic_connection_policies#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS ucs central config orgs dynamic_vnic_connection_policies section",
+   "description": "EasyUCS ucs central config orgs dynamic_vnic_connection_policies section JSON schema",
+   "type": "object",
+   "properties": {
+      "comment": {
+         "description": "Dynamic vNIC Connection Policy Comments",
+         "type": "string",
+         "default": ""
+      },
+      "name": {
+         "description": "Dynamic vNIC Connection Policy Name",
+         "type": "string",
+         "default": "",
+         "pattern": "^[\\-\\.:_a-zA-Z0-9]{1,16}$"
+      },
+      "descr": {
+         "description": "Description of Dynamic vNIC Connection Policy",
+         "type": "string",
+         "default": "",
+         "pattern": "^[ !#$%&\\(\\)\\*\\+,\\-\\./:;\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{0,256}$"
+      },
+      "number_dynamic_vnics": {
+         "description": "Dynamic vNIC Connection Policy - Number of Dynamic vnics",
+         "type": "string",
+         "default": "54",
+         "pattern": "^[0-9]$|^[0-9][0-9]$|^[0-1][0-9][0-9]$|^2[0-4][0-9]$|^25[0-6]$|^off$"
+      },
+      "adapter_policy": {
+         "description": "Dynamic vNIC Connection Policy - Adapter Policy",
+         "type": "string",
+         "pattern": "^[\\-\\.:_a-zA-Z0-9]{0,16}$|^global-VMWarePassThru$"
+      },
+      "protection": {
+         "description": "Dynamic vNIC Connection Policy - Protection",
+         "type": "string",
+         "default": "protected",
+         "enum": [
+            "protected",
+            "none",
+            "protected-pref-a",
+            "protected-pref-b"
+         ]
+      },
+      "tags": {
+         "description": "Dynamic vNIC Connection Policy - Tags",
+         "type": "array",
+         "items": {
+            "description": "Dynamic vNIC Connection Policy - Tag",
+            "type": "object",
+            "properties": {
+               "type": {
+                  "description": "Dynamic vNIC Connection Policy - Tag - Type",
+                  "type": "string",
+                  "pattern": "^[ !#$%&\\(\\)\\*\\+,\\-\\.:;=\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{1,32}$"
+               },
+               "value": {
+                  "description": "Dynamic vNIC Connection Policy - Tag - Value",
+                  "type": "string"
+               }
+            },
+            "additionalProperties": false,
+            "required": [
+               "type",
+               "value"
+            ]
+         }
+      }
+   },
+   "additionalProperties": false,
+   "required": [
+      "name"
+   ]
+}

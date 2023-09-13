@@ -1,19 +1,26 @@
 {
-   "id":"ucs_system_config_qos_system_class#",
-   "$schema":"http://json-schema.org/draft-07/schema#",
-   "title":"EasyUCS ucs system config qos_system_class section",
-   "description":"EasyUCS ucs system config qos_system_class section JSON schema",
-   "type":"object",
-   "properties":{
+   "id": "ucs_system_config_qos_system_class#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS ucs system config qos_system_class section",
+   "description": "EasyUCS ucs system config qos_system_class section JSON schema",
+   "type": "object",
+   "properties": {
       "comment": {
          "description": "QoS System Class Comments",
          "type": "string",
          "default": ""
       },
-      "priority":{
-         "description":"Priority of QoS System Class",
-         "type":"string",
-         "enum":[
+      "policy_owner": {
+         "description": "QoS System Class Owner (for UCS Central)",
+         "type": "string",
+         "enum": [
+            "ucs-central"
+         ]
+      },
+      "priority": {
+         "description": "Priority of QoS System Class",
+         "type": "string",
+         "enum": [
             "best-effort",
             "bronze",
             "fc",
@@ -22,18 +29,18 @@
             "silver"
          ]
       },
-      "state":{
-         "description":"Admin State of QoS System Class",
-         "type":"string",
-         "enum":[
+      "state": {
+         "description": "Admin State of QoS System Class",
+         "type": "string",
+         "enum": [
             "disabled",
             "enabled"
          ]
       },
-      "cos":{
-         "description":"CoS value of QoS System Class",
-         "type":"string",
-         "enum":[
+      "cos": {
+         "description": "CoS value of QoS System Class",
+         "type": "string",
+         "enum": [
             "0",
             "1",
             "2",
@@ -44,18 +51,18 @@
             "any"
          ]
       },
-      "packet_drop":{
-         "description":"Does QoS System Class support packet drop?",
-         "type":"string",
-         "enum":[
+      "packet_drop": {
+         "description": "Does QoS System Class support packet drop?",
+         "type": "string",
+         "enum": [
             "disabled",
             "enabled"
          ]
       },
-      "weight":{
-         "description":"Weight of QoS System Class",
-         "type":"string",
-         "enum":[
+      "weight": {
+         "description": "Weight of QoS System Class",
+         "type": "string",
+         "enum": [
             "best-effort",
             "none",
             "0",
@@ -71,17 +78,17 @@
             "10"
          ]
       },
-      "mtu":{
-         "description":"MTU of QoS System Class",
-         "type":"string",
-         "default":"normal",
-         "pattern":"^1[5-9][0-9][0-9]$|^[2-8][0-9][0-9][0-9]$|^9[0-1][0-9][0-9]$|^920[0-9]$|^921[0-6]$|^fc$|^normal$"
+      "mtu": {
+         "description": "MTU of QoS System Class",
+         "type": "string",
+         "default": "normal",
+         "pattern": "^1[5-9][0-9][0-9]$|^[2-8][0-9][0-9][0-9]$|^9[0-1][0-9][0-9]$|^920[0-9]$|^921[0-6]$|^fc$|^normal$"
       },
-      "multicast_optimized":{
-         "description":"Is QoS System Class Multicast optimized?",
-         "type":"string",
-         "default":"disabled",
-         "enum":[
+      "multicast_optimized": {
+         "description": "Is QoS System Class Multicast optimized?",
+         "type": "string",
+         "default": "disabled",
+         "enum": [
             "disabled",
             "enabled",
             "false",
@@ -91,8 +98,8 @@
          ]
       }
    },
-   "additionalProperties":false,
-   "required":[
+   "additionalProperties": false,
+   "required": [
       "priority"
    ]
 }

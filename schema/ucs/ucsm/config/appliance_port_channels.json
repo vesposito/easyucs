@@ -1,46 +1,46 @@
 {
-   "id":"ucs_system_config_appliance_port_channels#",
-   "$schema":"http://json-schema.org/draft-07/schema#",
-   "title":"EasyUCS system config appliance_port_channels section",
-   "description":"EasyUCS system config appliance_port_channels section JSON schema",
-   "type":"object",
-   "properties":{
+   "id": "ucs_system_config_appliance_port_channels#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS system config appliance_port_channels section",
+   "description": "EasyUCS system config appliance_port_channels section JSON schema",
+   "type": "object",
+   "properties": {
       "comment": {
          "description": "Appliance Port-Channel Comments",
          "type": "string",
          "default": ""
       },
-      "name":{
-         "description":"Name of Appliance Port-Channel",
-         "type":"string",
-         "pattern":"^[\\-\\.:_a-zA-Z0-9]{0,16}$"
+      "name": {
+         "description": "Name of Appliance Port-Channel",
+         "type": "string",
+         "pattern": "^[\\-\\.:_a-zA-Z0-9]{0,16}$"
       },
-      "descr":{
-         "description":"Description of Appliance Port-Channel",
-         "type":"string",
-         "default":"",
-         "pattern":"^[ !#$%&\\(\\)\\*\\+,\\-\\./:;\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{0,256}$"
+      "descr": {
+         "description": "Description of Appliance Port-Channel",
+         "type": "string",
+         "default": "",
+         "pattern": "^[ !#$%&\\(\\)\\*\\+,\\-\\./:;\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{0,256}$"
       },
-      "fabric":{
-         "description":"Fabric ID of Appliance Port-Channel (\"A\" or \"B\")",
-         "type":"string",
-         "enum":[
+      "fabric": {
+         "description": "Fabric ID of Appliance Port-Channel (\"A\" or \"B\")",
+         "type": "string",
+         "enum": [
             "a",
             "A",
             "b",
             "B"
          ]
       },
-      "pc_id":{
-         "description":"Port-Channel ID of Appliance Port-Channel",
-         "type":"string",
-         "pattern":"^[1-9]$|^[1-9][0-9]$|^1[0-9][0-9]$|^2[0-4][0-9]$|^25[0-6]$"
+      "pc_id": {
+         "description": "Port-Channel ID of Appliance Port-Channel",
+         "type": "string",
+         "pattern": "^[1-9]$|^[1-9][0-9]$|^1[0-9][0-9]$|^2[0-4][0-9]$|^25[0-6]$"
       },
-      "priority":{
-         "description":"Priority of Appliance Port-Channel",
-         "type":"string",
-         "default":"best-effort",
-         "enum":[
+      "priority": {
+         "description": "Priority of Appliance Port-Channel",
+         "type": "string",
+         "default": "best-effort",
+         "enum": [
             "best-effort",
             "bronze",
             "fc",
@@ -49,152 +49,152 @@
             "silver"
          ]
       },
-      "pin_group":{
-         "description":"LAN Pin Group of Appliance Port-Channel",
-         "type":"string"
+      "pin_group": {
+         "description": "LAN Pin Group of Appliance Port-Channel",
+         "type": "string"
       },
-      "network_control_policy":{
-         "description":"Network Control Policy of Appliance Port-Channel",
-         "type":"string",
-         "pattern":"^[\\-\\.:_a-zA-Z0-9]{0,16}$"
+      "network_control_policy": {
+         "description": "Network Control Policy of Appliance Port-Channel",
+         "type": "string",
+         "pattern": "^[\\-\\.:_a-zA-Z0-9]{0,16}$"
       },
-      "flow_control_policy":{
-         "description":"Flow Control Policy of Appliance Port-Channel",
-         "type":"string",
-         "pattern":"^[\\-\\.:_a-zA-Z0-9]{0,16}$"
+      "flow_control_policy": {
+         "description": "Flow Control Policy of Appliance Port-Channel",
+         "type": "string",
+         "pattern": "^[\\-\\.:_a-zA-Z0-9]{0,16}$"
       },
-      "admin_speed":{
-         "description":"Admin Speed of Appliance Port-Channel",
-         "type":"string",
-         "enum":[
+      "admin_speed": {
+         "description": "Admin Speed of Appliance Port-Channel",
+         "type": "string",
+         "enum": [
             "1gbps",
             "10gbps",
             "40gbps"
          ]
       },
-      "admin_state":{
-         "description":"Admin State of Appliance Port-Channel",
-         "type":"string",
-         "default":"enabled",
-         "enum":[
+      "admin_state": {
+         "description": "Admin State of Appliance Port-Channel",
+         "type": "string",
+         "default": "enabled",
+         "enum": [
             "disabled",
             "enabled"
          ]
       },
-      "vlan_port_mode":{
-         "description":"VLAN Port Mode of Appliance Port-Channel",
-         "type":"string",
-         "default":"trunk",
-         "enum":[
+      "vlan_port_mode": {
+         "description": "VLAN Port Mode of Appliance Port-Channel",
+         "type": "string",
+         "default": "trunk",
+         "enum": [
             "access",
             "trunk"
          ]
       },
-      "appliance_vlans":{
-         "description":"VLAN Name(s) assigned to Appliance Port",
-         "type":"array",
-         "items":{
-            "description":"VLAN Name assigned to Appliance Port",
-            "type":"string",
-            "pattern":"^[\\-\\.:_a-zA-Z0-9]{1,32}$"
+      "appliance_vlans": {
+         "description": "VLAN Name(s) assigned to Appliance Port",
+         "type": "array",
+         "items": {
+            "description": "VLAN Name assigned to Appliance Port",
+            "type": "string",
+            "pattern": "^[\\-\\.:_a-zA-Z0-9]{1,32}$"
          },
-         "minItems":1
+         "minItems": 1
       },
-      "native_vlan":{
-         "description":"(Optional) VLAN Name of native VLAN assigned to Appliance Port",
-         "type":"string",
-         "pattern":"^[\\-\\.:_a-zA-Z0-9]{1,32}$"
+      "native_vlan": {
+         "description": "(Optional) VLAN Name of native VLAN assigned to Appliance Port",
+         "type": "string",
+         "pattern": "^[\\-\\.:_a-zA-Z0-9]{1,32}$"
       },
-      "interfaces":{
-         "description":"List of interfaces member of Appliance Port-Channel",
-         "type":"array",
-         "items":{
-            "description":"Interface member of Appliance Port-Channel",
-            "type":"object",
-            "properties":{
-               "slot_id":{
-                  "description":"Slot ID of Interface member of Appliance Port-Channel",
-                  "type":"string",
-                  "pattern":"^[1-4]$"
+      "interfaces": {
+         "description": "List of interfaces member of Appliance Port-Channel",
+         "type": "array",
+         "items": {
+            "description": "Interface member of Appliance Port-Channel",
+            "type": "object",
+            "properties": {
+               "slot_id": {
+                  "description": "Slot ID of Interface member of Appliance Port-Channel",
+                  "type": "string",
+                  "pattern": "^[1-4]$"
                },
-               "port_id":{
-                  "description":"Port ID of Interface member of Appliance Port-Channel",
-                  "type":"string",
-                  "pattern":"^[1-9]$|^[1-9][0-9]$|^10[0-8]$"
+               "port_id": {
+                  "description": "Port ID of Interface member of Appliance Port-Channel",
+                  "type": "string",
+                  "pattern": "^[1-9]$|^[1-9][0-9]$|^10[0-8]$"
                },
-               "aggr_id":{
-                  "description":"Aggregate ID of Interface member of Appliance Port-Channel (for Breakout Ports)",
-                  "type":"string",
-                  "pattern":"^[1-4]$"
+               "aggr_id": {
+                  "description": "Aggregate ID of Interface member of Appliance Port-Channel (for Breakout Ports)",
+                  "type": "string",
+                  "pattern": "^[1-4]$"
                },
-               "user_label":{
-                  "description":"User Label of Interface member of Appliance Port-Channel",
-                  "type":"string",
-                  "default":"",
-                  "pattern":"^[ !#$%&\\(\\)\\*\\+,\\-\\./:;\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{0,32}$"
+               "user_label": {
+                  "description": "User Label of Interface member of Appliance Port-Channel",
+                  "type": "string",
+                  "default": "",
+                  "pattern": "^[ !#$%&\\(\\)\\*\\+,\\-\\./:;\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{0,32}$"
                },
-               "admin_state":{
-                  "description":"Admin State of Interface member of Appliance Port-Channel",
-                  "type":"string",
-                  "default":"enabled",
-                  "enum":[
+               "admin_state": {
+                  "description": "Admin State of Interface member of Appliance Port-Channel",
+                  "type": "string",
+                  "default": "enabled",
+                  "enum": [
                      "disabled",
                      "enabled"
                   ]
                }
             },
-            "additionalProperties":false,
-            "required":[
+            "additionalProperties": false,
+            "required": [
                "slot_id",
                "port_id"
             ]
          },
-         "minItems":1
+         "minItems": 1
       },
-      "ethernet_target_endpoint":{
-         "description":"Ethernet Target Endpoint list of Appliance Port-Channel",
-         "type":"array",
-         "items":{
-            "description":"Ethernet Target Endpoint of Appliance Port-Channel",
-            "type":"object",
-            "properties":{
-               "name":{
-                  "description":"Name of Ethernet Target Endpoint of Appliance Port-Channel",
-                  "type":"string",
-                  "pattern":"^[\\-\\.:_a-zA-Z0-9]{1,16}$"
+      "ethernet_target_endpoint": {
+         "description": "Ethernet Target Endpoint list of Appliance Port-Channel",
+         "type": "array",
+         "items": {
+            "description": "Ethernet Target Endpoint of Appliance Port-Channel",
+            "type": "object",
+            "properties": {
+               "name": {
+                  "description": "Name of Ethernet Target Endpoint of Appliance Port-Channel",
+                  "type": "string",
+                  "pattern": "^[\\-\\.:_a-zA-Z0-9]{1,16}$"
                },
-               "mac_address":{
-                  "description":"MAC Address of Ethernet Target Endpoint of Appliance Port-Channel",
-                  "type":"string",
-                  "default":"00:00:00:00:00:00",
-                  "pattern":"^(([0-9a-fA-F][0-9a-fA-F]:){5}([0-9a-fA-F][0-9a-fA-F]))$|^0$"
+               "mac_address": {
+                  "description": "MAC Address of Ethernet Target Endpoint of Appliance Port-Channel",
+                  "type": "string",
+                  "default": "00:00:00:00:00:00",
+                  "pattern": "^(([0-9a-fA-F][0-9a-fA-F]:){5}([0-9a-fA-F][0-9a-fA-F]))$|^0$"
                }
             },
-            "additionalProperties":false,
-            "required":[
+            "additionalProperties": false,
+            "required": [
                "name"
             ]
          },
-         "minItems":1,
-         "maxItems":1
+         "minItems": 1,
+         "maxItems": 1
       },
-      "lacp_policy":{
-         "description":"LACP Policy of Appliance Port-Channel (if protocol LACP)",
-         "type":"string",
-         "pattern":"^[\\-\\.:_a-zA-Z0-9]{0,16}$"
+      "lacp_policy": {
+         "description": "LACP Policy of Appliance Port-Channel (if protocol LACP)",
+         "type": "string",
+         "pattern": "^[\\-\\.:_a-zA-Z0-9]{0,16}$"
       },
-      "protocol":{
-         "description":"Protocol used for Appliance Port-Channel",
-         "type":"string",
-         "default":"static",
-         "enum":[
+      "protocol": {
+         "description": "Protocol used for Appliance Port-Channel",
+         "type": "string",
+         "default": "static",
+         "enum": [
             "lacp",
             "static"
          ]
       }
    },
-   "additionalProperties":false,
-   "required":[
+   "additionalProperties": false,
+   "required": [
       "fabric",
       "pc_id"
    ]

@@ -1,0 +1,103 @@
+{
+   "id": "intersight_config_orgs_resource_pools#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS intersight config orgs resource_pools section",
+   "description": "EasyUCS intersight config orgs resource_pools section JSON schema",
+   "type": "object",
+   "properties": {
+      "comment": {
+         "description": "Resource Pool Comments",
+         "type": "string",
+         "default": ""
+      },
+      "descr": {
+         "description": "Resource Pool Description",
+         "type": "string",
+         "default": "",
+         "pattern": "^$|^[a-zA-Z0-9]+[\\x00-\\xFF]*$",
+         "maxLength": 1024
+      },
+      "name": {
+         "description": "Resource Pool Name",
+         "type": "string",
+         "default": "",
+         "pattern": "^[a-zA-Z0-9_.:-]{1,64}$"
+      },
+      "tags": {
+         "description": "Resource Pool Tags",
+         "type": "array",
+         "items": {
+            "description": "Resource Pool Tag",
+            "type": "object",
+            "properties": {
+               "key": {
+                  "description": "Resource Pool Tag Key",
+                  "type": "string",
+                  "default": "",
+                  "minLength": 1,
+                  "maxLength": 128
+               },
+               "value": {
+                  "description": "Resource Pool Tag Value",
+                  "type": "string",
+                  "default": "",
+                  "minLength": 0,
+                  "maxLength": 256
+               }
+            },
+            "additionalProperties": false,
+            "required": [
+               "key",
+               "value"
+            ]
+         },
+         "minItems": 1
+      },
+      "resources": {
+         "description": "Resource Pool Assigned Resources",
+         "type": "array",
+         "items": {
+            "properties": {
+               "moid": {
+                  "description": "Resource Pool Assigned Resource - Moid",
+                  "type": "string",
+                  "default": ""
+               },
+               "name": {
+                  "description": "Resource Pool Assigned Resource - Name",
+                  "type": "string",
+                  "default": ""
+               },
+               "type": {
+                  "description": "Resource Pool Assigned Resource - Type",
+                  "type": "string",
+                  "enum": [
+                     "blade",
+                     "rack"
+                  ]
+               }
+            },
+            "additionalProperties": false,
+            "required": [
+               "name",
+               "type"
+            ]
+         },
+         "minItems": 1
+      },
+      "target_platform": {
+         "description": "Resource Pool Target Platform",
+         "type": "string",
+         "default": "Standalone",
+         "enum": [
+            "FI-Attached",
+            "Standalone"
+         ]
+      }
+   },
+   "additionalProperties": false,
+   "required": [
+      "name",
+      "target_platform"
+   ]
+}

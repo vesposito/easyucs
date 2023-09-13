@@ -38,6 +38,30 @@
             "pattern": "^[\\-\\./:_a-zA-Z0-9]{1,128}$"
          },
          "minItems": 1
+      },
+      "tags": {
+         "description": "VLAN Group - Tags",
+         "type": "array",
+         "items": {
+            "description": "VLAN Group - Tag",
+            "type": "object",
+            "properties": {
+               "type": {
+                  "description": "VLAN Group - Tag - Type",
+                  "type": "string",
+                  "pattern": "^[ !#$%&\\(\\)\\*\\+,\\-\\.:;=\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{1,32}$"
+               },
+               "value": {
+                  "description": "VLAN Group - Tag - Value",
+                  "type": "string"
+               }
+            },
+            "additionalProperties": false,
+            "required": [
+               "type",
+               "value"
+            ]
+         }
       }
    },
    "additionalProperties": false,

@@ -1,25 +1,34 @@
 {
-   "id":"ucs_system_config_syslog#",
-   "$schema":"http://json-schema.org/draft-07/schema#",
-   "title":"EasyUCS ucs system config syslog section",
-   "description":"EasyUCS ucs system config syslog section JSON schema",
-   "type":"object",
-   "properties":{
+   "id": "ucs_system_config_syslog#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS ucs system config syslog section",
+   "description": "EasyUCS ucs system config syslog section JSON schema",
+   "type": "object",
+   "properties": {
       "comment": {
          "description": "Syslog Comments",
          "type": "string",
          "default": ""
       },
-      "local_destinations":{
-         "description":"Syslog Local Destinations",
-         "type":"array",
-         "items":{
-            "type":"object",
-            "description":"Syslog Local Destination",
-            "properties":{
-               "console":{
-                  "description":"Syslog Console",
-                  "type":"array",
+      "rfc_5424_compliance": {
+         "description": "Syslog RFC 5424 Compliance Admin State",
+         "type": "string",
+         "default": "disabled",
+         "enum": [
+            "disabled",
+            "enabled"
+         ]
+      },
+      "local_destinations": {
+         "description": "Syslog Local Destinations",
+         "type": "array",
+         "items": {
+            "type": "object",
+            "description": "Syslog Local Destination",
+            "properties": {
+               "console": {
+                  "description": "Syslog Console",
+                  "type": "array",
                   "items": {
                      "type": "object",
                      "description": "Syslog Console",
@@ -52,9 +61,9 @@
                   "minItems": 1,
                   "maxItems": 1
                },
-               "monitor":{
-                  "description":"Syslog Monitor",
-                  "type":"array",
+               "monitor": {
+                  "description": "Syslog Monitor",
+                  "type": "array",
                   "items": {
                      "type": "object",
                      "description": "Syslog Monitor",
@@ -92,9 +101,9 @@
                   "minItems": 1,
                   "maxItems": 1
                },
-               "file":{
-                  "description":"Syslog File",
-                  "type":"array",
+               "file": {
+                  "description": "Syslog File",
+                  "type": "array",
                   "items": {
                      "type": "object",
                      "description": "Syslog File",
@@ -145,21 +154,21 @@
                   "maxItems": 1
                }
             },
-            "additionalProperties":false
+            "additionalProperties": false
          },
          "minItems": 1,
          "maxItems": 3
       },
-      "remote_destinations":{
-         "description":"Syslog Remote Destinations",
-         "type":"array",
-         "items":{
-            "type":"object",
-            "description":"Syslog Remote Destination",
-            "properties":{
-               "server1":{
-                  "description":"Syslog Remote Server 1",
-                  "type":"array",
+      "remote_destinations": {
+         "description": "Syslog Remote Destinations",
+         "type": "array",
+         "items": {
+            "type": "object",
+            "description": "Syslog Remote Destination",
+            "properties": {
+               "server1": {
+                  "description": "Syslog Remote Server 1",
+                  "type": "array",
                   "items": {
                      "type": "object",
                      "description": "Syslog Remote Server 1",
@@ -218,9 +227,9 @@
                   "minItems": 1,
                   "maxItems": 1
                },
-               "server2":{
-                  "description":"Syslog Remote Server 2",
-                  "type":"array",
+               "server2": {
+                  "description": "Syslog Remote Server 2",
+                  "type": "array",
                   "items": {
                      "type": "object",
                      "description": "Syslog Remote Server 2",
@@ -279,9 +288,9 @@
                   "minItems": 1,
                   "maxItems": 1
                },
-               "server3":{
-                  "description":"Syslog Remote Server 3",
-                  "type":"array",
+               "server3": {
+                  "description": "Syslog Remote Server 3",
+                  "type": "array",
                   "items": {
                      "type": "object",
                      "description": "Syslog Remote Server 3",
@@ -341,39 +350,39 @@
                   "maxItems": 1
                }
             },
-            "additionalProperties":false
+            "additionalProperties": false
          },
          "minItems": 1,
          "maxItems": 3
       },
-      "local_sources":{
-         "description":"Syslog Local Sources",
-         "type":"array",
-         "items":{
-            "type":"object",
-            "description":"Syslog Local Sources",
-            "properties":{
-               "faults":{
-                  "description":"Syslog Local Sources Faults Admin State",
-                  "type":"string",
+      "local_sources": {
+         "description": "Syslog Local Sources",
+         "type": "array",
+         "items": {
+            "type": "object",
+            "description": "Syslog Local Sources",
+            "properties": {
+               "faults": {
+                  "description": "Syslog Local Sources Faults Admin State",
+                  "type": "string",
                   "default": "disabled",
                   "enum": [
                      "disabled",
                      "enabled"
                   ]
                },
-               "audits":{
-                  "description":"Syslog Local Sources Audits Admin State",
-                  "type":"string",
+               "audits": {
+                  "description": "Syslog Local Sources Audits Admin State",
+                  "type": "string",
                   "default": "disabled",
                   "enum": [
                      "disabled",
                      "enabled"
                   ]
                },
-               "events":{
-                  "description":"Syslog Local Sources Events Admin State",
-                  "type":"string",
+               "events": {
+                  "description": "Syslog Local Sources Events Admin State",
+                  "type": "string",
                   "default": "disabled",
                   "enum": [
                      "disabled",
@@ -387,5 +396,5 @@
          "maxItems": 1
       }
    },
-   "additionalProperties":false
+   "additionalProperties": false
 }

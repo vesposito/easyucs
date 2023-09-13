@@ -1,53 +1,53 @@
 {
-   "id":"ucs_system_config_local_users_properties#",
-   "$schema":"http://json-schema.org/draft-07/schema#",
-   "title":"EasyUCS ucs system config local_users_properties section",
-   "description":"EasyUCS ucs system config local_users_properties section JSON schema",
-   "type":"object",
-   "properties":{
+   "id": "ucs_system_config_local_users_properties#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS ucs system config local_users_properties section",
+   "description": "EasyUCS ucs system config local_users_properties section JSON schema",
+   "type": "object",
+   "properties": {
       "comment": {
          "description": "Local Users Properties Comments",
          "type": "string",
          "default": ""
       },
-      "password_strength_check":{
-         "description":"Local Users Password Strength Check",
-         "type":"string",
-         "default":"yes",
-         "enum":[
+      "password_strength_check": {
+         "description": "Local Users Password Strength Check",
+         "type": "string",
+         "default": "yes",
+         "enum": [
             "yes",
             "no"
          ]
       },
-      "change_interval":{
-         "description":"Local Users Password Change Interval",
-         "type":"string",
-         "default":"48"
+      "change_interval": {
+         "description": "Local Users Password Change Interval",
+         "type": "string",
+         "default": "48"
       },
-      "no_change_interval":{
-         "description":"Local Users Password No Change Interval",
-         "type":"string",
-         "default":"24"
+      "no_change_interval": {
+         "description": "Local Users Password No Change Interval",
+         "type": "string",
+         "default": "24"
       },
-      "change_during_interval":{
-         "description":"Local Users Password Change During Interval",
-         "type":"string",
-         "default":"enable",
-         "enum":[
+      "change_during_interval": {
+         "description": "Local Users Password Change During Interval",
+         "type": "string",
+         "default": "enable",
+         "enum": [
             "enable",
             "disable"
          ]
       },
-      "history_count":{
-         "description":"Local Users Password History Count",
-         "type":"string",
-         "default":"5"
+      "history_count": {
+         "description": "Local Users Password History Count",
+         "type": "string",
+         "default": "5"
       },
-      "change_count":{
-         "description":"Local Users Password Change Count",
-         "type":"string",
-         "default":"2"
+      "change_count": {
+         "description": "Local Users Password Change Count",
+         "type": "string",
+         "default": "2"
       }
    },
-   "additionalProperties":false
+   "additionalProperties": false
 }

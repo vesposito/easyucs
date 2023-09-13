@@ -1,0 +1,2756 @@
+{
+   "id": "ucs_central_config_server_pool_policy_qualifications#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS ucs central config orgs server_pool_policy_qualifications section",
+   "description": "EasyUCS ucs central config orgs server_pool_policy_qualifications section JSON schema",
+   "type": "object",
+   "properties": {
+      "comment": {
+         "description": "Server Pool Policy Qualification Comments",
+         "type": "string",
+         "default": ""
+      },
+      "name": {
+         "description": "Server Pool Policy Qualification Name",
+         "type": "string",
+         "default": "",
+         "pattern": "^[\\-\\.:_a-zA-Z0-9]{1,16}$"
+      },
+      "descr": {
+         "description": "Description of Server Pool Policy Qualification",
+         "type": "string",
+         "default": "",
+         "pattern": "^[ !#$%&\\(\\)\\*\\+,\\-\\./:;\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{0,256}$"
+      },
+      "qualifications": {
+         "description": "Qualifications of Server Pool Policy Qualification",
+         "type": "array",
+         "items": {
+            "properties": {
+               "type": {
+                  "description": "Qualification Type",
+                  "type": "string",
+                  "enum": [
+                     "adapter",
+                     "cpu-cores",
+                     "domain_qual",
+                     "memory",
+                     "storage",
+                     "server_pid"
+                  ]
+               },
+               "adapter_qualifications": {
+                  "description": "Adapter Qualifications - Adapter Type",
+                  "type": "array",
+                  "items": {
+                     "properties": {
+                        "adapter_type": {
+                           "description": "Adapter Qualifications - Adapter Type",
+                           "type": "string",
+                           "enum": [
+                              "cdn-support",
+                              "eth-flow-monitoring-netflow",
+                              "eth-nvgre",
+                              "eth-nvgre-rocev2",
+                              "eth-nvgre-vmq",
+                              "eth-roce",
+                              "eth-roce-v2",
+                              "eth-vxlan",
+                              "eth-vxlan-rocev2",
+                              "eth-vxlan-vmq",
+                              "fcoe",
+                              "non-virtualized-eth-if",
+                              "non-virtualized-fc-if",
+                              "oracle-rac-support",
+                              "path-encap-consolidated",
+                              "path-encap-virtual",
+                              "path-encap-virtual-ce",
+                              "protected-eth-if",
+                              "protected-fc-if",
+                              "protected-fcoe",
+                              "pxeboot-config-support",
+                              "uplink-aggregation",
+                              "virtualized-ce-eth-if",
+                              "virtualized-eth-if",
+                              "virtualized-eth-sriov",
+                              "virtualized-eth-sriov-usnic",
+                              "virtualized-eth-vmmq",
+                              "virtualized-eth-vmq",
+                              "virtualized-fc-if",
+                              "virtualized-fc-sriov",
+                              "virtualized-scsi-if"
+                           ]
+                        },
+                        "adapter_pid": {
+                           "description": "Adapter Qualifications - Adapter PID (RegEx)",
+                           "type": "string",
+                           "default": "",
+                           "pattern": "[ !#$%\\(\\)\\*\\+,\\-\\./:;\\?@\\[\\\\\\]\\^_\\{\\|\\}~a-zA-Z0-9]{0,256}"
+                        },
+                        "adapter_maximum_capacity": {
+                           "description": "Adapter Qualifications - Maximum Capacity",
+                           "type": "string",
+                           "default": "unspecified",
+                           "pattern": "^unspecified$|^[0-9]$|^[0-9][0-9]$|^[0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9]$|^[0-5][0-9][0-9][0-9][0-9]$|^6[0-4][0-9][0-9][0-9]$|^65[0-4][0-9][0-9]$|^655[0-2][0-9]$|^6553[0-5]$"
+                        }
+                     },
+                     "additionalProperties": false,
+                     "required": [
+                        "adapter_type"
+                     ]
+                  }
+               },
+               "processor_architecture": {
+                  "description": "CPU/Cores Qualifications - Processor Architecture",
+                  "type": "string",
+                  "default": "any",
+                  "enum": [
+                     "Dual-Core_Opteron",
+                     "Intel_P4_C",
+                     "Opteron",
+                     "Pentium_4",
+                     "Turion_64",
+                     "Xeon",
+                     "Xeon_MP",
+                     "any"
+                  ]
+               },
+               "processor_pid": {
+                  "description": "CPU/Cores Qualifications - Processor PID",
+                  "type": "string",
+                  "default": "",
+                  "pattern": "^[ !#$%\\(\\)\\*\\+,\\-\\./:;\\?@\\[\\\\\\]\\^_\\{\\|\\}~a-zA-Z0-9]{0,256}$"
+               },
+               "min_cores": {
+                  "description": "CPU/Cores Qualifications - Minimum Number of Cores",
+                  "type": "string",
+                  "default": "unspecified",
+                  "pattern": "^unspecified$|^[0-9]$|^[0-9][0-9]$|^[0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9]$|^[0-5][0-9][0-9][0-9][0-9]$|^6[0-4][0-9][0-9][0-9]$|^65[0-4][0-9][0-9]$|^655[0-2][0-9]$|^6553[0-5]$"
+               },
+               "max_cores": {
+                  "description": "CPU/Cores Qualifications - Maximum Number of Cores",
+                  "type": "string",
+                  "default": "unspecified",
+                  "pattern": "^unspecified$|^[0-9]$|^[0-9][0-9]$|^[0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9]$|^[0-5][0-9][0-9][0-9][0-9]$|^6[0-4][0-9][0-9][0-9]$|^65[0-4][0-9][0-9]$|^655[0-2][0-9]$|^6553[0-5]$"
+               },
+               "min_threads": {
+                  "description": "CPU/Cores Qualifications - Minimum Number of Threads",
+                  "type": "string",
+                  "default": "unspecified",
+                  "pattern": "^unspecified$|^[0-9]$|^[0-9][0-9]$|^[0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9]$|^[0-5][0-9][0-9][0-9][0-9]$|^6[0-4][0-9][0-9][0-9]$|^65[0-4][0-9][0-9]$|^655[0-2][0-9]$|^6553[0-5]$"
+               },
+               "max_threads": {
+                  "description": "CPU/Cores Qualifications - Maximum Number of Threads",
+                  "type": "string",
+                  "default": "unspecified",
+                  "pattern": "^unspecified$|^[0-9]$|^[0-9][0-9]$|^[0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9]$|^[0-5][0-9][0-9][0-9][0-9]$|^6[0-4][0-9][0-9][0-9]$|^65[0-4][0-9][0-9]$|^655[0-2][0-9]$|^6553[0-5]$"
+               },
+               "min_procs": {
+                  "description": "CPU/Cores Qualifications - Minimum Number of Processors",
+                  "type": "string",
+                  "default": "unspecified",
+                  "pattern": "^unspecified$|^[0-9]$|^[0-9][0-9]$|^[0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9]$|^[0-5][0-9][0-9][0-9][0-9]$|^6[0-4][0-9][0-9][0-9]$|^65[0-4][0-9][0-9]$|^655[0-2][0-9]$|^6553[0-5]$"
+               },
+               "max_procs": {
+                  "description": "CPU/Cores Qualifications - Maximum Number of Processors",
+                  "type": "string",
+                  "default": "unspecified",
+                  "pattern": "^unspecified$|^[0-9]$|^[0-9][0-9]$|^[0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9]$|^[0-5][0-9][0-9][0-9][0-9]$|^6[0-4][0-9][0-9][0-9]$|^65[0-4][0-9][0-9]$|^655[0-2][0-9]$|^6553[0-5]$"
+               },
+               "cpu_speed": {
+                  "description": "CPU/Cores Qualifications - CPU Speed (in MHz)",
+                  "type": "string",
+                  "default": "unspecified",
+                  "pattern": "^unspecified$|^[0-9]$|^[0-9][0-9]$|^[0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-3][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^4[0-1][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^42[0-8][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^429[0-3][0-9][0-9][0-9][0-9][0-9][0-9]$|^4294[0-8][0-9][0-9][0-9][0-9][0-9]$|^42949[0-5][0-9][0-9][0-9][0-9]$|^429496[0-6][0-9][0-9][0-9]$|^4294967[0-1][0-9][0-9]$|^42949672[0-8][0-9]$|^429496729[0-5]$"
+               },
+               "cpu_stepping": {
+                  "description": "CPU/Cores Qualifications - CPU Stepping",
+                  "type": "string",
+                  "default": "unspecified",
+                  "pattern": "^unspecified$|^[0-9]$|^[0-9][0-9]$|^[0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-3][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^4[0-1][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^42[0-8][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^429[0-3][0-9][0-9][0-9][0-9][0-9][0-9]$|^4294[0-8][0-9][0-9][0-9][0-9][0-9]$|^42949[0-5][0-9][0-9][0-9][0-9]$|^429496[0-6][0-9][0-9][0-9]$|^4294967[0-1][0-9][0-9]$|^42949672[0-8][0-9]$|^429496729[0-5]$"
+               },
+               "domain_qualifications": {
+                  "description": "Qualification of Domain Qualifier",
+                  "type": "array",
+                  "items": {
+                     "type": "object",
+                     "properties": {
+                        "type": {
+                           "type": "string",
+                           "enum": [
+                              "domain_qual_chassis",
+                              "domain_qual_rack",
+                              "domain_qual_group",
+                              "domain_qual_group_name",
+                              "domain_qual_owner",
+                              "domain_qual_site",
+                              "domain_qual_product",
+                              "domain_qual_system_addr"
+                           ]
+                        },
+                        "first_chassis_id": {
+                           "description": "Domain Qualifier Chassis/Server Qualifications - First Chassis ID",
+                           "type": "string",
+                           "pattern": "^[1-9]$|^[0-9][0-9]$|^[0-1][0-9][0-9]$|^2[0-4][0-9]$|^25[0-5]$"
+                        },
+                        "last_chassis_id": {
+                           "description": "Domain Qualifier Chassis/Server Qualifications - Last Chassis ID",
+                           "type": "string",
+                           "pattern": "^[1-9]$|^[0-9][0-9]$|^[0-1][0-9][0-9]$|^2[0-4][0-9]$|^25[0-5]$"
+                        },
+                        "number_of_chassis": {
+                           "description": "Chassis/Server Qualifications - Number of Chassis",
+                           "type": "string",
+                           "pattern": "^[1-9]$|^[0-9][0-9]$|^[0-1][0-9][0-9]$|^2[0-4][0-9]$|^25[0-5]$"
+                        },
+                        "server_qualifications": {
+                           "description": "Chassis/Server Qualifications - Server Qualifications",
+                           "type": "array",
+                           "items": {
+                              "description": "Domain Qualifier Chassis/Server Qualifications - Server Qualification Element",
+                              "type": "object",
+                              "properties": {
+                                 "first_slot_id": {
+                                    "description": "Domain Qualifier Chassis/Server Qualifications - First Server Slot ID",
+                                    "type": "string",
+                                    "pattern": "^[1-8]$"
+                                 },
+                                 "last_slot_id": {
+                                    "description": "Domain Qualifier Chassis/Server Qualifications - Last Server Slot ID",
+                                    "type": "string",
+                                    "pattern": "^[1-8]$"
+                                 },
+                                 "number_of_slots": {
+                                    "description": "Domain Qualifier Chassis/Server Qualifications - Number of Server Slots",
+                                    "type": "string",
+                                    "pattern": "^[1-8]$"
+                                 }
+                              },
+                              "additionalProperties": false,
+                              "if": {
+                                 "$comment": "Chassis/Server Qualifications with parameter number_of_slots",
+                                 "required": [
+                                    "number_of_slots"
+                                 ]
+                              },
+                              "then": {
+                                 "required": [
+                                    "first_slot_id"
+                                 ],
+                                 "not": {
+                                    "required": [
+                                       "last_slot_id"
+                                    ]
+                                 }
+                              },
+                              "else": {
+                                 "$comment": "Chassis/Server Qualifications with parameter last_slot_id",
+                                 "required": [
+                                    "first_slot_id",
+                                    "last_slot_id"
+                                 ],
+                                 "not": {
+                                    "required": [
+                                       "number_of_slots"
+                                    ]
+                                 }
+                              }
+                           }
+                        },
+                        "first_rack_id": {
+                           "description": "Domain Qualifier Rack Qualifications - First Rack Server Slot ID",
+                           "type": "string",
+                           "pattern": "^[1-9]$|^[0-9][0-9]$|^[0-1][0-9][0-9]$|^2[0-4][0-9]$|^25[0-5]$"
+                        },
+                        "last_rack_id": {
+                           "description": "Domain Qualifier Rack Qualifications - Last Rack Server Slot ID",
+                           "type": "string",
+                           "pattern": "^[1-9]$|^[0-9][0-9]$|^[0-1][0-9][0-9]$|^2[0-4][0-9]$|^25[0-5]$"
+                        },
+                        "number_of_servers": {
+                           "description": "Rack Qualifications - Number of Rack Server Slots",
+                           "type": "string",
+                           "pattern": "^[1-9]$|^[0-9][0-9]$|^[0-1][0-9][0-9]$|^2[0-4][0-9]$|^25[0-5]$"
+                        },
+                        "hierarchical": {
+                           "description": "Domain Qualifier Domain group Qualifications - hierarchical",
+                           "type": "string",
+                           "default": "false",
+                           "enum": [
+                              "false",
+                              "true",
+                              "no",
+                              "yes"
+                           ]
+                        },
+                        "domain_group_dn": {
+                           "description": "Domain Qualifier Domain group Qualifications - Last Rack Server Slot ID",
+                           "type": "string",
+                           "pattern": "^root(/[\\-\\.:_a-zA-Z0-9]{2,32})*$"
+                        },
+                        "name": {
+                           "description": "Domain Qualifier Domain group/group_name/owner_name/site_name Qualifications - name",
+                           "type": "string"
+                        },
+                        "regex": {
+                           "description": "Domain Qualifier Domain owner/site_name Qualifications - owner name regex",
+                           "type": "string",
+                           "pattern": "^.+$"
+                        },
+                        "product_family": {
+                           "description": "Domain Qualifier Domain Product family Qualifications - product family",
+                           "type": "string",
+                           "enum": [
+                              "ucs-classic",
+                              "ucs-classic-3gen",
+                              "ucs-classic-4gen",
+                              "ucs-mini"
+                           ]
+                        },
+                        "max_addr": {
+                           "description": "Domain Qualifier Domain Address Qualifications - Address maximum",
+                           "type": "string",
+                           "format": "ipv4"
+                        },
+                        "min_addr": {
+                           "description": "Domain Qualifier Domain Address Qualifications - Address minimum",
+                           "type": "string",
+                           "format": "ipv4"
+                        }
+                     },
+                     "additionalProperties": false,
+                     "required": [
+                        "type"
+                     ],
+                     "allOf": [
+                        {
+                           "$comment": "Domain Qual Chassis Domain Qualification",
+                           "if": {
+                              "properties": {
+                                 "type": {
+                                    "enum": [
+                                       "domain_qual_chassis"
+                                    ]
+                                 }
+                              }
+                           },
+                           "then": {
+                              "if": {
+                                 "$comment": "Domain Qual Chassis with number_of_chassis parameter",
+                                 "required": [
+                                    "number_of_chassis"
+                                 ]
+                              },
+                              "then": {
+                                 "required": [
+                                    "first_chassis_id"
+                                 ],
+                                 "allOf": [
+                                    {
+                                       "not": {
+                                          "required": [
+                                             "domain_group_dn"
+                                          ]
+                                       }
+                                    },
+                                    {
+                                       "not": {
+                                          "required": [
+                                             "first_rack_id"
+                                          ]
+                                       }
+                                    },
+                                    {
+                                       "not": {
+                                          "required": [
+                                             "hierarchical"
+                                          ]
+                                       }
+                                    },
+                                    {
+                                       "not": {
+                                          "required": [
+                                             "last_chassis_id"
+                                          ]
+                                       }
+                                    },
+                                    {
+                                       "not": {
+                                          "required": [
+                                             "last_rack_id"
+                                          ]
+                                       }
+                                    },
+                                    {
+                                       "not": {
+                                          "required": [
+                                             "max_addr"
+                                          ]
+                                       }
+                                    },
+                                    {
+                                       "not": {
+                                          "required": [
+                                             "min_addr"
+                                          ]
+                                       }
+                                    },
+                                    {
+                                       "not": {
+                                          "required": [
+                                             "name"
+                                          ]
+                                       }
+                                    },
+                                    {
+                                       "not": {
+                                          "required": [
+                                             "number_of_servers"
+                                          ]
+                                       }
+                                    },
+                                    {
+                                       "not": {
+                                          "required": [
+                                             "product_family"
+                                          ]
+                                       }
+                                    },
+                                    {
+                                       "not": {
+                                          "required": [
+                                             "regex"
+                                          ]
+                                       }
+                                    }
+                                 ]
+                              },
+                              "else": {
+                                 "$comment": "Domain Qual Chassis with last_chassis_id parameter",
+                                 "required": [
+                                    "first_chassis_id",
+                                    "last_chassis_id"
+                                 ],
+                                 "allOf": [
+                                    {
+                                       "not": {
+                                          "required": [
+                                             "domain_group_dn"
+                                          ]
+                                       }
+                                    },
+                                    {
+                                       "not": {
+                                          "required": [
+                                             "first_rack_id"
+                                          ]
+                                       }
+                                    },
+                                    {
+                                       "not": {
+                                          "required": [
+                                             "hierarchical"
+                                          ]
+                                       }
+                                    },
+                                    {
+                                       "not": {
+                                          "required": [
+                                             "last_rack_id"
+                                          ]
+                                       }
+                                    },
+                                    {
+                                       "not": {
+                                          "required": [
+                                             "max_addr"
+                                          ]
+                                       }
+                                    },
+                                    {
+                                       "not": {
+                                          "required": [
+                                             "min_addr"
+                                          ]
+                                       }
+                                    },
+                                    {
+                                       "not": {
+                                          "required": [
+                                             "name"
+                                          ]
+                                       }
+                                    },
+                                    {
+                                       "not": {
+                                          "required": [
+                                             "number_of_chassis"
+                                          ]
+                                       }
+                                    },
+                                    {
+                                       "not": {
+                                          "required": [
+                                             "number_of_servers"
+                                          ]
+                                       }
+                                    },
+                                    {
+                                       "not": {
+                                          "required": [
+                                             "product_family"
+                                          ]
+                                       }
+                                    },
+                                    {
+                                       "not": {
+                                          "required": [
+                                             "regex"
+                                          ]
+                                       }
+                                    }
+                                 ]
+                              }
+                           }
+                        },
+                        {
+                           "$comment": "Domain Qual Rack Qualification",
+                           "if": {
+                              "properties": {
+                                 "type": {
+                                    "enum": [
+                                       "domain_qual_rack"
+                                    ]
+                                 }
+                              }
+                           },
+                           "then": {
+                              "if": {
+                                 "$comment": "Domain Qual Rack with number_of_servers parameter",
+                                 "required": [
+                                    "number_of_servers"
+                                 ]
+                              },
+                              "then": {
+                                 "required": [
+                                    "first_rack_id"
+                                 ],
+                                 "allOf": [
+                                    {
+                                       "not": {
+                                          "required": [
+                                             "domain_group_dn"
+                                          ]
+                                       }
+                                    },
+                                    {
+                                       "not": {
+                                          "required": [
+                                             "first_chassis_id"
+                                          ]
+                                       }
+                                    },
+                                    {
+                                       "not": {
+                                          "required": [
+                                             "hierarchical"
+                                          ]
+                                       }
+                                    },
+                                    {
+                                       "not": {
+                                          "required": [
+                                             "last_chassis_id"
+                                          ]
+                                       }
+                                    },
+                                    {
+                                       "not": {
+                                          "required": [
+                                             "last_rack_id"
+                                          ]
+                                       }
+                                    },
+                                    {
+                                       "not": {
+                                          "required": [
+                                             "max_addr"
+                                          ]
+                                       }
+                                    },
+                                    {
+                                       "not": {
+                                          "required": [
+                                             "min_addr"
+                                          ]
+                                       }
+                                    },
+                                    {
+                                       "not": {
+                                          "required": [
+                                             "name"
+                                          ]
+                                       }
+                                    },
+                                    {
+                                       "not": {
+                                          "required": [
+                                             "number_of_chassis"
+                                          ]
+                                       }
+                                    },
+                                    {
+                                       "not": {
+                                          "required": [
+                                             "product_family"
+                                          ]
+                                       }
+                                    },
+                                    {
+                                       "not": {
+                                          "required": [
+                                             "regex"
+                                          ]
+                                       }
+                                    },
+                                    {
+                                       "not": {
+                                          "required": [
+                                             "server_qualifications"
+                                          ]
+                                       }
+                                    }
+                                 ]
+                              },
+                              "else": {
+                                 "$comment": "Domain Qual Rack with last_rack_id parameter",
+                                 "required": [
+                                    "first_rack_id",
+                                    "last_rack_id"
+                                 ],
+                                 "allOf": [
+                                    {
+                                       "not": {
+                                          "required": [
+                                             "domain_group_dn"
+                                          ]
+                                       }
+                                    },
+                                    {
+                                       "not": {
+                                          "required": [
+                                             "first_chassis_id"
+                                          ]
+                                       }
+                                    },
+                                    {
+                                       "not": {
+                                          "required": [
+                                             "hierarchical"
+                                          ]
+                                       }
+                                    },
+                                    {
+                                       "not": {
+                                          "required": [
+                                             "last_chassis_id"
+                                          ]
+                                       }
+                                    },
+                                    {
+                                       "not": {
+                                          "required": [
+                                             "max_addr"
+                                          ]
+                                       }
+                                    },
+                                    {
+                                       "not": {
+                                          "required": [
+                                             "min_addr"
+                                          ]
+                                       }
+                                    },
+                                    {
+                                       "not": {
+                                          "required": [
+                                             "name"
+                                          ]
+                                       }
+                                    },
+                                    {
+                                       "not": {
+                                          "required": [
+                                             "number_of_chassis"
+                                          ]
+                                       }
+                                    },
+                                    {
+                                       "not": {
+                                          "required": [
+                                             "number_of_servers"
+                                          ]
+                                       }
+                                    },
+                                    {
+                                       "not": {
+                                          "required": [
+                                             "product_family"
+                                          ]
+                                       }
+                                    },
+                                    {
+                                       "not": {
+                                          "required": [
+                                             "regex"
+                                          ]
+                                       }
+                                    },
+                                    {
+                                       "not": {
+                                          "required": [
+                                             "server_qualifications"
+                                          ]
+                                       }
+                                    }
+                                 ]
+                              }
+                           }
+                        },
+                        {
+                           "$comment": "Domain Qual Domain Group Qualification",
+                           "if": {
+                              "properties": {
+                                 "type": {
+                                    "enum": [
+                                       "domain_qual_group"
+                                    ]
+                                 }
+                              }
+                           },
+                           "then": {
+                              "properties": {
+                                 "name": {
+                                    "pattern": "^[\\-\\.:_a-zA-Z0-9]{1,16}$"
+                                 }
+                              },
+                              "required": [
+                                 "domain_group_dn",
+                                 "name"
+                              ],
+                              "allOf": [
+                                 {
+                                    "not": {
+                                       "required": [
+                                          "first_chassis_id"
+                                       ]
+                                    }
+                                 },
+                                 {
+                                    "not": {
+                                       "required": [
+                                          "first_rack_id"
+                                       ]
+                                    }
+                                 },
+                                 {
+                                    "not": {
+                                       "required": [
+                                          "last_chassis_id"
+                                       ]
+                                    }
+                                 },
+                                 {
+                                    "not": {
+                                       "required": [
+                                          "last_rack_id"
+                                       ]
+                                    }
+                                 },
+                                 {
+                                    "not": {
+                                       "required": [
+                                          "max_addr"
+                                       ]
+                                    }
+                                 },
+                                 {
+                                    "not": {
+                                       "required": [
+                                          "min_addr"
+                                       ]
+                                    }
+                                 },
+                                 {
+                                    "not": {
+                                       "required": [
+                                          "number_of_chassis"
+                                       ]
+                                    }
+                                 },
+                                 {
+                                    "not": {
+                                       "required": [
+                                          "number_of_servers"
+                                       ]
+                                    }
+                                 },
+                                 {
+                                    "not": {
+                                       "required": [
+                                          "product_family"
+                                       ]
+                                    }
+                                 },
+                                 {
+                                    "not": {
+                                       "required": [
+                                          "regex"
+                                       ]
+                                    }
+                                 },
+                                 {
+                                    "not": {
+                                       "required": [
+                                          "server_qualifications"
+                                       ]
+                                    }
+                                 }
+                              ]
+                           }
+                        },
+                        {
+                           "$comment": "Domain Qual Domain Group Name Qualification",
+                           "if": {
+                              "properties": {
+                                 "type": {
+                                    "enum": [
+                                       "domain_qual_group_name"
+                                    ]
+                                 }
+                              }
+                           },
+                           "then": {
+                              "required": [
+                                 "name"
+                              ],
+                              "allOf": [
+                                 {
+                                    "not": {
+                                       "required": [
+                                          "domain_group_dn"
+                                       ]
+                                    }
+                                 },
+                                 {
+                                    "not": {
+                                       "required": [
+                                          "first_chassis_id"
+                                       ]
+                                    }
+                                 },
+                                 {
+                                    "not": {
+                                       "required": [
+                                          "first_rack_id"
+                                       ]
+                                    }
+                                 },
+                                 {
+                                    "not": {
+                                       "required": [
+                                          "hierarchical"
+                                       ]
+                                    }
+                                 },
+                                 {
+                                    "not": {
+                                       "required": [
+                                          "last_chassis_id"
+                                       ]
+                                    }
+                                 },
+                                 {
+                                    "not": {
+                                       "required": [
+                                          "last_rack_id"
+                                       ]
+                                    }
+                                 },
+                                 {
+                                    "not": {
+                                       "required": [
+                                          "max_addr"
+                                       ]
+                                    }
+                                 },
+                                 {
+                                    "not": {
+                                       "required": [
+                                          "min_addr"
+                                       ]
+                                    }
+                                 },
+                                 {
+                                    "not": {
+                                       "required": [
+                                          "number_of_chassis"
+                                       ]
+                                    }
+                                 },
+                                 {
+                                    "not": {
+                                       "required": [
+                                          "number_of_servers"
+                                       ]
+                                    }
+                                 },
+                                 {
+                                    "not": {
+                                       "required": [
+                                          "product_family"
+                                       ]
+                                    }
+                                 },
+                                 {
+                                    "not": {
+                                       "required": [
+                                          "regex"
+                                       ]
+                                    }
+                                 },
+                                 {
+                                    "not": {
+                                       "required": [
+                                          "server_qualifications"
+                                       ]
+                                    }
+                                 }
+                              ]
+                           }
+                        },
+                        {
+                           "$comment": "Domain Qual Domain Owner Qualification",
+                           "if": {
+                              "properties": {
+                                 "type": {
+                                    "enum": [
+                                       "domain_qual_owner"
+                                    ]
+                                 }
+                              }
+                           },
+                           "then": {
+                              "properties": {
+                                 "name": {
+                                    "pattern": "^[\\-\\.:_a-zA-Z0-9]{1,16}$"
+                                 }
+                              },
+                              "required": [
+                                 "name",
+                                 "regex"
+                              ],
+                              "allOf": [
+                                 {
+                                    "not": {
+                                       "required": [
+                                          "domain_group_dn"
+                                       ]
+                                    }
+                                 },
+                                 {
+                                    "not": {
+                                       "required": [
+                                          "first_chassis_id"
+                                       ]
+                                    }
+                                 },
+                                 {
+                                    "not": {
+                                       "required": [
+                                          "first_rack_id"
+                                       ]
+                                    }
+                                 },
+                                 {
+                                    "not": {
+                                       "required": [
+                                          "hierarchical"
+                                       ]
+                                    }
+                                 },
+                                 {
+                                    "not": {
+                                       "required": [
+                                          "last_chassis_id"
+                                       ]
+                                    }
+                                 },
+                                 {
+                                    "not": {
+                                       "required": [
+                                          "last_rack_id"
+                                       ]
+                                    }
+                                 },
+                                 {
+                                    "not": {
+                                       "required": [
+                                          "max_addr"
+                                       ]
+                                    }
+                                 },
+                                 {
+                                    "not": {
+                                       "required": [
+                                          "min_addr"
+                                       ]
+                                    }
+                                 },
+                                 {
+                                    "not": {
+                                       "required": [
+                                          "number_of_chassis"
+                                       ]
+                                    }
+                                 },
+                                 {
+                                    "not": {
+                                       "required": [
+                                          "number_of_servers"
+                                       ]
+                                    }
+                                 },
+                                 {
+                                    "not": {
+                                       "required": [
+                                          "product_family"
+                                       ]
+                                    }
+                                 },
+                                 {
+                                    "not": {
+                                       "required": [
+                                          "server_qualifications"
+                                       ]
+                                    }
+                                 }
+                              ]
+                           }
+                        },
+                        {
+                           "$comment": "Domain Qual Domain Site Qualification",
+                           "if": {
+                              "properties": {
+                                 "type": {
+                                    "enum": [
+                                       "domain_qual_site"
+                                    ]
+                                 }
+                              }
+                           },
+                           "then": {
+                              "properties": {
+                                 "name": {
+                                    "pattern": "^[\\-\\.:_a-zA-Z0-9]{1,16}$"
+                                 }
+                              },
+                              "required": [
+                                 "name",
+                                 "regex"
+                              ],
+                              "allOf": [
+                                 {
+                                    "not": {
+                                       "required": [
+                                          "domain_group_dn"
+                                       ]
+                                    }
+                                 },
+                                 {
+                                    "not": {
+                                       "required": [
+                                          "first_chassis_id"
+                                       ]
+                                    }
+                                 },
+                                 {
+                                    "not": {
+                                       "required": [
+                                          "first_rack_id"
+                                       ]
+                                    }
+                                 },
+                                 {
+                                    "not": {
+                                       "required": [
+                                          "hierarchical"
+                                       ]
+                                    }
+                                 },
+                                 {
+                                    "not": {
+                                       "required": [
+                                          "last_chassis_id"
+                                       ]
+                                    }
+                                 },
+                                 {
+                                    "not": {
+                                       "required": [
+                                          "last_rack_id"
+                                       ]
+                                    }
+                                 },
+                                 {
+                                    "not": {
+                                       "required": [
+                                          "max_addr"
+                                       ]
+                                    }
+                                 },
+                                 {
+                                    "not": {
+                                       "required": [
+                                          "min_addr"
+                                       ]
+                                    }
+                                 },
+                                 {
+                                    "not": {
+                                       "required": [
+                                          "number_of_chassis"
+                                       ]
+                                    }
+                                 },
+                                 {
+                                    "not": {
+                                       "required": [
+                                          "number_of_servers"
+                                       ]
+                                    }
+                                 },
+                                 {
+                                    "not": {
+                                       "required": [
+                                          "product_family"
+                                       ]
+                                    }
+                                 },
+                                 {
+                                    "not": {
+                                       "required": [
+                                          "server_qualifications"
+                                       ]
+                                    }
+                                 }
+                              ]
+                           }
+                        },
+                        {
+                           "$comment": "Domain Qual Product Qualification",
+                           "if": {
+                              "properties": {
+                                 "type": {
+                                    "enum": [
+                                       "domain_qual_product"
+                                    ]
+                                 }
+                              }
+                           },
+                           "then": {
+                              "required": [
+                                 "product_family"
+                              ],
+                              "allOf": [
+                                 {
+                                    "not": {
+                                       "required": [
+                                          "domain_group_dn"
+                                       ]
+                                    }
+                                 },
+                                 {
+                                    "not": {
+                                       "required": [
+                                          "first_chassis_id"
+                                       ]
+                                    }
+                                 },
+                                 {
+                                    "not": {
+                                       "required": [
+                                          "first_rack_id"
+                                       ]
+                                    }
+                                 },
+                                 {
+                                    "not": {
+                                       "required": [
+                                          "hierarchical"
+                                       ]
+                                    }
+                                 },
+                                 {
+                                    "not": {
+                                       "required": [
+                                          "last_chassis_id"
+                                       ]
+                                    }
+                                 },
+                                 {
+                                    "not": {
+                                       "required": [
+                                          "last_rack_id"
+                                       ]
+                                    }
+                                 },
+                                 {
+                                    "not": {
+                                       "required": [
+                                          "max_addr"
+                                       ]
+                                    }
+                                 },
+                                 {
+                                    "not": {
+                                       "required": [
+                                          "min_addr"
+                                       ]
+                                    }
+                                 },
+                                 {
+                                    "not": {
+                                       "required": [
+                                          "name"
+                                       ]
+                                    }
+                                 },
+                                 {
+                                    "not": {
+                                       "required": [
+                                          "number_of_chassis"
+                                       ]
+                                    }
+                                 },
+                                 {
+                                    "not": {
+                                       "required": [
+                                          "number_of_servers"
+                                       ]
+                                    }
+                                 },
+                                 {
+                                    "not": {
+                                       "required": [
+                                          "regex"
+                                       ]
+                                    }
+                                 },
+                                 {
+                                    "not": {
+                                       "required": [
+                                          "server_qualifications"
+                                       ]
+                                    }
+                                 }
+                              ]
+                           }
+                        },
+                        {
+                           "$comment": "Domain Qual Domain System IP Address Qualification",
+                           "if": {
+                              "properties": {
+                                 "type": {
+                                    "enum": [
+                                       "domain_qual_system_addr"
+                                    ]
+                                 }
+                              }
+                           },
+                           "then": {
+                              "required": [
+                                 "max_addr",
+                                 "min_addr"
+                              ],
+                              "allOf": [
+                                 {
+                                    "not": {
+                                       "required": [
+                                          "domain_group_dn"
+                                       ]
+                                    }
+                                 },
+                                 {
+                                    "not": {
+                                       "required": [
+                                          "first_chassis_id"
+                                       ]
+                                    }
+                                 },
+                                 {
+                                    "not": {
+                                       "required": [
+                                          "first_rack_id"
+                                       ]
+                                    }
+                                 },
+                                 {
+                                    "not": {
+                                       "required": [
+                                          "hierarchical"
+                                       ]
+                                    }
+                                 },
+                                 {
+                                    "not": {
+                                       "required": [
+                                          "last_chassis_id"
+                                       ]
+                                    }
+                                 },
+                                 {
+                                    "not": {
+                                       "required": [
+                                          "last_rack_id"
+                                       ]
+                                    }
+                                 },
+                                 {
+                                    "not": {
+                                       "required": [
+                                          "name"
+                                       ]
+                                    }
+                                 },
+                                 {
+                                    "not": {
+                                       "required": [
+                                          "number_of_chassis"
+                                       ]
+                                    }
+                                 },
+                                 {
+                                    "not": {
+                                       "required": [
+                                          "number_of_servers"
+                                       ]
+                                    }
+                                 },
+                                 {
+                                    "not": {
+                                       "required": [
+                                          "product_family"
+                                       ]
+                                    }
+                                 },
+                                 {
+                                    "not": {
+                                       "required": [
+                                          "regex"
+                                       ]
+                                    }
+                                 },
+                                 {
+                                    "not": {
+                                       "required": [
+                                          "server_qualifications"
+                                       ]
+                                    }
+                                 }
+                              ]
+                           }
+                        }
+                     ]
+                  }
+               },
+               "domain_qual_name": {
+                  "description": "Domain Qualifications - Name",
+                  "type": "string",
+                  "pattern": "^[\\-\\.:_a-zA-Z0-9]{1,16}$"
+               },
+               "clock": {
+                  "description": "Memory Qualifications - Memory Clock (in MHz)",
+                  "type": "string",
+                  "default": "unspecified",
+                  "pattern": "^unspecified$|^[0-9]$|^[0-9][0-9]$|^[0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9]$|^[0-5][0-9][0-9][0-9][0-9]$|^6[0-4][0-9][0-9][0-9]$|^65[0-4][0-9][0-9]$|^655[0-2][0-9]$|^6553[0-5]$"
+               },
+               "data_rate": {
+                  "description": "Memory Qualifications - Speed",
+                  "type": "string",
+                  "default": "unspecified",
+                  "pattern": "^unspecified$|^[0-9]$|^[0-9][0-9]$|^[0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9]$|^[0-5][0-9][0-9][0-9][0-9]$|^6[0-4][0-9][0-9][0-9]$|^65[0-4][0-9][0-9]$|^655[0-2][0-9]$|^6553[0-5]$"
+               },
+               "latency": {
+                  "description": "Memory Qualifications - Memory Latency (in ns)",
+                  "type": "string",
+                  "default": "unspecified",
+                  "pattern": "^unspecified$|^[0-9]$|^[0-9][0-9]$|^[0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-3][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^4[0-1][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^42[0-8][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^429[0-3][0-9][0-9][0-9][0-9][0-9][0-9]$|^4294[0-8][0-9][0-9][0-9][0-9][0-9]$|^42949[0-5][0-9][0-9][0-9][0-9]$|^429496[0-6][0-9][0-9][0-9]$|^4294967[0-1][0-9][0-9]$|^42949672[0-8][0-9]$|^429496729[0-5]$"
+               },
+               "width": {
+                  "description": "Memory Qualifications - Width (in Bits)",
+                  "type": "string",
+                  "default": "unspecified",
+                  "pattern": "^unspecified$|^[0-9]$|^[0-9][0-9]$|^[0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9]$|^[0-5][0-9][0-9][0-9][0-9]$|^6[0-4][0-9][0-9][0-9]$|^65[0-4][0-9][0-9]$|^655[0-2][0-9]$|^6553[0-5]$"
+               },
+               "server_pid": {
+                  "description": "Server PID Qualifications - Server PID",
+                  "type": "string",
+                  "default": "",
+                  "pattern": "^[ !#$%\\(\\)\\*\\+,\\-\\./:;\\?@\\[\\\\\\]\\^_\\{\\|\\}~a-zA-Z0-9]{0,256}$"
+               },
+               "diskless": {
+                  "description": "Storage Qualifications - Diskless",
+                  "type": "string",
+                  "default": "unspecified",
+                  "enum": [
+                     "yes",
+                     "no",
+                     "unspecified"
+                  ]
+               },
+               "number_of_blocks": {
+                  "description": "Storage Qualifications - Number of Blocks",
+                  "type": "string",
+                  "default": "unknown",
+                  "pattern": "^unknown$|^[0-9]$|^[0-9][0-9]$|^[0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-3][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^4[0-1][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^42[0-8][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^429[0-3][0-9][0-9][0-9][0-9][0-9][0-9]$|^4294[0-8][0-9][0-9][0-9][0-9][0-9]$|^42949[0-5][0-9][0-9][0-9][0-9]$|^429496[0-6][0-9][0-9][0-9]$|^4294967[0-1][0-9][0-9]$|^42949672[0-8][0-9]$|^429496729[0-5]$"
+               },
+               "block_size": {
+                  "description": "Storage Qualifications - Block Size",
+                  "type": "string",
+                  "default": "unknown",
+                  "pattern": "^unknown$|^[0-9]$|^[0-9][0-9]$|^[0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-3][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^4[0-1][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^42[0-8][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^429[0-3][0-9][0-9][0-9][0-9][0-9][0-9]$|^4294[0-8][0-9][0-9][0-9][0-9][0-9]$|^42949[0-5][0-9][0-9][0-9][0-9]$|^429496[0-6][0-9][0-9][0-9]$|^4294967[0-1][0-9][0-9]$|^42949672[0-8][0-9]$|^429496729[0-5]$"
+               },
+               "per_disk_cap": {
+                  "description": "Storage Qualifications - Per Disk Capacity (in MB)",
+                  "type": "string",
+                  "default": "unknown",
+                  "pattern": "^unknown$|^[0-9]$|^[0-9][0-9]$|^[0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-3][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^4[0-1][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^42[0-8][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^429[0-3][0-9][0-9][0-9][0-9][0-9][0-9]$|^4294[0-8][0-9][0-9][0-9][0-9][0-9]$|^42949[0-5][0-9][0-9][0-9][0-9]$|^429496[0-6][0-9][0-9][0-9]$|^4294967[0-1][0-9][0-9]$|^42949672[0-8][0-9]$|^429496729[0-5]$"
+               },
+               "number_of_flexflash_cards": {
+                  "description": "Storage Qualifications - Number of FlexFlash Cards",
+                  "type": "string",
+                  "default": "unknown",
+                  "pattern": "^unknown$|^[0-9]{1,3}$|^[1-2][0-9]{4}$|^3[0-1][0-9]{3}$|^32[0-6][0-9]{2}$|^327[0-5][0-9]$|^3276[0-7]$"
+               },
+               "disk_type": {
+                  "description": "Storage Qualifications - Disk Type",
+                  "type": "string",
+                  "default": "unspecified",
+                  "enum": [
+                     "HDD",
+                     "SSD",
+                     "unspecified"
+                  ]
+               },
+               "min_cap": {
+                  "description": "Memory/Storage Qualifications - Minimum Capacity (in MB)",
+                  "type": "string"
+               },
+               "max_cap": {
+                  "description": "Memory/Storage Qualifications - Maximum Capacity (in MB)",
+                  "type": "string"
+               },
+               "units": {
+                  "description": "Memory/Storage Qualifications - Units",
+                  "type": "string",
+                  "default": "unspecified",
+                  "pattern": "^unspecified$|^[0-9]$|^[0-9][0-9]$|^[0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9]$|^[0-5][0-9][0-9][0-9][0-9]$|^6[0-4][0-9][0-9][0-9]$|^65[0-4][0-9][0-9]$|^655[0-2][0-9]$|^6553[0-5]$"
+               }
+            },
+            "additionalProperties": false,
+            "required": [
+               "type"
+            ],
+            "allOf": [
+               {
+                  "$comment": "Adapter Qualification",
+                  "if": {
+                     "properties": {
+                        "type": {
+                           "enum": [
+                              "adapter"
+                           ]
+                        }
+                     }
+                  },
+                  "then": {
+                     "allOf": [
+                        {
+                           "not": {
+                              "required": [
+                                 "block_size"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "clock"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "cpu_speed"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "cpu_stepping"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "data_rate"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "diskless"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "disk_type"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "domain_qualifications"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "domain_qual_name"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "latency"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "max_cap"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "max_cores"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "max_procs"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "max_threads"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "min_cap"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "min_cores"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "min_procs"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "min_threads"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "number_of_blocks"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "number_of_flexflash_cards"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "per_disk_cap"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "processor_architecture"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "processor_pid"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "server_pid"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "units"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "width"
+                              ]
+                           }
+                        }
+                     ]
+                  }
+               },
+               {
+                  "$comment": "CPU Qualification",
+                  "if": {
+                     "properties": {
+                        "type": {
+                           "enum": [
+                              "cpu-cores"
+                           ]
+                        }
+                     }
+                  },
+                  "then": {
+                     "required": [
+                        "processor_architecture"
+                     ],
+                     "allOf": [
+                        {
+                           "not": {
+                              "required": [
+                                 "adapter_qualifications"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "block_size"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "clock"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "data_rate"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "diskless"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "disk_type"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "domain_qualifications"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "domain_qual_name"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "latency"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "max_cap"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "min_cap"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "number_of_blocks"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "number_of_flexflash_cards"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "per_disk_cap"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "server_pid"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "units"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "width"
+                              ]
+                           }
+                        }
+                     ]
+                  }
+               },
+               {
+                  "$comment": "Domain Qual Qualification",
+                  "if": {
+                     "properties": {
+                        "type": {
+                           "enum": [
+                              "domain_qual"
+                           ]
+                        }
+                     }
+                  },
+                  "then": {
+                     "required": [
+                        "domain_qual_name"
+                     ],
+                     "allOf": [
+                        {
+                           "not": {
+                              "required": [
+                                 "adapter_qualifications"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "block_size"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "clock"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "cpu_speed"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "cpu_stepping"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "data_rate"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "diskless"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "disk_type"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "latency"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "max_cap"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "max_cores"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "max_procs"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "max_threads"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "min_cap"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "min_cores"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "min_procs"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "min_threads"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "number_of_blocks"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "number_of_flexflash_cards"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "per_disk_cap"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "processor_architecture"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "processor_pid"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "units"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "width"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "server_pid"
+                              ]
+                           }
+                        }
+                     ]
+                  }
+               },
+               {
+                  "$comment": "Memory Qualification",
+                  "if": {
+                     "properties": {
+                        "type": {
+                           "enum": [
+                              "memory"
+                           ]
+                        }
+                     }
+                  },
+                  "then": {
+                     "properties": {
+                        "min_cap": {
+                           "default": "unspecified",
+                           "pattern": "^unspecified$|^[0-9]$|^[0-9][0-9]$|^[0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-3][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^4[0-1][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^42[0-8][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^429[0-3][0-9][0-9][0-9][0-9][0-9][0-9]$|^4294[0-8][0-9][0-9][0-9][0-9][0-9]$|^42949[0-5][0-9][0-9][0-9][0-9]$|^429496[0-6][0-9][0-9][0-9]$|^4294967[0-1][0-9][0-9]$|^42949672[0-8][0-9]$|^429496729[0-5]$"
+                        },
+                        "max_cap": {
+                           "default": "unspecified",
+                           "pattern": "^unspecified$|^[0-9]$|^[0-9][0-9]$|^[0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-3][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^4[0-1][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^42[0-8][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^429[0-3][0-9][0-9][0-9][0-9][0-9][0-9]$|^4294[0-8][0-9][0-9][0-9][0-9][0-9]$|^42949[0-5][0-9][0-9][0-9][0-9]$|^429496[0-6][0-9][0-9][0-9]$|^4294967[0-1][0-9][0-9]$|^42949672[0-8][0-9]$|^429496729[0-5]$"
+                        }
+                     },
+                     "allOf": [
+                        {
+                           "not": {
+                              "required": [
+                                 "adapter_qualifications"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "block_size"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "cpu_speed"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "cpu_stepping"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "diskless"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "disk_type"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "domain_qualifications"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "domain_qual_name"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "max_cores"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "max_procs"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "max_threads"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "min_cores"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "min_procs"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "min_threads"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "number_of_blocks"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "number_of_flexflash_cards"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "per_disk_cap"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "processor_architecture"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "processor_pid"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "server_pid"
+                              ]
+                           }
+                        }
+                     ]
+                  }
+               },
+               {
+                  "$comment": "Server PID Qualification",
+                  "if": {
+                     "properties": {
+                        "type": {
+                           "enum": [
+                              "server_pid"
+                           ]
+                        }
+                     }
+                  },
+                  "then": {
+                     "required": [
+                        "server_pid"
+                     ],
+                     "allOf": [
+                        {
+                           "not": {
+                              "required": [
+                                 "adapter_qualifications"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "block_size"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "clock"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "cpu_speed"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "cpu_stepping"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "data_rate"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "diskless"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "disk_type"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "domain_qualifications"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "domain_qual_name"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "latency"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "max_cap"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "max_cores"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "max_procs"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "max_threads"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "min_cap"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "min_cores"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "min_procs"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "min_threads"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "number_of_blocks"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "number_of_flexflash_cards"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "per_disk_cap"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "processor_architecture"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "processor_pid"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "units"
+                              ]
+                           }
+                        },
+                        {
+                           "not": {
+                              "required": [
+                                 "width"
+                              ]
+                           }
+                        }
+                     ]
+                  }
+               },
+               {
+                  "$comment": "Storage Qualification",
+                  "if": {
+                     "properties": {
+                        "type": {
+                           "enum": [
+                              "storage"
+                           ]
+                        }
+                     }
+                  },
+                  "then": {
+                     "required": [
+                        "diskless"
+                     ],
+                     "if": {
+                        "$comment": "Storage Qualification with diskless option unspecified or no",
+                        "properties": {
+                           "diskless": {
+                              "enum": [
+                                 "no",
+                                 "unspecified"
+                              ]
+                           }
+                        }
+                     },
+                     "then": {
+                        "allOf": [
+                           {
+                              "properties": {
+                                 "min_cap": {
+                                    "default": "unknown",
+                                    "pattern": "^unknown$|^[0-9]$|^[0-9][0-9]$|^[0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-3][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^4[0-1][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^42[0-8][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^429[0-3][0-9][0-9][0-9][0-9][0-9][0-9]$|^4294[0-8][0-9][0-9][0-9][0-9][0-9]$|^42949[0-5][0-9][0-9][0-9][0-9]$|^429496[0-6][0-9][0-9][0-9]$|^4294967[0-1][0-9][0-9]$|^42949672[0-8][0-9]$|^429496729[0-5]$"
+                                 },
+                                 "max_cap": {
+                                    "default": "unknown",
+                                    "pattern": "^unknown$|^[0-9]$|^[0-9][0-9]$|^[0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-3][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^4[0-1][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^42[0-8][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^429[0-3][0-9][0-9][0-9][0-9][0-9][0-9]$|^4294[0-8][0-9][0-9][0-9][0-9][0-9]$|^42949[0-5][0-9][0-9][0-9][0-9]$|^429496[0-6][0-9][0-9][0-9]$|^4294967[0-1][0-9][0-9]$|^42949672[0-8][0-9]$|^429496729[0-5]$"
+                                 }
+                              }
+                           },
+                           {
+                              "allOf": [
+                                 {
+                                    "not": {
+                                       "required": [
+                                          "adapter_qualifications"
+                                       ]
+                                    }
+                                 },
+                                 {
+                                    "not": {
+                                       "required": [
+                                          "clock"
+                                       ]
+                                    }
+                                 },
+                                 {
+                                    "not": {
+                                       "required": [
+                                          "cpu_speed"
+                                       ]
+                                    }
+                                 },
+                                 {
+                                    "not": {
+                                       "required": [
+                                          "cpu_stepping"
+                                       ]
+                                    }
+                                 },
+                                 {
+                                    "not": {
+                                       "required": [
+                                          "data_rate"
+                                       ]
+                                    }
+                                 },
+                                 {
+                                    "not": {
+                                       "required": [
+                                          "domain_qualifications"
+                                       ]
+                                    }
+                                 },
+                                 {
+                                    "not": {
+                                       "required": [
+                                          "domain_qual_name"
+                                       ]
+                                    }
+                                 },
+                                 {
+                                    "not": {
+                                       "required": [
+                                          "latency"
+                                       ]
+                                    }
+                                 },
+                                 {
+                                    "not": {
+                                       "required": [
+                                          "max_cores"
+                                       ]
+                                    }
+                                 },
+                                 {
+                                    "not": {
+                                       "required": [
+                                          "max_procs"
+                                       ]
+                                    }
+                                 },
+                                 {
+                                    "not": {
+                                       "required": [
+                                          "max_threads"
+                                       ]
+                                    }
+                                 },
+                                 {
+                                    "not": {
+                                       "required": [
+                                          "min_cores"
+                                       ]
+                                    }
+                                 },
+                                 {
+                                    "not": {
+                                       "required": [
+                                          "min_procs"
+                                       ]
+                                    }
+                                 },
+                                 {
+                                    "not": {
+                                       "required": [
+                                          "min_threads"
+                                       ]
+                                    }
+                                 },
+                                 {
+                                    "not": {
+                                       "required": [
+                                          "processor_architecture"
+                                       ]
+                                    }
+                                 },
+                                 {
+                                    "not": {
+                                       "required": [
+                                          "processor_pid"
+                                       ]
+                                    }
+                                 },
+                                 {
+                                    "not": {
+                                       "required": [
+                                          "server_pid"
+                                       ]
+                                    }
+                                 },
+                                 {
+                                    "not": {
+                                       "required": [
+                                          "width"
+                                       ]
+                                    }
+                                 }
+                              ]
+                           }
+                        ]
+                     },
+                     "else": {
+                        "$comment": "Storage Qualification with diskless option yes",
+                        "allOf": [
+                           {
+                              "not": {
+                                 "required": [
+                                    "adapter_qualifications"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "block_size"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "clock"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "cpu_speed"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "cpu_stepping"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "data_rate"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "disk_type"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "domain_qualifications"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "domain_qual_name"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "latency"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "max_cap"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "max_cores"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "max_procs"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "max_threads"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "min_cap"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "min_cores"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "min_procs"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "min_threads"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "number_of_blocks"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "number_of_flexflash_cards"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "per_disk_cap"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "processor_architecture"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "processor_pid"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "server_pid"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "units"
+                                 ]
+                              }
+                           },
+                           {
+                              "not": {
+                                 "required": [
+                                    "width"
+                                 ]
+                              }
+                           }
+                        ]
+                     }
+                  }
+               }
+            ]
+         }
+      },
+      "tags": {
+         "description": "Server Pool Policy Qualification - Tags",
+         "type": "array",
+         "items": {
+            "description": "Server Pool Policy Qualification - Tag",
+            "type": "object",
+            "properties": {
+               "type": {
+                  "description": "Server Pool Policy Qualification - Tag - Type",
+                  "type": "string",
+                  "pattern": "^[ !#$%&\\(\\)\\*\\+,\\-\\.:;=\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{1,32}$"
+               },
+               "value": {
+                  "description": "Server Pool Policy Qualification - Tag - Value",
+                  "type": "string"
+               }
+            },
+            "additionalProperties": false,
+            "required": [
+               "type",
+               "value"
+            ]
+         }
+      }
+   },
+   "additionalProperties": false,
+   "required": [
+      "name"
+   ]
+}

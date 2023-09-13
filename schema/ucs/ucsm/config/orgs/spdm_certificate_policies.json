@@ -1,0 +1,81 @@
+{
+   "id": "ucs_system_config_spdm_certificate_policies#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS ucs system config spdm_certificate_policies section",
+   "description": "EasyUCS ucs system config spdm_certificate_policies section JSON schema",
+   "type": "object",
+   "properties": {
+      "comment": {
+         "description": "SPDM Certificate Policy Comments",
+         "type": "string",
+         "default": ""
+      },
+      "name": {
+         "description": "SPDM Certificate Policy Name",
+         "type": "string",
+         "default": "",
+         "pattern": "^[\\-\\.:_a-zA-Z0-9]{1,16}$"
+      },
+      "descr": {
+         "description": "Description of SPDM Certificate Policy",
+         "type": "string",
+         "default": "",
+         "pattern": "^[ !#$%&\\(\\)\\*\\+,\\-\\./:;\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{0,256}$"
+      },
+      "policy_owner": {
+         "description": "SPDM Certificate Policy Owner (for UCS Central)",
+         "type": "string",
+         "enum": [
+            "ucs-central"
+         ]
+      },
+      "fault_alert_setting": {
+         "description": "Fault Alert Setting of SPDM Certificate Policy",
+         "type": "string",
+         "default": "partial",
+         "enum": [
+            "disabled",
+            "full",
+            "partial"
+         ]
+      },
+      "certificates": {
+         "description": "SPDM Certificate Policy - Certificates",
+         "type": "array",
+         "items": {
+            "type": "object",
+            "properties": {
+               "name": {
+                  "description": "SPDM Certificate Policy - Certificates - Name",
+                  "type": "string",
+                  "default": "",
+                  "pattern": "^[\\-\\.:_a-zA-Z0-9]{1,16}$"
+               },
+               "certificate_type": {
+                  "description": "SPDM Certificate Policy - Certificates - Certificate Type",
+                  "type": "string",
+                  "default": "pem",
+                  "enum": [
+                     "pem"
+                  ]
+               },
+               "certificate": {
+                  "description": "SPDM Certificate Policy - Certificates - Certificate",
+                  "type": "string",
+                  "default": ""
+               }
+            },
+            "additionalProperties": false,
+            "required": [
+               "name",
+               "certificate"
+            ]
+         },
+         "minItems": 1
+      }
+   },
+   "additionalProperties": false,
+   "required": [
+      "name"
+   ]
+}

@@ -3,6 +3,7 @@
 
 """ policies.py: Easy UCS Deployment Tool """
 
+from common import read_json_file
 from report.content import *
 from report.ucs.section import UcsReportSection
 from report.ucs.table import UcsReportTable
@@ -78,9 +79,10 @@ class UcsSystemBiosPolicyReportTable(UcsReportTable):
         rows = [[_("Description"), _("Value")],
                 [_("Name"), bios_policy.name],
                 [_("Description"), bios_policy.descr],
-                [_("Organization"), bios_policy._parent._dn]]
+                [_("Organization"), bios_policy._parent._dn],
+                [_("Policy Owner"), bios_policy.policy_owner]]
 
-        bios_table = bios_policy.get_bios_table()
+        bios_table = read_json_file(file_path="config/ucs/ucsm/bios_table.json", logger=self)
         if not bios_table:
             self.logger(level="error", message="BIOS Table not imported.")
         if bios_table:
@@ -177,6 +179,9 @@ class UcsSystemBootOrderReportTable(UcsReportTable):
                                          target["lun"], target["wwpn"], target["type"], None,
                                          target["boot_loader_name"], target["boot_loader_path"],
                                          target["boot_loader_description"]])
+                            else:
+                                rows.append([boot_item["order"], boot_item["device_type"], vhba["name"], vhba["type"],
+                                             None, None, None, None, None, None, None, None])
                     continue
             if "embedded_local_disks" in boot_item:
                 if boot_item["embedded_local_disks"]:
@@ -250,6 +255,7 @@ class UcsSystemGraphicsCardPolicyReportTable(UcsReportTable):
                 [_("Name"), graphics_card_policy.name],
                 [_("Description"), graphics_card_policy.descr],
                 [_("Organization"), graphics_card_policy._parent._dn],
+                [_("Policy Owner"), graphics_card_policy.policy_owner],
                 [_("Graphics Card Mode"), graphics_card_policy.graphics_card_mode]]
 
         UcsReportTable.__init__(self, order_id=order_id, parent=parent, row_number=len(rows),
@@ -309,6 +315,7 @@ class UcsSystemLocalDiskConfigPolicyReportTable(UcsReportTable):
                 [_("Name"), local_disk_config_policy.name],
                 [_("Description"), local_disk_config_policy.descr],
                 [_("Organization"), local_disk_config_policy._parent._dn],
+                [_("Policy Owner"), local_disk_config_policy.policy_owner],
                 [_("Mode"), mode],
                 [_("Protect Configuration"), local_disk_config_policy.protect_configuration],
                 [_("FlexFlash State"), local_disk_config_policy.flexflash_state],
@@ -358,6 +365,7 @@ class UcsSystemMaintenancePolicyReportTable(UcsReportTable):
                 [_("Name"), maintenance_policy.name],
                 [_("Description"), maintenance_policy.descr],
                 [_("Organization"), maintenance_policy._parent._dn],
+                [_("Policy Owner"), maintenance_policy.policy_owner],
                 [_("Reboot Policy"), maintenance_policy.reboot_policy],
                 [_("Soft Shutdown Timer"), soft_shutdown_timer],
                 [_("Storage Config. Deployment Policy"), maintenance_policy.storage_config_deployment_policy],
@@ -403,6 +411,7 @@ class UcsSystemScrubPolicyReportTable(UcsReportTable):
                 [_("Name"), scrub_policy.name],
                 [_("Description"), scrub_policy.descr],
                 [_("Organization"), scrub_policy._parent._dn],
+                [_("Policy Owner"), scrub_policy.policy_owner],
                 [_("Disk Scrub"), scrub_policy.disk_scrub],
                 [_("FlexFlash Scrub"), scrub_policy.flexflash_scrub],
                 [_("BIOS Settings Scrub"), scrub_policy.bios_settings_scrub],
@@ -446,7 +455,7 @@ class UcsSystemVmediaPolicyReportSection(UcsReportSection):
         for vmedia_mount in sorted(vmedia_policy.vmedia_mounts, key=lambda x: x["name"], reverse=False):
             self.content_list.append(
                 UcsSystemVmediaMountReportTable(order_id=self.report.get_current_order_id(), parent=self,
-                                                 centered=True, vmedia_mount=vmedia_mount))
+                                                centered=True, vmedia_mount=vmedia_mount))
 
 
 class UcsSystemVmediaPolicyReportTable(UcsReportTable):
@@ -456,6 +465,7 @@ class UcsSystemVmediaPolicyReportTable(UcsReportTable):
                 [_("Name"), vmedia_policy.name],
                 [_("Description"), vmedia_policy.descr],
                 [_("Organization"), vmedia_policy._parent._dn],
+                [_("Policy Owner"), vmedia_policy.policy_owner],
                 [_("Retry on Mount Fail"), vmedia_policy.retry_on_mount_fail]]
 
         UcsReportTable.__init__(self, order_id=order_id, parent=parent, row_number=len(rows),

@@ -43,6 +43,30 @@
             "pattern": "^[\\-\\./:_a-zA-Z0-9]{1,128}$"
          },
          "minItems": 1
+      },
+      "tags": {
+         "description": "Locale - Tags",
+         "type": "array",
+         "items": {
+            "description": "Locale - Tag",
+            "type": "object",
+            "properties": {
+               "type": {
+                  "description": "Locale - Tag - Type",
+                  "type": "string",
+                  "pattern": "^[ !#$%&\\(\\)\\*\\+,\\-\\.:;=\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{1,32}$"
+               },
+               "value": {
+                  "description": "Locale - Tag - Value",
+                  "type": "string"
+               }
+            },
+            "additionalProperties": false,
+            "required": [
+               "type",
+               "value"
+            ]
+         }
       }
    },
    "required": [

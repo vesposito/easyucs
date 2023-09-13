@@ -14,13 +14,20 @@
          "description": "Ethernet Adapter Policy Name",
          "type": "string",
          "default": "",
-         "pattern": "^[\\-\\.:_a-zA-Z0-9]{1,16}$"
+         "pattern": "^[\\-\\.:_a-zA-Z0-9]{1,16}$|^VMWare-NVMe-RoCEv2$"
       },
       "descr": {
          "description": "Description of Ethernet Adapter Policy",
          "type": "string",
          "default": "",
          "pattern": "^[ !#$%&\\(\\)\\*\\+,\\-\\./:;\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{0,256}$"
+      },
+      "policy_owner": {
+         "description": "Ethernet Adapter Policy Owner (for UCS Central)",
+         "type": "string",
+         "enum": [
+            "ucs-central"
+         ]
       },
       "pooled": {
          "description": "Ethernet Adapter Policy - Pooled",
@@ -139,6 +146,24 @@
             "disabled"
          ]
       },
+      "geneve_offload": {
+         "description": "Ethernet Adapter Policy - GENEVE Offload",
+         "type": "string",
+         "default": "disabled",
+         "enum": [
+            "enabled",
+            "disabled"
+         ]
+      },
+      "azurestack_host_qos": {
+         "description": "Ethernet Adapter Policy - AzureStack-Host QoS",
+         "type": "string",
+         "default": "disabled",
+         "enum": [
+            "enabled",
+            "disabled"
+         ]
+      },
       "failback_timeout": {
          "description": "Ethernet Adapter Policy - Failback Timeout",
          "type": "string",
@@ -209,7 +234,7 @@
                   "default": "256",
                   "pattern": "^[1-9]$|^[1-9][0-9]$|^[1-9][0-9][0-9]$|^[1-7][0-9][0-9][0-9]$|^80[0-9][0-9]$|^81[0-8][0-9]$|^819[0-2]$"
                },
-                "memory_regions": {
+               "memory_regions": {
                   "description": "Ethernet Adapter Policy - RoCE Properties - Memory Regions",
                   "type": "string",
                   "default": "131072",

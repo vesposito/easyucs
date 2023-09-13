@@ -101,6 +101,11 @@ class UcsSystemLanNeighborEntry(UcsSystemNeighborEntry):
             if self.model is not None and self.model != '':
                 if any(x in self.model for x in ["N3K-", "N5K-", "N6K-", "N7K-", "N77-", "N9K-"]):
                     self.is_nexus = True
+
+                # Some Nexus devices report their model with extra info,
+                # like "N9K-C93180YC-EXRouter, Switch, Supports-STP-Dispute". We remove the extra info
+                if self.model.endswith("Router, Switch, Supports-STP-Dispute"):
+                    self.model.replace("Router, Switch, Supports-STP-Dispute", "")
             else:
                 self.model = None
 
@@ -187,7 +192,7 @@ class UcsSystemLanNeighborEntry(UcsSystemNeighborEntry):
             # We need this JSON content to be sent using the first parameter (network_lan_neighbor_entry)
             if network_lan_neighbor_entry is not None:
                 self.is_aci_leaf = self.get_attribute(ucs_sdk_object=network_lan_neighbor_entry,
-                                                        attribute_name="is_aci_leaf")
+                                                      attribute_name="is_aci_leaf")
                 self.chassis_id = self.get_attribute(ucs_sdk_object=network_lan_neighbor_entry,
                                                      attribute_name="chassis_id")
                 self.device_type = self.get_attribute(ucs_sdk_object=network_lan_neighbor_entry,

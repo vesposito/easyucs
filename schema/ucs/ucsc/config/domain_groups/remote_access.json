@@ -70,13 +70,13 @@
                   "description": "Remote Access Maximum Web Sessions",
                   "type": "string",
                   "default": "256",
-                  "pattern":"^[1-9]$|^[1-9][0-9]$|^1[0-9][0-9]$|^2[0-4][0-9]$|^25[0-6]$"
+                  "pattern": "^[1-9]$|^[1-9][0-9]$|^1[0-9][0-9]$|^2[0-4][0-9]$|^25[0-6]$"
                },
                "maximum_sessions_per_user": {
                   "description": "Remote Access Maximum Web Sessions Per User",
                   "type": "string",
                   "default": "32",
-                  "pattern":"^[1-9]$|^[1-9][0-9]$|^1[0-9][0-9]$|^2[0-4][0-9]$|^25[0-6]$"
+                  "pattern": "^[1-9]$|^[1-9][0-9]$|^1[0-9][0-9]$|^2[0-4][0-9]$|^25[0-6]$"
                }
             },
             "additionalProperties": false
@@ -95,19 +95,43 @@
                   "description": "Remote Access Maximum Shell Sessions",
                   "type": "string",
                   "default": "32",
-                  "pattern":"^[1-9]$|^[1-2][0-9]$|^3[0-2]$"
+                  "pattern": "^[1-9]$|^[1-2][0-9]$|^3[0-2]$"
                },
                "maximum_sessions_per_user": {
                   "description": "Remote Access Maximum Shell Sessions Per User",
                   "type": "string",
                   "default": "32",
-                  "pattern":"^[1-9]$|^[1-2][0-9]$|^3[0-2]$"
+                  "pattern": "^[1-9]$|^[1-2][0-9]$|^3[0-2]$"
                }
             },
             "additionalProperties": false
          },
          "minItems": 1,
          "maxItems": 1
+      },
+      "tags": {
+         "description": "Remote Access - Tags",
+         "type": "array",
+         "items": {
+            "description": "Remote Access - Tag",
+            "type": "object",
+            "properties": {
+               "type": {
+                  "description": "Remote Access - Tag - Type",
+                  "type": "string",
+                  "pattern": "^[ !#$%&\\(\\)\\*\\+,\\-\\.:;=\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{1,32}$"
+               },
+               "value": {
+                  "description": "Remote Access - Tag - Value",
+                  "type": "string"
+               }
+            },
+            "additionalProperties": false,
+            "required": [
+               "type",
+               "value"
+            ]
+         }
       }
    },
    "additionalProperties": false

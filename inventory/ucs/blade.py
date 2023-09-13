@@ -3,13 +3,12 @@
 
 """ chassis.py: Easy UCS Deployment Tool """
 
-import json
-
-from inventory.ucs.adaptor import UcsSystemAdaptor
+from common import read_json_file
+from inventory.ucs.adaptor import UcsSystemAdaptor, UcsSystemAdaptorPortExpander
 from inventory.ucs.cpu import UcsSystemCpu
 from inventory.ucs.gpu import UcsSystemGpu
 from inventory.ucs.memory import UcsSystemMemoryArray
-from inventory.ucs.mgmt import UcsSystemMgmtInterface
+from inventory.ucs.mgmt import UcsSystemMgmtInterface, UcsSystemMgmtInterfaceInband
 from inventory.ucs.object import GenericUcsInventoryObject, UcsSystemInventoryObject
 from inventory.ucs.storage import UcsSystemStorageController, UcsSystemStorageControllerNvmeDrive, \
     UcsSystemStorageFlexFlashController
@@ -55,23 +54,14 @@ class UcsBlade(GenericUcsInventoryObject):
         """
         if self.sku is not None:
             # We use the catalog file to get the blade IMM Compatibility status
-            try:
-                if self.sku_scaled:
-                    json_file = open("catalog/blades/" + self.sku_scaled + ".json")
-                else:
-                    json_file = open("catalog/blades/" + self.sku + ".json")
-                blade_catalog = json.load(fp=json_file)
-                json_file.close()
+            if self.sku_scaled:
+                blade_catalog = read_json_file(file_path="catalog/blades/" + self.sku_scaled + ".json", logger=self)
+            else:
+                blade_catalog = read_json_file(file_path="catalog/blades/" + self.sku + ".json", logger=self)
 
+            if blade_catalog:
                 if "imm_compatible" in blade_catalog:
                     return blade_catalog["imm_compatible"]
-
-            except FileNotFoundError:
-                if self.sku_scaled:
-                    self.logger(level="error", message="Blade catalog file " + self.sku_scaled + ".json not found")
-                else:
-                    self.logger(level="error", message="Blade catalog file " + self.sku + ".json not found")
-                return None
 
         return None
 
@@ -87,23 +77,14 @@ class UcsBlade(GenericUcsInventoryObject):
         """
         if self.sku is not None:
             # We use the catalog file to get the blade short name
-            try:
-                if self.sku_scaled:
-                    json_file = open("catalog/blades/" + self.sku_scaled + ".json")
-                else:
-                    json_file = open("catalog/blades/" + self.sku + ".json")
-                blade_catalog = json.load(fp=json_file)
-                json_file.close()
+            if self.sku_scaled:
+                blade_catalog = read_json_file(file_path="catalog/blades/" + self.sku_scaled + ".json", logger=self)
+            else:
+                blade_catalog = read_json_file(file_path="catalog/blades/" + self.sku + ".json", logger=self)
 
+            if blade_catalog:
                 if "model_short_name" in blade_catalog:
                     return blade_catalog["model_short_name"]
-
-            except FileNotFoundError:
-                if self.sku_scaled:
-                    self.logger(level="error", message="Blade catalog file " + self.sku_scaled + ".json not found")
-                else:
-                    self.logger(level="error", message="Blade catalog file " + self.sku + ".json not found")
-                return None
 
         return None
 
@@ -211,6 +192,9 @@ class UcsSystemBlade(UcsBlade, UcsSystemInventoryObject):
     def _get_adaptors(self):
         if self._inventory.load_from == "live":
             return self._inventory.get_inventory_objects_under_dn(dn=self.dn, object_class=UcsSystemAdaptor,
+                                                                  parent=self) +\
+                   self._inventory.get_inventory_objects_under_dn(dn=self.dn,
+                                                                  object_class=UcsSystemAdaptorPortExpander,
                                                                   parent=self)
         elif self._inventory.load_from == "file" and "adaptors" in self._ucs_sdk_object:
             return [UcsSystemAdaptor(self, adaptor) for adaptor in self._ucs_sdk_object["adaptors"]]
@@ -246,9 +230,16 @@ class UcsSystemBlade(UcsBlade, UcsSystemInventoryObject):
     def _get_mgmt_interfaces(self):
         if self._inventory.load_from == "live":
             return self._inventory.get_inventory_objects_under_dn(dn=self.dn + "/mgmt",
-                                                                  object_class=UcsSystemMgmtInterface, parent=self)
+                                                                  object_class=UcsSystemMgmtInterface, parent=self) + \
+                   self._inventory.get_inventory_objects_under_dn(dn=self.dn + "/mgmt",
+                                                                  object_class=UcsSystemMgmtInterfaceInband,
+                                                                  parent=self)
         elif self._inventory.load_from == "file" and "mgmt_interfaces" in self._ucs_sdk_object:
-            return [UcsSystemMgmtInterface(self, mgmt_if) for mgmt_if in self._ucs_sdk_object["mgmt_interfaces"]]
+            return [UcsSystemMgmtInterface(self, mgmt_if) for mgmt_if in self._ucs_sdk_object["mgmt_interfaces"]
+                    if "type" in mgmt_if and mgmt_if["type"] in [None, "outband"]] + \
+                   [UcsSystemMgmtInterfaceInband(self, mgmt_interface) for mgmt_interface in
+                    self._ucs_sdk_object["mgmt_interfaces"]
+                    if "type" in mgmt_interface and mgmt_interface["type"] in ["inband"]]
         else:
             return []
 
@@ -320,6 +311,7 @@ class UcsSystemBlade(UcsBlade, UcsSystemInventoryObject):
                             "UCSB-VIC-M83-8P",  # VIC 1380
                             "UCSB-MLOM-40G-04",  # VIC 1440
                             "UCSB-VIC-M84-4P",  # VIC 1480
+                            "UCSB-ML-V5Q10G",  # VIC 15411
                             "UCSC-PCIE-CSC-02",  # VIC 1225
                             "UCSC-PCIE-C10T-02",  # VIC 1225T
                             "UCSC-MLOM-CSC-02",  # VIC 1227
@@ -329,8 +321,19 @@ class UcsSystemBlade(UcsBlade, UcsSystemInventoryObject):
                             "UCSC-MLOM-C40Q-03",  # VIC 1387
                             "UCSC-PCIE-C25Q-04",  # VIC 1455
                             "UCSC-MLOM-C25Q-04",  # VIC 1457
-                            "UCSC-PCIE-C100-04",  # VIC 1485
-                            "UCSC-MLOM-C100-04"  # VIC 1487
+                            "UCSC-M-V25-04",  # VIC 1467
+                            "UCSC-M-V100-04",  # VIC 1477
+                            "UCSC-PCIE-C100-04",  # VIC 1495
+                            "UCSC-MLOM-C100-04",  # VIC 1497
+                            "UCSC-P-V5Q50G",  # VIC 15425
+                            "UCSC-M-V5Q50G",  # VIC 15428
+                            "UCSC-P-V5D200G",  # VIC 15235
+                            "UCSC-M-V5D200G",  # VIC 15238
+                            "UCSX-V4-Q25GML",  # VIC 14425
+                            "UCSX-V4-Q25GME",  # VIC 14825
+                            "UCSX-ML-V5D200G",  # VIC 15231
+                            "UCSX-ML-V5Q50G",  # VIC 15420
+                            "UCSX-ME-V5Q50G"  # VIC 15422
                         ]:
                             adaptor.driver_name_ethernet = current_driver["name"]
                             adaptor.driver_version_ethernet = current_driver["version"]
@@ -350,6 +353,7 @@ class UcsSystemBlade(UcsBlade, UcsSystemInventoryObject):
                             "UCSB-VIC-M83-8P",  # VIC 1380
                             "UCSB-MLOM-40G-04",  # VIC 1440
                             "UCSB-VIC-M84-4P",  # VIC 1480
+                            "UCSB-ML-V5Q10G",  # VIC 15411
                             "UCSC-PCIE-CSC-02",  # VIC 1225
                             "UCSC-PCIE-C10T-02",  # VIC 1225T
                             "UCSC-MLOM-CSC-02",  # VIC 1227
@@ -359,8 +363,19 @@ class UcsSystemBlade(UcsBlade, UcsSystemInventoryObject):
                             "UCSC-MLOM-C40Q-03",  # VIC 1387
                             "UCSC-PCIE-C25Q-04",  # VIC 1455
                             "UCSC-MLOM-C25Q-04",  # VIC 1457
-                            "UCSC-PCIE-C100-04",  # VIC 1485
-                            "UCSC-MLOM-C100-04"  # VIC 1487
+                            "UCSC-M-V25-04",  # VIC 1467
+                            "UCSC-M-V100-04",  # VIC 1477
+                            "UCSC-PCIE-C100-04",  # VIC 1495
+                            "UCSC-MLOM-C100-04",  # VIC 1497
+                            "UCSC-P-V5Q50G",  # VIC 15425
+                            "UCSC-M-V5Q50G",  # VIC 15428
+                            "UCSC-P-V5D200G",  # VIC 15235
+                            "UCSC-M-V5D200G",  # VIC 15238
+                            "UCSX-V4-Q25GML",  # VIC 14425
+                            "UCSX-V4-Q25GME",  # VIC 14825
+                            "UCSX-ML-V5D200G",  # VIC 15231
+                            "UCSX-ML-V5Q50G",  # VIC 15420
+                            "UCSX-ME-V5Q50G"  # VIC 15422
                         ]:
                             adaptor.driver_name_fibre_channel = current_driver["name"]
                             adaptor.driver_version_fibre_channel = current_driver["version"]

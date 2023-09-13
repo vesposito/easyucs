@@ -40,5 +40,6 @@
       "port_size": [51, 110]
     }
   },
-  "imm_compatible": false
+  "imm_compatible": true,
+  "imm_min_required_version": "4.2(3c)"
 }

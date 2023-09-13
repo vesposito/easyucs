@@ -3,12 +3,12 @@
 
 """ configuration.py: Easy UCS Deployment Tool """
 
+import copy
 import json
+import math
 import os.path
 from ipaddress import IPv4Address, IPv6Address
 from pathlib import Path
-
-from PIL import Image
 
 from report.content import *
 from report.ucs.policies import UcsSystemPoliciesReportSection
@@ -153,11 +153,12 @@ class UcsSystemVlansReportSection(UcsReportSection):
 
 class UcsSystemVlansReportTable(UcsReportTable):
     def __init__(self, order_id, parent, vlans, centered=False):
-        rows = [[_("ID"), _("VLAN Name"), _("Fabric"), _("Multicast Policy"), _("Sharing Type")]]
+        rows = [[_("ID"), _("VLAN Name"), _("Fabric"), _("Multicast Policy"), _("Sharing Type"), _("Policy Owner")]]
 
         vlans.sort(key=lambda x: int(x.id), reverse=False)
         for vlan in vlans:
-            rows.append([vlan.id, vlan.name, vlan.fabric, vlan.multicast_policy_name, vlan.sharing_type])
+            rows.append([vlan.id, vlan.name, vlan.fabric, vlan.multicast_policy_name, vlan.sharing_type,
+                         vlan.policy_owner])
 
         UcsReportTable.__init__(self, order_id=order_id, parent=parent, row_number=len(rows),
                                 column_number=len(rows[1]), centered=centered, cells_list=rows)
@@ -182,7 +183,7 @@ class UcsSystemVlanGroupsReportSection(UcsReportSection):
 class UcsSystemVlanGroupsReportTable(UcsReportTable):
     def __init__(self, order_id, parent, vlan_groups, centered=False):
         rows = [[_("Name"), _("VLANs"), _("Native VLAN"), _("LAN Uplink Ports"), _("LAN Port Channel"),
-                 _("Org Permissions")]]
+                 _("Org Permissions"), _("Policy Owner")]]
 
         for vlan_group in vlan_groups:
             lan_up_text = ""
@@ -212,7 +213,8 @@ class UcsSystemVlanGroupsReportTable(UcsReportTable):
             lan_up = lan_up_text
             lan_pc = lan_pc_text
             org_perm = str(vlan_group.org_permissions).replace("[", "").replace("'", "").replace("]", "")
-            rows.append([vlan_group.name, vlans, vlan_group.native_vlan, lan_up, lan_pc, org_perm])
+            rows.append([vlan_group.name, vlans, vlan_group.native_vlan, lan_up, lan_pc, org_perm,
+                         vlan_group.policy_owner])
 
         UcsReportTable.__init__(self, order_id=order_id, parent=parent, row_number=len(rows),
                                 column_number=len(rows[1]), centered=centered, cells_list=rows)
@@ -235,11 +237,11 @@ class UcsSystemVsansReportSection(UcsReportSection):
 
 class UcsSystemVsansReportTable(UcsReportTable):
     def __init__(self, order_id, parent, vsans, centered=False):
-        rows = [[_("ID"), _("FCoE VLAN ID"), _("VSAN Name"), _("Fabric"), _("Zoning")]]
+        rows = [[_("ID"), _("FCoE VLAN ID"), _("VSAN Name"), _("Fabric"), _("Zoning"), _("Policy Owner")]]
 
         vsans.sort(key=lambda x: int(x.id), reverse=False)
         for vsan in vsans:
-            rows.append([vsan.id, vsan.fcoe_vlan_id, vsan.name, vsan.fabric, vsan.zoning])
+            rows.append([vsan.id, vsan.fcoe_vlan_id, vsan.name, vsan.fabric, vsan.zoning, vsan.policy_owner])
 
         UcsReportTable.__init__(self, order_id=order_id, parent=parent, row_number=len(rows),
                                 column_number=len(rows[1]), centered=centered, cells_list=rows)
@@ -421,6 +423,8 @@ class UcsSystemIdentitiesReportSection(UcsReportSection):
         self.content_list.append(
             UcsSystemUuidPoolsReportSection(order_id=self.report.get_current_order_id(), parent=self))
         self.content_list.append(
+            UcsSystemIqnPoolsReportSection(order_id=self.report.get_current_order_id(), parent=self))
+        self.content_list.append(
             UcsSystemMacPoolsReportSection(order_id=self.report.get_current_order_id(), parent=self))
         self.content_list.append(
             UcsSystemWwnnPoolsReportSection(order_id=self.report.get_current_order_id(), parent=self))
@@ -488,7 +492,7 @@ class UcsSystemIpv6BlocksReportTable(UcsReportTable):
         rows = [[_("From"), _("To"), _("Prefix"), _("Gateway"), _("Primary DNS"), _("Secondary DNS"), _("Size")]]
 
         for block_ipv6 in blocks_ipv6:
-            size = int(IPv6Address(block_ipv6["to"])) - int(IPv6Address(block_ipv6["from"]))
+            size = int(IPv6Address(block_ipv6["to"])) - int(IPv6Address(block_ipv6["from"])) + 1
             rows.append([block_ipv6["from"], block_ipv6["to"], block_ipv6["prefix"], block_ipv6["gateway"],
                          block_ipv6["primary_dns"], block_ipv6["secondary_dns"], size])
 
@@ -529,6 +533,53 @@ class UcsSystemUuidPoolReportSection(UcsReportSection):
             self.content_list.append(
                 UcsSystemGenericBlocksReportTable(order_id=self.report.get_current_order_id(), parent=self,
                                                   centered=True, blocks=uuid_pool.uuid_blocks))
+
+
+class UcsSystemIqnPoolsReportSection(UcsReportSection):
+    def __init__(self, order_id, parent, title=""):
+        if not title:
+            title = _("IQN Pools")
+        UcsReportSection.__init__(self, order_id=order_id, parent=parent, title=title)
+
+        iqn_pool_list = []
+        # Searching for all IQN Pools
+        for org in self.report.config.orgs:
+            self.parse_org(org, iqn_pool_list, element_to_parse="iqn_pools")
+
+        if iqn_pool_list:
+            for iqn_pool in iqn_pool_list:
+                self.content_list.append(
+                    UcsSystemIqnPoolReportSection(order_id=self.report.get_current_order_id(), parent=self,
+                                                  iqn_pool=iqn_pool, title=_("IQN Pool ") + iqn_pool.name))
+
+
+class UcsSystemIqnPoolReportSection(UcsReportSection):
+    def __init__(self, order_id, parent, iqn_pool, title=""):
+        UcsReportSection.__init__(self, order_id=order_id, parent=parent, title=title)
+
+        self.content_list.append(
+            GenericReportText(order_id=self.report.get_current_order_id(), parent=self, string=_("\nPrefix : "),
+                              bolded=False))
+        self.content_list.append(
+            GenericReportText(order_id=self.report.get_current_order_id(), parent=self, string=iqn_pool.prefix,
+                              bolded=True, new_paragraph=False))
+
+        if iqn_pool.iqn_blocks:
+            self.content_list.append(
+                UcsSystemIqnBlocksReportTable(order_id=self.report.get_current_order_id(), parent=self,
+                                                  centered=True, iqn_blocks=iqn_pool.iqn_blocks))
+
+
+class UcsSystemIqnBlocksReportTable(UcsReportTable):
+    def __init__(self, order_id, parent, iqn_blocks, centered=False):
+        rows = [[_("Suffix"), _("From"), _("To"), _("Size")]]
+
+        for iqn_block in iqn_blocks:
+            size = int(iqn_block["to"]) - int(iqn_block["from"]) + 1
+            rows.append([iqn_block["suffix"], iqn_block["from"], iqn_block["to"], size])
+
+        UcsReportTable.__init__(self, order_id=order_id, parent=parent, row_number=len(rows),
+                                column_number=len(rows[1]), centered=centered, cells_list=rows)
 
 
 class UcsSystemMacPoolsReportSection(UcsReportSection):
@@ -651,7 +702,7 @@ class UcsSystemWwxnPoolReportSection(UcsReportSection):
 
 
 class UcsSystemGenericBlocksReportTable(UcsReportTable):
-    # Used for WWNN, WWPN, WWXN, UUID and MAC Blocks
+    # Used for WWNN, WWPN, WWxN, UUID and MAC Blocks
     def __init__(self, order_id, parent, blocks, centered=False):
         rows = [[_("From"), _("To"), _("Size")]]
 
@@ -679,20 +730,25 @@ class UcsSystemServiceProfilesAndTemplatesReportSection(UcsReportSection):
 
 
 class UcsSystemServiceProfileTemplatesReportSection(UcsReportSection):
-    def parse_org(self, org, service_profile_temp_list, service_profile_child_list,
-                  element_to_parse="service_profiles"):
+    def parse_profiles(self, org, service_profile_temp_list, service_profile_child_list, global_templates):
         if org.service_profiles is not None:
             for service_profile in org.service_profiles:
                 if not service_profile.service_profile_template:
                     if service_profile.type in ["updating-template", "initial-template"]:
                         service_profile_temp_list.append(service_profile)
+                elif service_profile.policy_owner in ["ucs-central"]:
+                    # We are facing a Global Service Profile that has been instantiated from a Global SP Template
+                    if service_profile.service_profile_template not in global_templates.keys():
+                        global_templates[service_profile.service_profile_template] = [service_profile]
+                    else:
+                        global_templates[service_profile.service_profile_template].append(service_profile)
                 else:
                     service_profile_child_list.append(service_profile)
 
         if hasattr(org, "orgs"):
             if org.orgs is not None:
                 for suborg in org.orgs:
-                    self.parse_org(suborg, service_profile_temp_list, service_profile_child_list)
+                    self.parse_profiles(suborg, service_profile_temp_list, service_profile_child_list, global_templates)
 
     def __init__(self, order_id, parent, title=""):
         if not title:
@@ -701,9 +757,10 @@ class UcsSystemServiceProfileTemplatesReportSection(UcsReportSection):
 
         service_profile_temp_list = []
         service_profile_child_list = []
+        global_templates = {}
         # Searching for all updating template Service Profile
         for org in self.report.config.orgs:
-            self.parse_org(org, service_profile_temp_list, service_profile_child_list)
+            self.parse_profiles(org, service_profile_temp_list, service_profile_child_list, global_templates)
 
         for sp_temp in service_profile_temp_list:
             # Get the SP spawned from the template
@@ -721,6 +778,24 @@ class UcsSystemServiceProfileTemplatesReportSection(UcsReportSection):
                                                      service_profile=sp_temp,
                                                      title=_("Service Profile Template ") + sp_temp.name))
             delattr(sp_temp, "children")
+
+        for gsp_temp_name in global_templates.keys():
+            # Get the GSP spawned from the global template
+            children = ""
+            for child in global_templates[gsp_temp_name]:
+                if not children:
+                    children = child.name
+                else:
+                    children = children + ", " + child.name
+            first_child = copy.copy(global_templates[gsp_temp_name][0])
+            first_child.name = gsp_temp_name.split("ucs-central/")[1]
+            first_child.type = ""
+            first_child.children = children
+
+            self.content_list.append(
+                UcsSystemServiceProfileReportSection(order_id=self.report.get_current_order_id(), parent=self,
+                                                     service_profile=first_child,
+                                                     title=_("Global Service Profile Template ") + first_child.name))
 
 
 class UcsSystemServiceProfilesReportSection(UcsReportSection):
@@ -773,7 +848,9 @@ class UcsSystemServiceProfileReportSection(UcsReportSection):
 class UcsSystemServiceProfileReportTable(UcsReportTable):
     def __init__(self, order_id, parent, service_profile, centered=False):
         rows = [[_("Description"), _("Value")], [_("Name"), service_profile.name], [_("Type"), service_profile.type],
-                [_("Organization"), service_profile._parent._dn], [_("BIOS Policy"), service_profile.bios_policy],
+                [_("Organization"), service_profile._parent._dn],
+                [_("Policy Owner"), service_profile.policy_owner],
+                [_("BIOS Policy"), service_profile.bios_policy],
                 [_("Boot Policy"), service_profile.boot_policy],
                 [_("Maintenance Policy"), service_profile.maintenance_policy],
                 [_("Local Disk Configuration Policy"), service_profile.local_disk_configuration_policy],
@@ -787,6 +864,7 @@ class UcsSystemServiceProfileReportTable(UcsReportTable):
                 [_("Power Control Policy"), service_profile.power_control_policy],
                 [_("Scrub Policy"), service_profile.scrub_policy],
                 [_("KVM Management Policy"), service_profile.kvm_management_policy],
+                [_("SPDM Certificate Policy"), service_profile.spdm_certificate_policy],
                 [_("Graphics Card Policy"), service_profile.graphics_card_policy],
                 [_("Power Sync Policy"), service_profile.power_sync_policy],
                 [_("Storage Profile"), service_profile.storage_profile],
@@ -795,7 +873,10 @@ class UcsSystemServiceProfileReportTable(UcsReportTable):
                 [_("Server Pool"), service_profile.server_pool],
                 [_("Host Firmware Package"), service_profile.host_firmware_package]]
         if hasattr(service_profile, "children"):
-            rows.append([_("Instantiated Service Profiles"), service_profile.children.replace(", ", "\n")])
+            if service_profile.policy_owner in ["ucs-central"]:
+                rows.append([_("Instantiated Global Service Profiles"), service_profile.children.replace(", ", "\n")])
+            else:
+                rows.append([_("Instantiated Service Profiles"), service_profile.children.replace(", ", "\n")])
 
         UcsReportTable.__init__(self, order_id=order_id, parent=parent, row_number=len(rows),
                                 column_number=len(rows[1]), centered=centered, cells_list=rows)
@@ -829,14 +910,16 @@ class UcsSystemServiceProfilesAllocationChassisReportSection(UcsReportSection):
             title = _("Blade Servers associations")
         UcsReportSection.__init__(self, order_id=order_id, parent=parent, title=title)
 
-        i = 1
-        path = self.report.img_path + "infra_service_profile_" + "chassis_" + str(i) + ".png"
-        while os.path.exists(path):
-            self.content_list.append(
-                GenericReportImage(order_id=self.report.get_current_order_id(), parent=self, path=path, centered=True,
-                                   size=18))
-            i += 1
+        # We get the value max_chassis_per_page from draw.service_profile.UcsSystemDrawInfraServiceProfile
+        max_chassis_per_page = 6
+        number_of_page = int(math.ceil(len(self.report.inventory.chassis)/max_chassis_per_page))
+
+        for i in range(1, number_of_page+1):
             path = self.report.img_path + "infra_service_profile_" + "chassis_" + str(i) + ".png"
+            if os.path.exists(path):
+                self.content_list.append(
+                    GenericReportImage(order_id=self.report.get_current_order_id(), parent=self, path=path,
+                                       centered=True, size=18))
 
         flag = False
         for chassis in self.report.inventory.chassis:
@@ -879,14 +962,16 @@ class UcsSystemServiceProfilesAllocationRacksReportSection(UcsReportSection):
             title = _("Rack Servers associations")
         UcsReportSection.__init__(self, order_id=order_id, parent=parent, title=title)
 
-        i = 1
-        path = self.report.img_path + "infra_service_profile_" + "rack_" + str(i) + ".png"
-        while os.path.exists(path):
-            self.content_list.append(
-                GenericReportImage(order_id=self.report.get_current_order_id(), parent=self, path=path, centered=True,
-                                   size=18))
-            i += 1
+        # We get the value max_rack_per_page from draw.service_profile.UcsSystemDrawInfraServiceProfile
+        max_rack_per_page = 12
+        number_of_page = int(math.ceil(len(self.report.inventory.rack_units) / max_rack_per_page))
+
+        for i in range(1, number_of_page + 1):
             path = self.report.img_path + "infra_service_profile_" + "rack_" + str(i) + ".png"
+            if os.path.exists(path):
+                self.content_list.append(
+                    GenericReportImage(order_id=self.report.get_current_order_id(), parent=self, path=path,
+                                       centered=True, size=18))
 
         flag = False
         for rack in self.report.inventory.rack_units:
@@ -927,14 +1012,16 @@ class UcsSystemServiceProfilesAllocationRackEnclosuresReportSection(UcsReportSec
             title = _("Rack Enclosures Servers associations")
         UcsReportSection.__init__(self, order_id=order_id, parent=parent, title=title)
 
-        i = 1
-        path = self.report.img_path + "infra_service_profile_" + "rack_enclosure_" + str(i) + ".png"
-        while os.path.exists(path):
-            self.content_list.append(
-                GenericReportImage(order_id=self.report.get_current_order_id(), parent=self, path=path, centered=True,
-                                   size=18))
-            i += 1
+        # We get the value max_rack_enclosure_per_page from draw.service_profile.UcsSystemDrawInfraServiceProfile
+        max_rack_enclosure_per_page = 12
+        number_of_page = int(math.ceil(len(self.report.inventory.rack_enclosures) / max_rack_enclosure_per_page))
+
+        for i in range(1, number_of_page + 1):
             path = self.report.img_path + "infra_service_profile_" + "rack_enclosure_" + str(i) + ".png"
+            if os.path.exists(path):
+                self.content_list.append(
+                    GenericReportImage(order_id=self.report.get_current_order_id(), parent=self, path=path,
+                                       centered=True, size=18))
 
         flag = False
         for rack_enclosure in self.report.inventory.rack_enclosures:

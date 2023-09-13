@@ -1,0 +1,27 @@
+{
+   "id": "intersight_device#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS intersight device section",
+   "description": "EasyUCS intersight device section JSON schema",
+   "type": "object",
+   "properties": {
+      "target": {
+         "description": "The Intersight Device IP or hostname targeted",
+         "type": "string"
+      },
+      "username": {
+         "description": "Username to use for the Intersight Device",
+         "type": "string"
+      },
+      "password": {
+         "description": "Password of the user to use for the Intersight Device",
+         "type": "string"
+      }
+   },
+   "required": [
+      "target",
+      "username",
+      "password"
+   ],
+   "additionalProperties": false
+}

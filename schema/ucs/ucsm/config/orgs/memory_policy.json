@@ -1,26 +1,33 @@
 {
-   "id":"ucs_system_config_memory_policy#",
-   "$schema":"http://json-schema.org/draft-07/schema#",
-   "title":"EasyUCS ucs system config orgs memory_policy section",
-   "description":"EasyUCS ucs system config orgs memory_policy section JSON schema",
-   "type":"object",
+   "id": "ucs_system_config_memory_policy#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS ucs system config orgs memory_policy section",
+   "description": "EasyUCS ucs system config orgs memory_policy section JSON schema",
+   "type": "object",
    "properties": {
       "comment": {
          "description": "Memory Policy Comments",
          "type": "string",
          "default": ""
       },
-      "blacklisting":{
-         "description":"Blacklisting",
-         "type":"string",
-         "default":"enabled",
+      "policy_owner": {
+         "description": "Memory Policy Owner (for UCS Central)",
+         "type": "string",
+         "enum": [
+            "ucs-central"
+         ]
+      },
+      "blacklisting": {
+         "description": "Blacklisting",
+         "type": "string",
+         "default": "enabled",
          "enum": [
             "disabled",
             "enabled"
          ]
       }
    },
-   "additionalProperties":false,
+   "additionalProperties": false,
    "required": [
       "blacklisting"
    ]

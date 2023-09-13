@@ -1,0 +1,44 @@
+{
+   "id": "intersight_config_user_groups#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS intersight config user_groups section",
+   "description": "EasyUCS intersight config user_groups section JSON schema",
+   "type": "object",
+   "properties": {
+      "comment": {
+         "description": "User Group Comments",
+         "type": "string",
+         "default": ""
+      },
+      "group_name_in_identity_provider": {
+         "description": "User Group Group Name In Identity Provider",
+         "type": "string",
+         "default": ""
+      },
+      "identity_provider": {
+         "description": "User Group Identity Provider",
+         "type": "string",
+         "default": "Cisco"
+      },
+      "name": {
+         "description": "User Group Name",
+         "type": "string",
+         "default": ""
+      },
+      "roles": {
+         "description": "User Group Roles",
+         "type": "array",
+         "items": {
+            "description": "User Group Role",
+            "type": "string"
+         },
+         "minItems": 1
+      }
+   },
+   "additionalProperties": false,
+   "required": [
+      "group_name_in_identity_provider",
+      "name",
+      "roles"
+   ]
+}

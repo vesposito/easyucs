@@ -1,0 +1,18 @@
+{
+   "id": "easyucs_settings#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS settings schema",
+   "description": "EasyUCS settings JSON schema",
+   "type": "object",
+   "properties": {
+      "update_existing_intersight_objects": {
+         "description": "Use update existing objects info for determining whether to overwrite existing objects in IMM. If set to true, the commits should overwrite existing object attributes in IMM",
+         "type": "boolean",
+         "default": false
+      }
+   },
+   "additionalProperties": false,
+   "required": [
+      "update_existing_intersight_objects"
+   ]
+}

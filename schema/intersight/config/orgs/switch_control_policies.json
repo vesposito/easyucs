@@ -1,0 +1,149 @@
+{
+   "id": "intersight_config_orgs_switch_control_policies#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS intersight config orgs switch_control_policies section",
+   "description": "EasyUCS intersight config orgs switch_control_policies section JSON schema",
+   "type": "object",
+   "properties": {
+      "comment": {
+         "description": "Switch Control Policy Comments",
+         "type": "string",
+         "default": ""
+      },
+      "descr": {
+         "description": "Switch Control Policy Description",
+         "type": "string",
+         "default": "",
+         "pattern": "^$|^[a-zA-Z0-9]+[\\x00-\\xFF]*$",
+         "maxLength": 1024
+      },
+      "name": {
+         "description": "Switch Control Policy Name",
+         "type": "string",
+         "default": "",
+         "pattern": "^[a-zA-Z0-9_.:-]{1,64}$"
+      },
+      "tags": {
+         "description": "Switch Control Policy Tags",
+         "type": "array",
+         "items": {
+            "description": "Switch Control Policy Tag",
+            "type": "object",
+            "properties": {
+               "key": {
+                  "description": "Switch Control Policy Tag Key",
+                  "type": "string",
+                  "default": "",
+                  "minLength": 1,
+                  "maxLength": 128
+               },
+               "value": {
+                  "description": "Switch Control Policy Tag Value",
+                  "type": "string",
+                  "default": "",
+                  "minLength": 0,
+                  "maxLength": 256
+               }
+            },
+            "additionalProperties": false,
+            "required": [
+               "key",
+               "value"
+            ]
+         },
+         "minItems": 1
+      },
+      "link_control_global_settings": {
+         "description": "Switch Control Policy Link Control Global Settings",
+         "type": "object",
+         "properties": {
+            "message_interval": {
+               "description": "Configures the time between Link Control probe messages on ports that are in advertisement mode and are currently determined to be bidirectional. Valid values are from 7 to 90 seconds.",
+               "type": "integer",
+               "default": 15,
+               "minimum": 7,
+               "maximum": 90
+            },
+            "recovery_action": {
+               "description": "Link Control recovery when enabled, attempts to bring an Link Control error-disabled port out of reset.",
+               "type": "string",
+               "default": "none",
+               "enum": [
+                  "none",
+                  "reset"
+               ]
+            }
+         },
+         "additionalProperties": false
+      },
+      "mac_address_table_aging": {
+         "description": "Switch Control Policy MAC Address Table Aging",
+         "type": "string",
+         "default": "Default",
+         "enum": [
+            "Custom",
+            "Default",
+            "Never"
+         ]
+      },
+      "mac_aging_time": {
+         "description": "Switch Control Policy MAC Address Table Aging Time (Custom)",
+         "type": "integer",
+         "minimum": 1,
+         "maximum": 1000000
+      },
+      "switching_mode": {
+         "description": "Switch Control Policy Switching Mode",
+         "type": "object",
+         "properties": {
+            "ethernet": {
+               "description": "Switch Control Policy - Switching Mode - Ethernet",
+               "type": "string",
+               "default": "end-host",
+               "enum": [
+                  "end-host",
+                  "switch"
+               ]
+            },
+            "fc": {
+               "description": "Switch Control Policy - Switching Mode - FC",
+               "type": "string",
+               "default": "end-host",
+               "enum": [
+                  "end-host",
+                  "switch"
+               ]
+            }
+         },
+         "additionalProperties": false,
+         "anyOf": [
+            {
+               "required": [
+                  "ethernet"
+               ]
+            },
+            {
+               "required": [
+                  "fc"
+               ]
+            }
+         ]
+      },
+      "reserved_vlan_start_id": {
+         "description": "Switch Control Policy Reserved VLAN Start ID",
+         "type": "integer",
+         "default": 3915,
+         "minimum": 2,
+         "maximum": 3915
+      },
+      "vlan_port_count_optimization": {
+         "description": "Switch Control Policy VLAN Port Count Optimization Admin State",
+         "type": "boolean",
+         "default": false
+      }
+   },
+   "additionalProperties": false,
+   "required": [
+      "name"
+   ]
+}

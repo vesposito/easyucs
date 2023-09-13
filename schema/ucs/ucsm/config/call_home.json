@@ -1,94 +1,122 @@
 {
-   "id":"ucs_system_config_call_home#",
-   "$schema":"http://json-schema.org/draft-07/schema#",
-   "title":"EasyUCS ucs system config call_home section",
-   "description":"EasyUCS ucs system config call_home section JSON schema",
-   "type":"object",
-   "properties":{
+   "id": "ucs_system_config_call_home#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS ucs system config call_home section",
+   "description": "EasyUCS ucs system config call_home section JSON schema",
+   "type": "object",
+   "properties": {
       "comment": {
          "description": "Call Home Comments",
          "type": "string",
          "default": ""
       },
-      "mute_at_start":{
-         "description":"Mute Call Home Anonymous Reporting popup at UCS Manager start",
-         "type":"string",
-         "default":"no",
-         "enum":[
+      "policy_owner": {
+         "description": "Call Home Owner (for UCS Central)",
+         "type": "string",
+         "enum": [
+            "ucs-central"
+         ]
+      },
+      "mute_at_start": {
+         "description": "Mute Call Home Anonymous Reporting popup at UCS Manager start",
+         "type": "string",
+         "default": "no",
+         "enum": [
             "yes",
             "no"
          ]
       },
-      "anonymous_reporting":{
-         "description":"Call Home Anonymous Reporting Admin State",
-         "type":"string",
-         "default":"off",
-         "enum":[
+      "anonymous_reporting": {
+         "description": "Call Home Anonymous Reporting Admin State",
+         "type": "string",
+         "default": "off",
+         "enum": [
             "on",
             "off"
          ]
       },
-      "smtp_host":{
-         "description":"Call Home SMTP Host IP address / Hostname",
-         "type":"string",
-         "pattern":"^[A-Za-z]([A-Za-z0-9_.-]*[A-Za-z0-9])?([A-Za-z]([A-Za-z0-9._-]*[A-Za-z0-9])?)*$|^([1-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\\.([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\\.([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\\.([1-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])$|^([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}$|^([0-9a-fA-F]{1,4}:){1,7}:$|^([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}$|^([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}$|^([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}$|^([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}$|^([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}$|^[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})$|^:((:[0-9a-fA-F]{1,4}){1,7}|:)$"
+      "smtp_host": {
+         "description": "Call Home SMTP Host IP address / Hostname",
+         "type": "string",
+         "pattern": "^[A-Za-z]([A-Za-z0-9_.-]*[A-Za-z0-9])?([A-Za-z]([A-Za-z0-9._-]*[A-Za-z0-9])?)*$|^([1-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\\.([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\\.([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\\.([1-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])$|^([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}$|^([0-9a-fA-F]{1,4}:){1,7}:$|^([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}$|^([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}$|^([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}$|^([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}$|^([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}$|^[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})$|^:((:[0-9a-fA-F]{1,4}){1,7}|:)$"
       },
-      "smtp_port":{
-         "description":"Call Home SMTP Port",
-         "type":"string",
-         "default":"25",
-         "pattern":"^[1-9]$|^[1-9][0-9]$|^[1-9][0-9][0-9]$|^[1-9][0-9][0-9][0-9]$|^[1-5][0-9][0-9][0-9][0-9]$|^6[0-4][0-9][0-9][0-9]$|^65[0-4][0-9][0-9]$|^655[0-2][0-9]$|^6553[0-5]$"
+      "smtp_port": {
+         "description": "Call Home SMTP Port",
+         "type": "string",
+         "default": "25",
+         "pattern": "^[1-9]$|^[1-9][0-9]$|^[1-9][0-9][0-9]$|^[1-9][0-9][0-9][0-9]$|^[1-5][0-9][0-9][0-9][0-9]$|^6[0-4][0-9][0-9][0-9]$|^65[0-4][0-9][0-9]$|^655[0-2][0-9]$|^6553[0-5]$"
       },
-      "system_inventory":{
-         "description":"Enable/Disable Call Home System Inventory (Send Periodically)",
-         "type":"string",
-         "default":"off",
-         "enum":[
+      "smtp_authentication": {
+         "description": "Call Home SMTP Authentication Admin State",
+         "type": "string",
+         "default": "off",
+         "enum": [
+            "off",
+            "on"
+         ]
+      },
+      "smtp_username": {
+         "description": "Call Home SMTP Authentication User Name",
+         "type": "string",
+         "default": "",
+         "pattern": "^[a-zA-Z0-9_.-]{0,255}$"
+      },
+      "smtp_password": {
+         "description": "Call Home SMTP Authentication Password",
+         "type": "string",
+         "default": "",
+         "pattern": "^[!#%\\*\\+,\\-\\./:=@\\\\\\^_\\{\\}~a-zA-Z0-9]{0,56}$"
+      },
+      "system_inventory": {
+         "description": "Enable/Disable Call Home System Inventory (Send Periodically)",
+         "type": "string",
+         "default": "off",
+         "enum": [
             "on",
             "off"
          ]
       },
-      "system_inventory_send_now":{
-         "description":"Send Call Home System Inventory now?",
-         "type":"string",
-         "default":"no",
-         "enum":[
+      "system_inventory_send_now": {
+         "description": "Send Call Home System Inventory now?",
+         "type": "string",
+         "default": "no",
+         "enum": [
             "yes",
             "no"
          ]
       },
-      "system_inventory_send_interval":{
-         "description":"Call Home System Inventory Send Interval (days)",
-         "type":"string",
-         "default":"30",
-         "pattern":"^[0-9]$|^[1-2][0-9]$|^30$"
+      "system_inventory_send_interval": {
+         "description": "Call Home System Inventory Send Interval (days)",
+         "type": "string",
+         "default": "30",
+         "pattern": "^[0-9]$|^[1-2][0-9]$|^30$"
       },
-      "system_inventory_hour":{
-         "description":"Call Home System Inventory Hour Of Day To Send",
-         "type":"string",
-         "default":"0",
-         "pattern":"^[0-9]$|^1[0-9]$|^2[0-3]$"
+      "system_inventory_hour": {
+         "description": "Call Home System Inventory Hour Of Day To Send",
+         "type": "string",
+         "default": "0",
+         "pattern": "^[0-9]$|^1[0-9]$|^2[0-3]$"
       },
-      "system_inventory_minute":{
-         "description":"Call Home System Inventory Minute Of Hour",
-         "type":"string",
-         "default":"0",
-         "pattern":"^[0-9]$|^[1-5][0-9]$"
+      "system_inventory_minute": {
+         "description": "Call Home System Inventory Minute Of Hour",
+         "type": "string",
+         "default": "0",
+         "pattern": "^[0-9]$|^[1-5][0-9]$"
       },
-      "admin_state":{
-         "description":"Call Home Admin State",
-         "type":"string",
-         "default":"off",
-         "enum":[
+      "admin_state": {
+         "description": "Call Home Admin State",
+         "type": "string",
+         "default": "off",
+         "enum": [
             "on",
             "off"
          ]
       },
-      "switch_priority":{
-         "description":"Call Home Switch Priority",
-         "type":"string",
-         "default":"debug",
-         "enum":[
+      "switch_priority": {
+         "description": "Call Home Switch Priority",
+         "type": "string",
+         "default": "debug",
+         "enum": [
             "alert",
             "critical",
             "debug",
@@ -99,75 +127,75 @@
             "warning"
          ]
       },
-      "throttling":{
-         "description":"Call Home Alert Throttling Admin State",
-         "type":"string",
-         "default":"on",
-         "enum":[
+      "throttling": {
+         "description": "Call Home Alert Throttling Admin State",
+         "type": "string",
+         "default": "on",
+         "enum": [
             "on",
             "off"
          ]
       },
-      "contact":{
-         "description":"Call Home Contact Name",
-         "type":"string",
-         "pattern":"[a-zA-Z0-9=\\[\\]!#$%()*+\\\\,-./:;@_\\s{|}~?`^]*"
+      "contact": {
+         "description": "Call Home Contact Name",
+         "type": "string",
+         "pattern": "[a-zA-Z0-9=\\[\\]!#$%()*+\\\\,-./:;@_\\s{|}~?`^]*"
       },
-      "phone":{
-         "description":"Call Home Contact Phone Number",
-         "type":"string"
+      "phone": {
+         "description": "Call Home Contact Phone Number",
+         "type": "string"
       },
-      "email":{
-         "description":"Call Home Contact Email Address",
-         "type":"string",
-         "format":"email"
+      "email": {
+         "description": "Call Home Contact Email Address",
+         "type": "string",
+         "format": "email"
       },
-      "address":{
-         "description":"Call Home Contact Address",
-         "type":"string",
-         "pattern":"[a-zA-Z0-9=\\[\\]!#$%()*+\\\\,-./:;@_\\s{|}~?`<>\"\"'&^]+"
+      "address": {
+         "description": "Call Home Contact Address",
+         "type": "string",
+         "pattern": "[a-zA-Z0-9=\\[\\]!#$%()*+\\\\,-./:;@_\\s{|}~?`<>\"\"'&^]+"
       },
-      "customer_id":{
-         "description":"Call Home Customer ID",
-         "type":"string",
-         "pattern":"[a-zA-Z0-9=\\[\\]!#$%()*+\\\\,-./:;@_\\s{|}~?`<>\"\"'&^]+"
+      "customer_id": {
+         "description": "Call Home Customer ID",
+         "type": "string",
+         "pattern": "[a-zA-Z0-9=\\[\\]!#$%()*+\\\\,-./:;@_\\s{|}~?`<>\"\"'&^]+"
       },
-      "contract_id":{
-         "description":"Call Home Contract ID",
-         "type":"string",
-         "pattern":"[a-zA-Z0-9=\\[\\]!#$%()*+\\\\,-./:;@_\\s{|}~?`<>\"\"'&^]+"
+      "contract_id": {
+         "description": "Call Home Contract ID",
+         "type": "string",
+         "pattern": "[a-zA-Z0-9=\\[\\]!#$%()*+\\\\,-./:;@_\\s{|}~?`<>\"\"'&^]+"
       },
-      "site_id":{
-         "description":"Call Home Site ID",
-         "type":"string",
-         "pattern":"[a-zA-Z0-9=\\[\\]!#$%()*+\\\\,-./:;@_\\s{|}~?`<>\"\"'&^]+"
+      "site_id": {
+         "description": "Call Home Site ID",
+         "type": "string",
+         "pattern": "[a-zA-Z0-9=\\[\\]!#$%()*+\\\\,-./:;@_\\s{|}~?`<>\"\"'&^]+"
       },
-      "email_from":{
-         "description":"Call Home Email From",
-         "type":"string",
-         "format":"email"
+      "email_from": {
+         "description": "Call Home Email From",
+         "type": "string",
+         "format": "email"
       },
-      "email_reply_to":{
-         "description":"Call Home Email Reply To",
-         "type":"string",
-         "format":"email"
+      "email_reply_to": {
+         "description": "Call Home Email Reply To",
+         "type": "string",
+         "format": "email"
       },
-      "profiles":{
-         "description":"Call Home Profiles List",
-         "type":"array",
-         "items":{
-            "type":"object",
-            "properties":{
-               "profile_name":{
-                  "description":"Call Home Profile Name",
-                  "type":"string",
-                  "pattern":"^[\\-\\.:_a-zA-Z0-9]{1,16}$"
+      "profiles": {
+         "description": "Call Home Profiles List",
+         "type": "array",
+         "items": {
+            "type": "object",
+            "properties": {
+               "profile_name": {
+                  "description": "Call Home Profile Name",
+                  "type": "string",
+                  "pattern": "^[\\-\\.:_a-zA-Z0-9]{1,16}$"
                },
-               "profile_level":{
-                  "description":"Call Home Profile Level",
-                  "type":"string",
-                  "default":"debug",
-                  "enum":[
+               "profile_level": {
+                  "description": "Call Home Profile Level",
+                  "type": "string",
+                  "default": "debug",
+                  "enum": [
                      "critical",
                      "debug",
                      "disaster",
@@ -179,28 +207,28 @@
                      "warning"
                   ]
                },
-               "profile_format":{
-                  "description":"Call Home Profile Format",
-                  "type":"string",
-                  "default":"xml",
-                  "enum":[
+               "profile_format": {
+                  "description": "Call Home Profile Format",
+                  "type": "string",
+                  "default": "xml",
+                  "enum": [
                      "fullTxt",
                      "shortTxt",
                      "xml"
                   ]
                },
-               "profile_max_size":{
-                  "description":"Call Home Profile Max Message Size",
-                  "type":"string",
-                  "default":"1000000",
-                  "pattern":"^[1-9]$|^[1-9][0-9]$|^[1-9][0-9][0-9]$|^[1-9][0-9][0-9][0-9]$|^[1-9][0-9][0-9][0-9][0-9]$|^[1-9][0-9][0-9][0-9][0-9][0-9]$|^[1-4][0-9][0-9][0-9][0-9][0-9][0-9]$|^5000000$"
+               "profile_max_size": {
+                  "description": "Call Home Profile Max Message Size",
+                  "type": "string",
+                  "default": "1000000",
+                  "pattern": "^[1-9]$|^[1-9][0-9]$|^[1-9][0-9][0-9]$|^[1-9][0-9][0-9][0-9]$|^[1-9][0-9][0-9][0-9][0-9]$|^[1-9][0-9][0-9][0-9][0-9][0-9]$|^[1-4][0-9][0-9][0-9][0-9][0-9][0-9]$|^5000000$"
                },
-               "profile_alert_groups":{
-                  "description":"Call Home Profile Alert Groups",
-                  "type":"array",
-                  "items":{
-                     "type":"string",
-                     "enum":[
+               "profile_alert_groups": {
+                  "description": "Call Home Profile Alert Groups",
+                  "type": "array",
+                  "items": {
+                     "type": "string",
+                     "enum": [
                         "all",
                         "ciscoTac",
                         "diagnostic",
@@ -215,43 +243,43 @@
                         "test"
                      ]
                   },
-                  "minItems":0,
-                  "maxItems":12
+                  "minItems": 0,
+                  "maxItems": 12
                },
-               "profile_emails":{
-                  "description":"Call Home Profile Email Recipients",
-                  "type":"array",
-                  "items":{
-                     "type":"string",
-                     "format":"email"
+               "profile_emails": {
+                  "description": "Call Home Profile Email Recipients",
+                  "type": "array",
+                  "items": {
+                     "type": "string",
+                     "format": "email"
                   }
                }
             },
-            "additionalProperties":false,
-            "required":[
+            "additionalProperties": false,
+            "required": [
                "profile_name"
             ]
          },
-         "minItems":1
+         "minItems": 1
       },
-      "policies":{
-         "description":"Call Home Policies",
-         "type":"array",
-         "items":{
-            "type":"object",
-            "properties":{
-               "state":{
-                  "description":"Call Home Policy Admin State",
-                  "type":"string",
-                  "enum":[
+      "policies": {
+         "description": "Call Home Policies",
+         "type": "array",
+         "items": {
+            "type": "object",
+            "properties": {
+               "state": {
+                  "description": "Call Home Policy Admin State",
+                  "type": "string",
+                  "enum": [
                      "enabled",
                      "disabled"
                   ]
                },
-               "cause":{
-                  "description":"Call Home Policy Cause",
-                  "type":"string",
-                  "enum":[
+               "cause": {
+                  "description": "Call Home Policy Cause",
+                  "type": "string",
+                  "enum": [
                      "adaptor-mismatch",
                      "arp-targets-config-error",
                      "association-failed",
@@ -311,16 +339,16 @@
                   ]
                }
             },
-            "additionalProperties":false,
-            "required":[
+            "additionalProperties": false,
+            "required": [
                "state",
                "cause"
             ]
          },
-         "minItems":1
+         "minItems": 1
       }
    },
-   "additionalProperties":false,
+   "additionalProperties": false,
    "if": {
       "properties": {
          "admin_state": {

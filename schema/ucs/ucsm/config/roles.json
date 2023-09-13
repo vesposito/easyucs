@@ -1,29 +1,36 @@
 {
-   "id":"ucs_system_config_roles#",
-   "$schema":"http://json-schema.org/draft-07/schema#",
-   "title":"EasyUCS ucs system config roles section",
-   "description":"EasyUCS ucs system config roles section JSON schema",
-   "type":"object",
-   "properties":{
+   "id": "ucs_system_config_roles#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS ucs system config roles section",
+   "description": "EasyUCS ucs system config roles section JSON schema",
+   "type": "object",
+   "properties": {
       "comment": {
          "description": "Role Comments",
          "type": "string",
          "default": ""
       },
-      "name":{
-         "description":"Role Name",
-         "type":"string"
+      "name": {
+         "description": "Role Name",
+         "type": "string"
       },
-      "privileges":{
-         "description":"Role Privileges List",
-         "type":"array",
-         "default":[
+      "policy_owner": {
+         "description": "Role Owner (for UCS Central)",
+         "type": "string",
+         "enum": [
+            "ucs-central"
+         ]
+      },
+      "privileges": {
+         "description": "Role Privileges List",
+         "type": "array",
+         "default": [
             "read-only"
          ],
-         "items":{
-            "description":"Role Privilege",
-            "type":"string",
-            "enum":[
+         "items": {
+            "description": "Role Privilege",
+            "type": "string",
+            "enum": [
                "aaa",
                "admin",
                "ext-lan-config",
@@ -64,11 +71,11 @@
                "read-only"
             ]
          },
-         "minItems":1
+         "minItems": 1
       }
    },
-   "required":[
+   "required": [
       "name"
    ],
-   "additionalProperties":false
+   "additionalProperties": false
 }

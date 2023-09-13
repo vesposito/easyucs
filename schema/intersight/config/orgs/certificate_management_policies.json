@@ -1,0 +1,94 @@
+{
+   "id": "intersight_config_orgs_certificate_management_policies#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS intersight config orgs certificate_management_policies section",
+   "description": "EasyUCS intersight config orgs certificate_management_policies section JSON schema",
+   "type": "object",
+   "properties": {
+      "comment": {
+         "description": "Certificate Management Policy Comments",
+         "type": "string",
+         "default": ""
+      },
+      "descr": {
+         "description": "Certificate Management Policy Description",
+         "type": "string",
+         "default": "",
+         "pattern": "^$|^[a-zA-Z0-9]+[\\x00-\\xFF]*$",
+         "maxLength": 1024
+      },
+      "name": {
+         "description": "Certificate Management Policy Name",
+         "type": "string",
+         "default": "",
+         "pattern": "^[a-zA-Z0-9_.:-]{1,64}$"
+      },
+      "tags": {
+         "description": "Certificate Management Policy Tags",
+         "type": "array",
+         "items": {
+            "description": "Certificate Management Policy Tag",
+            "type": "object",
+            "properties": {
+               "key": {
+                  "description": "Certificate Management Policy Tag Key",
+                  "type": "string",
+                  "default": "",
+                  "minLength": 1,
+                  "maxLength": 128
+               },
+               "value": {
+                  "description": "Certificate Management Policy Tag Value",
+                  "type": "string",
+                  "default": "",
+                  "minLength": 0,
+                  "maxLength": 256
+               }
+            },
+            "additionalProperties": false,
+            "required": [
+               "key",
+               "value"
+            ]
+         },
+         "minItems": 1
+      },
+      "certificates": {
+         "description": "Certificate Management Policy Certificates",
+         "type": "object",
+         "properties": {
+            "imc_certificate": {
+               "description": "Certificate Management Policy - IMC Certificate",
+               "type": "object",
+               "properties": {
+                  "enable": {
+                     "description": "Certificate Management Policy - IMC Certificate - Enable",
+                     "type": "boolean",
+                     "default": true
+                  },
+                  "certificate": {
+                     "description": "Certificate Management Policy - IMC Certificate - PEM Certificate",
+                     "type": "string",
+                     "default": ""
+                  },
+                  "private_key": {
+                     "description": "Certificate Management Policy - IMC Certificate - Private Key",
+                     "type": "string",
+                     "default": ""
+                  }
+               },
+               "additionalProperties": false,
+               "required": [
+                  "enable"
+               ]
+            }
+         },
+         "additionalProperties": false
+      }
+   },
+   "additionalProperties": false,
+   "required": [
+      "name"
+   ]
+}
+ 

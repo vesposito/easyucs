@@ -1,0 +1,76 @@
+{
+   "id": "intersight_config_orgs_ssh_policies#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS intersight config orgs ssh_policies section",
+   "description": "EasyUCS intersight config orgs ssh_policies section JSON schema",
+   "type": "object",
+   "properties": {
+      "comment": {
+         "description": "SSH Policy Comments",
+         "type": "string",
+         "default": ""
+      },
+      "descr": {
+         "description": "SSH Policy Description",
+         "type": "string",
+         "default": "",
+         "pattern": "^$|^[a-zA-Z0-9]+[\\x00-\\xFF]*$",
+         "maxLength": 1024
+      },
+      "name": {
+         "description": "SSH Policy Name",
+         "type": "string",
+         "default": "",
+         "pattern": "^[a-zA-Z0-9_.:-]{1,64}$"
+      },
+      "tags": {
+         "description": "SSH Policy Tags",
+         "type": "array",
+         "items": {
+            "description": "SSH Policy Tag",
+            "type": "object",
+            "properties": {
+               "key": {
+                  "description": "SSH Policy Tag Key",
+                  "type": "string",
+                  "default": "",
+                  "minLength": 1,
+                  "maxLength": 128
+               },
+               "value": {
+                  "description": "SSH Policy Tag Value",
+                  "type": "string",
+                  "default": "",
+                  "minLength": 0,
+                  "maxLength": 256
+               }
+            },
+            "additionalProperties": false,
+            "required": [
+               "key",
+               "value"
+            ]
+         },
+         "minItems": 1
+      },
+      "enabled": {
+         "description": "SSH Policy Admin State",
+         "type": "boolean",
+         "default": true
+      },
+      "port": {
+         "description": "SSH Policy Port",
+         "type": "integer",
+         "default": 22
+      },
+      "timeout": {
+         "description": "SSH Policy Timeout (in seconds)",
+         "type": "integer",
+         "default": 1800
+      }
+   },
+   "additionalProperties": false,
+   "required": [
+      "name"
+   ]
+}

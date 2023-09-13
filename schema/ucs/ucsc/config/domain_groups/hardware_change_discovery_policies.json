@@ -1,0 +1,63 @@
+{
+   "id": "ucs_central_config_domain_groups_hardware_change_discovery_policies#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS ucs central config domain_groups hardware_change_discovery_policies section",
+   "description": "EasyUCS ucs central config domain_groups hardware_change_discovery_policies section JSON schema",
+   "type": "object",
+   "properties": {
+      "comment": {
+         "description": "Hardware Change Discovery Policy Comments",
+         "type": "string",
+         "default": ""
+      },
+      "name": {
+         "description": "Hardware Change Discovery Policy Name",
+         "type": "string",
+         "default": "",
+         "pattern": "^[\\-\\.:_a-zA-Z0-9]{1,16}$"
+      },
+      "descr": {
+         "description": "Description of Hardware Change Discovery Policy",
+         "type": "string",
+         "default": "",
+         "pattern": "^[ !#$%&\\(\\)\\*\\+,\\-\\./:;\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{0,256}$"
+      },
+      "action": {
+         "description": "Hardware Change Discovery Policy - action",
+         "type": "string",
+         "default": "user-acknowledged",
+         "enum": [
+            "auto-acknowledged",
+            "user-acknowledged"
+         ]
+      },
+      "tags": {
+         "description": "Hardware Change Discovery Policy - Tags",
+         "type": "array",
+         "items": {
+            "description": "Hardware Change Discovery Policy - Tag",
+            "type": "object",
+            "properties": {
+               "type": {
+                  "description": "Hardware Change Discovery Policy - Tag - Type",
+                  "type": "string",
+                  "pattern": "^[ !#$%&\\(\\)\\*\\+,\\-\\.:;=\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{1,32}$"
+               },
+               "value": {
+                  "description": "Hardware Change Discovery Policy - Tag - Value",
+                  "type": "string"
+               }
+            },
+            "additionalProperties": false,
+            "required": [
+               "type",
+               "value"
+            ]
+         }
+      }
+   },
+   "additionalProperties": false,
+   "required": [
+      "name"
+   ]
+}

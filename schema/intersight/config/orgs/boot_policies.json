@@ -1,0 +1,1032 @@
+{
+   "id": "intersight_config_orgs_boot_policies#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS intersight config orgs boot_policies section",
+   "description": "EasyUCS intersight config orgs boot_policies section JSON schema",
+   "type": "object",
+   "properties": {
+      "comment": {
+         "description": "Boot Policy Comments",
+         "type": "string",
+         "default": ""
+      },
+      "descr": {
+         "description": "Boot Policy Description",
+         "type": "string",
+         "default": "",
+         "pattern": "^$|^[a-zA-Z0-9]+[\\x00-\\xFF]*$",
+         "maxLength": 1024
+      },
+      "name": {
+         "description": "Boot Policy Name",
+         "type": "string",
+         "default": "",
+         "pattern": "^[a-zA-Z0-9_.:-]{1,64}$"
+      },
+      "tags": {
+         "description": "Boot Policy Tags",
+         "type": "array",
+         "items": {
+            "description": "Boot Policy Tag",
+            "type": "object",
+            "properties": {
+               "key": {
+                  "description": "Boot Policy Tag Key",
+                  "type": "string",
+                  "default": "",
+                  "minLength": 1,
+                  "maxLength": 128
+               },
+               "value": {
+                  "description": "Boot Policy Tag Value",
+                  "type": "string",
+                  "default": "",
+                  "minLength": 0,
+                  "maxLength": 256
+               }
+            },
+            "additionalProperties": false,
+            "required": [
+               "key",
+               "value"
+            ]
+         },
+         "minItems": 1
+      },
+      "boot_mode": {
+         "description": "Boot Policy - Boot Mode",
+         "type": "string",
+         "default": "Legacy",
+         "enum": [
+            "Legacy",
+            "Uefi"
+         ]
+      },
+      "enable_secure_boot": {
+         "description": "Boot Policy - Enable Secure Boot",
+         "type": "boolean",
+         "default": false
+      },
+      "boot_devices": {
+         "description": "Boot Policy - Boot Devices",
+         "type": "array",
+         "items": {
+            "description": "Boot Policy - Device Member of Boot Order",
+            "type": "object",
+            "properties": {
+               "device_type": {
+                  "description": "Boot Policy - Device Member of Boot Order - Device Type",
+                  "type": "string",
+                  "enum": [
+                     "iscsi_boot",
+                     "local_cdd",
+                     "local_disk",
+                     "nvme",
+                     "pch_storage",
+                     "pxe_boot",
+                     "san_boot",
+                     "sd_card",
+                     "uefi_shell",
+                     "usb",
+                     "virtual_media"
+                  ]
+               },
+               "device_name": {
+                  "description": "Boot Policy - Device Member of Boot Order - Device Name",
+                  "type": "string",
+                  "default": "",
+                  "pattern": "((^[a-zA-Z0-9]$){1,30}|(^(([a-zA-Z0-9])([a-zA-Z0-9_\\-]{0,28})([a-zA-Z0-9]))$))"
+               },
+               "enabled": {
+                  "description": "Boot Policy - Device Member of Boot Order - Enabled",
+                  "type": "boolean",
+                  "default": false
+               },
+               "bootloader_name": {
+                  "description": "Boot Policy - Device Member of Boot Order - Boot Loader Name",
+                  "type": "string",
+                  "default": "",
+                  "maxLength": 128
+               },
+               "bootloader_description": {
+                  "description": "Boot Policy - Device Member of Boot Order - Boot Loader Description",
+                  "type": "string",
+                  "default": "",
+                  "maxLength": 128
+               },
+               "bootloader_path": {
+                  "description": "Boot Policy - Device Member of Boot Order - Boot Loader Path",
+                  "type": "string",
+                  "default": "",
+                  "maxLength": 256
+               },
+               "interface_name": {
+                  "description": "Boot Policy - Device Member of Boot Order - iSCSI Boot/PXE Boot/SAN Boot Interface Name",
+                  "type": "string",
+                  "default": "",
+                  "pattern": "^[a-zA-Z0-9-._:]*$"
+               },
+               "interface_source": {
+                  "description": "Boot Policy - Device Member of Boot Order - PXE Boot Interface Source",
+                  "type": "string",
+                  "default": "name",
+                  "enum": [
+                     "mac",
+                     "name",
+                     "port"
+                  ]
+               },
+               "ip_type": {
+                  "description": "Boot Policy - Device Member of Boot Order - PXE Boot IP Type",
+                  "type": "string",
+                  "default": "None",
+                  "enum": [
+                     "IPv4",
+                     "IPv6",
+                     "None"
+                  ]
+               },
+               "lun": {
+                  "description": "Boot Policy - Device Member of Boot Order - PCH Storage/SAN Boot/SD Card LUN",
+                  "type": "integer",
+                  "default": 0,
+                  "minimum": 0,
+                  "maximum": 255
+               },
+               "mac_address": {
+                  "description": "Boot Policy - Device Member of Boot Order - PXE Boot MAC Address",
+                  "type": "string",
+                  "default": "",
+                  "pattern": "^$|^(((\\d|([a-f]|[A-F])){2}:){5}(\\d|([a-f]|[A-F])){2})$"
+               },
+               "port": {
+                  "description": "Boot Policy - Device Member of Boot Order - iSCSI Boot/PXE Boot Port",
+                  "type": "integer",
+                  "minimum": -1,
+                  "maximum": 255
+               },
+               "slot": {
+                  "description": "Boot Policy - Device Member of Boot Order - iSCSI Boot/Local Disk/PXE Boot/SAN Boot Slot",
+                  "type": "string",
+                  "default": ""
+               },
+               "subtype": {
+                  "description": "Boot Policy - Device Member of Boot Order - SD Card/USB/Virtual Media Subtype",
+                  "type": "string",
+                  "default": "None",
+                  "enum": [
+                     "cimc-mapped-dvd",
+                     "cimc-mapped-hdd",
+                     "flex-util",
+                     "flex-flash",
+                     "kvm-mapped-dvd",
+                     "kvm-mapped-hdd",
+                     "kvm-mapped-fdd",
+                     "None",
+                     "SDCARD",
+                     "usb-cd",
+                     "usb-fdd",
+                     "usb-hdd"
+                  ]
+               },
+               "target_wwpn": {
+                  "description": "Boot Policy - Device Member of Boot Order - SAN Boot Target WWPN",
+                  "type": "string",
+                  "default": "",
+                  "pattern": "^$|(^([0-9a-fA-F]{2}:){7}[0-9a-fA-F]{2}$)"
+               }
+            },
+            "additionalProperties": false,
+            "required": [
+               "device_type",
+               "device_name"
+            ],
+            "allOf": [
+               {
+                  "$comment": "Below is for setting constraints for iscsi_boot device type",
+                  "if": {
+                     "properties": {
+                        "device_type": {
+                           "enum": [
+                              "iscsi_boot"
+                           ]
+                        }
+                     },
+                     "required": [
+                        "device_type"
+                     ]
+                  },
+                  "then": {
+                     "allOf": [
+                        {
+                           "required": [
+                              "interface_name"
+                           ]
+                        },
+                        {
+                           "not": {
+                              "anyOf": [
+                                 {
+                                    "required": [
+                                       "interface_source"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
+                                       "ip_type"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
+                                       "lun"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
+                                       "mac_address"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
+                                       "subtype"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
+                                       "target_wwpn"
+                                    ]
+                                 }
+                              ]
+                           }
+                        },
+                        {
+                           "properties": {
+                              "slot": {
+                                 "pattern": "^$|^([1-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5]|L|MLOM|L1|L2|OCP)$"
+                              }
+                           }
+                        }
+                     ]
+                  }
+               },
+               {
+                  "$comment": "Below is for setting constraints for local_cdd device type",
+                  "if": {
+                     "properties": {
+                        "device_type": {
+                           "enum": [
+                              "local_cdd"
+                           ]
+                        }
+                     },
+                     "required": [
+                        "device_type"
+                     ]
+                  },
+                  "then": {
+                     "allOf": [
+                        {
+                           "not": {
+                              "anyOf": [
+                                 {
+                                    "required": [
+                                       "interface_name"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
+                                       "interface_source"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
+                                       "ip_type"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
+                                       "lun"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
+                                       "mac_address"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
+                                       "port"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
+                                       "slot"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
+                                       "subtype"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
+                                       "target_wwpn"
+                                    ]
+                                 }
+                              ]
+                           }
+                        }
+                     ]
+                  }
+               },
+               {
+                  "$comment": "Below is for setting constraints for local_disk device type",
+                  "if": {
+                     "properties": {
+                        "device_type": {
+                           "enum": [
+                              "local_disk"
+                           ]
+                        }
+                     },
+                     "required": [
+                        "device_type"
+                     ]
+                  },
+                  "then": {
+                     "allOf": [
+                        {
+                           "not": {
+                              "anyOf": [
+                                 {
+                                    "required": [
+                                       "interface_name"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
+                                       "interface_source"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
+                                       "ip_type"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
+                                       "lun"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
+                                       "mac_address"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
+                                       "port"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
+                                       "subtype"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
+                                       "target_wwpn"
+                                    ]
+                                 }
+                              ]
+                           }
+                        },
+                        {
+                           "properties": {
+                              "slot": {
+                                 "pattern": "^$|^([1-9]|[1-9][0-9]|1[0-9][0-9]|20[0-5]|M|HBA|SAS|MRAID|RAID|MRAID1|MRAID2|MSTOR-RAID|FMEZZ1-SAS|MSTOR-RAID-1|MSTOR-RAID-2)$"
+                              }
+                           }
+                        }
+                     ]
+                  }
+               },
+               {
+                  "$comment": "Below is for setting constraints for nvme device type",
+                  "if": {
+                     "properties": {
+                        "device_type": {
+                           "enum": [
+                              "nvme"
+                           ]
+                        }
+                     },
+                     "required": [
+                        "device_type"
+                     ]
+                  },
+                  "then": {
+                     "allOf": [
+                        {
+                           "not": {
+                              "anyOf": [
+                                 {
+                                    "required": [
+                                       "interface_name"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
+                                       "interface_source"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
+                                       "ip_type"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
+                                       "lun"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
+                                       "mac_address"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
+                                       "port"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
+                                       "slot"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
+                                       "subtype"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
+                                       "target_wwpn"
+                                    ]
+                                 }
+                              ]
+                           }
+                        }
+                     ]
+                  }
+               },
+               {
+                  "$comment": "Below is for setting constraints for pch_storage device type",
+                  "if": {
+                     "properties": {
+                        "device_type": {
+                           "enum": [
+                              "pch_storage"
+                           ]
+                        }
+                     },
+                     "required": [
+                        "device_type"
+                     ]
+                  },
+                  "then": {
+                     "allOf": [
+                        {
+                           "not": {
+                              "anyOf": [
+                                 {
+                                    "required": [
+                                       "interface_name"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
+                                       "interface_source"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
+                                       "ip_type"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
+                                       "mac_address"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
+                                       "port"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
+                                       "slot"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
+                                       "subtype"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
+                                       "target_wwpn"
+                                    ]
+                                 }
+                              ]
+                           }
+                        }
+                     ]
+                  }
+               },
+               {
+                  "$comment": "Below is for setting constraints for pxe_boot device type",
+                  "if": {
+                     "properties": {
+                        "device_type": {
+                           "enum": [
+                              "pxe_boot"
+                           ]
+                        }
+                     },
+                     "required": [
+                        "device_type"
+                     ]
+                  },
+                  "then": {
+                     "allOf": [
+                        {
+                           "required": [
+                              "interface_source"
+                           ]
+                        },
+                        {
+                           "not": {
+                              "anyOf": [
+                                 {
+                                    "required": [
+                                       "lun"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
+                                       "subtype"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
+                                       "target_wwpn"
+                                    ]
+                                 }
+                              ]
+                           }
+                        },
+                        {
+                           "properties": {
+                              "slot": {
+                                 "pattern": "^$|^([1-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5]|L|MLOM|L1|L2|OCP)$"
+                              }
+                           }
+                        },
+                        {
+                           "!comment": "Below is the logic for the various options for interface_source",
+                           "allOf": [
+                              {
+                                 "if": {
+                                    "properties": {
+                                       "interface_source": {
+                                          "enum": [
+                                             "name"
+                                          ]
+                                       }
+                                    },
+                                    "required": [
+                                       "interface_source"
+                                    ]
+                                 },
+                                 "then": {
+                                    "required": [
+                                       "interface_name"
+                                    ]
+                                 }
+                              },
+                              {
+                                 "if": {
+                                    "properties": {
+                                       "interface_source": {
+                                          "enum": [
+                                             "port"
+                                          ]
+                                       }
+                                    },
+                                    "required": [
+                                       "interface_source"
+                                    ]
+                                 },
+                                 "then": {
+                                    "required": [
+                                       "port"
+                                    ]
+                                 }
+                              },
+                              {
+                                 "if": {
+                                    "properties": {
+                                       "interface_source": {
+                                          "enum": [
+                                             "mac"
+                                          ]
+                                       }
+                                    },
+                                    "required": [
+                                       "interface_source"
+                                    ]
+                                 },
+                                 "then": {
+                                    "required": [
+                                       "mac_address"
+                                    ]
+                                 }
+                              }
+                           ]
+                        }
+                     ]
+                  }
+               },
+               {
+                  "$comment": "Below is for setting constraints for san_boot device type",
+                  "if": {
+                     "properties": {
+                        "device_type": {
+                           "enum": [
+                              "san_boot"
+                           ]
+                        }
+                     },
+                     "required": [
+                        "device_type"
+                     ]
+                  },
+                  "then": {
+                     "allOf": [
+                        {
+                           "required": [
+                              "interface_name"
+                           ]
+                        },
+                        {
+                           "not": {
+                              "anyOf": [
+                                 {
+                                    "required": [
+                                       "interface_source"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
+                                       "ip_type"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
+                                       "mac_address"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
+                                       "port"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
+                                       "subtype"
+                                    ]
+                                 }
+                              ]
+                           }
+                        },
+                        {
+                           "properties": {
+                              "slot": {
+                                 "pattern": "^$|^([1-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5]|MLOM|L1|L2)$"
+                              }
+                           }
+                        }
+                     ]
+                  }
+               },
+               {
+                  "$comment": "Below is for setting constraints for sd_card device type",
+                  "if": {
+                     "properties": {
+                        "device_type": {
+                           "enum": [
+                              "sd_card"
+                           ]
+                        }
+                     },
+                     "required": [
+                        "device_type"
+                     ]
+                  },
+                  "then": {
+                     "allOf": [
+                        {
+                           "not": {
+                              "anyOf": [
+                                 {
+                                    "required": [
+                                       "interface_name"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
+                                       "interface_source"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
+                                       "ip_type"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
+                                       "mac_address"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
+                                       "port"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
+                                       "slot"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
+                                       "target_wwpn"
+                                    ]
+                                 }
+                              ]
+                           }
+                        },
+                        {
+                           "properties": {
+                              "subtype": {
+                                 "enum": [
+                                    "flex-util",
+                                    "flex-flash",
+                                    "None",
+                                    "SDCARD"
+                                 ]
+                              }
+                           }
+                        }
+                     ]
+                  }
+               },
+               {
+                  "$comment": "Below is for setting constraints for uefi_shell device type",
+                  "if": {
+                     "properties": {
+                        "device_type": {
+                           "enum": [
+                              "uefi_shell"
+                           ]
+                        }
+                     },
+                     "required": [
+                        "device_type"
+                     ]
+                  },
+                  "then": {
+                     "allOf": [
+                        {
+                           "not": {
+                              "anyOf": [
+                                 {
+                                    "required": [
+                                       "interface_name"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
+                                       "interface_source"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
+                                       "ip_type"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
+                                       "lun"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
+                                       "mac_address"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
+                                       "port"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
+                                       "slot"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
+                                       "subtype"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
+                                       "target_wwpn"
+                                    ]
+                                 }
+                              ]
+                           }
+                        }
+                     ]
+                  }
+               },
+               {
+                  "$comment": "Below is for setting constraints for usb device type",
+                  "if": {
+                     "properties": {
+                        "device_type": {
+                           "enum": [
+                              "usb"
+                           ]
+                        }
+                     },
+                     "required": [
+                        "device_type"
+                     ]
+                  },
+                  "then": {
+                     "allOf": [
+                        {
+                           "not": {
+                              "anyOf": [
+                                 {
+                                    "required": [
+                                       "interface_name"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
+                                       "interface_source"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
+                                       "ip_type"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
+                                       "lun"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
+                                       "mac_address"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
+                                       "port"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
+                                       "slot"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
+                                       "target_wwpn"
+                                    ]
+                                 }
+                              ]
+                           }
+                        },
+                        {
+                           "properties": {
+                              "subtype": {
+                                 "enum": [
+                                    "None",
+                                    "usb-cd",
+                                    "usb-fdd",
+                                    "usb-hdd"
+                                 ]
+                              }
+                           }
+                        }
+                     ]
+                  }
+               },
+               {
+                  "$comment": "Below is for setting constraints for virtual_media device type",
+                  "if": {
+                     "properties": {
+                        "device_type": {
+                           "enum": [
+                              "virtual_media"
+                           ]
+                        }
+                     },
+                     "required": [
+                        "device_type"
+                     ]
+                  },
+                  "then": {
+                     "allOf": [
+                        {
+                           "not": {
+                              "anyOf": [
+                                 {
+                                    "required": [
+                                       "interface_name"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
+                                       "interface_source"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
+                                       "ip_type"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
+                                       "lun"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
+                                       "mac_address"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
+                                       "port"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
+                                       "slot"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
+                                       "target_wwpn"
+                                    ]
+                                 }
+                              ]
+                           }
+                        },
+                        {
+                           "properties": {
+                              "subtype": {
+                                 "enum": [
+                                    "cimc-mapped-dvd",
+                                    "cimc-mapped-hdd",
+                                    "kvm-mapped-dvd",
+                                    "kvm-mapped-hdd",
+                                    "kvm-mapped-fdd",
+                                    "None"
+                                 ]
+                              }
+                           }
+                        }
+                     ]
+                  }
+               }
+            ]
+         },
+         "minItems": 1
+      }
+   },
+   "additionalProperties": false,
+   "required": [
+      "name"
+   ]
+}

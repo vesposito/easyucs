@@ -1,0 +1,35 @@
+{
+   "id": "intersight_config_account_details#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS intersight config account_details section",
+   "description": "EasyUCS intersight config account_details section JSON schema",
+   "type": "object",
+   "properties": {
+      "comment": {
+         "description": "Account Details Comments",
+         "type": "string",
+         "default": ""
+      },
+      "account_name": {
+         "description": "Account Details Account Name",
+         "type": "string",
+         "default": ""
+      },
+      "default_idle_timeout": {
+         "description": "Account Details Default Idle Timeout",
+         "type": "integer",
+         "default": 1800
+      },
+      "default_session_timeout": {
+         "description": "Account Details Default Session Timeout",
+         "type": "integer",
+         "default": 57600
+      },
+      "per_user_limit": {
+         "description": "Account Details Per User Limit",
+         "type": "integer",
+         "default": 32
+      }
+   },
+   "additionalProperties": false
+}

@@ -7,9 +7,9 @@
             "category":"best-practices",
             "subcategory":"BIOS",
             "name":"UCS Manager BIOS Policy for Online Transaction Processing on Cisco UCS M5 Servers",
-            "url":"https://www.cisco.com/c/dam/en/us/products/collateral/servers-unified-computing/ucs-b-series-blade-servers/whitepaper_c11-740098.pdf",
+            "url":"https://www.cisco.com/c/en/us/products/collateral/servers-unified-computing/ucs-b-series-blade-servers/white-paper-c11-744678.html",
             "easyucs_version":"0.9.0",
-            "revision": "1.0"
+            "revision": "1.1"
          }
       ]
    },

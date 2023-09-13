@@ -1,26 +1,33 @@
 {
-   "id":"ucs_system_config_diagnostics_policies#",
-   "$schema":"http://json-schema.org/draft-07/schema#",
-   "title":"EasyUCS ucs system config orgs diagnostics_policies section",
-   "description":"EasyUCS ucs system config orgs diagnostics_policies section JSON schema",
-   "type":"object",
-   "properties":{
+   "id": "ucs_system_config_diagnostics_policies#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS ucs system config orgs diagnostics_policies section",
+   "description": "EasyUCS ucs system config orgs diagnostics_policies section JSON schema",
+   "type": "object",
+   "properties": {
       "comment": {
          "description": "Diagnostics Policy Comments",
          "type": "string",
          "default": ""
       },
-      "name":{
-         "description":"Diagnostics Policy Name",
-         "type":"string",
-         "default":"",
-         "pattern":"^[\\-\\.:_a-zA-Z0-9]{1,16}$"
+      "name": {
+         "description": "Diagnostics Policy Name",
+         "type": "string",
+         "default": "",
+         "pattern": "^[\\-\\.:_a-zA-Z0-9]{1,16}$"
       },
-      "descr":{
-         "description":"Description of Diagnostics Policy",
-         "type":"string",
-         "default":"",
-         "pattern":"^[ !#$%&\\(\\)\\*\\+,\\-\\./:;\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{0,256}$"
+      "descr": {
+         "description": "Description of Diagnostics Policy",
+         "type": "string",
+         "default": "",
+         "pattern": "^[ !#$%&\\(\\)\\*\\+,\\-\\./:;\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{0,256}$"
+      },
+      "policy_owner": {
+         "description": "Diagnostics Policy Owner (for UCS Central)",
+         "type": "string",
+         "enum": [
+            "ucs-central"
+         ]
       },
       "memory_tests": {
          "description": "Diagnostics Policy - Memory Tests",
@@ -38,7 +45,10 @@
                   "description": "Diagnostics Policy - Memory Test - CPU Filter",
                   "type": "string",
                   "default": "all-cpus",
-                  "enum": ["all-cpus", "p0-p1-cpus"]
+                  "enum": [
+                     "all-cpus",
+                     "p0-p1-cpus"
+                  ]
                },
                "loop_count": {
                   "description": "Diagnostics Policy - Memory Test - Loop Count",
@@ -50,7 +60,10 @@
                   "description": "Diagnostics Policy - Memory Test - Memory Chunck Size",
                   "type": "string",
                   "default": "5mb-chunk",
-                  "enum": ["5mb-chunk", "big-chunk"]
+                  "enum": [
+                     "5mb-chunk",
+                     "big-chunk"
+                  ]
                },
                "memory_size": {
                   "description": "Diagnostics Policy - Memory Test - Memory Size",
@@ -62,7 +75,13 @@
                   "description": "Diagnostics Policy - Memory Test - Pattern",
                   "type": "string",
                   "default": "prbs",
-                  "enum": ["butterfly", "killer", "prbs", "prbs-addr", "prbs-killer"]
+                  "enum": [
+                     "butterfly",
+                     "killer",
+                     "prbs",
+                     "prbs-addr",
+                     "prbs-killer"
+                  ]
                }
             },
             "additionalProperties": false,
@@ -73,8 +92,8 @@
          "minItems": 1
       }
    },
-   "additionalProperties":false,
-   "required":[
+   "additionalProperties": false,
+   "required": [
       "name"
    ]
 }

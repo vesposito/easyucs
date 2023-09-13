@@ -1,0 +1,147 @@
+{
+   "id": "intersight_config_orgs_drive_security_policies#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS intersight config orgs drive_security_policies section",
+   "description": "EasyUCS intersight config orgs drive_security_policies section JSON schema",
+   "type": "object",
+   "properties": {
+      "comment": {
+         "description": "Drive Security Policy Comments",
+         "type": "string",
+         "default": ""
+      },
+      "descr": {
+         "description": "Drive Security Policy Description",
+         "type": "string",
+         "default": "",
+         "pattern": "^$|^[a-zA-Z0-9]+[\\x00-\\xFF]*$",
+         "maxLength": 1024
+      },
+      "name": {
+         "description": "Drive Security Policy Name",
+         "type": "string",
+         "default": "",
+         "pattern": "^[a-zA-Z0-9_.:-]{1,64}$"
+      },
+      "tags": {
+         "description": "Drive Security Policy Tags",
+         "type": "array",
+         "items": {
+            "description": "Drive Security Policy Tag",
+            "type": "object",
+            "properties": {
+               "key": {
+                  "description": "Drive Security Policy Tag Key",
+                  "type": "string",
+                  "default": "",
+                  "minLength": 1,
+                  "maxLength": 128
+               },
+               "value": {
+                  "description": "Drive Security Policy Tag Value",
+                  "type": "string",
+                  "default": "",
+                  "minLength": 0,
+                  "maxLength": 256
+               }
+            },
+            "additionalProperties": false,
+            "required": [
+               "key",
+               "value"
+            ]
+         },
+         "minItems": 1
+      },
+      "primary_kmip_server": {
+         "description": "Drive Security Policy Primary KMIP server",
+         "type": "object",
+         "properties": {
+            "enable_drive_security": {
+               "description": "Enable the selected KMIP Server configuration for encryption. This flag just enables the drive security and only after remote key setting configured, the actual encryption will be done.",
+               "type": "boolean",
+               "default": true
+            },
+            "ip_address": {
+               "description": "The IP address of the KMIP server. It could be an IPv4 address, an IPv6 address, or a hostname. Hostnames are valid only when Inband is configured for the CIMC address.",
+               "type": "string",
+               "default": ""
+            },
+            "port": {
+               "description": "The port to which the KMIP client should connect.",
+               "type": "integer",
+               "default": 5696,
+               "minimum": 1024,
+               "maximum": 65535
+            },
+            "timeout": {
+               "description": "The timeout before which the KMIP client should connect.",
+               "type": "integer",
+               "default": 60,
+               "minimum": 1,
+               "maximum": 65
+            }
+         }
+      },
+      "secondary_kmip_server": {
+         "description": "Drive Security Policy Secondary KMIP server",
+         "type": "object",
+         "properties": {
+            "enable_drive_security": {
+               "description": "Enable the selected KMIP Server configuration for encryption. This flag just enables the drive security and only after remote key setting configured, the actual encryption will be done.",
+               "type": "boolean",
+               "default": true
+            },
+            "ip_address": {
+               "description": "The IP address of the KMIP server. It could be an IPv4 address, an IPv6 address, or a hostname. Hostnames are valid only when Inband is configured for the CIMC address.",
+               "type": "string",
+               "default": ""
+            },
+            "port": {
+               "description": "The port to which the KMIP client should connect.",
+               "type": "integer",
+               "default": 5696,
+               "minimum": 1024,
+               "maximum": 65535
+            },
+            "timeout": {
+               "description": "The timeout before which the KMIP client should connect.",
+               "type": "integer",
+               "default": 60,
+               "minimum": 1,
+               "maximum": 65
+            }
+         }
+      },
+      "server_public_root_ca_certificate": {
+         "description": "The certificate/ public key of the KMIP server. It is required for initiating secure communication with the server.",
+         "type": "string",
+         "default": ""
+      },
+      "authentication_credentials": {
+         "description": "Drive Security Policy authentication credentials",
+         "type": "object",
+         "properties": {
+            "enable_authentication": {
+               "description": "Enables/disables the authentication for communicating with KMIP server. This flag enables the authentication which makes authentication mandatory.",
+               "type": "boolean",
+               "default": false
+            },
+            "username": {
+               "description": "The user name for the KMIP server login.",
+               "type": "string",
+               "pattern": "^$|[a-zA-Z][a-zA-Z0-9_.-]{0,31}"
+            },
+            "password": {
+               "description": "The password for the KMIP server login.",
+               "type": "string",
+               "pattern": "[!'#%&\\'\\(\\)\\*\\+,\\-\\.\\/:;<>@\\[\\\\\\]\\^_`\\{\\|\\}~a-zA-Z0-9]{0,80}"
+            }
+         }
+      }
+   },
+   "additionalProperties": false,
+   "required": [
+      "name"
+   ]
+}

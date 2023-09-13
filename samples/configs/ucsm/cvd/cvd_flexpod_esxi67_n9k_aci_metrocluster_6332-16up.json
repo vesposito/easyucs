@@ -8,8 +8,8 @@
             "subcategory": "FlexPod",
             "name": "FlexPod Datacenter with Cisco ACI Multi-Pod with NetApp MetroCluster IP and VMware vSphere 6.7 (6332-16UP)",
             "url": "https://www.cisco.com/c/en/us/td/docs/unified_computing/ucs/UCS_CVDs/flexpod_esxi67_n9k_aci_metrocluster.html",
-            "easyucs_version": "0.9.0",
-            "revision": "1.0"
+            "easyucs_version": "0.9.8.2",
+            "revision": "1.3"
          }
       ]
    },
@@ -185,7 +185,7 @@
                   ]
                }
             ],
-            "iqn_suffix_pools": [
+            "iqn_pools": [
                {
                   "name": "IQN-Pool",
                   "prefix": "iqn.2010-11.com.flexpod",
@@ -355,7 +355,7 @@
                         "vlan_native": "Native",
                         "cdn_source": "vnic-name",
                         "mtu": "9000",
-                        "mac_pool": "MAC-Pool-A",
+                        "mac_address_pool": "MAC-Pool-A",
                         "network_control_policy": "Enable-CDP-LLDP"
                      },
                      {
@@ -363,7 +363,7 @@
                         "fabric": "B",
                         "redundancy_type": "secondary",
                         "peer_redundancy_template": "Infra-A",
-                        "mac_pool": "MAC-Pool-B"
+                        "mac_address_pool": "MAC-Pool-B"
                      },
                      {
                         "name": "iSCSI-A",
@@ -379,7 +379,7 @@
                         "vlan_native": "iSCSI-A",
                         "cdn_source": "vnic-name",
                         "mtu": "9000",
-                        "mac_pool": "MAC-Pool-A",
+                        "mac_address_pool": "MAC-Pool-A",
                         "network_control_policy": "Enable-CDP-LLDP"
                      },
                      {
@@ -396,7 +396,7 @@
                         "vlan_native": "iSCSI-B",
                         "cdn_source": "vnic-name",
                         "mtu": "9000",
-                        "mac_pool": "MAC-Pool-B",
+                        "mac_address_pool": "MAC-Pool-B",
                         "network_control_policy": "Enable-CDP-LLDP"
                      },
                      {
@@ -461,7 +461,7 @@
                         ],
                         "cdn_source": "vnic-name",
                         "mtu": "9000",
-                        "mac_pool": "MAC-Pool-A",
+                        "mac_address_pool": "MAC-Pool-A",
                         "network_control_policy": "Enable-CDP-LLDP"
                      },
                      {
@@ -469,7 +469,7 @@
                         "fabric": "B",
                         "redundancy_type": "secondary",
                         "peer_redundancy_template": "APIC-vDS-A",
-                        "mac_pool": "MAC-Pool-B"
+                        "mac_address_pool": "MAC-Pool-B"
                      }
                   ],
                   "lan_connectivity_policies": [
@@ -478,32 +478,32 @@
                         "vnics": [
                            {
                               "name": "00-Infra-A",
-                              "template": "Infra-A",
+                              "vnic_template": "Infra-A",
                               "adapter_policy": "VMWare"
                            },
                            {
                               "name": "01-Infra-B",
-                              "template": "Infra-B",
+                              "vnic_template": "Infra-B",
                               "adapter_policy": "VMWare"
                            },
                            {
                               "name": "02-iSCSI-A",
-                              "template": "iSCSI-A",
+                              "vnic_template": "iSCSI-A",
                               "adapter_policy": "VMWare"
                            },
                            {
                               "name": "03-iSCSI-B",
-                              "template": "iSCSI-B",
+                              "vnic_template": "iSCSI-B",
                               "adapter_policy": "VMWare"
                            },
                            {
                               "name": "04-APIC-vDS-A",
-                              "template": "APIC-vDS-A",
+                              "vnic_template": "APIC-vDS-A",
                               "adapter_policy": "VMware-HighTrf"
                            },
                            {
                               "name": "05-APIC-vDS-B",
-                              "template": "APIC-vDS-B",
+                              "vnic_template": "APIC-vDS-B",
                               "adapter_policy": "VMware-HighTrf"
                            }
                         ],

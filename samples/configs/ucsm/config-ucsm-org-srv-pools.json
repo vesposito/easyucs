@@ -1,27 +1,27 @@
 {
-   "easyucs":{
-      "metadata":[
+   "easyucs": {
+      "metadata": [
          {
             "file_type": "config",
             "device_type": "ucsm",
-            "category":"custom",
-            "subcategory":"samples",
-            "name":"UCS Manager server pools-related sections configuration sample",
-            "easyucs_version":"0.9.0",
-            "revision": "1.0"
+            "category": "samples",
+            "subcategory": "Server Pools",
+            "name": "UCS Manager server pools-related sections configuration sample",
+            "easyucs_version": "0.9.8.4",
+            "revision": "1.2"
          }
       ]
    },
-   "config":{
-      "orgs":[
+   "config": {
+      "orgs": [
          {
-            "name":"root",
-            "server_pool_policy_qualifications":[
+            "name": "root",
+            "server_pool_policy_qualifications": [
                {
                   "name": "QUAL",
-                  "qualifications":[
+                  "qualifications": [
                      {
-                        "type":"chassis-server",
+                        "type": "chassis-server",
                         "first_chassis_id": "1",
                         "last_chassis_id": "40",
                         "server_qualifications": [
@@ -36,58 +36,58 @@
                         ]
                      },
                      {
-                        "type":"server_pid",
+                        "type": "server_pid",
                         "server_pid": ".B6625."
                      },
                      {
-                        "type":"rack",
-                        "first_slot_id": "5",
-                        "last_slot_id": "9"
+                        "type": "rack",
+                        "first_rack_id": "5",
+                        "last_rack_id": "9"
                      },
                      {
                         "type": "cpu-cores",
-                        "min_cores":"1",
-                        "max_cores":"4",
+                        "min_cores": "1",
+                        "max_cores": "4",
                         "processor_architecture": "Xeon",
                         "processor_pid": "UCS-CPU-E52660E"
                      },
                      {
-                        "type":"memory",
+                        "type": "memory",
                         "min_cap": "500",
-                        "max_cap":"9000"
+                        "max_cap": "9000"
                      }
                   ]
                }
             ],
-            "server_pools":[
+            "server_pools": [
                {
                   "name": "Serverpool",
-                  "descr":"description"
+                  "descr": "description"
                },
                {
                   "name": "tst",
-                  "descr":"",
-                  "servers":[
+                  "descr": "",
+                  "servers": [
                      {
                         "chassis_id": "1",
                         "slot_id": "1"
                      },
                      {
-                        "rack_id":"1"
+                        "rack_id": "1"
                      }
                   ]
                }
             ],
-            "server_pool_policies":[
+            "server_pool_policies": [
                {
                   "name": "SerPoli",
-                  "target_pool":"Serverpool",
-                  "qualification":"QUAL"
+                  "target_pool": "Serverpool",
+                  "qualification": "QUAL"
                },
                {
                   "name": "VIC",
-                  "target_pool":"",
-                  "qualification":""
+                  "target_pool": "",
+                  "qualification": ""
                }
             ]
          }

@@ -18,7 +18,7 @@ from inventory.ucs.gpu import UcsImcGpu
 from inventory.ucs.neighbor import UcsSystemLanNeighbor, UcsSystemSanNeighbor
 from inventory.ucs.psu import UcsSystemPsu
 from inventory.ucs.storage import UcsSystemStorageController, UcsImcStorageControllerNvmeDrive, \
-    UcsSystemStorageControllerNvmeDrive, UcsImcStorageLocalDisk, UcsImcStorageRaidBattery
+    UcsSystemStorageControllerNvmeDrive, UcsImcStorageLocalDisk, UcsImcStorageNvmeDrive, UcsImcStorageRaidBattery
 
 
 class GenericUcsInventory(GenericInventory):
@@ -29,7 +29,7 @@ class GenericUcsInventory(GenericInventory):
         self.intersight_status = ""
         self.sdk_objects = {}
 
-    def _fetch_sdk_objects(self):
+    def _fetch_sdk_objects(self, force=False):
         # List of SDK objects to fetch that are common to UCS System, IMC & UCS Central
         sdk_objects_to_fetch = ["adaptorExtEthIf", "adaptorHostEthIf", "adaptorUnit", "computeRackUnit",
                                 "equipmentChassis", "equipmentLocatorLed", "equipmentPsu",
@@ -37,23 +37,93 @@ class GenericUcsInventory(GenericInventory):
                                 "processorUnit", "storageController", "storageEnclosure", "storageFlexFlashController",
                                 "storageLocalDisk", "storageRaidBattery"]
         self.logger(level="debug", message="Fetching common UCS SDK objects for inventory")
+
+        if self.device.task is not None:
+            self.device.task.taskstep_manager.start_taskstep(name="FetchInventoryUcsCommonSdkObjects",
+                                                             description="Fetching common UCS SDK Inventory Objects")
+
+        failed_to_fetch = []
         for sdk_object_name in sdk_objects_to_fetch:
             try:
                 self.sdk_objects[sdk_object_name] = self.handle.query_classid(sdk_object_name)
+                self.logger(level="debug", message="Fetched " + str(len(self.sdk_objects[sdk_object_name])) +
+                                                   " objects of class " + sdk_object_name)
             except (UcsException, ImcException, UcscException) as err:
-                if err.error_code == "ERR-xml-parse-error" and "no class named " + sdk_object_name in err.error_descr:
+                if err.error_code in ["ERR-xml-parse-error", "0"] and \
+                        "no class named " + sdk_object_name in err.error_descr:
+                    self.logger(level="debug", message="No UCS class named " + sdk_object_name)
+                elif err.error_code in ["2500"] and \
+                        "MO is not supported on this UCS-C server platform." in err.error_descr:
                     self.logger(level="debug", message="No UCS class named " + sdk_object_name)
                 else:
-                    self.logger(level="error", message="Error while trying to fetch UCS class " + sdk_object_name +
-                                                       ": " + str(err))
+                    failed_to_fetch.append(sdk_object_name)
+                    self.logger(level="error",
+                                message="Error while trying to fetch " + self.device.metadata.device_type_long +
+                                        " class " + sdk_object_name + ": " + str(err))
+
             except ConnectionRefusedError:
-                self.logger(level="error", message="Error while communicating with UCS class " + sdk_object_name +
-                                                   ": Connection refused")
-            except urllib.error.URLError:
-                self.logger(level="error", message="Timeout error while fetching UCS class " + sdk_object_name)
-            except Exception as err:
+                failed_to_fetch.append(sdk_object_name)
                 self.logger(level="error",
-                            message="Error while fetching UCS class " + sdk_object_name + ": " + str(err))
+                            message="Error while communicating with " + self.device.metadata.device_type_long +
+                                    " for class " + sdk_object_name + ": Connection refused")
+            except urllib.error.URLError:
+                failed_to_fetch.append(sdk_object_name)
+                self.logger(level="error", message="Timeout error while fetching " +
+                                                   self.device.metadata.device_type_long + " class " + sdk_object_name)
+            except Exception as err:
+                failed_to_fetch.append(sdk_object_name)
+                self.logger(level="error", message="Error while fetching " + self.device.metadata.device_type_long +
+                                                   " class " + sdk_object_name + ": " + str(err))
+
+        if failed_to_fetch:
+            duplicate_failed_to_fetch = failed_to_fetch.copy()
+            for sdk_object_name in duplicate_failed_to_fetch:
+                self.logger(level="info", message="Retrying to fetch " + sdk_object_name)
+                try:
+                    self.sdk_objects[sdk_object_name] = self.handle.query_classid(sdk_object_name)
+                    self.logger(level="debug", message="Fetched " + str(len(self.sdk_objects[sdk_object_name])) +
+                                                       " objects of class " + sdk_object_name)
+                    failed_to_fetch.remove(sdk_object_name)
+                except (UcsException, ImcException, UcscException) as err:
+                    self.logger(level="error",
+                                message="Error while trying to fetch " + self.device.metadata.device_type_long +
+                                        " class " + sdk_object_name + ": " + str(err))
+
+                except ConnectionRefusedError:
+                    self.logger(level="error",
+                                message="Error while communicating with " + self.device.metadata.device_type_long +
+                                        " for class " + sdk_object_name + ": Connection refused")
+                except urllib.error.URLError:
+                    self.logger(level="error", message="Timeout error while fetching " +
+                                                       self.device.metadata.device_type_long + " class " + sdk_object_name)
+                except Exception as err:
+                    self.logger(level="error", message="Error while fetching " + self.device.metadata.device_type_long +
+                                                       " class " + sdk_object_name + ": " + str(err))
+
+        # In case we still have SDK objects that failed to fetch, we list them in a warning message
+        if failed_to_fetch:
+            for sdk_object_name in failed_to_fetch:
+                self.logger(level="warning",
+                            message="Impossible to fetch " + sdk_object_name + " after 2 attempts.")
+
+        if self.device.task is not None:
+            if not failed_to_fetch:
+                self.device.task.taskstep_manager.stop_taskstep(
+                    name="FetchInventoryUcsCommonSdkObjects", status="successful",
+                    status_message="Successfully fetched common UCS SDK Inventory Objects")
+            elif force:
+                self.device.task.taskstep_manager.stop_taskstep(
+                    name="FetchInventoryUcsCommonSdkObjects", status="successful",
+                    status_message="Fetched common UCS SDK Inventory Objects with errors (forced)")
+            else:
+                self.device.task.taskstep_manager.stop_taskstep(
+                    name="FetchInventoryUcsCommonSdkObjects", status="failed",
+                    status_message="Error while fetching common UCS SDK Inventory Objects")
+
+                # If any of the mandatory tasksteps fails then return False
+                if not self.device.task.taskstep_manager.is_taskstep_optional(name="FetchInventoryUcsCommonSdkObjects"):
+                    return False
+        return True
 
     def get_inventory_objects_under_dn(self, dn=None, object_class=None, parent=None):
         if dn is not None and object_class is not None and parent is not None:
@@ -68,7 +138,7 @@ class GenericUcsInventory(GenericInventory):
                                 if hasattr(sdk_object, "presence") and sdk_object.presence == "missing":
                                     continue
                                 # Also filter absent adaptorConnectorInfo on standalone servers
-                                if hasattr(sdk_object, "present") and sdk_object.present == "N/A":
+                                if hasattr(sdk_object, "present") and sdk_object.present in ["N/A", "NO", "No"]:
                                     continue
                                 # Also filter absent storageRaidBattery on standalone servers
                                 if hasattr(sdk_object, "battery_present") and sdk_object.battery_present == "false":
@@ -118,9 +188,13 @@ class GenericUcsInventory(GenericInventory):
                                 if object_class is UcsImcStorageRaidBattery and "storage-SATA-MSTOR-RAID" \
                                         in sdk_object.dn:
                                     continue
-                                # Also filter storageLocalDisk objects with driveSlotStatus set to "Absent"
-                                if object_class is UcsImcStorageLocalDisk and hasattr(sdk_object, "driveSlotStatus"):
-                                    if sdk_object.driveSlotStatus in ["Absent"]:
+                                # Also filter storageLocalDisk objects with drive_slot_status set to "Absent"
+                                if object_class is UcsImcStorageLocalDisk and hasattr(sdk_object, "drive_slot_status"):
+                                    if sdk_object.drive_slot_status in ["Absent"]:
+                                        continue
+                                # Also filter storageNVMePhysicalDrive objects with drive_slot_status set to "Absent"
+                                if object_class is UcsImcStorageNvmeDrive and hasattr(sdk_object, "drive_slot_status"):
+                                    if sdk_object.drive_slot_status in ["Absent"]:
                                         continue
                                 # Filter only HBA adapters for UcsImcHbaAdapter objects
                                 if object_class is UcsImcHbaAdapter and "HBA" not in sdk_object.model:
@@ -197,49 +271,175 @@ class UcsSystemInventory(GenericUcsInventory):
         GenericUcsInventory.__init__(self, parent=parent)
 
         # List of attributes to be exported in an inventory export
-        self.export_list = ["chassis", "device_connector", "fabric_extenders", "fabric_interconnects", "lan_neighbors", "rack_enclosures",
-                            "rack_units", "san_neighbors"]
+        self.export_list = ["chassis", "device_connector", "fabric_extenders", "fabric_interconnects", "lan_neighbors",
+                            "rack_enclosures", "rack_units", "san_neighbors"]
 
-    def _fetch_sdk_objects(self):
-        GenericUcsInventory._fetch_sdk_objects(self)
+    def _fetch_sdk_objects(self, force=False):
+        GenericUcsInventory._fetch_sdk_objects(self, force=force)
+
+        # If any of the mandatory tasksteps fails then return False
+        from api.api_server import easyucs
+        if easyucs and self.device.task and \
+                easyucs.task_manager.is_any_taskstep_failed(uuid=self.device.task.metadata.uuid):
+            self.logger(level="error", message="Failed to fetch one or more common SDK objects. "
+                                               "Stopping the inventory fetch.")
+            return False
 
         # List of SDK objects to fetch that are specific to UCS System
-        sdk_objects_to_fetch = ["computeBlade", "equipmentFex", "equipmentFruVariant", "equipmentIOCard",
-                                "equipmentRackEnclosure", "equipmentSwitchCard", "equipmentSwitchIOCard",
-                                "equipmentTpm", "equipmentXcvr", "etherPIo", "etherServerIntFIo", "etherSwitchIntFIo",
-                                "fcPIo", "firmwareRunning", "firmwareStatus", "graphicsCard", "licenseFeature",
-                                "licenseFile", "licenseInstance", "licenseServerHostId", "lsServer", "memoryErrorStats",
-                                "mgmtConnection", "moInvKv", "networkElement", "networkLanNeighborEntry",
+        sdk_objects_to_fetch = ["adaptorUnitExtn", "computeBlade", "equipmentFex", "equipmentFruVariant",
+                                "equipmentIOCard", "equipmentRackEnclosure", "equipmentSwitchCard",
+                                "equipmentSwitchIOCard", "equipmentTpm", "equipmentXcvr", "etherPIo",
+                                "etherServerIntFIo", "etherSwitchIntFIo", "fcPIo", "firmwareRunning", "firmwareStatus",
+                                "graphicsCard", "licenseFeature", "licenseFile", "licenseInstance",
+                                "licenseServerHostId", "lsServer", "memoryErrorStats", "mgmtConnection",
+                                "mgmtInterface", "mgmtVnet", "moInvKv", "networkElement", "networkLanNeighborEntry",
                                 "networkLldpNeighborEntry", "networkSanNeighborEntry", "storageEmbeddedStorage",
-                                "storageFlexFlashCard", "storageNvmeStats", "storageSsdHealthStats", "swVlanPortNs"]
-        self.logger(level="debug", message="Fetching UCS System SDK objects for inventory")
+                                "storageFlexFlashCard", "storageNvmeStats", "storageSsdHealthStats", "swVlanPortNs",
+                                "vnicIpV4MgmtPooledAddr", "vnicIpV4PooledAddr", "vnicIpV4StaticAddr",
+                                "vnicIpV6StaticAddr", "vnicIpV6MgmtPooledAddr"]
+        self.logger(level="debug",
+                    message="Fetching " + self.device.metadata.device_type_long + " SDK objects for inventory")
+
+        if self.device.task is not None:
+            self.device.task.taskstep_manager.start_taskstep(
+                name="FetchInventoryUcsSystemSdkObjects",
+                description="Fetching " + self.device.metadata.device_type_long + " SDK Inventory Objects")
+
+        failed_to_fetch = []
         for sdk_object_name in sdk_objects_to_fetch:
             try:
                 self.sdk_objects[sdk_object_name] = self.handle.query_classid(sdk_object_name)
+                self.logger(level="debug", message="Fetched " + str(len(self.sdk_objects[sdk_object_name])) +
+                                                   " objects of class " + sdk_object_name)
             except (UcsException, ImcException) as err:
-                if err.error_code == "ERR-xml-parse-error" and "no class named " + sdk_object_name in err.error_descr:
-                    self.logger(level="debug", message="No UCS class named " + sdk_object_name)
+                if err.error_code in ["ERR-xml-parse-error", "0"] and \
+                        "no class named " + sdk_object_name in err.error_descr:
+                    self.logger(level="debug", message="No " + self.device.metadata.device_type_long +
+                                                       " class named " + sdk_object_name)
                 else:
-                    self.logger(level="error", message="Error while trying to fetch UCS class " + sdk_object_name +
-                                                       ": " + str(err))
+                    failed_to_fetch.append(sdk_object_name)
+                    self.logger(level="error",
+                                message="Error while trying to fetch " + self.device.metadata.device_type_long +
+                                        " class " + sdk_object_name + ": " + str(err))
             except ConnectionRefusedError:
-                self.logger(level="error", message="Error while communicating with UCS class " + sdk_object_name +
-                                                   ": Connection refused")
-            except urllib.error.URLError:
-                self.logger(level="error", message="Timeout error while fetching UCS class " + sdk_object_name)
-            except Exception as err:
+                failed_to_fetch.append(sdk_object_name)
                 self.logger(level="error",
-                            message="Error while fetching UCS class " + sdk_object_name + ": " + str(err))
+                            message="Error while communicating with " + self.device.metadata.device_type_long +
+                                    " for class " + sdk_object_name + ": Connection refused")
+            except urllib.error.URLError:
+                failed_to_fetch.append(sdk_object_name)
+                self.logger(level="error", message="Timeout error while fetching " +
+                                                   self.device.metadata.device_type_long + " class " + sdk_object_name)
+            except Exception as err:
+                failed_to_fetch.append(sdk_object_name)
+                self.logger(level="error", message="Error while fetching " + self.device.metadata.device_type_long +
+                                                   " class " + sdk_object_name + ": " + str(err))
+
+        # We retry all SDK objects that failed to fetch properly
+        if failed_to_fetch:
+            duplicate_failed_to_fetch = failed_to_fetch.copy()
+            for sdk_object_name in duplicate_failed_to_fetch:
+                self.logger(level="info", message="Retrying to fetch " + sdk_object_name)
+                try:
+                    self.sdk_objects[sdk_object_name] = self.handle.query_classid(sdk_object_name)
+                    self.logger(level="debug", message="Fetched " + str(len(self.sdk_objects[sdk_object_name])) +
+                                                       " objects of class " + sdk_object_name)
+                    failed_to_fetch.remove(sdk_object_name)
+                except (UcsException, ImcException) as err:
+                    self.logger(level="error",
+                                message="Error while trying to fetch " + self.device.metadata.device_type_long +
+                                        " class " + sdk_object_name + ": " + str(err))
+                except ConnectionRefusedError:
+                    self.logger(level="error",
+                                message="Error while communicating with " + self.device.metadata.device_type_long +
+                                        " for class " + sdk_object_name + ": Connection refused")
+                except urllib.error.URLError:
+                    self.logger(level="error", message="Timeout error while fetching " +
+                                                       self.device.metadata.device_type_long + " class " +
+                                                       sdk_object_name)
+                except Exception as err:
+                    self.logger(level="error", message="Error while fetching " + self.device.metadata.device_type_long +
+                                                       " class " + sdk_object_name + ": " + str(err))
+
+        # In case we still have SDK objects that failed to fetch, we list them in a warning message
+        if failed_to_fetch:
+            for sdk_object_name in failed_to_fetch:
+                self.logger(level="warning",
+                            message="Impossible to fetch " + sdk_object_name + " after 2 attempts.")
+
+        if self.device.task is not None:
+            if not failed_to_fetch:
+                self.device.task.taskstep_manager.stop_taskstep(
+                    name="FetchInventoryUcsSystemSdkObjects", status="successful",
+                    status_message="Successfully fetched " + self.device.metadata.device_type_long +
+                                   " SDK Inventory Objects")
+            elif force:
+                self.device.task.taskstep_manager.stop_taskstep(
+                    name="FetchInventoryUcsSystemSdkObjects", status="successful",
+                    status_message="Fetched " + self.device.metadata.device_type_long +
+                                   " SDK Inventory Objects with errors (forced)")
+            else:
+                self.device.task.taskstep_manager.stop_taskstep(
+                    name="FetchInventoryUcsSystemSdkObjects", status="failed",
+                    status_message="Error while fetching " + self.device.metadata.device_type_long +
+                                   " SDK Inventory Objects")
+
+                # If any of the mandatory tasksteps fails then return False
+                if not self.device.task.taskstep_manager.is_taskstep_optional(name="FetchInventoryUcsSystemSdkObjects"):
+                    return False
 
         # Catalog SDK objects
+        if self.device.task is not None:
+            self.device.task.taskstep_manager.start_taskstep(
+                name="FetchInventoryUcsSystemCatalogSdkObjects",
+                description="Fetching " + self.device.metadata.device_type_long + " SDK catalog Inventory Objects")
+
+        issue_while_fetching = False
         try:
-            self.logger(level="debug", message="Fetching UCS System SDK catalog objects for inventory")
+            self.logger(level="debug", message="Fetching " + self.device.metadata.device_type_long +
+                                               " SDK catalog objects for inventory")
             self.sdk_objects["catalog"] = self.handle.query_children(in_dn="capabilities")
             self.sdk_objects["equipmentManufacturingDef"] = self.handle.query_classid("equipmentManufacturingDef")
             self.sdk_objects["equipmentLocalDiskDef"] = self.handle.query_classid("equipmentLocalDiskDef")
         except (UcsException, ImcException) as err:
+            issue_while_fetching = True
             self.logger(level="error",
-                        message="Error while trying to fetch UCS System catalog classes: " + str(err))
+                        message="Error while trying to fetch " + self.device.metadata.device_type_long +
+                                " catalog classes: " + str(err))
+        except urllib.error.URLError as err:
+            issue_while_fetching = True
+            self.logger(level="error",
+                        message="URLError while trying to fetch " + self.device.metadata.device_type_long +
+                                " catalog classes: " + str(err))
+        except Exception as err:
+            issue_while_fetching = True
+            self.logger(level="error",
+                        message="Unexpected Error while trying to fetch " + self.device.metadata.device_type_long +
+                                " catalog classes: " + str(err))
+
+        if self.device.task is not None:
+            if not issue_while_fetching:
+                self.device.task.taskstep_manager.stop_taskstep(
+                    name="FetchInventoryUcsSystemCatalogSdkObjects", status="successful",
+                    status_message="Successfully fetched " + self.device.metadata.device_type_long +
+                                   " catalog SDK Inventory Objects")
+            elif force:
+                self.device.task.taskstep_manager.stop_taskstep(
+                    name="FetchInventoryUcsSystemCatalogSdkObjects", status="successful",
+                    status_message="Fetched " + self.device.metadata.device_type_long +
+                                   " catalog SDK Inventory Objects with errors (forced)")
+            else:
+                self.device.task.taskstep_manager.stop_taskstep(
+                    name="FetchInventoryUcsSystemCatalogSdkObjects", status="failed",
+                    status_message="Error while fetching " + self.device.metadata.device_type_long +
+                                   " catalog SDK Inventory Objects")
+
+                # If any of the mandatory tasksteps fails then return False
+                if not self.device.task.taskstep_manager.is_taskstep_optional(
+                        name="FetchInventoryUcsSystemCatalogSdkObjects"):
+                    return False
+
+        return True
 
     def _get_lan_neighbors(self):
         # Determining the LAN neighbors from the CDP and LLDP neighbor entries of all ports of all FIs
@@ -369,8 +569,16 @@ class UcsImcInventory(GenericUcsInventory):
         # List of attributes to be exported in an inventory export
         self.export_list = ["chassis", "device_connector", "rack_enclosures", "rack_units"]
 
-    def _fetch_sdk_objects(self):
-        GenericUcsInventory._fetch_sdk_objects(self)
+    def _fetch_sdk_objects(self, force=False):
+        GenericUcsInventory._fetch_sdk_objects(self, force=force)
+
+        # If any of the mandatory tasksteps fails then return False
+        from api.api_server import easyucs
+        if easyucs and self.device.task and \
+                easyucs.task_manager.is_any_taskstep_failed(uuid=self.device.task.metadata.uuid):
+            self.logger(level="error", message="Failed to fetch one or more common SDK objects. "
+                                               "Stopping the inventory fetch.")
+            return False
 
         # List of SDK objects to fetch that are specific to IMC
         sdk_objects_to_fetch = ["adaptorConnectorInfo", "computeServerNode", "equipmentRackEnclosure",
@@ -379,27 +587,106 @@ class UcsImcInventory(GenericUcsInventory):
                                 "storageControllerNVMe", "storageEnclosureDisk", "storageFlexFlashControllerProps",
                                 "storageFlexFlashPhysicalDrive", "storageLocalDiskProps", "storageNVMePhysicalDrive",
                                 "systemBoardUnit"]
-        self.logger(level="debug", message="Fetching UCS IMC SDK objects for inventory")
+        self.logger(level="debug",
+                    message="Fetching " + self.device.metadata.device_type_long + " SDK objects for inventory")
+
+        if self.device.task is not None:
+            self.device.task.taskstep_manager.start_taskstep(
+                name="FetchInventoryUcsImcSdkObjects",
+                description="Fetching " + self.device.metadata.device_type_long + " SDK Inventory Objects")
+
+        failed_to_fetch = []
         for sdk_object_name in sdk_objects_to_fetch:
             try:
                 self.sdk_objects[sdk_object_name] = self.handle.query_classid(sdk_object_name)
+                self.logger(level="debug", message="Fetched " + str(len(self.sdk_objects[sdk_object_name])) +
+                                                   " objects of class " + sdk_object_name)
             except ImcException as err:
-                if err.error_code == "ERR-xml-parse-error" and "no class named " + sdk_object_name in err.error_descr:
-                    self.logger(level="debug", message="No UCS IMC class named " + sdk_object_name)
+                if err.error_code in ["ERR-xml-parse-error", "0"] and \
+                        "no class named " + sdk_object_name in err.error_descr:
+                    self.logger(level="debug", message="No " + self.device.metadata.device_type_long +
+                                                       " class named " + sdk_object_name)
+                elif err.error_code in ["2500"] and \
+                        "MO is not supported on this UCS-C server platform." in err.error_descr:
+                    self.logger(level="debug", message="No UCS class named " + sdk_object_name)
                 else:
-                    self.logger(level="error", message="Error while trying to fetch UCS IMC class " + sdk_object_name +
-                                                       ": " + str(err))
+                    failed_to_fetch.append(sdk_object_name)
+                    self.logger(level="error",
+                                message="Error while trying to fetch " + self.device.metadata.device_type_long +
+                                        " class " + sdk_object_name + ": " + str(err))
             # Prevent rare exception due to Server Error return when fetching UCS IMC class
             except xml.etree.ElementTree.ParseError as err:
-                self.logger(level="error", message="Error while trying to fetch UCS IMC class " + sdk_object_name +
-                                                   ": " + str(err))
-            except Exception as err:
+                failed_to_fetch.append(sdk_object_name)
                 self.logger(level="error",
-                            message="Error while fetching UCS class " + sdk_object_name + ": " + str(err))
+                            message="Error while trying to fetch " + self.device.metadata.device_type_long +
+                                    " class " + sdk_object_name + ": " + str(err))
+            except Exception as err:
+                failed_to_fetch.append(sdk_object_name)
+                self.logger(level="error",
+                            message="Error while fetching " + self.device.metadata.device_type_long +
+                                    " class " + sdk_object_name + ": " + str(err))
+
+        # We retry all SDK objects that failed to fetch properly
+        if failed_to_fetch:
+            duplicate_failed_to_fetch = failed_to_fetch.copy()
+            for sdk_object_name in duplicate_failed_to_fetch:
+                self.logger(level="info", message="Retrying to fetch " + sdk_object_name)
+                try:
+                    self.sdk_objects[sdk_object_name] = self.handle.query_classid(sdk_object_name)
+                    self.logger(level="debug", message="Fetched " + str(len(self.sdk_objects[sdk_object_name])) +
+                                                       " objects of class " + sdk_object_name)
+                    failed_to_fetch.remove(sdk_object_name)
+                except ImcException as err:
+                    self.logger(level="error",
+                                message="Error while trying to fetch " + self.device.metadata.device_type_long +
+                                        " class " + sdk_object_name + ": " + str(err))
+                    # Prevent rare exception due to Server Error return when fetching UCS IMC class
+                except xml.etree.ElementTree.ParseError as err:
+                    self.logger(level="error",
+                                message="Error while trying to fetch " + self.device.metadata.device_type_long +
+                                        " class " + sdk_object_name + ": " + str(err))
+                except Exception as err:
+                    self.logger(level="error",
+                                message="Error while fetching " + self.device.metadata.device_type_long +
+                                        " class " + sdk_object_name + ": " + str(err))
+
+        # In case we still have SDK objects that failed to fetch, we list them in a warning message
+        if failed_to_fetch:
+            for sdk_object_name in failed_to_fetch:
+                self.logger(level="warning",
+                            message="Impossible to fetch " + sdk_object_name + " after 2 attempts.")
+
+        if self.device.task is not None:
+            if not failed_to_fetch:
+                self.device.task.taskstep_manager.stop_taskstep(
+                    name="FetchInventoryUcsImcSdkObjects", status="successful",
+                    status_message="Successfully fetched " + self.device.metadata.device_type_long +
+                                   " SDK Inventory Objects")
+            elif force:
+                self.device.task.taskstep_manager.stop_taskstep(
+                    name="FetchInventoryUcsImcSdkObjects", status="successful",
+                    status_message="Fetched " + self.device.metadata.device_type_long +
+                                   " SDK Inventory Objects with errors (forced)")
+            else:
+                self.device.task.taskstep_manager.stop_taskstep(
+                    name="FetchInventoryUcsImcSdkObjects", status="failed",
+                    status_message="Error while fetching " + self.device.metadata.device_type_long +
+                                   " SDK Inventory Objects")
+
+                # If any of the mandatory tasksteps fails then return False
+                if not self.device.task.taskstep_manager.is_taskstep_optional(name="FetchInventoryUcsImcSdkObjects"):
+                    return False
 
         # Catalog SDK objects
+        if self.device.task is not None:
+            self.device.task.taskstep_manager.start_taskstep(
+                name="FetchInventoryUcsImcCatalogSdkObjects",
+                description="Fetching " + self.device.metadata.device_type_long + " SDK catalog Inventory Objects")
+
+        issue_while_fetching = False
         try:
-            self.logger(level="debug", message="Fetching UCS IMC SDK catalog objects for inventory")
+            self.logger(level="debug", message="Fetching " + self.device.metadata.device_type_long +
+                                               " SDK catalog objects for inventory")
             compute_boards = self.handle.query_classid("computeBoard")
             self.logger(level="debug",
                         message="Found " + str(len(compute_boards)) + " computeBoard object(s) for catalog")
@@ -410,8 +697,28 @@ class UcsImcInventory(GenericUcsInventory):
             self.logger(level="debug", message="Catalog has " + str(len(self.sdk_objects["catalog"])) + " objects")
 
         except ImcException as err:
-            self.logger(level="error",
-                        message="Error while trying to fetch UCS IMC catalog classes: " + str(err))
+            issue_while_fetching = True
+            self.logger(level="error", message="Error while trying to fetch " + self.device.metadata.device_type_long +
+                                               " catalog classes: " + str(err))
+
+        if self.device.task is not None:
+            if not issue_while_fetching:
+                self.device.task.taskstep_manager.stop_taskstep(
+                    name="FetchInventoryUcsImcCatalogSdkObjects", status="successful",
+                    status_message="Successfully fetched " + self.device.metadata.device_type_long +
+                                   " catalog SDK Inventory Objects")
+            else:
+                self.device.task.taskstep_manager.stop_taskstep(
+                    name="FetchInventoryUcsImcCatalogSdkObjects", status="failed",
+                    status_message="Error while fetching " + self.device.metadata.device_type_long +
+                                   " catalog SDK Inventory Objects")
+
+                # If any of the mandatory tasksteps fails then return False
+                if not self.device.task.taskstep_manager.is_taskstep_optional(
+                        name="FetchInventoryUcsImcCatalogSdkObjects"):
+                    return False
+
+        return True
 
 
 class UcsCentralInventory(GenericUcsInventory):
@@ -422,42 +729,156 @@ class UcsCentralInventory(GenericUcsInventory):
         # List of attributes to be exported in an inventory export
         self.export_list = ["domains"]
 
-    def _fetch_sdk_objects(self):
-        GenericUcsInventory._fetch_sdk_objects(self)
+    def _fetch_sdk_objects(self, force=False):
+        GenericUcsInventory._fetch_sdk_objects(self, force=force)
+
+        # If any of the mandatory tasksteps fails then return False
+        from api.api_server import easyucs
+        if easyucs and self.device.task and \
+                easyucs.task_manager.is_any_taskstep_failed(uuid=self.device.task.metadata.uuid):
+            self.logger(level="error", message="Failed to fetch one or more common SDK objects. "
+                                               "Stopping the inventory fetch.")
+            return False
 
         # List of SDK objects to fetch that are specific to UCS Central
         sdk_objects_to_fetch = ["computeBlade", "computeSystem", "equipmentFex", "equipmentFruVariant",
                                 "equipmentIOCard", "equipmentSwitchCard", "equipmentSwitchIOCard", "equipmentXcvr",
                                 "etherPIo", "etherServerIntFIo", "etherSwitchIntFIo", "fcPIo", "firmwareRunning",
-                                "graphicsCard", "licenseFeature", "licenseFile", "licenseInstance",
-                                "licenseServerHostId", "lsServer", "mgmtConnection", "networkElement",
-                                "storageFlexFlashCard", "storageNvmeStats"]
-        self.logger(level="debug", message="Fetching UCS Central SDK objects for inventory")
+                                "firmwareStatus", "graphicsCard", "licenseFeature", "licenseFile", "licenseInstance",
+                                "licenseServerHostId", "lsServer", "mgmtConnection", "mgmtInterface", "mgmtVnet",
+                                "networkElement", "storageFlexFlashCard", "storageNvmeStats", "storageSsdHealthStats",
+                                "vnicIpV4MgmtPooledAddr", "vnicIpV4PooledAddr", "vnicIpV4StaticAddr",
+                                "vnicIpV6StaticAddr", "vnicIpV6MgmtPooledAddr"]
+        self.logger(level="debug",
+                    message="Fetching " + self.device.metadata.device_type_long + " SDK objects for inventory")
+
+        if self.device.task is not None:
+            self.device.task.taskstep_manager.start_taskstep(
+                name="FetchInventoryUcsCentralSdkObjects",
+                description="Fetching " + self.device.metadata.device_type_long + " SDK Inventory Objects")
+
+        failed_to_fetch = []
         for sdk_object_name in sdk_objects_to_fetch:
             try:
                 self.sdk_objects[sdk_object_name] = self.handle.query_classid(sdk_object_name)
+                self.logger(level="debug", message="Fetched " + str(len(self.sdk_objects[sdk_object_name])) +
+                                                   " objects of class " + sdk_object_name)
             except UcscException as err:
-                if err.error_code == "ERR-xml-parse-error" and "no class named " + sdk_object_name in err.error_descr:
-                    self.logger(level="debug", message="No UCS class named " + sdk_object_name)
+                if err.error_code in ["ERR-xml-parse-error", "0"] and \
+                        "no class named " + sdk_object_name in err.error_descr:
+                    self.logger(level="debug", message="No " + self.device.metadata.device_type_long +
+                                                       " class named " + sdk_object_name)
                 else:
-                    self.logger(level="error", message="Error while trying to fetch UCS class " + sdk_object_name +
-                                                       ": " + str(err))
+                    failed_to_fetch.append(sdk_object_name)
+                    self.logger(level="error",
+                                message="Error while trying to fetch " + self.device.metadata.device_type_long +
+                                        " class " + sdk_object_name + ": " + str(err))
             except ConnectionRefusedError:
-                self.logger(level="error", message="Error while communicating with UCS class " + sdk_object_name +
-                                                   ": Connection refused")
-            except urllib.error.URLError:
-                self.logger(level="error", message="Timeout error while fetching UCS class " + sdk_object_name)
-            except Exception as err:
+                failed_to_fetch.append(sdk_object_name)
                 self.logger(level="error",
-                            message="Error while fetching UCS class " + sdk_object_name + ": " + str(err))
+                            message="Error while communicating with " + self.device.metadata.device_type_long +
+                                    " for class " + sdk_object_name + ": Connection refused")
+            except urllib.error.URLError:
+                failed_to_fetch.append(sdk_object_name)
+                self.logger(level="error",
+                            message="Timeout error while fetching " + self.device.metadata.device_type_long +
+                                    " class " + sdk_object_name)
+            except Exception as err:
+                failed_to_fetch.append(sdk_object_name)
+                self.logger(level="error", message="Error while fetching " + self.device.metadata.device_type_long +
+                                                   " class " + sdk_object_name + ": " + str(err))
+
+        # We retry all SDK objects that failed to fetch properly
+        if failed_to_fetch:
+            duplicate_failed_to_fetch = failed_to_fetch.copy()
+            for sdk_object_name in duplicate_failed_to_fetch:
+                self.logger(level="info", message="Retrying to fetch " + sdk_object_name)
+                try:
+                    self.sdk_objects[sdk_object_name] = self.handle.query_classid(sdk_object_name)
+                    self.logger(level="debug", message="Fetched " + str(len(self.sdk_objects[sdk_object_name])) +
+                                                       " objects of class " + sdk_object_name)
+                    failed_to_fetch.remove(sdk_object_name)
+                except UcscException as err:
+                    self.logger(level="error",
+                                message="Error while trying to fetch " + self.device.metadata.device_type_long +
+                                        " class " + sdk_object_name + ": " + str(err))
+                except ConnectionRefusedError:
+                    self.logger(level="error",
+                                message="Error while communicating with " + self.device.metadata.device_type_long +
+                                        " for class " + sdk_object_name + ": Connection refused")
+                except urllib.error.URLError:
+                    self.logger(level="error",
+                                message="Timeout error while fetching " + self.device.metadata.device_type_long +
+                                        " class " + sdk_object_name)
+                except Exception as err:
+                    self.logger(level="error", message="Error while fetching " + self.device.metadata.device_type_long +
+                                                       " class " + sdk_object_name + ": " + str(err))
+
+        # In case we still have SDK objects that failed to fetch, we list them in a warning message
+        if failed_to_fetch:
+            for sdk_object_name in failed_to_fetch:
+                self.logger(level="warning",
+                            message="Impossible to fetch " + sdk_object_name + " after 2 attempts.")
+
+        if self.device.task is not None:
+            if not failed_to_fetch:
+                self.device.task.taskstep_manager.stop_taskstep(
+                    name="FetchInventoryUcsCentralSdkObjects", status="successful",
+                    status_message="Successfully fetched " + self.device.metadata.device_type_long +
+                                   " SDK Inventory Objects")
+            elif force:
+                self.device.task.taskstep_manager.stop_taskstep(
+                    name="FetchInventoryUcsCentralSdkObjects", status="successful",
+                    status_message="Fetched " + self.device.metadata.device_type_long +
+                                   " SDK Inventory Objects with errors (forced)")
+            else:
+                self.device.task.taskstep_manager.stop_taskstep(
+                    name="FetchInventoryUcsCentralSdkObjects", status="failed",
+                    status_message="Error while fetching " + self.device.metadata.device_type_long +
+                                   " SDK Inventory Objects")
+
+                # If any of the mandatory tasksteps fails then return False
+                if not self.device.task.taskstep_manager.is_taskstep_optional(
+                        name="FetchInventoryUcsCentralSdkObjects"):
+                    return False
 
         # Catalog SDK objects
+        if self.device.task is not None:
+            self.device.task.taskstep_manager.start_taskstep(
+                name="FetchInventoryUcsCentralCatalogSdkObjects",
+                description="Fetching " + self.device.metadata.device_type_long + " SDK catalog Inventory Objects")
+
+        issue_while_fetching = False
         try:
-            self.logger(level="debug", message="Fetching UCS Central SDK catalog objects for inventory")
+            self.logger(level="debug", message="Fetching " + self.device.metadata.device_type_long +
+                                               " SDK catalog objects for inventory")
             self.sdk_objects["catalog"] = self.handle.query_children(in_dn="capabilities")
-            self.sdk_objects["equipmentManufacturingDef"] = self.handle.query_classid(
-                "equipmentManufacturingDef")
+            self.sdk_objects["equipmentManufacturingDef"] = self.handle.query_classid("equipmentManufacturingDef")
             self.sdk_objects["equipmentLocalDiskDef"] = self.handle.query_classid("equipmentLocalDiskDef")
         except UcscException as err:
-            self.logger(level="error",
-                        message="Error while trying to fetch UCS Central catalog classes: " + str(err))
+            issue_while_fetching = True
+            self.logger(level="error", message="Error while trying to fetch " + self.device.metadata.device_type_long +
+                                               " catalog classes: " + str(err))
+        except Exception as err:
+            issue_while_fetching = True
+            self.logger(level="error", message="Unexpected error while trying to fetch " +
+                                               self.device.metadata.device_type_long + " catalog classes: " + str(err))
+
+        if self.device.task is not None:
+            if not issue_while_fetching:
+                self.device.task.taskstep_manager.stop_taskstep(
+                    name="FetchInventoryUcsCentralCatalogSdkObjects", status="successful",
+                    status_message="Successfully fetched " + self.device.metadata.device_type_long +
+                                   " catalog SDK Inventory Objects")
+            else:
+                self.device.task.taskstep_manager.stop_taskstep(
+                    name="FetchInventoryUcsCentralCatalogSdkObjects", status="failed",
+                    status_message="Error while fetching " + self.device.metadata.device_type_long +
+                                   " catalog SDK Inventory Objects")
+
+                # If any of the mandatory tasksteps fails then return False
+                if not self.device.task.taskstep_manager.is_taskstep_optional(
+                        name="FetchInventoryUcsCentralCatalogSdkObjects"):
+                    return False
+
+        return True

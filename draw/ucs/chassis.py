@@ -160,7 +160,7 @@ class UcsSystemDrawChassisRear(GenericUcsDrawEquipment):
             self._file_name = self._device_target + "_chassis_" + self._parent.id + "_rear"
 
         elif self._parent.io_modules:
-            # We have IOMs in the chassis (5108)
+            # We have IOMs in the chassis (5108/9508)
             self.iom_list = self.get_iom_list()
             self.fill_blanks()
             self._file_name = self._device_target + "_chassis_" + self._parent.id + "_rear"
@@ -236,6 +236,38 @@ class UcsSystemDrawChassisRear(GenericUcsDrawEquipment):
                 # We paste the blanking panel
                 coord_offset = self.picture_offset[0] + coord[0], self.picture_offset[1] + coord[1]
                 self.paste_layer(blank_img, coord_offset)
+
+        # Fills unused XFM slots with blanking panels
+        if "x_fabric_modules_slots" in self.json_file:
+            if len(self._parent.x_fabric_modules) < len(self.json_file["x_fabric_modules_slots"]):
+                # Load blank image from JSON file
+                for expansion in self.json_file["x_fabric_modules_models"]:
+                    if "type" in expansion:
+                        if expansion["type"] == "blank":
+                            blank_name = expansion["name"]
+                            blank_img = Image.open("catalog/x_fabric_modules/img/" + blank_name + ".png", 'r')
+
+                all_slot_ids = []
+                used_slot_ids = []
+                unused_slot_ids = []
+
+                for slot in self._parent.x_fabric_modules:
+                    used_slot_ids.append(int(slot.id))
+
+                for slot in self.json_file["x_fabric_modules_slots"]:
+                    all_slot_ids.append(slot["id"])
+
+                for blank_id in set(all_slot_ids) - set(used_slot_ids):
+                    unused_slot_ids.append(blank_id)
+
+                for slot_id in unused_slot_ids:
+                    # We need to get the coordinates of the slot to place the blank
+                    for slot in self.json_file["x_fabric_modules_slots"]:
+                        if slot["id"] == int(slot_id):
+                            coord = slot["coord"]
+                    # We paste the blanking panel
+                    coord_offset = self.picture_offset[0] + coord[0], self.picture_offset[1] + coord[1]
+                    self.paste_layer(blank_img, coord_offset)
 
         # Fills unused PSU slots with blanking panels
         if "psus_slots_rear" in self.json_file:
@@ -501,6 +533,12 @@ class GenericUcsDrawSioc(GenericUcsDrawEquipment):
         return self.parent_draw.picture_offset[0] + coord[0], self.parent_draw.picture_offset[1] + coord[1]
     
     def draw_ports(self):
+        # Fix for when S3260 chassis is properly discovered and has a PCI SIOC but there is no server inserted.
+        # In that case there won't be any info in the inventory about the VIC model
+        if self._parent.sku in ["UCS-S3260-PCISIOC"]:
+            if not self.adaptor_list:
+                return None
+
         for port in self._parent.ports:
             if port.role != "unknown":
                 port_color = None
@@ -580,24 +618,27 @@ class GenericUcsDrawSioc(GenericUcsDrawEquipment):
                 for server_node in self._parent._parent.server_nodes:
                     for adaptor in server_node.adaptors:
                         if hasattr(adaptor, "id"):
-                            if "SIOC" in adaptor.id:
-                                if adaptor.id[-1] == self._parent.id:
-                                    adaptor_list.append(UcsSystemDrawAdaptor(parent=adaptor, parent_draw=self))
+                            if adaptor.id is not None:
+                                if "SIOC" in adaptor.id:
+                                    if adaptor.id[-1] == self._parent.id:
+                                        adaptor_list.append(UcsSystemDrawAdaptor(parent=adaptor, parent_draw=self))
             elif hasattr(self._parent._parent, "blades"):
                 for blade in self._parent._parent.blades:
                     for adaptor in blade.adaptors:
                         # For IMC SIOCs
                         if hasattr(adaptor, "id"):
-                            if "SIOC" in adaptor.id:
-                                # Adaptor ID appears as "SIOCx" ex. SIOC1
-                                if adaptor.id[-1] == self._parent.id:
-                                    adaptor_list.append(UcsSystemDrawAdaptor(parent=adaptor, parent_draw=self))
+                            if adaptor.id is not None:
+                                if "SIOC" in adaptor.id:
+                                    # Adaptor ID appears as "SIOCx" ex. SIOC1
+                                    if adaptor.id[-1] == self._parent.id:
+                                        adaptor_list.append(UcsSystemDrawAdaptor(parent=adaptor, parent_draw=self))
                         # For UCSM SIOCs
                         if hasattr(adaptor, "pci_slot"):
-                            if "SIOC" in adaptor.pci_slot:
-                                # PCI Slot appears as "SIOCx" ex. SIOC1
-                                if adaptor.pci_slot[-1] == self._parent.id:
-                                    adaptor_list.append(UcsSystemDrawAdaptor(parent=adaptor, parent_draw=self))
+                            if adaptor.pci_slot is not None:
+                                if "SIOC" in adaptor.pci_slot:
+                                    # PCI Slot appears as "SIOCx" ex. SIOC1
+                                    if adaptor.pci_slot[-1] == self._parent.id:
+                                        adaptor_list.append(UcsSystemDrawAdaptor(parent=adaptor, parent_draw=self))
 
         adaptor_list = [adaptor for adaptor in adaptor_list if adaptor.picture_size]
         return [e for e in adaptor_list if hasattr(e, "_parent")]
@@ -622,6 +663,8 @@ class UcsSystemDrawInfraChassis(UcsSystemDrawInfraEquipment):
                 self.fex_list = self._get_fex(fex_list)
                 self.fex_a = self.fex_list[0]
                 self.fex_b = self.fex_list[1]
+                # Should implement self.valid_fex and check if FEX are usable as in the UcsSystemDraw InfraRack object
+                # Even if chassis can't be connected through FEX as of now
 
         # Canvas settings
         if self.fex_presence:

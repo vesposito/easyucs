@@ -1,0 +1,131 @@
+{
+   "id": "ucs_system_vmq_connection_policies#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS ucs system config orgs vmq_connection_policies section",
+   "description": "EasyUCS ucs system config orgs vmq_connection_policies section JSON schema",
+   "type": "object",
+   "properties": {
+      "comment": {
+         "description": "VMQ Connection Policy Comments",
+         "type": "string",
+         "default": ""
+      },
+      "name": {
+         "description": "VMQ Connection Policy Name",
+         "type": "string",
+         "default": "",
+         "pattern": "^[\\-\\.:_a-zA-Z0-9]{1,16}$"
+      },
+      "descr": {
+         "description": "Description of VMQ Connection Policy",
+         "type": "string",
+         "default": "",
+         "pattern": "^[ !#$%&\\(\\)\\*\\+,\\-\\./:;\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{0,256}$"
+      },
+      "policy_owner": {
+         "description": "VMQ Connection Policy Owner (for UCS Central)",
+         "type": "string",
+         "enum": [
+            "ucs-central"
+         ]
+      },
+      "multi_queue": {
+         "description": "VMQ Connection Policy - Multi Queue",
+         "type": "string",
+         "default": "disabled",
+         "enum": [
+            "disabled",
+            "enabled"
+         ]
+      },
+      "number_of_vmqs": {
+         "description": "VMQ Connection Policy - Number of VMQs",
+         "type": "string",
+         "default": "64",
+         "pattern": "^[1-9]$|^[0-9][0-9]$|^1[0-1][0-9]$|^12[0-8]$"
+      },
+      "number_of_interrupts": {
+         "description": "VMQ Connection Policy - Number of Interrupts",
+         "type": "string",
+         "default": "64",
+         "pattern": "^[1-9]$|^[0-9][0-9]$|^1[0-1][0-9]$|^12[0-8]$"
+      },
+      "number_of_sub_vnics": {
+         "description": "VMQ Connection Policy - Number of Sub vNICs",
+         "type": "string",
+         "default": "64",
+         "pattern": "^[1-9]$|^[0-9][0-9]$|^1[0-9][0-9]$|^2[0-4][0-9]$|^25[0-6]$"
+      },
+      "adapter_policy": {
+         "description": "VMQ Connection Policy - Adapter Policy",
+         "type": "string",
+         "pattern": "^[\\-\\.:_a-zA-Z0-9]{0,16}$|^VMWare-NVMe-RoCEv2$"
+      }
+   },
+   "additionalProperties": false,
+   "required": [
+      "name"
+   ],
+   "allOf": [
+      {
+         "if": {
+            "properties": {
+               "multi_queue": {
+                  "enum": [
+                     "disabled"
+                  ]
+               }
+            },
+            "required": [
+               "multi_queue"
+            ]
+         },
+         "then": {
+            "not": {
+               "anyOf": [
+                  {
+                     "required": [
+                        "number_of_sub_vnics"
+                     ]
+                  },
+                  {
+                     "required": [
+                        "adapter_policy"
+                     ]
+                  }
+               ]
+            }
+         }
+      },
+      {
+         "if": {
+            "properties": {
+               "multi_queue": {
+                  "enum": [
+                     "enabled"
+                  ]
+               }
+            },
+            "required": [
+               "multi_queue"
+            ]
+         },
+         "then": {
+            "not": {
+               "anyOf": [
+                  {
+                     "required": [
+                        "number_of_vmqs"
+                     ]
+                  },
+                  {
+                     "required": [
+                        "number_of_interrupts"
+                     ]
+                  }
+               ]
+            }
+         }
+      }
+   ]
+}

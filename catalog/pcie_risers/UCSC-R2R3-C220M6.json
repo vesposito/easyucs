@@ -1,0 +1,22 @@
+{
+  "model_short_name": "",
+  "rear_file_name": "UCSC-R2R3-C220M6.png",
+  "rear_file_size": [1421,104],
+  "pcie_slots": [
+    {
+      "id": 1,
+      "width": "half",
+      "coord": [18, 16]
+    },
+    {
+      "id": 2,
+      "width": "half",
+      "coord": [516, 16]
+    },
+    {
+      "id": 3,
+      "width": "half",
+      "coord": [1013, 3]
+    }
+  ]
+}

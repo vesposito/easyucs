@@ -128,7 +128,7 @@ class UcsSystemInfraCablingChassisConnectivityTable(UcsReportTable):
                                     for fex_host_port in fex.host_ports:
                                         if fex_host_port.peer:
                                             if "chassis" in fex_host_port.peer.keys():
-                                                if str(fex_host_port.peer['rack']) == chassis.id:
+                                                if str(fex_host_port.peer['chassis']) == chassis.id:
                                                     fex_id = fex.id
                                                     if fex_host_port.aggr_port_id:
                                                         fex_port = fex_host_port.slot_id + "/" + \

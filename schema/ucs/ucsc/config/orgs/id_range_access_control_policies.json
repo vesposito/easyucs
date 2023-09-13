@@ -1,0 +1,62 @@
+{
+   "id": "ucs_central_config_id_range_access_control_policies#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS ucs central config orgs id_range_access_control_policies section",
+   "description": "EasyUCS ucs central config orgs id_range_access_control_policies section JSON schema",
+   "type": "object",
+   "properties": {
+      "comment": {
+         "description": "Id Range Access Control Policy Comments",
+         "type": "string",
+         "default": ""
+      },
+      "name": {
+         "description": "Id Range Access Control Policy Name",
+         "type": "string",
+         "default": "",
+         "pattern": "^[\\-\\.:_a-zA-Z0-9]{1,16}$"
+      },
+      "descr": {
+         "description": "Description of Id Range Access Control Policy",
+         "type": "string",
+         "default": "",
+         "pattern": "^[ !#$%&\\(\\)\\*\\+,\\-\\./:;\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{0,256}$"
+      },
+      "domain_groups": {
+         "description": "List of Id Range Access Control Policy Domain Groups",
+         "type": "array",
+         "items": {
+            "type": "string",
+            "pattern": "^root(/[\\-\\.:_a-zA-Z0-9]{2,32})*$"
+         }
+      },
+      "tags": {
+         "description": "Id Range Access Control Policy - Tags",
+         "type": "array",
+         "items": {
+            "description": "Id Range Access Control Policy - Tag",
+            "type": "object",
+            "properties": {
+               "type": {
+                  "description": "Id Range Access Control Policy - Tag - Type",
+                  "type": "string",
+                  "pattern": "^[ !#$%&\\(\\)\\*\\+,\\-\\.:;=\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{1,32}$"
+               },
+               "value": {
+                  "description": "Id Range Access Control Policy - Tag - Value",
+                  "type": "string"
+               }
+            },
+            "additionalProperties": false,
+            "required": [
+               "type",
+               "value"
+            ]
+         }
+      }
+   },
+   "additionalProperties": false,
+   "required": [
+      "name"
+   ]
+}

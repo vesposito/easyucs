@@ -1,0 +1,148 @@
+{
+   "id": "intersight_config_orgs_local_user_policies#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS intersight config orgs local_user_policies section",
+   "description": "EasyUCS intersight config orgs local_user_policies section JSON schema",
+   "type": "object",
+   "properties": {
+      "comment": {
+         "description": "Local User Policy Comments",
+         "type": "string",
+         "default": ""
+      },
+      "descr": {
+         "description": "Local User Policy Description",
+         "type": "string",
+         "default": "",
+         "pattern": "^$|^[a-zA-Z0-9]+[\\x00-\\xFF]*$",
+         "maxLength": 1024
+      },
+      "name": {
+         "description": "Local User Policy Name",
+         "type": "string",
+         "default": "",
+         "pattern": "^[a-zA-Z0-9_.:-]{1,64}$"
+      },
+      "tags": {
+         "description": "Local User Policy Tags",
+         "type": "array",
+         "items": {
+            "description": "Local User Policy Tag",
+            "type": "object",
+            "properties": {
+               "key": {
+                  "description": "Local User Policy Tag Key",
+                  "type": "string",
+                  "default": "",
+                  "minLength": 1,
+                  "maxLength": 128
+               },
+               "value": {
+                  "description": "Local User Policy Tag Value",
+                  "type": "string",
+                  "default": "",
+                  "minLength": 0,
+                  "maxLength": 256
+               }
+            },
+            "additionalProperties": false,
+            "required": [
+               "key",
+               "value"
+            ]
+         },
+         "minItems": 1
+      },
+      "always_send_user_password": {
+         "description": "Local User Policy Always Send User Password",
+         "type": "boolean",
+         "default": false
+      },
+      "enable_password_expiry": {
+         "description": "Local User Policy Enable Password Expiry",
+         "type": "boolean",
+         "default": false
+      },
+      "enforce_strong_password": {
+         "description": "Local User Policy Enforce Strong Password",
+         "type": "boolean",
+         "default": true
+      },
+      "grace_period": {
+         "description": "Local User Policy Grace Period",
+         "type": "integer",
+         "default": 5,
+         "minimum": 0,
+         "maximum": 5
+      },
+      "local_users": {
+         "description": "Local User Policy Local Users",
+         "type": "array",
+         "items": {
+            "description": "Local User Policy - Local User",
+            "type": "object",
+            "properties": {
+               "enable": {
+                  "description": "Local User Policy - Local User - Enable",
+                  "type": "boolean",
+                  "default": true
+               },
+               "password": {
+                  "description": "Local User Policy - Local User - Password",
+                  "type": "string",
+                  "default": "",
+                  "minLength": 8,
+                  "maxLength": 127,
+                  "pattern": "^[a-zA-Z0-9!@#$%^&\\*+-_=]+$"
+               },
+               "encrypted_password": {
+                  "description": "Local User Policy - Local User - Encrypted Password",
+                  "type": "string"
+               },
+               "role": {
+                  "description": "Local User Policy - Local User - Role",
+                  "type": "string",
+                  "default": "readonly",
+                  "enum": [
+                     "admin",
+                     "readonly",
+                     "user"
+                  ]
+               },
+               "username": {
+                  "description": "Local User Policy - Local User - Username",
+                  "type": "string",
+                  "default": ""
+               }
+            },
+            "additionalProperties": false
+         },
+         "minItems": 1
+      },
+      "notification_period": {
+         "description": "Local User Policy Notification Period",
+         "type": "integer",
+         "default": 15,
+         "minimum": 0,
+         "maximum": 15
+      },
+      "password_expiry_duration": {
+         "description": "Local User Policy Password Expiry Duration",
+         "type": "integer",
+         "default": 90,
+         "minimum": 1,
+         "maximum": 3650
+      },
+      "password_history": {
+         "description": "Local User Policy Password History",
+         "type": "integer",
+         "default": 5,
+         "minimum": 0,
+         "maximum": 5
+      }
+   },
+   "additionalProperties": false,
+   "required": [
+      "name"
+   ]
+}

@@ -1,0 +1,208 @@
+{
+   "id": "intersight_config_orgs_fibre_channel_adapter_policies#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS intersight config orgs fibre_channel_adapter_policies section",
+   "description": "EasyUCS intersight config orgs fibre_channel_adapter_policies section JSON schema",
+   "type": "object",
+   "properties": {
+      "comment": {
+         "description": "Fibre Channel Adapter Policy Comments",
+         "type": "string",
+         "default": ""
+      },
+      "descr": {
+         "description": "Fibre Channel Adapter Policy Description",
+         "type": "string",
+         "default": "",
+         "pattern": "^$|^[a-zA-Z0-9]+[\\x00-\\xFF]*$",
+         "maxLength": 1024
+      },
+      "name": {
+         "description": "Fibre Channel Adapter Policy Name",
+         "type": "string",
+         "default": "",
+         "pattern": "^[a-zA-Z0-9_.:-]{1,64}$"
+      },
+      "tags": {
+         "description": "Fibre Channel Adapter Policy Tags",
+         "type": "array",
+         "items": {
+            "description": "Fibre Channel Adapter Policy Tag",
+            "type": "object",
+            "properties": {
+               "key": {
+                  "description": "Fibre Channel Adapter Policy Tag Key",
+                  "type": "string",
+                  "default": "",
+                  "minLength": 1,
+                  "maxLength": 128
+               },
+               "value": {
+                  "description": "Fibre Channel Adapter Policy Tag Value",
+                  "type": "string",
+                  "default": "",
+                  "minLength": 0,
+                  "maxLength": 256
+               }
+            },
+            "additionalProperties": false,
+            "required": [
+               "key",
+               "value"
+            ]
+         },
+         "minItems": 1
+      },
+      "error_detection_timeout": {
+         "description": "Fibre Channel Adapter Policy Error Detection Timeout (EDTOV) (ms)",
+         "type": "integer",
+         "default": 2000,
+         "minimum": 1000,
+         "maximum": 100000
+      },
+      "flogi_retries": {
+         "description": "Fibre Channel Adapter Policy Flogi Retries",
+         "type": "integer",
+         "default": 8,
+         "minimum": 0
+      },
+      "flogi_timeout": {
+         "description": "Fibre Channel Adapter Policy Flogi Timeout (ms)",
+         "type": "integer",
+         "default": 4000,
+         "minimum": 1000,
+         "maximum": 255000
+      },
+      "io_throttle_count": {
+         "description": "Fibre Channel Adapter Policy I/O Throttle Count",
+         "type": "integer",
+         "default": 512,
+         "minimum": 1,
+         "maximum": 1024
+      },
+      "lun_queue_depth": {
+         "description": "Fibre Channel Adapter Policy LUN Queue Depth",
+         "type": "integer",
+         "default": 20,
+         "minimum": 1,
+         "maximum": 254
+      },
+      "max_luns_per_target": {
+         "description": "Fibre Channel Adapter Policy Maximum LUNs per Target",
+         "type": "integer",
+         "default": 1024,
+         "minimum": 1,
+         "maximum": 4096
+      },
+      "plogi_retries": {
+         "description": "Fibre Channel Adapter Policy Plogi Retries",
+         "type": "integer",
+         "default": 8,
+         "minimum": 0,
+         "maximum": 255
+      },
+      "plogi_timeout": {
+         "description": "Fibre Channel Adapter Policy Plogi Timeout (ms)",
+         "type": "integer",
+         "default": 20000,
+         "minimum": 1000,
+         "maximum": 255000
+      },
+      "resource_allocation_timeout": {
+         "description": "Fibre Channel Adapter Policy Resource Allocation Timeout (RATOV) (ms)",
+         "type": "integer",
+         "default": 10000,
+         "minimum": 5000,
+         "maximum": 100000
+      },
+      "receive_ring_size": {
+         "description": "Fibre Channel Adapter Policy Receive Ring Size",
+         "type": "integer",
+         "default": 64,
+         "minimum": 64,
+         "maximum": 2048
+      },
+      "transmit_ring_size": {
+         "description": "Fibre Channel Adapter Policy Transmit Ring Size",
+         "type": "integer",
+         "default": 64,
+         "minimum": 64,
+         "maximum": 2048
+      },
+      "scsi_io_queue_count": {
+         "description": "Fibre Channel Adapter Policy SCSI I/O Queue Count",
+         "type": "integer",
+         "default": 1,
+         "minimum": 1,
+         "maximum": 245
+      },
+      "scsi_io_ring_size": {
+         "description": "Fibre Channel Adapter Policy SCSI I/O Ring Size",
+         "type": "integer",
+         "default": 512,
+         "minimum": 64,
+         "maximum": 512
+      },
+      "interrupt_settings": {
+         "description": "Fibre Channel Adapter Policy - Interrupt Settings",
+         "type": "object",
+         "properties": {
+            "interrupt_mode": {
+               "description": "Fibre Channel Adapter Policy - Interrupt Settings - Interrupt Mode",
+               "type": "string",
+               "default": "MSIx",
+               "enum": [
+                  "INTx",
+                  "MSI",
+                  "MSIx"
+               ]
+            }
+         },
+         "additionalProperties": false
+      },
+      "error_recovery_settings": {
+         "description": "Fibre Channel Adapter Policy - Error Recovery Settings",
+         "type": "object",
+         "properties": {
+            "enable_fcp_error_recovery": {
+               "description": "Fibre Channel Adapter Policy - Error Recovery Settings - Enable FCP Error Recovery",
+               "type": "boolean",
+               "default": false
+            },
+            "io_retry_timeout": {
+               "description": "Fibre Channel Adapter Policy - Error Recovery Settings - I/O Retry Timeout (seconds)",
+               "type": "integer",
+               "default": 5,
+               "minimum": 1,
+               "maximum": 59
+            },
+            "link_down_timeout": {
+               "description": "Fibre Channel Adapter Policy - Error Recovery Settings - Link Down Timeout (ms)",
+               "type": "integer",
+               "default": 30000,
+               "minimum": 0,
+               "maximum": 240000
+            },
+            "port_down_io_retry": {
+               "description": "Fibre Channel Adapter Policy - Error Recovery Settings - Port Down I/O Retry (ms)",
+               "type": "integer",
+               "default": 8,
+               "minimum": 0,
+               "maximum": 255
+            },
+            "port_down_timeout": {
+               "description": "Fibre Channel Adapter Policy - Error Recovery Settings - Port Down Timeout (ms)",
+               "type": "integer",
+               "default": 10000,
+               "minimum": 0,
+               "maximum": 240000
+            }
+         },
+         "additionalProperties": false
+      }
+   },
+   "additionalProperties": false,
+   "required": [
+      "name"
+   ]
+}

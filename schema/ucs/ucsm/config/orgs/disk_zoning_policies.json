@@ -22,6 +22,13 @@
          "default": "",
          "pattern": "^[ !#$%&\\(\\)\\*\\+,\\-\\./:;\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{0,256}$"
       },
+      "policy_owner": {
+         "description": "Disk Zoning Policy Owner (for UCS Central)",
+         "type": "string",
+         "enum": [
+            "ucs-central"
+         ]
+      },
       "preserve_config": {
          "description": "Disk Zoning Policy - Preserve Config",
          "type": "string",
@@ -58,8 +65,7 @@
                         "description": "Disk Zoning Policy - Drive Path",
                         "type": "string",
                         "default": "path-both",
-                        "enum":
-                        [
+                        "enum": [
                            "PATH-0",
                            "PATH-1",
                            "PATH-BOTH",
@@ -127,15 +133,14 @@
                         "description": "Disk Zoning Policy - Drive Path",
                         "type": "string",
                         "default": "path-both",
-                        "enum":
-                           [
-                              "PATH-0",
-                              "PATH-1",
-                              "PATH-BOTH",
-                              "path-0",
-                              "path-1",
-                              "path-both"
-                           ]
+                        "enum": [
+                           "PATH-0",
+                           "PATH-1",
+                           "PATH-BOTH",
+                           "path-0",
+                           "path-1",
+                           "path-both"
+                        ]
                      },
                      "disk_slot_range_start": {
                         "description": "Disk Zoning Policy - Disk Slot Range Start",

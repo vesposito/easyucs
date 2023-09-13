@@ -1,0 +1,422 @@
+{% extends "/html/base.html" %}
+
+{% block css %}
+<!-- DataTables -->
+<link rel="stylesheet" href="/static/plugins/datatables-bs4/css/dataTables.bootstrap4.min.css">
+<link rel="stylesheet" href="/static/plugins/datatables-select/css/select.bootstrap4.min.css">
+<link rel="stylesheet" href="/static/plugins/datatables-responsive/css/responsive.bootstrap4.min.css">
+<link rel="stylesheet" href="/static/plugins/datatables-buttons/css/buttons.bootstrap4.min.css">
+{% endblock %}
+
+{% block modals %}
+<div class="modal fade" id="claimToIntersightModal" tabindex="-1" role="dialog" aria-labelledby="claim_to_intersight_label" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="claimToIntersightModalLabel">Claim To Intersight</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form id = "claimToIntersightForm">
+          <div class="form-group">
+            <label for="target_device" class="col-form-label">Target Device:</label>
+            <select class="form-control" name="intersight_device_uuid" id="target_device">
+            </select>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        <button type="submit" class="btn btn-primary" onclick="claimToIntersight()">Claim</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="editDeviceModal" tabindex="-1" role="dialog" aria-labelledby="edit_device_label" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="edit_device_label">Edit Device</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form id = "editDeviceForm">
+          <div class="form-group">
+            <label for="edit_target" class="col-form-label">Target:</label>
+            <input type="text" name="target" class="form-control" id="edit_target" placeholder="10.60.11.12">
+          </div>
+          <div id="intersight-device-edit-form" class="d-none">
+            <div class="form-group">
+              <label for="edit_key_id" class="col-form-label">Key ID:</label>
+              <input type="text" name="key_id" class="form-control" id="edit_key_id" placeholder="ab32810b3e952006541c4aab8/57842fd63e9520038472105e8f2dac7564612d30ae6e83">
+            </div>
+            <div class="form-group">
+              <label for="edit_private_key" class="col-form-label">Private Key:</label>
+              <textarea style="white-space: pre-line;" type="text" name="private_key" class="form-control" id="edit_private_key" placeholder="-----BEGIN EC PRIVATE KEY-----&#10;MIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgP13mv5gJcy2iuXkk&#10;0XQxQRFaiPBbXz25aZiHjP4pmHyhRANCAASPHN4M1YmJC+0QBU1KloACJIhqsj48&#10;Vn/WhrcQ1Tv9oMrzYBPgExVGfRhORb6eCiYwY0UpUN36LQ6gmgDHzA1i&#10;-----END EC PRIVATE KEY-----&#10;" rows="5"></textarea>
+            </div>
+          </div>
+          <div id="ucs-device-edit-form" class="d-none">
+            <div class="form-group">
+              <label for="edit_username" class="col-form-label">Username:</label>
+              <input type="text" name="username" class="form-control" id="edit_username" placeholder="admin">
+            </div>
+            <div class="form-group">
+              <label for="edit_password" class="col-form-label">Password:</label>
+              <input type="password" name="password" class="form-control" id="edit_password">
+            </div>
+          </div>
+          <div id="edit-bypass-version-checks-form" class="d-none">
+            <div class="form-group">
+              <label for="edit_bypass_version_checks" class="form-check-label font-weight-bold">Bypass version checks:</label>
+              <input type="checkbox" name="bypass_version_checks" class="col-sm-2 form-check-input" id="edit_bypass_version_checks">
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+        <button id = "editDeviceSubmitButton" type="submit" class="btn btn-primary">Save changes</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="pushConfigModal" tabindex="-1" role="dialog" aria-labelledby="push_config_label" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="push_config_label">Push Config</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <h5 class="modal-title">Push config using:</h5>
+        <form id = "pushConfigForm">
+          <div class = "row">
+            <div class = "col-md-12">
+              <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" name="push_type" id="new_file" value="new_file">
+                <label class="form-check-label" for="new_file">New file</label>
+              </div>
+              <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" name="push_type" id="config_catalog" value="config_catalog">
+                <label class="form-check-label" for="config_catalog">Config catalog</label>
+              </div>
+              <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" name="push_type" id="current_configs" value="current_configs">
+                <label class="form-check-label" for="current_configs">Imported configs</label>
+              </div>
+            </div>
+          </div>
+          <div class = "row">
+            <div class = "col-md-12">
+              <div class="form-check form-check-inline">
+                <input class="form-check-input" type="checkbox" name = "reset" id="reset">
+                <label class="form-check-label" for="reset">Reset</label>
+              </div>
+              <div class="form-check form-check-inline">
+                <input class="form-check-input" type="checkbox" name = "setup" id="setup" onclick="showFabricFields()">
+                <label class="form-check-label" for="setup">Setup</label>
+              </div>
+            </div>
+          </div>
+          <div id="collapsedNewFile" class="form-group collapse">
+            <label for="push_configs_new">New file</label>
+            <input type="file" class="form-control-file" id="push_configs_new">
+          </div>
+          <div id="collapsedCatalogConfigs" class="form-group collapse">
+            <label for="push_configs_catalog" class="col-form-label">Config catalog</label>
+            <select class="form-control" name="config_uuid" id="push_configs_catalog">
+            </select>
+          </div>
+          <div id="collapsedImportedConfigs" class="form-group collapse">
+            <label for="push_configs_imported" class="col-form-label">Imported configs</label>
+            <select class="form-control" name="config_uuid" id="push_configs_imported">
+            </select>
+          </div>
+          <div id="collapsedFabricFields_ucsm" class="form-group collapse">
+            <div class = "row">
+              <div class = "col-md-6">
+                <label for="dhcp_ip_fabA">DHCP IP for FABRIC-A:</label>
+                <input type="text" name="dhcp_ip_fabA" class="form-control" id="dhcp_ip_fabA" placeholder="10.60.11.201">
+              </div>
+              <div class = "col-md-6">
+                <label for="dhcp_ip_fabB">DHCP IP for FABRIC-B:</label>
+                <input type="text" name="dhcp_ip_fabB" class="form-control" id="dhcp_ip_fabB" placeholder="10.60.11.202">
+              </div>
+            </div>
+          </div>
+          <div id="collapsedFabricFields_cimc" class="form-group collapse">
+            <div class = "row">
+              <div class = "col-md-12">
+                <label for="dhcp_ip_cimc">DHCP IP for CIMC:</label>
+                <input type="text" name="dhcp_ip_cimc" class="form-control" id="dhcp_ip_cimc" placeholder="10.60.11.209">
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+        <button id = "pushConfigSubmitButton" type="submit" class="btn btn-primary" onclick="pushConfig()">Push</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="generateReportModal" tabindex="-1" role="dialog" aria-labelledby="generate_report_label" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="generate_report_label">Generate Report</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <h5 class="modal-title">Generate report using:</h5>
+        <form id = "generateReportForm">
+          <div class="form-group">
+            <label for="configs_options" class="col-form-label">Configuration</label>
+            <select class="form-control" name="config_uuid" id="configs_options">
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="inventories_options" class="col-form-label">Inventory</label>
+            <select class="form-control" name="inventory_uuid" id="inventories_options">
+            </select>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+        <button id = "generateReportSubmitButton" type="submit" class="btn btn-primary" onclick="generateReport()">Generate</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+
+{% block content %}
+<div class="content-header">
+  <div class="container-fluid">
+    <div class="row">
+      <div id="deviceCardContainer" class="col-sm-10 col-md-8">
+      </div>
+      <div class="col-sm-2 col-md-4">
+        <ol class="breadcrumb float-sm-right">
+          <li class="breadcrumb-item"><a href="/">Home</a></li>
+          <li class="breadcrumb-item active">Device</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+</div>
+
+<section class="content">
+  <div class = "container-fluid">
+    <div class = "row">
+      <div id="deviceClaimContainer" class="col-sm-10 col-md-8">
+      </div>
+    </div>
+
+    <div class = "row">
+      <div id="deviceButtonsContainer" class="dropright col-md-12 mb-3">
+        <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Actions</button>
+        <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+          <a class="dropdown-item" onclick="fetchLiveObjectFromDevice('config')"><span class="mr-2" style="width: 20px; display: inline-block"><i class="fa-solid fa-file-arrow-down"></i></span>Fetch Config</a>
+          <a class="dropdown-item" onclick="fetchLiveObjectFromDevice('inventory')"><span class="mr-2" style="width: 20px; display: inline-block"><i class="fa-solid fa-download"></i></span>Fetch Inventory</a>
+          <a class="dropdown-item" onclick="fetchLiveObjectFromDevice('backup')"><span class="mr-2" style="width: 20px; display: inline-block"><i class="fa-solid fa-floppy-disk"></i></span>Fetch Backup</a>
+          <div class="dropdown-divider"></div>
+          <a class="dropdown-item dropdown-toggle" onclick="togglePushConfigModal(event)"><span class="mr-2" style="width: 20px; display: inline-block"><i class="fa-solid fa-file-arrow-up"></i></span>Push Config</a>
+          <div class="dropdown-divider"></div>
+          <a class="dropdown-item dropdown-toggle" onclick="toggleGenerateReportModal(event)"><span class="mr-2" style="width: 20px; display: inline-block"><i class="fa-solid fa-book"></i></span>Generate Report</a>
+          <div id="actions-separator" class="dropdown-divider" style="display: none"></div>
+          <a id="action-claim-to-intersight" class="dropdown-item dropdown-toggle" style="display: none" onclick="toggleClaimToIntersightModal(event)"><span class="mr-2" style="width: 20px; display: inline-block"><i class="fa-solid fa-cloud-arrow-up"></i></span>Claim to Intersight</a>
+          <a id="action-clear-intersight-claim-status" class="dropdown-item" style="display: none" onclick="clearIntersightClaimStatus()"><span class="mr-2" style="width: 20px; display: inline-block"><i class="fa-solid fa-plug-circle-xmark"></i></span>Clear Intersight Claim Status</a>
+          <a id="action-clear-sel-logs" class="dropdown-item" style="display: none" onclick="clearSelLogs()"><span class="mr-2" style="width: 20px; display: inline-block"><i class="fa-solid fa-broom"></i></span>Clear SEL Logs</a>
+        </div>
+      </div>
+    </div>
+
+    <div class = "row">
+      <div class = "col-md-12">
+        <nav>
+          <div class="nav nav-tabs" id="nav-tab" role="tablist">
+            <a class="nav-item nav-link active" id="nav-config-tab" data-toggle="tab" href="#nav-config" role="tab" aria-controls="nav-config" aria-selected="true">Configs</a>
+            <a class="nav-item nav-link" id="nav-inventory-tab" data-toggle="tab" href="#nav-inventory" role="tab" aria-controls="nav-inventory" aria-selected="false">Inventories</a>
+            <a class="nav-item nav-link" id="nav-report-tab" data-toggle="tab" href="#nav-report" role="tab" aria-controls="nav-report" aria-selected="false">Reports</a>
+            <a class="nav-item nav-link" id="nav-backup-tab" data-toggle="tab" href="#nav-backup" role="tab" aria-controls="nav-backup" aria-selected="false">Backups</a>
+          </div>
+        </nav>
+        <div class="tab-content" id="nav-tabContent">
+          <div class="tab-pane fade show active" id="nav-config" role="tabpanel" aria-labelledby="nav-config-tab">
+            <div class="card">
+              <div class="card-body">
+                <form id = "configActionForm" onchange = "onSelectedObjectsChanged('config');">
+                  <div class="row">
+                    <div class="col-md-12">
+                      <button type="button" class="btn btn-primary mb-3" onclick="openImportFileDialog('config');">
+                        <i class="fas fa-plus"></i>
+                        Import Config
+                      </button>
+                      <input id='importConfigDialog' type='file' onchange="importConfig(event)" hidden/>
+                    </div>
+                    <div id="configTableButtonContainer" class="col-md-12 d-none">
+                      <button type="button" class="btn btn-success dropdown-toggle mb-3" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Actions</button>
+                      <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                        <a class="dropdown-item" type="submit" onclick="downloadObjects('config')">Download Config(s)</a>
+                        <a class="dropdown-item" type="submit" onclick="deleteMultipleObjects('config')">Delete Config(s)</a>
+                        <div class="dropdown-divider"></div>
+                        <a id = "pushConfigTableButton" class="dropdown-item" type="submit" onclick="togglePushConfigModal(event, populate=true)">Push Config</a>
+                      </div>
+                    </div>
+                  </div>
+                  <table id="configTable" class="table table-bordered table-striped table-hover">
+                    <thead>
+                    <tr>
+                      <th><input type="checkbox" id="configTable_selectAll" name="select_all" value="1" onclick = "handleSelectAll('config', this);"></th>
+                      <th>Configuration name</th>
+                      <th>Origin</th>
+                      <th>Import date</th>
+                      <th>EasyUCS version</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                  </table>
+                </form>
+              </div>
+            </div>
+          </div>
+          <div class="tab-pane fade" id="nav-inventory" role="tabpanel" aria-labelledby="nav-inventory-tab">
+            <div class="card">
+              <div class="card-body">
+                <div class="row">
+                  <div class="col-md-12">
+                    <button type="button" class="btn btn-primary mb-3" onclick="openImportFileDialog('inventory');">
+                      <i class="fas fa-plus"></i>
+                      Import Inventory
+                    </button>
+                    <input id='importInventoryDialog' type='file' onchange="importInventory(event)" hidden/>
+                  </div>
+                  <div id="inventoryTableButtonContainer" class="col-md-12 d-none">
+                    <button type="button" class="btn btn-success dropdown-toggle mb-3" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Actions</button>
+                    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                      <a class="dropdown-item" type="submit" onclick="downloadObjects('inventory')">Download Inventories</a>
+                      <a class="dropdown-item" type="submit" onclick="deleteMultipleObjects('inventory')">Delete Inventories</a>
+                    </div>
+                  </div>
+                </div>
+                <form id = "inventoryActionForm" onchange = "onSelectedObjectsChanged('inventory');">
+                  <table id="inventoryTable" class="table table-bordered table-striped table-hover">
+                    <thead>
+                    <tr>
+                      <th><input type="checkbox" id="inventoryTable_selectAll" name="select_all" value="1" onclick = "handleSelectAll('inventory', this);"></th>
+                      <th>Inventory name</th>
+                      <th>Origin</th>
+                      <th>Import date</th>
+                      <th>EasyUCS version</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                  </table>
+                </form>
+              </div>
+            </div>
+          </div>
+          <div class="tab-pane fade" id="nav-report" role="tabpanel" aria-labelledby="nav-report-tab">
+            <div class="card">
+              <div class="card-body">
+                <div class="row">
+                  <div id="reportTableButtonContainer" class="col-md-12 d-none">
+                    <button type="button" class="btn btn-success dropdown-toggle mb-3" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Actions</button>
+                    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                      <a class="dropdown-item" type="submit" onclick="downloadObjects('report')">Download Report(s)</a>
+                      <a class="dropdown-item" type="submit" onclick="deleteMultipleObjects('report')">Delete Report(s)</a>
+                    </div>
+                  </div>
+                </div>
+                <form id = "reportActionForm" onchange = "onSelectedObjectsChanged('report');">
+                  <table id="reportTable" class="table table-bordered table-striped table-hover">
+                    <thead>
+                    <tr>
+                      <th><input type="checkbox" id="reportTable_selectAll" name="select_all" value="1" onclick = "handleSelectAll('report', this);"></th>
+                      <th>Report name</th>
+                      <th>Origin</th>
+                      <th>Import date</th>
+                      <th>EasyUCS version</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                  </table>
+                </form>
+              </div>
+            </div>
+          </div>
+          <div class="tab-pane fade" id="nav-backup" role="tabpanel" aria-labelledby="nav-backup-tab">
+            <div class="card">
+              <div class="card-body">
+                <div class="row">
+                  <div id="backupTableButtonContainer" class="col-md-12 d-none">
+                    <button type="button" class="btn btn-success dropdown-toggle mb-3" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Actions</button>
+                    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                      <a class="dropdown-item" type="submit" onclick="downloadObjects('backup')">Download Backup(s)</a>
+                      <a class="dropdown-item" type="submit" onclick="deleteMultipleObjects('backup')">Delete Backup(s)</a>
+                    </div>
+                  </div>
+                </div>
+                <form id = "backupActionForm" onchange = "onSelectedObjectsChanged('backup');">
+                  <table id="backupTable" class="table table-bordered table-striped table-hover">
+                    <thead>
+                    <tr>
+                      <th><input type="checkbox" id="backupTable_selectAll" name="select_all" value="1" onclick = "handleSelectAll('backup', this);"></th>
+                      <th>Backup name</th>
+                      <th>Origin</th>
+                      <th>Import date</th>
+                      <th>EasyUCS version</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                  </table>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block javascript%}
+<!-- DataTables  & Plugins -->
+<script src="/static/plugins/moment/moment.min.js"></script>
+<script src="/static/plugins/datatables/jquery.dataTables.min.js"></script>
+<script src="/static/plugins/datatables-bs4/js/dataTables.bootstrap4.min.js"></script>
+<script src="/static/plugins/datatables-buttons/js/dataTables.buttons.min.js"></script>
+<script src="/static/plugins/datatables-buttons/js/buttons.bootstrap4.min.js"></script>
+<script src="/static/plugins/datatables-buttons/js/buttons.html5.min.js"></script>
+<script src="/static/plugins/datatables-buttons/js/buttons.print.min.js"></script>
+<script src="/static/plugins/datatables-buttons/js/buttons.colVis.min.js"></script>
+<script src="/static/plugins/datatables-responsive/js/dataTables.responsive.min.js"></script>
+<script src="/static/plugins/datatables-responsive/js/responsive.bootstrap4.min.js"></script>
+<script src="/static/plugins/datatables-select/js/dataTables.select.min.js"></script>
+<script src="/static/plugins/datatables-select/js/select.bootstrap4.min.js"></script>
+<script src="/static/plugins/jszip/jszip.min.js"></script>
+<script src="/static/plugins/pdfmake/pdfmake.min.js"></script>
+<script src="/static/plugins/datatables-datetime-moment/datetime-moment.js"></script>
+<!-- Page-specific JS -->
+<script src="/static/js/device.js" crossorigin="anonymous"></script>
+{% endblock %}

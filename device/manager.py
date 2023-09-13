@@ -5,166 +5,411 @@
 
 import json
 import os
-import shutil
-import uuid
 
 import export
-from device.device import GenericDevice
+from __init__ import __version__
+from device.intersight.device import IntersightDevice
 from device.ucs.device import UcsSystem, UcsImc, UcsCentral
+from repository.metadata import DeviceMetadata
 
 
 class DeviceManager:
     REPOSITORY_FOLDER_NAME = "repository"
 
-    def __init__(self):
+    def __init__(self, parent=None):
         self.device_list = []
+        self.parent = parent
 
-    def add_device(self, device_type=None, target=None, username=None, password=None):
+        self._parent_having_logger = self._find_logger()
+
+    def logger(self, level='info', message="No message"):
+        if not self._parent_having_logger:
+            self._parent_having_logger = self._find_logger()
+
+        if self._parent_having_logger:
+            self._parent_having_logger.logger(level=level, message=message)
+
+    def _find_logger(self):
+        # Method to find the object having a logger - it can be high up in the hierarchy of objects
+        current_object = self
+        while hasattr(current_object, 'parent') and not hasattr(current_object, '_logger_handle'):
+            current_object = current_object.parent
+
+        if hasattr(current_object, '_logger_handle'):
+            return current_object
+        else:
+            print("WARNING: No logger found in Device Manager")
+            return None
+
+    def add_device(self, metadata=None, device_type=None, uuid=None, target=None, username=None, password=None,
+                   key_id=None, private_key_path=None, is_hidden=False, is_system=False, system_usage=None,
+                   logger_handle_log_level=None, bypass_version_checks=False):
         """
         Adds a device to the list of devices
+        :param metadata: The metadata object of to the device to be added (if no device details provided)
         :param device_type: The type of device to be added (e.g. "ucsm")
+        :param uuid: The UUID of the device to be added
         :param target: The IP address/hostname of the device
         :param username: The username/login of the device
         :param password: The password of the device
-        :return: True if add is successful, False otherwise
+        :param key_id: The key ID of the device (for Intersight devices)
+        :param private_key_path: The private key path of the device (for Intersight devices)
+        :param is_hidden: Whether the device should be set to hidden
+        :param is_system: Whether the device is a system device
+        :param system_usage: If device is a system device, indicates the usage for this system device (e.g. "catalog")
+        :param logger_handle_log_level: The log level of the device to be added (e.g. "info", "debug", ...)
+        :param bypass_version_checks: Whether the device needs to bypass the version check or not
+        :return: UUID of device if add is successful, False otherwise
         """
+        if isinstance(metadata, DeviceMetadata):
+            device_type = metadata.device_type
+            uuid = metadata.uuid
+            target = metadata.target
+            username = metadata.username
+            password = metadata.password
+            key_id = metadata.key_id
+            private_key_path = metadata.private_key_path
+            is_hidden = metadata.is_hidden
+            is_system = metadata.is_system
+            system_usage = metadata.system_usage
+            bypass_version_checks = metadata.bypass_version_checks
+
         if device_type is None:
-            # TODO: Change to make it optional
-            print("Missing device_type in device add request!")
+            self.logger(level="error", message="Missing device_type in device add request!")
             return False
 
-        if target is None or username is None or password is None:
-            print("Missing target, username or password in device add request!")
+        if device_type not in ["cimc", "intersight", "ucsc", "ucsm"]:
+            self.logger(level="error", message="Device type not recognized. Could not add device")
             return False
 
-        if device_type not in ["ucsm", "cimc"]:
-            print("Device type not recognized. Could not import device")
-            return False
+        if not is_system:
+            if device_type in ["intersight"]:
+                if key_id is None or private_key_path is None:
+                    self.logger(level="error", message="Missing key_id or private_key_path in device add request!")
+                    return False
+            else:
+                if target is None or username is None or password is None:
+                    self.logger(level="error", message="Missing target, username or password in device add request!")
+                    return False
 
-        # We create a new device object
-        device = GenericDevice(target=target, user=username, password=password)
+        if logger_handle_log_level is None:
+            logger_handle_log_level = self.parent.logger_handle_log_level
 
-        if device_type == "ucsm":
-            device = UcsSystem(target=target, user=username, password=password)
-        elif device_type == "cimc":
-            device = UcsImc(target=target, user=username, password=password)
+        if device_type == "cimc":
+            device = UcsImc(parent=self, uuid=uuid, target=target, user=username, password=password,
+                            is_hidden=is_hidden, is_system=is_system, system_usage=system_usage,
+                            logger_handle_log_level=logger_handle_log_level,
+                            bypass_version_checks=bypass_version_checks)
+        elif device_type == "intersight":
+            if target:
+                device = IntersightDevice(parent=self, uuid=uuid, target=target, key_id=key_id,
+                                          private_key_path=private_key_path, is_hidden=is_hidden, is_system=is_system,
+                                          system_usage=system_usage, logger_handle_log_level=logger_handle_log_level,
+                                          bypass_version_checks=bypass_version_checks)
+            else:
+                device = IntersightDevice(parent=self, uuid=uuid, key_id=key_id, private_key_path=private_key_path,
+                                          is_hidden=is_hidden, is_system=is_system, system_usage=system_usage,
+                                          logger_handle_log_level=logger_handle_log_level,
+                                          bypass_version_checks=bypass_version_checks)
         elif device_type == "ucsc":
-            device = UcsCentral(target=target, user=username, password=password)
+            device = UcsCentral(parent=self, uuid=uuid, target=target, user=username, password=password,
+                                is_hidden=is_hidden, is_system=is_system, system_usage=system_usage,
+                                logger_handle_log_level=logger_handle_log_level,
+                                bypass_version_checks=bypass_version_checks)
+        elif device_type == "ucsm":
+            device = UcsSystem(parent=self, uuid=uuid, target=target, user=username, password=password,
+                               is_hidden=is_hidden, is_system=is_system, system_usage=system_usage,
+                               logger_handle_log_level=logger_handle_log_level,
+                               bypass_version_checks=bypass_version_checks)
+        else:
+            self.logger(level="error", message="Device type not recognized. Could not add device")
+            return False
 
-        device.load_from = "add"
+        if isinstance(metadata, DeviceMetadata):
+            # We use the provided metadata as the newly added device metadata.
+            device.metadata = metadata
+        else:
+            device.metadata.easyucs_version = __version__
+            device.load_from = "add"
+        self.logger(level="debug", message="Adding device of type '" + device_type + "' with UUID " + str(device.uuid) +
+                                           " to the list of devices")
+        for loaded_device in self.device_list:
+            if str(device.uuid) == str(loaded_device.uuid):
+                self.logger(level="error", message="Device of type " + device_type + "' with UUID " + str(device.uuid) +
+                                                   " already loaded")
+                return device.uuid
 
         self.device_list.append(device)
+        return device.uuid
+
+    def clear_device_list(self):
+        """
+        Removes all the devices from the device list
+        :return: True
+        """
+        self.device_list.clear()
         return True
 
-    def load_device(self, import_format="json", directory=None, filename=None):
+    def export_device(self, uuid=None, export_format="json", directory=None, filename=None):
         """
-        Loads the specified device in the specified import format from the specified filename to the list of devices
+        Exports the specified device in the specified export format to the repository
+        :param uuid: The UUID of the device to be saved
+        :param export_format: The export format (e.g. "json")
+        :param directory: The directory containing the export file
+        :param filename: The name of the file containing the exported content
+        :return: True if export is successful, False otherwise
+        """
+        if export_format not in ["json"]:
+            return False
+        if filename is None:
+            self.logger(level="error", message="Missing filename in device export request!")
+            return False
+        if not directory:
+            self.logger(level="debug",
+                        message="No directory specified in device export request. Using local folder.")
+            directory = "."
+
+        if uuid is None:
+            self.logger(level="debug", message="No device UUID specified in device export request. Using latest.")
+            device = self.get_latest_device()
+        else:
+            # Find the device that needs to be exported
+            device = self.find_device_by_uuid(uuid=uuid)
+            if not device:
+                self.logger(level="error", message="Failed to locate device with UUID " + str(uuid) + " for export")
+                return False
+
+        if device is None:
+            # We could not find any device
+            self.logger(level="error", message="Could not find any device to export!")
+            return False
+
+        self.logger(level="debug", message="Using device " + str(device.uuid) + " for export")
+
+        if export_format == "json":
+            header_json = {"metadata": [export.generate_json_metadata_header(file_type="device", device=device)]}
+            device_json = {"easyucs": header_json, "device": {}}
+
+            device_json["device"]["target"] = device.target
+
+            if device.metadata.device_type in ["intersight"]:
+                device_json["device"]["key_id"] = device.key_id
+                device_json["device"]["private_key_path"] = device.private_key_path
+            else:
+                device_json["device"]["username"] = device.username
+                device_json["device"]["password"] = device.password
+
+            # Calculate hash of entire JSON file and adding it to header before exporting
+            device_json = export.insert_json_metadata_hash(json_content=device_json)
+            if not device_json:
+                self.logger(level="error", message="Unable to calculate MD5 hash of device file!")
+                return False
+
+            # Saving md5 hash to the InventoryMetadata object
+            device.metadata.hash = device_json["easyucs"]["metadata"][0]["hash"]
+
+            self.logger(message="Exporting device " + str(device.uuid) + " to file: " + directory + "/" + filename)
+            if not os.path.exists(directory):
+                self.logger(message="Creating directory " + directory)
+                os.makedirs(directory)
+            with open(directory + '/' + filename, 'w') as device_json_file:
+                json.dump(device_json, device_json_file, indent=3)
+            device_json_file.close()
+            return True
+
+    def find_device_by_uuid(self, uuid=None):
+        """
+        Finds a device from the device list given a specific UUID
+        :param uuid: UUID of the device to find
+        :return: device if found, None otherwise
+        """
+        if uuid is None:
+            self.logger(level="error", message="No device UUID specified in find device request.")
+            return None
+
+        device_list = [device for device in self.device_list if str(device.uuid) == str(uuid)]
+        if len(device_list) != 1:
+            self.logger(level="debug", message="Failed to locate device with UUID " + str(uuid) +
+                                               " - Found " + str(len(device_list)) + " devices")
+            return None
+        else:
+            return device_list[0]
+
+    def get_latest_device(self):
+        """
+        Returns the most recent device from the device list
+        :return: GenericDevice (or subclass), None if no device is found
+        """
+        if len(self.device_list) == 0:
+            return None
+        # return sorted(self.device_list, key=lambda device: device.metadata.timestamp)[-1]
+        return self.device_list[-1]
+
+    def import_device(self, import_format="json", directory=None, filename=None, device=None, metadata=None):
+        """
+        Imports the specified device in the specified import format from the specified filename to device_list
         :param import_format: The import format (e.g. "json")
         :param directory: The directory containing the import file
         :param filename: The name of the file containing the content to be imported
-        :return: True if load is successful, False otherwise
+        :param device: The device content to be imported (if no directory/filename provided)
+        :param metadata: The metadata object of to the device to be imported (if no device or dir/file provided)
+        :return: Device object if import is successful, False otherwise
         """
         if import_format not in ["json"]:
-            print("Requested device import format not supported!")
+            self.logger(level="error", message="Requested device import format not supported!")
             return False
-        if filename is None:
-            print("Missing filename in device import request!")
-            return False
-        if directory is None:
-            print("No directory specified in device import request. Using local folder.")
-            directory = "."
 
-        if import_format == "json":
-            try:
-                with open(directory + '/' + filename, 'r') as config_json_file:
-                    complete_json = json.load(config_json_file)
-                config_json_file.close()
-            except FileNotFoundError as err:
-                print("File not found: " + str(err))
+        # If no device content is provided, we need to open the file using directory and filename arguments
+        if device is None:
+            if metadata is None:
+                if filename is None:
+                    self.logger(level="error", message="Missing filename in device import request!")
+                    return False
+                if directory is None:
+                    self.logger(level="debug",
+                                message="No directory specified in device import request. Using local folder.")
+                    directory = "."
+            else:
+                if metadata.file_path is None:
+                    self.logger(level="error", message="Missing metadata file path in device import request!")
+                    return False
+                else:
+                    directory = os.path.dirname(metadata.file_path)
+                    filename = os.path.basename(metadata.file_path)
+
+            # Making sure device file exists
+            if not os.path.exists(directory + '/' + filename):
+                self.logger(level="error",
+                            message="Requested device file: " + directory + "/" + filename + " does not exist!")
                 return False
 
+            if import_format == "json":
+                self.logger(level="debug", message="Requested device import format is JSON")
+                with open(directory + '/' + filename, 'r') as device_json_file:
+                    try:
+                        complete_json = json.load(device_json_file)
+                    except json.decoder.JSONDecodeError as err:
+                        self.logger(level="error",
+                                    message="Invalid device JSON file " + directory + "/" + filename + ": " + str(err))
+                        return False
+                device_json_file.close()
+
+        else:
+            if import_format == "json":
+                self.logger(level="debug", message="Requested device import format is JSON")
+                if isinstance(device, str):
+                    complete_json = json.loads(device)
+                elif isinstance(device, dict):
+                    complete_json = device
+                else:
+                    self.logger(level="error", message="Unable to import device")
+                    return False
+
+        if import_format in ["json"]:
             # We verify that the JSON content is valid
-            device_valid = self._validate_device_from_json(device_json=complete_json)
-            if device_valid:
-                print("Successfully validated device JSON file: " + directory + "/" + filename)
+            if not self._validate_device_from_json(device_json=complete_json):
+                self.logger(message="Can't import invalid device JSON file")
+                return False
+            else:
+                self.logger(message="Successfully validated device JSON file")
 
             # We verify the hash of the file to check if it has been modified
             custom = False
             if not export.verify_json_metadata_hash(json_content=complete_json):
-                print("Hash of the imported file does not verify. Device will be marked as custom")
+                self.logger(message="Hash of the imported file does not verify. Device will be marked as custom")
                 custom = True
+
+            # We calculate md5 hash of entire imported JSON file and add it to header
+            complete_json = export.insert_json_metadata_hash(json_content=complete_json)
+            if not complete_json:
+                self.logger(level="debug", message="Unable to calculate MD5 hash of imported device file!")
+                return False
+
+            # We now compare the hash of the file to the hash of the metadata object if we have it
+            if not custom and metadata is not None:
+                if "metadata" in complete_json["easyucs"]:
+                    if "hash" in complete_json["easyucs"]["metadata"][0]:
+                        if metadata.hash is not None:
+                            if metadata.hash != complete_json["easyucs"]["metadata"][0]["hash"]:
+                                self.logger(level="debug", message="Hash of the imported file does not match " +
+                                                                   "metadata hash. Device will be marked as custom")
+                                custom = True
 
             # We make sure there is a "device" section in the file
             if "device" in complete_json:
                 device_json = complete_json["device"]
             else:
-                print("No device section in JSON file. Could not import device")
+                self.logger(level="error", message="No device section in JSON file. Could not import device")
                 return False
 
             # We fetch the device type
             if "device_type" not in complete_json["easyucs"]["metadata"][0]:
-                print("Device type not specified in JSON file. Could not import device")
+                self.logger(level="error", message="Device type not specified in JSON file. Could not import device")
                 return False
 
             device_type = complete_json["easyucs"]["metadata"][0]["device_type"]
-            if device_type not in ["ucsm", "cimc"]:
-                print("Device type not recognized. Could not import device")
-                return False
-
-            # We fetch the device UUID
-            if "device_uuid" not in complete_json["easyucs"]["metadata"][0]:
-                print("Device UUID not specified in JSON file. Could not import device")
-                return False
-
-            device_uuid = uuid.UUID(complete_json["easyucs"]["metadata"][0]["device_uuid"])
-
-            # We first need to make sure that the device has not already been loaded
-            device_list = [device for device in self.device_list if device.uuid == device_uuid]
-            if len(device_list) >= 1:
-                print("Device with UUID " + str(device_uuid) + " is already loaded!")
+            if device_type not in ["cimc", "intersight", "ucsc", "ucsm"]:
+                self.logger(level="error", message="Device type not recognized. Could not import device")
                 return False
 
             # We create a new device object
             try:
-                if device_type == "ucsm":
-                    device = UcsSystem(target=device_json["target"], user=device_json["username"],
-                                       password=device_json["password"])
-                elif device_type == "cimc":
+                if device_type == "cimc":
                     device = UcsImc(target=device_json["target"], user=device_json["username"],
                                     password=device_json["password"])
+                elif device_type == "intersight":
+                    device = IntersightDevice(target=device_json["target"], key_id=device_json["key_id"],
+                                              private_key_path=device_json["private_key_path"])
                 elif device_type == "ucsc":
                     device = UcsCentral(target=device_json["target"], user=device_json["username"],
                                         password=device_json["password"])
+                elif device_type == "ucsm":
+                    device = UcsSystem(target=device_json["target"], user=device_json["username"],
+                                       password=device_json["password"])
                 else:
                     return False
 
-                device.load_from = "file"
+                # We use the provided metadata for the new device object if the hash of the file is valid
+                if not custom and metadata is not None:
+                    self.logger(level="debug", message="Using provided metadata for device import")
+                    device.metadata = metadata
+                    device.metadata.parent = device
+                    device.uuid = metadata.uuid
 
-                # We set the UUID of the device from the JSON file
-                device.uuid = device_uuid
+                device.load_from = "file"
+                device.metadata.easyucs_version = __version__
+
+                # We save md5 hash to the DeviceMetadata object
+                device.metadata.hash = complete_json["easyucs"]["metadata"][0]["hash"]
+
+                # We set the origin of the device as "file"
+                device.metadata.origin = "file"
 
                 # We set the custom flag of the device
                 if custom:
                     device.custom = True
 
-                print("Device import successful. Appending device to the list of devices")
+                self.logger(message="Device import successful. Appending device to the list of devices")
                 # We add the device to the list of devices
                 self.device_list.append(device)
-                return True
+                return device
 
             except Exception:
-                print("Device import failed!")
+                self.logger(level="error", message="Device import failed!")
                 return False
 
-    def remove_device(self, uuid):
+    def remove_device(self, uuid=None):
         """
-        Removes the specified device from the repository
+        Removes the specified device from the device list
         :param uuid: The UUID of the device to be deleted
         :return: True if delete is successful, False otherwise
         """
+        if uuid is None:
+            self.logger(level="error", message="No device UUID specified in remove device request.")
+            return False
 
         # Find the device that needs to be removed
-        device = self.find_device_by_uuid(device_uuid=uuid)
+        device = self.find_device_by_uuid(uuid=uuid)
         if not device:
             return False
         else:
@@ -173,187 +418,8 @@ class DeviceManager:
         # Remove the device from the list of devices
         self.device_list.remove(device_to_remove)
 
-        # Delete the directory for the device in the repository
-        directory = self.REPOSITORY_FOLDER_NAME + "/" + str(uuid)
-
-        if os.path.exists(directory):
-            shutil.rmtree(directory)
-        else:
-            print("Device not found in repository. Nothing to delete.")
-            return False
-
-        return True
-
-    def save_device(self, uuid=None, export_format="json"):
-        """
-        Saves the specified device in the specified export format to the repository
-        :param uuid: The UUID of the device to be saved
-        :param export_format: The export format (e.g. "json")
-        :return: True if save is successful, False otherwise
-        """
-        if export_format not in ["json"]:
-            return False
-        if uuid is None:
-            return False
-
-        # Find the device that needs to be exported
-        device = self.find_device_by_uuid(device_uuid=uuid)
-        if not device:
-            print("Failed to locate device with UUID " + str(uuid) + " for export")
-            return False
-
-        directory = self.REPOSITORY_FOLDER_NAME + "/" + str(uuid)
-        filename = "device-" + str(uuid) + "." + export_format
-
-        # Creating folder for device
-        if not os.path.exists(directory):
-            os.makedirs(directory)
-
-        if export_format == "json":
-            header_json = {}
-            header_json["metadata"] = [export.generate_json_metadata_header(file_type="device", device=device)]
-            device_json = {}
-            device_json["easyucs"] = header_json
-            device_json["device"] = {}
-
-            device_json["device"]["target"] = device.target
-            device_json["device"]["username"] = device.username
-            device_json["device"]["password"] = device.password
-
-            # Calculate hash of entire JSON file and adding it to header before exporting
-            device_json = export.insert_json_metadata_hash(json_content=device_json)
-
-            print("Exporting device " + str(device.uuid) + " to file: " + directory + "/" + filename)
-            with open(directory + '/' + filename, 'w') as device_json_file:
-                json.dump(device_json, device_json_file, indent=3)
-            device_json_file.close()
-            return True
-
-    def save_device_configs(self, device_uuid=None, export_format="json"):
-        """
-        Saves all configs of a given device in the specified export format to the repository
-        :param device_uuid: The UUID of the device containing the configs to be saved
-        :param export_format: The export format (e.g. "json")
-        :return: True if save is successful, False otherwise
-        """
-        if export_format not in ["json"]:
-            return False
-        if device_uuid is None:
-            return False
-
-        # Find the device that needs to be exported
-        device_list = [device for device in self.device_list if device.uuid == device_uuid]
-        if len(device_list) != 1:
-            print("Failed to locate device with UUID " + str(device_uuid) + " for export")
-            return False
-        else:
-            device = device_list[0]
-
-        directory = self.REPOSITORY_FOLDER_NAME + "/" + str(device_uuid) + "/configs"
-
-        # Creating folder for configs
-        if not os.path.exists(directory):
-            os.makedirs(directory)
-
-        for config in device.config_manager.config_list:
-            filename = "config-" + str(config.uuid) + ".json"
-            device.config_manager.export_config(directory=directory, filename=filename)
-
-        return True
-
-    def scan_repository(self):
-        """
-        Scans the repository for devices, configs and inventories and loads them
-        :return: True if successful, False otherwise
-        """
-        directory = self.REPOSITORY_FOLDER_NAME
-
-        # We make sure the repository folder exists - otherwise we create it
-        if not os.path.exists(directory):
-            os.makedirs(directory)
-
-        folder_list = [name for name in os.listdir(directory) if os.path.isdir(directory + "/" + name)]
-
-        if len(folder_list) == 0:
-            print("Nothing in the repository!")
-
-        for folder in folder_list:
-            if os.path.exists(directory + "/" + folder + "/device-" + folder + ".json"):
-                # We first need to make sure that the device has not already been loaded
-                device_list = [device for device in self.device_list if device.uuid == uuid.UUID(folder)]
-                if len(device_list) >= 1:
-                    print("Device with UUID " + folder + " is already loaded!")
-                    continue
-                if not self.load_device(import_format="json", directory=directory + "/" + folder,
-                                        filename="device-" + folder + ".json"):
-                    print("Failed to load device with UUID " + folder)
-                    continue
-
-                # We fetch the corresponding device
-                device_list = [device for device in self.device_list if device.uuid == uuid.UUID(folder)]
-                if len(device_list) != 1:
-                    print("Failed to locate device with UUID " + folder)
-                    continue
-                else:
-                    device = device_list[0]
-
-                # We now need to load configs and inventories for that device
-                configs_folder = directory + "/" + folder + "/configs"
-                if os.path.exists(configs_folder):
-                    config_file_list = [name for name in os.listdir(configs_folder) if
-                                        os.path.isfile(configs_folder + "/" + name) and
-                                        os.path.splitext(configs_folder + "/" + name)[1] == ".json"]
-                    for config_file in config_file_list:
-                        config_file_uuid = os.path.splitext(config_file)[0][7:]
-                        # We first need to make sure that the config has not already been loaded
-                        config_list = [config for config in device.config_manager.config_list
-                                       if config.uuid == uuid.UUID(config_file_uuid)]
-                        if len(config_list) >= 1:
-                            print("Config with UUID " + config_file_uuid + " is already loaded!")
-                            continue
-                        print("Importing config with UUID " + config_file_uuid)
-                        device.config_manager.import_config(import_format="json", directory=configs_folder,
-                                                            filename=config_file)
-                        # Keep the uuid of the config file because the import from file creates a new config
-                        # with a new uuid
-                        device.config_manager.config_list[-1].uuid = uuid.UUID(config_file_uuid)
-
-                inventories_folder = directory + "/" + folder + "/inventories"
-                if os.path.exists(inventories_folder):
-                    inventory_file_list = [name for name in os.listdir(inventories_folder) if
-                                           os.path.isfile(inventories_folder + "/" + name) and
-                                           os.path.splitext(inventories_folder + "/" + name)[1] == ".json"]
-                    for inventory_file in inventory_file_list:
-                        inventory_file_uuid = os.path.splitext(inventory_file)[0][7:]
-                        # We first need to make sure that the inventory has not already been loaded
-                        inventory_list = [inventory for inventory in device.inventory_manager.inventory_list
-                                          if inventory.uuid == uuid.UUID(inventory_file_uuid)]
-                        if len(inventory_list) >= 1:
-                            print("Inventory with UUID " + inventory_file_uuid + " is already loaded!")
-                            continue
-                        print("Importing inventory with UUID " + inventory_file_uuid)
-                        device.inventory_manager.import_inventory(import_format="json", directory=inventories_folder,
-                                                                  filename=inventory_file)
-
-            else:
-                print("Folder " + folder + " does not contain a device .json file!")
-
         return True
 
     def _validate_device_from_json(self, device_json=None):
         # TODO: Verify that the JSON content is valid using jsonschema
         return True
-
-    def find_device_by_uuid(self, device_uuid):
-        """
-        Finds a device given a specific UUID
-
-        :param device_uuid: UUID of the device to find
-        :return: device if found, None otherwise
-        """
-        device_list = [device for device in self.device_list if str(device.uuid) == str(device_uuid)]
-        if len(device_list) != 1:
-            print("Failed to locate device with UUID " + str(device_uuid))
-            return None
-        else:
-            return device_list[0]

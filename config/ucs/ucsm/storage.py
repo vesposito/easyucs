@@ -15,6 +15,7 @@ from ucsmsdk.mometa.lstorage.LstorageLocalDiskConfigRef import LstorageLocalDisk
 from ucsmsdk.mometa.lstorage.LstorageLogin import LstorageLogin
 from ucsmsdk.mometa.lstorage.LstorageLunSetConfig import LstorageLunSetConfig
 from ucsmsdk.mometa.lstorage.LstorageProfile import LstorageProfile
+from ucsmsdk.mometa.lstorage.LstorageProfileDef import LstorageProfileDef
 from ucsmsdk.mometa.lstorage.LstorageRemote import LstorageRemote
 from ucsmsdk.mometa.lstorage.LstorageSecurity import LstorageSecurity
 from ucsmsdk.mometa.lstorage.LstorageVirtualDriveDef import LstorageVirtualDriveDef
@@ -24,6 +25,7 @@ from config.ucs.object import UcsSystemConfigObject
 
 class UcsSystemDiskGroupPolicy(UcsSystemConfigObject):
     _CONFIG_NAME = "Disk Group Policy"
+    _CONFIG_SECTION_NAME = "disk_group_policies"
     _UCS_SDK_OBJECT_NAME = "lstorageDiskGroupConfigPolicy"
 
     # TODO:  if a disk group configuration manual exists you can not change it to automatic and vice-versa
@@ -31,7 +33,7 @@ class UcsSystemDiskGroupPolicy(UcsSystemConfigObject):
     # You need to remove one MO in order to create the other.
 
     def __init__(self, parent=None, json_content=None, lstorage_disk_group_config_policy=None):
-        UcsSystemConfigObject.__init__(self, parent=parent)
+        UcsSystemConfigObject.__init__(self, parent=parent, ucs_sdk_object=lstorage_disk_group_config_policy)
         self.name = None
         self.descr = None
         self.raid_level = None
@@ -60,8 +62,8 @@ class UcsSystemDiskGroupPolicy(UcsSystemConfigObject):
                 if "lstorageVirtualDriveDef" in self._parent._config.sdk_objects:
                     for lstorage_virtual_drive_def in self._config.sdk_objects["lstorageVirtualDriveDef"]:
                         if self._parent._dn:
-                            if self._parent._dn + "/disk-group-config-" + self.name \
-                                    in lstorage_disk_group_config_policy.dn:
+                            if self._parent._dn + "/disk-group-config-" + self.name + "/" \
+                                    in lstorage_virtual_drive_def.dn:
                                 self.write_cache_policy = lstorage_virtual_drive_def.write_cache_policy
                                 self.io_policy = lstorage_virtual_drive_def.io_policy
                                 self.security = lstorage_virtual_drive_def.security
@@ -69,11 +71,13 @@ class UcsSystemDiskGroupPolicy(UcsSystemConfigObject):
                                 self.strip_size = lstorage_virtual_drive_def.strip_size
                                 self.access_policy = lstorage_virtual_drive_def.access_policy
                                 self.drive_cache = lstorage_virtual_drive_def.drive_cache
+                                break
 
                 if "lstorageDiskGroupQualifier" in self._parent._config.sdk_objects:
                     for lstorage_virtual_drive_def in self._config.sdk_objects["lstorageDiskGroupQualifier"]:
                         if self._parent._dn:
-                            if self._parent._dn + "/disk-group-config-" + self.name in lstorage_virtual_drive_def.dn:
+                            if self._parent._dn + "/disk-group-config-" + self.name + "/" in \
+                                    lstorage_virtual_drive_def.dn:
                                 self.drive_type = lstorage_virtual_drive_def.drive_type
                                 self.number_of_global_hot_spares = lstorage_virtual_drive_def.num_glob_hot_spares
                                 self.number_of_dedicated_hot_spares = lstorage_virtual_drive_def.num_ded_hot_spares
@@ -81,11 +85,13 @@ class UcsSystemDiskGroupPolicy(UcsSystemConfigObject):
                                 self.use_jbod_disks = lstorage_virtual_drive_def.use_jbod_disks
                                 self.min_drive_size = lstorage_virtual_drive_def.min_drive_size
                                 self.number_of_drives = lstorage_virtual_drive_def.num_drives
+                                break
 
-                elif "lstorageLocalDiskConfigRef" in self._parent._config.sdk_objects:
+                if "lstorageLocalDiskConfigRef" in self._parent._config.sdk_objects:
                     for lstorage_virtual_drive_def in self._config.sdk_objects["lstorageLocalDiskConfigRef"]:
                         if self._parent._dn:
-                            if self._parent._dn + "/disk-group-config-" + self.name in lstorage_virtual_drive_def.dn:
+                            if self._parent._dn + "/disk-group-config-" + self.name + "/" \
+                                    in lstorage_virtual_drive_def.dn:
                                 drive = {}
                                 drive.update({"slot_number": lstorage_virtual_drive_def.slot_num})
                                 drive.update({"role": lstorage_virtual_drive_def.role})
@@ -108,7 +114,8 @@ class UcsSystemDiskGroupPolicy(UcsSystemConfigObject):
 
     def push_object(self, commit=True):
         if commit:
-            self.logger(message="Pushing " + self._CONFIG_NAME + " configuration: " + str(self.name))
+            self.logger(message="Pushing " + self._CONFIG_NAME +
+                        " configuration: " + str(self.name))
         else:
             self.logger(message="Adding to the handle " + self._CONFIG_NAME + " configuration: " + str(self.name) +
                                 ", waiting for a commit")
@@ -155,12 +162,22 @@ class UcsSystemDiskGroupPolicy(UcsSystemConfigObject):
 
 class UcsSystemStorageProfile(UcsSystemConfigObject):
     _CONFIG_NAME = "Storage Profile"
+    _CONFIG_SECTION_NAME = "storage_profiles"
     _UCS_SDK_OBJECT_NAME = "lstorageProfile"
+    _UCS_SDK_SPECIFIC_OBJECT_NAME = "lstorageProfileDef"
+    _POLICY_MAPPING_TABLE = {
+        "local_luns": [
+            {
+                "disk_group_policy": UcsSystemDiskGroupPolicy
+            }
+        ]
+    }
 
     def __init__(self, parent=None, json_content=None, lstorage_profile=None):
-        UcsSystemConfigObject.__init__(self, parent=parent)
+        UcsSystemConfigObject.__init__(self, parent=parent, ucs_sdk_object=lstorage_profile)
         self.name = None
         self.descr = None
+        self.auto_config_mode = None
         self.security_policy = []
         self.local_luns = []
         self.lun_sets = []
@@ -170,11 +187,20 @@ class UcsSystemStorageProfile(UcsSystemConfigObject):
             if lstorage_profile is not None:
                 self.name = lstorage_profile.name
                 self.descr = lstorage_profile.descr
+                self.auto_config_mode = lstorage_profile.auto_config_mode
+
+                if self._parent._dn:
+                    if self._parent.__class__.__name__ == "UcsSystemServiceProfile":
+                        # We are in presence of a Specific Storage Policy under a Service Profile object
+                        self.name = None
+                        storage_policy_dn = self._parent._dn + "/profile-def" + "/"
+                    else:
+                        storage_policy_dn = self._parent._dn + "/profile-" + self.name + "/"
 
                 if "lstorageRemote" in self._parent._config.sdk_objects:
                     for remote_policy in self._config.sdk_objects["lstorageRemote"]:
                         if self._parent._dn:
-                            if self._parent._dn + "/profile-" + self.name + "/" in remote_policy.dn:
+                            if storage_policy_dn in remote_policy.dn:
                                 policy = {}
                                 policy.update({"type": "remote_policy"})
                                 policy.update({"primary_ip_address": remote_policy.primary_server})
@@ -184,25 +210,29 @@ class UcsSystemStorageProfile(UcsSystemConfigObject):
                                 policy.update({"deployed_key": remote_policy.deployed_security_key})
                                 if "lstorageLogin" in self._parent._config.sdk_objects:
                                     for login in self._config.sdk_objects["lstorageLogin"]:
-                                        if self._parent._dn + "/profile-" + self.name + "/" in login.dn:
+                                        if storage_policy_dn in login.dn:
                                             policy.update({"username": login.user_name})
                                             policy.update({"password": login.password})
+                                            break
                                 self.security_policy.append(policy)
+                                break
+
                 if "lstorageLocal" in self._parent._config.sdk_objects and not self.security_policy:
-                    for remote_policy in self._config.sdk_objects["lstorageLocal"]:
+                    for local_policy in self._config.sdk_objects["lstorageLocal"]:
                         if self._parent._dn:
-                            if self._parent._dn + "/profile-" + self.name + "/" in remote_policy.dn:
+                            if storage_policy_dn in local_policy.dn:
                                 policy = {}
                                 policy.update({"type": "local_policy"})
-                                policy.update({"key": remote_policy.security_key})
-                                # policy.update({"deployed_key": remote_policy.deployed_security_key})
+                                policy.update({"key": local_policy.security_key})
+                                # policy.update({"deployed_key": local_policy.deployed_security_key})
                                 self.security_policy.append(policy)
+                                break
 
                 if "lstorageDasScsiLun" in self._parent._config.sdk_objects:
                     for lstorage_das_scsi_lun in self._config.sdk_objects["lstorageDasScsiLun"]:
                         if self._parent._dn:
-                            if self._parent._dn + "/profile-" + self.name + "/" in lstorage_das_scsi_lun.dn:
-                                lun = {}
+                            if storage_policy_dn in lstorage_das_scsi_lun.dn:
+                                lun = {"_object_type": "local_luns"}
                                 # No difference between "name" in "Create Local LUN" and "Prepare Claim Local LUN"
                                 lun.update({"name": lstorage_das_scsi_lun.name})
                                 lun.update({"size": lstorage_das_scsi_lun.size})
@@ -210,25 +240,38 @@ class UcsSystemStorageProfile(UcsSystemConfigObject):
                                 lun.update({"auto_deploy": lstorage_das_scsi_lun.auto_deploy})
                                 lun.update({"expand_to_available": lstorage_das_scsi_lun.expand_to_avail})
                                 lun.update({"disk_group_policy": lstorage_das_scsi_lun.local_disk_policy_name})
+
+                                # Fetching the operational state of the referenced policies
+                                oper_state = {}
+                                oper_state.update(
+                                    self.get_operational_state(
+                                        policy_dn=lstorage_das_scsi_lun.oper_local_disk_policy_name,
+                                        separator="/disk-group-config-",
+                                        policy_name="disk_group_policy"
+                                    )
+                                )
+                                lun['operational_state'] = oper_state
+
                                 self.local_luns.append(lun)
 
                 if "lstorageControllerDef" in self._parent._config.sdk_objects:
                     for lstorage_controller_def in self._config.sdk_objects["lstorageControllerDef"]:
                         if self._parent._dn:
-                            if self._parent._dn + "/profile-" + self.name + "/" in lstorage_controller_def.dn:
+                            if storage_policy_dn in lstorage_controller_def.dn:
                                 controller_def = {}
                                 controller_def.update({"name": lstorage_controller_def.name})
                                 if "lstorageControllerModeConfig" in self._parent._config.sdk_objects:
                                     for lsstorage in self._config.sdk_objects["lstorageControllerModeConfig"]:
-                                        if self._parent._dn + "/profile-" + self.name + "/" in lsstorage.dn:
+                                        if storage_policy_dn in lsstorage.dn:
                                             controller_def.update({"protected_configuration": lsstorage.protect_config})
                                             controller_def.update({"raid_level": lsstorage.raid_mode})
+                                            break
                                 self.controller_definitions.append(controller_def)
 
                 if "lstorageLunSetConfig" in self._parent._config.sdk_objects:
                     for lun_set_config in self._config.sdk_objects["lstorageLunSetConfig"]:
                         if self._parent._dn:
-                            if self._parent._dn + "/profile-" + self.name + "/" in lun_set_config.dn:
+                            if storage_policy_dn in lun_set_config.dn:
                                 lun_set = {}
                                 lun_set.update({"name": lun_set_config.name})
                                 lun_set.update({"raid_level": lun_set_config.raid_level})
@@ -243,6 +286,7 @@ class UcsSystemStorageProfile(UcsSystemConfigObject):
                                             lun_set.update({"io_policy": lsstorage.io_policy})
                                             lun_set.update({"drive_cache": lsstorage.drive_cache})
                                             lun_set.update({"security": lsstorage.security})
+                                            break
                                 self.lun_sets.append(lun_set)
 
         elif self._config.load_from == "file":
@@ -259,15 +303,24 @@ class UcsSystemStorageProfile(UcsSystemConfigObject):
                         if value not in element:
                             element[value] = None
                 for element in self.local_luns:
+                    element["_object_type"] = "local_luns"
                     for value in ["name", "size", "fractional_size", "auto_deploy", "expand_to_available",
-                                  "disk_group_policy"]:
+                                  "disk_group_policy", "operational_state"]:
                         if value not in element:
                             element[value] = None
+                    if element["operational_state"]:
+                        for policy in ["disk_group_policy"]:
+                            if policy not in element["operational_state"]:
+                                element["operational_state"][policy] = None
+                            else:
+                                for value in ["name", "org"]:
+                                    if value not in element["operational_state"][policy]:
+                                        element["operational_state"][policy][value] = None
                 for element in self.controller_definitions:
                     for value in ["name", "protected_configuration", "raid_level"]:
                         if value not in element:
                             element[value] = None
-                for element in self.controller_definitions:
+                for element in self.lun_sets:
                     for value in ["name", "disk_slot_range", "raid_level", "strip_size", "access_policy", "read_policy",
                                   "write_cache_policy", "io_policy", "drive_cache", "security"]:
                         if value not in element:
@@ -276,20 +329,34 @@ class UcsSystemStorageProfile(UcsSystemConfigObject):
         self.clean_object()
 
     def push_object(self, commit=True):
+        detail = str(self.name)
+        if self._parent.__class__.__name__ == "UcsSystemServiceProfile":
+            # We are in presence of a Specific Storage Policy under a Service Profile object
+            detail = "Service Profile " + str(self._parent.name)
+
         if commit:
-            self.logger(message="Pushing " + self._CONFIG_NAME + " configuration: " + str(self.name))
+            self.logger(message="Pushing " + self._CONFIG_NAME +
+                        " configuration: " + detail)
         else:
-            self.logger(message="Adding to the handle " + self._CONFIG_NAME + " configuration: " + str(self.name) +
+            self.logger(message="Adding to the handle " + self._CONFIG_NAME + " configuration: " + detail +
                                 ", waiting for a commit")
 
         if hasattr(self._parent, '_dn'):
             parent_mo = self._parent._dn
         else:
             self.logger(level="error", message="Impossible to find the parent dn of " + self._CONFIG_NAME + " : " +
-                                               str(self.name))
+                                               detail)
             return False
 
-        mo_lstorage_profile = LstorageProfile(parent_mo_or_dn=parent_mo, name=self.name, descr=self.descr)
+        if self._parent.__class__.__name__ == "UcsSystemServiceProfile":
+            # We are in presence of a Specific Storage Policy under a Service Profile object
+            mo_lstorage_profile = LstorageProfileDef(
+                parent_mo_or_dn=parent_mo, descr=self.descr, auto_config_mode=self.auto_config_mode)
+        else:
+            # We are in presence of a regular Storage Policy under an Org object
+            mo_lstorage_profile = LstorageProfile(
+                parent_mo_or_dn=parent_mo, name=self.name, descr=self.descr, auto_config_mode=self.auto_config_mode)
+
         if self.security_policy:
             mo_security = LstorageSecurity(parent_mo_or_dn=mo_lstorage_profile)
             mo_drive_security = LstorageDriveSecurity(parent_mo_or_dn=mo_security)
@@ -307,7 +374,7 @@ class UcsSystemStorageProfile(UcsSystemConfigObject):
                 elif policy["type"] == "local_policy":
                     LstorageLocal(parent_mo_or_dn=mo_drive_security,
                                   security_key=policy["key"])
-                                  # deployed_security_key=policy['deployed_key']
+                    # deployed_security_key=policy['deployed_key']
         if self.local_luns:
             for local_lun in self.local_luns:
                 LstorageDasScsiLun(parent_mo_or_dn=mo_lstorage_profile, fractional_size=local_lun['fractional_size'],
@@ -340,6 +407,10 @@ class UcsSystemStorageProfile(UcsSystemConfigObject):
         self._handle.add_mo(mo=mo_lstorage_profile, modify_present=True)
 
         if commit:
-            if self.commit(detail=self.name) != True:
+            detail = str(self.name)
+            if self._parent.__class__.__name__ == "UcsSystemServiceProfile":
+                # We are in presence of a Specific Storage Policy under a Service Profile object
+                detail = "Service Profile " + str(self._parent.name)
+            if self.commit(detail=detail) != True:
                 return False
         return True

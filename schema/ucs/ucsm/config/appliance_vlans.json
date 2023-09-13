@@ -1,33 +1,40 @@
 {
-   "id":"ucs_system_config_appliance_vlans#",
-   "$schema":"http://json-schema.org/draft-07/schema#",
-   "title":"EasyUCS ucs system config appliance_vlans section",
-   "description":"EasyUCS ucs system config appliance_vlans section JSON schema",
-   "type":"object",
+   "id": "ucs_system_config_appliance_vlans#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS ucs system config appliance_vlans section",
+   "description": "EasyUCS ucs system config appliance_vlans section JSON schema",
+   "type": "object",
    "oneOf": [
       {
-         "properties":{
+         "properties": {
             "comment": {
                "description": "Appliance VLAN Comments",
                "type": "string",
                "default": ""
             },
-            "name":{
-               "description":"Appliance VLAN Name",
-               "type":"string",
-               "default":"",
-               "pattern":"^[\\-\\.:_a-zA-Z0-9]{1,32}$"
+            "name": {
+               "description": "Appliance VLAN Name",
+               "type": "string",
+               "default": "",
+               "pattern": "^[\\-\\.:_a-zA-Z0-9]{1,32}$"
             },
-            "id":{
-               "description":"Appliance VLAN ID",
-               "type":"string",
-               "pattern":"^[1-9]$|^[1-9][0-9]$|^[1-9][0-9][0-9]$|^[1-3][0-9][0-9][0-9]$|^40[0-2][0-9]$|^404[8-9]$|^40[5-8][0-9]$|^409[0-3]$"
+            "policy_owner": {
+               "description": "Appliance VLAN Owner (for UCS Central)",
+               "type": "string",
+               "enum": [
+                  "ucs-central"
+               ]
             },
-            "fabric":{
-               "description":"Appliance VLAN Fabric",
-               "type":"string",
-               "default":"dual",
-               "enum":[
+            "id": {
+               "description": "Appliance VLAN ID",
+               "type": "string",
+               "pattern": "^[1-9]$|^[1-9][0-9]$|^[1-9][0-9][0-9]$|^[1-3][0-9][0-9][0-9]$|^40[0-2][0-9]$|^404[8-9]$|^40[5-8][0-9]$|^409[0-3]$"
+            },
+            "fabric": {
+               "description": "Appliance VLAN Fabric",
+               "type": "string",
+               "default": "dual",
+               "enum": [
                   "a",
                   "A",
                   "b",
@@ -35,26 +42,26 @@
                   "dual"
                ]
             },
-            "sharing_type":{
-               "description":"Appliance VLAN Sharing Type",
-               "type":"string",
-               "default":"none",
-               "enum":[
+            "sharing_type": {
+               "description": "Appliance VLAN Sharing Type",
+               "type": "string",
+               "default": "none",
+               "enum": [
                   "community",
                   "isolated",
                   "none",
                   "primary"
                ]
             },
-            "primary_vlan_name":{
-               "description":"Appliance VLAN Primary VLAN Name",
-               "type":"string"
+            "primary_vlan_name": {
+               "description": "Appliance VLAN Primary VLAN Name",
+               "type": "string"
             },
-            "native_vlan":{
-               "description":"Set Appliance VLAN as Native VLAN",
-               "type":"string",
-               "default":"no",
-               "enum":[
+            "native_vlan": {
+               "description": "Set Appliance VLAN as Native VLAN",
+               "type": "string",
+               "default": "no",
+               "enum": [
                   "yes",
                   "no"
                ]
@@ -71,40 +78,47 @@
                "minItems": 1
             }
          },
-         "additionalProperties":false,
-         "required":[
+         "additionalProperties": false,
+         "required": [
             "name",
             "id"
          ]
       },
       {
-         "properties":{
+         "properties": {
             "comment": {
                "description": "Appliance VLAN Range Comments",
                "type": "string",
                "default": ""
             },
-            "prefix":{
-               "description":"Appliance VLAN Prefix",
-               "type":"string",
-               "default":"",
-               "pattern":"^[\\-\\.:_a-zA-Z0-9]{1,32}$"
+            "prefix": {
+               "description": "Appliance VLAN Prefix",
+               "type": "string",
+               "default": "",
+               "pattern": "^[\\-\\.:_a-zA-Z0-9]{1,32}$"
             },
-            "id_from":{
-               "description":"Appliance VLAN ID range starting value",
-               "type":"string",
-               "pattern":"^[1-9]$|^[1-9][0-9]$|^[1-9][0-9][0-9]$|^[1-3][0-9][0-9][0-9]$|^40[0-2][0-9]$|^404[8-9]$|^40[5-8][0-9]$|^409[0-3]$"
+            "id_from": {
+               "description": "Appliance VLAN ID range starting value",
+               "type": "string",
+               "pattern": "^[1-9]$|^[1-9][0-9]$|^[1-9][0-9][0-9]$|^[1-3][0-9][0-9][0-9]$|^40[0-2][0-9]$|^404[8-9]$|^40[5-8][0-9]$|^409[0-3]$"
             },
-            "id_to":{
-               "description":"Appliance VLAN ID range ending value",
-               "type":"string",
-               "pattern":"^[1-9]$|^[1-9][0-9]$|^[1-9][0-9][0-9]$|^[1-3][0-9][0-9][0-9]$|^40[0-2][0-9]$|^404[8-9]$|^40[5-8][0-9]$|^409[0-3]$"
+            "id_to": {
+               "description": "Appliance VLAN ID range ending value",
+               "type": "string",
+               "pattern": "^[1-9]$|^[1-9][0-9]$|^[1-9][0-9][0-9]$|^[1-3][0-9][0-9][0-9]$|^40[0-2][0-9]$|^404[8-9]$|^40[5-8][0-9]$|^409[0-3]$"
             },
-            "fabric":{
-               "description":"Appliance VLAN Fabric",
-               "type":"string",
-               "default":"dual",
-               "enum":[
+            "policy_owner": {
+               "description": "Appliance VLAN Owner (for UCS Central)",
+               "type": "string",
+               "enum": [
+                  "ucs-central"
+               ]
+            },
+            "fabric": {
+               "description": "Appliance VLAN Fabric",
+               "type": "string",
+               "default": "dual",
+               "enum": [
                   "a",
                   "A",
                   "b",
@@ -112,26 +126,26 @@
                   "dual"
                ]
             },
-            "sharing_type":{
-               "description":"Appliance VLAN Sharing Type",
-               "type":"string",
-               "default":"none",
-               "enum":[
+            "sharing_type": {
+               "description": "Appliance VLAN Sharing Type",
+               "type": "string",
+               "default": "none",
+               "enum": [
                   "community",
                   "isolated",
                   "none",
                   "primary"
                ]
             },
-            "primary_vlan_name":{
-               "description":"Appliance VLAN Primary VLAN Name",
-               "type":"string"
+            "primary_vlan_name": {
+               "description": "Appliance VLAN Primary VLAN Name",
+               "type": "string"
             },
-            "native_vlan":{
-               "description":"Set Appliance VLAN as Native VLAN",
-               "type":"string",
-               "default":"no",
-               "enum":[
+            "native_vlan": {
+               "description": "Set Appliance VLAN as Native VLAN",
+               "type": "string",
+               "default": "no",
+               "enum": [
                   "yes",
                   "no"
                ]
@@ -148,8 +162,8 @@
                "minItems": 1
             }
          },
-         "additionalProperties":false,
-         "required":[
+         "additionalProperties": false,
+         "required": [
             "prefix",
             "id_from",
             "id_to"

@@ -1,18 +1,18 @@
 {
-   "easyucs":{
-      "metadata":[
+   "easyucs": {
+      "metadata": [
          {
             "file_type": "config",
             "device_type": "ucsc",
-            "category":"custom",
-            "subcategory":"samples",
-            "name":"UCS Central Domain Group/VLAN/VSAN-related sections configuration sample",
-            "easyucs_version":"0.9.0",
-            "revision": "1.0"
+            "category": "samples",
+            "subcategory": "Domain Groups",
+            "name": "UCS Central Domain Group/VLAN/VSAN-related sections configuration sample",
+            "easyucs_version": "0.9.0",
+            "revision": "1.1"
          }
       ]
    },
-   "config":{
+   "config": {
       "domain_groups": [
          {
             "name": "root",
@@ -23,19 +23,19 @@
                   "native_vlan": "yes"
                },
                {
-                  "name":"vlan400",
-                  "id":"400",
-                  "sharing_type":"primary",
-                  "multicast_policy_name":"default",
+                  "name": "vlan400",
+                  "id": "400",
+                  "sharing_type": "primary",
+                  "multicast_policy_name": "default",
                   "org_permissions": [
                      "TEST"
                   ]
                },
                {
-                  "name":"vlan401",
-                  "id":"401",
-                  "sharing_type":"isolated",
-                  "primary_vlan_name":"vlan400"
+                  "name": "vlan401",
+                  "id": "401",
+                  "sharing_type": "isolated",
+                  "primary_vlan_name": "vlan400"
                },
                {
                   "prefix": "vlan-",
@@ -43,11 +43,11 @@
                   "id_to": "450"
                }
             ],
-            "vlan_groups":[
+            "vlan_groups": [
                {
-                  "name":"test",
-                  "native_vlan":"ESX-100",
-                  "vlans":[
+                  "name": "test",
+                  "native_vlan": "ESX-100",
+                  "vlans": [
                      "ESX-101",
                      "ESX-102"
                   ],
@@ -56,18 +56,18 @@
                   ]
                }
             ],
-            "appliance_vlans":[
+            "appliance_vlans": [
                {
-                  "name":"testA",
-                  "id":"231",
-                  "sharing_type":"isolated",
-                  "primary_vlan_name":"testGlobal"
+                  "name": "testA",
+                  "id": "231",
+                  "sharing_type": "isolated",
+                  "primary_vlan_name": "testGlobal"
                },
                {
-                  "name":"testGlobal",
-                  "id":"230",
-                  "sharing_type":"primary",
-                  "primary_vlan_name":"testGlobal",
+                  "name": "testGlobal",
+                  "id": "230",
+                  "sharing_type": "primary",
+                  "primary_vlan_name": "testGlobal",
                   "org_permissions": [
                      "root"
                   ]
@@ -91,9 +91,9 @@
             ]
          }
       ],
-      "orgs":[
+      "orgs": [
          {
-            "name":"root",
+            "name": "root",
             "orgs": [
                {
                   "name": "TEST"

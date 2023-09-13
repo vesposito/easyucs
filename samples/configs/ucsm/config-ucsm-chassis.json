@@ -1,28 +1,28 @@
 {
-   "easyucs":{
-      "metadata":[
+   "easyucs": {
+      "metadata": [
          {
             "file_type": "config",
             "device_type": "ucsm",
-            "category":"custom",
-            "subcategory":"samples",
-            "name":"UCS Manager chassis-related sections configuration sample",
-            "easyucs_version":"0.9.0",
-            "revision": "1.0"
+            "category": "samples",
+            "subcategory": "Chassis",
+            "name": "UCS Manager chassis-related sections configuration sample",
+            "easyucs_version": "0.9.0",
+            "revision": "1.1"
          }
       ]
    },
-   "config":{
-      "orgs":[
+   "config": {
+      "orgs": [
          {
-            "name":"root",
-            "chassis_firmware_packages":[
+            "name": "root",
+            "chassis_firmware_packages": [
                {
-                  "name":"CHP",
-                  "descr":"descr",
-                  "chassis_package":"3.1(3c)C",
-                  "service_pack":"",
-                  "excluded_components":[
+                  "name": "CHP",
+                  "descr": "descr",
+                  "chassis_package": "3.1(3c)C",
+                  "service_pack": "",
+                  "excluded_components": [
                      "local-disk",
                      "chassis-adaptor",
                      "chassis-board-controller",
@@ -31,58 +31,58 @@
                   ]
                }
             ],
-            "chassis_maintenance_policies":[
+            "chassis_maintenance_policies": [
                {
-                  "name":"CMP",
-                  "descr":"descr"
+                  "name": "CMP",
+                  "descr": "descr"
                }
             ],
-            "compute_connection_policies":[
+            "compute_connection_policies": [
                {
-                  "name":"CCP",
-                  "descr":"descr",
-                  "server_sioc_connectivity":"single-server-dual-sioc"
+                  "name": "CCP",
+                  "descr": "descr",
+                  "server_sioc_connectivity": "single-server-dual-sioc"
                },
                {
-                  "name":"CCP2",
-                  "descr":"descr",
-                  "server_sioc_connectivity":"single-server-single-sioc"
+                  "name": "CCP2",
+                  "descr": "descr",
+                  "server_sioc_connectivity": "single-server-single-sioc"
                }
             ],
-            "disk_zoning_policies":[
+            "disk_zoning_policies": [
                {
-                  "name":"DZP",
-                  "descr":"descr",
-                  "preserve_config":"no",
-                  "disks_zoned":[
+                  "name": "DZP",
+                  "descr": "descr",
+                  "preserve_config": "no",
+                  "disks_zoned": [
                      {
-                        "ownership":"unassigned",
+                        "ownership": "unassigned",
                         "drive_path": "path-both",
-                        "disk_slot":"1"
+                        "disk_slot": "1"
                      },
                      {
-                        "ownership":"dedicated",
-                        "disk_slot":"2",
-                        "server":"1",
-                        "controller":"1"
+                        "ownership": "dedicated",
+                        "disk_slot": "2",
+                        "server": "1",
+                        "controller": "1"
                      },
                      {
-                        "ownership":"shared",
-                        "disk_slot":"3"
+                        "ownership": "shared",
+                        "disk_slot": "3"
                      },
                      {
-                        "ownership":"chassis-global-hot-spare",
-                        "disk_slot":"4"
+                        "ownership": "chassis-global-hot-spare",
+                        "disk_slot": "4"
                      }
                   ]
                },
                {
-                  "name":"DZP2",
-                  "descr":"descr",
-                  "preserve_config":"yes",
-                  "disks_zoned":[
+                  "name": "DZP2",
+                  "descr": "descr",
+                  "preserve_config": "yes",
+                  "disks_zoned": [
                      {
-                        "ownership":"dedicated",
+                        "ownership": "dedicated",
                         "drive_path": "path-both",
                         "disk_slot_range_start": "1",
                         "disk_slot_range_stop": "4",
@@ -92,29 +92,29 @@
                   ]
                }
             ],
-            "chassis_profiles":[
+            "chassis_profiles": [
                {
-                  "name":"TempUp",
-                  "type":"updating-template",
-                  "disk_zoning_policy":"DZP",
-                  "chassis_firmware_policy":"CHP",
-                  "compute_connection_policy":"CCP",
-                  "chassis_maintenance_policy":"CMP"
+                  "name": "TempUp",
+                  "type": "updating-template",
+                  "disk_zoning_policy": "DZP",
+                  "chassis_firmware_policy": "CHP",
+                  "compute_connection_policy": "CCP",
+                  "chassis_maintenance_policy": "CMP"
                },
                {
-                  "name":"TempIn",
-                  "type":"initial-template"
+                  "name": "TempIn",
+                  "type": "initial-template"
                },
                {
-                  "name":"ChassisProfile",
-                  "type":"instance"
+                  "name": "ChassisProfile",
+                  "type": "instance"
                },
                {
-                  "name":"FromTempTest",
-                  "type":"instance",
-                  "chassis_profile_template":"TempUp",
-                  "suffix_start_number":"1",
-                  "number_of_instances":"2"
+                  "name": "FromTempTest",
+                  "type": "instance",
+                  "chassis_profile_template": "TempUp",
+                  "suffix_start_number": "1",
+                  "number_of_instances": "2"
                }
             ]
          }

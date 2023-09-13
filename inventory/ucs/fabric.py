@@ -3,8 +3,7 @@
 
 """ fabric.py: Easy UCS Deployment Tool """
 
-import json
-
+from common import read_json_file
 from draw.ucs.fabric import UcsSystemDrawFexFront, UcsSystemDrawFexRear, UcsSystemDrawFiRear, UcsSystemDrawFiFront, \
     UcsSystemDrawGem
 from inventory.ucs.object import GenericUcsInventoryObject, UcsSystemInventoryObject
@@ -44,17 +43,10 @@ class UcsFex(GenericUcsInventoryObject):
         """
         if self.sku is not None:
             # We use the catalog file to get the FEX IMM Compatibility status
-            try:
-                json_file = open("catalog/fabric_extenders/" + self.sku + ".json")
-                fex_catalog = json.load(fp=json_file)
-                json_file.close()
-
+            fex_catalog = read_json_file(file_path="catalog/fabric_extenders/" + self.sku + ".json", logger=self)
+            if fex_catalog:
                 if "imm_compatible" in fex_catalog:
                     return fex_catalog["imm_compatible"]
-
-            except FileNotFoundError:
-                self.logger(level="error", message="Fabric Extender catalog file " + self.sku + ".json not found")
-                return None
 
         return None
 
@@ -64,17 +56,10 @@ class UcsFex(GenericUcsInventoryObject):
         """
         if self.sku is not None:
             # We use the catalog file to get the FEX short name
-            try:
-                json_file = open("catalog/fabric_extenders/" + self.sku + ".json")
-                fex_catalog = json.load(fp=json_file)
-                json_file.close()
-
+            fex_catalog = read_json_file(file_path="catalog/fabric_extenders/" + self.sku + ".json", logger=self)
+            if fex_catalog:
                 if "model_short_name" in fex_catalog:
                     return fex_catalog["model_short_name"]
-
-            except FileNotFoundError:
-                self.logger(level="error", message="Fabric Extender catalog file " + self.sku + ".json not found")
-                return None
 
         return None
 
@@ -110,17 +95,10 @@ class UcsFi(GenericUcsInventoryObject):
         """
         if self.sku is not None:
             # We use the catalog file to get the FI IMM Compatibility status
-            try:
-                json_file = open("catalog/fabric_interconnects/" + self.sku + ".json")
-                fi_catalog = json.load(fp=json_file)
-                json_file.close()
-
+            fi_catalog = read_json_file(file_path="catalog/fabric_interconnects/" + self.sku + ".json", logger=self)
+            if fi_catalog:
                 if "imm_compatible" in fi_catalog:
                     return fi_catalog["imm_compatible"]
-
-            except FileNotFoundError:
-                self.logger(level="error", message="Fabric Interconnect catalog file " + self.sku + ".json not found")
-                return None
 
         return None
 
@@ -130,17 +108,10 @@ class UcsFi(GenericUcsInventoryObject):
         """
         if self.sku is not None:
             # We use the catalog file to get the FI short name
-            try:
-                json_file = open("catalog/fabric_interconnects/" + self.sku + ".json")
-                fi_catalog = json.load(fp=json_file)
-                json_file.close()
-
+            fi_catalog = read_json_file(file_path="catalog/fabric_interconnects/" + self.sku + ".json", logger=self)
+            if fi_catalog:
                 if "model_short_name" in fi_catalog:
                     return fi_catalog["model_short_name"]
-
-            except FileNotFoundError:
-                self.logger(level="error", message="Fabric Interconnect catalog file " + self.sku + ".json not found")
-                return None
 
         return None
 

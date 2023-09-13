@@ -1,0 +1,236 @@
+{
+   "id": "intersight_config_orgs_ldap_policies#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS intersight config orgs ldap_policies section",
+   "description": "EasyUCS intersight config orgs ldap_policies section JSON schema",
+   "type": "object",
+   "properties": {
+      "comment": {
+         "description": "LDAP Policy Comments",
+         "type": "string",
+         "default": ""
+      },
+      "descr": {
+         "description": "LDAP Policy Description",
+         "type": "string",
+         "default": "",
+         "pattern": "^$|^[a-zA-Z0-9]+[\\x00-\\xFF]*$",
+         "maxLength": 1024
+      },
+      "name": {
+         "description": "LDAP Policy Name",
+         "type": "string",
+         "default": "",
+         "pattern": "^[a-zA-Z0-9_.:-]{1,64}$"
+      },
+      "tags": {
+         "description": "LADP Policy Tags",
+         "type": "array",
+         "items": {
+            "description": "LDAP Policy Tags",
+            "type": "object",
+            "properties": {
+               "key": {
+                  "description": "LDAP Policy Tag Key",
+                  "type": "string",
+                  "default": "",
+                  "minLength": 1,
+                  "maxLength": 128
+               },
+               "value": {
+                  "description": "LDAP Policy Tag Value",
+                  "type": "string",
+                  "default": "",
+                  "minLength": 0,
+                  "maxLength": 256
+               }
+            },
+            "additionalProperties": false,
+            "required": [
+               "key",
+               "value"
+            ]
+         },
+         "minItems": 1
+      },
+      "enable_ldap": {
+         "description": "LDAP Policy - Enable LDAP",
+         "type": "boolean",
+         "default": true
+      },
+      "base_properties": {
+         "description": "Base Settings/Properties of LDAP Policy",
+         "type": "object",
+         "properties": {
+            "base_dn": {
+               "description": "Base Distinguished Name (DN). Starting point from where server will search for users and groups.",
+               "type": "string",
+               "default": "",
+               "max_length": 254
+            },
+            "domain": {
+               "description": "The IPv4 domain that all users must be in",
+               "type": "string",
+               "default": "",
+               "pattern": "^(([a-zA-Z0-9])|([a-zA-Z0-9][a-zA-Z0-9\\.\\-]*[a-zA-Z0-9]))$",
+               "max_length": 255
+            },
+            "timeout": {
+               "description": "LDAP authentication timeout duration, in seconds.",
+               "type": "integer",
+               "minimum": 0,
+               "maximum": 180
+            },
+            "enable_encryption": {
+               "description": "If enabled, the endpoint encrypts all information it sends to the LDAP server.",
+               "type": "boolean",
+               "default": false
+            },
+            "bind_method": {
+               "description": "Authentication method to access LDAP servers.",
+               "type": "string",
+               "default": "LoginCredentials",
+               "enum": [
+                  "LoginCredentials",
+                  "Anonymous",
+                  "ConfiguredCredentials"
+               ]
+            },
+            "bind_dn": {
+               "description": "Distinguished Name (DN) of the user, that is used to authenticate against LDAP servers.",
+               "type": "string",
+               "pattern": "",
+               "min_length": 0,
+               "max_length": 254
+            },
+            "bind_password": {
+               "description": "The password of the user for initial bind process",
+               "type": "string",
+               "pattern": "^[\\S+]{0,254}$",
+               "max_length": 254
+            },
+            "filter": {
+               "description": "Criteria to identify entries in search requests.",
+               "type": "string",
+               "pattern": "^$|^[a-zA-Z0-9(][a-zA-Z0-9_#@$%&\\-\\^|()*=:!,.]*[a-zA-Z0-9\\-)]$"
+            },
+            "group_attribute": {
+               "description": "Groups to which an LDAP entry belongs.",
+               "type": "string",
+               "default": "",
+               "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_#@$%&\\-\\^]*[a-zA-Z0-9\\-]$"
+            },
+            "attribute": {
+               "description": "Role and locale information of the user.",
+               "type": "string",
+               "default": "",
+               "pattern": "^[a-zA-Z0-9][a-zA-Z0-9\\-\\.]*[a-zA-Z0-9\\-]$"
+            },
+            "enable_group_authorization": {
+               "description": "If enabled, user authorization is also done at the group level for LDAP users not in the local user database.",
+               "type": "boolean",
+               "default": false
+            },
+            "nested_group_search_depth": {
+               "description": "Search depth to look for a nested LDAP group in an LDAP group map.",
+               "type": "integer",
+               "default": 128,
+               "minimum": 1,
+               "maximum": 128
+            }
+         }
+      },
+      "enable_dns": {
+         "description": "Enables DNS to access LDAP servers.",
+         "type": "boolean",
+         "default": false
+      },
+      "dns_parameters": {
+         "description": "dns parameters for LDAP servers",
+         "type": "object",
+         "properties": {
+            "source": {
+               "description": "Source of the domain name used for the DNS SRV request.",
+               "type": "string",
+               "default": "Extracted",
+               "enum": [
+                  "Extracted",
+                  "Configured",
+                  "ConfiguredExtracted"
+               ]
+            },
+            "search_domain": {
+               "description": "Domain name that acts as a source for a DNS query.",
+               "type": "string",
+               "pattern": "^(([a-zA-Z0-9])|([a-zA-Z0-9][a-zA-Z0-9\\.\\-]*[a-zA-Z0-9]))$",
+               "max_length": 64
+            },
+            "search_forest": {
+               "description": "Forest name that acts as a source for a DNS query.",
+               "type": "string",
+               "pattern": "^(([a-zA-Z0-9])|([a-zA-Z0-9][a-zA-Z0-9\\.\\-]*[a-zA-Z0-9]))$",
+               "max_length": 64
+            }
+         }
+      },
+      "user_search_precedence": {
+         "description": "Search precedence between local user database and LDAP user database.",
+         "type": "string",
+         "default": "LocalUserDb",
+         "enum": [
+            "LocalUserDb",
+            "LDAPUserDb"
+         ]
+      },
+      "providers": {
+         "description": "Details of LDAP servers - IP Address and Port",
+         "type": "array",
+         "properties": {
+            "ldap_server": {
+               "description": "LDAP Server Address, can be IP address or hostname.",
+               "type": "string",
+               "default": ""
+            },
+            "ldap_server_port": {
+               "description": "LDAP Server Port for connection establishment.",
+               "type": "integer",
+               "default": 389,
+               "minimum": 1,
+               "maximum": 65535
+            }
+         }
+      },
+      "groups": {
+         "description": "List of LDAP groups for LDAP policy",
+         "type": "array",
+         "properties": {
+            "name": {
+               "description": "LDAP Group name in the LDAP server database.",
+               "type": "string",
+               "default": "",
+               "pattern": "^([^+\\-][a-zA-Z0-9=!#$%()*+,-.:;@ _{|}~?&]*)$"
+            },
+            "domain": {
+               "description": "LDAP server domain name where the Group resides",
+               "type": "string",
+               "default": "",
+               "pattern": "^(([a-zA-Z0-9])|([a-zA-Z0-9][a-zA-Z0-9\\.\\-]*[a-zA-Z0-9]))$"
+            },
+            "role": {
+               "description": "Role assigned to all users in this LDAP server group. This can be one of read-only, user, admin.",
+               "type": "string",
+               "default": "admin",
+               "enum": [
+                  "admin",
+                  "read-only",
+                  "user"
+               ]
+            }
+         }
+      }
+   },
+   "additionalProperties": false,
+   "required": [
+      "name"
+   ]
+}

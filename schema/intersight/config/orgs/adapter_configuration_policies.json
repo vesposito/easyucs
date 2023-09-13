@@ -1,0 +1,126 @@
+{
+   "id": "intersight_config_orgs_adapter_configuration_policies#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS intersight config orgs adapter_configuration_policies section",
+   "description": "EasyUCS intersight config orgs adapter_configuration_policies section JSON schema",
+   "type": "object",
+   "properties": {
+      "comment": {
+         "description": "Adapter Configuration Policy Comments",
+         "type": "string",
+         "default": ""
+      },
+      "descr": {
+         "description": "Adapter Configuration Policy Description",
+         "type": "string",
+         "default": "",
+         "pattern": "^$|^[a-zA-Z0-9]+[\\x00-\\xFF]*$",
+         "maxLength": 1024
+      },
+      "name": {
+         "description": "Adapter Configuration Policy Name",
+         "type": "string",
+         "default": "",
+         "pattern": "^[a-zA-Z0-9_.:-]{1,64}$"
+      },
+      "tags": {
+         "description": "Adapter Configuration Policy Tags",
+         "type": "array",
+         "items": {
+            "description": "Adapter Configuration Policy Tag",
+            "type": "object",
+            "properties": {
+               "key": {
+                  "description": "Adapter Configuration Policy Tag Key",
+                  "type": "string",
+                  "default": "",
+                  "minLength": 1,
+                  "maxLength": 128
+               },
+               "value": {
+                  "description": "Adapter Configuration Policy Tag Value",
+                  "type": "string",
+                  "default": "",
+                  "minLength": 0,
+                  "maxLength": 256
+               }
+            },
+            "additionalProperties": false,
+            "required": [
+               "key",
+               "value"
+            ]
+         },
+         "minItems": 1
+      },
+      "vic_adapter_configurations": {
+         "description": "Adapter Configuration Policy - VIC Adapter Configurations",
+         "type": "array",
+         "items": {
+            "type": "object",
+            "description": "Adapter Configuration Policy - VIC Adapter Configuration",
+            "properties": {
+               "dce_interface_settings": {
+                  "type": "array",
+                  "description": "Adapter Configuration Policy - VIC Adapter Configuration - DCE Interfaces Settings",
+                  "items": {
+                     "type": "object",
+                     "description": "Adapter Configuration Policy - VIC Adapter Configuration - DCE Interface Settings",
+                     "properties": {
+                        "fec_mode": {
+                           "type": "string",
+                           "description": "Adapter Configuration Policy - VIC Adapter Configuration - DCE Interface Settings - FEC Mode",
+                           "default": "cl91",
+                           "enum": [
+                              "cl74",
+                              "cl91",
+                              "Off"
+                           ]
+                        },
+                        "interface_id": {
+                           "type": "integer",
+                           "description": "Adapter Configuration Policy - VIC Adapter Configuration - DCE Interface Settings - Interface ID",
+                           "minimum": 1,
+                           "maximum": 4
+                        }
+                     },
+                     "required": [
+                        "interface_id"
+                     ]
+                  },
+                  "minItems": 1,
+                  "maxItems": 4
+               },
+               "enable_fip": {
+                  "type": "boolean",
+                  "description": "Adapter Configuration Policy - VIC Adapter Configuration - Enable FIP",
+                  "default": true
+               },
+               "enable_lldp": {
+                  "type": "boolean",
+                  "description": "Adapter Configuration Policy - VIC Adapter Configuration - Enable LLDP",
+                  "default": true
+               },
+               "enable_port_channel": {
+                  "type": "boolean",
+                  "description": "Adapter Configuration Policy - VIC Adapter Configuration - Enable Port-Channel",
+                  "default": true
+               },
+               "pci_slot": {
+                  "type": "string",
+                  "description": "Adapter Configuration Policy - VIC Adapter Configuration - PCI Slot ID",
+                  "default": "",
+                  "pattern": "^([1-9]|1[0-5]|MLOM)$"
+               }
+            },
+            "required": [
+               "pci_slot"
+            ]
+         }
+      }
+   },
+   "additionalProperties": false,
+   "required": [
+      "name"
+   ]
+}
