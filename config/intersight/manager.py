@@ -92,8 +92,8 @@ class IntersightConfigManager(GenericConfigManager):
             }
             if org.descr:
                 json_org["descr"] = org.descr
+            json_org["server_profiles"] = []
             if org.ucs_server_profiles:
-                json_org["server_profiles"] = []
                 for server_profile in org.ucs_server_profiles:
                     dict_server_profile = {
                         "name": getattr(server_profile, "name", None),
@@ -103,6 +103,7 @@ class IntersightConfigManager(GenericConfigManager):
                         if hasattr(server_profile, field) and getattr(server_profile, field):
                             dict_server_profile[field] = getattr(server_profile, field)
                     json_org["server_profiles"].append(dict_server_profile)
+            if org.ucs_server_profile_templates:
                 for server_profile_template in org.ucs_server_profile_templates:
                     dict_server_profile_template = {
                         "name": getattr(server_profile_template, "name", None),

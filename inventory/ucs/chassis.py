@@ -328,7 +328,12 @@ class UcsSystemChassis(UcsChassis, UcsSystemInventoryObject):
             return []
 
     def _get_x_fabric_modules(self):
-        return []
+        if self._inventory.load_from == "live":
+            return self._inventory.get_inventory_objects_under_dn(dn=self.dn, object_class=UcsSystemXfm, parent=self)
+        elif self._inventory.load_from == "file" and "x_fabric_modules" in self._ucs_sdk_object:
+            return [UcsSystemXfm(self, xfm) for xfm in self._ucs_sdk_object["x_fabric_modules"]]
+        else:
+            return []
 
 
 class UcsImcChassis(UcsChassis, UcsImcInventoryObject):
@@ -589,6 +594,64 @@ class UcsSystemIom(UcsIom, UcsSystemInventoryObject):
             return [UcsSystemIomPort(self, port) for port in self._ucs_sdk_object["ports"]]
         else:
             return []
+
+
+class UcsSystemXfm(UcsSystemInventoryObject):
+    _UCS_SDK_OBJECT_NAME = "equipmentCrossFabricModule"
+
+    def __init__(self, parent=None, equipment_cross_fabric_module=None):
+        UcsSystemInventoryObject.__init__(self, parent=parent, ucs_sdk_object=equipment_cross_fabric_module)
+
+        self.chassis_id = self.get_attribute(ucs_sdk_object=equipment_cross_fabric_module, attribute_name="chassis_id")
+        self.id = self.get_attribute(ucs_sdk_object=equipment_cross_fabric_module, attribute_name="id")
+        self.model = self.get_attribute(ucs_sdk_object=equipment_cross_fabric_module, attribute_name="model")
+        self.revision = self.get_attribute(ucs_sdk_object=equipment_cross_fabric_module, attribute_name="revision")
+        self.serial = self.get_attribute(ucs_sdk_object=equipment_cross_fabric_module, attribute_name="serial")
+        self.vendor = self.get_attribute(ucs_sdk_object=equipment_cross_fabric_module, attribute_name="vendor")
+
+        # Fix unknown SKU
+        if not self.sku and self.model:
+            self.sku = self.model
+
+        self.imm_compatible = None
+        self.short_name = None
+
+        if self._inventory.load_from == "live":
+            self.short_name = self._get_model_short_name()
+            self.imm_compatible = self._get_imm_compatibility()
+
+        elif self._inventory.load_from == "file":
+            for attribute in ["imm_compatible", "short_name"]:
+                setattr(self, attribute, None)
+                if attribute in equipment_cross_fabric_module:
+                    setattr(self, attribute, self.get_attribute(ucs_sdk_object=equipment_cross_fabric_module,
+                                                                attribute_name=attribute))
+
+    def _get_imm_compatibility(self):
+        """
+        Returns X-Fabric Module IMM Compatibility status from EasyUCS catalog files
+        """
+        if self.sku is not None:
+            # We use the catalog file to get the X-Fabric Module IMM Compatibility status
+            xfm_catalog = read_json_file(file_path="catalog/x_fabric_modules/" + self.sku + ".json", logger=self)
+            if xfm_catalog:
+                if "imm_compatible" in xfm_catalog:
+                    return xfm_catalog["imm_compatible"]
+
+        return None
+
+    def _get_model_short_name(self):
+        """
+        Returns X-Fabric Module short name from EasyUCS catalog files
+        """
+        if self.sku is not None:
+            # We use the catalog file to get the X-Fabric Module short name
+            xfm_catalog = read_json_file(file_path="catalog/x_fabric_modules/" + self.sku + ".json", logger=self)
+            if xfm_catalog:
+                if "model_short_name" in xfm_catalog:
+                    return xfm_catalog["model_short_name"]
+
+        return None
 
 
 class UcsSystemSioc(UcsSioc, UcsSystemInventoryObject):

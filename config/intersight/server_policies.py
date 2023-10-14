@@ -305,6 +305,33 @@ class IntersightBootPolicy(IntersightConfigObject):
                     elif boot_device.class_id in ["boot.VirtualMedia"]:
                         boot_entry["device_type"] = "virtual_media"
                         boot_entry["subtype"] = boot_device.subtype
+                    elif boot_device.class_id in ["boot.Http"]:
+                        boot_entry["device_type"] = "http_boot"
+                        boot_entry["ip_type"] = boot_device.ip_type
+                        boot_entry["ip_config_type"] = boot_device.ip_config_type
+                        boot_entry["slot"] = boot_device.slot
+                        boot_entry["protocol"] = boot_device.protocol
+                        boot_entry["uri"] = boot_device.uri
+                        if boot_entry["ip_config_type"] in ["Static"]:
+                            if boot_device.ip_type == "IPv4" and getattr(boot_device, "static_ip_v4_settings"):
+                                boot_entry["static_ip"] = boot_device.static_ip_v4_settings["ip"]
+                                boot_entry["dns_ip"] = boot_device.static_ip_v4_settings["dns_ip"]
+                                boot_entry["gateway_ip"] = boot_device.static_ip_v4_settings["gateway_ip"]
+                                boot_entry["network_mask"] = boot_device.static_ip_v4_settings["network_mask"]
+
+                            elif boot_device.ip_type == "IPv6" and getattr(boot_device, "static_ip_v6_settings"):
+                                boot_entry["static_ip"] = boot_device.static_ip_v6_settings["ip"]
+                                boot_entry["dns_ip"] = boot_device.static_ip_v6_settings["dns_ip"]
+                                boot_entry["gateway_ip"] = boot_device.static_ip_v6_settings["gateway_ip"]
+                                boot_entry["prefix_length"] = boot_device.static_ip_v6_settings["prefix_length"]
+
+                        boot_entry["interface_source"] = boot_device.interface_source
+                        if boot_entry["interface_source"] in ["name"]:
+                            boot_entry["interface_name"] = boot_device.interface_name
+                        elif boot_entry["interface_source"] in ["mac"]:
+                            boot_entry["mac_address"] = boot_device.mac_address
+                        elif boot_entry["interface_source"] in ["port"]:
+                            boot_entry["port"] = boot_device.port
 
                     self.boot_devices.append(boot_entry)
 
@@ -320,9 +347,12 @@ class IntersightBootPolicy(IntersightConfigObject):
         # We use this to make sure all options of a Boot Device are set to None if they are not present
         if self.boot_devices:
             for boot_device in self.boot_devices:
-                for attribute in ["device_type", "device_name", "enabled", "bootloader_name",
-                                  "bootloader_description", "bootloader_path", "interface_name", "interface_source",
-                                  "ip_type", "lun", "mac_address", "port", "slot", "subtype", "target_wwpn"]:
+                for attribute in [
+                    "device_type", "device_name", "dns_ip", "enabled", "bootloader_name", "bootloader_description",
+                    "bootloader_path", "gateway_ip", "interface_name", "interface_source", "ip_config_type", "ip_type",
+                    "lun", "mac_address", "network_mask", "port", "prefix_length", "protocol", "slot", "subtype",
+                    "static_ip", "target_wwpn", "uri"
+                ]:
                     if attribute not in boot_device:
                         boot_device[attribute] = None
 
@@ -457,6 +487,61 @@ class IntersightBootPolicy(IntersightConfigObject):
                     kwargs_boot_device["bootloader"] = BootBootloader(**kwargs_bootloader)
 
                     kwargs["boot_devices"].append(BootPchStorage(**kwargs_boot_device))
+
+                elif boot_device["device_type"] == "http_boot":
+                    from intersight.model.boot_http import BootHttp
+                    kwargs_boot_device = {
+                        "object_type": "boot.Http",
+                        "class_id": "boot.Http",
+                        "name": boot_device["device_name"]
+                    }
+                    if boot_device["enabled"] is not None:
+                        kwargs_boot_device["enabled"] = boot_device["enabled"]
+                    if boot_device["interface_name"] is not None:
+                        kwargs_boot_device["interface_name"] = boot_device["interface_name"]
+                    if boot_device["interface_source"] is not None:
+                        kwargs_boot_device["interface_source"] = boot_device["interface_source"]
+                    if boot_device["ip_type"] is not None:
+                        kwargs_boot_device["ip_type"] = boot_device["ip_type"]
+                    if boot_device["mac_address"] is not None:
+                        kwargs_boot_device["mac_address"] = boot_device["mac_address"]
+                    if boot_device["port"] is not None:
+                        kwargs_boot_device["port"] = boot_device["port"]
+                    if boot_device["slot"] is not None:
+                        kwargs_boot_device["slot"] = boot_device["slot"]
+                    if boot_device["ip_config_type"] is not None:
+                        kwargs_boot_device["ip_config_type"] = boot_device["ip_config_type"]
+                    if boot_device["protocol"] is not None:
+                        kwargs_boot_device["protocol"] = boot_device["protocol"]
+                    if boot_device["uri"] is not None:
+                        kwargs_boot_device["uri"] = boot_device["uri"]
+                    if boot_device["ip_config_type"] == "Static" and boot_device["ip_type"] == "IPv4":
+                        from intersight.model.boot_static_ip_v4_settings import BootStaticIpV4Settings
+                        kwargs_boot_static_ipv4_settings = {
+                            "object_type": "boot.StaticIpV4Settings",
+                            "class_id": "boot.StaticIpV4Settings"
+                        }
+                        kwargs_boot_static_ipv4_settings["dns_ip"] = boot_device["dns_ip"]
+                        kwargs_boot_static_ipv4_settings["gateway_ip"] = boot_device["gateway_ip"]
+                        kwargs_boot_static_ipv4_settings["ip"] = boot_device["static_ip"]
+                        kwargs_boot_static_ipv4_settings["network_mask"] = boot_device["network_mask"]
+                        kwargs_boot_device["static_ip_v4_settings"] = BootStaticIpV4Settings(
+                            **kwargs_boot_static_ipv4_settings)
+
+                    elif boot_device["ip_config_type"] == "Static" and boot_device["ip_type"] == "IPv6":
+                        from intersight.model.boot_static_ip_v6_settings import BootStaticIpV6Settings
+                        kwargs_boot_static_ipv6_settings = {
+                            "object_type": "boot.StaticIpV6Settings",
+                            "class_id": "boot.StaticIpV6Settings"
+                        }
+                        kwargs_boot_static_ipv6_settings["dns_ip"] = boot_device["dns_ip"]
+                        kwargs_boot_static_ipv6_settings["gateway_ip"] = boot_device["gateway_ip"]
+                        kwargs_boot_static_ipv6_settings["ip"] = boot_device["static_ip"]
+                        kwargs_boot_static_ipv6_settings["prefix_length"] = boot_device["prefix_length"]
+                        kwargs_boot_device["static_ip_v6_settings"] = BootStaticIpV6Settings(
+                            **kwargs_boot_static_ipv6_settings)
+
+                    kwargs["boot_devices"].append(BootHttp(**kwargs_boot_device))
 
                 elif boot_device["device_type"] == "pxe_boot":
                     from intersight.model.boot_pxe import BootPxe
@@ -2843,13 +2928,14 @@ class IntersightLanConnectivityPolicy(IntersightConfigObject):
             # We use this to make sure all options of a vNIC are set to None if they are not present
             if self.vnics:
                 for vnic in self.vnics:
-                    for attribute in ["cdn_source", "cdn_value", "enable_failover",
-                                      "enable_virtual_machine_multi_queue", "ethernet_adapter_policy",
-                                      "ethernet_network_control_policy", "ethernet_network_group_policy",
-                                      "ethernet_network_policy", "ethernet_qos_policy", "iscsi_boot_policy",
-                                      "mac_address_allocation_type", "mac_address_pool", "mac_address_static", "name",
-                                      "pci_link", "pci_order", "pin_group_name", "slot_id", "switch_id", "uplink_port",
-                                      "usnic_settings", "vmq_settings"]:
+                    for attribute in ["automatic_pci_link_assignment", "automatic_slot_id_assignment", "cdn_source",
+                                      "cdn_value", "enable_failover", "enable_virtual_machine_multi_queue",
+                                      "ethernet_adapter_policy", "ethernet_network_control_policy",
+                                      "ethernet_network_group_policy", "ethernet_network_policy", "ethernet_qos_policy",
+                                      "iscsi_boot_policy", "mac_address_allocation_type", "mac_address_pool",
+                                      "mac_address_static", "name", "pci_link", "pci_link_assignment_mode", "pci_order",
+                                      "pin_group_name", "slot_id", "switch_id", "uplink_port", "usnic_settings",
+                                      "vmq_settings"]:
                         if attribute not in vnic:
                             vnic[attribute] = None
 
@@ -2877,16 +2963,14 @@ class IntersightLanConnectivityPolicy(IntersightConfigObject):
                             "pci_order": vnic_eth_if.order
                         }
                         if vnic_eth_if.placement:
-                            if hasattr(vnic_eth_if.placement, "auto_slot_id"):  # Required to support older Appliances
-                                if not vnic_eth_if.placement.auto_slot_id:
-                                    vnic["slot_id"] = vnic_eth_if.placement.id
-                            else:
+                            vnic["automatic_slot_id_assignment"] = vnic_eth_if.placement.auto_slot_id
+                            if not vnic_eth_if.placement.auto_slot_id:
                                 vnic["slot_id"] = vnic_eth_if.placement.id
-                            if hasattr(vnic_eth_if.placement, "auto_pci_link"):  # Required to support older Appliances
-                                if not vnic_eth_if.placement.auto_pci_link:
+                            vnic["automatic_pci_link_assignment"] = vnic_eth_if.placement.auto_pci_link
+                            if not vnic_eth_if.placement.auto_pci_link:
+                                vnic["pci_link_assignment_mode"] = vnic_eth_if.placement.pci_link_assignment_mode
+                                if vnic_eth_if.placement.pci_link_assignment_mode in ["Custom"]:
                                     vnic["pci_link"] = vnic_eth_if.placement.pci_link
-                            else:
-                                vnic["pci_link"] = vnic_eth_if.placement.pci_link
                             if self.target_platform in ["FI-Attached"]:
                                 vnic["switch_id"] = vnic_eth_if.placement.switch_id
                                 if vnic["switch_id"] in ["None"]:
@@ -2898,7 +2982,7 @@ class IntersightLanConnectivityPolicy(IntersightConfigObject):
                             if vnic_eth_if.cdn.source in ["user"]:
                                 vnic["cdn_value"] = vnic_eth_if.cdn.value
                         if self.target_platform in ["FI-Attached"]:
-                            vnic["pin_group_name"] = vnic_eth_if.pin_group_name
+                            vnic["pin_group_name"] = vnic_eth_if.pin_group_name if vnic_eth_if.pin_group_name else None
                             vnic["enable_failover"] = vnic_eth_if.failover_enabled
                             vnic["mac_address_allocation_type"] = vnic_eth_if.mac_address_type.lower()
                             # We only fetch the MAC Address Pool or Static MAC for FI-Attached servers
@@ -3100,21 +3184,29 @@ class IntersightLanConnectivityPolicy(IntersightConfigObject):
                     "object_type": "vnic.PlacementSettings",
                     "class_id": "vnic.PlacementSettings"
                 }
-                if vnic.get("slot_id") is not None:
-                    kwargs_placement["auto_slot_id"] = False
-                    kwargs_placement["auto_pci_link"] = False  # Both Auto attributes must be set together
-                    kwargs_placement["id"] = vnic["slot_id"]
-                else:
-                    kwargs_placement["auto_slot_id"] = True
-                    kwargs_placement["auto_pci_link"] = True  # Both Auto attributes must be set together
                 if vnic.get("switch_id") is not None:
                     kwargs_placement["switch_id"] = vnic["switch_id"]
-                if vnic.get("pci_link") is not None:
-                    if kwargs_placement.get("auto_pci_link"):
-                        self.logger(level="warning", message="Forcing PCI Link to 'Auto' for vNIC '" +
-                                                             vnic.get("name") + " since Slot ID is set to 'Auto'")
-                    else:
-                        kwargs_placement["pci_link"] = vnic["pci_link"]
+
+                if vnic.get("automatic_slot_id_assignment", False):
+                    kwargs_placement["auto_slot_id"] = True
+                elif vnic.get("slot_id") is not None:  # We have a Slot ID value
+                    kwargs_placement["auto_slot_id"] = False
+                    kwargs_placement["id"] = vnic["slot_id"]
+                else:  # We don't have any slot ID value - we set Auto Slot ID to enabled
+                    kwargs_placement["auto_slot_id"] = True
+
+                if vnic.get("automatic_pci_link_assignment", False):
+                    kwargs_placement["auto_pci_link"] = True
+                elif vnic.get("pci_link") is not None:  # We have a PCI Link value - We set assignment mode to Custom
+                    kwargs_placement["auto_pci_link"] = False
+                    kwargs_placement["pci_link_assignment_mode"] = "Custom"
+                    kwargs_placement["pci_link"] = vnic["pci_link"]
+                elif vnic.get("pci_link_assignment_mode") in ["Load-Balanced"]:  # Assignment mode set to Load-Balanced
+                    kwargs_placement["auto_pci_link"] = False
+                    kwargs_placement["pci_link_assignment_mode"] = "Load-Balanced"
+                else:  # We don't have any PCI Link value - we set Auto PCI Link to enabled
+                    kwargs_placement["auto_pci_link"] = True
+
                 if vnic.get("uplink_port") is not None:
                     kwargs_placement["uplink"] = vnic["uplink_port"]
                 kwargs["placement"] = VnicPlacementSettings(**kwargs_placement)
@@ -3245,7 +3337,22 @@ class IntersightLanConnectivityPolicy(IntersightConfigObject):
                     if vnic["usnic_settings"].get("class_of_service") is not None:
                         kwargs_usnic["cos"] = vnic["usnic_settings"]["class_of_service"]
                     if vnic["usnic_settings"].get("usnic_adapter_policy") is not None:
-                        kwargs_usnic["usnic_adapter_policy"] = vnic["usnic_settings"]["usnic_adapter_policy"]
+                        eth_adapter_policy = self.get_live_object(
+                            object_name=vnic["usnic_settings"].get("usnic_adapter_policy"),
+                            object_type="vnic.EthAdapterPolicy"
+                        )
+                        if eth_adapter_policy:
+                            kwargs_usnic["usnic_adapter_policy"] = eth_adapter_policy.moid
+                        else:
+                            self._config.push_summary_manager.add_object_status(
+                                obj=self,
+                                obj_detail=f"Attaching Eth Adapter Policy "
+                                           f"'{vnic['usnic_settings']['usnic_adapter_policy']}' "
+                                           f"to - vNIC - {str(vnic['name'])} - usNIC Settings",
+                                obj_type="vnic.EthIf", status="failed",
+                                message=f"Failed to find Eth Adapter Policy "
+                                        f"'{vnic['usnic_settings']['usnic_adapter_policy']}'"
+                            )
                     kwargs["usnic_settings"] = VnicUsnicSettings(
                         **kwargs_usnic)
 
@@ -3262,7 +3369,22 @@ class IntersightLanConnectivityPolicy(IntersightConfigObject):
                     if vnic["vmq_settings"].get("number_of_sub_vnics") is not None:
                         kwargs_vmq["num_sub_vnics"] = vnic["vmq_settings"]["number_of_sub_vnics"]
                     if vnic["vmq_settings"].get("vmmq_adapter_policy") is not None:
-                        kwargs_vmq["vmmq_adapter_policy"] = vnic["vmq_settings"]["vmmq_adapter_policy"]
+                        eth_adapter_policy = self.get_live_object(
+                            object_name=vnic["vmq_settings"].get("vmmq_adapter_policy"),
+                            object_type="vnic.EthAdapterPolicy"
+                        )
+                        if eth_adapter_policy:
+                            kwargs_vmq["vmmq_adapter_policy"] = eth_adapter_policy.moid
+                        else:
+                            self._config.push_summary_manager.add_object_status(
+                                obj=self,
+                                obj_detail=f"Attaching Eth Adapter Policy "
+                                           f"'{vnic['vmq_settings']['vmmq_adapter_policy']}' "
+                                           f"to - vNIC - {str(vnic['name'])} - VMQ Settings",
+                                obj_type="vnic.EthIf", status="failed",
+                                message=f"Failed to find Eth Adapter Policy "
+                                        f"'{vnic['vmq_settings']['vmmq_adapter_policy']}'"
+                            )
                     if vnic["vmq_settings"].get("number_of_interrupts") is not None:
                         kwargs_vmq["num_interrupts"] = vnic["vmq_settings"]["number_of_interrupts"]
                     if vnic["vmq_settings"].get("number_of_virtual_machine_queues") is not None:
@@ -4234,10 +4356,12 @@ class IntersightSanConnectivityPolicy(IntersightConfigObject):
             # We use this to make sure all options of a vHBA are set to None if they are not present
             if self.vhbas:
                 for vhba in self.vhbas:
-                    for attribute in ["fc_zone_policies", "fibre_channel_adapter_policy",
+                    for attribute in ["automatic_pci_link_assignment", "automatic_slot_id_assignment",
+                                      "fc_zone_policies", "fibre_channel_adapter_policy",
                                       "fibre_channel_network_policy", "fibre_channel_qos_policy", "name", "pci_link",
-                                      "pci_order", "persistent_lun_bindings", "pin_group_name", "slot_id", "switch_id",
-                                      "uplink_port", "vhba_type", "wwpn_allocation_type", "wwpn_pool", "wwpn_static"]:
+                                      "pci_link_assignment_mode", "pci_order", "persistent_lun_bindings",
+                                      "pin_group_name", "slot_id", "switch_id", "uplink_port", "vhba_type",
+                                      "wwpn_allocation_type", "wwpn_pool", "wwpn_static"]:
                         if attribute not in vhba:
                             vhba[attribute] = None
 
@@ -4255,16 +4379,14 @@ class IntersightSanConnectivityPolicy(IntersightConfigObject):
                             "vhba_type": vnic_fc_if.type
                         }
                         if vnic_fc_if.placement:
-                            if hasattr(vnic_fc_if.placement, "auto_slot_id"):  # Required to support older Appliances
-                                if not vnic_fc_if.placement.auto_slot_id:
-                                    vhba["slot_id"] = vnic_fc_if.placement.id
-                            else:
+                            vhba["automatic_slot_id_assignment"] = vnic_fc_if.placement.auto_slot_id
+                            if not vnic_fc_if.placement.auto_slot_id:
                                 vhba["slot_id"] = vnic_fc_if.placement.id
-                            if hasattr(vnic_fc_if.placement, "auto_pci_link"):  # Required to support older Appliances
-                                if not vnic_fc_if.placement.auto_pci_link:
+                            vhba["automatic_pci_link_assignment"] = vnic_fc_if.placement.auto_pci_link
+                            if not vnic_fc_if.placement.auto_pci_link:
+                                vhba["pci_link_assignment_mode"] = vnic_fc_if.placement.pci_link_assignment_mode
+                                if vnic_fc_if.placement.pci_link_assignment_mode in ["Custom"]:
                                     vhba["pci_link"] = vnic_fc_if.placement.pci_link
-                            else:
-                                vhba["pci_link"] = vnic_fc_if.placement.pci_link
                             if self.target_platform in ["FI-Attached"]:
                                 vhba["switch_id"] = vnic_fc_if.placement.switch_id
                                 if vhba["switch_id"] in ["None"]:
@@ -4272,7 +4394,7 @@ class IntersightSanConnectivityPolicy(IntersightConfigObject):
                             elif self.target_platform in ["Standalone"]:
                                 vhba["uplink_port"] = vnic_fc_if.placement.uplink
                         if self.target_platform in ["FI-Attached"]:
-                            vhba["pin_group_name"] = vnic_fc_if.pin_group_name
+                            vhba["pin_group_name"] = vnic_fc_if.pin_group_name if vnic_fc_if.pin_group_name else None
                             vhba["wwpn_allocation_type"] = vnic_fc_if.wwpn_address_type.lower()
                             # We only fetch the WWPN Address Pool or Static WWPN for FI-Attached servers
                             if vnic_fc_if.wwpn_address_type in ["POOL"]:
@@ -4422,21 +4544,29 @@ class IntersightSanConnectivityPolicy(IntersightConfigObject):
                     "object_type": "vnic.PlacementSettings",
                     "class_id": "vnic.PlacementSettings"
                 }
-                if vhba.get("slot_id") is not None:
-                    kwargs_placement["auto_slot_id"] = False
-                    kwargs_placement["auto_pci_link"] = False  # Both Auto attributes must be set together
-                    kwargs_placement["id"] = vhba["slot_id"]
-                else:
-                    kwargs_placement["auto_slot_id"] = True
-                    kwargs_placement["auto_pci_link"] = True  # Both Auto attributes must be set together
                 if vhba.get("switch_id") is not None:
                     kwargs_placement["switch_id"] = vhba["switch_id"]
-                if vhba.get("pci_link") is not None:
-                    if kwargs_placement.get("auto_pci_link"):
-                        self.logger(level="warning", message="Forcing PCI Link to 'Auto' for vHBA '" +
-                                                             vhba.get("name") + " since Slot ID is set to 'Auto'")
-                    else:
-                        kwargs_placement["pci_link"] = vhba["pci_link"]
+
+                if vhba.get("automatic_slot_id_assignment", False):
+                    kwargs_placement["auto_slot_id"] = True
+                elif vhba.get("slot_id") is not None:  # We have a Slot ID value
+                    kwargs_placement["auto_slot_id"] = False
+                    kwargs_placement["id"] = vhba["slot_id"]
+                else:  # We don't have any slot ID value - we set Auto Slot ID to enabled
+                    kwargs_placement["auto_slot_id"] = True
+
+                if vhba.get("automatic_pci_link_assignment", False):
+                    kwargs_placement["auto_pci_link"] = True
+                elif vhba.get("pci_link") is not None:  # We have a PCI Link value - We set assignment mode to Custom
+                    kwargs_placement["auto_pci_link"] = False
+                    kwargs_placement["pci_link_assignment_mode"] = "Custom"
+                    kwargs_placement["pci_link"] = vhba["pci_link"]
+                elif vhba.get("pci_link_assignment_mode") in ["Load-Balanced"]:  # Assignment mode set to Load-Balanced
+                    kwargs_placement["auto_pci_link"] = False
+                    kwargs_placement["pci_link_assignment_mode"] = "Load-Balanced"
+                else:  # We don't have any PCI Link value - we set Auto PCI Link to enabled
+                    kwargs_placement["auto_pci_link"] = True
+
                 if vhba.get("uplink_port") is not None:
                     kwargs_placement["uplink"] = vhba["uplink_port"]
                 kwargs["placement"] = VnicPlacementSettings(**kwargs_placement)

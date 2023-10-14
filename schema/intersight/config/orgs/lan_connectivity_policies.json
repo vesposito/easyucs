@@ -106,6 +106,16 @@
                   "type": "object",
                   "description": "LAN Connectivity Policy - vNIC",
                   "properties": {
+                     "automatic_pci_link_assignment": {
+                        "description": "LAN Connectivity Policy - vNIC Automatic PCI Link Assignment",
+                        "type": "boolean",
+                        "default": false
+                     },
+                     "automatic_slot_id_assignment": {
+                        "description": "LAN Connectivity Policy - vNIC Automatic Slot ID Assignment",
+                        "type": "boolean",
+                        "default": false
+                     },
                      "cdn_source": {
                         "description": "LAN Connectivity Policy - vNIC CDN Source",
                         "type": "string",
@@ -190,6 +200,15 @@
                         "type": "integer",
                         "default": 0,
                         "maximum": 1
+                     },
+                     "pci_link_assignment_mode": {
+                        "description": "LAN Connectivity Policy - vNIC PCI Link Assignment Mode",
+                        "type": "string",
+                        "default": "Custom",
+                        "enum": [
+                           "Custom",
+                           "Load-Balanced"
+                        ]
                      },
                      "pci_order": {
                         "description": "LAN Connectivity Policy - vNIC PCI Order",
@@ -351,6 +370,163 @@
                   ],
                   "allOf": [
                      {
+                        "$comment": "Below is for setting constraints for automatic_pci_link_assignment with value true",
+                        "if": {
+                           "properties": {
+                              "automatic_pci_link_assignment": {
+                                 "enum": [
+                                    true
+                                 ]
+                              }
+                           },
+                           "required": [
+                              "automatic_pci_link_assignment"
+                           ]
+                        },
+                        "then": {
+                           "allOf": [
+                              {
+                                 "not": {
+                                    "required": [
+                                       "pci_link_assignment_mode"
+                                    ]
+                                 }
+                              },
+                              {
+                                 "not": {
+                                    "required": [
+                                       "pci_link"
+                                    ]
+                                 }
+                              }
+                           ]
+                        }
+                     },
+                     {
+                        "$comment": "Below is for setting constraints for automatic_pci_link_assignment with value false",
+                        "if": {
+                           "properties": {
+                              "automatic_pci_link_assignment": {
+                                 "enum": [
+                                    false
+                                 ]
+                              }
+                           },
+                           "required": [
+                              "automatic_pci_link_assignment"
+                           ]
+                        },
+                        "then": {
+                           "allOf": [
+                              {
+                                 "required": [
+                                    "pci_link_assignment_mode"
+                                 ]
+                              }
+                           ]
+                        }
+                     },
+                     {
+                        "$comment": "Below is for setting constraints for pci_link_assignment_mode with value Custom",
+                        "if": {
+                           "properties": {
+                              "pci_link_assignment_mode": {
+                                 "enum": [
+                                    "Custom"
+                                 ]
+                              }
+                           },
+                           "required": [
+                              "pci_link_assignment_mode"
+                           ]
+                        },
+                        "then": {
+                           "allOf": [
+                              {
+                                 "required": [
+                                    "pci_link"
+                                 ]
+                              }
+                           ]
+                        }
+                     },
+                     {
+                        "$comment": "Below is for setting constraints for pci_link_assignment_mode with value Load-Balanced",
+                        "if": {
+                           "properties": {
+                              "pci_link_assignment_mode": {
+                                 "enum": [
+                                    "Load-Balanced"
+                                 ]
+                              }
+                           },
+                           "required": [
+                              "pci_link_assignment_mode"
+                           ]
+                        },
+                        "then": {
+                           "allOf": [
+                              {
+                                 "not": {
+                                    "required": [
+                                       "pci_link"
+                                    ]
+                                 }
+                              }
+                           ]
+                        }
+                     },
+                     {
+                        "$comment": "Below is for setting constraints for automatic_slot_id_assignment with value true",
+                        "if": {
+                           "properties": {
+                              "automatic_slot_id_assignment": {
+                                 "enum": [
+                                    true
+                                 ]
+                              }
+                           },
+                           "required": [
+                              "automatic_slot_id_assignment"
+                           ]
+                        },
+                        "then": {
+                           "allOf": [
+                              {
+                                 "not": {
+                                    "required": [
+                                       "slot_id"
+                                    ]
+                                 }
+                              }
+                           ]
+                        }
+                     },
+                     {
+                        "$comment": "Below is for setting constraints for automatic_slot_id_assignment with value false",
+                        "if": {
+                           "properties": {
+                              "automatic_slot_id_assignment": {
+                                 "enum": [
+                                    false
+                                 ]
+                              }
+                           },
+                           "required": [
+                              "automatic_slot_id_assignment"
+                           ]
+                        },
+                        "then": {
+                           "allOf": [
+                              {
+                                 "required": [
+                                    "slot_id"
+                                 ]
+                              }
+                           ]
+                        }
+                     },
+                     {
                         "$comment": "Below is for setting constraints for mac_address_allocation_type with value pool",
                         "if": {
                            "properties": {
@@ -453,6 +629,16 @@
                   "type": "object",
                   "description": "LAN Connectivity Policy - vNIC",
                   "properties": {
+                     "automatic_pci_link_assignment": {
+                        "description": "LAN Connectivity Policy - vNIC Automatic PCI Link Assignment",
+                        "type": "boolean",
+                        "default": true
+                     },
+                     "automatic_slot_id_assignment": {
+                        "description": "LAN Connectivity Policy - vNIC Automatic Slot ID Assignment",
+                        "type": "boolean",
+                        "default": true
+                     },
                      "cdn_source": {
                         "description": "LAN Connectivity Policy - vNIC CDN Source",
                         "type": "string",
@@ -499,6 +685,15 @@
                         "type": "integer",
                         "default": 0,
                         "maximum": 1
+                     },
+                     "pci_link_assignment_mode": {
+                        "description": "LAN Connectivity Policy - vNIC PCI Link Assignment Mode",
+                        "type": "string",
+                        "default": "Custom",
+                        "enum": [
+                           "Custom",
+                           "Load-Balanced"
+                        ]
                      },
                      "pci_order": {
                         "description": "LAN Connectivity Policy - vNIC PCI Order",
@@ -657,6 +852,163 @@
                      "ethernet_network_policy"
                   ],
                   "allOf": [
+                     {
+                        "$comment": "Below is for setting constraints for automatic_pci_link_assignment with value true",
+                        "if": {
+                           "properties": {
+                              "automatic_pci_link_assignment": {
+                                 "enum": [
+                                    true
+                                 ]
+                              }
+                           },
+                           "required": [
+                              "automatic_pci_link_assignment"
+                           ]
+                        },
+                        "then": {
+                           "allOf": [
+                              {
+                                 "not": {
+                                    "required": [
+                                       "pci_link_assignment_mode"
+                                    ]
+                                 }
+                              },
+                              {
+                                 "not": {
+                                    "required": [
+                                       "pci_link"
+                                    ]
+                                 }
+                              }
+                           ]
+                        }
+                     },
+                     {
+                        "$comment": "Below is for setting constraints for automatic_pci_link_assignment with value false",
+                        "if": {
+                           "properties": {
+                              "automatic_pci_link_assignment": {
+                                 "enum": [
+                                    false
+                                 ]
+                              }
+                           },
+                           "required": [
+                              "automatic_pci_link_assignment"
+                           ]
+                        },
+                        "then": {
+                           "allOf": [
+                              {
+                                 "required": [
+                                    "pci_link_assignment_mode"
+                                 ]
+                              }
+                           ]
+                        }
+                     },
+                     {
+                        "$comment": "Below is for setting constraints for pci_link_assignment_mode with value Custom",
+                        "if": {
+                           "properties": {
+                              "pci_link_assignment_mode": {
+                                 "enum": [
+                                    "Custom"
+                                 ]
+                              }
+                           },
+                           "required": [
+                              "pci_link_assignment_mode"
+                           ]
+                        },
+                        "then": {
+                           "allOf": [
+                              {
+                                 "required": [
+                                    "pci_link"
+                                 ]
+                              }
+                           ]
+                        }
+                     },
+                     {
+                        "$comment": "Below is for setting constraints for pci_link_assignment_mode with value Load-Balanced",
+                        "if": {
+                           "properties": {
+                              "pci_link_assignment_mode": {
+                                 "enum": [
+                                    "Load-Balanced"
+                                 ]
+                              }
+                           },
+                           "required": [
+                              "pci_link_assignment_mode"
+                           ]
+                        },
+                        "then": {
+                           "allOf": [
+                              {
+                                 "not": {
+                                    "required": [
+                                       "pci_link"
+                                    ]
+                                 }
+                              }
+                           ]
+                        }
+                     },
+                     {
+                        "$comment": "Below is for setting constraints for automatic_slot_id_assignment with value true",
+                        "if": {
+                           "properties": {
+                              "automatic_slot_id_assignment": {
+                                 "enum": [
+                                    true
+                                 ]
+                              }
+                           },
+                           "required": [
+                              "automatic_slot_id_assignment"
+                           ]
+                        },
+                        "then": {
+                           "allOf": [
+                              {
+                                 "not": {
+                                    "required": [
+                                       "slot_id"
+                                    ]
+                                 }
+                              }
+                           ]
+                        }
+                     },
+                     {
+                        "$comment": "Below is for setting constraints for automatic_slot_id_assignment with value false",
+                        "if": {
+                           "properties": {
+                              "automatic_slot_id_assignment": {
+                                 "enum": [
+                                    false
+                                 ]
+                              }
+                           },
+                           "required": [
+                              "automatic_slot_id_assignment"
+                           ]
+                        },
+                        "then": {
+                           "allOf": [
+                              {
+                                 "required": [
+                                    "slot_id"
+                                 ]
+                              }
+                           ]
+                        }
+                     },
                      {
                         "$comment": "Below is for setting constraints for cdn_source with value user",
                         "if": {

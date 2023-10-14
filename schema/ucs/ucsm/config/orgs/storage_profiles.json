@@ -343,6 +343,7 @@
                      "best-effort-striped",
                      "best-effort-striped-dual-parity",
                      "best-effort-striped-parity",
+                     "disable-local-storage",
                      "dual-disk",
                      "no-local-storage",
                      "no-raid",

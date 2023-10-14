@@ -226,15 +226,15 @@ class UcsCentralBiosPolicy(UcsCentralConfigObject):
                             bios_token_settings_children_list = [child for child in bios_token_settings_list
                                                                  if bios_token_param.dn + "/" in child.dn]
                             bios_token_value = None
-                            for bios_token_settings_child in bios_token_settings_children_list:
-                                # We first try to determine the bios_token_name as defined in our BIOS Table
-                                bios_token_name = None
-                                for bios_table_key, bios_table_values in bios_table.items():
-                                    if bios_table_values["target_name"] == bios_token_param.target_token_name:
-                                        bios_token_name = bios_table_key
-                                        # Since we have found the right BIOS Token name, we exit the for loop
-                                        break
-                                if bios_token_name:
+                            bios_token_name = None
+                            # We first try to determine the bios_token_name as defined in our BIOS Table
+                            for bios_table_key, bios_table_values in bios_table.items():
+                                if bios_table_values["target_name"] == bios_token_param.target_token_name:
+                                    bios_token_name = bios_table_key
+                                    # Since we have found the right BIOS Token name, we exit the for loop
+                                    break
+                            if bios_token_name:
+                                for bios_token_settings_child in bios_token_settings_children_list:
                                     if bios_token_settings_child.is_assigned == "yes":
                                         bios_token_value = bios_token_settings_child.settings_mo_rn
                                         if bios_token_value in ["Integer", "Float", "Hex"]:
@@ -243,10 +243,10 @@ class UcsCentralBiosPolicy(UcsCentralConfigObject):
                                         setattr(self, bios_token_name, bios_token_value)
                                         # Since we have found the right BIOS Token value, we exit the for loop
                                         break
-                                else:
-                                    self.logger(level="warning",
-                                                message="BIOS Param name " + bios_token_param.param_name +
-                                                        " not found in BIOS Table")
+                            else:
+                                self.logger(level="warning",
+                                            message=f"BIOS Param name '{bios_token_param.param_name}' not found"
+                                                    f" in BIOS Table for {self._CONFIG_NAME} '{self.name}'")
                             if bios_token_name and not bios_token_value:
                                 setattr(self, bios_token_name, "platform-default")
 

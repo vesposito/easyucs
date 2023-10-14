@@ -141,6 +141,10 @@ class UcsSystemDrawChassisRear(GenericUcsDrawEquipment):
 
         self.paste_layer(self.picture, self.picture_offset)
 
+        if self._parent.x_fabric_modules:
+            # We have X-Fabric Modules in the chassis
+            self.xfm_list = self.get_xfm_list()
+
         if self._parent.fabric_interconnects:
             # We have Fabric Interconnects in the chassis (UCS Mini)
             self.fi_list = self.get_fi_list()
@@ -429,6 +433,16 @@ class UcsSystemDrawChassisRear(GenericUcsDrawEquipment):
         sioc_list = [sioc for sioc in sioc_list if sioc.picture_size]
         return sioc_list
 
+    def get_xfm_list(self):
+        xfm_list = []
+        for xfm in self._parent.x_fabric_modules:
+            xfm_list.append(UcsSystemDrawXfm(xfm, self))
+        # xfm_list = remove_not_supported_in_list(xfm_list)
+        # xfm_list = remove_not_completed_in_list(xfm_list)
+        # We only keep the xfm that have been fully created -> picture
+        xfm_list = [xfm for xfm in xfm_list if xfm.picture_size]
+        return xfm_list
+
 
 class UcsSystemDrawIom(GenericUcsDrawEquipment):
     def __init__(self, parent=None, parent_draw=None):
@@ -642,6 +656,26 @@ class GenericUcsDrawSioc(GenericUcsDrawEquipment):
 
         adaptor_list = [adaptor for adaptor in adaptor_list if adaptor.picture_size]
         return [e for e in adaptor_list if hasattr(e, "_parent")]
+
+
+class UcsSystemDrawXfm(GenericUcsDrawEquipment):
+    def __init__(self, parent=None, parent_draw=None):
+        self.parent_draw = parent_draw
+        GenericUcsDrawEquipment.__init__(self, parent=parent)
+        if not self.picture:
+            return
+
+        self.ports = []
+        self.parent_draw.paste_layer(self.picture, self.picture_offset)
+
+        # We drop the picture in order to save on memory
+        self.picture = None
+
+    def _get_picture_offset(self):
+        for slot in self.parent_draw.json_file["x_fabric_modules_slots"]:
+            if slot["id"] == int(self._parent.id):
+                coord = slot["coord"]
+        return self.parent_draw.picture_offset[0] + coord[0], self.parent_draw.picture_offset[1] + coord[1]
 
 
 class UcsSystemDrawInfraChassis(UcsSystemDrawInfraEquipment):

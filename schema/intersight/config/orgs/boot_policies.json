@@ -78,6 +78,7 @@
                   "description": "Boot Policy - Device Member of Boot Order - Device Type",
                   "type": "string",
                   "enum": [
+                     "http_boot",
                      "iscsi_boot",
                      "local_cdd",
                      "local_disk",
@@ -120,6 +121,16 @@
                   "default": "",
                   "maxLength": 256
                },
+               "dns_ip": {
+                  "description": "Boot Policy - Device Member of Boot Order - HTTP Boot DNS IP",
+                  "type": "string",
+                  "default": ""
+               },
+               "gateway_ip": {
+                  "description": "Boot Policy - Device Member of Boot Order - HTTP Boot Gateway IP",
+                  "type": "string",
+                  "default": ""
+               },
                "interface_name": {
                   "description": "Boot Policy - Device Member of Boot Order - iSCSI Boot/PXE Boot/SAN Boot Interface Name",
                   "type": "string",
@@ -136,8 +147,17 @@
                      "port"
                   ]
                },
+               "ip_config_type": {
+                  "description": "Boot Policy - Device Member of Boot Order - HTTP Boot IP Config Type",
+                  "type": "string",
+                  "default": "DHCP",
+                  "enum": [
+                     "DHCP",
+                     "Static"
+                  ]
+               },
                "ip_type": {
-                  "description": "Boot Policy - Device Member of Boot Order - PXE Boot IP Type",
+                  "description": "Boot Policy - Device Member of Boot Order - PXE/HTTP Boot IP Type",
                   "type": "string",
                   "default": "None",
                   "enum": [
@@ -159,14 +179,41 @@
                   "default": "",
                   "pattern": "^$|^(((\\d|([a-f]|[A-F])){2}:){5}(\\d|([a-f]|[A-F])){2})$"
                },
+               "network_mask": {
+                  "description": "Boot Policy - Device Member of Boot Order - HTTP Boot Network Mask",
+                  "type": "string",
+                  "default": "",
+                  "pattern": "^$|^(((255\\.){3}(255|254|252|248|240|224|192|128|0+))|((255\\.){2}(255|254|252|248|240|224|192|128|0+)\\.0)|((255\\.)(255|254|252|248|240|224|192|128|0+)(\\.0+){2})|((255|254|252|248|240|224|192|128|0+)(\\.0+){3}))$"
+               },
                "port": {
                   "description": "Boot Policy - Device Member of Boot Order - iSCSI Boot/PXE Boot Port",
                   "type": "integer",
                   "minimum": -1,
                   "maximum": 255
                },
+               "prefix_length": {
+                  "description": "Boot Policy - Device Member of Boot Order - HTTP Boot Prefix Length",
+                  "type": "integer",
+                  "default": 1,
+                  "minimum": 1,
+                  "maximum": 127
+               },
+               "protocol": {
+                  "description": "Boot Policy - Device Member of Boot Order - HTTP Boot Protocol",
+                  "type": "string",
+                  "default": "HTTPS",
+                  "enum": [
+                     "HTTPS",
+                     "HTTP"
+                  ]
+               },
                "slot": {
-                  "description": "Boot Policy - Device Member of Boot Order - iSCSI Boot/Local Disk/PXE Boot/SAN Boot Slot",
+                  "description": "Boot Policy - Device Member of Boot Order - iSCSI Boot/Local Disk/PXE Boot/SAN Boot/HTTP Boot Slot",
+                  "type": "string",
+                  "default": ""
+               },
+               "static_ip": {
+                  "description": "Boot Policy - Device Member of Boot Order - HTTP Boot Static IP",
                   "type": "string",
                   "default": ""
                },
@@ -194,6 +241,11 @@
                   "type": "string",
                   "default": "",
                   "pattern": "^$|(^([0-9a-fA-F]{2}:){7}[0-9a-fA-F]{2}$)"
+               },
+               "uri": {
+                  "description": "Boot Policy - Device Member of Boot Order - HTTP Boot URI",
+                  "type": "string",
+                  "default": ""
                }
             },
             "additionalProperties": false,
@@ -228,7 +280,22 @@
                               "anyOf": [
                                  {
                                     "required": [
+                                       "dns_ip"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
+                                       "gateway_ip"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
                                        "interface_source"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
+                                       "ip_config_type"
                                     ]
                                  },
                                  {
@@ -248,12 +315,37 @@
                                  },
                                  {
                                     "required": [
+                                       "network_mask"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
+                                       "prefix_length"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
+                                       "protocol"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
+                                       "static_ip"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
                                        "subtype"
                                     ]
                                  },
                                  {
                                     "required": [
                                        "target_wwpn"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
+                                       "uri"
                                     ]
                                  }
                               ]
@@ -290,12 +382,27 @@
                               "anyOf": [
                                  {
                                     "required": [
+                                       "dns_ip"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
+                                       "gateway_ip"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
                                        "interface_name"
                                     ]
                                  },
                                  {
                                     "required": [
                                        "interface_source"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
+                                       "ip_config_type"
                                     ]
                                  },
                                  {
@@ -315,12 +422,32 @@
                                  },
                                  {
                                     "required": [
+                                       "network_mask"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
                                        "port"
                                     ]
                                  },
                                  {
                                     "required": [
+                                       "prefix_length"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
+                                       "protocol"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
                                        "slot"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
+                                       "static_ip"
                                     ]
                                  },
                                  {
@@ -331,6 +458,11 @@
                                  {
                                     "required": [
                                        "target_wwpn"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
+                                       "uri"
                                     ]
                                  }
                               ]
@@ -360,12 +492,27 @@
                               "anyOf": [
                                  {
                                     "required": [
+                                       "dns_ip"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
+                                       "gateway_ip"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
                                        "interface_name"
                                     ]
                                  },
                                  {
                                     "required": [
                                        "interface_source"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
+                                       "ip_config_type"
                                     ]
                                  },
                                  {
@@ -385,7 +532,27 @@
                                  },
                                  {
                                     "required": [
+                                       "network_mask"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
                                        "port"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
+                                       "prefix_length"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
+                                       "protocol"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
+                                       "static_ip"
                                     ]
                                  },
                                  {
@@ -396,6 +563,11 @@
                                  {
                                     "required": [
                                        "target_wwpn"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
+                                       "uri"
                                     ]
                                  }
                               ]
@@ -432,12 +604,27 @@
                               "anyOf": [
                                  {
                                     "required": [
+                                       "dns_ip"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
+                                       "gateway_ip"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
                                        "interface_name"
                                     ]
                                  },
                                  {
                                     "required": [
                                        "interface_source"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
+                                       "ip_config_type"
                                     ]
                                  },
                                  {
@@ -457,12 +644,32 @@
                                  },
                                  {
                                     "required": [
+                                       "network_mask"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
                                        "port"
                                     ]
                                  },
                                  {
                                     "required": [
+                                       "prefix_length"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
+                                       "protocol"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
                                        "slot"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
+                                       "static_ip"
                                     ]
                                  },
                                  {
@@ -473,6 +680,11 @@
                                  {
                                     "required": [
                                        "target_wwpn"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
+                                       "uri"
                                     ]
                                  }
                               ]
@@ -502,12 +714,27 @@
                               "anyOf": [
                                  {
                                     "required": [
+                                       "dns_ip"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
+                                       "gateway_ip"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
                                        "interface_name"
                                     ]
                                  },
                                  {
                                     "required": [
                                        "interface_source"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
+                                       "ip_config_type"
                                     ]
                                  },
                                  {
@@ -522,12 +749,32 @@
                                  },
                                  {
                                     "required": [
+                                       "network_mask"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
                                        "port"
                                     ]
                                  },
                                  {
                                     "required": [
+                                       "prefix_length"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
+                                       "protocol"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
                                        "slot"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
+                                       "static_ip"
                                     ]
                                  },
                                  {
@@ -539,6 +786,11 @@
                                     "required": [
                                        "target_wwpn"
                                     ]
+                                 },
+                                 {
+                                    "required": [
+                                       "uri"
+                                    ]
                                  }
                               ]
                            }
@@ -547,12 +799,12 @@
                   }
                },
                {
-                  "$comment": "Below is for setting constraints for pxe_boot device type",
+                  "$comment": "Below is for setting constraints for http_boot device type",
                   "if": {
                      "properties": {
                         "device_type": {
                            "enum": [
-                              "pxe_boot"
+                              "http_boot"
                            ]
                         }
                      },
@@ -656,6 +908,255 @@
                                  }
                               }
                            ]
+                        },
+                        {
+                           "!comment": "Below is the logic for the static ip configurations",
+                           "allOf": [
+                              {
+                                 "if": {
+                                    "properties": {
+                                       "ip_config_type": {
+                                          "enum": [
+                                             "Static"
+                                          ]
+                                       },
+                                       "ip_type": {
+                                          "enum": [
+                                             "IPv4"
+                                          ]
+                                       }
+                                    },
+                                    "required": [
+                                       "ip_config_type",
+                                       "ip_type"
+                                    ]
+                                 },
+                                 "then": {
+                                    "allOf": [
+                                       {
+                                          "properties": {
+                                             "dns_ip": {
+                                                "pattern": "^$|^([1-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\\.([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\\.([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\\.([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])$"
+                                             },
+                                             "gateway_ip": {
+                                                "pattern": "^$|^([1-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\\.([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\\.([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\\.([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])$"
+                                             },
+                                             "static_ip": {
+                                                "pattern": "^$|^([1-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\\.([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\\.([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\\.([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])$"
+                                             }
+                                          }
+                                       },
+                                       {
+                                          "required": [
+                                             "dns_ip",
+                                             "gateway_ip",
+                                             "static_ip",
+                                             "network_mask"
+                                          ]
+                                       }
+                                    ]
+                                 }
+                              },
+                              {
+                                 "if": {
+                                    "properties": {
+                                       "ip_config_type": {
+                                          "enum": [
+                                             "Static"
+                                          ]
+                                       },
+                                       "ip_type": {
+                                          "enum": [
+                                             "IPv6"
+                                          ]
+                                       }
+                                    },
+                                    "required": [
+                                       "ip_config_type",
+                                       "ip_type"
+                                    ]
+                                 },
+                                 "then": {
+                                    "allOf": [
+                                       {
+                                          "properties": {
+                                             "dns_ip": {
+                                                "pattern": "^$|^(([0-9A-Fa-f]{1,4}:([0-9A-Fa-f]{1,4}:([0-9A-Fa-f]{1,4}:([0-9A-Fa-f]{1,4}:([0-9A-Fa-f]{1,4}:[0-9A-Fa-f]{0,4}|:[0-9A-Fa-f]{1,4})?|(:[0-9A-Fa-f]{1,4}){0,2})|(:[0-9A-Fa-f]{1,4}){0,3})|(:[0-9A-Fa-f]{1,4}){0,4})|:(:[0-9A-Fa-f]{1,4}){0,5})((:[0-9A-Fa-f]{1,4}){2}|:(25[0-5]|(2[0-4]|1[0-9]|[1-9])?[0-9])(\\.(25[0-5]|(2[0-4]|1[0-9]|[1-9])?[0-9])){3})|(([0-9A-Fa-f]{1,4}:){1,6}|:):[0-9A-Fa-f]{0,4}|([0-9A-Fa-f]{1,4}:){7}:)$"
+                                             },
+                                             "gateway_ip": {
+                                                "pattern": "^$|^(([0-9A-Fa-f]{1,4}:([0-9A-Fa-f]{1,4}:([0-9A-Fa-f]{1,4}:([0-9A-Fa-f]{1,4}:([0-9A-Fa-f]{1,4}:[0-9A-Fa-f]{0,4}|:[0-9A-Fa-f]{1,4})?|(:[0-9A-Fa-f]{1,4}){0,2})|(:[0-9A-Fa-f]{1,4}){0,3})|(:[0-9A-Fa-f]{1,4}){0,4})|:(:[0-9A-Fa-f]{1,4}){0,5})((:[0-9A-Fa-f]{1,4}){2}|:(25[0-5]|(2[0-4]|1[0-9]|[1-9])?[0-9])(\\.(25[0-5]|(2[0-4]|1[0-9]|[1-9])?[0-9])){3})|(([0-9A-Fa-f]{1,4}:){1,6}|:):[0-9A-Fa-f]{0,4}|([0-9A-Fa-f]{1,4}:){7}:)$"
+                                             },
+                                             "static_ip": {
+                                                "pattern": "^$|^(([0-9A-Fa-f]{1,4}:([0-9A-Fa-f]{1,4}:([0-9A-Fa-f]{1,4}:([0-9A-Fa-f]{1,4}:([0-9A-Fa-f]{1,4}:[0-9A-Fa-f]{0,4}|:[0-9A-Fa-f]{1,4})?|(:[0-9A-Fa-f]{1,4}){0,2})|(:[0-9A-Fa-f]{1,4}){0,3})|(:[0-9A-Fa-f]{1,4}){0,4})|:(:[0-9A-Fa-f]{1,4}){0,5})((:[0-9A-Fa-f]{1,4}){2}|:(25[0-5]|(2[0-4]|1[0-9]|[1-9])?[0-9])(\\.(25[0-5]|(2[0-4]|1[0-9]|[1-9])?[0-9])){3})|(([0-9A-Fa-f]{1,4}:){1,6}|:):[0-9A-Fa-f]{0,4}|([0-9A-Fa-f]{1,4}:){7}:)$"
+                                             }
+                                          }
+                                       },
+                                       {
+                                          "required": [
+                                             "dns_ip",
+                                             "gateway_ip",
+                                             "static_ip",
+                                             "prefix_length"
+                                          ]
+                                       }
+                                    ]
+                                 }
+                              }
+                           ]
+                        }
+                     ]
+                  }
+               },
+               {
+                  "$comment": "Below is for setting constraints for pxe_boot device type",
+                  "if": {
+                     "properties": {
+                        "device_type": {
+                           "enum": [
+                              "pxe_boot"
+                           ]
+                        }
+                     },
+                     "required": [
+                        "device_type"
+                     ]
+                  },
+                  "then": {
+                     "allOf": [
+                        {
+                           "required": [
+                              "interface_source"
+                           ]
+                        },
+                        {
+                           "not": {
+                              "anyOf": [
+                                 {
+                                    "required": [
+                                       "dns_ip"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
+                                       "gateway_ip"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
+                                       "ip_config_type"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
+                                       "lun"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
+                                       "network_mask"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
+                                       "prefix_length"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
+                                       "protocol"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
+                                       "static_ip"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
+                                       "subtype"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
+                                       "target_wwpn"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
+                                       "uri"
+                                    ]
+                                 }
+                              ]
+                           }
+                        },
+                        {
+                           "properties": {
+                              "slot": {
+                                 "pattern": "^$|^([1-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5]|L|MLOM|L1|L2|OCP)$"
+                              }
+                           }
+                        },
+                        {
+                           "!comment": "Below is the logic for the various options for interface_source",
+                           "allOf": [
+                              {
+                                 "if": {
+                                    "properties": {
+                                       "interface_source": {
+                                          "enum": [
+                                             "name"
+                                          ]
+                                       }
+                                    },
+                                    "required": [
+                                       "interface_source"
+                                    ]
+                                 },
+                                 "then": {
+                                    "required": [
+                                       "interface_name"
+                                    ]
+                                 }
+                              },
+                              {
+                                 "if": {
+                                    "properties": {
+                                       "interface_source": {
+                                          "enum": [
+                                             "port"
+                                          ]
+                                       }
+                                    },
+                                    "required": [
+                                       "interface_source"
+                                    ]
+                                 },
+                                 "then": {
+                                    "required": [
+                                       "port"
+                                    ]
+                                 }
+                              },
+                              {
+                                 "if": {
+                                    "properties": {
+                                       "interface_source": {
+                                          "enum": [
+                                             "mac"
+                                          ]
+                                       }
+                                    },
+                                    "required": [
+                                       "interface_source"
+                                    ]
+                                 },
+                                 "then": {
+                                    "required": [
+                                       "mac_address"
+                                    ]
+                                 }
+                              }
+                           ]
                         }
                      ]
                   }
@@ -686,7 +1187,22 @@
                               "anyOf": [
                                  {
                                     "required": [
+                                       "dns_ip"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
+                                       "gateway_ip"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
                                        "interface_source"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
+                                       "ip_config_type"
                                     ]
                                  },
                                  {
@@ -701,12 +1217,37 @@
                                  },
                                  {
                                     "required": [
+                                       "network_mask"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
                                        "port"
                                     ]
                                  },
                                  {
                                     "required": [
+                                       "prefix_length"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
+                                       "protocol"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
+                                       "static_ip"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
                                        "subtype"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
+                                       "uri"
                                     ]
                                  }
                               ]
@@ -743,12 +1284,27 @@
                               "anyOf": [
                                  {
                                     "required": [
+                                       "dns_ip"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
+                                       "gateway_ip"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
                                        "interface_name"
                                     ]
                                  },
                                  {
                                     "required": [
                                        "interface_source"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
+                                       "ip_config_type"
                                     ]
                                  },
                                  {
@@ -763,7 +1319,22 @@
                                  },
                                  {
                                     "required": [
+                                       "network_mask"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
                                        "port"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
+                                       "prefix_length"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
+                                       "protocol"
                                     ]
                                  },
                                  {
@@ -773,7 +1344,17 @@
                                  },
                                  {
                                     "required": [
+                                       "static_ip"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
                                        "target_wwpn"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
+                                       "uri"
                                     ]
                                  }
                               ]
@@ -815,12 +1396,27 @@
                               "anyOf": [
                                  {
                                     "required": [
+                                       "dns_ip"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
+                                       "gateway_ip"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
                                        "interface_name"
                                     ]
                                  },
                                  {
                                     "required": [
                                        "interface_source"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
+                                       "ip_config_type"
                                     ]
                                  },
                                  {
@@ -840,12 +1436,32 @@
                                  },
                                  {
                                     "required": [
+                                       "network_mask"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
                                        "port"
                                     ]
                                  },
                                  {
                                     "required": [
+                                       "prefix_length"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
+                                       "protocol"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
                                        "slot"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
+                                       "static_ip"
                                     ]
                                  },
                                  {
@@ -856,6 +1472,11 @@
                                  {
                                     "required": [
                                        "target_wwpn"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
+                                       "uri"
                                     ]
                                  }
                               ]
@@ -885,12 +1506,27 @@
                               "anyOf": [
                                  {
                                     "required": [
+                                       "dns_ip"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
+                                       "gateway_ip"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
                                        "interface_name"
                                     ]
                                  },
                                  {
                                     "required": [
                                        "interface_source"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
+                                       "ip_config_type"
                                     ]
                                  },
                                  {
@@ -910,7 +1546,22 @@
                                  },
                                  {
                                     "required": [
+                                       "network_mask"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
                                        "port"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
+                                       "prefix_length"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
+                                       "protocol"
                                     ]
                                  },
                                  {
@@ -920,7 +1571,17 @@
                                  },
                                  {
                                     "required": [
+                                       "static_ip"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
                                        "target_wwpn"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
+                                       "uri"
                                     ]
                                  }
                               ]
@@ -962,12 +1623,27 @@
                               "anyOf": [
                                  {
                                     "required": [
+                                       "dns_ip"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
+                                       "gateway_ip"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
                                        "interface_name"
                                     ]
                                  },
                                  {
                                     "required": [
                                        "interface_source"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
+                                       "ip_config_type"
                                     ]
                                  },
                                  {
@@ -987,7 +1663,22 @@
                                  },
                                  {
                                     "required": [
+                                       "network_mask"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
                                        "port"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
+                                       "prefix_length"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
+                                       "protocol"
                                     ]
                                  },
                                  {
@@ -997,7 +1688,17 @@
                                  },
                                  {
                                     "required": [
+                                       "static_ip"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
                                        "target_wwpn"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
+                                       "uri"
                                     ]
                                  }
                               ]

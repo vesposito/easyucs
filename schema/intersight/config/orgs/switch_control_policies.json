@@ -53,6 +53,11 @@
          },
          "minItems": 1
       },
+      "fabric_port_channel_vhba_reset": {
+         "description": "Switch Control Policy Fabric Port-Channel vHBA Reset Admin State",
+         "type": "boolean",
+         "default": false
+      },
       "link_control_global_settings": {
          "description": "Switch Control Policy Link Control Global Settings",
          "type": "object",

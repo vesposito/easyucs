@@ -1,14 +1,14 @@
 paramiko>=2.7.1
 imcsdk>=0.9.13
 jsonschema>=3.2.0
-python-docx>=0.8.11
+python-docx==0.8.11
 requests>=2.23.0
 ucsmsdk>=0.9.15
 ucscsdk>=0.9.0.3
 matplotlib>=3.2.1
 natsort>=7.1.1
 networkx[default]>=2.4
-Pillow>=7.1.2
+Pillow<10.0.0
 netaddr>=0.7.19
 pyyaml>=5.3.1
 packaging>=20.4
@@ -16,7 +16,7 @@ Flask>=2.0.0
 Flask-Cors>=3.0.10
 cryptography>=2.9.2
 urllib3>=1.25.9
-intersight>=1.0.11.13376
+intersight>=1.0.11.13515
 SQLAlchemy>=1.4.11
 werkzeug>=1.0.1
 numpy>=1.19.4

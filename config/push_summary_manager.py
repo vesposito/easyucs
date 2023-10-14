@@ -8,11 +8,18 @@ from config.object import GenericConfigObject
 class PushSummaryManager:
     def __init__(self, parent=None):
         """
+        Initializes all the necessary attributes
+        """
+        self.parent = parent
+        self._init_push_summary()
+        self._parent_having_logger = self._find_logger()
+
+    def _init_push_summary(self):
+        """
         Initialize the Push Summary in Dictionary format for capturing different types of
         messages - Error, Warnings, Info related to different attributes of a Policy,
         fabric attributes and variables
         """
-        self.parent = parent
         self.push_summary = {
             "summary": {
                 "success": 0,
@@ -22,8 +29,6 @@ class PushSummaryManager:
             },
             "pushed_objects": {}
         }
-
-        self._parent_having_logger = self._find_logger()
 
     def add_object_message(self, obj=None, message=None):
         """Adds push object success message to push summary dict
@@ -123,6 +128,12 @@ class PushSummaryManager:
 
     @staticmethod
     def add_push_obj_status(current_object, push_summary_pointer):
+        """
+        Adds the push object status of all objects and sub-objects
+        Args:
+            current_object: EasyUCS object from where push summary is fetched
+            push_summary_pointer: Dictionary that holds the details of all pushed objects
+        """
         if not isinstance(current_object, dict):
             # We have an EasyUCS object
             if getattr(current_object, "_commit_status", None):
@@ -171,7 +182,11 @@ class PushSummaryManager:
                                 element_count += 1
 
     def _find_logger(self):
-        # Method to find the object having a logger - it can be high up in the hierarchy of objects
+        """
+        Method to find the object having a logger - it can be high up in the hierarchy of objects
+        Returns:
+            EasyUCS object having a logger if found, None otherwise
+        """
         current_object = self
         while hasattr(current_object, 'parent') and not hasattr(current_object, '_logger_handle'):
             current_object = current_object.parent
@@ -218,8 +233,56 @@ class PushSummaryManager:
         return self.push_summary
 
     def logger(self, level='info', message="No message"):
+        """
+        Logger method to print log messages
+        Args:
+            level: Log level to be assigned
+            message: Log message to be printed
+        """
         if not self._parent_having_logger:
             self._parent_having_logger = self._find_logger()
 
         if self._parent_having_logger:
             self._parent_having_logger.logger(level=level, message=message)
+
+    def reset_commit_status(self, current_object):
+        """
+        Resetting the commit status of all EasyUCS objects and sub-objects
+        Args:
+            current_object: EasyUCS object whose commit status will be reset
+        """
+        # Clearing commit status of all objects and sub-objects
+        if not isinstance(current_object, dict):
+            # We have an EasyUCS object
+            if getattr(current_object, "_commit_status", None):
+                current_object._commit_status = []
+
+            for attribute in sorted(vars(current_object)):
+                if not attribute.startswith('_') and not attribute == "dn" \
+                        and getattr(current_object, attribute) is not None:
+                    if any(isinstance(getattr(current_object, attribute), x) for x in [GenericConfigObject]):
+                        # Attribute of EasyUCS object is an EasyUCS object
+                        self.reset_commit_status(current_object)
+                    elif isinstance(getattr(current_object, attribute), list):
+                        # Attribute of EasyUCS object is a list
+                        if len(getattr(current_object, attribute)) == 0:
+                            continue
+                        for element in getattr(current_object, attribute):
+                            if isinstance(element, GenericConfigObject):
+                                self.reset_commit_status(element)
+
+    def reset_push_summary(self):
+        """
+        Resetting the push summary of the config. This is done to avoid having legacy data when
+        pushing the same config multiple times.
+        """
+        if self.push_summary.get("summary", {}).get("total", 0) != 0:
+            self._init_push_summary()
+            # Clearing commit status of each config object
+            for export_attribute in self.parent.export_list:
+                # We check if the attribute is an empty list, in which case, we don't reset the status
+                if isinstance(getattr(self.parent, export_attribute), list):
+                    if len(getattr(self.parent, export_attribute)) == 0:
+                        continue
+                    for config_object in getattr(self.parent, export_attribute):
+                        self.reset_commit_status(config_object)

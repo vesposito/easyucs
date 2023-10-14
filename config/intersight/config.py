@@ -294,8 +294,23 @@ class IntersightConfig(GenericConfig):
                     for sdk_object in sdk_objects_list:
                         self.logger(level="warning", message="Impossible to fetch " + sdk_object + " after 2 attempts.")
 
+        is_shared_org = False
+        for organization_organization in self.sdk_objects.get("organization_organization", []):
+            # Checking if intersight orgs have shared resources, if yes raise an error
+            if hasattr(organization_organization, "shared_with_resources"):
+                if organization_organization.shared_with_resources:
+                    self.logger(level="error", message="Organization with shared resources is not supported")
+                    is_shared_org = True
+                    break
+
         if self.device.task is not None:
-            if not retry_failed_to_fetch:
+            if is_shared_org and not force:
+                self.device.task.taskstep_manager.stop_taskstep(
+                    name="FetchConfigIntersightSdkObjects", status="failed",
+                    status_message="Error while fetching " + self.device.metadata.device_type_long +
+                                   " SDK Config Objects. Organization with shared resources is not supported")
+                return False
+            elif not retry_failed_to_fetch:
                 self.device.task.taskstep_manager.stop_taskstep(
                     name="FetchConfigIntersightSdkObjects", status="successful",
                     status_message="Successfully fetched " + self.device.metadata.device_type_long +

@@ -1341,7 +1341,7 @@ class IntersightWwnnPool(IntersightConfigObject):
         fcpool_pool = FcpoolPool(**kwargs)
 
         fcpool = self.commit(object_type=self._INTERSIGHT_SDK_OBJECT_NAME, payload=fcpool_pool, detail=self.name,
-                             return_relationship=True)
+                             return_relationship=True, key_attributes=["name", "pool_purpose"])
         if not fcpool:
             return False
 
@@ -1553,7 +1553,7 @@ class IntersightWwpnPool(IntersightConfigObject):
         fcpool_pool = FcpoolPool(**kwargs)
 
         fcpool = self.commit(object_type=self._INTERSIGHT_SDK_OBJECT_NAME, payload=fcpool_pool, detail=self.name,
-                             return_relationship=True)
+                             return_relationship=True, key_attributes=["name", "pool_purpose"])
         if not fcpool:
             return False
 

@@ -598,7 +598,7 @@ class UcsSystemOrg(UcsSystemConfigObject):
         # TODO: Verify order
         objects_to_push_in_order = [
             'server_pool_policy_qualifications', 'server_pools', 'server_pool_policies', 'ip_pools', 'mac_pools',
-            'uuid_pools', 'wwpn_pools', 'wwnn_pools', 'wwxn_pools', 'bios_policies', 'boot_policies', 'orgs',
+            'uuid_pools', 'wwpn_pools', 'wwnn_pools', 'wwxn_pools', 'bios_policies', 'boot_policies',
             'iqn_pools', 'vmedia_policies', 'qos_policies', 'ethernet_adapter_policies',
             'fibre_channel_adapter_policies', 'diagnostics_policies', 'iscsi_adapter_policies', 'ipmi_access_profiles',
             'power_control_policies', 'serial_over_lan_policies', 'power_sync_policies', 'vnic_vhba_placement_policies',
@@ -669,6 +669,11 @@ class UcsSystemOrg(UcsSystemConfigObject):
                                         " as it is instantiated from a UCS Central Global Service Profile Template")
             else:
                 service_profile.push_object()
+
+        # We push orgs at the end to make sure profiles/templates dependencies are already pushed
+        if self.orgs:
+            for org in self.orgs:
+                org.push_object()
 
         return True
 
@@ -1147,6 +1152,7 @@ class UcsSystemGlobalPolicies(UcsSystemConfigObject):
         self.hardware_change_discovery_policy_owner = None
         self.fabric_a_fc_uplink_trunking = None
         self.fabric_b_fc_uplink_trunking = None
+        self.fabric_pc_vhba_reset = None
         self.q_in_q_forwarding = None
 
         if self._config.load_from == "live":
@@ -1221,6 +1227,7 @@ class UcsSystemGlobalPolicies(UcsSystemConfigObject):
                 self.mac_address_table_aging = self._config.sdk_objects["fabricLanCloud"][0].mac_aging
                 self.vlan_port_count_optimization = self._config.sdk_objects["fabricLanCloud"][0].vlan_compression
                 self.q_in_q_forwarding = self._config.sdk_objects["fabricLanCloud"][0].qin_q_forwarding
+                self.fabric_pc_vhba_reset = self._config.sdk_objects["fabricLanCloud"][0].fabric_pc_vhba_reset
 
             if "fabricLanCloudPolicy" in self._config.sdk_objects:
                 if self._config.sdk_objects["fabricLanCloudPolicy"][0].policy_owner in ["policy"]:
@@ -1412,6 +1419,14 @@ class UcsSystemGlobalPolicies(UcsSystemConfigObject):
             self._handle.add_mo(mo_fabric_lan_cloud, modify_present=True)
             if commit:
                 if self.commit("Q-in-Q Forwarding") != True:
+                    return False
+
+        if self.fabric_pc_vhba_reset:
+            mo_fabric_lan_cloud = FabricLanCloud(parent_mo_or_dn=parent_mo_fabric,
+                                                 fabric_pc_vhba_reset=self.fabric_pc_vhba_reset)
+            self._handle.add_mo(mo_fabric_lan_cloud, modify_present=True)
+            if commit:
+                if self.commit("Fabric PC vHBA Reset") != True:
                     return False
 
         # TODO: Support modifying Reserved VLAN IDs by handling associated required reboot

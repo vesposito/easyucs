@@ -36,6 +36,7 @@ class UcsRack(GenericUcsInventoryObject):
                                                attribute_secondary_name="memory_total", attribute_type="int")
         self.model = self.get_attribute(ucs_sdk_object=compute_rack_unit, attribute_name="model")
         self.serial = self.get_attribute(ucs_sdk_object=compute_rack_unit, attribute_name="serial")
+        self.server_personality = None
         self.slot_id = None
         if self._device.metadata.device_type not in ["ucsc"]:
             # The following attribute is not supported in UCS Central
@@ -194,6 +195,7 @@ class UcsSystemRack(UcsRack, UcsSystemInventoryObject):
             self.imm_compatible = self._get_imm_compatibility()
             self.mgmt_connection_type = self._get_mgmt_connection_type()
             self.locator_led_status = self._determine_locator_led_status()
+            self.server_personality = self._get_server_personality()
             self._find_pcie_risers()
             self._get_os_details()
             if self.assigned_to_dn is not None and self.assigned_to_dn != "":
@@ -605,6 +607,19 @@ class UcsSystemRack(UcsRack, UcsSystemInventoryObject):
             return [UcsSystemPsu(self, psu) for psu in self._ucs_sdk_object["power_supplies"]]
         else:
             return []
+
+    def _get_server_personality(self):
+        # We check if we already have fetched the list of computePersonality objects
+        if self._inventory.sdk_objects.get("computePersonality") is not None:
+            compute_personality_list = [compute_personality for compute_personality in
+                                        self._inventory.sdk_objects["computePersonality"] if "sys/rack-unit-" +
+                                        self.id + "/" in compute_personality.dn]
+
+            # We return the computePersonality name if there is one and only one computePersonality object in the list
+            if len(compute_personality_list) == 1:
+                return compute_personality_list[0].name
+
+        return None
 
     def _get_service_profile_template(self):
         # We check if we already have fetched the list of lsServer objects

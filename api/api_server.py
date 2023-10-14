@@ -20,9 +20,8 @@ from flask_cors import CORS
 from werkzeug.exceptions import BadRequest
 from werkzeug.utils import secure_filename
 
-from common import validate_json, encrypt, decrypt, extract, guess_image_metadata
+from common import validate_json, encrypt, decrypt, extract
 from __init__ import EASYUCS_ROOT, __version__
-from device.device import GenericDevice
 
 app = Flask(__name__)
 cors = CORS(app)
@@ -2112,6 +2111,8 @@ def device_uuid_config_uuid_actions_push(device_uuid, config_uuid):
                             response_message = "Failed to load config with UUID " + str(config_uuid)
                         response = response_handle(response=response_message, code=400)
                         return response
+                    # Resetting the push summary and commit statuses in config objects
+                    config.push_summary_manager.reset_push_summary()
 
                 try:
                     # We create a new task

@@ -286,11 +286,11 @@ class UcsSystemInventory(GenericUcsInventory):
             return False
 
         # List of SDK objects to fetch that are specific to UCS System
-        sdk_objects_to_fetch = ["adaptorUnitExtn", "computeBlade", "equipmentFex", "equipmentFruVariant",
-                                "equipmentIOCard", "equipmentRackEnclosure", "equipmentSwitchCard",
-                                "equipmentSwitchIOCard", "equipmentTpm", "equipmentXcvr", "etherPIo",
-                                "etherServerIntFIo", "etherSwitchIntFIo", "fcPIo", "firmwareRunning", "firmwareStatus",
-                                "graphicsCard", "licenseFeature", "licenseFile", "licenseInstance",
+        sdk_objects_to_fetch = ["adaptorUnitExtn", "computeBlade", "computePersonality", "equipmentCrossFabricModule",
+                                "equipmentFex", "equipmentFruVariant", "equipmentIOCard", "equipmentRackEnclosure",
+                                "equipmentSwitchCard", "equipmentSwitchIOCard", "equipmentTpm", "equipmentXcvr",
+                                "etherPIo", "etherServerIntFIo", "etherSwitchIntFIo", "fcPIo", "firmwareRunning",
+                                "firmwareStatus", "graphicsCard", "licenseFeature", "licenseFile", "licenseInstance",
                                 "licenseServerHostId", "lsServer", "memoryErrorStats", "mgmtConnection",
                                 "mgmtInterface", "mgmtVnet", "moInvKv", "networkElement", "networkLanNeighborEntry",
                                 "networkLldpNeighborEntry", "networkSanNeighborEntry", "storageEmbeddedStorage",

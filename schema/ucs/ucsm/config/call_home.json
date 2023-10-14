@@ -366,9 +366,6 @@
          "phone",
          "email",
          "address",
-         "customer_id",
-         "contract_id",
-         "site_id",
          "email_from",
          "email_reply_to",
          "smtp_host"

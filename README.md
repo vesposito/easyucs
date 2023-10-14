@@ -152,6 +152,16 @@ python easyucs_api.py
 
 ## Versioning
 
+### 0.9.8.6
+
+* Add support for HTTP boot, Simple Placement mode for VIC 1300 in Intersight config
+* Add support for Fabric Port-Channel vHBA Reset in UCSM & Intersight config
+* Add support for BIOS Tokens up to UCS Central 2.0(1t)
+* Add support for XFM inventory/draw & Server Personality in UCSM inventory
+* Bump up minimum Intersight Appliance required version to 1.0.9-615
+* Prevent fetching Intersight config with Shared Orgs (not yet supported)
+* Miscellaneous bug fixes and improvements
+
 ### 0.9.8.5
 
 Sorry for the delay in updating this tool! We were busy working on the [**IMM Transition Tool**](https://www.cisco.com/c/en/us/td/docs/unified_computing/Intersight/IMM-Transition-Tool/b_imm_tt_rn.html) which uses EasyUCS as its backend.

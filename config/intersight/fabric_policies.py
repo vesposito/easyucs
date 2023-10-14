@@ -1941,6 +1941,7 @@ class IntersightFabricSwitchControlPolicy(IntersightConfigObject):
         IntersightConfigObject.__init__(self, parent=parent, sdk_object=fabric_switch_control_policy)
 
         self.descr = self.get_attribute(attribute_name="description", attribute_secondary_name="descr")
+        self.fabric_port_channel_vhba_reset = None
         self.link_control_global_settings = None
         self.mac_address_table_aging = None
         self.mac_aging_time = None
@@ -1951,6 +1952,11 @@ class IntersightFabricSwitchControlPolicy(IntersightConfigObject):
                                                                attribute_secondary_name="vlan_port_count_optimization")
 
         if self._config.load_from == "live":
+            if hasattr(self._object, "fabric_pc_vhba_reset"):
+                if self._object.fabric_pc_vhba_reset in ["Disabled"]:
+                    self.fabric_port_channel_vhba_reset = False
+                elif self._object.fabric_pc_vhba_reset in ["Enabled"]:
+                    self.fabric_port_channel_vhba_reset = True
             if hasattr(self._object, "mac_aging_settings"):
                 if hasattr(self._object.mac_aging_settings, "mac_aging_option"):
                     self.mac_address_table_aging = self._object.mac_aging_settings.mac_aging_option
@@ -1971,8 +1977,8 @@ class IntersightFabricSwitchControlPolicy(IntersightConfigObject):
                     self.switching_mode["fc"] = self._object.fc_switching_mode
 
         elif self._config.load_from == "file":
-            for attribute in ["link_control_global_settings", "mac_address_table_aging", "mac_aging_time",
-                              "switching_mode"]:
+            for attribute in ["fabric_port_channel_vhba_reset", "link_control_global_settings",
+                              "mac_address_table_aging", "mac_aging_time", "switching_mode"]:
                 setattr(self, attribute, None)
                 if attribute in self._object:
                     setattr(self, attribute, self.get_attribute(attribute_name=attribute))
@@ -2009,6 +2015,11 @@ class IntersightFabricSwitchControlPolicy(IntersightConfigObject):
             kwargs["description"] = self.descr
         if self.tags is not None:
             kwargs["tags"] = self.create_tags()
+        if self.fabric_port_channel_vhba_reset is not None:
+            if self.fabric_port_channel_vhba_reset is True:
+                kwargs["fabric_pc_vhba_reset"] = "Enabled"
+            elif self.fabric_port_channel_vhba_reset is False:
+                kwargs["fabric_pc_vhba_reset"] = "Disabled"
         if self.reserved_vlan_start_id is not None:
             kwargs["reserved_vlan_start_id"] = self.reserved_vlan_start_id
         if self.vlan_port_count_optimization is not None:

@@ -68,6 +68,6 @@ class GenericConfigObject:
                         self._device.task.taskstep_manager.update_taskstep_description(
                             description=f"Pushing {self._CONFIG_NAME} with {attribute_name} "
                                         f"'{getattr(self, attribute_name)}'")
-                function(self, *args, **kwargs)
+                return function(self, *args, **kwargs)
             return wrapper
         return decorator

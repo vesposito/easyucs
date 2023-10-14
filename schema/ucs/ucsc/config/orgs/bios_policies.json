@@ -254,6 +254,23 @@
             "platform-default"
          ]
       },
+      "adaptive_refresh_management_level": {
+         "description": "BIOS Policy - Adaptive Refresh Management Level - Adaptive Refresh Management Level",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "Default",
+            "Level-A",
+            "Level-B",
+            "Level-C",
+            "Platform Default",
+            "default",
+            "level-a",
+            "level-b",
+            "level-c",
+            "platform-default"
+         ]
+      },
       "adjacent_cache_line_prefetcher": {
          "description": "BIOS Policy - Processor Prefetch Config - Adjacent Cache Line Prefetcher",
          "type": "string",
@@ -740,8 +757,24 @@
             "46",
             "47",
             "48",
+            "49",
             "5",
+            "50",
+            "51",
+            "52",
+            "53",
+            "54",
+            "55",
+            "56",
+            "57",
+            "58",
+            "59",
             "6",
+            "60",
+            "61",
+            "62",
+            "63",
+            "64",
             "7",
             "8",
             "9",
@@ -1237,6 +1270,21 @@
             "Platform Default",
             "disabled",
             "enabled",
+            "platform-default"
+         ]
+      },
+      "error_check_scrub": {
+         "description": "BIOS Policy - ECS Configuration - Error Check Scrub",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "Disabled",
+            "Enabled-with-Result-Collection",
+            "Enabled-without-Result-Collection",
+            "Platform Default",
+            "disabled",
+            "enabled-with-result-collection",
+            "enabled-without-result-collection",
             "platform-default"
          ]
       },
@@ -3408,6 +3456,19 @@
             "test-only"
          ]
       },
+      "optimized_power_mode": {
+         "description": "BIOS Policy - Optimized Power Mode - Optimized Power Mode",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "Disabled",
+            "Enabled",
+            "Platform Default",
+            "disabled",
+            "enabled",
+            "platform-default"
+         ]
+      },
       "optionrom_launch_optimization": {
          "description": "BIOS Policy - OptionROM Launch Optimization - OptionROM Launch Optimization",
          "type": "string",
@@ -4795,6 +4856,37 @@
             "platform-default"
          ]
       },
+      "prmrr_size": {
+         "description": "BIOS Policy - PRMRR Size Configuration - PRMRR Size",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "128G",
+            "128g",
+            "16G",
+            "16g",
+            "1G",
+            "1g",
+            "256G",
+            "256g",
+            "2G",
+            "2g",
+            "32G",
+            "32g",
+            "4G",
+            "4g",
+            "512G",
+            "512g",
+            "64G",
+            "64g",
+            "8G",
+            "8g",
+            "Invalid-Config.",
+            "Platform Default",
+            "invalid-config.",
+            "platform-default"
+         ]
+      },
       "processor_c1e": {
          "description": "BIOS Policy - Processor C1E - Processor C1E",
          "type": "string",
@@ -5060,6 +5152,19 @@
             "Auto",
             "Platform Default",
             "auto",
+            "platform-default"
+         ]
+      },
+      "rank_margin_tool": {
+         "description": "BIOS Policy - Rank Margin Tool - Rank Margin Tool",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "Disabled",
+            "Enabled",
+            "Platform Default",
+            "disabled",
+            "enabled",
             "platform-default"
          ]
       },
@@ -6058,12 +6163,18 @@
          "type": "string",
          "default": "platform-default",
          "enum": [
+            "Auto",
             "Disabled",
             "Enabled",
             "Platform Default",
+            "SNC2",
+            "SNC4",
+            "auto",
             "disabled",
             "enabled",
-            "platform-default"
+            "platform-default",
+            "snc2",
+            "snc4"
          ]
       },
       "svm_mode": {
@@ -6238,6 +6349,12 @@
             "10.4gt-s",
             "11.2GT-s",
             "11.2gt-s",
+            "12.8GT-s",
+            "12.8gt-s",
+            "14.4GT-s",
+            "14.4gt-s",
+            "16.0GT-s",
+            "16.0gt-s",
             "9.6GT-s",
             "9.6gt-s",
             "Auto",
@@ -6457,6 +6574,19 @@
             "Platform Default",
             "balanced",
             "io-sensitive",
+            "platform-default"
+         ]
+      },
+      "x2apic_opt_out": {
+         "description": "BIOS Policy - X2APIC Opt Out - X2APIC Opt Out",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "Disabled",
+            "Enabled",
+            "Platform Default",
+            "disabled",
+            "enabled",
             "platform-default"
          ]
       },

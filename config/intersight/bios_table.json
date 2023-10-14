@@ -446,12 +446,25 @@
    "adaptive_refresh_mgmt_level": {
       "type": "enum",
       "ucsc_token_map": {
-         "Default": [],
-         "Level A": [],
-         "Level B": [],
-         "Level C": [],
+         "Default": [
+            "Default",
+            "default"
+         ],
+         "Level A": [
+            "Level-A",
+            "level-a"
+         ],
+         "Level B": [
+            "Level-B",
+            "level-b"
+         ],
+         "Level C": [
+            "Level-C",
+            "level-c"
+         ],
          "platform-default": [
-            "Platform Default"
+            "Platform Default",
+            "platform-default"
          ]
       },
       "ucsm_token_map": {
@@ -3159,28 +3172,60 @@
          "48": [
             "48"
          ],
-         "49": [],
+         "49": [
+            "49"
+         ],
          "5": [
             "5"
          ],
-         "50": [],
-         "51": [],
-         "52": [],
-         "53": [],
-         "54": [],
-         "55": [],
-         "56": [],
-         "57": [],
-         "58": [],
-         "59": [],
+         "50": [
+            "50"
+         ],
+         "51": [
+            "51"
+         ],
+         "52": [
+            "52"
+         ],
+         "53": [
+            "53"
+         ],
+         "54": [
+            "54"
+         ],
+         "55": [
+            "55"
+         ],
+         "56": [
+            "56"
+         ],
+         "57": [
+            "57"
+         ],
+         "58": [
+            "58"
+         ],
+         "59": [
+            "59"
+         ],
          "6": [
             "6"
          ],
-         "60": [],
-         "61": [],
-         "62": [],
-         "63": [],
-         "64": [],
+         "60": [
+            "60"
+         ],
+         "61": [
+            "61"
+         ],
+         "62": [
+            "62"
+         ],
+         "63": [
+            "63"
+         ],
+         "64": [
+            "64"
+         ],
          "7": [
             "7"
          ],
@@ -4738,11 +4783,21 @@
    "error_check_scrub": {
       "type": "enum",
       "ucsc_token_map": {
-         "Disabled": [],
-         "Enabled with Result Collection": [],
-         "Enabled without Result Collection": [],
+         "Disabled": [
+            "Disabled",
+            "disabled"
+         ],
+         "Enabled with Result Collection": [
+            "Enabled-with-Result-Collection",
+            "enabled-with-result-collection"
+         ],
+         "Enabled without Result Collection": [
+            "Enabled-without-Result-Collection",
+            "enabled-without-result-collection"
+         ],
          "platform-default": [
-            "Platform Default"
+            "Platform Default",
+            "platform-default"
          ]
       },
       "ucsm_token_map": {
@@ -6606,10 +6661,17 @@
    "optimized_power_mode": {
       "type": "enum",
       "ucsc_token_map": {
-         "disabled": [],
-         "enabled": [],
+         "disabled": [
+            "disabled",
+            "Disabled"
+         ],
+         "enabled": [
+            "enabled",
+            "Enabled"
+         ],
          "platform-default": [
-            "Platform Default"
+            "Platform Default",
+            "platform-default"
          ]
       },
       "ucsm_token_map": {
@@ -8342,22 +8404,56 @@
    "prmrr_size": {
       "type": "enum",
       "ucsc_token_map": {
-         "128G": [],
+         "128G": [
+            "128G",
+            "128g"
+         ],
          "128M": [],
-         "16G": [],
-         "1G": [],
-         "256G": [],
+         "16G": [
+            "16G",
+            "16g"
+         ],
+         "1G": [
+            "1G",
+            "1g"
+         ],
+         "256G": [
+            "256G",
+            "256g"
+         ],
          "256M": [],
-         "2G": [],
-         "32G": [],
-         "4G": [],
-         "512G": [],
+         "2G": [
+            "2G",
+            "2g"
+         ],
+         "32G": [
+            "32G",
+            "32g"
+         ],
+         "4G": [
+            "4G",
+            "4g"
+         ],
+         "512G": [
+            "512G",
+            "512g"
+         ],
          "512M": [],
-         "64G": [],
-         "8G": [],
-         "Invalid Config.": [],
+         "64G": [
+            "64G",
+            "64g"
+         ],
+         "8G": [
+            "8G",
+            "8g"
+         ],
+         "Invalid Config.": [
+            "Invalid-Config.",
+            "invalid-config."
+         ],
          "platform-default": [
-            "Platform Default"
+            "Platform Default",
+            "platform-default"
          ]
       },
       "ucsm_token_map": {
@@ -16544,9 +16640,18 @@
    "snc": {
       "type": "enum",
       "ucsc_token_map": {
-         "Auto": [],
-         "SNC2": [],
-         "SNC4": [],
+         "Auto": [
+            "Auto",
+            "auto"
+         ],
+         "SNC2": [
+            "SNC2",
+            "snc2"
+         ],
+         "SNC4": [
+            "SNC4",
+            "snc4"
+         ],
          "disabled": [
             "disabled",
             "Disabled"
@@ -17687,10 +17792,17 @@
    "x2apic_opt_out": {
       "type": "enum",
       "ucsc_token_map": {
-         "disabled": [],
-         "enabled": [],
+         "disabled": [
+            "disabled",
+            "Disabled"
+         ],
+         "enabled": [
+            "enabled",
+            "Enabled"
+         ],
          "platform-default": [
-            "Platform Default"
+            "Platform Default",
+            "platform-default"
          ]
       },
       "ucsm_token_map": {

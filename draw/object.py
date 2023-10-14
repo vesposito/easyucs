@@ -89,6 +89,8 @@ class GenericDrawObject:
             folder_path = "catalog/drives/"
         elif "Iom" in self._parent.__class__.__name__ or "Sioc" in self._parent.__class__.__name__:
             folder_path = "catalog/io_modules/"
+        elif self._parent.__class__.__name__ == "UcsSystemXfm":
+            folder_path = "catalog/x_fabric_modules/"
         elif "Rack" in self._parent.__class__.__name__:
             if self._parent.model == "UCSC-C125":
                 folder_path = "catalog/server_nodes/"

@@ -316,6 +316,31 @@
          "Platform Default"
       ]
    },
+   "adaptive_refresh_management_level": {
+      "available_in_legacy_mode": false,
+      "feature_group": "Adaptive Refresh Management Level",
+      "legacy_values": [
+         "default",
+         "level-a",
+         "level-b",
+         "level-c",
+         "platform-default"
+      ],
+      "maximum": null,
+      "minimum": null,
+      "param_name": "Adaptive Refresh Management Level",
+      "step": null,
+      "target_name": "AdaptiveRefreshMgmtLevel",
+      "type": "enum",
+      "unit": null,
+      "values": [
+         "Default",
+         "Level-A",
+         "Level-B",
+         "Level-C",
+         "Platform Default"
+      ]
+   },
    "adjacent_cache_line_prefetcher": {
       "available_in_legacy_mode": true,
       "feature_group": "Processor Prefetch Config",
@@ -1051,8 +1076,24 @@
          "46",
          "47",
          "48",
+         "49",
          "5",
+         "50",
+         "51",
+         "52",
+         "53",
+         "54",
+         "55",
+         "56",
+         "57",
+         "58",
+         "59",
          "6",
+         "60",
+         "61",
+         "62",
+         "63",
+         "64",
          "7",
          "8",
          "9",
@@ -1110,8 +1151,24 @@
          "46",
          "47",
          "48",
+         "49",
          "5",
+         "50",
+         "51",
+         "52",
+         "53",
+         "54",
+         "55",
+         "56",
+         "57",
+         "58",
+         "59",
          "6",
+         "60",
+         "61",
+         "62",
+         "63",
+         "64",
          "7",
          "8",
          "9",
@@ -1857,6 +1914,29 @@
       "values": [
          "Disabled",
          "Enabled",
+         "Platform Default"
+      ]
+   },
+   "error_check_scrub": {
+      "available_in_legacy_mode": false,
+      "feature_group": "ECS Configuration",
+      "legacy_values": [
+         "disabled",
+         "enabled-with-result-collection",
+         "enabled-without-result-collection",
+         "platform-default"
+      ],
+      "maximum": null,
+      "minimum": null,
+      "param_name": "Error Check Scrub",
+      "step": null,
+      "target_name": "ErrorCheckScrub",
+      "type": "enum",
+      "unit": null,
+      "values": [
+         "Disabled",
+         "Enabled-with-Result-Collection",
+         "Enabled-without-Result-Collection",
          "Platform Default"
       ]
    },
@@ -5126,6 +5206,27 @@
          "Platform Default"
       ]
    },
+   "optimized_power_mode": {
+      "available_in_legacy_mode": false,
+      "feature_group": "Optimized Power Mode",
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "platform-default"
+      ],
+      "maximum": null,
+      "minimum": null,
+      "param_name": "Optimized Power Mode",
+      "step": null,
+      "target_name": "OptimizedPowerMode",
+      "type": "enum",
+      "unit": null,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ]
+   },
    "optionrom_launch_optimization": {
       "available_in_legacy_mode": false,
       "feature_group": "OptionROM Launch Optimization",
@@ -5583,7 +5684,7 @@
       "step": "1",
       "target_name": "PchPciePllSsc",
       "type": "integer",
-      "unit": "(N/10)%",
+      "unit": "(n/10)%",
       "values": [
          "Integer",
          "Platform Default"
@@ -7259,6 +7360,45 @@
          "Platform Default"
       ]
    },
+   "prmrr_size": {
+      "available_in_legacy_mode": false,
+      "feature_group": "PRMRR Size Configuration",
+      "legacy_values": [
+         "128g",
+         "16g",
+         "1g",
+         "256g",
+         "2g",
+         "32g",
+         "4g",
+         "512g",
+         "64g",
+         "8g",
+         "invalid-config.",
+         "platform-default"
+      ],
+      "maximum": null,
+      "minimum": null,
+      "param_name": "PRMRR Size",
+      "step": null,
+      "target_name": "PrmrrSize",
+      "type": "enum",
+      "unit": null,
+      "values": [
+         "128G",
+         "16G",
+         "1G",
+         "256G",
+         "2G",
+         "32G",
+         "4G",
+         "512G",
+         "64G",
+         "8G",
+         "Invalid-Config.",
+         "Platform Default"
+      ]
+   },
    "processor_c1e": {
       "available_in_legacy_mode": true,
       "feature_group": "Processor C1E",
@@ -7652,6 +7792,27 @@
          "4-Way",
          "8-Way",
          "Auto",
+         "Platform Default"
+      ]
+   },
+   "rank_margin_tool": {
+      "available_in_legacy_mode": false,
+      "feature_group": "Rank Margin Tool",
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "platform-default"
+      ],
+      "maximum": null,
+      "minimum": null,
+      "param_name": "Rank Margin Tool",
+      "step": null,
+      "target_name": "EnableRMT",
+      "type": "enum",
+      "unit": null,
+      "values": [
+         "Disabled",
+         "Enabled",
          "Platform Default"
       ]
    },
@@ -9204,8 +9365,11 @@
       "available_in_legacy_mode": false,
       "feature_group": "Interleave Configuration",
       "legacy_values": [
+         "auto",
          "disabled",
          "enabled",
+         "snc2",
+         "snc4",
          "platform-default"
       ],
       "maximum": null,
@@ -9216,8 +9380,11 @@
       "type": "enum",
       "unit": null,
       "values": [
+         "Auto",
          "Disabled",
          "Enabled",
+         "SNC2",
+         "SNC4",
          "Platform Default"
       ]
    },
@@ -9489,6 +9656,9 @@
       "legacy_values": [
          "10.4gt-s",
          "11.2gt-s",
+         "12.8gt-s",
+         "14.4gt-s",
+         "16.0gt-s",
          "9.6gt-s",
          "auto",
          "use-per-link-setting",
@@ -9504,6 +9674,9 @@
       "values": [
          "10.4GT-s",
          "11.2GT-s",
+         "12.8GT-s",
+         "14.4GT-s",
+         "16.0GT-s",
          "9.6GT-s",
          "Auto",
          "Use-Per-Link-Setting",
@@ -9847,6 +10020,27 @@
       "values": [
          "Balanced",
          "IO-Sensitive",
+         "Platform Default"
+      ]
+   },
+   "x2apic_opt_out": {
+      "available_in_legacy_mode": false,
+      "feature_group": "X2APIC Opt Out",
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "platform-default"
+      ],
+      "maximum": null,
+      "minimum": null,
+      "param_name": "X2APIC Opt Out",
+      "step": null,
+      "target_name": "X2ApicOptOut",
+      "type": "enum",
+      "unit": null,
+      "values": [
+         "Disabled",
+         "Enabled",
          "Platform Default"
       ]
    },

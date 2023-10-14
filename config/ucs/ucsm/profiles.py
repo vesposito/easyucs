@@ -348,6 +348,19 @@ class UcsSystemServiceProfile(UcsSystemConfigObject):
                                     parent=self, storage_local_disk_config_policy=specific_local_disk_config_pol
                                 )
 
+                                # In some specific cases, the Service Profile can have both a Local Disk Config Policy
+                                # and a Specific Local Disk Config Policy applied to it. We only keep the specific as
+                                # that is what the UCSM GUI shows in such a scenario (EASYUCS-1046)
+                                if self.local_disk_configuration_policy:
+                                    self.logger(
+                                        level="warning",
+                                        message=f"Ignoring Local Disk Configuration Policy " +
+                                                f"'{self.local_disk_configuration_policy}' due to Specific Local " +
+                                                f"Disk Configuration Policy being configured for {self._CONFIG_NAME} " +
+                                                f"'{self.name}'"
+                                    )
+                                    self.local_disk_configuration_policy = None
+
                 if "vnicDynamicCon" in self._parent._config.sdk_objects:
                     for specific_dyn_vnic_conn_pol in self._config.sdk_objects["vnicDynamicCon"]:
                         if self._parent._dn:
@@ -1472,7 +1485,7 @@ class UcsSystemServiceProfile(UcsSystemConfigObject):
                 if mac_address == "hardware-default":
                     mac_address = None
                 mo_vnic_iscsi = VnicIScsi(parent_mo_or_dn=mo_ls_server,
-                                          adaptor_profile_name=iscsi_vnic["adapter_policy"],
+                                          adaptor_profile_name=iscsi_vnic["iscsi_adapter_policy"],
                                           ident_pool_name=mac_address_pool,
                                           addr=mac_address,
                                           name=iscsi_vnic['name'],
@@ -1713,6 +1726,15 @@ class UcsSystemServiceProfile(UcsSystemConfigObject):
         if not hasattr(self, 'number_of_instances'):
             self.number_of_instances = "1"
 
+        # Creating the path to the template. Example = "org-root/org-DevTeam/ls-Template"
+        template_name, template_org_path = self._config.get_operational_policy_name_and_org_path(
+            source_object=self,
+            policy_type="service_profile_template")
+        if template_name and template_org_path:
+            source_dn = "org-" + template_org_path.replace("/", "/org-") + "/ls-" + self.service_profile_template
+        else:
+            source_dn = parent_mo + "/ls-" + self.service_profile_template
+
         if self.suffix_start_number and self.number_of_instances:
             dn_set = DnSet()
             for i in range(int(self.suffix_start_number),
@@ -1720,9 +1742,6 @@ class UcsSystemServiceProfile(UcsSystemConfigObject):
                 dn = Dn()
                 dn.attr_set("value", str(self.name + str(i)))
                 dn_set.child_add(dn)
-
-            # Creating the path to the template. Example = "org-root/org-DevTeam/ls-Template"
-            source_dn = parent_mo + "/ls-" + self.service_profile_template
 
             elem = ls_instantiate_n_named_template(cookie=self._handle.cookie,
                                                    dn=source_dn,
@@ -1754,9 +1773,6 @@ class UcsSystemServiceProfile(UcsSystemConfigObject):
                         str(self.service_profile_template))
 
         else:
-            # Creating the path to the template. Example = "org-root/org-DevTeam/ls-Template"
-            source_dn = parent_mo + "/ls-" + self.service_profile_template
-
             elem = ls_instantiate_template(cookie=self._handle.cookie,
                                            dn=source_dn,
                                            in_error_on_existing="false",
