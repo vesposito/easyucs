@@ -29,7 +29,7 @@ Minimum versions of UCS devices :
 * UCS Manager: ***3.2(1d)*** or above
 * UCS IMC: ***3.0(1c)*** or above
 * UCS Central: ***2.0(1a)*** or above
-* Intersight SaaS ***(no prerequisite)*** & Appliance: ***1.0.9-589*** or above
+* Intersight SaaS ***(no prerequisite)*** & Appliance: ***1.0.9-615*** or above
 
 This tool requires ***Python 3.8+*** to work. *Python 2.x* is not supported.
 
