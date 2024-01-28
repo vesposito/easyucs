@@ -1,0 +1,32 @@
+{
+  "model_short_name": "Mellanox MCX516A-CDAT 2x100G",
+  "rear_file_name": "UCSC-P-M5D100GF.png",
+  "rear_file_name_half": "UCSC-P-M5D100GF_half.png",
+  "rear_file_size": [593,75],
+  "rear_file_size_half": [389,75],
+  "rear_ports": {
+    "x/1": {
+      "port_coord": [256, 17],
+      "port_type": "qsfp28",
+      "port_size": [108, 50]
+    },
+    "x/2": {
+      "port_coord": [380, 17],
+      "port_type": "qsfp28",
+      "port_size": [108, 50]
+    }
+  },
+  "rear_ports_half": {
+    "x/1": {
+      "port_coord": [96, 17],
+      "port_type": "qsfp28",
+      "port_size": [108, 50]
+    },
+    "x/2": {
+      "port_coord": [220, 17],
+      "port_type": "qsfp28",
+      "port_size": [108, 50]
+    }
+  },
+  "data_sheet_url": "https://www.cisco.com/c/dam/en/us/products/collateral/servers-unified-computing/ucs-c-series-rack-servers/pb-connectx-5-en-card_cisco-7b_Jan-2020.pdf"
+}

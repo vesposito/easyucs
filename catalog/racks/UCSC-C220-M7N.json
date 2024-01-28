@@ -34,18 +34,20 @@
    "pcie_riser_models": [
       {
          "name": "UCSC-FBRS-C220",
-         "type": "blank",
+         "type": "#blank",
          "riser_ids": [1],
          "description": "Blanking Panel"
       },
       {
-         "name": "UCSC-FBRS2-C220M7",
+         "name": "UCSC-RIS2A_2B-22XM7",
+         "#name": "UCSC-FBRS2-C220M7",
          "type": "blank",
          "riser_ids": [2],
          "description": "Blanking Panel"
       },
       {
-         "name": "UCSC-FBRS-C220",
+         "name": "UCSC-RIS3A-22XM7",
+         "#name": "UCSC-FBRS-C220",
          "type": "blank",
          "riser_ids": [3],
          "description": "Blanking Panel"

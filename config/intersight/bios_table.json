@@ -8461,7 +8461,10 @@
             "128G",
             "128g"
          ],
-         "128M": [],
+         "128M": [
+            "128M",
+            "128m"
+         ],
          "16G": [
             "16G",
             "16g"
@@ -8474,7 +8477,10 @@
             "256G",
             "256g"
          ],
-         "256M": [],
+         "256M": [
+            "256M",
+            "256m"
+         ],
          "2G": [
             "2G",
             "2g"
@@ -8491,7 +8497,10 @@
             "512G",
             "512g"
          ],
-         "512M": [],
+         "512M": [
+            "512M",
+            "512m"
+         ],
          "64G": [
             "64G",
             "64g"
@@ -17222,7 +17231,10 @@
             "Hemisphere-2-clusters-",
             "hemisphere-2-clusters-"
          ],
-         "Quadrant (4-clusters)": [],
+         "Quadrant (4-clusters)": [
+            "Quadrant-4-clusters-",
+            "quadrant-4-clusters-"
+         ],
          "platform-default": [
             "Platform Default",
             "platform-default"

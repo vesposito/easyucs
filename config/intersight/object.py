@@ -591,26 +591,36 @@ class IntersightConfigObject(GenericConfigObject):
             if not (object_name and self._parent.__class__.__name__ == "IntersightOrganization"):
                 return None
 
-            if not self._parent._moid:
-                self._parent._moid = (self.get_parent_org_relationship()).moid
-                if not self._parent._moid:
+            if "/" in object_name:
+                org_ref = self.get_org_relationship(org_name=object_name.split("/")[0])
+                if not org_ref:
                     if log:
                         self.logger(
                             level="warning",
-                            message="Could not find parent org Moid for object "
-                                    + str(object_type)
-                                    + " with name '"
-                                    + str(object_name)
-                                    + "' to assign to "
-                                    + str(self._CONFIG_NAME)
-                                    + " "
-                                    + str(self.name)
+                            message=f"Could not find parent org Moid for object {str(object_type)} with name "
+                                    f"'{str(object_name)}' to assign to {str(self._CONFIG_NAME)} {str(self.name)}"
                         )
                     return None
+                org_ref_moid = org_ref.moid
+                object_name = object_name.split("/")[1]
+            else:
+                if not self._parent._moid:
+                    org_ref = self.get_parent_org_relationship()
+                    if not org_ref:
+                        if log:
+                            self.logger(
+                                level="warning",
+                                message=f"Could not find parent org Moid for object {str(object_type)} with name "
+                                        f"'{str(object_name)}' to assign to {str(self._CONFIG_NAME)} {str(self.name)}"
+                            )
+                        return None
+
+                    self._parent._moid = org_ref.moid
+                org_ref_moid = self._parent._moid
 
             object_list = self._device.query(
                 object_type=object_type,
-                filter="Name eq '" + object_name + "' and Organization.Moid eq '" + self._parent._moid + "'"
+                filter="Name eq '" + object_name + "' and Organization.Moid eq '" + org_ref_moid + "'"
             )
 
         if object_list and len(object_list) == 1:
@@ -622,16 +632,28 @@ class IntersightConfigObject(GenericConfigObject):
         if log:
             self.logger(
                 level="warning",
-                message="Could not find a unique object "
-                        + str(object_type)
-                        + " with name '"
-                        + str(object_name)
-                        + "' to assign to "
-                        + str(self._CONFIG_NAME)
-                        + " "
-                        + str(self.name)
+                message=f"Could not find a unique object {str(object_type)} with name '{str(object_name)}' "
+                        f"to assign to {str(self._CONFIG_NAME)} {str(self.name)}"
             )
         return None
+
+    def get_org_relationship(self, org_name=None):
+        """
+        Get organization Relationship object
+        :return: OrganizationOrganizationRelationship object if found, None otherwise
+        """
+        if not org_name:
+            self.logger(level="error", message="No Org Name provided")
+            return None
+
+        org_list = self._device.query(object_type="organization.Organization", filter="Name eq '%s'" % org_name)
+
+        if len(org_list) != 1:
+            self.logger(level="error", message="Could not find org object with name " + org_name)
+            return None
+
+        # We return the corresponding OrganizationOrganizationRelationship object
+        return self.create_relationship_equivalent(sdk_object=org_list[0])
 
     def get_parent_org_relationship(self):
         """
@@ -642,15 +664,39 @@ class IntersightConfigObject(GenericConfigObject):
         if not self._parent.__class__.__name__ == "IntersightOrganization":
             return None
 
-        org_list = self._device.query(object_type="organization.Organization",
-                                      filter="Name eq '%s'" % self._parent.name)
+        # We return the corresponding OrganizationOrganizationRelationship object
+        return self.get_org_relationship(org_name=self._parent.name)
 
-        if len(org_list) != 1:
-            self.logger(level="error", message="Could not find org object with name " + self._parent.name)
+    def _get_policy_name(self, policy):
+        """
+        Get policy name using the Relationship object (Used during 'fetch_config()', under '__init__()')
+        :param policy: Intersight relationship object
+        :return: Name of the policy or "<shared_org_name>/<policy_name>" if policy is in a shared organization
+        """
+        if not policy:
+            self.logger(level="warning", message="No Policy/Pool Provided")
             return None
 
-        # We return the corresponding OrganizationOrganizationRelationship object
-        return self.create_relationship_equivalent(sdk_object=org_list[0])
+        policy_list = self.get_config_objects_from_ref(ref=policy)
+        if (len(policy_list)) != 1:
+            self.logger(level="debug", message="Could not find the appropriate " + str(policy.object_type) +
+                                               " with MOID " + str(policy.moid))
+            return None
+        else:
+            # Check if the referenced policy's organization differs from the organization of the
+            # current (self) object. If true then the policy is in a shared organization, return
+            # "<shared_org_name>/<policy_name>", otherwise return just "<policy_name>".
+            if policy_list[0].organization.moid != self._object.organization.moid:
+                source_org_list = self.get_config_objects_from_ref(ref=policy_list[0].organization)
+                if len(source_org_list) != 1:
+                    self.logger(level="debug",
+                                message=f"Could not find the appropriate {str(policy_list[0].organization.object_type)}"
+                                        f" with MOID {str(policy_list[0].organization.moid)}")
+                else:
+                    return f"{source_org_list[0].name}/{policy_list[0].name}"
+
+            # We return the name attribute of the matching policy
+            return policy_list[0].name
 
     def instantiate_config_objects_under_org(self, org=None, object_class=None):
         """

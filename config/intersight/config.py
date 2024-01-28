@@ -62,6 +62,8 @@ class IntersightConfig(GenericConfig):
         GenericConfig.__init__(self, parent=parent)
 
         self.update_existing_intersight_objects = settings.get("update_existing_intersight_objects", False)
+        self.delete_existing_resource_group_memberships_for_intersight_shared_orgs = \
+            settings.get("delete_existing_resource_group_memberships_for_intersight_shared_orgs", False)
         self.export_list = None
         self.handle = self.parent.parent.handle
         self.sdk_objects = {}
@@ -80,6 +82,24 @@ class IntersightConfig(GenericConfig):
         bios_table = read_json_file(file_path="config/intersight/bios_table.json", logger=self)
         if bios_table:
             self.bios_table = bios_table
+
+    @property
+    def fabric_org_name(self):
+        """
+        Function to get the value of attribute '_fabric_org_name'. It should hold the name of the organization
+        which holds the converted fabric policies.
+        """
+        if not hasattr(self, "_fabric_org_name"):
+            self._fabric_org_name = None
+        return self._fabric_org_name
+
+    @fabric_org_name.setter
+    def fabric_org_name(self, value):
+        """
+        Function to set the attribute _fabric_org_name
+        :param value: The value to be set for _fabric_org_name
+        """
+        self._fabric_org_name = value
 
     def _fetch_sdk_objects(self, force=False):
         MAX_OBJECTS_PER_FETCH_CALL = 100
@@ -294,23 +314,8 @@ class IntersightConfig(GenericConfig):
                     for sdk_object in sdk_objects_list:
                         self.logger(level="warning", message="Impossible to fetch " + sdk_object + " after 2 attempts.")
 
-        is_shared_org = False
-        for organization_organization in self.sdk_objects.get("organization_organization", []):
-            # Checking if intersight orgs have shared resources, if yes raise an error
-            if hasattr(organization_organization, "shared_with_resources"):
-                if organization_organization.shared_with_resources:
-                    self.logger(level="error", message="Organization with shared resources is not supported")
-                    is_shared_org = True
-                    break
-
         if self.device.task is not None:
-            if is_shared_org and not force:
-                self.device.task.taskstep_manager.stop_taskstep(
-                    name="FetchConfigIntersightSdkObjects", status="failed",
-                    status_message="Error while fetching " + self.device.metadata.device_type_long +
-                                   " SDK Config Objects. Organization with shared resources is not supported")
-                return False
-            elif not retry_failed_to_fetch:
+            if not retry_failed_to_fetch:
                 self.device.task.taskstep_manager.stop_taskstep(
                     name="FetchConfigIntersightSdkObjects", status="successful",
                     status_message="Successfully fetched " + self.device.metadata.device_type_long +
@@ -334,10 +339,10 @@ class IntersightConfig(GenericConfig):
 
     def get_object(self, object_type=None, name="", org_name="", debug=True):
         """
-        Gets a policy object from the config given its type, name and org name
+        Gets an object from the config given its type, name and optional org name
         :param object_type: type of object to get (class)
         :param name: name of the object to get
-        :param org_name: org name of the object to get
+        :param org_name: org name of the object to get (optional)
         :param debug: If True then we log the debug messages, otherwise we don't
         :return: object if successful, None otherwise
         """
@@ -349,13 +354,10 @@ class IntersightConfig(GenericConfig):
             self.logger(level="error", message="Invalid name in get object request")
             return None
 
-        if not isinstance(org_name, str):
-            self.logger(level="error", message="Org name not a string in get object request")
-            return None
-
-        if not org_name:
-            self.logger(level="error", message="Invalid org name in get object request")
-            return None
+        # If the object to be fetched is in a shared org, then we update the org_name and name field.
+        if "/" in name:
+            org_name = name.split("/")[0]
+            name = name.split("/")[1]
 
         # Determining the section name to look for in the config
         if not hasattr(object_type, "_CONFIG_SECTION_NAME"):
@@ -363,39 +365,64 @@ class IntersightConfig(GenericConfig):
             return None
         section_name = object_type._CONFIG_SECTION_NAME
 
-        # Identifying the org in which to look for in the config
-        if not self.orgs:
-            self.logger(level="debug", message="Could not find org " + str(org_name) + " in config")
-            return None
+        if org_name:
+            # Identifying the org in which to look for in the config
+            if not self.orgs:
+                self.logger(level="debug", message="Could not find org " + str(org_name) + " in config")
+                return None
 
-        found_org = None
-        for org in self.orgs:
-            if org.name == org_name:
-                found_org = org
-                break
-        if not found_org:
-            self.logger(level="debug", message="Could not find org " + str(org_name) + " in config")
-            return None
+            found_org = None
+            for org in self.orgs:
+                if org.name == org_name:
+                    found_org = org
+                    break
+            if not found_org:
+                self.logger(level="debug", message="Could not find org " + str(org_name) + " in config")
+                return None
 
-        # Checking in the section name of the found org if an object with the given name exists
-        if not hasattr(found_org, section_name):
+            # Checking in the section name of the found org if an object with the given name exists
+            if not hasattr(found_org, section_name):
+                if debug:
+                    self.logger(level="debug", message="No section named " + section_name + " in org " + str(org_name))
+                return None
+            if not getattr(found_org, section_name):
+                if debug:
+                    self.logger(level="debug", message="No item in section " + section_name + " of org " + str(org_name))
+                return None
+            if not isinstance(getattr(found_org, section_name), list):
+                self.logger(level="debug",
+                            message="Section " + section_name + " in org " + str(org_name) + " is not a list of objects")
+                return None
+            for obj in getattr(found_org, section_name):
+                if hasattr(obj, "name"):
+                    if obj.name == name and isinstance(obj, object_type):
+                        return obj
+
             if debug:
-                self.logger(level="debug", message="No section named " + section_name + " in org " + str(org_name))
-            return None
-        if not getattr(found_org, section_name):
-            if debug:
-                self.logger(level="debug", message="No item in section " + section_name + " of org " + str(org_name))
-            return None
-        if not isinstance(getattr(found_org, section_name), list):
-            self.logger(level="debug",
-                        message="Section " + section_name + " in org " + str(org_name) + " is not a list of objects")
-            return None
-        for obj in getattr(found_org, section_name):
-            if hasattr(obj, "name"):
-                if obj.name == name and isinstance(obj, object_type):
-                    return obj
+                self.logger(level="debug", message="Could not find " + object_type._CONFIG_NAME +
+                                                   " with name " + str(name) + " in org " + str(org_name))
+        else:
+            # Checking in the section name of the found org if an object with the given name exists
+            if not hasattr(self, section_name):
+                if debug:
+                    self.logger(level="debug", message="No section named " + section_name + " in config")
+                return None
+            if not getattr(self, section_name):
+                if debug:
+                    self.logger(level="debug",
+                                message="No item in section " + section_name + " of config")
+                return None
+            if not isinstance(getattr(self, section_name), list):
+                self.logger(level="debug",
+                            message="Section " + section_name + " in config is not a list of objects")
+                return None
 
-        if debug:
-            self.logger(level="debug", message="Could not find " + object_type._CONFIG_NAME +
-                                               " with name " + str(name) + " in org " + str(org_name))
+            for obj in getattr(self, section_name):
+                if hasattr(obj, "name"):
+                    if obj.name == name and isinstance(obj, object_type):
+                        return obj
+
+            if debug:
+                self.logger(level="debug", message="Could not find " + object_type._CONFIG_NAME +
+                                                   " with name " + str(name) + " in config.")
         return None

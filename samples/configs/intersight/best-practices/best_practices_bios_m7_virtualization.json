@@ -1,0 +1,59 @@
+{
+   "easyucs": {
+      "metadata": [
+         {
+            "file_type": "config",
+            "device_type": "intersight",
+            "category": "best-practices",
+            "subcategory": "BIOS",
+            "name": "Intersight BIOS Policy for Virtualization on Cisco UCS M7 Servers",
+            "url": "https://www.cisco.com/c/en/us/products/collateral/servers-unified-computing/ucs-b-series-blade-servers/ucs-m7-platforms-wp.html",
+            "easyucs_version": "0.9.8.6",
+            "revision": "1.0"
+         }
+      ]
+   },
+   "config": {
+      "orgs": [
+         {
+            "name": "default",
+            "bios_policies": [
+               {
+                  "name": "Virtu-M7",
+                  "descr": "BIOS Policy for Virtualization on Cisco UCS M7 Servers",
+                  "intel_hyper_threading_tech": "platform-default",
+                  "hardware_prefetch": "platform-default",
+                  "adjacent_cache_line_prefetch": "platform-default",
+                  "ip_prefetch": "platform-default",
+                  "streamer_prefetch": "platform-default",
+                  "llc_prefetch": "platform-default",
+                  "intel_virtualization_technology": "platform-default",
+                  "upi_link_enablement": "platform-default",
+                  "upi_power_management": "platform-default",
+                  "qpi_link_speed": "platform-default",
+                  "xpt_remote_prefetch": "platform-default",
+                  "kti_prefetch": "platform-default",
+                  "xpt_prefetch": "platform-default",
+                  "snc": "platform-default",
+                  "llc_alloc": "platform-default",
+                  "numa_optimized": "platform-default",
+                  "virtual_numa": "platform-default",
+                  "memory_refresh_rate": "platform-default",
+                  "select_memory_ras_configuration": "platform-default",
+                  "patrol_scrub": "platform-default",
+                  "intel_vt_for_directed_io": "platform-default",
+                  "cpu_perf_enhancement": "platform-default",
+                  "energy_efficient_turbo": "platform-default",
+                  "intel_turbo_boost_tech": "platform-default",
+                  "processor_c6report": "enabled",
+                  "processor_c1e": "platform-default",
+                  "package_cstate_limit": "platform-default",
+                  "ufs_disable": "platform-default",
+                  "eng_perf_tuning": "platform-default",
+                  "work_load_config": "Balanced"
+               }
+            ]
+         }
+      ]
+   }
+}

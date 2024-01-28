@@ -346,7 +346,7 @@
          "description": "UCS Server Profile - Assigned Resource Pool Name",
          "type": "string",
          "default": "",
-         "pattern": "^[a-zA-Z0-9_.:-]{1,64}$"
+         "pattern": "^([a-zA-Z0-9_.:-]{1,64}/)?[a-zA-Z0-9_.:-]{1,64}$"
       },
       "san_connectivity_policy": {
          "description": "SAN Connectivity Policy associated to UCS Server Profile",
@@ -447,7 +447,7 @@
          "description": "UCS Server Profile - UUID Pool Name",
          "type": "string",
          "default": "",
-         "pattern": "^[a-zA-Z0-9_.:-]{1,64}$"
+         "pattern": "^([a-zA-Z0-9_.:-]{1,64}/)?[a-zA-Z0-9_.:-]{1,64}$"
       },
       "uuid_static": {
          "description": "UCS Server Profile - UUID Static",

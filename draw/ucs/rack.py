@@ -77,6 +77,7 @@ class GenericDrawRackFront(GenericUcsDrawObject):
     def get_storage_controllers(self):
         storage_controller_list = []
         for storage_controller in self._parent.storage_controllers:
+            # We skip M.2 and internal controllers on racks
             if storage_controller.type not in ["SAS", "NVME"]:
                 continue
             storage_controller_list.append(UcsSystemDrawStorageController(storage_controller, self))
@@ -756,20 +757,20 @@ class UcsSystemDrawInfraRack(UcsSystemDrawInfraEquipment):
             msg = "Rack #" + self.rack._parent.id + " - " + self.rack._parent.user_label
         else:
             msg = "Rack #" + self.rack._parent.id
-        w, h = self.draw.textsize(msg, font=font_title)
+        w = self.draw.textlength(msg, font=font_title)
         # 16 px space between text and equipment
         self.draw.text((round(self.canvas_width / 2 - w / 2), self.rack_offset[1] - (font_size + 16)), msg,
                        fill=fill_color, font=font_title)
         if self.fex_presence:
             if self.fex_a:
                 msg = "Fex #" + self.fex_a._parent.id
-                w, h = self.draw.textsize(msg, font=font_title)
+                w = self.draw.textlength(msg, font=font_title)
                 # 16 px space between text and equipment
                 self.draw.text((self.fex_a.picture_size[0] - w, self.fex_a_offset[1] - (font_size + 16)), msg,
                                fill=fill_color, font=font_title)
             if self.fex_b:
                 msg = "Fex #" + self.fex_b._parent.id
-                w, h = self.draw.textsize(msg, font=font_title)
+                w = self.draw.textlength(msg, font=font_title)
                 # 16 px space between text and equipment
                 self.draw.text((self.canvas_width - self.fex_b.picture_size[0],
                                 self.fex_b_offset[1] - (font_size + 16)), msg, fill=fill_color, font=font_title)
@@ -1781,24 +1782,28 @@ class UcsSystemDrawInfraRackEnclosure(UcsSystemDrawInfraEquipment):
         fill_color = "black"
         font_size = 60
         font_title = ImageFont.truetype('arial.ttf', font_size)
+
         if self.rack_enclosure._parent.user_label:
             msg = "Rack #" + self.rack_enclosure._parent.id + " - " + self.rack_enclosure._parent.user_label
         else:
             msg = "Rack #" + self.rack_enclosure._parent.id
-        w, h = self.draw.textsize(msg, font=font_title)
+
+        w = self.draw.textlength(msg, font=font_title)
         # 16 px space between text and equipment
         self.draw.text((round(self.canvas_width / 2 - w / 2), self.rack_offset[1] - (font_size + 16)), msg,
                        fill=fill_color, font=font_title)
+
         if self.fex_presence:
             if self.fex_a:
                 msg = "Fex #" + self.fex_a._parent.id
-                w, h = self.draw.textsize(msg, font=font_title)
+                w = self.draw.textlength(msg, font=font_title)
                 # 16 px space between text and equipment
                 self.draw.text((self.fex_a.picture_size[0] - w, self.fex_a_offset[1] - (font_size + 16)), msg,
                                fill=fill_color, font=font_title)
+
             if self.fex_b:
                 msg = "Fex #" + self.fex_b._parent.id
-                w, h = self.draw.textsize(msg, font=font_title)
+                w = self.draw.textlength(msg, font=font_title)
                 # 16 px space between text and equipment
                 self.draw.text((self.canvas_width - self.fex_b.picture_size[0],
                                 self.fex_b_offset[1] - (font_size + 16)), msg, fill=fill_color, font=font_title)

@@ -228,9 +228,8 @@ class UcsDeviceConnector(GenericUcsConfigObject):
 
                     return response.json()
                 except Exception as err:
-                    print(err)
                     self.logger(level="error",
-                                message="Couldn't push the device connector information to the API")
+                                message=f"Couldn't push the device connector information to the API: {str(err)}")
             else:
                 self.logger(level="error",
                             message="No login cookie, no request can be made to find device connector information")

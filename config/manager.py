@@ -343,10 +343,11 @@ class GenericConfigManager:
 
         return True
 
-    def push_config(self, uuid=None):
+    def push_config(self, uuid=None, reset=False):
         """
         Push the specified config on the live system
         :param uuid: The UUID of the config to be exported. If not specified, the most recent config will be used
+        :param reset: Whether the device must be reset before pushing the config
         :return: True if config push was successful, False otherwise
         """
         return False

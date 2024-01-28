@@ -218,12 +218,15 @@ class IntersightOrganization(IntersightConfigObject):
         self.descr = self.get_attribute(attribute_name="description", attribute_secondary_name="descr")
         self.name = self.get_attribute(attribute_name="name")
         self.resource_groups = None
+        self.shared_with_orgs = None
+        self._shared_with_me_orgs = None
 
         if self._config.load_from == "live":
             self.resource_groups = self._get_resource_groups_names()
+            self.shared_with_orgs = self._get_shared_with_org_names()
 
         elif self._config.load_from == "file":
-            for attribute in ["resource_groups"]:
+            for attribute in ["resource_groups", "shared_with_orgs"]:
                 setattr(self, attribute, None)
                 if attribute in self._object:
                     setattr(self, attribute, self.get_attribute(attribute_name=attribute))
@@ -564,37 +567,84 @@ class IntersightOrganization(IntersightConfigObject):
                     return resource_group_names
         return None
 
+    def _get_shared_with_org_names(self):
+        if hasattr(self._object, "shared_with_resources"):
+            if self._object.shared_with_resources:
+                resources_list = self.get_config_objects_from_ref(ref=self._object.shared_with_resources)
+                if (len(resources_list)) == 0:
+                    self.logger(level="debug",
+                                message="Could not find any shared with resources for Organization " + self.name)
+                    return None
+                else:
+                    # We return a list of the resource_group names
+                    org_names = []
+                    for resource in resources_list:
+                        if getattr(resource, "object_type", None) == "organization.Organization" and \
+                                hasattr(resource, "name"):
+                            org_names.append(resource.name)
+
+                    return org_names
+
     @IntersightConfigObject.update_taskstep_description()
     def push_object(self):
         from intersight.model.organization_organization import OrganizationOrganization
 
         self.logger(message=f"Pushing {self._CONFIG_NAME} configuration: {self.name}")
 
+        # Flag to determine whether to delete the resource group membership of the shared organization.
+        delete_existing_resource_group_memberships_for_intersight_shared_orgs = \
+            self._config.delete_existing_resource_group_memberships_for_intersight_shared_orgs
+        # Flag to determine whether to update an already existing object in Intersight or not. Has to be set only
+        # when below 2nd condition is true.
+        modify_present = False
+
         # Determining the list of Resource Groups we assign to our organization
+        # Intersight does not allow shared organizations to have resource groups. So, to manage
+        # organization + resource group "push" we have the following scenario:
+        # 1. Resource group present + No Shared Orgs: Get the resource groups and attach them to the organization.
+        # 2. Resource group present + Share Orgs are present +
+        # delete_existing_resource_group_memberships_for_intersight_shared_orgs flag is set: In this case do not fetch
+        # and resource groups and proceed with empty resource group list
+        # 3. Resource group present + Share Orgs are present +
+        # delete_existing_resource_group_memberships_for_intersight_shared_orgs flag is false: Raise an error
+        # explaining that "Intersight does not support attaching resource groups to shared organizations."
         resource_group_list = []
         if self.resource_groups:
-            for resource_group in self.resource_groups:
-                # We need to retrieve the resource.Group object for assigning the correct Resource Group
-                rg_list = self._device.query(object_type="resource.Group", filter="Name eq '%s'" % resource_group)
+            if not self.shared_with_orgs:
+                for resource_group in self.resource_groups:
+                    # We need to retrieve the resource.Group object for assigning the correct Resource Group
+                    rg_list = self._device.query(object_type="resource.Group", filter="Name eq '%s'" % resource_group)
 
-                if rg_list:
-                    if len(rg_list) != 1:
-                        self.logger(level="warning",
-                                    message="Could not find unique Resource Group '" + resource_group +
-                                            "' to assign to Organization '" + self.name + "'")
+                    if rg_list:
+                        if len(rg_list) != 1:
+                            self.logger(level="warning",
+                                        message="Could not find unique Resource Group '" + resource_group +
+                                                "' to assign to Organization '" + self.name + "'")
+                        else:
+                            resource_group_list.append(self.create_relationship_equivalent(sdk_object=rg_list[0]))
+
                     else:
-                        resource_group_list.append(self.create_relationship_equivalent(sdk_object=rg_list[0]))
-
-                else:
-                    self.logger(level="warning",
-                                message="Could not find Resource Group '" + resource_group +
-                                        "' to assign to Organization '" + self.name + "'")
+                        self.logger(level="warning",
+                                    message="Could not find Resource Group '" + resource_group +
+                                            "' to assign to Organization '" + self.name + "'")
+            elif delete_existing_resource_group_memberships_for_intersight_shared_orgs:
+                modify_present = True
+                self.logger(level="info", message=f"This org {self.name} is shared with other organization, deleting "
+                                                  "all the associated Resource Group memberships.")
+            else:
+                err_message = f"Failed to push organization '{self.name}'. An organization in Intersight cannot have " \
+                              f"Resource Groups if it's also shared with other organizations."
+                self.logger(level="error", message=err_message)
+                self._config.push_summary_manager.add_object_status(obj=self, obj_detail=self.name,
+                                                                    obj_type=self._INTERSIGHT_SDK_OBJECT_NAME,
+                                                                    status="failed", message=err_message)
+                return False
 
         kwargs = {
             "object_type": self._INTERSIGHT_SDK_OBJECT_NAME,
             "class_id": self._INTERSIGHT_SDK_OBJECT_NAME
         }
-        if resource_group_list:
+        if resource_group_list or delete_existing_resource_group_memberships_for_intersight_shared_orgs:
             kwargs["resource_groups"] = resource_group_list
         if self.name is not None:
             kwargs["name"] = self.name
@@ -606,9 +656,57 @@ class IntersightOrganization(IntersightConfigObject):
         organization_organization = OrganizationOrganization(**kwargs)
 
         if not self.commit(object_type=self._INTERSIGHT_SDK_OBJECT_NAME, payload=organization_organization,
-                           detail=self.name):
+                           detail=self.name, modify_present=modify_present):
             return False
 
+        return True
+
+    @IntersightConfigObject.update_taskstep_description()
+    def push_sharing_rules(self):
+        # Create the sharing rules, if this org is shared with other orgs
+        if self.shared_with_orgs:
+            # We now need to bulk push the iam.SharingRules object
+            from intersight.model.bulk_request import BulkRequest
+            from intersight.model.bulk_sub_request import BulkSubRequest
+            from intersight.model.mo_base_mo import MoBaseMo
+
+            bulk_request_kwargs = {
+                "uri": "/v1/iam/SharingRules",
+                "verb": "POST",
+                "requests": []
+            }
+            requests = []
+
+            for shared_with_org in self.shared_with_orgs:
+                body_kwargs = {
+                    "object_type": "iam.SharingRule",
+                    "class_id": "iam.SharingRule",
+                    "shared_resource": self.get_org_relationship(org_name=self.name),
+                    "shared_with_resource": self.get_org_relationship(org_name=shared_with_org)
+                }
+
+                body = MoBaseMo(**body_kwargs)
+
+                sub_request_kwargs = {
+                    "object_type": "bulk.RestSubRequest",
+                    "class_id": "bulk.RestSubRequest",
+                    "body": body
+                }
+
+                sub_request = BulkSubRequest(**sub_request_kwargs)
+
+                requests.append(sub_request)
+
+            bulk_request_kwargs["requests"] = requests
+            bulk_request = BulkRequest(**bulk_request_kwargs)
+
+            detail = f"{self.name} - Sharing Rules - Sharing Org with {self.shared_with_orgs})"
+            if not self.commit(object_type="bulk.Request", payload=bulk_request, detail=detail, key_attributes=[]):
+                return False
+        return True
+
+    @IntersightConfigObject.update_taskstep_description()
+    def push_subobjects(self):
         # We push all subconfig elements, in a specific optimized order
         # TODO: Verify order
         objects_to_push_in_order = [
@@ -627,13 +725,14 @@ class IntersightOrganization(IntersightConfigObject):
             'virtual_media_policies', 'lan_connectivity_policies', 'san_connectivity_policies', 'port_policies',
             'ucs_domain_profiles', 'ucs_chassis_profiles', 'ucs_server_profile_templates', 'ucs_server_profiles']
 
+        is_pushed = True
         for config_object_type in objects_to_push_in_order:
             if getattr(self, config_object_type) is not None:
                 if getattr(self, config_object_type).__class__.__name__ == "list":
                     for subobject in getattr(self, config_object_type):
-                        subobject.push_object()
+                        is_pushed = subobject.push_object() and is_pushed
 
-        return True
+        return is_pushed
 
 
 class IntersightResourceGroup(IntersightConfigObject):

@@ -312,7 +312,7 @@ class RepositoryManager:
                 - postgresql+psycopg2://username:password@0.0.0.0:5432/database
         """
         if self.engine is None:
-            self.engine = create_engine(uri, **kwargs)
+            self.engine = create_engine(uri, **kwargs, pool_size=50, max_overflow=100, pool_recycle=3600)
             # Create all tables in DB
             models.Base.metadata.create_all(bind=self.engine)
         return self.engine
@@ -591,6 +591,15 @@ class RepositoryManager:
                     record[field] = python_uuid.UUID(record[field])
                 elif "timestamp" in field:
                     record[field] = datetime.datetime.fromisoformat(record[field])
+                elif "cached_orgs" in field:
+                    for org_name in record[field]:
+                        if isinstance(record[field][org_name], str):
+                            record[field][org_name] = {
+                                "description": record[field][org_name],
+                                "is_shared": False,
+                                "resource_groups": [],
+                                "shared_with_orgs": []
+                            }
         return True
 
     def create_backups_folder(self, device=None):
@@ -751,6 +760,23 @@ class RepositoryManager:
             return False
 
         # Restoring the settings from the replaced settings file.
+        # If the backed-up setting have some missing attributes then add them here before calling _init_settings().
+        file_contents = read_json_file(file_path=self.SETTINGS_FILE_NAME)
+        file_changed = False
+        # A mapping of field to their default values
+        fields_to_value_mapping = {
+            "delete_existing_resource_group_memberships_for_intersight_shared_orgs": False
+        }
+        for field in fields_to_value_mapping:
+            if field not in file_contents:
+                file_contents[field] = fields_to_value_mapping[field]
+                file_changed = True
+
+        if file_changed:
+            full_path = os.path.abspath(os.path.join(EASYUCS_ROOT, self.SETTINGS_FILE_NAME))
+            with open(full_path, 'w') as file:
+                json.dump(file_contents, file, indent=3)
+
         if not self._init_settings():
             return False
 

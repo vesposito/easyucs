@@ -77,8 +77,8 @@ class GenericUcsDrawBlade(GenericUcsDrawEquipment):
         # TODO : Check if this condition still needs to be here
         if (self._parent.sku != "UCSC-C3X60-SVRNB") and (self._parent.sku != "UCSC-C3K-M4SRB"):
             for storage_controller in self._parent.storage_controllers:
-                # We skip M.2 controllers on M5 blades
-                if ("M5" in self._parent.sku) and (storage_controller.type not in ["SAS", "NVME"]):
+                # We skip M.2 controllers on blades
+                if storage_controller.type not in ["SAS", "NVME"]:
                     continue
                 storage_controller_list.append(UcsSystemDrawStorageController(storage_controller, self))
                 # storage_controller_list = remove_not_completed_in_list(storage_controller_list)

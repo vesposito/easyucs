@@ -141,7 +141,7 @@ class GenericUcsInventory(GenericInventory):
                                 if hasattr(sdk_object, "present") and sdk_object.present in ["N/A", "NO", "No"]:
                                     continue
                                 # Also filter absent storageRaidBattery on standalone servers
-                                if hasattr(sdk_object, "battery_present") and sdk_object.battery_present == "false":
+                                if hasattr(sdk_object, "battery_present") and sdk_object.battery_present != "true":
                                     continue
                                 # Also filter absent storageFlexFlashPhysicalDrive on standalone servers
                                 if object_class._UCS_SDK_OBJECT_NAME == "storageFlexFlashPhysicalDrive":
@@ -582,11 +582,12 @@ class UcsImcInventory(GenericUcsInventory):
 
         # List of SDK objects to fetch that are specific to IMC
         sdk_objects_to_fetch = ["adaptorConnectorInfo", "computeServerNode", "equipmentRackEnclosure",
-                                "equipmentSharedIOModule", "equipmentTpm", "ioControllerNVMePhysicalDrive",
-                                "ioExpander", "networkAdapterEthIf", "networkAdapterUnit", "pciEquipSlot",
-                                "storageControllerNVMe", "storageEnclosureDisk", "storageFlexFlashControllerProps",
-                                "storageFlexFlashPhysicalDrive", "storageLocalDiskProps", "storageNVMePhysicalDrive",
-                                "systemBoardUnit"]
+                                "equipmentSharedIOModule", "equipmentTpm", "gpuInventory",
+                                "ioControllerNVMePhysicalDrive", "ioExpander", "networkAdapterEthIf",
+                                "networkAdapterUnit", "pciAdapterFruInventory", "pciAdapterFruInventoryInfo",
+                                "pciEquipSlot", "storageControllerNVMe", "storageEnclosureDisk",
+                                "storageFlexFlashControllerProps", "storageFlexFlashPhysicalDrive",
+                                "storageLocalDiskProps", "storageNVMePhysicalDrive", "systemBoardUnit"]
         self.logger(level="debug",
                     message="Fetching " + self.device.metadata.device_type_long + " SDK objects for inventory")
 

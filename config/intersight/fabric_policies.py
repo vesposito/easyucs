@@ -2,10 +2,12 @@
 # !/usr/bin/env python
 
 """ fabric_policies.py: Easy UCS Deployment Tool """
+import copy
 
 from config.intersight.object import IntersightConfigObject
 from config.intersight.server_policies import IntersightNetworkConnectivityPolicy, IntersightNtpPolicy, \
-    IntersightSnmpPolicy, IntersightSyslogPolicy
+    IntersightSnmpPolicy, IntersightSyslogPolicy, IntersightEthernetNetworkGroupPolicy, \
+    IntersightEthernetNetworkControlPolicy
 
 
 class IntersightFabricFlowControlPolicy(IntersightConfigObject):
@@ -226,6 +228,46 @@ class IntersightFabricPortPolicy(IntersightConfigObject):
     _CONFIG_NAME = "Port Policy"
     _CONFIG_SECTION_NAME = "port_policies"
     _INTERSIGHT_SDK_OBJECT_NAME = "fabric.PortPolicy"
+    _POLICY_MAPPING_TABLE = {
+        "appliance_port_channels": [
+            {
+                "ethernet_network_control_policy": IntersightEthernetNetworkControlPolicy,
+                "ethernet_network_group_policy": IntersightEthernetNetworkGroupPolicy
+            }
+        ],
+        "appliance_ports": [
+            {
+                "ethernet_network_control_policy": IntersightEthernetNetworkControlPolicy,
+                "ethernet_network_group_policy": IntersightEthernetNetworkGroupPolicy
+            }
+        ],
+        "fcoe_port_channels": [
+            {
+                "link_aggregation_policy": IntersightFabricLinkAggregationPolicy,
+                "link_control_policy": IntersightFabricLinkControlPolicy
+            }
+        ],
+        "fcoe_uplink_ports": [
+            {
+                "link_control_policy": IntersightFabricLinkControlPolicy
+            }
+        ],
+        "lan_port_channels": [
+            {
+                "ethernet_network_group_policy": IntersightEthernetNetworkGroupPolicy,
+                "flow_control_policy": IntersightFabricFlowControlPolicy,
+                "link_aggregation_policy": IntersightFabricLinkAggregationPolicy,
+                "link_control_policy": IntersightFabricLinkControlPolicy
+            }
+        ],
+        "lan_uplink_ports": [
+            {
+                "ethernet_network_group_policy": IntersightEthernetNetworkGroupPolicy,
+                "flow_control_policy": IntersightFabricFlowControlPolicy,
+                "link_control_policy": IntersightFabricLinkControlPolicy
+            }
+        ]
+    }
 
     def __init__(self, parent=None, fabric_port_policy=None):
         IntersightConfigObject.__init__(self, parent=parent, sdk_object=fabric_port_policy)
@@ -977,7 +1019,8 @@ class IntersightFabricPortPolicy(IntersightConfigObject):
             # We now need to push the fabric.PortMode object for Breakout Port configuration
             from intersight.model.fabric_port_mode import FabricPortMode
 
-            for breakout_port in self.breakout_ports:
+            # We push breakout ports in reverse order in order to properly support FI 6536 (EASYUCS-1119)
+            for breakout_port in sorted(self.breakout_ports, key=lambda x: -int(x["port_id"])):
                 kwargs = {
                     "object_type": "fabric.PortMode",
                     "class_id": "fabric.PortMode",
@@ -2246,12 +2289,13 @@ class IntersightFabricVlanPolicy(IntersightConfigObject):
                                 primary_vlan_id = fabric_vlan.primary_vlan_id
                         else:
                             # We only fetch the Multicast Policy if there is no Private VLAN config
-                            multicast_policy = self.get_config_objects_from_ref(ref=fabric_vlan.multicast_policy)
+                            if fabric_vlan.multicast_policy:
+                                multicast_policy = self._get_policy_name(policy=fabric_vlan.multicast_policy)
                         if multicast_policy:
                             vlans.append({"name": fabric_vlan.name, "id": fabric_vlan.vlan_id,
                                           "auto_allow_on_uplinks": fabric_vlan.auto_allow_on_uplinks,
                                           "native_vlan": fabric_vlan.is_native,
-                                          "multicast_policy": multicast_policy[0].name,
+                                          "multicast_policy": multicast_policy,
                                           "sharing_type": sharing_type,
                                           "primary_vlan_id": primary_vlan_id})
                         else:
@@ -2643,22 +2687,18 @@ class IntersightUcsDomainProfile(IntersightConfigObject):
 
         if self._config.load_from == "live":
             # We first need to identify the Moids of the fabric.SwitchProfile objects attached to the UCS Domain Profile
-            self._switch_profiles_moids = {"fabric_a": None, "fabric_b": None}
-            sw_profiles = self.get_config_objects_from_ref(ref=self._object.switch_profiles)
-            if sw_profiles:
-                for switch_profile in sw_profiles:
-                    if switch_profile.name[-2:] == "-A":
-                        self._switch_profiles_moids["fabric_a"] = switch_profile.moid
-                    elif switch_profile.name[-2:] == "-B":
-                        self._switch_profiles_moids["fabric_b"] = switch_profile.moid
+            self._switch_profiles = self.get_config_objects_from_ref(ref=self._object.switch_profiles)
+            if self._switch_profiles:
+                for switch_profile in self._switch_profiles:
+                    for policy in switch_profile.policy_bucket:
+                        for (policy_name, intersight_policy) in self._POLICY_MAPPING_TABLE.items():
+                            if not isinstance(intersight_policy, dict) and \
+                                    policy.object_type == getattr(intersight_policy, "_INTERSIGHT_SDK_OBJECT_NAME",
+                                                                  None):
+                                setattr(self, policy_name, self._get_policy_name(policy))
+                                break
 
-            self.network_connectivity_policy = self._get_network_connectivity_policy()
-            self.ntp_policy = self._get_ntp_policy()
             self.port_policies = self._get_port_policies()
-            self.snmp_policy = self._get_snmp_policy()
-            self.switch_control_policy = self._get_switch_control_policy()
-            self.syslog_policy = self._get_syslog_policy()
-            self.system_qos_policy = self._get_system_qos_policy()
             self.vlan_policies = self._get_vlan_policies()
             self.vsan_policies = self._get_vsan_policies()
 
@@ -2678,112 +2718,32 @@ class IntersightUcsDomainProfile(IntersightConfigObject):
             if not self.vsan_policies:
                 self.vsan_policies = {"fabric_a": None, "fabric_b": None}
 
-    def _get_network_connectivity_policy(self):
-        # Fetches the Network Connectivity Policy assigned to the UCS Domain Profile
-        if "networkconfig_policy" in self._config.sdk_objects:
-            for networkconfig_policy in self._config.sdk_objects["networkconfig_policy"]:
-                if hasattr(networkconfig_policy, "profiles"):
-                    for profile in networkconfig_policy.profiles:
-                        if profile.moid in self._switch_profiles_moids.values():
-                            return networkconfig_policy.name
-
-        return None
-
-    def _get_ntp_policy(self):
-        # Fetches the NTP Policy assigned to the UCS Domain Profile
-        if "ntp_policy" in self._config.sdk_objects:
-            for ntp_policy in self._config.sdk_objects["ntp_policy"]:
-                if hasattr(ntp_policy, "profiles"):
-                    for profile in ntp_policy.profiles:
-                        if profile.moid in self._switch_profiles_moids.values():
-                            return ntp_policy.name
-
-        return None
-
     def _get_port_policies(self):
         # Fetches the Port Policies assigned to the UCS Domain Profile
         port_policies = {"fabric_a": None, "fabric_b": None}
-        if "fabric_port_policy" in self._config.sdk_objects:
-            for fabric_port_policy in self._config.sdk_objects["fabric_port_policy"]:
-                if hasattr(fabric_port_policy, "profiles"):
-                    if fabric_port_policy.profiles:
-                        for profile in self.get_config_objects_from_ref(ref=fabric_port_policy.profiles):
-                            if profile.moid == self._switch_profiles_moids["fabric_a"]:
-                                port_policies["fabric_a"] = fabric_port_policy.name
-                            elif profile.moid == self._switch_profiles_moids["fabric_b"]:
-                                port_policies["fabric_b"] = fabric_port_policy.name
-
-                # We break the loop if we have found a match
-                # FIXME : Does not support single Fabric Interconnect scenarios
-                if port_policies["fabric_a"] and port_policies["fabric_b"]:
-                    return port_policies
+        for switch_profile in self._switch_profiles:
+            for policy in switch_profile.policy_bucket:
+                if policy.object_type == getattr(IntersightFabricPortPolicy, "_INTERSIGHT_SDK_OBJECT_NAME", None):
+                    if switch_profile.name[-2:] == "-A":
+                        port_policies["fabric_a"] = self._get_policy_name(policy)
+                    elif switch_profile.name[-2:] == "-B":
+                        port_policies["fabric_b"] = self._get_policy_name(policy)
 
         if port_policies["fabric_a"] or port_policies["fabric_b"]:
             return port_policies
         else:
             return None
 
-    def _get_snmp_policy(self):
-        # Fetches the SNMP Policy assigned to the UCS Domain Profile
-        if "snmp_policy" in self._config.sdk_objects:
-            for snmp_policy in self._config.sdk_objects["snmp_policy"]:
-                if hasattr(snmp_policy, "profiles"):
-                    for profile in snmp_policy.profiles:
-                        if profile.moid in self._switch_profiles_moids.values():
-                            return snmp_policy.name
-
-        return None
-
-    def _get_switch_control_policy(self):
-        # Fetches the Switch Control Policy assigned to the UCS Domain Profile
-        if "fabric_switch_control_policy" in self._config.sdk_objects:
-            for fabric_switch_control_policy in self._config.sdk_objects["fabric_switch_control_policy"]:
-                if hasattr(fabric_switch_control_policy, "profiles"):
-                    for profile in fabric_switch_control_policy.profiles:
-                        if profile.moid in self._switch_profiles_moids.values():
-                            return fabric_switch_control_policy.name
-
-        return None
-
-    def _get_syslog_policy(self):
-        # Fetches the Syslog Policy assigned to the UCS Domain Profile
-        if "syslog_policy" in self._config.sdk_objects:
-            for syslog_policy in self._config.sdk_objects["syslog_policy"]:
-                if hasattr(syslog_policy, "profiles"):
-                    for profile in syslog_policy.profiles:
-                        if profile.moid in self._switch_profiles_moids.values():
-                            return syslog_policy.name
-
-        return None
-
-    def _get_system_qos_policy(self):
-        # Fetches the System QoS Policy assigned to the UCS Domain Profile
-        if "fabric_system_qos_policy" in self._config.sdk_objects:
-            for fabric_system_qos_policy in self._config.sdk_objects["fabric_system_qos_policy"]:
-                if hasattr(fabric_system_qos_policy, "profiles"):
-                    for profile in fabric_system_qos_policy.profiles:
-                        if profile.moid in self._switch_profiles_moids.values():
-                            return fabric_system_qos_policy.name
-
-        return None
-
     def _get_vlan_policies(self):
         # Fetches the VLAN Policies assigned to the UCS Domain Profile
         vlan_policies = {"fabric_a": None, "fabric_b": None}
-        if "fabric_eth_network_policy" in self._config.sdk_objects:
-            for fabric_eth_network_policy in self._config.sdk_objects["fabric_eth_network_policy"]:
-                if hasattr(fabric_eth_network_policy, "profiles"):
-                    if fabric_eth_network_policy.profiles:
-                        for profile in self.get_config_objects_from_ref(ref=fabric_eth_network_policy.profiles):
-                            if profile.moid == self._switch_profiles_moids["fabric_a"]:
-                                vlan_policies["fabric_a"] = fabric_eth_network_policy.name
-                            elif profile.moid == self._switch_profiles_moids["fabric_b"]:
-                                vlan_policies["fabric_b"] = fabric_eth_network_policy.name
-
-                # We break the loop if we have found a match
-                # FIXME : Does not support single Fabric Interconnect scenarios
-                if vlan_policies["fabric_a"] and vlan_policies["fabric_b"]:
-                    return vlan_policies
+        for switch_profile in self._switch_profiles:
+            for policy in switch_profile.policy_bucket:
+                if policy.object_type == getattr(IntersightFabricVlanPolicy, "_INTERSIGHT_SDK_OBJECT_NAME", None):
+                    if switch_profile.name[-2:] == "-A":
+                        vlan_policies["fabric_a"] = self._get_policy_name(policy)
+                    elif switch_profile.name[-2:] == "-B":
+                        vlan_policies["fabric_b"] = self._get_policy_name(policy)
 
         if vlan_policies["fabric_a"] or vlan_policies["fabric_b"]:
             return vlan_policies
@@ -2793,20 +2753,13 @@ class IntersightUcsDomainProfile(IntersightConfigObject):
     def _get_vsan_policies(self):
         # Fetches the VSAN Policies assigned to the UCS Domain Profile
         vsan_policies = {"fabric_a": None, "fabric_b": None}
-        if "fabric_fc_network_policy" in self._config.sdk_objects:
-            for fabric_fc_network_policy in self._config.sdk_objects["fabric_fc_network_policy"]:
-                if hasattr(fabric_fc_network_policy, "profiles"):
-                    if fabric_fc_network_policy.profiles:
-                        for profile in self.get_config_objects_from_ref(ref=fabric_fc_network_policy.profiles):
-                            if profile.moid == self._switch_profiles_moids["fabric_a"]:
-                                vsan_policies["fabric_a"] = fabric_fc_network_policy.name
-                            elif profile.moid == self._switch_profiles_moids["fabric_b"]:
-                                vsan_policies["fabric_b"] = fabric_fc_network_policy.name
-
-                # We break the loop if we have found a match
-                # FIXME : Does not support single Fabric Interconnect scenarios
-                if vsan_policies["fabric_a"] and vsan_policies["fabric_b"]:
-                    return vsan_policies
+        for switch_profile in self._switch_profiles:
+            for policy in switch_profile.policy_bucket:
+                if policy.object_type == getattr(IntersightFabricVsanPolicy, "_INTERSIGHT_SDK_OBJECT_NAME", None):
+                    if switch_profile.name[-2:] == "-A":
+                        vsan_policies["fabric_a"] = self._get_policy_name(policy)
+                    elif switch_profile.name[-2:] == "-B":
+                        vsan_policies["fabric_b"] = self._get_policy_name(policy)
 
         if vsan_policies["fabric_a"] or vsan_policies["fabric_b"]:
             return vsan_policies
@@ -2851,291 +2804,87 @@ class IntersightUcsDomainProfile(IntersightConfigObject):
         # We now need to push the fabric.SwitchProfile objects for both Fabric Interconnects
         # FIXME: Add support for single Fabric Interconnect
         from intersight.model.fabric_switch_profile import FabricSwitchProfile
-        kwargs = {
+        switch_profile_a_kwargs = {
             "object_type": "fabric.SwitchProfile",
             "class_id": "fabric.SwitchProfile",
-            "switch_cluster_profile": fscp
+            "switch_cluster_profile": fscp,
+            "policy_bucket": []
         }
         if self.name is not None:
-            kwargs["name"] = self.name + "-A"
+            switch_profile_a_kwargs["name"] = self.name + "-A"
         if self.descr is not None:
-            kwargs["description"] = self.descr
+            switch_profile_a_kwargs["description"] = self.descr
 
-        fabric_switch_profile_a = FabricSwitchProfile(**kwargs)
+        switch_profile_b_kwargs = copy.deepcopy(switch_profile_a_kwargs)
+        if self.name is not None:
+            switch_profile_b_kwargs["name"] = self.name + "-B"
+
+        for policy_section in ["network_connectivity_policy", "ntp_policy", "port_policies", "snmp_policy",
+                               "switch_control_policy", "syslog_policy", "system_qos_policy", "vlan_policies",
+                               "vsan_policies"]:
+            if getattr(self, policy_section, None) is not None:
+                if isinstance(getattr(self, policy_section, {}), dict):
+                    policy_type = self._POLICY_MAPPING_TABLE.get(policy_section, {}).get("fabric_a")
+                    fsp_a_policy_name = getattr(self, policy_section, {}).get("fabric_a")
+                    fsp_b_policy_name = getattr(self, policy_section, {}).get("fabric_b")
+                else:
+                    policy_type = self._POLICY_MAPPING_TABLE.get(policy_section, None)
+                    fsp_a_policy_name = fsp_b_policy_name = getattr(self, policy_section, None)
+
+                if policy_type:
+                    object_type = getattr(policy_type, "_INTERSIGHT_SDK_OBJECT_NAME", None)
+                    if object_type:
+                        fsp_a_live_policy = self.get_live_object(object_name=fsp_a_policy_name,
+                                                                  object_type=object_type)
+                        if fsp_a_live_policy:
+                            switch_profile_a_kwargs["policy_bucket"].append(fsp_a_live_policy)
+                        else:
+                            self._config.push_summary_manager.add_object_status(
+                                obj=self, obj_detail=f"Attaching {policy_section} '{fsp_a_policy_name}'",
+                                obj_type=self._INTERSIGHT_SDK_OBJECT_NAME, status="failed",
+                                message=f"Failed to find {policy_section} '{fsp_a_policy_name}'")
+
+                        fsp_b_live_policy = self.get_live_object(object_name=fsp_b_policy_name,
+                                                                  object_type=object_type)
+                        if fsp_b_live_policy:
+                            switch_profile_b_kwargs["policy_bucket"].append(fsp_b_live_policy)
+                        else:
+                            self._config.push_summary_manager.add_object_status(
+                                obj=self, obj_detail=f"Attaching {policy_section} '{fsp_b_policy_name}'",
+                                obj_type=self._INTERSIGHT_SDK_OBJECT_NAME, status="failed",
+                                message=f"Failed to find {policy_section} '{fsp_b_policy_name}'")
+                    else:
+                        err_message = "Missing _INTERSIGHT_SDK_OBJECT_NAME value for " + policy_section
+                        self.logger(level="error", message=err_message)
+                        self._config.push_summary_manager.add_object_status(
+                            obj=self, obj_detail=f"Attaching {policy_section} '{getattr(self, policy_section)}'",
+                            obj_type=self._INTERSIGHT_SDK_OBJECT_NAME, status="failed", message=err_message)
+
+                else:
+                    err_message = "Missing entry for " + policy_section + " in _POLICY_MAPPING_TABLE"
+                    self.logger(level="error", message=err_message)
+                    self._config.push_summary_manager.add_object_status(
+                        obj=self, obj_detail=f"Attaching {policy_section} '{getattr(self, policy_section)}'",
+                        obj_type=self._INTERSIGHT_SDK_OBJECT_NAME, status="failed", message=err_message)
+
+        fabric_switch_profile_a = FabricSwitchProfile(**switch_profile_a_kwargs)
 
         fspa = self.commit(
             object_type="fabric.SwitchProfile",
             payload=fabric_switch_profile_a,
-            detail=self.name + " - Switch Profile FI A",
-            return_relationship=True
+            detail=self.name + " - Switch Profile FI A"
         )
         if not fspa:
             return False
 
-        if self.name is not None:
-            kwargs["name"] = self.name + "-B"
-
-        fabric_switch_profile_b = FabricSwitchProfile(**kwargs)
+        fabric_switch_profile_b = FabricSwitchProfile(**switch_profile_b_kwargs)
 
         fspb = self.commit(
             object_type="fabric.SwitchProfile",
             payload=fabric_switch_profile_b,
-            detail=self.name + " - Switch Profile FI B",
-            return_relationship=True
+            detail=self.name + " - Switch Profile FI B"
         )
         if not fspb:
             return False
-
-        # We also need to map the VLAN Policies to the just created fabric.SwitchProfile objects
-        for fabric_id, vlan_policy_name in self.vlan_policies.items():
-            if vlan_policy_name:
-                # We first need to identify the VLAN Policy object reference
-                vlan_policy = self.get_live_object(
-                    object_name=vlan_policy_name,
-                    object_type="fabric.EthNetworkPolicy",
-                    return_reference=False
-                )
-                if vlan_policy:
-                    # We now need to modify the VLAN Policy to add a relationship to the SwitchProfile
-                    if fabric_id == "fabric_a":
-                        vlan_policy.profiles.append(fspa)
-                    elif fabric_id == "fabric_b":
-                        vlan_policy.profiles.append(fspb)
-
-                    fab_id = fabric_id.upper()[-1:]
-                    if not self.commit(
-                            object_type="fabric.EthNetworkPolicy",
-                            payload=vlan_policy,
-                            detail=self.name + " - VLAN Policy Switch Profile " + fab_id + " assignment",
-                            modify_present=True
-                    ):
-                        return False
-                else:
-                    self._config.push_summary_manager.add_object_status(
-                        obj=self, obj_detail=f"Attaching VLAN Policy '{vlan_policy_name}'",
-                        obj_type=self._INTERSIGHT_SDK_OBJECT_NAME, status="failed",
-                        message=f"Failed to find VLAN Policy '{vlan_policy_name}'"
-                    )
-
-        # We also need to map the VSAN Policies to the just created fabric.SwitchProfile objects
-        for fabric_id, vsan_policy_name in self.vsan_policies.items():
-            if vsan_policy_name:
-                # We first need to identify the VSAN Policy object reference
-                vsan_policy = self.get_live_object(
-                    object_name=vsan_policy_name,
-                    object_type="fabric.FcNetworkPolicy",
-                    return_reference=False
-                )
-                if vsan_policy:
-                    # We now need to modify the VSAN Policy to add a relationship to the SwitchProfile
-                    if fabric_id == "fabric_a":
-                        vsan_policy.profiles.append(fspa)
-                    elif fabric_id == "fabric_b":
-                        vsan_policy.profiles.append(fspb)
-
-                    fab_id = fabric_id.upper()[-1:]
-                    if not self.commit(
-                            object_type="fabric.FcNetworkPolicy",
-                            payload=vsan_policy,
-                            detail=self.name + " - VSAN Policy Switch Profile " + fab_id + " assignment",
-                            modify_present=True
-                    ):
-                        return False
-                else:
-                    self._config.push_summary_manager.add_object_status(
-                        obj=self, obj_detail=f"Attaching VSAN Policy '{vsan_policy_name}'",
-                        obj_type=self._INTERSIGHT_SDK_OBJECT_NAME, status="failed",
-                        message=f"Failed to find VSAN Policy '{vsan_policy_name}'"
-                    )
-
-        # We also need to map the Port Policies to the just created fabric.SwitchProfile objects
-        for fabric_id, port_policy_name in self.port_policies.items():
-            if port_policy_name:
-                # We first need to identify the Port Policy object reference
-                port_policy = self.get_live_object(
-                    object_name=port_policy_name,
-                    object_type="fabric.PortPolicy",
-                    return_reference=False
-                )
-                if port_policy:
-                    # We now need to modify the Port Policy to add a relationship to the SwitchProfile
-                    if fabric_id == "fabric_a":
-                        port_policy.profiles.append(fspa)
-                    elif fabric_id == "fabric_b":
-                        port_policy.profiles.append(fspb)
-
-                    fab_id = fabric_id.upper()[-1:]
-                    if not self.commit(
-                            object_type="fabric.PortPolicy", payload=port_policy,
-                            detail=self.name + " - Port Policy Switch Profile " + fab_id + " assignment",
-                            modify_present=True
-                    ):
-                        return False
-                else:
-                    self._config.push_summary_manager.add_object_status(
-                        obj=self, obj_detail=f"Attaching Port Policy '{port_policy_name}'",
-                        obj_type=self._INTERSIGHT_SDK_OBJECT_NAME, status="failed",
-                        message=f"Failed to find Port Policy '{port_policy_name}'"
-                    )
-
-        # We also need to map the SNMP Policy to the just created fabric.SwitchProfile objects
-        if self.snmp_policy:
-            # We first need to identify the SNMP Policy object reference
-            snmp_policy = self.get_live_object(
-                object_name=self.snmp_policy,
-                object_type="snmp.Policy",
-                return_reference=False
-            )
-            if snmp_policy:
-                # We now need to modify the SNMP Policy to add a relationship to the Switch Profile
-                snmp_policy.profiles.append(fspa)
-                snmp_policy.profiles.append(fspb)
-
-                if not self.commit(
-                        object_type="snmp.Policy",
-                        payload=snmp_policy,
-                        detail=self.name + " - SNMP Policy Switch Profiles assignment",
-                        modify_present=True
-                ):
-                    return False
-            else:
-                self._config.push_summary_manager.add_object_status(
-                    obj=self, obj_detail=f"Attaching SNMP Policy '{self.snmp_policy}'",
-                    obj_type=self._INTERSIGHT_SDK_OBJECT_NAME, status="failed",
-                    message=f"Failed to find SNMP Policy '{self.snmp_policy}'"
-                )
-
-        # We also need to map the Switch Control Policy to the just created fabric.SwitchProfile objects
-        if self.switch_control_policy:
-            # We first need to identify the Switch Control Policy object reference
-            sw_ctrl_policy = self.get_live_object(
-                object_name=self.switch_control_policy,
-                object_type="fabric.SwitchControlPolicy",
-                return_reference=False
-            )
-            if sw_ctrl_policy:
-                # We now need to modify the Switch Control Policy to add a relationship to the SwitchProfile
-                sw_ctrl_policy.profiles.append(fspa)
-                sw_ctrl_policy.profiles.append(fspb)
-
-                if not self.commit(
-                        object_type="fabric.SwitchControlPolicy",
-                        payload=sw_ctrl_policy,
-                        detail=self.name + " - Switch Control Policy Switch Profiles assignment",
-                        modify_present=True
-                ):
-                    return False
-            else:
-                self._config.push_summary_manager.add_object_status(
-                    obj=self, obj_detail=f"Attaching Switch Control Policy '{self.switch_control_policy}'",
-                    obj_type=self._INTERSIGHT_SDK_OBJECT_NAME, status="failed",
-                    message=f"Failed to find Switch Control Policy '{self.switch_control_policy}'"
-                )
-
-        # We also need to map the System QoS Policy to the just created fabric.SwitchProfile objects
-        if self.system_qos_policy:
-            # We first need to identify the System QoS Policy object reference
-            qos_policy = self.get_live_object(
-                object_name=self.system_qos_policy,
-                object_type="fabric.SystemQosPolicy",
-                return_reference=False
-            )
-            if qos_policy:
-                # We now need to modify the System QoS Policy to add a relationship to the SwitchProfile
-                qos_policy.profiles.append(fspa)
-                qos_policy.profiles.append(fspb)
-
-                if not self.commit(
-                        object_type="fabric.SystemQosPolicy",
-                        payload=qos_policy,
-                        detail=self.name + " - System QoS Policy Switch Profiles assignment",
-                        modify_present=True
-                ):
-                    return False
-            else:
-                self._config.push_summary_manager.add_object_status(
-                    obj=self, obj_detail=f"Attaching System QoS Policy '{self.system_qos_policy}'",
-                    obj_type=self._INTERSIGHT_SDK_OBJECT_NAME, status="failed",
-                    message=f"Failed to find System QoS Policy '{self.system_qos_policy}'"
-                )
-
-        # We also need to map the Syslog Policy to the just created fabric.SwitchProfile objects
-        if self.syslog_policy:
-            # We first need to identify the Syslog Policy object reference
-            syslog_policy = self.get_live_object(
-                object_name=self.syslog_policy,
-                object_type="syslog.Policy",
-                return_reference=False
-            )
-            if syslog_policy:
-                # We now need to modify the Syslog Policy to add a relationship to the Switch Profile
-                syslog_policy.profiles.append(fspa)
-                syslog_policy.profiles.append(fspb)
-
-                if not self.commit(
-                        object_type="syslog.Policy",
-                        payload=syslog_policy,
-                        detail=self.name + " - Syslog Policy Switch Profiles assignment",
-                        modify_present=True
-                ):
-                    return False
-            else:
-                self._config.push_summary_manager.add_object_status(
-                    obj=self, obj_detail=f"Attaching Syslog Policy '{self.syslog_policy}'",
-                    obj_type=self._INTERSIGHT_SDK_OBJECT_NAME, status="failed",
-                    message=f"Failed to find Syslog Policy '{self.syslog_policy}'"
-                )
-
-        # We also need to map the Network Connectivity Policy to the just created fabric.SwitchProfile objects
-        if self.network_connectivity_policy:
-            # We first need to identify the Network Connectivity Policy object reference
-            network_connectivity_policy = self.get_live_object(
-                object_name=self.network_connectivity_policy,
-                object_type="networkconfig.Policy",
-                return_reference=False
-            )
-            if network_connectivity_policy:
-                network_connectivity_policy.profiles.append(fspa)
-                network_connectivity_policy.profiles.append(fspb)
-
-                if not self.commit(
-                        object_type="networkconfig.Policy",
-                        payload=network_connectivity_policy,
-                        detail=self.name + " - Network Connectivity Policy Switch Profiles assignment",
-                        modify_present=True
-                ):
-                    return False
-            else:
-                self._config.push_summary_manager.add_object_status(
-                    obj=self, obj_detail=f"Attaching Network Connectivity Policy '{self.network_connectivity_policy}'",
-                    obj_type=self._INTERSIGHT_SDK_OBJECT_NAME, status="failed",
-                    message=f"Failed to find Network Connectivity Policy '{self.network_connectivity_policy}'"
-                )
-
-        # Lastly, we need to map the NTP Policy to the just created fabric.SwitchProfile objects
-        if self.ntp_policy:
-            # We first need to identify the NTP Policy object reference
-            ntp_policy = self.get_live_object(
-                object_name=self.ntp_policy,
-                object_type="ntp.Policy",
-                return_reference=False
-            )
-            if ntp_policy:
-                ntp_policy.profiles.append(fspa)
-                ntp_policy.profiles.append(fspb)
-
-                if not self.commit(
-                        object_type="ntp.Policy",
-                        payload=ntp_policy,
-                        detail=self.name + " - NTP Policy Switch Profiles assignment",
-                        modify_present=True
-                ):
-                    return False
-            else:
-                self._config.push_summary_manager.add_object_status(
-                    obj=self, obj_detail=f"Attaching NTP Policy '{self.ntp_policy}'",
-                    obj_type=self._INTERSIGHT_SDK_OBJECT_NAME, status="failed",
-                    message=f"Failed to find NTP Policy '{self.ntp_policy}'"
-                )
 
         return True

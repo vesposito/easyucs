@@ -191,21 +191,19 @@ class IntersightUcsServerProfile(IntersightGenericUcsServerProfile):
 
                 if hasattr(server_profile, "uuid_pool"):  # This line is needed until Intersight Appliance is updated
                     if server_profile.uuid_pool:
-                        uuid_pool = self.get_config_objects_from_ref(ref=server_profile.uuid_pool)
+                        uuid_pool = self._get_policy_name(policy=server_profile.uuid_pool)
                         if uuid_pool:
-                            if len(uuid_pool) == 1:
-                                self.uuid_pool = uuid_pool[0].name
+                            self.uuid_pool = uuid_pool
 
                 if server_profile.server_pool:
-                    server_pool = self.get_config_objects_from_ref(ref=server_profile.server_pool)
+                    server_pool = self._get_policy_name(policy=server_profile.server_pool)
                     if server_pool:
-                        if len(server_pool) == 1:
-                            self.resource_pool = server_pool[0].name
+                        self.resource_pool = server_pool
 
                 for policy in self._object.policy_bucket:
                     for (policy_name, intersight_policy) in self._POLICY_MAPPING_TABLE.items():
                         if policy.object_type == getattr(intersight_policy, "_INTERSIGHT_SDK_OBJECT_NAME", None):
-                            setattr(self, policy_name, self._get_policy(policy))
+                            setattr(self, policy_name, self._get_policy_name(policy))
                             break
 
             # Fetching the identities which are already consumed by the profile
@@ -225,16 +223,14 @@ class IntersightUcsServerProfile(IntersightGenericUcsServerProfile):
                     }
 
                     for pool_type_reservation in self._config.sdk_objects[pool_type + "pool_reservation"]:
-                        if (pool_type_reservation.moid == reservation_reference.reservation_moid) and \
-                                pool_type_reservation.organization.moid == self._parent._moid:
+                        if pool_type_reservation.moid == reservation_reference.reservation_moid:
                             target_reservation = pool_type_reservation
                             break
 
                     for pool in self._config.sdk_objects[pool_type + "pool_pool"]:
                         if getattr(pool, "reservations", None) is not None:
                             for pool_reservation in pool.reservations:
-                                if (pool_reservation.moid == reservation_reference.reservation_moid) and \
-                                        pool.organization.moid == self._parent._moid:
+                                if pool_reservation.moid == reservation_reference.reservation_moid:
                                     target_pool = pool
                                     break
 
@@ -266,8 +262,16 @@ class IntersightUcsServerProfile(IntersightGenericUcsServerProfile):
                             elif reservation_reference.consumer_type == "WWNN":
                                 reservation.update({"reservation_type": "wwnn"})
 
+                        # If target pool exists in an org different from the server profile org (in a shared org) then
+                        # we make sure to name the pool as "{org_name}/{pool_name}"
+                        pool_name = target_pool.name
+                        if target_pool.organization.moid != self._parent._moid:
+                            org = self.get_config_objects_from_ref(ref=target_pool.organization)
+                            if org:
+                                pool_name = f"{org[0].name}/{target_pool.name}"
+
                         reservation.update({"identity": target_reservation.identity,
-                                            "pool_name": target_pool.name})
+                                            "pool_name": pool_name})
 
                     self.reservations.append(reservation)
 
@@ -415,6 +419,16 @@ class IntersightUcsServerProfile(IntersightGenericUcsServerProfile):
         if "server_profile_template" in self._config.sdk_objects:
             for server_profile_template in self._config.sdk_objects["server_profile_template"]:
                 if server_profile_template.moid == self._object.src_template.moid:
+                    # If the referenced SPT exists in a shared org, then we return "<org_name>/<spt_name>"
+                    if self._object.organization.moid != server_profile_template.organization.moid:
+                        source_org_list = self.get_config_objects_from_ref(ref=server_profile_template.organization)
+                        if len(source_org_list) != 1:
+                            self.logger(level="debug",
+                                        message=f"Could not find the appropriate "
+                                                f"{str(server_profile_template.organization.object_type)}"
+                                                f" with MOID {str(server_profile_template.organization.moid)}")
+                        else:
+                            return f"{source_org_list[0].name}/{server_profile_template.name}"
                     return server_profile_template.name
 
         return None
@@ -488,7 +502,7 @@ class IntersightUcsServerProfile(IntersightGenericUcsServerProfile):
         reservation["identity_type"] = "ip"
         # pool name is not required when allocation type is static
         if ippool_lease.allocation_type not in ["static"]:
-            reservation["pool_name"] = self._get_policy(ippool_lease.pool)
+            reservation["pool_name"] = self._get_policy_name(ippool_lease.pool)
         return reservation
 
     def _get_ip_identities(self):
@@ -534,7 +548,7 @@ class IntersightUcsServerProfile(IntersightGenericUcsServerProfile):
                         reservation["identity"] = iqnpool_lease.iqn_address
                         # pool name is not required when allocation type is static
                         if iqnpool_lease.allocation_type not in ["static"]:
-                            reservation["pool_name"] = self._get_policy(iqnpool_lease.pool)
+                            reservation["pool_name"] = self._get_policy_name(iqnpool_lease.pool)
                         reservation["identity_type"] = "iqn"
                         yield reservation
 
@@ -548,7 +562,7 @@ class IntersightUcsServerProfile(IntersightGenericUcsServerProfile):
                         reservation["identity"] = vnic_eth_if.mac_address
                         # pool name is not required when allocation type is static
                         if vnic_eth_if.mac_address_type not in ["static"]:
-                            reservation["pool_name"] = self._get_policy(vnic_eth_if.mac_pool)
+                            reservation["pool_name"] = self._get_policy_name(vnic_eth_if.mac_pool)
                         reservation["identity_type"] = "mac"
                         reservation["vnic_name"] = vnic_eth_if.name
                         yield reservation
@@ -563,7 +577,7 @@ class IntersightUcsServerProfile(IntersightGenericUcsServerProfile):
                         reservation["identity"] = uuidpool_lease.uuid
                         # pool name is not required when allocation type is static
                         if uuidpool_lease.allocation_type not in ["static"]:
-                            reservation["pool_name"] = self._get_policy(uuidpool_lease.pool)
+                            reservation["pool_name"] = self._get_policy_name(uuidpool_lease.pool)
                         reservation["identity_type"] = "uuid"
                         yield reservation
 
@@ -577,7 +591,7 @@ class IntersightUcsServerProfile(IntersightGenericUcsServerProfile):
                         reservation["identity"] = fcpool_lease.wwn_id
                         # pool name is not required when allocation type is static
                         if fcpool_lease.allocation_type not in ["static"]:
-                            reservation["pool_name"] = self._get_policy(fcpool_lease.pool)
+                            reservation["pool_name"] = self._get_policy_name(fcpool_lease.pool)
                         reservation["identity_type"] = "wwnn"
                         yield reservation
 
@@ -591,7 +605,7 @@ class IntersightUcsServerProfile(IntersightGenericUcsServerProfile):
                         reservation["identity"] = vnic_fc_if.wwpn
                         # pool name is not required when allocation type is static
                         if vnic_fc_if.wwpn_address_type not in ["static"]:
-                            reservation["pool_name"] = self._get_policy(vnic_fc_if.wwpn_pool)
+                            reservation["pool_name"] = self._get_policy_name(vnic_fc_if.wwpn_pool)
                         reservation["identity_type"] = "wwpn"
                         reservation["vhba_name"] = vnic_fc_if.name
                         yield reservation
@@ -690,18 +704,13 @@ class IntersightUcsServerProfile(IntersightGenericUcsServerProfile):
 
                     for reservation in self.reservations:
                         if reservation["reservation_type"] == "ip":
-                            if org.moid not in reservation_pools_cache["ip"]:
-                                reservation_pools_cache["ip"][org.moid] = {}
-
                             # If pool name is not in the local cache, we query for it to get its moid
-                            if reservation["pool_name"] not in reservation_pools_cache["ip"][org.moid]:
-                                pool_list = self._device.query(
-                                    object_type="ippool.Pool",
-                                    filter=f"Name eq '{reservation['pool_name']}' " +
-                                           f"and Organization.Moid eq '{str(org.moid)}'"
-                                )
-                                if len(pool_list) == 1:
-                                    reservation_pools_cache["ip"][org.moid][pool_list[0].name] = pool_list[0].moid
+                            if reservation["pool_name"] not in reservation_pools_cache["ip"]:
+                                pool = self.get_live_object(object_type="ippool.Pool",
+                                                            object_name=reservation['pool_name'],
+                                                            return_reference=False)
+                                if pool:
+                                    reservation_pools_cache["ip"][reservation['pool_name']] = pool.moid
                                 else:
                                     err_message = "Could not find unique ippool.Pool with name " + reservation[
                                         'pool_name']
@@ -714,7 +723,7 @@ class IntersightUcsServerProfile(IntersightGenericUcsServerProfile):
                             reservation_list = self._device.query(
                                 object_type="ippool.Reservation",
                                 filter=f"Identity eq '{reservation['identity']}' and Pool.Moid eq " +
-                                       f"'{reservation_pools_cache['ip'][org.moid][reservation['pool_name']]}'"
+                                       f"'{reservation_pools_cache['ip'][reservation['pool_name']]}'"
                             )
                             if len(reservation_list) == 1:
                                 from intersight.model.ippool_reservation_reference import IppoolReservationReference
@@ -759,18 +768,13 @@ class IntersightUcsServerProfile(IntersightGenericUcsServerProfile):
                                 continue
 
                         elif reservation["reservation_type"] == "iqn":
-                            if org.moid not in reservation_pools_cache["iqn"]:
-                                reservation_pools_cache["iqn"][org.moid] = {}
-
                             # If pool name is not in the local cache, we query for it to get its moid
-                            if reservation["pool_name"] not in reservation_pools_cache["iqn"][org.moid]:
-                                pool_list = self._device.query(
-                                    object_type="iqnpool.Pool",
-                                    filter=f"Name eq '{reservation['pool_name']}' " +
-                                           f"and Organization.Moid eq '{str(org.moid)}'"
-                                )
-                                if len(pool_list) == 1:
-                                    reservation_pools_cache["iqn"][org.moid][pool_list[0].name] = pool_list[0].moid
+                            if reservation["pool_name"] not in reservation_pools_cache["iqn"]:
+                                pool = self.get_live_object(object_type="iqnpool.Pool",
+                                                            object_name=reservation['pool_name'],
+                                                            return_reference=False)
+                                if pool:
+                                    reservation_pools_cache["iqn"][reservation['pool_name']] = pool.moid
                                 else:
                                     err_message = "Could not find unique iqnpool.Pool with name " + reservation[
                                         'pool_name']
@@ -783,7 +787,7 @@ class IntersightUcsServerProfile(IntersightGenericUcsServerProfile):
                             reservation_list = self._device.query(
                                 object_type="iqnpool.Reservation",
                                 filter=f"Identity eq '{reservation['identity']}' and Pool.Moid eq " +
-                                       f"'{reservation_pools_cache['iqn'][org.moid][reservation['pool_name']]}'"
+                                       f"'{reservation_pools_cache['iqn'][reservation['pool_name']]}'"
                             )
                             if len(reservation_list) == 1:
                                 from intersight.model.iqnpool_reservation_reference import IqnpoolReservationReference
@@ -804,18 +808,13 @@ class IntersightUcsServerProfile(IntersightGenericUcsServerProfile):
                                 continue
 
                         elif reservation["reservation_type"] == "mac":
-                            if org.moid not in reservation_pools_cache["mac"]:
-                                reservation_pools_cache["mac"][org.moid] = {}
-
                             # If pool name is not in the local cache, we query for it to get its moid
-                            if reservation["pool_name"] not in reservation_pools_cache["mac"][org.moid]:
-                                pool_list = self._device.query(
-                                    object_type="macpool.Pool",
-                                    filter=f"Name eq '{reservation['pool_name']}' " +
-                                           f"and Organization.Moid eq '{str(org.moid)}'"
-                                )
-                                if len(pool_list) == 1:
-                                    reservation_pools_cache["mac"][org.moid][pool_list[0].name] = pool_list[0].moid
+                            if reservation["pool_name"] not in reservation_pools_cache["mac"]:
+                                pool = self.get_live_object(object_type="macpool.Pool",
+                                                            object_name=reservation['pool_name'],
+                                                            return_reference=False)
+                                if pool:
+                                    reservation_pools_cache["mac"][reservation['pool_name']] = pool.moid
                                 else:
                                     err_message = "Could not find unique macpool.Pool with name " + \
                                                   reservation['pool_name']
@@ -828,7 +827,7 @@ class IntersightUcsServerProfile(IntersightGenericUcsServerProfile):
                             reservation_list = self._device.query(
                                 object_type="macpool.Reservation",
                                 filter=f"Identity eq '{reservation['identity']}' and Pool.Moid eq " +
-                                       f"'{reservation_pools_cache['mac'][org.moid][reservation['pool_name']]}'"
+                                       f"'{reservation_pools_cache['mac'][reservation['pool_name']]}'"
                             )
                             if len(reservation_list) == 1:
                                 from intersight.model.macpool_reservation_reference import MacpoolReservationReference
@@ -851,18 +850,13 @@ class IntersightUcsServerProfile(IntersightGenericUcsServerProfile):
                                 continue
 
                         elif reservation["reservation_type"] == "uuid":
-                            if org.moid not in reservation_pools_cache["uuid"]:
-                                reservation_pools_cache["uuid"][org.moid] = {}
-
                             # If pool name is not in the local cache, we query for it to get its moid
-                            if reservation["pool_name"] not in reservation_pools_cache["uuid"][org.moid]:
-                                pool_list = self._device.query(
-                                    object_type="uuidpool.Pool",
-                                    filter=f"Name eq '{reservation['pool_name']}' " +
-                                           f"and Organization.Moid eq '{str(org.moid)}'"
-                                )
-                                if len(pool_list) == 1:
-                                    reservation_pools_cache["uuid"][org.moid][pool_list[0].name] = pool_list[0].moid
+                            if reservation["pool_name"] not in reservation_pools_cache["uuid"]:
+                                pool = self.get_live_object(object_type="uuidpool.Pool",
+                                                            object_name=reservation['pool_name'],
+                                                            return_reference=False)
+                                if pool:
+                                    reservation_pools_cache["uuid"][reservation['pool_name']] = pool.moid
                                 else:
                                     err_message = "Could not find unique uuidpool.Pool with name " + reservation[
                                         'pool_name']
@@ -875,7 +869,7 @@ class IntersightUcsServerProfile(IntersightGenericUcsServerProfile):
                             reservation_list = self._device.query(
                                 object_type="uuidpool.Reservation",
                                 filter=f"Identity eq '{reservation['identity'].upper()}' and Pool.Moid eq " +
-                                       f"'{reservation_pools_cache['uuid'][org.moid][reservation['pool_name']]}'"
+                                       f"'{reservation_pools_cache['uuid'][reservation['pool_name']]}'"
                             )
                             if len(reservation_list) == 1:
                                 from intersight.model.uuidpool_reservation_reference import UuidpoolReservationReference
@@ -896,18 +890,13 @@ class IntersightUcsServerProfile(IntersightGenericUcsServerProfile):
                                 continue
 
                         elif reservation["reservation_type"] == "wwpn":
-                            if org.moid not in reservation_pools_cache["wwpn"]:
-                                reservation_pools_cache["wwpn"][org.moid] = {}
-
                             # If pool name is not in the local cache, we query for it to get its moid
-                            if reservation["pool_name"] not in reservation_pools_cache["wwpn"][org.moid]:
-                                pool_list = self._device.query(
-                                    object_type="fcpool.Pool",
-                                    filter=f"Name eq '{reservation['pool_name']}' and PoolPurpose eq 'WWPN' " +
-                                           f"and Organization.Moid eq '{str(org.moid)}'"
-                                )
-                                if len(pool_list) == 1:
-                                    reservation_pools_cache["wwpn"][org.moid][pool_list[0].name] = pool_list[0].moid
+                            if reservation["pool_name"] not in reservation_pools_cache["wwpn"]:
+                                pool = self.get_live_object(object_type="fcpool.Pool",
+                                                            object_name=reservation['pool_name'],
+                                                            return_reference=False)
+                                if pool:
+                                    reservation_pools_cache["wwpn"][reservation['pool_name']] = pool.moid
                                 else:
                                     err_message = "Could not find unique fcpool.Pool with type 'WWPN' " + \
                                                   "and name " + reservation['pool_name']
@@ -920,7 +909,7 @@ class IntersightUcsServerProfile(IntersightGenericUcsServerProfile):
                             reservation_list = self._device.query(
                                 object_type="fcpool.Reservation",
                                 filter=f"Identity eq '{reservation['identity']}' and Pool.Moid eq " +
-                                       f"'{reservation_pools_cache['wwpn'][org.moid][reservation['pool_name']]}'"
+                                       f"'{reservation_pools_cache['wwpn'][reservation['pool_name']]}'"
                             )
                             if len(reservation_list) == 1:
                                 from intersight.model.fcpool_reservation_reference import FcpoolReservationReference
@@ -943,18 +932,13 @@ class IntersightUcsServerProfile(IntersightGenericUcsServerProfile):
                                 continue
 
                         elif reservation["reservation_type"] == "wwnn":
-                            if org.moid not in reservation_pools_cache["wwnn"]:
-                                reservation_pools_cache["wwnn"][org.moid] = {}
-
                             # If pool name is not in the local cache, we query for it to get its moid
-                            if reservation["pool_name"] not in reservation_pools_cache["wwnn"][org.moid]:
-                                pool_list = self._device.query(
-                                    object_type="fcpool.Pool",
-                                    filter=f"Name eq '{reservation['pool_name']}' and PoolPurpose eq 'WWNN' " +
-                                           f"and Organization.Moid eq '{str(org.moid)}'"
-                                )
-                                if len(pool_list) == 1:
-                                    reservation_pools_cache["wwnn"][org.moid][pool_list[0].name] = pool_list[0].moid
+                            if reservation["pool_name"] not in reservation_pools_cache["wwnn"]:
+                                pool = self.get_live_object(object_type="fcpool.Pool",
+                                                            object_name=reservation['pool_name'],
+                                                            return_reference=False)
+                                if pool:
+                                    reservation_pools_cache["wwnn"][reservation['pool_name']] = pool.moid
                                 else:
                                     err_message = "Could not find unique fcpool.Pool with type 'WWNN' " + \
                                                   "and name " + reservation['pool_name']
@@ -967,7 +951,7 @@ class IntersightUcsServerProfile(IntersightGenericUcsServerProfile):
                             reservation_list = self._device.query(
                                 object_type="fcpool.Reservation",
                                 filter=f"Identity eq '{reservation['identity']}' and Pool.Moid eq " +
-                                       f"'{reservation_pools_cache['wwnn'][org.moid][reservation['pool_name']]}'"
+                                       f"'{reservation_pools_cache['wwnn'][reservation['pool_name']]}'"
                             )
                             if len(reservation_list) == 1:
                                 # We first need to determine the SAN Connectivity Policy name
@@ -1169,17 +1153,13 @@ class IntersightUcsServerProfile(IntersightGenericUcsServerProfile):
 
             for reservation in self.reservations:
                 if reservation["reservation_type"] == "ip":
-                    if org.moid not in reservation_pools_cache["ip"]:
-                        reservation_pools_cache["ip"][org.moid] = {}
-
                     # If pool name is not in the local cache, we query for it to get its moid
-                    if reservation["pool_name"] not in reservation_pools_cache["ip"][org.moid]:
-                        pool_list = self._device.query(
-                            object_type="ippool.Pool",
-                            filter=f"Name eq '{reservation['pool_name']}' and Organization.Moid eq '{str(org.moid)}'"
-                        )
-                        if len(pool_list) == 1:
-                            reservation_pools_cache["ip"][org.moid][pool_list[0].name] = pool_list[0].moid
+                    if reservation["pool_name"] not in reservation_pools_cache["ip"]:
+                        pool = self.get_live_object(object_type="ippool.Pool",
+                                                    object_name=reservation['pool_name'],
+                                                    return_reference=False)
+                        if pool:
+                            reservation_pools_cache["ip"][reservation['pool_name']] = pool.moid
                         else:
                             err_message = "Could not find unique ippool.Pool with name " + reservation['pool_name']
                             self.logger(level="error", message=err_message)
@@ -1191,7 +1171,7 @@ class IntersightUcsServerProfile(IntersightGenericUcsServerProfile):
                     reservation_list = self._device.query(
                         object_type="ippool.Reservation",
                         filter=f"Identity eq '{reservation['identity']}' and Pool.Moid eq " +
-                               f"'{reservation_pools_cache['ip'][org.moid][reservation['pool_name']]}'"
+                               f"'{reservation_pools_cache['ip'][reservation['pool_name']]}'"
                     )
                     if len(reservation_list) == 1:
                         from intersight.model.ippool_reservation_reference import IppoolReservationReference
@@ -1235,17 +1215,13 @@ class IntersightUcsServerProfile(IntersightGenericUcsServerProfile):
                         continue
 
                 elif reservation["reservation_type"] == "iqn":
-                    if org.moid not in reservation_pools_cache["iqn"]:
-                        reservation_pools_cache["iqn"][org.moid] = {}
-
                     # If pool name is not in the local cache, we query for it to get its moid
-                    if reservation["pool_name"] not in reservation_pools_cache["iqn"][org.moid]:
-                        pool_list = self._device.query(
-                            object_type="iqnpool.Pool",
-                            filter=f"Name eq '{reservation['pool_name']}' and Organization.Moid eq '{str(org.moid)}'"
-                        )
-                        if len(pool_list) == 1:
-                            reservation_pools_cache["iqn"][org.moid][pool_list[0].name] = pool_list[0].moid
+                    if reservation["pool_name"] not in reservation_pools_cache["iqn"]:
+                        pool = self.get_live_object(object_type="iqnpool.Pool",
+                                                    object_name=reservation['pool_name'],
+                                                    return_reference=False)
+                        if pool:
+                            reservation_pools_cache["iqn"][reservation['pool_name']] = pool.moid
                         else:
                             err_message = "Could not find unique iqnpool.Pool with name " + reservation[
                                 'pool_name']
@@ -1258,7 +1234,7 @@ class IntersightUcsServerProfile(IntersightGenericUcsServerProfile):
                     reservation_list = self._device.query(
                         object_type="iqnpool.Reservation",
                         filter=f"Identity eq '{reservation['identity']}' and Pool.Moid eq " +
-                               f"'{reservation_pools_cache['iqn'][org.moid][reservation['pool_name']]}'"
+                               f"'{reservation_pools_cache['iqn'][reservation['pool_name']]}'"
                     )
                     if len(reservation_list) == 1:
                         from intersight.model.iqnpool_reservation_reference import IqnpoolReservationReference
@@ -1278,17 +1254,13 @@ class IntersightUcsServerProfile(IntersightGenericUcsServerProfile):
                         continue
 
                 elif reservation["reservation_type"] == "mac":
-                    if org.moid not in reservation_pools_cache["mac"]:
-                        reservation_pools_cache["mac"][org.moid] = {}
-
                     # If pool name is not in the local cache, we query for it to get its moid
-                    if reservation["pool_name"] not in reservation_pools_cache["mac"][org.moid]:
-                        pool_list = self._device.query(
-                            object_type="macpool.Pool",
-                            filter=f"Name eq '{reservation['pool_name']}' and Organization.Moid eq '{str(org.moid)}'"
-                        )
-                        if len(pool_list) == 1:
-                            reservation_pools_cache["mac"][org.moid][pool_list[0].name] = pool_list[0].moid
+                    if reservation["pool_name"] not in reservation_pools_cache["mac"]:
+                        pool = self.get_live_object(object_type="macpool.Pool",
+                                                    object_name=reservation['pool_name'],
+                                                    return_reference=False)
+                        if pool:
+                            reservation_pools_cache["mac"][reservation['pool_name']] = pool.moid
                         else:
                             err_message = "Could not find unique macpool.Pool with name " + \
                                           reservation['pool_name']
@@ -1301,7 +1273,7 @@ class IntersightUcsServerProfile(IntersightGenericUcsServerProfile):
                     reservation_list = self._device.query(
                         object_type="macpool.Reservation",
                         filter=f"Identity eq '{reservation['identity']}' and Pool.Moid eq " +
-                               f"'{reservation_pools_cache['mac'][org.moid][reservation['pool_name']]}'"
+                               f"'{reservation_pools_cache['mac'][reservation['pool_name']]}'"
                     )
                     if len(reservation_list) == 1:
                         from intersight.model.macpool_reservation_reference import MacpoolReservationReference
@@ -1323,17 +1295,13 @@ class IntersightUcsServerProfile(IntersightGenericUcsServerProfile):
                         continue
 
                 elif reservation["reservation_type"] == "uuid":
-                    if org.moid not in reservation_pools_cache["uuid"]:
-                        reservation_pools_cache["uuid"][org.moid] = {}
-
                     # If pool name is not in the local cache, we query for it to get its moid
-                    if reservation["pool_name"] not in reservation_pools_cache["uuid"][org.moid]:
-                        pool_list = self._device.query(
-                            object_type="uuidpool.Pool",
-                            filter=f"Name eq '{reservation['pool_name']}' and Organization.Moid eq '{str(org.moid)}'"
-                        )
-                        if len(pool_list) == 1:
-                            reservation_pools_cache["uuid"][org.moid][pool_list[0].name] = pool_list[0].moid
+                    if reservation["pool_name"] not in reservation_pools_cache["uuid"]:
+                        pool = self.get_live_object(object_type="uuidpool.Pool",
+                                                    object_name=reservation['pool_name'],
+                                                    return_reference=False)
+                        if pool:
+                            reservation_pools_cache["uuid"][reservation['pool_name']] = pool.moid
                         else:
                             err_message = "Could not find unique uuidpool.Pool with name " + reservation[
                                 'pool_name']
@@ -1346,7 +1314,7 @@ class IntersightUcsServerProfile(IntersightGenericUcsServerProfile):
                     reservation_list = self._device.query(
                         object_type="uuidpool.Reservation",
                         filter=f"Identity eq '{reservation['identity'].upper()}' and Pool.Moid eq " +
-                               f"'{reservation_pools_cache['uuid'][org.moid][reservation['pool_name']]}'"
+                               f"'{reservation_pools_cache['uuid'][reservation['pool_name']]}'"
                     )
                     if len(reservation_list) == 1:
                         from intersight.model.uuidpool_reservation_reference import UuidpoolReservationReference
@@ -1366,18 +1334,13 @@ class IntersightUcsServerProfile(IntersightGenericUcsServerProfile):
                         continue
 
                 elif reservation["reservation_type"] == "wwpn":
-                    if org.moid not in reservation_pools_cache["wwpn"]:
-                        reservation_pools_cache["wwpn"][org.moid] = {}
-
                     # If pool name is not in the local cache, we query for it to get its moid
-                    if reservation["pool_name"] not in reservation_pools_cache["wwpn"][org.moid]:
-                        pool_list = self._device.query(
-                            object_type="fcpool.Pool",
-                            filter=f"Name eq '{reservation['pool_name']}' and PoolPurpose eq 'WWPN' " +
-                                   f"and Organization.Moid eq '{str(org.moid)}'"
-                        )
-                        if len(pool_list) == 1:
-                            reservation_pools_cache["wwpn"][org.moid][pool_list[0].name] = pool_list[0].moid
+                    if reservation["pool_name"] not in reservation_pools_cache["wwpn"]:
+                        pool = self.get_live_object(object_type="fcpool.Pool",
+                                                    object_name=reservation['pool_name'],
+                                                    return_reference=False)
+                        if pool:
+                            reservation_pools_cache["wwpn"][reservation['pool_name']] = pool.moid
                         else:
                             err_message = "Could not find unique fcpool.Pool with type 'WWPN' " + \
                                           "and name " + reservation['pool_name']
@@ -1390,7 +1353,7 @@ class IntersightUcsServerProfile(IntersightGenericUcsServerProfile):
                     reservation_list = self._device.query(
                         object_type="fcpool.Reservation",
                         filter=f"Identity eq '{reservation['identity']}' and Pool.Moid eq " +
-                               f"'{reservation_pools_cache['wwpn'][org.moid][reservation['pool_name']]}'"
+                               f"'{reservation_pools_cache['wwpn'][reservation['pool_name']]}'"
                     )
                     if len(reservation_list) == 1:
                         from intersight.model.fcpool_reservation_reference import FcpoolReservationReference
@@ -1412,18 +1375,13 @@ class IntersightUcsServerProfile(IntersightGenericUcsServerProfile):
                         continue
 
                 elif reservation["reservation_type"] == "wwnn":
-                    if org.moid not in reservation_pools_cache["wwnn"]:
-                        reservation_pools_cache["wwnn"][org.moid] = {}
-
                     # If pool name is not in the local cache, we query for it to get its moid
-                    if reservation["pool_name"] not in reservation_pools_cache["wwnn"][org.moid]:
-                        pool_list = self._device.query(
-                            object_type="fcpool.Pool",
-                            filter=f"Name eq '{reservation['pool_name']}' and PoolPurpose eq 'WWNN' " +
-                                   f"and Organization.Moid eq '{str(org.moid)}'"
-                        )
-                        if len(pool_list) == 1:
-                            reservation_pools_cache["wwnn"][org.moid][pool_list[0].name] = pool_list[0].moid
+                    if reservation["pool_name"] not in reservation_pools_cache["wwnn"]:
+                        pool = self.get_live_object(object_type="fcpool.Pool",
+                                                    object_name=reservation['pool_name'],
+                                                    return_reference=False)
+                        if pool:
+                            reservation_pools_cache["wwnn"][reservation['pool_name']] = pool.moid
                         else:
                             err_message = "Could not find unique fcpool.Pool with type 'WWNN' " + \
                                           "and name " + reservation['pool_name']
@@ -1436,7 +1394,7 @@ class IntersightUcsServerProfile(IntersightGenericUcsServerProfile):
                     reservation_list = self._device.query(
                         object_type="fcpool.Reservation",
                         filter=f"Identity eq '{reservation['identity']}' and Pool.Moid eq " +
-                               f"'{reservation_pools_cache['wwnn'][org.moid][reservation['pool_name']]}'"
+                               f"'{reservation_pools_cache['wwnn'][reservation['pool_name']]}'"
                     )
                     if len(reservation_list) == 1:
                         if self.san_connectivity_policy:
@@ -1528,15 +1486,14 @@ class IntersightUcsServerProfileTemplate(IntersightGenericUcsServerProfile):
 
             if hasattr(server_profile_template, "uuid_pool"):  # This line is needed until IS Appliance is updated
                 if server_profile_template.uuid_pool:
-                    uuid_pool = self.get_config_objects_from_ref(ref=server_profile_template.uuid_pool)
+                    uuid_pool = self._get_policy_name(policy=server_profile_template.uuid_pool)
                     if uuid_pool:
-                        if len(uuid_pool) == 1:
-                            self.uuid_pool = uuid_pool[0].name
+                        self.uuid_pool = uuid_pool
 
             for policy in self._object.policy_bucket:
                 for (policy_name, intersight_policy) in self._POLICY_MAPPING_TABLE.items():
                     if policy.object_type == getattr(intersight_policy, "_INTERSIGHT_SDK_OBJECT_NAME", None):
-                        setattr(self, policy_name, self._get_policy(policy))
+                        setattr(self, policy_name, self._get_policy_name(policy))
                         break
 
         elif self._config.load_from == "file":

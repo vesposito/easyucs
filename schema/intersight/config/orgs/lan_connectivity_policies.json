@@ -77,7 +77,7 @@
          "description": "LAN Connectivity Policy IQN Pool Name",
          "type": "string",
          "default": "",
-         "pattern": "^[a-zA-Z0-9_.:-]{1,64}$"
+         "pattern": "^([a-zA-Z0-9_.:-]{1,64}/)?[a-zA-Z0-9_.:-]{1,64}$"
       },
       "target_platform": {
          "description": "LAN Connectivity Policy Target Platform",
@@ -141,31 +141,31 @@
                         "description": "LAN Connectivity Policy - vNIC Ethernet Adapter Policy",
                         "type": "string",
                         "default": "",
-                        "pattern": "^[a-zA-Z0-9_.:-]{1,64}$"
+                        "pattern": "^([a-zA-Z0-9_.:-]{1,64}/)?[a-zA-Z0-9_.:-]{1,64}$"
                      },
                      "ethernet_network_control_policy": {
                         "description": "LAN Connectivity Policy - vNIC Ethernet Network Control Policy",
                         "type": "string",
                         "default": "",
-                        "pattern": "^[a-zA-Z0-9_.:-]{1,64}$"
+                        "pattern": "^([a-zA-Z0-9_.:-]{1,64}/)?[a-zA-Z0-9_.:-]{1,64}$"
                      },
                      "ethernet_network_group_policy": {
                         "description": "LAN Connectivity Policy - vNIC Ethernet Network Group Policy",
                         "type": "string",
                         "default": "",
-                        "pattern": "^[a-zA-Z0-9_.:-]{1,64}$"
+                        "pattern": "^([a-zA-Z0-9_.:-]{1,64}/)?[a-zA-Z0-9_.:-]{1,64}$"
                      },
                      "ethernet_qos_policy": {
                         "description": "LAN Connectivity Policy - vNIC Ethernet QoS Policy",
                         "type": "string",
                         "default": "",
-                        "pattern": "^[a-zA-Z0-9_.:-]{1,64}$"
+                        "pattern": "^([a-zA-Z0-9_.:-]{1,64}/)?[a-zA-Z0-9_.:-]{1,64}$"
                      },
                      "iscsi_boot_policy": {
                         "description": "LAN Connectivity Policy - vNIC iSCSI Boot Policy",
                         "type": "string",
                         "default": "",
-                        "pattern": "^[a-zA-Z0-9_.:-]{1,64}$"
+                        "pattern": "^([a-zA-Z0-9_.:-]{1,64}/)?[a-zA-Z0-9_.:-]{1,64}$"
                      },
                      "mac_address_allocation_type": {
                         "description": "LAN Connectivity Policy - vNIC MAC Address Allocation Type",
@@ -180,7 +180,7 @@
                         "description": "LAN Connectivity Policy - vNIC MAC Address Pool Name",
                         "type": "string",
                         "default": "",
-                        "pattern": "^[a-zA-Z0-9_.:-]{1,64}$"
+                        "pattern": "^([a-zA-Z0-9_.:-]{1,64}/)?[a-zA-Z0-9_.:-]{1,64}$"
                      },
                      "mac_address_static": {
                         "description": "LAN Connectivity Policy - vNIC MAC Address Static",
@@ -251,7 +251,7 @@
                               "description": "LAN Connectivity Policy - vNIC usNIC Settings - usNIC Adapter Policy Name",
                               "type": "string",
                               "default": "",
-                              "pattern": "^[a-zA-Z0-9_.:-]{1,64}$"
+                              "pattern": "^([a-zA-Z0-9_.:-]{1,64}/)?[a-zA-Z0-9_.:-]{1,64}$"
                            }
                         },
                         "additionalProperties": false
@@ -290,7 +290,7 @@
                               "description": "LAN Connectivity Policy - vNIC VMQ Settings - VMMQ Adapter Policy Name",
                               "type": "string",
                               "default": "",
-                              "pattern": "^[a-zA-Z0-9_.:-]{1,64}$"
+                              "pattern": "^([a-zA-Z0-9_.:-]{1,64}/)?[a-zA-Z0-9_.:-]{1,64}$"
                            }
                         },
                         "additionalProperties": false,
@@ -659,19 +659,19 @@
                         "description": "LAN Connectivity Policy - vNIC Ethernet Adapter Policy",
                         "type": "string",
                         "default": "",
-                        "pattern": "^[a-zA-Z0-9_.:-]{1,64}$"
+                        "pattern": "^([a-zA-Z0-9_.:-]{1,64}/)?[a-zA-Z0-9_.:-]{1,64}$"
                      },
                      "ethernet_network_policy": {
                         "description": "LAN Connectivity Policy - vNIC Ethernet Network Policy",
                         "type": "string",
                         "default": "",
-                        "pattern": "^[a-zA-Z0-9_.:-]{1,64}$"
+                        "pattern": "^([a-zA-Z0-9_.:-]{1,64}/)?[a-zA-Z0-9_.:-]{1,64}$"
                      },
                      "ethernet_qos_policy": {
                         "description": "LAN Connectivity Policy - vNIC Ethernet QoS Policy",
                         "type": "string",
                         "default": "",
-                        "pattern": "^[a-zA-Z0-9_.:-]{1,64}$"
+                        "pattern": "^([a-zA-Z0-9_.:-]{1,64}/)?[a-zA-Z0-9_.:-]{1,64}$"
                      },
                      "name": {
                         "description": "LAN Connectivity Policy - vNIC Name",
@@ -735,7 +735,7 @@
                               "description": "LAN Connectivity Policy - vNIC usNIC Settings - usNIC Adapter Policy Name",
                               "type": "string",
                               "default": "",
-                              "pattern": "^[a-zA-Z0-9_.:-]{1,64}$"
+                              "pattern": "^([a-zA-Z0-9_.:-]{1,64}/)?[a-zA-Z0-9_.:-]{1,64}$"
                            }
                         },
                         "additionalProperties": false
@@ -774,7 +774,7 @@
                               "description": "LAN Connectivity Policy - vNIC VMQ Settings - VMMQ Adapter Policy Name",
                               "type": "string",
                               "default": "",
-                              "pattern": "^[a-zA-Z0-9_.:-]{1,64}$"
+                              "pattern": "^([a-zA-Z0-9_.:-]{1,64}/)?[a-zA-Z0-9_.:-]{1,64}$"
                            }
                         },
                         "additionalProperties": false,

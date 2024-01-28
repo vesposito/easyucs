@@ -737,23 +737,35 @@ class UcsImcRack(UcsRack, UcsImcInventoryObject):
         c240_m5_pcie_risers_matrix = {
             "riser1": {"No Riser": "None",
                        "(2 Slots x8, 1 Slot x16)": "UCSC-PCI-1-C240M5/UCSC-RIS-1-240M5",
+                       "1A(2 Slots x8, 1 Slot x16)": "UCSC-PCI-1-C240M5/UCSC-RIS-1-240M5",
                        "(3 Slots x8)": "UCSC-PCI-1B-240M5/UCSC-RIS-1B-240M5",
-                       "(2 Slots x4, 1 Slot x16)": "UCSC-RS1C-240M5SD"},
+                       "1B(3 Slots x8)": "UCSC-PCI-1B-240M5/UCSC-RIS-1B-240M5",
+                       "(2 Slots x4, 1 Slot x16)": "UCSC-RS1C-240M5SD",
+                       "1C(2 Slots x4, 1 Slot x16)": "UCSC-RS1C-240M5SD"},
             "riser2": {"No Riser": "None",
                        "(1 Slot x8, 2 Slots x16)": "UCSC-PCI-2A-240M5/UCSC-RIS-2A-240M5",
+                       "2A(1 Slot x8, 2 Slots x16)": "UCSC-PCI-2A-240M5/UCSC-RIS-2A-240M5",
                        "(3 Slots x8, 1 Slot x16)": "UCSC-PCI-2B-240M5/UCSC-RIS-2B-240M5",
+                       "2B(3 Slots x8, 1 Slot x16)": "UCSC-PCI-2B-240M5/UCSC-RIS-2B-240M5",
                        "(5 Slots x8)": "UCSC-PCI-2C-240M5/UCSC-RIS-2C-240M5",
-                       "(2 Slots x4, 1 Slot x16, 1 Slot x8)": "UCSC-RS2E-240M5SD"}
+                       "2C(5 Slots x8)": "UCSC-PCI-2C-240M5/UCSC-RIS-2C-240M5",
+                       "(2 Slots x4, 1 Slot x16, 1 Slot x8)": "UCSC-RS2E-240M5SD",
+                       "2E(2 Slots x4, 1 Slot x16, 1 Slot x8)": "UCSC-RS2E-240M5SD"}
         }
         c240_m6_pcie_risers_matrix = {
             "riser1": {"No Riser": "None",
                        "(2 Slots x8, 1 Slot x16)": "UCSC-RIS1A-240M6",
-                       "(2 Slots x8)": "UCSC-RIS1B-240M6"},
+                       "1A(2 Slots x8, 1 Slot x16)": "UCSC-RIS1A-240M6",
+                       "(2 Slots x8)": "UCSC-RIS1B-240M6",
+                       "1B(2 Slots x8)": "UCSC-RIS1B-240M6"},
             "riser2": {"No Riser": "None",
-                       "(2 Slots x8, 1 Slot x16)": "UCSC-RIS2A-240M6"},
+                       "(2 Slots x8, 1 Slot x16)": "UCSC-RIS2A-240M6",
+                       "2A(2 Slots x8, 1 Slot x16)": "UCSC-RIS2A-240M6"},
             "riser3": {"No Riser": "None",
                        "(2 Slots x8)": "UCSC-RIS3A-240M6",
-                       "(1 Slot x8)": "UCSC-RIS3B-240M6"}
+                       "3A(2 Slots x8)": "UCSC-RIS3A-240M6",
+                       "(1 Slot x8)": "UCSC-RIS3B-240M6",
+                       "3B(1 Slot x8)": "UCSC-RIS3B-240M6"}
         }
         c220_m7_pcie_risers_matrix = {
             "riser1": {"No Riser": "None",
@@ -795,15 +807,20 @@ class UcsImcRack(UcsRack, UcsImcInventoryObject):
                         for (key, value) in c240_m5_pcie_risers_matrix["riser1"].items():
                             if system_board_unit.riser1 == key:
                                 pci_riser1_entry = {"id": "1", "sku": value}
-                                self.pcie_risers.append(pci_riser1_entry)
+                                if value not in ["None"]:
+                                    self.pcie_risers.append(pci_riser1_entry)
                                 continue
                         for (key, value) in c240_m5_pcie_risers_matrix["riser2"].items():
                             if system_board_unit.riser2 == key:
-                                pci_riser2_entry = {"id": "2", "sku": value}
                                 # Handle specific case of C240-M5SN with particular PID for riser 2
                                 if self.sku == "UCSC-C240-M5SN":
                                     pci_riser2_entry = {"id": "2", "sku": "UCSC-PCI-2D-240M5/UCSC-RIS-2D-240M5"}
-                                self.pcie_risers.append(pci_riser2_entry)
+                                    self.pcie_risers.append(pci_riser2_entry)
+                                    continue
+
+                                pci_riser2_entry = {"id": "2", "sku": value}
+                                if value not in ["None"]:
+                                    self.pcie_risers.append(pci_riser2_entry)
                                 continue
 
                         if not pci_riser1_entry:
@@ -823,17 +840,20 @@ class UcsImcRack(UcsRack, UcsImcInventoryObject):
                         for (key, value) in c240_m6_pcie_risers_matrix["riser1"].items():
                             if system_board_unit.riser1 == key:
                                 pci_riser1_entry = {"id": "1", "sku": value}
-                                self.pcie_risers.append(pci_riser1_entry)
+                                if value not in ["None"]:
+                                    self.pcie_risers.append(pci_riser1_entry)
                                 continue
                         for (key, value) in c240_m6_pcie_risers_matrix["riser2"].items():
                             if system_board_unit.riser2 == key:
                                 pci_riser2_entry = {"id": "2", "sku": value}
-                                self.pcie_risers.append(pci_riser2_entry)
+                                if value not in ["None"]:
+                                    self.pcie_risers.append(pci_riser2_entry)
                                 continue
                         for (key, value) in c240_m6_pcie_risers_matrix["riser3"].items():
                             if system_board_unit.riser3 == key:
                                 pci_riser3_entry = {"id": "3", "sku": value}
-                                self.pcie_risers.append(pci_riser3_entry)
+                                if value not in ["None"]:
+                                    self.pcie_risers.append(pci_riser3_entry)
                                 continue
 
                         if not pci_riser1_entry:
@@ -878,17 +898,20 @@ class UcsImcRack(UcsRack, UcsImcInventoryObject):
                         for (key, value) in c240_m7_pcie_risers_matrix["riser1"].items():
                             if system_board_unit.riser1 == key:
                                 pci_riser1_entry = {"id": "1", "sku": value}
-                                self.pcie_risers.append(pci_riser1_entry)
+                                if value not in ["None"]:
+                                    self.pcie_risers.append(pci_riser1_entry)
                                 continue
                         for (key, value) in c240_m7_pcie_risers_matrix["riser2"].items():
                             if system_board_unit.riser2 == key:
                                 pci_riser2_entry = {"id": "2", "sku": value}
-                                self.pcie_risers.append(pci_riser2_entry)
+                                if value not in ["None"]:
+                                    self.pcie_risers.append(pci_riser2_entry)
                                 continue
                         for (key, value) in c240_m7_pcie_risers_matrix["riser3"].items():
                             if system_board_unit.riser3 == key:
                                 pci_riser3_entry = {"id": "3", "sku": value}
-                                self.pcie_risers.append(pci_riser3_entry)
+                                if value not in ["None"]:
+                                    self.pcie_risers.append(pci_riser3_entry)
                                 continue
 
                         if not pci_riser1_entry:
@@ -911,17 +934,20 @@ class UcsImcRack(UcsRack, UcsImcInventoryObject):
                         for (key, value) in c220_m7_pcie_risers_matrix["riser1"].items():
                             if system_board_unit.riser1 == key:
                                 pci_riser1_entry = {"id": "1", "sku": value}
-                                self.pcie_risers.append(pci_riser1_entry)
+                                if value not in ["None"]:
+                                    self.pcie_risers.append(pci_riser1_entry)
                                 continue
                         for (key, value) in c220_m7_pcie_risers_matrix["riser2"].items():
                             if system_board_unit.riser2 == key:
                                 pci_riser2_entry = {"id": "2", "sku": value}
-                                self.pcie_risers.append(pci_riser2_entry)
+                                if value not in ["None"]:
+                                    self.pcie_risers.append(pci_riser2_entry)
                                 continue
                         for (key, value) in c220_m7_pcie_risers_matrix["riser3"].items():
                             if system_board_unit.riser3 == key:
                                 pci_riser3_entry = {"id": "3", "sku": value}
-                                self.pcie_risers.append(pci_riser3_entry)
+                                if value not in ["None"]:
+                                    self.pcie_risers.append(pci_riser3_entry)
                                 continue
 
                         if not pci_riser1_entry:

@@ -612,11 +612,12 @@ class UcsSystemOrg(UcsSystemConfigObject):
             'disk_group_policies', 'storage_profiles', 'graphics_card_policies', 'kvm_management_policies',
             'memory_policy', 'threshold_policies', 'iscsi_authentication_profiles', 'persistent_memory_policies']
 
+        is_pushed = True
         for config_object in objects_to_push_in_order:
             if getattr(self, config_object) is not None:
                 if getattr(self, config_object).__class__.__name__ == "list":
                     for subobject in getattr(self, config_object):
-                        subobject.push_object()
+                        is_pushed = subobject.push_object() and is_pushed
 
         # HANDLING OF CHASSIS PROFILES & TEMPLATES
         # We first need to identify all Chassis Profile Templates and push them, and then push the Chassis Profiles
@@ -631,7 +632,7 @@ class UcsSystemOrg(UcsSystemConfigObject):
                     chassis_profiles.append(chassis_profile)
 
         for chassis_profile_template in chassis_profile_templates:
-            chassis_profile_template.push_object()
+            is_pushed = chassis_profile_template.push_object() and is_pushed
 
         for chassis_profile in chassis_profiles:
             if all(getattr(chassis_profile, attr) for attr in ["chassis_profile_template", "name"]):
@@ -642,7 +643,7 @@ class UcsSystemOrg(UcsSystemConfigObject):
                                 message="Ignoring Chassis Profile " + chassis_profile.name +
                                         " as it is instantiated from a UCS Central Global Chassis Profile Template")
             else:
-                chassis_profile.push_object()
+                is_pushed = chassis_profile.push_object() and is_pushed
 
         # HANDLING OF SERVICE PROFILES & TEMPLATES
         # We first need to identify all Service Profile Templates and push them, and then push the Service Profiles
@@ -657,7 +658,7 @@ class UcsSystemOrg(UcsSystemConfigObject):
                     service_profiles.append(service_profile)
 
         for service_profile_template in service_profile_templates:
-            service_profile_template.push_object()
+            is_pushed = service_profile_template.push_object() and is_pushed
 
         for service_profile in service_profiles:
             if all(getattr(service_profile, attr) for attr in ["service_profile_template", "name"]):
@@ -668,14 +669,14 @@ class UcsSystemOrg(UcsSystemConfigObject):
                                 message="Ignoring Service Profile " + service_profile.name +
                                         " as it is instantiated from a UCS Central Global Service Profile Template")
             else:
-                service_profile.push_object()
+                is_pushed = service_profile.push_object() and is_pushed
 
         # We push orgs at the end to make sure profiles/templates dependencies are already pushed
         if self.orgs:
             for org in self.orgs:
-                org.push_object()
+                is_pushed = org.push_object() and is_pushed
 
-        return True
+        return is_pushed
 
     def _get_generic_element(self, json_content, object_class, name_to_fetch, restrict_to_root=False):
         if self._config.load_from == "live":

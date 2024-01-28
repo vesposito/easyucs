@@ -14,25 +14,37 @@
             "weight": 1
          },
          {
-            "name": "ClaimDeviceToIntersight",
+            "name": "SetDeviceConnectorAccessMode",
+            "optional": true,
             "order": 3,
             "weight": 1
          },
          {
-            "name": "RefreshIntersightClaimStatus",
+            "name": "ConfigureDeviceConnectorProxy",
+            "optional": true,
             "order": 4,
+            "weight": 1
+         },
+         {
+            "name": "ClaimDeviceToIntersight",
+            "order": 5,
+            "weight": 1
+         },
+         {
+            "name": "RefreshIntersightClaimStatus",
+            "order": 6,
             "weight": 2
          },
          {
             "name": "DisconnectUcsImcDevice",
             "optional": true,
-            "order": 5,
+            "order": 7,
             "weight": 1
          },
          {
             "name": "DisconnectIntersightDevice",
             "optional": true,
-            "order": 6,
+            "order": 8,
             "weight": 1
          }
       ]
@@ -52,25 +64,37 @@
             "weight": 1
          },
          {
-            "name": "ClaimDeviceToIntersight",
+            "name": "SetDeviceConnectorAccessMode",
+            "optional": true,
             "order": 3,
             "weight": 1
          },
          {
-            "name": "RefreshIntersightClaimStatus",
+            "name": "ConfigureDeviceConnectorProxy",
+            "optional": true,
             "order": 4,
+            "weight": 1
+         },
+         {
+            "name": "ClaimDeviceToIntersight",
+            "order": 5,
+            "weight": 1
+         },
+         {
+            "name": "RefreshIntersightClaimStatus",
+            "order": 6,
             "weight": 2
          },
          {
             "name": "DisconnectUcsSystemDevice",
             "optional": true,
-            "order": 5,
+            "order": 7,
             "weight": 1
          },
          {
             "name": "DisconnectIntersightDevice",
             "optional": true,
-            "order": 6,
+            "order": 8,
             "weight": 1
          }
       ]
@@ -239,14 +263,19 @@
             "weight": 1
          },
          {
-            "name": "FetchConfigIntersightSdkObjects",
+            "name": "ValidateIntersightLicense",
             "order": 2,
+            "weight": 1
+         },
+         {
+            "name": "FetchConfigIntersightSdkObjects",
+            "order": 3,
             "weight": 4
          },
          {
             "name": "DisconnectIntersightDevice",
             "optional": true,
-            "order": 3,
+            "order": 4,
             "weight": 1
          }
       ]
@@ -599,24 +628,29 @@
             "weight": 1
          },
          {
-            "name": "PushOrgsSectionIntersight",
+            "name": "ValidateIntersightLicense",
             "order": 2,
+            "weight": 1
+         },
+         {
+            "name": "PushOrgsSectionIntersight",
+            "order": 3,
             "weight": 10
          },
          {
             "name": "PushAdminSectionIntersight",
-            "order": 3,
+            "order": 4,
             "weight": 2
          },
          {
             "name": "DisconnectIntersightDevice",
             "optional": true,
-            "order": 4,
+            "order": 5,
             "weight": 1
          },
          {
             "name": "GenerateReportDevice",
-            "order": 5,
+            "order": 6,
             "weight": 1
          }
       ]
@@ -680,84 +714,158 @@
             "weight": 1
          },
          {
-            "name": "ResetDeviceUcsSystem",
+            "name": "ClearIntersightClaimStatus",
+            "optional": true,
             "order": 2,
             "weight": 1
          },
          {
-            "name": "WaitForRebootAfterResetUcsSystem",
+            "name": "DecommissionAllRackServers",
+            "optional": true,
             "order": 3,
+            "weight": 2
+         },
+         {
+            "name": "EraseFiConfigurations",
+            "order": 4,
+            "weight": 3
+         },
+         {
+            "name": "WaitForRebootAfterResetUcsSystem",
+            "order": 5,
             "weight": 5
          },
          {
             "name": "InitialSetupUcsSystem",
-            "order": 4,
-            "weight": 2
-         },
-         {
-            "name": "WaitForClusterElectionUcsSystem",
-            "order": 5,
-            "weight": 2
-         },
-         {
-            "name": "WaitForClusterHaReadyUcsSystem",
             "order": 6,
             "weight": 2
          },
          {
-            "name": "PushAdminSectionUcsSystem",
+            "name": "WaitForClusterElectionUcsSystem",
             "order": 7,
-            "weight": 1
+            "weight": 2
          },
          {
-            "name": "PushEquipmentSectionUcsSystem",
+            "name": "WaitForClusterHaReadyUcsSystem",
             "order": 8,
-            "weight": 1
+            "weight": 2
          },
          {
-            "name": "PushVlanVsanSectionUcsSystem",
+            "name": "PushAdminSectionUcsSystem",
             "order": 9,
             "weight": 1
          },
          {
-            "name": "PushFiPortsSectionUcsSystem",
+            "name": "PushEquipmentSectionUcsSystem",
             "order": 10,
             "weight": 1
          },
          {
-            "name": "WaitForRebootAfterPushFiPortsUcsSystem",
+            "name": "PushVlanVsanSectionUcsSystem",
             "order": 11,
+            "weight": 1
+         },
+         {
+            "name": "PushFiPortsSectionUcsSystem",
+            "order": 12,
+            "weight": 1
+         },
+         {
+            "name": "WaitForRebootAfterPushFiPortsUcsSystem",
+            "order": 13,
             "weight": 5
          },
          {
             "name": "WaitForClusterHaReadyAfterPushFiPortsUcsSystem",
-            "order": 12,
+            "order": 14,
             "weight": 2
          },
          {
             "name": "WaitForFiPortsFsmStateUcsSystem",
-            "order": 13,
+            "order": 15,
             "weight": 2
          },
          {
             "name": "PushFiPortChannelsSectionUcsSystem",
-            "order": 14,
+            "order": 16,
             "weight": 1
          },
          {
             "name": "PushOrgsSectionUcsSystem",
-            "order": 15,
+            "order": 17,
             "weight": 3
          },
          {
             "name": "DisconnectUcsSystemDevice",
             "optional": true,
-            "order": 16,
+            "order": 18,
             "weight": 1
          },
          {
             "name": "GenerateReportDevice",
-            "order": 17,
+            "order": 19,
+            "weight": 1
+         }
+      ]
+   },
+   "ResetDeviceUcsImc": {
+      "description": "Reset UCS IMC device",
+      "device_type": "ucsm",
+      "steps": [
+         {
+            "name": "ConnectUcsImcDevice",
+            "order": 1,
+            "weight": 1
+         },
+         {
+            "name": "ClearIntersightClaimStatus",
+            "optional": true,
+            "order": 2,
+            "weight": 1
+         },
+         {
+            "name": "EraseConfiguration",
+            "order": 3,
+            "weight": 3
+         },
+         {
+            "name": "DisconnectUcsImcDevice",
+            "optional": true,
+            "order": 5,
+            "weight": 1
+         }
+      ]
+   },
+   "ResetDeviceUcsSystem": {
+      "description": "Reset UCS System device",
+      "device_type": "ucsm",
+      "steps": [
+         {
+            "name": "ConnectUcsSystemDevice",
+            "order": 1,
+            "weight": 1
+         },
+         {
+            "name": "ClearIntersightClaimStatus",
+            "optional": true,
+            "order": 2,
+            "weight": 1
+         },
+         {
+            "name": "DecommissionAllRackServers",
+            "optional": true,
+            "order": 3,
+            "weight": 3
+         },
+         {
+            "name": "EraseFiConfigurations",
+            "order": 4,
+            "weight": 3
+         },
+         {
+            "name": "DisconnectUcsSystemDevice",
+            "optional": true,
+            "order": 5,
             "weight": 1
          }
       ]

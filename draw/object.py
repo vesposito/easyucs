@@ -355,7 +355,7 @@ class GenericUcsDrawObject(GenericDrawObject):
 
         # Draw frame around legend
         max_txt = 'X' * max_len_txt
-        w, h = infra.draw.textsize(max_txt, font=font)
+        w = infra.draw.textlength(max_txt, font=font)
         frame_w = w + align_left + space_rect_txt
         frame_wire_width = 5
         infra.draw.line(((0, canvas_height + round(height_betw_server_legend / 2)),
@@ -434,7 +434,7 @@ class GenericUcsDrawObject(GenericDrawObject):
 
             # Draw frame around legend
             max_txt = 'X' * max_len_txt
-            w, h = infra.draw.textsize(max_txt, font=font)
+            w = infra.draw.textlength(max_txt, font=font)
             frame_w = w + align_left + space_rect_txt
             frame_wire_width = 5
             infra.draw.line(((0, canvas_height + round(height_betw_server_legend / 2)),

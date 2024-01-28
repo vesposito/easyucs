@@ -2230,28 +2230,14 @@ class IntersightImcAccessPolicy(IntersightConfigObject):
     def _get_inband_ip_pool(self):
         if hasattr(self._object, "inband_ip_pool"):
             if self._object.inband_ip_pool is not None:
-                inband_ip_pool_list = self.get_config_objects_from_ref(ref=self._object.inband_ip_pool)
-                if (len(inband_ip_pool_list)) != 1:
-                    self.logger(level="debug", message="Could not find the appropriate inband ippool.Pool for " +
-                                                       " access.Policy with MOID " + str(self._moid))
-                    return None
-                else:
-                    # We return the name attribute of the matching ippool.Pool
-                    return inband_ip_pool_list[0].name
+                return self._get_policy_name(policy=self._object.inband_ip_pool)
 
         return None
 
     def _get_out_of_band_ip_pool(self):
         if hasattr(self._object, "out_of_band_ip_pool"):
             if self._object.out_of_band_ip_pool is not None:
-                out_of_band_ip_pool_list = self.get_config_objects_from_ref(ref=self._object.out_of_band_ip_pool)
-                if (len(out_of_band_ip_pool_list)) != 1:
-                    self.logger(level="debug", message="Could not find the appropriate out of band ippool.Pool for " +
-                                                       " access.Policy with MOID " + str(self._moid))
-                    return None
-                else:
-                    # We return the name attribute of the matching ippool.Pool
-                    return out_of_band_ip_pool_list[0].name
+                return self._get_policy_name(policy=self._object.out_of_band_ip_pool)
 
         return None
 
@@ -2611,59 +2597,28 @@ class IntersightIscsiBootPolicy(IntersightConfigObject):
     def _get_iscsi_adapter_policy(self):
         if hasattr(self._object, "iscsi_adapter_policy"):
             if self._object.iscsi_adapter_policy is not None:
-                iscsi_adapter_policy_list = self.get_config_objects_from_ref(ref=self._object.iscsi_adapter_policy)
-                if (len(iscsi_adapter_policy_list)) != 1:
-                    self.logger(level="debug", message="Could not find the appropriate vnic.IscsiAdapterPolicy for " +
-                                                       " access.Policy with MOID " + str(self._moid))
-                    return None
-                else:
-                    # We return the name attribute of the matching vnic.IscsiAdapterPolicy
-                    return iscsi_adapter_policy_list[0].name
+                return self._get_policy_name(policy=self._object.iscsi_adapter_policy)
 
         return None
 
     def _get_primary_target_policy(self):
         if hasattr(self._object, "primary_target_policy"):
             if self._object.primary_target_policy is not None:
-                primary_target_policy_list = self.get_config_objects_from_ref(ref=self._object.primary_target_policy)
-                if (len(primary_target_policy_list)) != 1:
-                    self.logger(level="debug",
-                                message="Could not find the appropriate vnic.IscsiStaticTargetPolicy for " +
-                                        " access.Policy with MOID " + str(self._moid))
-                    return None
-                else:
-                    # We return the name attribute of the matching vnic.IscsiStaticTargetPolicy
-                    return primary_target_policy_list[0].name
+                return self._get_policy_name(policy=self._object.primary_target_policy)
 
         return None
 
     def _get_secondary_target_policy(self):
         if hasattr(self._object, "secondary_target_policy"):
             if self._object.secondary_target_policy is not None:
-                secondary_target_policy_list = self.get_config_objects_from_ref(
-                    ref=self._object.secondary_target_policy)
-                if (len(secondary_target_policy_list)) != 1:
-                    self.logger(level="debug",
-                                message="Could not find the appropriate vnic.IscsiStaticTargetPolicy for " +
-                                        " access.Policy with MOID " + str(self._moid))
-                    return None
-                else:
-                    # We return the name attribute of the matching vnic.IscsiStaticTargetPolicy
-                    return secondary_target_policy_list[0].name
+                return self._get_policy_name(policy=self._object.secondary_target_policy)
 
         return None
 
     def _get_initiator_ip_pool(self):
         if hasattr(self._object, "initiator_ip_pool"):
             if self._object.initiator_ip_pool is not None:
-                initiator_ip_pool_list = self.get_config_objects_from_ref(ref=self._object.initiator_ip_pool)
-                if (len(initiator_ip_pool_list)) != 1:
-                    self.logger(level="debug", message="Could not find the appropriate ippool.Pool for " +
-                                                       " access.Policy with MOID " + str(self._moid))
-                    return None
-                else:
-                    # We return the name attribute of the matching ippool.Pool
-                    return initiator_ip_pool_list[0].name
+                return self._get_policy_name(policy=self._object.initiator_ip_pool)
 
         return None
 
@@ -2913,10 +2868,7 @@ class IntersightLanConnectivityPolicy(IntersightConfigObject):
                 # We avoid fetching the IQN Pool in case IQN Allocation Type is not "pool". This prevents an issue in
                 # case Intersight has both a pool and a static entry defined (EASYUCS-666).
                 if lan_connectivity_policy.iqn_pool:
-                    iqn_pool = self.get_config_objects_from_ref(ref=lan_connectivity_policy.iqn_pool)
-                    if iqn_pool:
-                        if len(iqn_pool) == 1:
-                            self.iqn_pool = iqn_pool[0].name
+                    self.iqn_pool = self._get_policy_name(policy=lan_connectivity_policy.iqn_pool)
             self.vnics = self._get_vnics()
 
         elif self._config.load_from == "file":
@@ -2988,55 +2940,46 @@ class IntersightLanConnectivityPolicy(IntersightConfigObject):
                             # We only fetch the MAC Address Pool or Static MAC for FI-Attached servers
                             if vnic_eth_if.mac_address_type in ["POOL"]:
                                 if vnic_eth_if.mac_pool:
-                                    mac_pool = self.get_config_objects_from_ref(ref=vnic_eth_if.mac_pool)
+                                    mac_pool = self._get_policy_name(policy=vnic_eth_if.mac_pool)
                                     if mac_pool:
-                                        if len(mac_pool) == 1:
-                                            vnic["mac_address_pool"] = mac_pool[0].name
+                                        vnic["mac_address_pool"] = mac_pool
                             elif vnic_eth_if.mac_address_type in ["STATIC"]:
                                 vnic["mac_address_static"] = vnic_eth_if.static_mac_address
                             # We only fetch Ethernet Network Group Policy, Ethernet Network Control Policy &
                             # iSCSI Boot Policy for FI-Attached servers
                             if vnic_eth_if.fabric_eth_network_group_policy:
                                 if len(vnic_eth_if.fabric_eth_network_group_policy) == 1:
-                                    fabric_eth_network_group_policy = self.get_config_objects_from_ref(
-                                        ref=vnic_eth_if.fabric_eth_network_group_policy[0])
+                                    fabric_eth_network_group_policy = self._get_policy_name(
+                                        policy=vnic_eth_if.fabric_eth_network_group_policy[0])
                                     if fabric_eth_network_group_policy:
-                                        if len(fabric_eth_network_group_policy) == 1:
-                                            vnic["ethernet_network_group_policy"] = \
-                                                fabric_eth_network_group_policy[0].name
+                                        vnic["ethernet_network_group_policy"] = fabric_eth_network_group_policy
                                 else:
                                     self.logger(level="error", message="Multiple Ethernet Network Group Policies " +
                                                                        "assigned to vNIC " + vnic_eth_if.name)
                             if vnic_eth_if.fabric_eth_network_control_policy:
                                 fabric_eth_network_control_policy = \
-                                    self.get_config_objects_from_ref(ref=vnic_eth_if.fabric_eth_network_control_policy)
+                                    self._get_policy_name(policy=vnic_eth_if.fabric_eth_network_control_policy)
                                 if fabric_eth_network_control_policy:
-                                    if len(fabric_eth_network_control_policy) == 1:
-                                        vnic["ethernet_network_control_policy"] = \
-                                            fabric_eth_network_control_policy[0].name
+                                    vnic["ethernet_network_control_policy"] = fabric_eth_network_control_policy
                             if vnic_eth_if.iscsi_boot_policy:
-                                iscsi_boot_policy = self.get_config_objects_from_ref(ref=vnic_eth_if.iscsi_boot_policy)
+                                iscsi_boot_policy = self._get_policy_name(policy=vnic_eth_if.iscsi_boot_policy)
                                 if iscsi_boot_policy:
-                                    if len(iscsi_boot_policy) == 1:
-                                        vnic["iscsi_boot_policy"] = iscsi_boot_policy[0].name
+                                    vnic["iscsi_boot_policy"] = iscsi_boot_policy
                         elif self.target_platform in ["Standalone"]:
                             # We only fetch Ethernet Network Policy for Standalone servers
                             if vnic_eth_if.eth_network_policy:
                                 eth_network_policy = \
-                                    self.get_config_objects_from_ref(ref=vnic_eth_if.eth_network_policy)
+                                    self._get_policy_name(policy=vnic_eth_if.eth_network_policy)
                                 if eth_network_policy:
-                                    if len(eth_network_policy) == 1:
-                                        vnic["ethernet_network_policy"] = eth_network_policy[0].name
+                                    vnic["ethernet_network_policy"] = eth_network_policy
                         if vnic_eth_if.eth_qos_policy:
-                            eth_qos_policy = self.get_config_objects_from_ref(ref=vnic_eth_if.eth_qos_policy)
+                            eth_qos_policy = self._get_policy_name(policy=vnic_eth_if.eth_qos_policy)
                             if eth_qos_policy:
-                                if len(eth_qos_policy) == 1:
-                                    vnic["ethernet_qos_policy"] = eth_qos_policy[0].name
+                                vnic["ethernet_qos_policy"] = eth_qos_policy
                         if vnic_eth_if.eth_adapter_policy:
-                            eth_adapter_policy = self.get_config_objects_from_ref(ref=vnic_eth_if.eth_adapter_policy)
+                            eth_adapter_policy = self._get_policy_name(policy=vnic_eth_if.eth_adapter_policy)
                             if eth_adapter_policy:
-                                if len(eth_adapter_policy) == 1:
-                                    vnic["ethernet_adapter_policy"] = eth_adapter_policy[0].name
+                                vnic["ethernet_adapter_policy"] = eth_adapter_policy
                         if vnic_eth_if.usnic_settings:
                             if vnic_eth_if.usnic_settings.count > 0:
                                 vnic["usnic_settings"] = {
@@ -3052,8 +2995,8 @@ class IntersightLanConnectivityPolicy(IntersightConfigObject):
                                     for vnic_eth_adapter_policy in self._config.sdk_objects["vnic_eth_adapter_policy"]:
                                         if vnic_eth_if.usnic_settings.usnic_adapter_policy == \
                                                 vnic_eth_adapter_policy.moid:
-                                            vnic["usnic_settings"]["usnic_adapter_policy"] = \
-                                                vnic_eth_adapter_policy.name
+                                            vnic["usnic_settings"]["usnic_adapter_policy"] = self._get_policy_name(
+                                                policy=vnic_eth_adapter_policy)
                                             break
                         if vnic_eth_if.vmq_settings:
                             if vnic_eth_if.vmq_settings.enabled:
@@ -3073,7 +3016,8 @@ class IntersightLanConnectivityPolicy(IntersightConfigObject):
                                     # Eth Adapter Policy SDK objects and find the relevant object.
                                     for vmmq_adapter_policy in self._config.sdk_objects["vnic_eth_adapter_policy"]:
                                         if vnic_eth_if.vmq_settings.vmmq_adapter_policy == vmmq_adapter_policy.moid:
-                                            vnic["vmq_settings"]["vmmq_adapter_policy"] = vmmq_adapter_policy.name
+                                            vnic["vmq_settings"]["vmmq_adapter_policy"] = self._get_policy_name(
+                                                policy=vmmq_adapter_policy)
                                             break
                         vnics.append(vnic)
 
@@ -4341,10 +4285,7 @@ class IntersightSanConnectivityPolicy(IntersightConfigObject):
                 self.wwnn_allocation_type = self.wwnn_allocation_type.lower()
 
             if san_connectivity_policy.wwnn_pool:
-                wwnn_pool = self.get_config_objects_from_ref(ref=san_connectivity_policy.wwnn_pool)
-                if wwnn_pool:
-                    if len(wwnn_pool) == 1:
-                        self.wwnn_pool = wwnn_pool[0].name
+                self.wwnn_pool = self._get_policy_name(policy=san_connectivity_policy.wwnn_pool)
             self.vhbas = self._get_vhbas()
 
         elif self._config.load_from == "file":
@@ -4399,35 +4340,30 @@ class IntersightSanConnectivityPolicy(IntersightConfigObject):
                             # We only fetch the WWPN Address Pool or Static WWPN for FI-Attached servers
                             if vnic_fc_if.wwpn_address_type in ["POOL"]:
                                 if vnic_fc_if.wwpn_pool:
-                                    wwpn_pool = self.get_config_objects_from_ref(ref=vnic_fc_if.wwpn_pool)
+                                    wwpn_pool = self._get_policy_name(policy=vnic_fc_if.wwpn_pool)
                                     if wwpn_pool:
-                                        if len(wwpn_pool) == 1:
-                                            vhba["wwpn_pool"] = wwpn_pool[0].name
+                                        vhba["wwpn_pool"] = wwpn_pool
                             elif vnic_fc_if.wwpn_address_type in ["STATIC"]:
                                 vhba["wwpn_static"] = vnic_fc_if.static_wwpn_address
                         if vnic_fc_if.fc_network_policy:
-                            fc_network_policy = self.get_config_objects_from_ref(ref=vnic_fc_if.fc_network_policy)
+                            fc_network_policy = self._get_policy_name(policy=vnic_fc_if.fc_network_policy)
                             if fc_network_policy:
-                                if len(fc_network_policy) == 1:
-                                    vhba["fibre_channel_network_policy"] = fc_network_policy[0].name
+                                vhba["fibre_channel_network_policy"] = fc_network_policy
                         if vnic_fc_if.fc_qos_policy:
-                            fc_qos_policy = self.get_config_objects_from_ref(ref=vnic_fc_if.fc_qos_policy)
+                            fc_qos_policy = self._get_policy_name(policy=vnic_fc_if.fc_qos_policy)
                             if fc_qos_policy:
-                                if len(fc_qos_policy) == 1:
-                                    vhba["fibre_channel_qos_policy"] = fc_qos_policy[0].name
+                                vhba["fibre_channel_qos_policy"] = fc_qos_policy
                         if vnic_fc_if.fc_adapter_policy:
-                            fc_adapter_policy = self.get_config_objects_from_ref(ref=vnic_fc_if.fc_adapter_policy)
+                            fc_adapter_policy = self._get_policy_name(policy=vnic_fc_if.fc_adapter_policy)
                             if fc_adapter_policy:
-                                if len(fc_adapter_policy) == 1:
-                                    vhba["fibre_channel_adapter_policy"] = fc_adapter_policy[0].name
+                                vhba["fibre_channel_adapter_policy"] = fc_adapter_policy
                         if vnic_fc_if.fc_zone_policies:
-                            fc_zone_policies = self.get_config_objects_from_ref(ref=vnic_fc_if.fc_zone_policies)
-                            if fc_zone_policies:
-                                if len(fc_zone_policies) >= 1:
-                                    fc_zone_policy_list = []
-                                    for fc_zone_policy in fc_zone_policies:
-                                        fc_zone_policy_list.append(fc_zone_policy.name)
-                                    vhba["fc_zone_policies"] = fc_zone_policy_list
+                            fc_zone_policy_list = []
+                            for fc_zone_policy_ref in vnic_fc_if.fc_zone_policies:
+                                fc_zone_policy = self._get_policy_name(policy=fc_zone_policy_ref)
+                                if fc_zone_policy:
+                                    fc_zone_policy_list.append(fc_zone_policy)
+                            vhba["fc_zone_policies"] = fc_zone_policy_list
 
                         vhbas.append(vhba)
 
@@ -4468,12 +4404,24 @@ class IntersightSanConnectivityPolicy(IntersightConfigObject):
         if self.wwnn_pool is not None:
             # We need to identify the WWNN Pool object reference
             # Since WWPN & WWNN share the same object type, we need to specify a query filter
-            wwnn_pool = self.get_live_object(
-                object_name=self.wwnn_pool,
-                object_type="fcpool.Pool",
-                query_filter="Name eq '" + self.wwnn_pool + "' and Organization/Moid eq '" +
-                             self.get_parent_org_relationship().moid + "' and PoolPurpose eq 'WWNN'"
-            )
+            if "/" in self.wwnn_pool:
+                wwnn_pool_name = self.wwnn_pool.split("/")[1]
+                wwnn_pool_org_ref = self.get_org_relationship(org_name=self.wwnn_pool.split("/")[0])
+                wwnn_pool = None
+                if wwnn_pool_org_ref:
+                    wwnn_pool = self.get_live_object(
+                        object_name=wwnn_pool_name,
+                        object_type="fcpool.Pool",
+                        query_filter="Name eq '" + wwnn_pool_name + "' and Organization/Moid eq '" +
+                                     wwnn_pool_org_ref.moid + "' and PoolPurpose eq 'WWNN'"
+                    )
+            else:
+                wwnn_pool = self.get_live_object(
+                    object_name=self.wwnn_pool,
+                    object_type="fcpool.Pool",
+                    query_filter="Name eq '" + self.wwnn_pool + "' and Organization/Moid eq '" +
+                                 self.get_parent_org_relationship().moid + "' and PoolPurpose eq 'WWNN'"
+                )
             if wwnn_pool:
                 kwargs["wwnn_pool"] = wwnn_pool
             else:
@@ -4518,12 +4466,24 @@ class IntersightSanConnectivityPolicy(IntersightConfigObject):
                     if vhba.get("wwpn_pool") is not None:
                         # We need to identify the WWPN Pool object reference
                         # Since WWPN & WWNN share the same object type, we need to specify a query filter
-                        wwpn_pool = self.get_live_object(
-                            object_name=vhba["wwpn_pool"],
-                            object_type="fcpool.Pool",
-                            query_filter="Name eq '" + vhba["wwpn_pool"] + "' and Organization/Moid eq '" +
-                                         self.get_parent_org_relationship().moid + "' and PoolPurpose eq 'WWPN'"
-                        )
+                        if "/" in vhba["wwpn_pool"]:
+                            wwpn_pool_name = vhba["wwpn_pool"].split("/")[1]
+                            wwpn_pool_org_ref = self.get_org_relationship(org_name=vhba["wwpn_pool"].split("/")[0])
+                            wwpn_pool = None
+                            if wwpn_pool_org_ref:
+                                wwpn_pool = self.get_live_object(
+                                    object_name=wwpn_pool_name,
+                                    object_type="fcpool.Pool",
+                                    query_filter="Name eq '" + wwpn_pool_name + "' and Organization/Moid eq '" +
+                                                 wwpn_pool_org_ref.moid + "' and PoolPurpose eq 'WWPN'"
+                                )
+                        else:
+                            wwpn_pool = self.get_live_object(
+                                object_name=vhba["wwpn_pool"],
+                                object_type="fcpool.Pool",
+                                query_filter="Name eq '" + vhba["wwpn_pool"] + "' and Organization/Moid eq '" +
+                                             self.get_parent_org_relationship().moid + "' and PoolPurpose eq 'WWPN'"
+                            )
                         if wwpn_pool:
                             kwargs["wwpn_pool"] = wwpn_pool
                         else:
@@ -5793,15 +5753,17 @@ class IntersightVirtualKvmPolicy(IntersightConfigObject):
     def __init__(self, parent=None, kvm_policy=None):
         IntersightConfigObject.__init__(self, parent=parent, sdk_object=kvm_policy)
 
+        self.allow_tunneled_vkvm = self.get_attribute(attribute_name="tunneled_kvm_enabled",
+                                                      attribute_secondary_name="allow_tunneled_vkvm")
         self.descr = self.get_attribute(attribute_name="description", attribute_secondary_name="descr")
-        self.name = self.get_attribute(attribute_name="name")
+        self.enable_local_server_video = self.get_attribute(attribute_name="enable_local_server_video")
+        self.enable_video_encryption = self.get_attribute(attribute_name="enable_video_encryption")
         self.enable_virtual_kvm = self.get_attribute(attribute_name="enabled",
                                                      attribute_secondary_name="enable_virtual_kvm")
         self.max_sessions = self.get_attribute(attribute_name="maximum_sessions",
                                                attribute_secondary_name="max_sessions")
+        self.name = self.get_attribute(attribute_name="name")
         self.remote_port = self.get_attribute(attribute_name="remote_port")
-        self.enable_video_encryption = self.get_attribute(attribute_name="enable_video_encryption")
-        self.enable_local_server_video = self.get_attribute(attribute_name="enable_local_server_video")
 
     @IntersightConfigObject.update_taskstep_description()
     def push_object(self):

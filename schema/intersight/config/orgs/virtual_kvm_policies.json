@@ -53,8 +53,13 @@
          },
          "minItems": 1
       },
-      "enable_virtual_kvm": {
-         "description": "Virtual KVM Policy Admin State",
+      "allow_tunneled_vkvm": {
+         "description": "Virtual KVM Policy Allow Tunneled vKVM",
+         "type": "boolean",
+         "default": false
+      },
+      "enable_local_server_video": {
+         "description": "Virtual KVM Policy Local Server Video State",
          "type": "boolean",
          "default": true
       },
@@ -63,20 +68,20 @@
          "type": "boolean",
          "default": true
       },
-      "enable_local_server_video": {
-         "description": "Virtual KVM Policy Local Server Video State",
+      "enable_virtual_kvm": {
+         "description": "Virtual KVM Policy Admin State",
          "type": "boolean",
          "default": true
-      },
-      "remote_port": {
-         "description": "Virtual KVM Policy Remote Port",
-         "type": "integer",
-         "default": 2068
       },
       "max_sessions": {
          "description": "Virtual KVM Policy Max Sessions",
          "type": "integer",
          "default": 4
+      },
+      "remote_port": {
+         "description": "Virtual KVM Policy Remote Port",
+         "type": "integer",
+         "default": 2068
       }
    },
    "additionalProperties": false,

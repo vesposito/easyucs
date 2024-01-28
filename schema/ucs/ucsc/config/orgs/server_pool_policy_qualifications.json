@@ -2545,13 +2545,6 @@
                            {
                               "not": {
                                  "required": [
-                                    "block_size"
-                                 ]
-                              }
-                           },
-                           {
-                              "not": {
-                                 "required": [
                                     "clock"
                                  ]
                               }
@@ -2580,13 +2573,6 @@
                            {
                               "not": {
                                  "required": [
-                                    "disk_type"
-                                 ]
-                              }
-                           },
-                           {
-                              "not": {
-                                 "required": [
                                     "domain_qualifications"
                                  ]
                               }
@@ -2602,13 +2588,6 @@
                               "not": {
                                  "required": [
                                     "latency"
-                                 ]
-                              }
-                           },
-                           {
-                              "not": {
-                                 "required": [
-                                    "max_cap"
                                  ]
                               }
                            },
@@ -2636,13 +2615,6 @@
                            {
                               "not": {
                                  "required": [
-                                    "min_cap"
-                                 ]
-                              }
-                           },
-                           {
-                              "not": {
-                                 "required": [
                                     "min_cores"
                                  ]
                               }
@@ -2664,27 +2636,6 @@
                            {
                               "not": {
                                  "required": [
-                                    "number_of_blocks"
-                                 ]
-                              }
-                           },
-                           {
-                              "not": {
-                                 "required": [
-                                    "number_of_flexflash_cards"
-                                 ]
-                              }
-                           },
-                           {
-                              "not": {
-                                 "required": [
-                                    "per_disk_cap"
-                                 ]
-                              }
-                           },
-                           {
-                              "not": {
-                                 "required": [
                                     "processor_architecture"
                                  ]
                               }
@@ -2700,13 +2651,6 @@
                               "not": {
                                  "required": [
                                     "server_pid"
-                                 ]
-                              }
-                           },
-                           {
-                              "not": {
-                                 "required": [
-                                    "units"
                                  ]
                               }
                            },

@@ -4845,13 +4845,17 @@
          "default": "platform-default",
          "enum": [
             "128G",
+            "128M",
             "128g",
+            "128m",
             "16G",
             "16g",
             "1G",
             "1g",
             "256G",
+            "256M",
             "256g",
+            "256m",
             "2G",
             "2g",
             "32G",
@@ -4859,7 +4863,9 @@
             "4G",
             "4g",
             "512G",
+            "512M",
             "512g",
+            "512m",
             "64G",
             "64g",
             "8G",
@@ -6291,9 +6297,11 @@
             "Disable-All2All-",
             "Hemisphere-2-clusters-",
             "Platform Default",
+            "Quadrant-4-clusters-",
             "disable-all2all-",
             "hemisphere-2-clusters-",
-            "platform-default"
+            "platform-default",
+            "quadrant-4-clusters-"
          ]
       },
       "uncore_frequency_scaling": {

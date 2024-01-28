@@ -356,6 +356,7 @@
             ],
             "allOf": [
                {
+                  "$comment": "Adapter Qualification",
                   "if": {
                      "properties": {
                         "type": {
@@ -2427,13 +2428,6 @@
                            {
                               "not": {
                                  "required": [
-                                    "block_size"
-                                 ]
-                              }
-                           },
-                           {
-                              "not": {
-                                 "required": [
                                     "clock"
                                  ]
                               }
@@ -2449,13 +2443,6 @@
                               "not": {
                                  "required": [
                                     "cpu_stepping"
-                                 ]
-                              }
-                           },
-                           {
-                              "not": {
-                                 "required": [
-                                    "disk_type"
                                  ]
                               }
                            },
@@ -2497,13 +2484,6 @@
                            {
                               "not": {
                                  "required": [
-                                    "max_cap"
-                                 ]
-                              }
-                           },
-                           {
-                              "not": {
-                                 "required": [
                                     "max_cores"
                                  ]
                               }
@@ -2512,13 +2492,6 @@
                               "not": {
                                  "required": [
                                     "max_threads"
-                                 ]
-                              }
-                           },
-                           {
-                              "not": {
-                                 "required": [
-                                    "min_cap"
                                  ]
                               }
                            },
@@ -2539,13 +2512,6 @@
                            {
                               "not": {
                                  "required": [
-                                    "number_of_blocks"
-                                 ]
-                              }
-                           },
-                           {
-                              "not": {
-                                 "required": [
                                     "number_of_chassis"
                                  ]
                               }
@@ -2553,21 +2519,7 @@
                            {
                               "not": {
                                  "required": [
-                                    "number_of_flexflash_cards"
-                                 ]
-                              }
-                           },
-                           {
-                              "not": {
-                                 "required": [
                                     "number_of_servers"
-                                 ]
-                              }
-                           },
-                           {
-                              "not": {
-                                 "required": [
-                                    "per_disk_cap"
                                  ]
                               }
                            },
@@ -2603,13 +2555,6 @@
                               "not": {
                                  "required": [
                                     "server_pid"
-                                 ]
-                              }
-                           },
-                           {
-                              "not": {
-                                 "required": [
-                                    "units"
                                  ]
                               }
                            },

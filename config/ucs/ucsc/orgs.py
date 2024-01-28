@@ -385,11 +385,12 @@ class UcsCentralOrg(UcsCentralConfigObject):
             'vmedia_policies', 'vmq_connection_policies', 'vnic_templates', 'lan_connectivity_policies',
             'san_connectivity_policies', 'service_profiles', 'orgs']
 
+        is_pushed = True
         for config_object in objects_to_push_in_order:
             if getattr(self, config_object) is not None:
                 if getattr(self, config_object).__class__.__name__ == "list":
                     for subobject in getattr(self, config_object):
-                        subobject.push_object()
+                        is_pushed = subobject.push_object() and is_pushed
 
         # HANDLING OF Instantiate CHASSIS PROFILES
         # All Chassis Profile Templates are pushed in objects_to_push_in_order, pushing instantiate profiles as mentioned below.
@@ -400,7 +401,7 @@ class UcsCentralOrg(UcsCentralConfigObject):
                     if all(getattr(chassis_profile, attr) for attr in ["chassis_profile_template", "name"]):
                         chassis_profile.instantiate_profile()
 
-        return True
+        return is_pushed
 
     def _get_generic_element(self, json_content, object_class, name_to_fetch):
         if self._config.load_from == "live":

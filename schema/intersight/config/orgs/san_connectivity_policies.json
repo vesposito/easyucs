@@ -94,19 +94,19 @@
                         "description": "SAN Connectivity Policy - vHBA Fibre Channel Adapter Policy",
                         "type": "string",
                         "default": "",
-                        "pattern": "^[a-zA-Z0-9_.:-]{1,64}$"
+                        "pattern": "^([a-zA-Z0-9_.:-]{1,64}/)?[a-zA-Z0-9_.:-]{1,64}$"
                      },
                      "fibre_channel_network_policy": {
                         "description": "SAN Connectivity Policy - vHBA Fibre Channel Network Policy",
                         "type": "string",
                         "default": "",
-                        "pattern": "^[a-zA-Z0-9_.:-]{1,64}$"
+                        "pattern": "^([a-zA-Z0-9_.:-]{1,64}/)?[a-zA-Z0-9_.:-]{1,64}$"
                      },
                      "fibre_channel_qos_policy": {
                         "description": "SAN Connectivity Policy - vHBA Fibre Channel QoS Policy",
                         "type": "string",
                         "default": "",
-                        "pattern": "^[a-zA-Z0-9_.:-]{1,64}$"
+                        "pattern": "^([a-zA-Z0-9_.:-]{1,64}/)?[a-zA-Z0-9_.:-]{1,64}$"
                      },
                      "fc_zone_policies": {
                         "description": "SAN Connectivity Policy - vHBA FC Zone Policies",
@@ -115,7 +115,7 @@
                            "description": "SAN Connectivity Policy - vHBA FC Zone Policy",
                            "type": "string",
                            "default": "",
-                           "pattern": "^[a-zA-Z0-9_.:-]{1,64}$"
+                           "pattern": "^([a-zA-Z0-9_.:-]{1,64}/)?[a-zA-Z0-9_.:-]{1,64}$"
                         },
                         "minItems": 1
                      },
@@ -196,7 +196,7 @@
                         "description": "SAN Connectivity Policy - vHBA WWPN Pool Name",
                         "type": "string",
                         "default": "",
-                        "pattern": "^[a-zA-Z0-9_.:-]{1,64}$"
+                        "pattern": "^([a-zA-Z0-9_.:-]{1,64}/)?[a-zA-Z0-9_.:-]{1,64}$"
                      },
                      "wwpn_static": {
                         "description": "SAN Connectivity Policy - vHBA Static WWPN",
@@ -454,19 +454,19 @@
                         "description": "SAN Connectivity Policy - vHBA Fibre Channel Adapter Policy",
                         "type": "string",
                         "default": "",
-                        "pattern": "^[a-zA-Z0-9_.:-]{1,64}$"
+                        "pattern": "^([a-zA-Z0-9_.:-]{1,64}/)?[a-zA-Z0-9_.:-]{1,64}$"
                      },
                      "fibre_channel_network_policy": {
                         "description": "SAN Connectivity Policy - vHBA Fibre Channel Network Policy",
                         "type": "string",
                         "default": "",
-                        "pattern": "^[a-zA-Z0-9_.:-]{1,64}$"
+                        "pattern": "^([a-zA-Z0-9_.:-]{1,64}/)?[a-zA-Z0-9_.:-]{1,64}$"
                      },
                      "fibre_channel_qos_policy": {
                         "description": "SAN Connectivity Policy - vHBA Fibre Channel QoS Policy",
                         "type": "string",
                         "default": "",
-                        "pattern": "^[a-zA-Z0-9_.:-]{1,64}$"
+                        "pattern": "^([a-zA-Z0-9_.:-]{1,64}/)?[a-zA-Z0-9_.:-]{1,64}$"
                      },
                      "fc_zone_policies": {
                         "description": "SAN Connectivity Policy - vHBA FC Zone Policies",
@@ -475,7 +475,7 @@
                            "description": "SAN Connectivity Policy - vHBA FC Zone Policy",
                            "type": "string",
                            "default": "",
-                           "pattern": "^[a-zA-Z0-9_.:-]{1,64}$"
+                           "pattern": "^([a-zA-Z0-9_.:-]{1,64}/)?[a-zA-Z0-9_.:-]{1,64}$"
                         },
                         "minItems": 1
                      },
@@ -727,7 +727,7 @@
          "description": "SAN Connectivity Policy WWNN Pool Name",
          "type": "string",
          "default": "",
-         "pattern": "^[a-zA-Z0-9_.:-]{1,64}$"
+         "pattern": "^([a-zA-Z0-9_.:-]{1,64}/)?[a-zA-Z0-9_.:-]{1,64}$"
       }
    },
    "additionalProperties": false,

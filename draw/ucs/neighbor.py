@@ -195,7 +195,7 @@ class UcsSystemDrawInfraNeighborsLan(UcsSystemDrawInfraNeighbors):
         font_title = ImageFont.truetype('arial.ttf', font_size)
         for key, neighbor in self.neighbors_dict.items():
             msg = neighbor._parent.system_name
-            w, h = self.draw.textsize(msg, font=font_title)
+            w = self.draw.textlength(msg, font=font_title)
             # 70 px is the space for text, 16 px space between text and equipment
             self.draw.text((neighbor.picture_offset[0] + neighbor.picture_size[0] / 2 - w/2,
                             neighbor.picture_offset[1] - (font_size + 16)), msg, fill=fill_color, font=font_title)
@@ -237,7 +237,7 @@ class UcsSystemDrawInfraNeighborsSan(UcsSystemDrawInfraNeighbors):
         font_title = ImageFont.truetype('arial.ttf', font_size)
         for key, neighbor in self.neighbors_dict.items():
             msg = neighbor._parent.fabric_nwwn
-            w, h = self.draw.textsize(msg, font=font_title)
+            w = self.draw.textlength(msg, font=font_title)
             # 70 px is the space for text, 16 px space between text and equipment
             self.draw.text((neighbor.picture_offset[0] + neighbor.picture_size[0] / 2 - w / 2,
                             neighbor.picture_offset[1] - (font_size + 16)),

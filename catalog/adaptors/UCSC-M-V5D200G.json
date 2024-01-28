@@ -15,6 +15,6 @@
       }
    },
    "imm_compatible": true,
-   "imm_min_required_version": "4.3(1.230097)",
+   "imm_min_required_version": "4.2(3i)",
    "data_sheet_url": "https://www.cisco.com/c/en/us/products/collateral/interfaces-modules/unified-computing-system-adapters/ucs-vic-15000-series-ds.html"
 }

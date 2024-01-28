@@ -387,15 +387,17 @@ class UcsSystemDrawStorageLocalDisk(GenericUcsDrawEquipment):
             font = ImageFont.truetype('arial.ttf', font_size)
 
             text_left = self.sku
-            w, h = self.draw.textsize(text_left, font=font)
+            left, top, right, bottom = self.draw.textbbox((0, 0), text_left, font=font)
             self.draw.text(
-                (center_square[0][0] - 20 - w, round((center_square[1][1] - center_square[0][1]) / 2 - h / 2)),
+                (center_square[0][0] - 20 - (right - left),
+                 round((center_square[1][1] - center_square[0][1]) / 2 - (top - bottom) / 2) - 10),
                 text_left, fill=fill_color, font=font)
 
             text_right = self.disk_size + " " + self.device_type
-            w, h = self.draw.textsize(text_right, font=font)
+            left, top, right, bottom = self.draw.textbbox((0, 0), text_right, font=font)
             self.draw.text(
-                (center_square[1][0] + 20, round((center_square[1][1] - center_square[0][1]) / 2 - h / 2)),
+                (center_square[1][0] + 20,
+                 round((center_square[1][1] - center_square[0][1]) / 2 - (top - bottom) / 2) - 10),
                 text_right, fill=fill_color, font=font)
 
         elif self.format == "sff_7mm_m6":
@@ -407,15 +409,17 @@ class UcsSystemDrawStorageLocalDisk(GenericUcsDrawEquipment):
             font = ImageFont.truetype('arial.ttf', font_size)
 
             text_left = self.sku
-            w, h = self.draw.textsize(text_left, font=font)
+            left, top, right, bottom = self.draw.textbbox((0, 0), text_left, font=font)
             self.draw.text(
-                (center_square[0][0] - 20 - w, round((center_square[1][1] - center_square[0][1]) / 2 - h / 2)),
+                (center_square[0][0] - 20 - (right - left),
+                 round((center_square[1][1] - center_square[0][1]) / 2 - (top - bottom) / 2) - 10),
                 text_left, fill=fill_color, font=font)
 
             text_right = self.disk_size + " " + self.device_type
-            w, h = self.draw.textsize(text_right, font=font)
+            left, top, right, bottom = self.draw.textbbox((0, 0), text_right, font=font)
             self.draw.text(
-                (center_square[1][0] + 20, round((center_square[1][1] - center_square[0][1]) / 2 - h / 2)),
+                (center_square[1][0] + 20,
+                 round((center_square[1][1] - center_square[0][1]) / 2 - (top - bottom) / 2) - 10),
                 text_right, fill=fill_color, font=font)
 
         elif self.format == "lff":
@@ -431,9 +435,9 @@ class UcsSystemDrawStorageLocalDisk(GenericUcsDrawEquipment):
             frame_dim = end_frame_coord[0] - start_frame_coord[0], end_frame_coord[1] - start_frame_coord[1]
 
             text = self.sku + " / " + self.disk_size
-            w, h = self.draw.textsize(text, font=font)
-            self.draw.text((round(frame_dim[0] / 2 + start_frame_coord[0] - w / 2),
-                            round(frame_dim[1] / 2 + start_frame_coord[1] - h / 2)), text,
+            left, top, right, bottom = self.draw.textbbox((0, 0), text, font=font)
+            self.draw.text((round(frame_dim[0] / 2 + start_frame_coord[0] - (right - left) / 2),
+                            round(frame_dim[1] / 2 + start_frame_coord[1] - (top - bottom) / 2) - 10), text,
                            fill=fill_color, font=font)
 
         elif self.format == "lff_m5":
@@ -460,17 +464,17 @@ class UcsSystemDrawStorageLocalDisk(GenericUcsDrawEquipment):
             font_3 = ImageFont.truetype('arial_bold.ttf', font_size_3)
 
             text_1 = self.disk_size
-            w_1, h_1 = self.draw.textsize(text_1, font=font_1)
+            w_1 = self.draw.textlength(text_1, font=font_1)
             text_2 = ''.join(self.sku.split('-')[1:])
-            w_2, h_2 = self.draw.textsize(text_2, font=font_2)
+            l2, t2, r2, b2 = self.draw.textbbox((0, 0), text_2, font=font_2)
             text_3 = self._parent.connection_protocol + ' ' + self._parent.drive_type
-            w_3, h_3 = self.draw.textsize(text_3, font=font_3)
+            w_3 = self.draw.textlength(text_3, font=font_3)
 
             self.draw.text((round(frame_dim[0] / 2 + start_frame_coord[0] - w_1 / 2), 518), text_1,
                            fill=fill_color, font=font_1)
 
-            self.draw.text((round(frame_dim[0] / 2 + start_frame_coord[0] - w_2 / 2),
-                            round(frame_dim[1] / 2 + start_frame_coord[1] - h_2 / 2)), text_2,
+            self.draw.text((round(frame_dim[0] / 2 + start_frame_coord[0] - (r2 - l2) / 2),
+                            round(frame_dim[1] / 2 + start_frame_coord[1] - (t2 - b2) / 2) - 10), text_2,
                            fill=fill_color, font=font_2)
 
             self.draw.text((round(frame_dim[0] / 2 + start_frame_coord[0] - w_3 / 2), 558), text_3,
@@ -513,12 +517,12 @@ class UcsSystemDrawStorageLocalDisk(GenericUcsDrawEquipment):
             font_3 = ImageFont.truetype('arial_bold.ttf', font_size_3)
 
             text_1 = self.disk_size
-            w_1, h_1 = self.draw.textsize(text_1, font=font_1)
+            w_1 = self.draw.textlength(text_1, font=font_1)
             text_2 = ''.join(self.sku.split('-')[1:])
-            w_2, h_2 = self.draw.textsize(text_2, font=font_2)
+            w_2 = self.draw.textlength(text_2, font=font_2)
             text_3 = (self._parent.connection_protocol if self._parent.connection_protocol else "") + ' ' + \
                      (self._parent.drive_type if self._parent.drive_type else "")
-            w_3, h_3 = self.draw.textsize(text_3, font=font_3)
+            w_3 = self.draw.textlength(text_3, font=font_3)
 
             self.draw.text((round(frame_dim[0] / 2 + start_frame_coord[0] - w_1 / 2), 372), text_1,
                            fill=fill_color, font=font_1)

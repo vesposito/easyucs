@@ -225,7 +225,7 @@ class UcsSystemDrawInfraServiceProfile(UcsSystemDrawInfraEquipment):
                             min_length_equipment = length
 
         font = ImageFont.truetype('arial.ttf', font_size_name)
-        while self.draw.textsize(max_name, font=font)[0] > min_length_equipment:
+        while self.draw.textlength(max_name, font=font) > min_length_equipment:
             font_size_name -= 5
             font = ImageFont.truetype('arial.ttf', font_size_name)
 
@@ -313,24 +313,34 @@ class UcsSystemDrawInfraServiceProfile(UcsSystemDrawInfraEquipment):
             self.paste_layer(cover, equipment.picture_offset)
 
             if service_profile_name:
-                w, h = self.draw.textsize(service_profile_name, font=font_name)
-                w_org, h_org = self.draw.textsize(service_profile_org, font=font_org)
+                left, top, right, bottom = self.draw.textbbox((0, 0), service_profile_name, font=font_name)
+                l_org, t_org, r_org, b_org = self.draw.textbbox((0, 0), service_profile_org, font=font_org)
+
                 # Draw service profile name info
-                self.draw.text((equipment.picture_offset[0] + equipment.picture_size[0] / 2 - w / 2,
-                                equipment.picture_offset[1] + equipment.picture_size[1] / 2 - h / 2),
-                               service_profile_name, fill=fill_color, font=font_name)
+                self.draw.text(
+                    (equipment.picture_offset[0] + equipment.picture_size[0] / 2,
+                     equipment.picture_offset[1] + equipment.picture_size[1] / 2),
+                    service_profile_name, fill=fill_color, font=font_name, align="center",
+                    anchor="mm")
+
                 # Draw service profile org info
-                self.draw.text((equipment.picture_offset[0] + equipment.picture_size[0] / 2 - w_org / 2,
-                                equipment.picture_offset[1] + h_org / 8),
-                               service_profile_org, fill=fill_color, font=font_org)
+                self.draw.text(
+                    (equipment.picture_offset[0] + equipment.picture_size[0] / 2 - (r_org - l_org) / 2,
+                     equipment.picture_offset[1] + (t_org - b_org) / 8 + 15),
+                    service_profile_org, fill=fill_color, font=font_org)
+
             if equipment._parent.user_label:
                 rack_info = "Rack #" + equipment._parent.id + " - " + equipment._parent.user_label
             else:
                 rack_info = "Rack #" + equipment._parent.id
-            w, h = self.draw.textsize(rack_info, font=font_org)
-            self.draw.text((equipment.picture_offset[0] + equipment.picture_size[0]/2 - w/2,
-                            equipment.picture_offset[1] - h - 5), rack_info,
-                           fill=fill_color, font=font_org)
+
+            left, top, right, bottom = self.draw.textbbox((0, 0), rack_info, font=font_org)
+
+            # Draw rack info
+            self.draw.text(
+                (equipment.picture_offset[0] + equipment.picture_size[0] / 2 - (right - left) / 2,
+                 equipment.picture_offset[1] - bottom - 5),
+                rack_info, fill=fill_color, font=font_org)
 
         elif type == "rack_enclosure":
             if "server_node_slots" in equipment.json_file:
@@ -348,16 +358,21 @@ class UcsSystemDrawInfraServiceProfile(UcsSystemDrawInfraEquipment):
                     self.paste_layer(cover, server_node.picture_offset)
 
                     if service_profile_name:
-                        w, h = self.draw.textsize(service_profile_name, font=font_name)
-                        w_org, h_org = self.draw.textsize(service_profile_org, font=font_org)
+                        left, top, right, bottom = self.draw.textbbox((0, 0), service_profile_name, font=font_name)
+                        l_org, t_org, r_org, b_org = self.draw.textbbox((0, 0), service_profile_org, font=font_org)
+
                         # Draw service profile name info
-                        self.draw.text((server_node.picture_offset[0] + server_node.picture_size[0] / 2 - w / 2,
-                                        server_node.picture_offset[1] + server_node.picture_size[1] / 2 - h / 2),
-                                       service_profile_name, fill=fill_color, font=font_name)
+                        self.draw.text((server_node.picture_offset[0] + server_node.picture_size[0] / 2,
+                                        server_node.picture_offset[1] + server_node.picture_size[1] / 2),
+                                       service_profile_name, fill=fill_color, font=font_name, align="center",
+                                       anchor="mm")
+
                         # Draw service profile org info
-                        self.draw.text((server_node.picture_offset[0] + server_node.picture_size[0] / 2 - w_org / 2,
-                                        server_node.picture_offset[1] + h_org / 8),
+                        self.draw.text((server_node.picture_offset[0] + server_node.picture_size[0] / 2 - (
+                                r_org - l_org) / 2,
+                                        server_node.picture_offset[1] + (t_org - b_org) / 8 + 15),
                                        service_profile_org, fill=fill_color, font=font_org)
+
                     # if equipment._parent.user_label:
                     #     chassis_info = "Chassis #" + equipment._parent.id + " - " + equipment._parent.user_label
                     # else:
@@ -384,24 +399,30 @@ class UcsSystemDrawInfraServiceProfile(UcsSystemDrawInfraEquipment):
                     self.paste_layer(cover, blade.picture_offset)
 
                     if service_profile_name:
-                        w, h = self.draw.textsize(service_profile_name, font=font_name)
-                        w_org, h_org = self.draw.textsize(service_profile_org, font=font_org)
+                        left, top, right, bottom = self.draw.textbbox((0, 0), service_profile_name, font=font_name)
+                        l_org, t_org, r_org, b_org = self.draw.textbbox((0, 0), service_profile_org, font=font_org)
+
                         # Draw service profile name info
-                        self.draw.text((blade.picture_offset[0] + blade.picture_size[0] / 2 - w / 2,
-                                        blade.picture_offset[1] + blade.picture_size[1] / 2 - h / 2),
-                                       service_profile_name, fill=fill_color, font=font_name)
+                        self.draw.text(
+                            (blade.picture_offset[0] + blade.picture_size[0] / 2,
+                             blade.picture_offset[1] + blade.picture_size[1] / 2),
+                            service_profile_name, fill=fill_color, font=font_name, align="center", anchor="mm")
+
                         # Draw service profile org info
-                        self.draw.text((blade.picture_offset[0] + blade.picture_size[0] / 2 - w_org / 2,
-                                        blade.picture_offset[1] + h_org / 8),
-                                       service_profile_org, fill=fill_color, font=font_org)
+                        self.draw.text(
+                            (blade.picture_offset[0] + blade.picture_size[0] / 2 - (r_org - l_org) / 2,
+                             blade.picture_offset[1] + (t_org - b_org) / 8 + 15),
+                            service_profile_org, fill=fill_color, font=font_org)
+
                     if equipment._parent.user_label:
                         chassis_info = "Chassis #" + equipment._parent.id + " - " + equipment._parent.user_label
                     else:
                         chassis_info = "Chassis #" + equipment._parent.id
-                    w, h = self.draw.textsize(chassis_info, font=font_org)
-                    self.draw.text((equipment.picture_offset[0] + equipment.picture_size[0]/2 - w/2,
-                                    equipment.picture_offset[1] - h - 5), chassis_info,
-                                   fill=fill_color, font=font_org)
+
+                    left, top, right, bottom = self.draw.textbbox((0, 0), chassis_info, font=font_org)
+                    self.draw.text((equipment.picture_offset[0] + equipment.picture_size[0] / 2 - (right - left) / 2,
+                                    equipment.picture_offset[1] - bottom - 5), chassis_info, fill=fill_color,
+                                   font=font_org)
 
     def generate_cover(self, color, size):
         img = Image.new('RGBA', size, color)

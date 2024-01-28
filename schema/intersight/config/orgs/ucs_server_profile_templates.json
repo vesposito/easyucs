@@ -191,7 +191,7 @@
          "description": "UCS Server Profile Template - UUID Pool Name",
          "type": "string",
          "default": "",
-         "pattern": "^[a-zA-Z0-9_.:-]{1,64}$"
+         "pattern": "^([a-zA-Z0-9_.:-]{1,64}/)?[a-zA-Z0-9_.:-]{1,64}$"
       },
       "virtual_kvm_policy": {
          "description": "UCS Server Profile Template Virtual KVM Policy",

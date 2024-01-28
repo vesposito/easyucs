@@ -67,13 +67,16 @@ class UcsSystemDrawChassisFront(GenericUcsDrawEquipment):
             unused_slot = []
             for slot in self._parent.blades:
                 if hasattr(slot, "scaled_mode"):
+                    # We handle the specific case of a B460 M4 for which we also use the 2 slots above the master blade
                     if slot.scaled_mode == "scaled":
                         used_slot.append(int(slot.slot_id) - 2)
                         used_slot.append(int(slot.slot_id) - 1)
                         used_slot.append(int(slot.slot_id) + 1)
                     if slot.scaled_mode == "single":
                         used_slot.append(int(slot.slot_id) + 1)
-                # We handle the specific case of a B460 M4 for which we also use the 2 slots above the master blade
+                if getattr(slot, "sku", "") in ["UCSX-410C-M7"]:
+                    # We handle the specific case of compute nodes taking 2 slots in the 9508 chassis
+                    used_slot.append(int(slot.slot_id) + 1)
                 used_slot.append(int(slot.slot_id))
             for slot in self.json_file["blades_slots"]:
                 potential_slot.append(slot["id"])
@@ -776,6 +779,7 @@ class UcsSystemDrawInfraChassis(UcsSystemDrawInfraEquipment):
         # if chassis.fi_list:
         #     self.chassis.fi_list = self.chassis.draw_fi()
         #     self.chassis.draw_fi_ports()
+        self.chassis.xfm_list = self.chassis.get_xfm_list()
 
         if self.fex_presence:
             self.fex_a.draw = self.draw
@@ -892,7 +896,7 @@ class UcsSystemDrawInfraChassis(UcsSystemDrawInfraEquipment):
             msg = "Chassis #" + self.chassis._parent.id + " - " + self.chassis._parent.user_label
         else:
             msg = "Chassis #" + self.chassis._parent.id
-        w, h = self.draw.textsize(msg, font=font_title)
+        w = self.draw.textlength(msg, font=font_title)
         # 16 px space between text and equipment
         self.draw.text((round(self.canvas_width/2 - w / 2), self.chassis_offset[1] - (font_size + 16)), msg,
                        fill=fill_color, font=font_title)

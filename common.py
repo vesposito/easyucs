@@ -18,11 +18,7 @@ from cryptography.fernet import InvalidToken
 from itertools import groupby, count
 
 import natsort
-import numpy as np
 import requests
-from matplotlib import cm
-from matplotlib import pyplot as plt
-from matplotlib.patches import Circle, Wedge, Rectangle
 
 from __init__ import EASYUCS_ROOT
 

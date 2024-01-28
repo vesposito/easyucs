@@ -1,10 +1,10 @@
 import base64
 import copy
+import csv
 import ctypes
-import datetime
 import json
 import os
-import shutil
+import re
 import signal
 import sys
 import tarfile
@@ -13,6 +13,7 @@ import time
 import uuid
 
 from cryptography.fernet import Fernet
+from io import StringIO
 from functools import wraps
 
 from flask import Flask, Response, request, send_file, after_this_request
@@ -31,7 +32,8 @@ logContent = ""
 displayLogsBool = False
 
 timeout_values = {
-    "claim_to_intersight": 300,
+    "add_device": 360,
+    "claim_to_intersight": 600,
     "clear_intersight_claim_status": 300,
     "clear_sel_logs": 300,
     "fetch_backup": 600,
@@ -40,6 +42,7 @@ timeout_values = {
     "fetch_inventory": 3600,
     "generate_report": 300,
     "push_config": 10800,
+    "reset": 300,
     "test_connection": 300
 }
 
@@ -380,8 +383,8 @@ def perform_action(device=None, action_type="", object_type="", task_uuid=None, 
         easyucs.logger(level="error", message="No device provided")
         sys.exit()
 
-    if action_type not in ["claim_to_intersight", "clear_intersight_claim_status", "clear_sel_logs", "fetch",
-                           "generate", "push", "test_connection"]:
+    if action_type not in ["add_device", "claim_to_intersight", "clear_intersight_claim_status", "clear_sel_logs",
+                           "fetch", "generate", "push", "reset", "test_connection"]:
         easyucs.logger(level="error", message="Invalid action type provided")
         sys.exit()
 
@@ -397,7 +400,8 @@ def perform_action(device=None, action_type="", object_type="", task_uuid=None, 
         action_kwargs = {}
 
     # In case this is a clear, fetch or push operation, we first need to connect to the device
-    if action_type in ["clear_intersight_claim_status", "clear_sel_logs", "fetch", "push", "test_connection"]:
+    if action_type in ["add_device", "clear_intersight_claim_status", "clear_sel_logs", "fetch", "push", "reset",
+                       "test_connection"]:
         if not device.connect(bypass_version_checks=device.metadata.bypass_version_checks):
             easyucs.logger(level="error",
                            message="Failed to connect to " + device.metadata.device_type_long + " device",
@@ -406,9 +410,15 @@ def perform_action(device=None, action_type="", object_type="", task_uuid=None, 
             if not status_message:
                 status_message = "Failed to connect to " + device.metadata.device_type_long + " device"
             easyucs.task_manager.stop_task(uuid=task_uuid, status="failed", status_message=status_message)
+            if action_type == "add_device":
+                easyucs.device_manager.remove_device(uuid=str(device.metadata.device_uuid))
 
         # We save device metadata in case they have changed (version, name, is_reachable and timestamp_last_connected)
-        easyucs.repository_manager.save_metadata(metadata=device.metadata)
+        if action_type == "add_device":
+            if device.metadata.is_reachable:
+                easyucs.repository_manager.save_metadata(metadata=device.metadata)
+        else:
+            easyucs.repository_manager.save_metadata(metadata=device.metadata)
 
         if not device.metadata.is_reachable:
             sys.exit()
@@ -490,7 +500,7 @@ def perform_action(device=None, action_type="", object_type="", task_uuid=None, 
 
     manager_target = None
     if object_type in ["device"] and action_type in ["claim_to_intersight", "clear_intersight_claim_status",
-                                                     "clear_sel_logs"]:
+                                                     "clear_sel_logs", "reset"]:
         # The operation to perform is a direct call to the function at the device level
         action_target = getattr(device, action_type)
 
@@ -512,9 +522,20 @@ def perform_action(device=None, action_type="", object_type="", task_uuid=None, 
         response = action_target(**action_kwargs)
 
     # In case this is a claim, a clear, a fetch or a push operation, we now need to disconnect from the device
-    if action_type in ["claim_to_intersight", "clear_intersight_claim_status", "clear_sel_logs", "fetch", "push",
-                       "test_connection"]:
+    if action_type in ["add_device", "claim_to_intersight", "clear_intersight_claim_status", "clear_sel_logs", "fetch",
+                       "push", "test_connection"]:
         device.disconnect()
+
+    if action_type in ["reset"]:
+        # If erase configuration is successful then we skip the disconnect step otherwise we perform a disconnect.
+        if response:
+            device.task.taskstep_manager.skip_taskstep(
+                name="DisconnectUcsSystemDevice",
+                status_message=f"Skipping the disconnect to {device.metadata.device_type_long} device "
+                               f"{device.metadata.device_type_long} since the reset operation was successful"
+            )
+        else:
+            device.disconnect()
 
     # In case this is a claim to Intersight operation, we now need to disconnect from the Intersight device
     if action_type in ["claim_to_intersight"]:
@@ -777,6 +798,16 @@ def devices():
                 private_key_path = easyucs.repository_manager.save_key_to_repository(private_key=private_key,
                                                                                      device_uuid=new_device_uuid)
 
+                @after_this_request
+                def cleanup(response):
+                    """
+                    Function to delete the private key file at the end of this request if the requests fails
+                    """
+                    if response.status_code not in [200]:
+                        if private_key_path and os.path.exists(private_key_path):
+                            os.remove(private_key_path)
+                    return response
+
             device_type = None
             if "device_type" in payload:
                 device_type = payload["device_type"]
@@ -811,8 +842,7 @@ def devices():
                 device_dict = {"device": device_metadata}
                 response = response_handle(device_dict, 200)
             else:
-                response = response_handle(code=500)
-
+                response = response_handle(code=400)
         except BadRequest as err:
             response = response_handle(code=err.code, response=str(err.description))
         except Exception as err:
@@ -859,6 +889,146 @@ def device_actions():
         return response
 
 
+@app.route("/devices/actions/add", methods=['POST'])
+# Method to add multiple devices from CSV file
+def device_actions_add():
+    if request.method == 'POST':
+        try:
+            if "devices_file" not in request.files:
+                response = response_handle(code=400, response="Invalid payload")
+                return response
+
+            file = request.files['devices_file']
+
+            # Validating the type of file
+            file_type = file.filename.split(".")
+            if len(file_type) <= 1 or file_type[1] != "csv":
+                response = response_handle(code=400, response="Invalid file type")
+                return response
+
+            # Mapping the contents of csv with column headers as key
+            device_data = list(csv.DictReader(StringIO(file.read().decode("utf-8-sig"))))
+            if not device_data:
+                response = response_handle(code=400,
+                                           response="Relevant device credentials not found in the uploaded CSV")
+                return response
+
+            # Removing duplicate values
+            device_data_list = []
+            for data in device_data:
+                if data not in device_data_list:
+                    device_data_list.append(data)
+
+            # Expected headers of the CSV file
+            headers = ['Device Type', 'Target', 'Username', 'Password']
+            # Validating the headers of CSV file
+            csv_headers = list(device_data[0].keys())
+            if csv_headers != headers:
+                response = response_handle(
+                    code=400,
+                    response="The column headings of uploaded CSV file are invalid"
+                )
+                return response
+
+            # Regular expression for validating IPv4/FQDN
+            ipv4_fqdn_pattern = (r'^((?:(25[0-5]|(?:2[0-4]|1[0-9]|[1-9]|)[0-9])(\.(?!$)|)){4}$)|'
+                                 r'(?=^.{4,253}$)(^((?!-)[a-zA-Z0-9-]{0,62}[a-zA-Z0-9]\.)+[a-zA-Z]{2,63})$')
+
+            # Validating the contents of the CSV file
+            for row in device_data_list:
+                if row["Device Type"] not in ["ucsm", "ucsc", "cimc"]:
+                    response = response_handle(
+                        code=400,
+                        response="The device type in CSV file should be ucsm/ucsc/cimc"
+                    )
+                    return response
+
+                if not re.match(ipv4_fqdn_pattern, row["Target"]):
+                    response = response_handle(
+                        code=400,
+                        response=f"The target {row['Target']} provided is not a valid IP or FQDN"
+                    )
+                    return response
+
+                if not row["Username"] or not row["Password"]:
+                    response = response_handle(
+                        code=400,
+                        response="Username and Password fields cannot be empty"
+                    )
+                    return response
+
+            # Get devices from DB
+            device_dict = get_object_from_db(object_type="device")
+            db_devices = []
+            if device_dict:
+                for device in device_dict["devices"]:
+                    if "username" in device and device["device_type"] != "intersight":
+                        db_devices.append(device["target"] + device["username"])
+
+            # Adding the device if not present in the DB
+            device_list = []
+            @after_this_request
+            def cleanup(response):
+                if response.status_code != 200:
+                    for device in device_list:
+                        easyucs.device_manager.remove_device(uuid=str(device.metadata.device_uuid))
+                return response
+
+            for row in device_data_list:
+                unique_id = row["Target"] + row["Username"]
+                if unique_id not in db_devices:
+                    if easyucs.device_manager.add_device(device_type=row["Device Type"], target=row["Target"],
+                                                         username=row["Username"], password=row["Password"]):
+                        device_list.append(easyucs.device_manager.get_latest_device())
+                    else:
+                        response = response_handle(code=400, response=f"Failed to add device: {row['Target']}.")
+                        return response
+                else:
+                    easyucs.logger(level="debug", message="Target device " + row['Target'] + " was already added.")
+
+            if not device_list:
+                response = response_handle(code=400, response=f"No new device(s) found in CSV (some devices "
+                                                              f"might already be present in the database.)")
+                return response
+
+            task_uuid_list = []
+            for device in device_list:
+                if device.metadata.device_type == "cimc":
+                    task_uuid = easyucs.task_manager.add_task(name="TestConnectionUcsImc",
+                                                              device_name=str(device.metadata.name),
+                                                              device_uuid=str(device.metadata.device_uuid))
+                elif device.metadata.device_type == "ucsc":
+                    task_uuid = easyucs.task_manager.add_task(name="TestConnectionUcsCentral",
+                                                              device_name=str(device.metadata.name),
+                                                              device_uuid=str(device.metadata.device_uuid))
+                elif device.metadata.device_type == "ucsm":
+                    task_uuid = easyucs.task_manager.add_task(name="TestConnectionUcsSystem",
+                                                              device_name=str(device.metadata.name),
+                                                              device_uuid=str(device.metadata.device_uuid))
+
+                pending_task = {
+                    "task_uuid": task_uuid,
+                    "action_type": "add_device",
+                    "object_type": "device",
+                    "timeout": timeout_values["add_device"]
+                }
+                if not easyucs.task_manager.add_to_pending_tasks(pending_task):
+                    easyucs.logger(level="error",
+                                   message=f"Error while scheduling the task for {device.metadata.target}. "
+                                           f"Task Queue might be Full. Try again after some time.", code=400)
+
+                task_uuid_list.append(str(task_uuid))
+
+            response = response_handle(response={"tasks": task_uuid_list}, code=200)
+            return response
+
+        except BadRequest as err:
+            response = response_handle(code=err.code, response=str(err.description))
+        except Exception as err:
+            response = response_handle(code=500, response=str(err))
+        return response
+
+
 @app.route("/devices/actions/claim_to_intersight", methods=['POST'])
 # @cross_origin()
 def devices_actions_claim_to_intersight():
@@ -892,7 +1062,9 @@ def devices_actions_claim_to_intersight():
                 return response
 
             action_kwargs = {
-                "intersight_device": intersight_device
+                "access_mode": payload.get("access_mode"),
+                "intersight_device": intersight_device,
+                "proxy_details": payload.get("proxy_details")
             }
 
             try:
@@ -1150,7 +1322,9 @@ def device_uuid_actions_claim_to_intersight(device_uuid):
                     return response
 
                 action_kwargs = {
-                    "intersight_device": intersight_device
+                    "access_mode": payload.get("access_mode"),
+                    "intersight_device": intersight_device,
+                    "proxy_details": payload.get("proxy_details")
                 }
 
                 try:
@@ -1352,42 +1526,70 @@ def device_uuid_actions_fetch_config_and_inventory(device_uuid):
         return response
 
 
-@app.route("/devices/<device_uuid>/actions/send_feedback", methods=['POST'])
+@app.route("/devices/<device_uuid>/actions/reset", methods=['POST'])
 # @cross_origin()
-def device_uuid_actions_send_feedback(device_uuid):
+def device_uuid_actions_reset(device_uuid):
     if request.method == 'POST':
         try:
             payload = request.json
 
             # Check if payload valid
-            if payload:
-                if not validate_json(json_data=payload, schema_path="api/specs/device_send_feedback_post.json",
-                                     logger=easyucs):
-                    response = response_handle(code=400, response="Invalid payload")
-                    return response
-            else:
-                response = response_handle(code=400, response="Missing payload")
+            if not validate_json(json_data=payload, schema_path="api/specs/device_reset_post.json", logger=easyucs):
+                response = response_handle(response="Invalid Payload", code=400)
                 return response
 
             device = load_object(object_type="device", object_uuid=device_uuid)
             if device:
-                if device.metadata.device_type != "intersight":
-                    response = response_handle(response="Device type is not Intersight", code=500)
+                if device.task is not None:
+                    response = response_handle(response="Device already has a task running: " + str(device.task.uuid),
+                                               code=500)
                     return response
 
-                if not device.send_feedback(
-                        feedback_type=payload["feedback_type"], comment=payload["comment"],
-                        follow_up=payload.get("follow_up", False), evaluation=payload.get("evaluation", "Excellent"),
-                        alternative_follow_up_emails=payload.get("alternative_follow_up_emails", [])):
-                    response = response_handle(response="Failed to send the feedback", code=500)
-                    return response
-                response = response_handle(code=200)
+                # Resetting the device
+                if payload.get("password") == device.password:
+                    if device.metadata.device_type == "ucsm":
+                        task_uuid = easyucs.task_manager.add_task(name="ResetDeviceUcsSystem",
+                                                                  device_name=str(device.name),
+                                                                  device_uuid=str(device.uuid))
+                        action_kwargs = {
+                            "clear_intersight_claim_status": payload.get("clear_intersight_claim_status", True),
+                            "clear_sel_logs": payload.get("clear_sel_logs", False),
+                            "decommission_rack_servers":  payload.get("decommission_rack_servers", True),
+                            "erase_flexflash": payload.get("erase_flexflash", False),
+                            "erase_virtual_drives": payload.get("erase_virtual_drives", False),
+                            "unregister_from_central":  payload.get("unregister_from_central", False)
+                        }
+                    elif device.metadata.device_type == "cimc":
+                        task_uuid = easyucs.task_manager.add_task(name="ResetDeviceUcsImc",
+                                                                  device_name=str(device.name),
+                                                                  device_uuid=str(device.uuid))
+                        action_kwargs = {
+                            "clear_intersight_claim_status": payload.get("clear_intersight_claim_status", False)
+                        }
+                    else:
+                        response = response_handle(response="Resetting " + device.metadata.device_type +
+                                                   " device is not supported", code=400)
+                        return response
+
+                    pending_task = {
+                        "task_uuid": task_uuid,
+                        "action_type": "reset",
+                        "object_type": "device",
+                        "timeout": timeout_values["reset"],
+                        "action_kwargs": action_kwargs
+                    }
+                    if not easyucs.task_manager.add_to_pending_tasks(pending_task):
+                        response = response_handle(response="Error while scheduling the task. Task Queue might be Full."
+                                                            " Try again after some time.", code=400)
+                        return response
+                    response = response_handle(response={"task": str(task_uuid)}, code=200)
+
+                else:
+                    response = response_handle(response="Admin password mismatch", code=400)
             else:
                 response = response_handle(response="Device not found with UUID: " + device_uuid, code=404)
-        except BadRequest as err:
-            response = response_handle(code=err.code, response=str(err.description))
-        except Exception as err:
-            response = response_handle(code=500, response=str(err))
+        except Exception:
+            response = response_handle(code=500)
         return response
 
 
@@ -1720,45 +1922,6 @@ def device_uuid_backup_uuid_actions_download(device_uuid, backup_uuid):
             else:
                 response = response_handle(response="Backup not found with UUID: " + backup_uuid, code=404)
 
-        except Exception as err:
-            response = response_handle(code=500, response=str(err))
-        return response
-
-
-@app.route("/devices/<device_uuid>/cache", methods=['GET'])
-def device_uuid_cache(device_uuid):
-    if request.method == 'GET':
-        try:
-            device = load_object(object_type="device", object_uuid=device_uuid)
-            if device:
-                operating_system = request.args.get("os", True, type=lambda v: v.lower() == 'true')
-                firmware = request.args.get("firmware", True, type=lambda v: v.lower() == 'true')
-
-                if device.metadata.device_type not in ["intersight"]:
-                    response = response_handle(response=f"OS and Firmware cached data not supported for "
-                                                        f"{device.metadata.device_type_long} device",
-                                               code=404)
-                    return response
-
-                if not device.metadata.cache_path:
-                    response = response_handle(response="OS and Firmware cached data not found", code=404)
-                    return response
-
-                os_firmware_data = device.get_os_firmware_data()
-
-                if not os_firmware_data:
-                    response = response_handle(response="Failed to read OS and Firmware cached data from device",
-                                               code=500)
-                    return response
-
-                if not operating_system:
-                    del os_firmware_data["os"]
-                if not firmware:
-                    del os_firmware_data["firmware"]
-
-                response = response_handle(response=os_firmware_data, code=200)
-            else:
-                response = response_handle(response="Device not found with UUID: " + device_uuid, code=404)
         except Exception as err:
             response = response_handle(code=500, response=str(err))
         return response
@@ -2099,6 +2262,7 @@ def device_uuid_config_uuid_actions_push(device_uuid, config_uuid):
                     action_kwargs["fi_ip_list"] = payload["fi_ip_list"]
                 if "reset" in payload:
                     action_kwargs["reset"] = payload["reset"]
+                action_kwargs["force"] = payload.get("force", False)
 
             device = load_object(object_type="device", object_uuid=device_uuid)
             if device:

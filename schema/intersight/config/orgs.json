@@ -13,7 +13,8 @@
       "name": {
          "description": "Org Name",
          "type": "string",
-         "default": ""
+         "default": "",
+         "pattern": "^[a-zA-Z0-9_.:-]{1,64}$"
       },
       "descr": {
          "description": "Org Description",
@@ -456,6 +457,16 @@
             "description:": "EasyUCS config/orgs/serial_over_lan_policies element",
             "type": "object",
             "$ref": "orgs/serial_over_lan_policies.json"
+         },
+         "minItems": 1
+      },
+      "shared_with_orgs": {
+         "description": "EasyUCS config/orgs/shared_with_orgs section",
+         "type": "array",
+         "items": {
+            "description:": "Name of the org",
+            "type": "string",
+            "pattern": "^[a-zA-Z0-9_.:-]{1,64}$"
          },
          "minItems": 1
       },

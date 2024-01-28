@@ -152,7 +152,7 @@ class PushSummaryManager:
                 # This implies that commit() was not called for this EasyUCS object. Very unlikely to happen.
                 if getattr(current_object, "name", None):
                     push_summary_pointer["name"] = current_object.name
-                push_summary_pointer["status"] = "not_committed"
+                push_summary_pointer["push_status"] = "not_committed"
                 push_summary_pointer["easyucs_object_type"] = current_object.__class__.__name__
                 push_summary_pointer["easyucs_object_name"] = current_object._CONFIG_NAME
 

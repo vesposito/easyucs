@@ -55,7 +55,7 @@
       }
    ],
    "imm_compatible": true,
-   "imm_min_required_version": "4.3(2.230131)",
+   "imm_min_required_version": "4.3(2b)",
    "spec_sheet_url": "https://www.cisco.com/c/dam/en/us/products/collateral/servers-unified-computing/ucs-x-series-modular-system/x210cm7-specsheet.pdf",
    "data_sheet_url": "https://www.cisco.com/c/en/us/products/collateral/servers-unified-computing/ucs-x-series-modular-system/ucs-x210c-m7-compute-node-ds.html",
    "specs": {

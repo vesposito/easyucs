@@ -1,0 +1,20 @@
+{
+   "model_short_name": "VIC 15237",
+   "rear_file_name": "UCSC-M-V5D200GV2.png",
+   "rear_file_size": [523,94],
+   "rear_ports": {
+      "x/2": {
+         "port_coord": [243, 16],
+         "port_type": "qsfp28",
+         "port_size": [111, 49]
+      },
+      "x/1": {
+         "port_coord": [116, 16],
+         "port_type": "qsfp28",
+         "port_size": [111, 49]
+      }
+   },
+   "imm_compatible": true,
+   "imm_min_required_version": "4.3(2c)",
+   "data_sheet_url": "https://www.cisco.com/c/en/us/products/collateral/interfaces-modules/unified-computing-system-adapters/ucs-vic-15000-series-ds.html"
+}

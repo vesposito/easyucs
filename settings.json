@@ -1,3 +1,4 @@
 {
-   "update_existing_intersight_objects": false
+   "update_existing_intersight_objects": false,
+   "delete_existing_resource_group_memberships_for_intersight_shared_orgs": false
 }

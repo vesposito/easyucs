@@ -110,7 +110,10 @@ class UcsAdaptor(GenericUcsInventoryObject):
                 self.sku = None  # Onboard 1G LoM
                 self.type = "nic"
             elif (vendor, device, subvendor, subdevice) == ("0x8086", "0x1528", "0x1137", "0x00d4"):
-                self.sku = None  # Onboard 10G LoM
+                self.sku = None  # Onboard 10G LoM (M5)
+                self.type = "nic"
+            elif (vendor, device, subvendor, subdevice) == ("0x8086", "0x1563", "0x1137", "0x02b3"):
+                self.sku = None  # Onboard 10G LoM (M6)
                 self.type = "nic"
             elif (vendor, device, subvendor, subdevice) == ("0x8086", "0x1528", "0x1137", "0x00bf"):
                 self.sku = "UCSC-PCIE-ITG"
@@ -126,9 +129,27 @@ class UcsAdaptor(GenericUcsInventoryObject):
                 self.sku = "UCSC-PCIE-ID40GF"
             elif (vendor, device, subvendor, subdevice) == ("0x8086", "0x158b", "0x1137", "0x0225"):
                 self.sku = "UCSC-PCIE-ID25GF"
+            elif (vendor, device, subvendor, subdevice) == ("0x8086", "0x15ff", "0x1137", "0x02c2"):
+                self.sku = "UCSC-P-IQ10GC"
+            elif (vendor, device, subvendor, subdevice) == ("0x8086", "0x159b", "0x1137", "0x02be"):
+                self.sku = "UCSC-P-I8D25GF"
+            elif (vendor, device, subvendor, subdevice) == ("0x8086", "0x1593", "0x1137", "0x02c3"):
+                self.sku = "UCSC-P-I8Q25GF"
+            elif (vendor, device, subvendor, subdevice) == ("0x8086", "0x1592", "0x1137", "0x02bf"):
+                self.sku = "UCSC-P-I8D100GF"
             # Mellanox
             elif (vendor, device, subvendor, subdevice) == ("0x15b3", "0x6750", "0x15b3", "0x0016"):
                 self.sku = "N2XX-AMPCI01"
+            elif (vendor, device, subvendor, subdevice) == ("0x15b3", "0x1015", "0x1137", "0x2aa"):
+                self.sku = "UCSC-P-M4D25GF"
+            elif (vendor, device, subvendor, subdevice) == ("0x15b3", "0x1017", "0x1137", "0x2ab"):
+                self.sku = "UCSC-P-M5D25GF"
+            elif (vendor, device, subvendor, subdevice) == ("0x15b3", "0x1017", "0x1137", "0x2b6"):
+                self.sku = "UCSC-P-M5S100GF"
+            elif (vendor, device, subvendor, subdevice) == ("0x15b3", "0x1019", "0x1137", "0x2ac"):
+                self.sku = "UCSC-P-M5D100GF"
+            elif (vendor, device, subvendor, subdevice) == ("0x15b3", "0x101d", "0x1137", "0x2cb"):
+                self.sku = "UCSC-P-M6DD100GF"
             # QLogic
             elif (vendor, device, subvendor, subdevice) == ("0x1077", "0x8000", "0x1077", "0x017e"):
                 self.sku = "N2XX-AQPCI01"
@@ -148,14 +169,22 @@ class UcsAdaptor(GenericUcsInventoryObject):
                 self.sku = "UCSC-PCIE-QNICSFP"
             elif (vendor, device, subvendor, subdevice) == ("0x1077", "0x2261", "0x1077", "0x02c7"):
                 self.sku = "UCSC-PCIE-QD16GF"
+            # Added to workaround incorrect subdevice ID (0x2c7 instead of 0x02c7)
+            elif (vendor, device, subvendor, subdevice) == ("0x1077", "0x2261", "0x1077", "0x2c7"):
+                self.sku = "UCSC-PCIE-QD16GF"
             elif (vendor, device, subvendor, subdevice) == ("0x1077", "0x2261", "0x1077", "0x02b6"):
                 self.sku = "UCSC-PCIE-QD32GF"
             elif (vendor, device, subvendor, subdevice) == ("0x1077", "0x8070", "0x1137", "0x0246"):
                 self.sku = "UCSC-PCIE-QD25GF"
             elif (vendor, device, subvendor, subdevice) == ("0x1077", "0x1634", "0x1137", "0x0245"):
                 self.sku = "UCSC-PCIE-QD40GF"
+            elif (vendor, device, subvendor, subdevice) == ("0x1077", "0x1644", "0x1137", "0x0257"):
+                self.sku = "UCSC-PCIE-QS100GF"
             elif (vendor, device, subvendor, subdevice) == ("0x1077", "0x8070", "0x1077", "0x0019"):
                 self.sku = "UCSC-OCP-QD25GF"
+            else:
+                self.logger(level="warning", message=f"Impossible to determine Adaptor SKU from unknown PCI " +
+                                                     f"device '{vendor}, {device}, {subvendor}, {subdevice}'")
 
         if self.sku in ["N2XX-AEPCI01", "UCSC-PCIE-ESFP", "UCSC-PCIE-E14102B", "UCSC-PCIE-E14102", "N2XX-AQPCI01",
                         "UCSC-PCIE-QSFP", "UCSC-PCIE-Q8362"]:
@@ -168,8 +197,10 @@ class UcsAdaptor(GenericUcsInventoryObject):
                           "UCSC-PCIE-BSFP", "UCSC-PCIE-B3SFP", "UCSC-PCIE-BTG", "N2XX-AIPCI01", "N2XX-AIPCI02",
                           "UCSC-PCIE-IRJ45", "UCSC-MLOM-IRJ45", "UCSC-PCIE-ITG", "UCSC-PCIE-ID10GC",
                           "UCSC-PCIE-ID10GF", "UCSC-PCIE-IQ10GF", "UCSC-PCIE-IQ10GC", "UCSC-PCIE-ID40GF",
-                          "UCSC-PCIE-ID25GF", "N2XX-AMPCI01", "UCSC-PCIE-QNICBT", "UCSC-PCIE-QNICSFP",
-                          "UCSC-PCIE-QD25GF", "UCSC-PCIE-QD40GF", "UCSX-MLOM-001", "UCSC-OCP-QD10GC",
+                          "UCSC-PCIE-ID25GF", "UCSC-P-IQ10GC", "UCSC-P-I8D25GF", "UCSC-P-I8Q25GF", "UCSC-P-I8D100GF",
+                          "N2XX-AMPCI01", "UCSC-P-M4D25GF", "UCSC-P-M5D25GF", "UCSC-P-M5S100GF", "UCSC-P-M5D100GF",
+                          "UCSC-P-M6DD100GF", "UCSC-PCIE-QNICBT", "UCSC-PCIE-QNICSFP", "UCSC-PCIE-QD25GF",
+                          "UCSC-PCIE-QD40GF", "UCSC-PCIE-QS100GF", "UCSX-MLOM-001", "UCSC-OCP-QD10GC",
                           "UCSC-OCP-QD25GF"]:
             self.type = "nic"
         elif self.sku in ["N2XX-ACPCI01", "UCSC-PCIE-CSC-02", "UCSC-PCIE-C10T-02", "UCSC-MLOM-CSC-02",
@@ -182,6 +213,9 @@ class UcsAdaptor(GenericUcsInventoryObject):
             self.type = "nic"
         elif self.pci_slot == "14" and self._parent.sku == "UCS-S3260-M5SRB":  # For LoM on S3260 M5 server node
             self.type = "nic"
+        else:
+            self.logger(level="warning", message=f"Impossible to determine Adaptor Type from unknown PCI " +
+                                                 f"device '{self.sku}': '{vendor}, {device}, {subvendor}, {subdevice}'")
 
 
 class UcsSystemAdaptor(UcsAdaptor, UcsSystemInventoryObject):
@@ -309,6 +343,8 @@ class UcsImcAdaptor(UcsAdaptor, UcsImcInventoryObject):
             if len(pci_equip_slot_list) == 1:
                 self.option_rom_status = pci_equip_slot_list[0].option_rom_status
                 self.version = pci_equip_slot_list[0].version
+                if self.sku is None and pci_equip_slot_list[0].pid:
+                    self.sku = pci_equip_slot_list[0].pid
                 return True
 
         return False
@@ -351,7 +387,7 @@ class UcsImcNetworkAdapter(UcsAdaptor, UcsImcInventoryObject):
             self.type = "unknown"
 
             # Handling potentially incomplete UCS catalog entries (when SKU is not found)
-            if self.sku is None:
+            if self.sku not in [None, "NA", "N/A"]:
                 # We do not perform this operation for S3260 server node LoM ports since there is no PID for those
                 if self.pci_slot not in ["SBLoM1"]:
                     if hasattr(self, "_pid_catalog"):
@@ -389,6 +425,8 @@ class UcsImcNetworkAdapter(UcsAdaptor, UcsImcInventoryObject):
                 self.option_rom_status = pci_equip_slot_list[0].option_rom_status
                 self.vendor = pci_equip_slot_list[0].vendor
                 self.version = pci_equip_slot_list[0].version
+                if self.sku is None and pci_equip_slot_list[0].pid:
+                    self.sku = pci_equip_slot_list[0].pid
                 return True
 
         return False
@@ -425,6 +463,12 @@ class UcsImcHbaAdapter(UcsAdaptor, UcsImcInventoryObject):
         self.short_name = None
         if self._inventory.load_from == "live":
 
+            wwpn_info = self._find_adaptor_sku_and_wwpn_info()
+            if wwpn_info:
+                self.ports = []
+                for port_info in wwpn_info.values():
+                    self.ports.append(port_info)
+
             # Handling potentially incomplete UCS catalog entries (when SKU is not found)
             if self.sku is None:
                 if hasattr(self, "_pid_catalog"):
@@ -437,6 +481,10 @@ class UcsImcHbaAdapter(UcsAdaptor, UcsImcInventoryObject):
                         self._determine_adaptor_sku_and_type(vendor=vendor, device=device, subvendor=subvendor,
                                                              subdevice=subdevice)
 
+            if self.sku is None:
+                if pci_equip_slot.pid:
+                    self.sku = pci_equip_slot.pid
+
             self.short_name = self._get_model_short_name()
 
         elif self._inventory.load_from == "file":
@@ -445,3 +493,50 @@ class UcsImcHbaAdapter(UcsAdaptor, UcsImcInventoryObject):
                 if attribute in pci_equip_slot:
                     setattr(self, attribute, self.get_attribute(ucs_sdk_object=pci_equip_slot,
                                                                 attribute_name=attribute))
+
+    def _find_adaptor_sku_and_wwpn_info(self):
+        if "pciAdapterFruInventory" not in self._inventory.sdk_objects.keys():
+            return None
+
+        # We check if we already have fetched the list of pciAdapterFruInventory objects
+        if self._inventory.sdk_objects["pciAdapterFruInventory"] is not None:
+
+            # We need to find the matching pciAdapterFruInventory object
+            pci_adapter_fru_inventory_list = [pci_adapter_fru_inventory for pci_adapter_fru_inventory in
+                                              self._inventory.sdk_objects["pciAdapterFruInventory"] if
+                                              self.pci_slot == pci_adapter_fru_inventory.id]
+            if (len(pci_adapter_fru_inventory_list)) != 1:
+                self.logger(level="debug",
+                            message="Could not find the corresponding pciAdapterFruInventory for object with DN " +
+                                    self.dn + " of model \"" + self.model + "\" with ID " + self.id)
+
+                return None
+            else:
+                if all(hasattr(pci_adapter_fru_inventory_list[0], attr) for attr in ["vendor_id", "device_id",
+                                                                                     "sub_vendor_id", "sub_device_id"]):
+                    vendor = pci_adapter_fru_inventory_list[0].vendor_id.lower()
+                    device = pci_adapter_fru_inventory_list[0].device_id.lower()
+                    subvendor = pci_adapter_fru_inventory_list[0].sub_vendor_id.lower()
+                    subdevice = pci_adapter_fru_inventory_list[0].sub_device_id.lower()
+                    self._determine_adaptor_sku_and_type(vendor=vendor, device=device, subvendor=subvendor,
+                                                         subdevice=subdevice)
+
+                    # We check if we already have fetched the list of pciAdapterFruInventoryInfo objects
+                    if self._inventory.sdk_objects["pciAdapterFruInventoryInfo"] is not None:
+
+                        # We need to find the matching pciAdapterFruInventoryInfo objects
+                        pci_adapter_fru_inventory_info_list = \
+                            [pci_adapter_fru_inventory_info for pci_adapter_fru_inventory_info in
+                             self._inventory.sdk_objects["pciAdapterFruInventoryInfo"] if
+                             pci_adapter_fru_inventory_list[0].dn + "/" in pci_adapter_fru_inventory_info.dn]
+
+                        wwpn_info = {}
+                        for fru_inv_info in pci_adapter_fru_inventory_info_list:
+                            wwpn_info[fru_inv_info.id] = {"wwpn": fru_inv_info.wwpn,
+                                                          "factory_wwpn": fru_inv_info.factory_wwpn,
+                                                          "port_id": fru_inv_info.id}
+
+                        if wwpn_info:
+                            return wwpn_info
+
+        return None

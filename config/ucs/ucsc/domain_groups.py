@@ -224,6 +224,7 @@ class UcsCentralDomainGroup(UcsCentralConfigObject):
         elif self.appliance_vlans:
             vlan_list = self.appliance_vlans
 
+        is_pushed = True
         if vlan_list:
             for vlan in vlan_list:
                 # Handling range of VLAN
@@ -234,17 +235,17 @@ class UcsCentralDomainGroup(UcsCentralConfigObject):
                         vlan_temp = copy.deepcopy(vlan)
                         vlan_temp.id = str(i)
                         vlan_temp.name = vlan_temp.prefix + vlan_temp.id
-                        vlan_temp.push_object()
+                        is_pushed = vlan_temp.push_object() and is_pushed
                 else:
-                    vlan.push_object()
+                    is_pushed = vlan.push_object() and is_pushed
 
         for config_object in objects_to_push_in_order:
             if getattr(self, config_object) is not None:
                 if getattr(self, config_object).__class__.__name__ == "list":
                     for subobject in getattr(self, config_object):
-                        subobject.push_object()
+                        is_pushed = subobject.push_object() and is_pushed
 
-        return True
+        return is_pushed
 
     def get_domain_group_path(self):
         """

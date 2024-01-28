@@ -1,0 +1,6 @@
+{
+   "model_short_name": "VIC 15230",
+   "imm_compatible": true,
+   "imm_min_required_version": "4.3(2c)",
+   "data_sheet_url": "https://www.cisco.com/c/en/us/products/collateral/interfaces-modules/unified-computing-system-adapters/ucs-vic-15000-series-ds.pdf"
+}

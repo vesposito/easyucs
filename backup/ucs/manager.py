@@ -89,6 +89,13 @@ class GenericUcsBackupManager(GenericBackupManager):
             self.parent.handle.commit()
         except Exception as err:
             if self.parent.task is not None:
+                status_message = f"Error while fetching {self.parent.metadata.device_type_long} Backup. "
+                if "password encryption key" in str(err).lower():
+                    # Maximum characters allowed in status_message column is 256
+                    if len(status_message + str(err)) < 256:
+                        status_message += str(err)
+                    else:
+                        status_message = str(err)
                 task_name = ""
                 if self.parent.metadata.device_type == "ucsc":
                     task_name = "FetchBackupUcsCentralDevice"
@@ -96,7 +103,7 @@ class GenericUcsBackupManager(GenericBackupManager):
                     task_name = "FetchBackupUcsSystemDevice"
                 self.parent.task.taskstep_manager.stop_taskstep(
                     name=task_name, status="failed",
-                    status_message="Error while fetching " + self.parent.metadata.device_type_long + " Backup")
+                    status_message=status_message)
             self.logger(
                 level="error",
                 message="Failed to perform backup of type '" + backup_type + "' for " +
@@ -254,7 +261,7 @@ class UcsImcBackupManager(GenericUcsBackupManager):
             if self.parent.task is not None:
                 self.parent.task.taskstep_manager.stop_taskstep(
                     name="FetchBackupUcsImcDevice", status="failed",
-                    status_message="Error while fetching " + self.parent.metadata.device_type_long + " Backup")
+                    status_message=f"Error while fetching {self.parent.metadata.device_type_long} Backup.")
             self.logger(
                 level="error",
                 message="Failed to perform backup of type '" + backup_type + "' for " +

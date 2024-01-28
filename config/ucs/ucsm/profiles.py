@@ -1406,18 +1406,19 @@ class UcsSystemServiceProfile(UcsSystemConfigObject):
                 return False
 
         # Push Specific Policies
+        is_pushed = True
         if self.specific_boot_policy:
-            self.specific_boot_policy.push_object()
+            is_pushed = self.specific_boot_policy.push_object() and is_pushed
         if self.specific_dynamic_vnic_connection_policy:
-            self.specific_dynamic_vnic_connection_policy.push_object()
+            is_pushed = self.specific_dynamic_vnic_connection_policy.push_object() and is_pushed
         if self.specific_local_disk_configuration_policy:
-            self.specific_local_disk_configuration_policy.push_object()
+            is_pushed = self.specific_local_disk_configuration_policy.push_object() and is_pushed
         if self.specific_serial_over_lan_policy:
-            self.specific_serial_over_lan_policy.push_object()
+            is_pushed = self.specific_serial_over_lan_policy.push_object() and is_pushed
         if self.specific_storage_profile:
-            self.specific_storage_profile.push_object()
+            is_pushed = self.specific_storage_profile.push_object() and is_pushed
         if self.specific_vmedia_policy:
-            self.specific_vmedia_policy.push_object()
+            is_pushed = self.specific_vmedia_policy.push_object() and is_pushed
 
         # Add Asset Tag
         if self.asset_tag:
@@ -1708,7 +1709,7 @@ class UcsSystemServiceProfile(UcsSystemConfigObject):
                 if self.commit(detail=iscsi_boot_parameter["iscsi_vnic_name"]) != True:
                     return False
 
-        return True
+        return True and is_pushed
 
     def instantiate_profile(self):
         self.logger(message="Instantiating " + self._CONFIG_NAME +

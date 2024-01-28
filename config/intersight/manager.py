@@ -36,6 +36,12 @@ class IntersightConfigManager(GenericConfigManager):
         else:
             self.logger(message="Successfully validated settings file")
 
+        if force:
+            self.parent.task.taskstep_manager.skip_taskstep(name="ValidateIntersightLicense",
+                                                            status_message="Skipped license validation since forced")
+        elif not self.parent.validate_intersight_license():
+            return False
+
         self.logger(message="Fetching config from live device (can take several minutes)")
         config = IntersightConfig(parent=self, settings=settings)
         config.metadata.origin = "live"
@@ -81,18 +87,21 @@ class IntersightConfigManager(GenericConfigManager):
         self.logger(message="Finished fetching config with UUID " + str(config.uuid) + " from live device")
         return config.uuid
 
-    def _get_server_profiles(self, config_orgs, output_json_orgs):
+    def _get_profiles(self, config_orgs, output_json_orgs):
         """
-        Fetches all the server profiles from all the orgs
+        Fetches all the server/chassis/domain profiles from all the orgs
         :returns: nothing
         """
         for org in config_orgs:
             json_org = {
-                "org_name": org.name
+                "org_name": org.name,
+                "is_shared": False
             }
+            if getattr(org, "shared_with_orgs", None):
+                json_org["is_shared"] = True
             if org.descr:
                 json_org["descr"] = org.descr
-            json_org["server_profiles"] = []
+            json_org["profiles"] = []
             if org.ucs_server_profiles:
                 for server_profile in org.ucs_server_profiles:
                     dict_server_profile = {
@@ -102,37 +111,56 @@ class IntersightConfigManager(GenericConfigManager):
                     for field in ["descr", "ucs_server_profile_template"]:
                         if hasattr(server_profile, field) and getattr(server_profile, field):
                             dict_server_profile[field] = getattr(server_profile, field)
-                    json_org["server_profiles"].append(dict_server_profile)
+                    json_org["profiles"].append(dict_server_profile)
             if org.ucs_server_profile_templates:
                 for server_profile_template in org.ucs_server_profile_templates:
                     dict_server_profile_template = {
                         "name": getattr(server_profile_template, "name", None),
                         "type": "ucs_server_profile_template"
                     }
-                    json_org["server_profiles"].append(dict_server_profile_template)
+                    json_org["profiles"].append(dict_server_profile_template)
+
+            if org.ucs_domain_profiles:
+                for domain_profile in org.ucs_domain_profiles:
+                    dict_domain_profile = {
+                        "name": getattr(domain_profile, "name", None),
+                        "type": "ucs_domain_profile"
+                    }
+                    json_org["profiles"].append(dict_domain_profile)
+
+            if org.ucs_chassis_profiles:
+                for chassis_profile in org.ucs_chassis_profiles:
+                    dict_chassis_profile = {
+                        "name": getattr(chassis_profile, "name", None),
+                        "type": "ucs_chassis_profile"
+                    }
+                    json_org["profiles"].append(dict_chassis_profile)
 
             output_json_orgs.append(json_org)
 
     def get_profiles(self, config=None):
         """
-        List all Server Profiles from a given config with some of their key attributes
-        :param config: The config from which all the server profiles/templates needs to be obtained
-        :return: All server profiles/templates from the config, [] otherwise
+        List all profiles (server/chassis/domain profiles) from a given config with some of their key attributes
+        :param config: The config from which all the profiles/templates need to be obtained
+        :return: All profiles/templates from the config, [] otherwise
         """
         if config is None:
-            self.logger(level="error", message="Missing config in get service profiles request!")
+            self.logger(level="error", message="Missing config in get profiles request!")
             return None
 
-        server_profiles = []
-        self._get_server_profiles(config.orgs, server_profiles)
+        profiles = []
+        self._get_profiles(config.orgs, profiles)
+        return profiles
 
-        return server_profiles
-
-    def push_config(self, uuid=None, bypass_version_checks=False):
+    def push_config(self, uuid=None, reset=False, bypass_version_checks=False, force=False):
         """
         Push the specified config to the live system
         :param uuid: The UUID of the config to be pushed. If not specified, the most recent config will be used
+        :param reset: Whether the device must be reset before pushing the config
         :param bypass_version_checks: Whether the minimum version checks should be bypassed when connecting
+        :param force: Force the push to proceed even in-case of critical errors. Eg: If we fail to push a source
+        shared org then we will continue pushing target orgs (orgs with which the source org is shared)
+        if and only if force is true, otherwise we will skip the push of the target orgs.
         :return: True if config push was successful, False otherwise
         """
         if uuid is None:
@@ -153,6 +181,13 @@ class IntersightConfigManager(GenericConfigManager):
             if not self.parent.connect(bypass_version_checks=bypass_version_checks):
                 return False
 
+            if force:
+                self.parent.task.taskstep_manager.skip_taskstep(name="ValidateIntersightLicense",
+                                                                status_message="Skipped license validation since "
+                                                                               "forced")
+            elif not self.parent.validate_intersight_license():
+                return False
+
             self.parent.set_task_progression(50)
             self.logger(message="Pushing configuration " + str(config.uuid) + " to " + self.parent.target)
 
@@ -162,10 +197,39 @@ class IntersightConfigManager(GenericConfigManager):
 
             # We push all config elements, in a specific optimized order
             self.logger(message="Now configuring Orgs/Policies/Profiles section")
+            is_pushed = True
             for resource_group in config.resource_groups:
-                resource_group.push_object()
+                is_pushed = resource_group.push_object() and is_pushed
+
+            # We sort the organizations in an order where shared organizations are pushed first.
+            config.orgs.sort(key=lambda o: len(o.shared_with_orgs) if o.shared_with_orgs else 0,
+                             reverse=True)
+
+            # First we push the Orgs not including their sub policies/profiles/pools
+            failed_orgs = []
             for org in config.orgs:
-                org.push_object()
+                if org.name not in failed_orgs and not org.push_object():
+                    # If we fail to push the organization object then we skip pushing its sub-objects, sharing rules
+                    # and organizations which this organization is shared to.
+                    is_pushed = False
+                    failed_orgs.append(org.name)
+                    if org.shared_with_orgs and not force:
+                        failed_orgs += org.shared_with_orgs
+                        self.logger(level="error",
+                                    message=f"Failed to push the organization(s) {', '.join(org.shared_with_orgs)}. "
+                                            f"As the organization '{org.name}' which is shared to the organization(s) "
+                                            f"have failed to be pushed.")
+
+            # Then we push the sharing rules between the orgs
+            for org in config.orgs:
+                if org.name not in failed_orgs or force:
+                    is_pushed = org.push_sharing_rules() and is_pushed
+
+            # Finally we push the Organizations policies/profiles/pools in an order where shared organizations are
+            # pushed first
+            for org in config.orgs:
+                if org.name not in failed_orgs or force:
+                    is_pushed = org.push_subobjects() and is_pushed
 
             if self.parent.task is not None:
                 self.parent.task.taskstep_manager.stop_taskstep(
@@ -181,16 +245,16 @@ class IntersightConfigManager(GenericConfigManager):
             # We push the entire admin section after the orgs because roles can be mapped to orgs
             self.logger(message="Now configuring Admin section")
             for account_details in config.account_details:
-                account_details.push_object()
+                is_pushed = account_details.push_object() and is_pushed
 
             for role in config.roles:
-                role.push_object()
+                is_pushed = role.push_object() and is_pushed
 
             for user in config.users:
-                user.push_object()
+                is_pushed = user.push_object() and is_pushed
 
             for user_group in config.user_groups:
-                user_group.push_object()
+                is_pushed = user_group.push_object() and is_pushed
 
             if self.parent.task is not None:
                 self.parent.task.taskstep_manager.stop_taskstep(
@@ -199,7 +263,11 @@ class IntersightConfigManager(GenericConfigManager):
 
             self.parent.set_task_progression(90)
 
-            self.logger(message="Successfully pushed configuration " + str(config.uuid) + " to " + self.parent.target)
+            if is_pushed:
+                # Checking the push summary failed count
+                if config.push_summary_manager.push_summary.get("summary", {}).get("failed") == 0:
+                    self.logger(message="Successfully pushed configuration " + str(config.uuid) +
+                                        " to " + self.parent.target)
 
             # We disconnect from the device
             self.parent.disconnect()

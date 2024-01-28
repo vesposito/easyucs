@@ -7365,13 +7365,16 @@
       "feature_group": "PRMRR Size Configuration",
       "legacy_values": [
          "128g",
+         "128m",
          "16g",
          "1g",
          "256g",
+         "256m",
          "2g",
          "32g",
          "4g",
          "512g",
+         "512m",
          "64g",
          "8g",
          "invalid-config.",
@@ -7386,13 +7389,16 @@
       "unit": null,
       "values": [
          "128G",
+         "128M",
          "16G",
          "1G",
          "256G",
+         "256M",
          "2G",
          "32G",
          "4G",
          "512G",
+         "512M",
          "64G",
          "8G",
          "Invalid-Config.",
@@ -9589,6 +9595,7 @@
       "legacy_values": [
          "disable-all2all-",
          "hemisphere-2-clusters-",
+         "quadrant-4-clusters-",
          "platform-default"
       ],
       "maximum": null,
@@ -9601,6 +9608,7 @@
       "values": [
          "Disable-All2All-",
          "Hemisphere-2-clusters-",
+         "Quadrant-4-clusters-",
          "Platform Default"
       ]
    },

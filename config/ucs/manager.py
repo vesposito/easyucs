@@ -403,6 +403,21 @@ class UcsSystemConfigManager(GenericUcsConfigManager):
             for fabric_breakout in config.sdk_objects["fabricBreakout"]:
                 config.breakout_ports.append(UcsSystemBreakoutPort(parent=config, fabric_breakout=fabric_breakout))
 
+                # EASYUCS-1076: It can happen that UCSM shows a port being both configured as Breakout and Server port.
+                # We remove the server port config in this case
+                for server_port in config.server_ports:
+                    if (server_port.fabric == fabric_breakout.dn.split('/')[2]) & (
+                            server_port.slot_id == fabric_breakout.slot_id) & (
+                            server_port.port_id == fabric_breakout.port_id) & (
+                            server_port.aggr_id is None):
+                        self.logger(
+                            level="warning",
+                            message=f"Removed Server Port " +
+                                    f"{server_port.fabric}/{server_port.slot_id}/{server_port.port_id} from config " +
+                                    f"due to it being also configured as a Breakout Port"
+                        )
+                        config.server_ports.remove(server_port)
+
         if "fcPIo" in config.sdk_objects:
             if config.sdk_objects["fcPIo"]:
                 fi_a_fc_ports_presence = False
@@ -476,13 +491,14 @@ class UcsSystemConfigManager(GenericUcsConfigManager):
 
         return True
 
-    def push_config(self, uuid=None, reset=False, fi_ip_list=[], bypass_version_checks=False):
+    def push_config(self, uuid=None, reset=False, fi_ip_list=[], bypass_version_checks=False, force=False):
         """
         Push the specified config to the live system
         :param uuid: The UUID of the config to be pushed. If not specified, the most recent config will be used
-        :param reset: Whether or not the device must be reset before pushing the config
+        :param reset: Whether the device must be reset before pushing the config
         :param fi_ip_list: List of DHCP IP addresses taken by each FI after the reset
-        :param bypass_version_checks: Whether or not the minimum version checks should be bypassed when connecting
+        :param bypass_version_checks: Whether the minimum version checks should be bypassed when connecting
+        :param force: Force the push to proceed even in-case of critical errors.
         :return: True if config push was successful, False otherwise
         """
         if uuid is None:
@@ -499,16 +515,9 @@ class UcsSystemConfigManager(GenericUcsConfigManager):
 
         if config:
             if reset:
-                if self.parent.task is not None:
-                    self.parent.task.taskstep_manager.start_taskstep(
-                        name="ResetDeviceUcsSystem",
-                        description="Resetting device " + self.parent.target)
                 # Check if the DHCP IP addresses are available before resetting
                 if not fi_ip_list:
                     message_str = "No DHCP IP addresses given"
-                    if self.parent.task is not None:
-                        self.parent.task.taskstep_manager.stop_taskstep(
-                            name="ResetDeviceUcsSystem", status="failed", status_message=message_str)
                     self.logger(level="error", message=message_str)
                     return False
                 # TODO Check if IP addresses are valid
@@ -520,9 +529,6 @@ class UcsSystemConfigManager(GenericUcsConfigManager):
                             if not user.password:
                                 # Admin password is a mandatory input
                                 message_str = "Reset aborted: Could not find password for user admin in config"
-                                if self.parent.task is not None:
-                                    self.parent.task.taskstep_manager.stop_taskstep(
-                                        name="ResetDeviceUcsSystem", status="failed", status_message=message_str)
                                 self.logger(level="error", message=message_str)
                                 return False
 
@@ -548,16 +554,8 @@ class UcsSystemConfigManager(GenericUcsConfigManager):
                                          clear_sel_logs=clear_sel_logs,
                                          bypass_version_checks=bypass_version_checks):
                     message_str = "Error while performing device reset"
-                    if self.parent.task is not None:
-                        self.parent.task.taskstep_manager.stop_taskstep(
-                            name="ResetDeviceUcsSystem", status="failed", status_message=message_str)
                     self.logger(level="error", message=message_str)
                     return False
-
-                if self.parent.task is not None:
-                    self.parent.task.taskstep_manager.stop_taskstep(
-                        name="ResetDeviceUcsSystem", status="successful",
-                        status_message="Successfully reset device " + self.parent.target)
 
                 # Clearing device target, username & password since they might change in the new config
                 self.parent.target = ""
@@ -757,7 +755,11 @@ class UcsSystemConfigManager(GenericUcsConfigManager):
             else:
                 if self.parent.task is not None:
                     self.parent.task.taskstep_manager.skip_taskstep(
-                        name="ResetDeviceUcsSystem", status_message="Skipping device reset")
+                        name="ClearIntersightClaimStatus", status_message="Skipping device reset")
+                    self.parent.task.taskstep_manager.skip_taskstep(
+                        name="DecommissionAllRackServers", status_message="Skipping device reset")
+                    self.parent.task.taskstep_manager.skip_taskstep(
+                        name="EraseFiConfigurations", status_message="Skipping device reset")
                     self.parent.task.taskstep_manager.skip_taskstep(
                         name="WaitForRebootAfterResetUcsSystem", status_message="Skipping device reset")
                     self.parent.task.taskstep_manager.skip_taskstep(
@@ -780,49 +782,50 @@ class UcsSystemConfigManager(GenericUcsConfigManager):
                 self.parent.task.taskstep_manager.start_taskstep(
                     name="PushAdminSectionUcsSystem", description="Pushing Admin section of config")
             self.logger(message="Now configuring Admin section")
+            is_pushed = True
             if config.system:
-                config.system[0].push_object()
+                is_pushed = config.system[0].push_object() and is_pushed
             for management_interface in config.management_interfaces:
-                management_interface.push_object()
+                is_pushed = management_interface.push_object() and is_pushed
             if config.call_home:
-                config.call_home[0].push_object()
+                is_pushed = config.call_home[0].push_object() and is_pushed
             for timezone_mgmt in config.timezone_mgmt:
-                timezone_mgmt.push_object()
+                is_pushed = timezone_mgmt.push_object() and is_pushed
             if config.local_users_properties:
-                config.local_users_properties[0].push_object()
+                is_pushed = config.local_users_properties[0].push_object() and is_pushed
             if config.dns:
                 # Exception for DNS
                 dns = UcsSystemDns(parent=config)
                 dns.dns = config.dns
-                dns.push_object()
+                is_pushed = dns.push_object() and is_pushed
             if config.pre_login_banner:
                 banner = UcsSystemPreLoginBanner(parent=config)
                 banner.message = config.pre_login_banner
-                banner.push_object()
+                is_pushed = banner.push_object() and is_pushed
             if config.communication_services:
-                config.communication_services[0].push_object()
+                is_pushed = config.communication_services[0].push_object() and is_pushed
             if config.device_connector:
-                config.device_connector[0].push_object()
+                is_pushed = config.device_connector[0].push_object() and is_pushed
             if config.global_fault_policy:
-                config.global_fault_policy[0].push_object()
+                is_pushed = config.global_fault_policy[0].push_object() and is_pushed
             if config.syslog:
-                config.syslog[0].push_object()
+                is_pushed = config.syslog[0].push_object() and is_pushed
             for locale in config.locales:
-                locale.push_object()
+                is_pushed = locale.push_object() and is_pushed
             for role in config.roles:
-                role.push_object()
+                is_pushed = role.push_object() and is_pushed
             for local_user in config.local_users:
-                local_user.push_object()
+                is_pushed = local_user.push_object() and is_pushed
             if config.backup_export_policy:
-                config.backup_export_policy[0].push_object()
+                is_pushed = config.backup_export_policy[0].push_object() and is_pushed
             if config.radius:
-                config.radius[0].push_object()
+                is_pushed = config.radius[0].push_object() and is_pushed
             if config.tacacs:
-                config.tacacs[0].push_object()
+                is_pushed = config.tacacs[0].push_object() and is_pushed
             if config.ldap:
-                config.ldap[0].push_object()
+                is_pushed = config.ldap[0].push_object() and is_pushed
             if config.authentication:
-                config.authentication[0].push_object()
+                is_pushed = config.authentication[0].push_object() and is_pushed
 
             if self.parent.task is not None:
                 self.parent.task.taskstep_manager.stop_taskstep(
@@ -835,24 +838,24 @@ class UcsSystemConfigManager(GenericUcsConfigManager):
                     name="PushEquipmentSectionUcsSystem", description="Pushing Equipment section of config")
             self.logger(message="Now configuring Equipment section")
             if config.global_policies:
-                config.global_policies[0].push_object()
+                is_pushed = config.global_policies[0].push_object() and is_pushed
             if config.kmip_client_cert_policy:
-                config.kmip_client_cert_policy[0].push_object()
+                is_pushed = config.kmip_client_cert_policy[0].push_object() and is_pushed
             if config.sel_policy:
-                config.sel_policy[0].push_object()
+                is_pushed = config.sel_policy[0].push_object() and is_pushed
             if config.slow_drain_timers:
-                config.slow_drain_timers[0].push_object()
+                is_pushed = config.slow_drain_timers[0].push_object() and is_pushed
             for qos_system_class in config.qos_system_class:
                 if config.check_if_switching_mode_config_requires_reboot() and \
                         self.parent.fi_a_model == "UCS-FI-6332-16UP":
                     self.logger(level="debug",
                                 message="The QoS System Class will be committed alongside the Switching Mode push")
-                    qos_system_class.push_object(commit=False)
+                    is_pushed = qos_system_class.push_object(commit=False) and is_pushed
                 else:
-                    qos_system_class.push_object()
+                    is_pushed = qos_system_class.push_object() and is_pushed
 
             for switching_mode in config.switching_mode:
-                switching_mode.push_object()
+                is_pushed = switching_mode.push_object() and is_pushed
 
             if self.parent.task is not None:
                 self.parent.task.taskstep_manager.stop_taskstep(
@@ -873,9 +876,9 @@ class UcsSystemConfigManager(GenericUcsConfigManager):
                         vlan_temp = copy.deepcopy(vlan)
                         vlan_temp.id = str(i)
                         vlan_temp.name = vlan_temp.prefix + vlan_temp.id
-                        vlan_temp.push_object()
+                        is_pushed = vlan_temp.push_object() and is_pushed
                 else:
-                    vlan.push_object()
+                    is_pushed = vlan.push_object() and is_pushed
 
             for vlan in config.appliance_vlans:
                 # Handling range of Appliance VLAN
@@ -886,15 +889,15 @@ class UcsSystemConfigManager(GenericUcsConfigManager):
                         vlan_temp = copy.deepcopy(vlan)
                         vlan_temp.id = str(i)
                         vlan_temp.name = vlan_temp.prefix + vlan_temp.id
-                        vlan_temp.push_object()
+                        is_pushed = vlan_temp.push_object() and is_pushed
                 else:
-                    vlan.push_object()
+                    is_pushed = vlan.push_object() and is_pushed
             for vlan_group in config.vlan_groups:
-                vlan_group.push_object()
+                is_pushed = vlan_group.push_object() and is_pushed
             for vsan in config.vsans:
-                vsan.push_object()
+                is_pushed = vsan.push_object() and is_pushed
             for storage_vsan in config.storage_vsans:
-                storage_vsan.push_object()
+                is_pushed = storage_vsan.push_object() and is_pushed
 
             if self.parent.task is not None:
                 self.parent.task.taskstep_manager.stop_taskstep(
@@ -909,13 +912,13 @@ class UcsSystemConfigManager(GenericUcsConfigManager):
             # The following section might need a reboot of the FIs
             # We do not commit yet to avoid multiple configuration requests of the same port id
             for breakout_port in config.breakout_ports:
-                breakout_port.push_object(commit=False)
+                is_pushed = breakout_port.push_object(commit=False) and is_pushed
             for san_uplink_port in config.san_uplink_ports:
-                san_uplink_port.push_object(commit=False)
+                is_pushed = san_uplink_port.push_object(commit=False) and is_pushed
             for san_storage_port in config.san_storage_ports:
-                san_storage_port.push_object(commit=False)
+                is_pushed = san_storage_port.push_object(commit=False) and is_pushed
             for san_unified_port in config.san_unified_ports:
-                san_unified_port.push_object(commit=False)
+                is_pushed = san_unified_port.push_object(commit=False) and is_pushed
 
             # Handling Breakout ports - We keep them in lists to configure them later
             ports_with_aggr_id = []
@@ -951,7 +954,7 @@ class UcsSystemConfigManager(GenericUcsConfigManager):
                             ports_converted_to_native_40g.append(port)
                 # For ports that are not Breakout-related, we include them in the next commit
                 if port not in ports_converted_to_native_40g and port not in ports_with_aggr_id:
-                    port.push_object(commit=False)
+                    is_pushed = port.push_object(commit=False) and is_pushed
 
             # Handling the specific case of server ports
             # For ports that are currently FC ports and need to be changed to server ports, we configure them
@@ -1012,7 +1015,7 @@ class UcsSystemConfigManager(GenericUcsConfigManager):
 
             # Reboot handling
             if need_reboot:
-                message_str = "Waiting up to 900 seconds for Fabric Interconnect to come back"
+                message_str = "Waiting up to 900 seconds for Fabric Interconnect(s) to come back"
                 if self.parent.task is not None:
                     self.parent.task.taskstep_manager.start_taskstep(
                         name="WaitForRebootAfterPushFiPortsUcsSystem", description=message_str)
@@ -1109,7 +1112,7 @@ class UcsSystemConfigManager(GenericUcsConfigManager):
             # We now need to push the config to ports that are in Breakout or were converted back to native
             # as they were excluded previously in case a reboot was needed
             for port in ports_with_aggr_id + ports_converted_to_native_40g:
-                port.push_object()
+                is_pushed = port.push_object() and is_pushed
 
             self.parent.set_task_progression(80)
 
@@ -1122,7 +1125,7 @@ class UcsSystemConfigManager(GenericUcsConfigManager):
                     self.logger(message="discover_server_ports_in_order is set, a 20s delay will be applied between " +
                                         "each server port")
             for server_port in config.server_ports:
-                server_port.push_object()
+                is_pushed = server_port.push_object() and is_pushed
                 if ordered_discovery:
                     # Adding a sleep timer to make sure chassis/rack servers are discovered in order
                     time.sleep(20)
@@ -1134,40 +1137,40 @@ class UcsSystemConfigManager(GenericUcsConfigManager):
                     name="PushFiPortChannelsSectionUcsSystem", description="Pushing FI Port-Channels section of config")
 
             for lan_port_channel in config.lan_port_channels:
-                lan_port_channel.push_object()
+                is_pushed = lan_port_channel.push_object() and is_pushed
             for fcoe_port_channel in config.fcoe_port_channels:
-                fcoe_port_channel.push_object()
+                is_pushed = fcoe_port_channel.push_object() and is_pushed
             for san_port_channel in config.san_port_channels:
-                san_port_channel.push_object()
+                is_pushed = san_port_channel.push_object() and is_pushed
             for appliance_port_channel in config.appliance_port_channels:
-                appliance_port_channel.push_object()
+                is_pushed = appliance_port_channel.push_object() and is_pushed
 
             for lan_pin_group in config.lan_pin_groups:
-                lan_pin_group.push_object()
+                is_pushed = lan_pin_group.push_object() and is_pushed
             for san_pin_group in config.san_pin_groups:
-                san_pin_group.push_object()
+                is_pushed = san_pin_group.push_object() and is_pushed
 
             for fc_zone_profile in config.fc_zone_profiles:
-                fc_zone_profile.push_object()
+                is_pushed = fc_zone_profile.push_object() and is_pushed
 
             for udld_link_policy in config.udld_link_policies:
-                udld_link_policy.push_object()
+                is_pushed = udld_link_policy.push_object() and is_pushed
             for link_profile in config.link_profiles:
-                link_profile.push_object()
+                is_pushed = link_profile.push_object() and is_pushed
             for appliance_network_control_policy in config.appliance_network_control_policies:
-                appliance_network_control_policy.push_object()
+                is_pushed = appliance_network_control_policy.push_object() and is_pushed
 
             for port_auto_discovery_policy in config.port_auto_discovery_policy:
-                port_auto_discovery_policy.push_object()
+                is_pushed = port_auto_discovery_policy.push_object() and is_pushed
 
             for lan_traffic_monitoring_session in config.lan_traffic_monitoring_sessions:
-                lan_traffic_monitoring_session.push_object()
+                is_pushed = lan_traffic_monitoring_session.push_object() and is_pushed
 
             for san_traffic_monitoring_session in config.san_traffic_monitoring_sessions:
-                san_traffic_monitoring_session.push_object()
+                is_pushed = san_traffic_monitoring_session.push_object() and is_pushed
 
             for netflow_monitoring in config.netflow_monitoring:
-                netflow_monitoring.push_object()
+                is_pushed = netflow_monitoring.push_object() and is_pushed
 
             if self.parent.task is not None:
                 self.parent.task.taskstep_manager.stop_taskstep(
@@ -1180,7 +1183,7 @@ class UcsSystemConfigManager(GenericUcsConfigManager):
                     name="PushOrgsSectionUcsSystem", description="Pushing Orgs section of config")
 
             for org in config.orgs:
-                org.push_object()
+                is_pushed = org.push_object() and is_pushed
 
             if self.parent.task is not None:
                 self.parent.task.taskstep_manager.stop_taskstep(
@@ -1190,9 +1193,10 @@ class UcsSystemConfigManager(GenericUcsConfigManager):
             # We handle UCS Central at the very end, because it might push config to the UCS system and create
             # connectivity issues
             if config.ucs_central:
-                config.ucs_central[0].push_object()
+                is_pushed = config.ucs_central[0].push_object() and is_pushed
 
-            self.logger(message="Successfully pushed configuration " + str(config.uuid) + " to " + self.parent.target)
+            if is_pushed:
+                self.logger(message="Successfully pushed configuration " + str(config.uuid) + " to " + self.parent.target)
 
             # We disconnect from the device
             self.parent.disconnect()
@@ -1476,13 +1480,14 @@ class UcsImcConfigManager(GenericUcsConfigManager):
         self.logger(message="Finished fetching config with UUID " + str(config.uuid) + " from live device")
         return config.uuid
 
-    def push_config(self, uuid=None, reset=False, imc_ip=None, bypass_version_checks=False):
+    def push_config(self, uuid=None, reset=False, imc_ip=None, bypass_version_checks=False, force=False):
         """
        Push the specified config to the live system
        :param uuid: The UUID of the config to be pushed. If not specified, the most recent config will be used
-       :param reset: Whether or not the device must be reset before pushing the config
+       :param reset: Whether the device must be reset before pushing the config
        :param imc_ip: DHCP IP address taken by the CIMC after the reset
-       :param bypass_version_checks: Whether or not the minimum version checks should be bypassed when connecting
+       :param bypass_version_checks: Whether the minimum version checks should be bypassed when connecting
+       :param force: Force the push to proceed even in-case of critical errors.
        :return: True if config push was successful, False otherwise
        """
         if uuid is None:
@@ -1617,10 +1622,13 @@ class UcsImcConfigManager(GenericUcsConfigManager):
             self.logger(message="Pushing configuration " + str(config.uuid) + " to " + self.parent.target)
 
             # We push all config elements, in a specific optimized order to reduce number of reboots
+            is_pushed = True
             if config.admin_networking:
                 old_session_id = self.parent.handle.session_id
 
-                if config.admin_networking[0].push_object():
+                admin_network_push_resp = config.admin_networking[0].push_object()
+                is_pushed = admin_network_push_resp and is_pushed
+                if admin_network_push_resp:
                     # We now need to get the new IP address from the configuration
                     if config.admin_networking[0].management_ipv4_address:
                         self.parent.target = config.admin_networking[0].management_ipv4_address
@@ -1644,75 +1652,76 @@ class UcsImcConfigManager(GenericUcsConfigManager):
                     self.logger(message="Old session id " + str(old_session_id) + " will self timeout")
 
             if config.timezone_mgmt:
-                config.timezone_mgmt[0].push_object()
+                is_pushed = config.timezone_mgmt[0].push_object() and is_pushed
             if config.local_users_properties:
-                config.local_users_properties[0].push_object()
+                is_pushed = config.local_users_properties[0].push_object() and is_pushed
             for local_user in config.local_users:
-                local_user.push_object()
+                is_pushed = local_user.push_object() and is_pushed
             if "clear_intersight_claim_status" in config.options.keys():
                 if config.options["clear_intersight_claim_status"] == "yes":
                     self.parent.clear_intersight_claim_status()
                     self.parent.connect()
             if config.device_connector:
-                config.device_connector[0].push_object()
+                is_pushed = config.device_connector[0].push_object() and is_pushed
 
             self.parent.set_task_progression(60)
 
             if config.server_properties:
-                config.server_properties[0].push_object()
+                is_pushed = config.server_properties[0].push_object() and is_pushed
             if config.ip_blocking_properties:
-                config.ip_blocking_properties[0].push_object()
+                is_pushed = config.ip_blocking_properties[0].push_object() and is_pushed
             if config.ip_filtering_properties:
-                config.ip_filtering_properties[0].push_object()
+                is_pushed = config.ip_filtering_properties[0].push_object() and is_pushed
             if config.power_policies:
-                config.power_policies[0].push_object()
+                is_pushed = config.power_policies[0].push_object() and is_pushed
             for adapter_card in config.adapter_cards:
-                adapter_card.push_object()
+                is_pushed = adapter_card.push_object() and is_pushed
             if config.communications_services:
-                config.communications_services[0].push_object()
+                is_pushed = config.communications_services[0].push_object() and is_pushed
             if config.chassis_inventory:
-                config.chassis_inventory[0].push_object()
+                is_pushed = config.chassis_inventory[0].push_object() and is_pushed
             if config.power_cap_configuration:
-                config.power_cap_configuration[0].push_object()
+                is_pushed = config.power_cap_configuration[0].push_object() and is_pushed
             if config.virtual_kvm_properties:
-                config.virtual_kvm_properties[0].push_object()
+                is_pushed = config.virtual_kvm_properties[0].push_object() and is_pushed
             if config.secure_key_management:
-                config.secure_key_management[0].push_object()
+                is_pushed = config.secure_key_management[0].push_object() and is_pushed
 
             self.parent.set_task_progression(70)
 
             if config.snmp:
-                config.snmp[0].push_object()
+                is_pushed = config.snmp[0].push_object() and is_pushed
             if config.smtp_properties:
-                config.smtp_properties[0].push_object()
+                is_pushed = config.smtp_properties[0].push_object() and is_pushed
             if config.logging_controls:
-                config.logging_controls[0].push_object()
+                is_pushed = config.logging_controls[0].push_object() and is_pushed
             for platform_event_filter in config.platform_event_filters:
-                platform_event_filter.push_object()
+                is_pushed = platform_event_filter.push_object() and is_pushed
             if config.virtual_media:
-                config.virtual_media[0].push_object()
+                is_pushed = config.virtual_media[0].push_object() and is_pushed
             if config.serial_over_lan_properties:
-                config.serial_over_lan_properties[0].push_object()
+                is_pushed = config.serial_over_lan_properties[0].push_object() and is_pushed
 
             self.parent.set_task_progression(80)
 
             if config.bios_settings:
-                config.bios_settings[0].push_object()
+                is_pushed = config.bios_settings[0].push_object() and is_pushed
 
             self.parent.set_task_progression(90)
 
             if config.ldap_settings:
-                config.ldap_settings[0].push_object()
+                is_pushed = config.ldap_settings[0].push_object() and is_pushed
             if config.boot_order_properties:
-                config.boot_order_properties[0].push_object()
+                is_pushed = config.boot_order_properties[0].push_object() and is_pushed
             if config.dynamic_storage_zoning:
-                config.dynamic_storage_zoning[0].push_object()
+                is_pushed = config.dynamic_storage_zoning[0].push_object() and is_pushed
             for storage_controller in config.storage_controllers:
-                storage_controller.push_object()
+                is_pushed = storage_controller.push_object() and is_pushed
             for storage_flex_flash_controller in config.storage_flex_flash_controllers:
-                storage_flex_flash_controller.push_object()
+                is_pushed = storage_flex_flash_controller.push_object() and is_pushed
 
-            self.logger(message="Successfully pushed configuration " + str(config.uuid) + " to " + self.parent.target)
+            if is_pushed:
+                self.logger(message="Successfully pushed configuration " + str(config.uuid) + " to " + self.parent.target)
 
             # We disconnect from the device
             self.parent.disconnect()
@@ -1903,11 +1912,13 @@ class UcsCentralConfigManager(GenericUcsConfigManager):
         self.logger(message="Finished fetching config with UUID " + str(config.uuid) + " from live device")
         return config.uuid
 
-    def push_config(self, uuid=None, bypass_version_checks=False):
+    def push_config(self, uuid=None, reset=False, bypass_version_checks=False, force=False):
         """
        Push the specified config to the live system
        :param uuid: The UUID of the config to be pushed. If not specified, the most recent config will be used
-       :param bypass_version_checks: Whether or not the minimum version checks should be bypassed when connecting
+       :param reset: Whether the device must be reset before pushing the config
+       :param bypass_version_checks: Whether the minimum version checks should be bypassed when connecting
+       :param force: Force the push to proceed even in-case of critical errors.
        :return: True if config push was successful, False otherwise
        """
         if uuid is None:
@@ -1930,34 +1941,36 @@ class UcsCentralConfigManager(GenericUcsConfigManager):
             self.logger(message="Pushing configuration " + str(config.uuid) + " to " + self.parent.target)
 
             # We push all config elements, in a specific optimized order to reduce number of reboots
+            is_pushed = True
             if config.system:
-                config.system[0].push_object()
+                is_pushed = config.system[0].push_object() and is_pushed
             for management_interface in config.management_interfaces:
-                management_interface.push_object()
+                is_pushed = management_interface.push_object() and is_pushed
             for dns in config.dns:
-                dns.push_object()
+                is_pushed = dns.push_object() and is_pushed
             for syslog in config.syslog:
-                syslog.push_object()
+                is_pushed = syslog.push_object() and is_pushed
             for snmp in config.snmp:
-                snmp.push_object()
+                is_pushed = snmp.push_object() and is_pushed
             if config.password_profile:
-                config.password_profile[0].push_object()
+                is_pushed = config.password_profile[0].push_object() and is_pushed
             for locale in config.locales:
-                locale.push_object()
+                is_pushed = locale.push_object() and is_pushed
             for role in config.roles:
-                role.push_object()
+                is_pushed = role.push_object() and is_pushed
             for local_user in config.local_users:
-                local_user.push_object()
+                is_pushed = local_user.push_object() and is_pushed
 
             if config.orgs:
                 for org in config.orgs:
-                    org.push_object()
+                    is_pushed = org.push_object() and is_pushed
 
             # We put these objects at the end, since they are likely to cause a disconnect
             for date_time in config.date_time:
-                date_time.push_object()
+                is_pushed = date_time.push_object() and is_pushed
 
-            self.logger(message="Successfully pushed configuration " + str(config.uuid) + " to " + self.parent.target)
+            if is_pushed:
+                self.logger(message="Successfully pushed configuration " + str(config.uuid) + " to " + self.parent.target)
 
             # We disconnect from the device
             self.parent.disconnect()

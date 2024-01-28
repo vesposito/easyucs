@@ -29,7 +29,7 @@ Minimum versions of UCS devices :
 * UCS Manager: ***3.2(1d)*** or above
 * UCS IMC: ***3.0(1c)*** or above
 * UCS Central: ***2.0(1a)*** or above
-* Intersight SaaS ***(no prerequisite)*** & Appliance: ***1.0.9-615*** or above
+* Intersight SaaS ***(no prerequisite)*** & Appliance: ***1.0.9-631*** or above
 
 This tool requires ***Python 3.8+*** to work. *Python 2.x* is not supported.
 
@@ -151,6 +151,13 @@ python easyucs_api.py
 
 
 ## Versioning
+
+### 0.9.8.7
+
+* Add support for Organization Sharing in Intersight config
+* Add support for X410c M7 & new VIC 15000 series adapters
+* Bump up minimum Intersight Appliance required version to 1.0.9-631
+* Miscellaneous bug fixes and improvements
 
 ### 0.9.8.6
 

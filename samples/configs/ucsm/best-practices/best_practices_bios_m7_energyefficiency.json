@@ -1,0 +1,59 @@
+{
+   "easyucs": {
+      "metadata": [
+         {
+            "file_type": "config",
+            "device_type": "ucsm",
+            "category": "best-practices",
+            "subcategory": "BIOS",
+            "name": "UCS Manager BIOS Policy for Energy Efficiency on Cisco UCS M7 Servers",
+            "url": "https://www.cisco.com/c/en/us/products/collateral/servers-unified-computing/ucs-b-series-blade-servers/ucs-m7-platforms-wp.html",
+            "easyucs_version": "0.9.8.6",
+            "revision": "1.0"
+         }
+      ]
+   },
+   "config": {
+      "orgs": [
+         {
+            "name": "root",
+            "bios_policies": [
+               {
+                  "name": "Energy-M7",
+                  "descr": "BIOS Policy for Energy Efficiency on Cisco UCS M7 Servers",
+                  "intel_hyperthreading_tech": "platform-default",
+                  "hardware_prefetcher": "platform-default",
+                  "adjacent_cache_line_prefetcher": "platform-default",
+                  "dcu_ip_prefetcher": "platform-default",
+                  "dcu_streamer_prefetch": "platform-default",
+                  "llc_prefetch": "platform-default",
+                  "intel_virtualization_technology": "platform-default",
+                  "upi_link_enablement": "platform-default",
+                  "upi_power_manangement": "platform-default",
+                  "upi_link_speed": "platform-default",
+                  "xpt_remote_prefetch": "platform-default",
+                  "upi_prefetch": "platform-default",
+                  "xpt_prefetch": "platform-default",
+                  "sub_numa_clustering": "platform-default",
+                  "llc_dead_line": "platform-default",
+                  "numa_optimized": "platform-default",
+                  "virtual_numa": "platform-default",
+                  "memory_refresh_rate": "platform-default",
+                  "memory_ras_configuration": "platform-default",
+                  "patrol_scrub": "platform-default",
+                  "intel_vt_for_directed_io": "platform-default",
+                  "enhanced_cpu_performance": "platform-default",
+                  "energy_efficient_turbo": "enabled",
+                  "intel_turbo_boost_tech": "platform-default",
+                  "processor_c6_report": "enabled",
+                  "processor_c1e": "enabled",
+                  "package_c_state_limit": "c6-non-retention",
+                  "uncore_frequency_scaling": "platform-default",
+                  "energy_performance_tuning": "platform-default",
+                  "workload_configuration": "balanced"
+               }
+            ]
+         }
+      ]
+   }
+}

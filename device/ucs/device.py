@@ -5,13 +5,14 @@
 
 import datetime
 import http
-import jsonschema
 import os
 import re
 import socket
 import threading
 import time
 import urllib
+import urllib3
+import json
 
 import paramiko
 import requests
@@ -38,11 +39,12 @@ import common
 from backup.ucs.manager import UcsCentralBackupManager, UcsImcBackupManager, UcsSystemBackupManager
 from config.ucs.manager import UcsImcConfigManager, UcsSystemConfigManager, UcsCentralConfigManager
 from device.device import GenericDevice
+from device.device_connector import DeviceConnector
 from inventory.ucs.manager import UcsImcInventoryManager, UcsSystemInventoryManager, UcsCentralInventoryManager
 from report.ucs.manager import UcsCentralReportManager, UcsImcReportManager, UcsSystemReportManager
 
 
-class GenericUcsDevice(GenericDevice):
+class GenericUcsDevice(GenericDevice, DeviceConnector):
     _MAX_PUSH_ATTEMPTS = 3
     _PUSH_INTERVAL_AFTER_FAIL = 5
 
@@ -64,232 +66,6 @@ class GenericUcsDevice(GenericDevice):
         # Commit parameters
         self.push_attempts = self._MAX_PUSH_ATTEMPTS
         self.push_interval_after_fail = self._PUSH_INTERVAL_AFTER_FAIL
-
-    def claim_to_intersight(self, intersight_device):
-        """
-        Claims UCS device to the given Intersight device
-        :param intersight_device: Intersight device to which the UCS device should be claimed
-        :return: True if claiming operation is successful, False otherwise
-        """
-
-        from intersight.model.asset_device_claim import AssetDeviceClaim
-        from intersight.model.appliance_device_claim import ApplianceDeviceClaim
-        from intersight.api.asset_api import AssetApi
-        from intersight.api.appliance_api import ApplianceApi
-        from intersight.exceptions import ApiValueError, ApiTypeError, ApiException
-
-        if self.metadata.device_type not in ["cimc", "ucsm"]:
-            self.logger(level="error", message="Unsupported device type: " + self.metadata.device_type_long)
-            return False
-
-        if not self.is_connected():
-            return False
-
-        if self.task is not None:
-            self.task.taskstep_manager.start_taskstep(name="ClaimDeviceToIntersight",
-                                                      description="Claiming UCS device to Intersight")
-
-        if self.metadata.device_connector_claim_status != "claimed":
-            if intersight_device.is_appliance:
-                platform_type = ""
-                if self.metadata.device_type == "cimc":
-                    platform_type = "IMC"
-                elif self.metadata.device_type == "ucsm":
-                    platform_type = "UCSFI"
-
-                try:
-                    appliance_api = ApplianceApi(api_client=intersight_device.handle)
-                    kwargs = {
-                        "Hostname": self.target,
-                        "Username": self.username,
-                        "Password": self.password,
-                        "PlatformType": platform_type
-                    }
-                    appliance_api.create_appliance_device_claim(ApplianceDeviceClaim(**kwargs))
-                    self.logger(level="info",
-                                message=f"Claiming of {self.metadata.device_type_long} {self.name}" +
-                                        f" started on {intersight_device.metadata.device_type_long}" +
-                                        f" {intersight_device.target}")
-                    if self.task is not None:
-                        self.task.taskstep_manager.stop_taskstep(
-                            name="ClaimDeviceToIntersight", status="successful",
-                            status_message=f"Claiming of {self.metadata.device_type_long} {self.name}" +
-                                           f" started on {intersight_device.metadata.device_type_long}" +
-                                           f" {intersight_device.target}")
-                except (ApiValueError, ApiTypeError, ApiException) as err:
-                    self.logger(level="error",
-                                message=f"Error while claiming {self.metadata.device_type_long} {self.name}" +
-                                        f" to {intersight_device.metadata.device_type_long}" +
-                                        f" {intersight_device.target}: {str(err)}")
-                    if self.task is not None:
-                        self.task.taskstep_manager.stop_taskstep(
-                            name="ClaimDeviceToIntersight", status="failed",
-                            status_message=f"Error while claiming {self.metadata.device_type_long} {self.name}" +
-                                           f" to {intersight_device.metadata.device_type_long}" +
-                                           f" {intersight_device.target}: {str(err)}")
-                    return False
-            else:
-                # We are in SaaS condition
-                try:
-                    kwargs = {
-                        "SecurityToken": self._device_connector_info["Claim Code"],
-                        "SerialNumber": self._device_connector_info["Device ID"]
-                    }
-
-                    asset_api = AssetApi(api_client=intersight_device.handle)
-                    asset_api.create_asset_device_claim(AssetDeviceClaim(**kwargs))
-                    self.logger(level="info",
-                                message=f"{self.metadata.device_type_long} device {self.name} claimed to " +
-                                        f"{intersight_device.metadata.device_type_long} {intersight_device.name}")
-                    if self.task is not None:
-                        self.task.taskstep_manager.stop_taskstep(
-                            name="ClaimDeviceToIntersight", status="successful",
-                            status_message=f"Successfully claimed {self.metadata.device_type_long} device " +
-                                           f"{self.name} to {intersight_device.metadata.device_type_long} " +
-                                           f"{intersight_device.name}")
-                except (ApiValueError, ApiTypeError, ApiException) as err:
-                    self.logger(level="error",
-                                message=f"Error while claiming {self.metadata.device_type_long} {self.name}" +
-                                        f" to {intersight_device.metadata.device_type_long} {intersight_device.name}:" +
-                                        f" {str(err)}")
-                    if self.task is not None:
-                        self.task.taskstep_manager.stop_taskstep(
-                            name="ClaimDeviceToIntersight", status="failed",
-                            status_message=f"Error while claiming {self.metadata.device_type_long} {self.name}" +
-                                           f" to {intersight_device.metadata.device_type_long}" +
-                                           f" {intersight_device.name}: {str(err)}")
-                    return False
-                except Exception as err:
-                    self.logger(level="error",
-                                message=f"Error while claiming {self.metadata.device_type_long} {self.name}" +
-                                        f" to {intersight_device.metadata.device_type_long} {intersight_device.name}:" +
-                                        f" {str(err)}")
-                    if self.task is not None:
-                        self.task.taskstep_manager.stop_taskstep(
-                            name="ClaimDeviceToIntersight", status="failed",
-                            status_message=f"Error while claiming {self.metadata.device_type_long} {self.name}" +
-                                           f" to {intersight_device.metadata.device_type_long}" +
-                                           f" {intersight_device.name}: {str(err)}")
-                    return False
-        else:
-            self.logger(level="info",
-                        message=f"{self.metadata.device_type_long} device {self.name}" +
-                                f" is already claimed in account {self.metadata.device_connector_ownership_name}")
-            if self.task is not None:
-                self.task.taskstep_manager.stop_taskstep(
-                    name="ClaimDeviceToIntersight", status="failed",
-                    status_message=f"{self.metadata.device_type_long} device {self.name}" +
-                                   f" is already claimed in Intersight account " +
-                                   f"{self.metadata.device_connector_ownership_name}")
-            return False
-
-        if self.task is not None:
-            self.logger(message="Refreshing Intersight Device Connector info")
-            self.task.taskstep_manager.start_taskstep(name="RefreshIntersightClaimStatus",
-                                                      description="Refreshing Intersight Device Connector info")
-            # We force an update of the Device Connector info and check periodically for 3 mins
-            count = 18
-            while self.metadata.device_connector_claim_status == "unclaimed" and count:
-                time.sleep(10)
-                self._set_device_connector_info()
-                count -= 1
-            if self.metadata.device_connector_claim_status == "claimed":
-                self.task.taskstep_manager.stop_taskstep(
-                    name="RefreshIntersightClaimStatus", status="successful",
-                    status_message="Successfully refreshed Intersight Device Connector Info"
-                )
-                from api.api_server import easyucs
-                if easyucs:
-                    easyucs.repository_manager.save_metadata(metadata=self.metadata)
-            else:
-                self.task.taskstep_manager.stop_taskstep(
-                    name="RefreshIntersightClaimStatus", status="failed",
-                    status_message="Failed refreshing Intersight Device Connector Info"
-                )
-
-        return True
-
-    def clear_intersight_claim_status(self):
-        """
-        Clears Intersight Claim Status
-        :return: True if successful, False otherwise
-        """
-        import urllib3
-
-        if self.metadata.device_type not in ["cimc", "ucsm"]:
-            self.logger(level="error", message="Unsupported device type: " + self.metadata.device_type_long)
-            return False
-
-        if not self.is_connected():
-            return False
-
-        message_str = "Clearing Intersight Claim Status of " + self.metadata.device_type_long + " device " + self.name
-        if self.task is not None:
-            self.task.taskstep_manager.start_taskstep(name="ClearIntersightClaimStatus", description=message_str)
-
-        self.logger(message=message_str)
-
-        uri = "https://" + self.target + "/connector/DeviceConnections"
-        login_cookie = self.handle.cookie
-
-        # Disable warning at each request
-        urllib3.disable_warnings()
-
-        if login_cookie:
-            auth_header = {'ucsmcookie': "ucsm-cookie=%s" % login_cookie}
-            try:
-                import json
-                data = '{"CloudDns":"svc.intersight.com", "ForceResetIdentity":true, "ResetIdentity":true}'
-                response = requests.put(uri, verify=False, headers=auth_header, data=data)
-                if response.json():
-                    self.disconnect()
-                    if response.status_code == 200:
-                        if self.task is not None:
-                            self.task.taskstep_manager.stop_taskstep(
-                                name="ClearIntersightClaimStatus", status="successful",
-                                status_message=f"Successfully cleared {self.metadata.device_type_long} device " +
-                                               f"{self.name} Intersight Claim Status")
-                        self.logger(message="Intersight Claim Status cleared on " + self.metadata.device_type_long +
-                                            " " + self.name)
-
-                        # We reset all Device Connector metadata info
-                        self.metadata.device_connector_claim_status = "unclaimed"
-                        self.metadata.device_connector_ownership_name = None
-                        self.metadata.device_connector_ownership_user = None
-                        self.metadata.intersight_device_uuid = None
-                        from api.api_server import easyucs
-                        if easyucs:
-                            easyucs.repository_manager.save_metadata(metadata=self.metadata)
-
-                        return True
-                    else:
-                        if self.task is not None:
-                            self.task.taskstep_manager.stop_taskstep(
-                                name="ClearIntersightClaimStatus", status="failed",
-                                status_message=f"Error while clearing {self.metadata.device_type_long} {self.name}" +
-                                               f" Intersight Claim Status: {str(response.status_code)}")
-                        self.logger(level="error", message="Error while clearing Intersight Claim Status: " +
-                                                           str(response.status_code))
-                        return False
-
-            except Exception as err:
-                if self.task is not None:
-                    self.task.taskstep_manager.stop_taskstep(
-                        name="ClearIntersightClaimStatus", status="failed",
-                        status_message=f"Error while clearing {self.metadata.device_type_long} {self.name}" +
-                                       f" Intersight Claim Status: Couldn't request the device connector information" +
-                                       f" from the API")
-                self.logger(level="error",
-                            message="Couldn't request the device connector information from the API: " + str(err))
-        else:
-            if self.task is not None:
-                self.task.taskstep_manager.stop_taskstep(
-                    name="ClearIntersightClaimStatus", status="failed",
-                    status_message=f"Error while clearing {self.metadata.device_type_long} {self.name}" +
-                                   f" Intersight Claim Status: No login cookie")
-            self.logger(level="error",
-                        message="No login cookie, no request can be made to find device connector information")
-        return False
 
     def connect(self, auto_refresh=None, force=None, bypass_version_checks=False, retries=1):
         """
@@ -498,135 +274,6 @@ class GenericUcsDevice(GenericDevice):
         except Exception as err:
             self.logger(level="debug", message="Error while trying to check if still connected: " + str(err))
             return False
-
-    def _set_device_connector_info(self):
-        """
-        Performs all requests to the device connector to get the necessary information and populate the metadata
-        with the most significant info + a dictionary containing all info
-        :return: True if info collected correctly, False otherwise
-        """
-        import urllib3
-        # Disable warning at each request
-        urllib3.disable_warnings()
-
-        if not self.is_connected():
-            self.connect()
-
-        base_uri = "https://" + self.target
-
-        dict_requests = {"/Systems": None,
-                         "/Versions": None,
-                         "/DeviceConnections": None,
-                         "/DeviceIdentifiers": None,
-                         "/SecurityTokens": None,
-                         "/HttpProxies": None}
-
-        # Sanity check
-        if hasattr(self.handle, "cookie"):
-            if self.handle.cookie:
-                auth_header = {'ucsmcookie': "ucsm-cookie=%s" % self.handle.cookie}
-                for end_uri, value in dict_requests.items():
-                    uri = base_uri + "/connector" + end_uri
-                    try:
-                        response = requests.get(uri, verify=False, headers=auth_header)
-                        if "error" not in response.text:
-                            dict_requests[end_uri] = response.json()
-                    except Exception as err:
-                        self.logger(level="error", message="Couldn't request the device connector information " +
-                                                           "from the API for config: " + str(err))
-                        return False
-            else:
-                self.logger(level="error",
-                            message="No login cookie, no request can be made to find device connector information")
-                return False
-        else:
-            self.logger(level="error",
-                        message="No login cookie, no request can be made to find device connector information")
-            return False
-
-        device_connector_info = {}
-        if isinstance(dict_requests["/Systems"], list):
-            if "ConnectionState" in dict_requests["/Systems"][0]:
-                device_connector_info["Connection State"] = dict_requests["/Systems"][0]["ConnectionState"]
-            if "AccountOwnershipState" in dict_requests["/Systems"][0]:
-                device_connector_info["Claim Status"] = dict_requests["/Systems"][0]["AccountOwnershipState"]
-                if dict_requests["/Systems"][0]["AccountOwnershipState"] == "Not Claimed":
-                    # We change the name to a more usable one
-                    self.metadata.device_connector_claim_status = "unclaimed"
-                else:
-                    # it should result in "claimed"
-                    self.metadata.device_connector_claim_status = dict_requests["/Systems"][0][
-                        "AccountOwnershipState"].lower()
-            if "AccountOwnershipName" in dict_requests["/Systems"][0]:
-                if dict_requests["/Systems"][0]["AccountOwnershipName"]:
-                    # We need to check the value as this value exists even if not claimed
-                    device_connector_info["Claimed Account"] = dict_requests["/Systems"][0]["AccountOwnershipName"]
-                    self.metadata.device_connector_ownership_name = dict_requests["/Systems"][0]["AccountOwnershipName"]
-            if "AccountOwnershipUser" in dict_requests["/Systems"][0]:
-                if dict_requests["/Systems"][0]["AccountOwnershipUser"]:
-                    device_connector_info["Claimed User"] = dict_requests["/Systems"][0]["AccountOwnershipUser"]
-                    self.metadata.device_connector_ownership_user = dict_requests["/Systems"][0]["AccountOwnershipUser"]
-        if isinstance(dict_requests["/DeviceConnections"], list):
-            if "CloudDns" in dict_requests["/DeviceConnections"][0]:
-                device_connector_info["Intersight URL"] = dict_requests["/DeviceConnections"][0]["CloudDns"]
-        if isinstance(dict_requests["/Versions"], list):
-            if "Version" in dict_requests["/Versions"][0]:
-                device_connector_info["Version"] = dict_requests["/Versions"][0]["Version"]
-        if isinstance(dict_requests["/HttpProxies"], list):
-            if "ProxyType" in dict_requests["/HttpProxies"][0]:
-                if dict_requests["/HttpProxies"][0]["ProxyType"] == "Manual":
-                    if "ProxyHost" in dict_requests["/HttpProxies"][0]:
-                        device_connector_info["Proxy"] = dict_requests["/HttpProxies"][0]["ProxyHost"]
-                else:
-                    device_connector_info["Proxy"] = dict_requests["/HttpProxies"][0]["ProxyType"]
-        if isinstance(dict_requests["/DeviceIdentifiers"], list):
-            if "Id" in dict_requests["/DeviceIdentifiers"][0]:
-                device_connector_info["Device ID"] = dict_requests["/DeviceIdentifiers"][0]["Id"]
-        if isinstance(dict_requests["/SecurityTokens"], list):
-            if "Token" in dict_requests["/SecurityTokens"][0]:
-                # No need to check the value as this value doesn't exist if claimed
-                device_connector_info["Claim Code"] = dict_requests["/SecurityTokens"][0]["Token"]
-
-        # Trying to determine if the Intersight target of this device exists as a device in EasyUCS.
-        # If so, we link its UUID to this device
-        # We only do this for claimed devices and if we are running with the EasyUCS DeviceManager
-        found_intersight_device = False
-        if device_connector_info.get("Intersight URL"):
-            if device_connector_info["Intersight URL"] in ["svc.ucs-connect.com", "svc.intersight.com",
-                                                           "svc-static1.intersight.com", "svc-static1.ucs-connect.com"]:
-                intersight_url = "www.intersight.com"
-            else:
-                # This is an Intersight Appliance. We need to remove the prefix "dc-" to the URL
-                if device_connector_info["Intersight URL"].startswith("dc-"):
-                    intersight_url = device_connector_info["Intersight URL"][3:]
-                else:
-                    intersight_url = device_connector_info["Intersight URL"]
-            if self.metadata.device_connector_claim_status == "claimed":
-                from api.api_server import easyucs
-                if easyucs:
-                    for device_metadata in easyucs.repository_manager.get_metadata(object_type="device"):
-                        if device_metadata.device_type == "intersight":
-                            if device_metadata.target == intersight_url:
-                                if device_metadata.device_name == device_connector_info.get("Claimed Account"):
-                                    found_intersight_device = True
-                                    self.metadata.intersight_device_uuid = device_metadata.uuid
-                                    self.logger(
-                                        level="info",
-                                        message="This device is claimed to Intersight device with UUID: " +
-                                                str(device_metadata.uuid)
-                                    )
-                                    break
-
-                    if not found_intersight_device:
-                        self.logger(level="debug", message="Could not find the Intersight device to which this " +
-                                                           self.metadata.device_type_long + " device is claimed")
-
-            if not found_intersight_device:
-                self.metadata.intersight_device_uuid = None
-
-        self._device_connector_info = device_connector_info
-
-        return True
 
     def _set_device_name_and_version(self):
         pass
@@ -1055,14 +702,18 @@ class UcsSystem(GenericUcsDevice):
         self.set_task_progression(35)
         return True
 
-    def reset(self, erase_virtual_drives=False, erase_flexflash=False, clear_sel_logs=False,
-              bypass_version_checks=False):
+    def reset(self, bypass_version_checks=False, clear_intersight_claim_status=False, clear_sel_logs=False,
+              decommission_rack_servers=False, erase_flexflash=False, erase_virtual_drives=False,
+              unregister_from_central=True):
         """
         Erases all configuration from the UCS System
-        :param erase_virtual_drives: Whether existing virtual drives should be erased from servers before reset
-        :param erase_flexflash: Whether FlexFlash should be formatted before reset
-        :param clear_sel_logs: Whether SEL Logs should be cleared before reset
         :param bypass_version_checks: Whether the minimum version checks should be bypassed when connecting
+        :param clear_intersight_claim_status: Whether Intersight claim status should be cleared if claimed
+        :param clear_sel_logs: Whether SEL Logs should be cleared before reset
+        :param decommission_rack_servers: Whether rack servers should be decommissioned before reset
+        :param erase_flexflash: Whether FlexFlash should be formatted before reset
+        :param erase_virtual_drives: Whether existing virtual drives should be erased from servers before reset
+        :param unregister_from_central: Whether to unregister UCS Manager from UCS Central
         :return: True if reset is successful, False otherwise
         """
 
@@ -1071,6 +722,32 @@ class UcsSystem(GenericUcsDevice):
         if not self.connect(bypass_version_checks=bypass_version_checks):
             self.logger(level="error", message="Unable to connect to UCS System")
             return False
+
+        if clear_intersight_claim_status and self.metadata.device_connector_claim_status == "claimed":
+            # If the UCSM device is claimed to Intersight, unclaim the device
+            if not self.clear_intersight_claim_status():
+                self.logger(level="error", message=f"Error while un-claiming the {self.metadata.device_type_long} "
+                                                   f"device {self.name} from Intersight")
+                return False
+        else:
+            self.task.taskstep_manager.skip_taskstep(
+                name="ClearIntersightClaimStatus",
+                status_message=f"Skipping the unclaim of {self.metadata.device_type_long} device {self.name} since "
+                               f"it is not claimed to Intersight"
+            )
+
+        if decommission_rack_servers:
+            # Decommissioning Rack servers
+            if not self.decommission_all_rack_servers():
+                self.logger(level="error", message=f"Error while performing decommission of rack servers in "
+                                                   f"{self.metadata.device_type_long} device {self.name}")
+                return False
+        else:
+            self.task.taskstep_manager.skip_taskstep(
+                name="DecommissionAllRackServers",
+                status_message=f"Skipping the decommissioning of rack servers in {self.metadata.device_type_long} "
+                               f"device {self.name}"
+            )
 
         if erase_flexflash:
             self.erase_flexflash()
@@ -1081,14 +758,23 @@ class UcsSystem(GenericUcsDevice):
         if clear_sel_logs:
             self.clear_sel_logs()
 
+        if self.task is not None:
+            self.task.taskstep_manager.start_taskstep(
+                name="EraseFiConfigurations",
+                description=f"Resetting Fabric Interconnects of {self.metadata.device_type_long} device {self.name}")
+
         # Verifying that SSH Service is enabled before trying to connect
         self.logger(level="debug", message="Verifying that SSH service is enabled on UCS System")
         try:
             ssh = self.handle.query_dn("sys/svc-ext/ssh-svc")
             ssh_admin_state = ssh.admin_state
 
-        except Exception:
-            self.logger(level="error", message="Unable to get SSH service state")
+        except Exception as err:
+            message_str = "Unable to get SSH service state"
+            self.logger(level="error", message=message_str + ": " + str(err))
+            if self.task is not None:
+                self.task.taskstep_manager.stop_taskstep(
+                    name="EraseFiConfigurations", status="failed", status_message=message_str)
             return False
 
         try:
@@ -1101,43 +787,59 @@ class UcsSystem(GenericUcsDevice):
                 self.logger(level="debug", message="SSH service is enabled on UCS System")
                 time.sleep(5)
 
-        except Exception:
-            self.logger(level="error", message="Unable to set SSH service admin state to 'enabled'")
-            return False
-
-        # Check if device is registered with UCS Central, in which case, gently remove it from Central
-        self.logger(level="debug", message="Verifying UCS Central Registration state on UCS System")
-        try:
-            ucs_central_registration_state = ""
-            ucs_central_reg_name = ""
-            ucs_central = self.handle.query_dn("sys/control-ep-policy")
-            if ucs_central:
-                ucs_central_registration_state = ucs_central.registration_state
-                ucs_central_reg_name = ucs_central.svc_reg_name
-
-        except Exception:
-            self.logger(level="error", message="Unable to get UCS Central Registration state")
-            return False
-
-        try:
-            if ucs_central_registration_state == "registered":
-                self.logger(level="warning",
-                            message="UCS System is registered with UCS Central " + ucs_central_reg_name +
-                                    "! Unregistering it before reset.")
-                self.handle.remove_mo(ucs_central)
-                self.handle.commit()
-                time.sleep(5)
-                # Waiting for UCSM to be ready after unregistering with UCS Central
-                self.wait_for_reboot_after_reset(fi_ip_list=[self.target])
-                # Try to connect again after beeing disconnected due to unregistering with UCS Central
-                if not self.connect(bypass_version_checks=bypass_version_checks):
-                    self.logger(level="error", message="Unable to connect to UCS System")
-                    return False
-
         except Exception as err:
-            self.logger(level="error", message="Unable to unregister UCS System from UCS Central " +
-                                               ucs_central_reg_name + ": " + str(err))
+            message_str = "Unable to set SSH service admin state to 'enabled'"
+            self.logger(level="error", message=message_str + ": " + str(err))
+            if self.task is not None:
+                self.task.taskstep_manager.stop_taskstep(
+                    name="EraseFiConfigurations", status="failed", status_message=message_str)
             return False
+
+        if unregister_from_central:
+            # Check if device is registered with UCS Central, in which case, gently remove it from Central
+            self.logger(level="debug", message="Verifying UCS Central Registration state on UCS System")
+            try:
+                ucs_central_registration_state = ""
+                ucs_central_reg_name = ""
+                ucs_central = self.handle.query_dn("sys/control-ep-policy")
+                if ucs_central:
+                    ucs_central_registration_state = ucs_central.registration_state
+                    ucs_central_reg_name = ucs_central.svc_reg_name
+
+            except Exception as err:
+                message_str = "Unable to get UCS Central Registration state"
+                self.logger(level="error", message=message_str + ": " + str(err))
+                if self.task is not None:
+                    self.task.taskstep_manager.stop_taskstep(
+                        name="EraseFiConfigurations", status="failed", status_message=message_str)
+                return False
+
+            try:
+                if ucs_central_registration_state == "registered":
+                    self.logger(level="warning",
+                                message="UCS System is registered with UCS Central " + ucs_central_reg_name +
+                                        "! Unregistering it before reset.")
+                    self.handle.remove_mo(ucs_central)
+                    self.handle.commit()
+                    time.sleep(5)
+                    # Waiting for UCSM to be ready after unregistering with UCS Central
+                    self.wait_for_reboot_after_reset(fi_ip_list=[self.target])
+                    # Try to connect again after beeing disconnected due to unregistering with UCS Central
+                    if not self.connect(bypass_version_checks=bypass_version_checks):
+                        message_str = "Unable to connect to UCS System"
+                        self.logger(level="error", message=message_str)
+                        if self.task is not None:
+                            self.task.taskstep_manager.stop_taskstep(
+                                name="EraseFiConfigurations", status="failed", status_message=message_str)
+                        return False
+
+            except Exception as err:
+                message_str = "Unable to unregister UCS System from UCS Central " + ucs_central_reg_name
+                self.logger(level="error", message=message_str + ": " + str(err))
+                if self.task is not None:
+                    self.task.taskstep_manager.stop_taskstep(
+                        name="EraseFiConfigurations", status="failed", status_message=message_str)
+                return False
 
         ip_sw_addr = []
 
@@ -1156,7 +858,11 @@ class UcsSystem(GenericUcsDevice):
             self.logger(level="debug", message="IP address of FI A: " + ip_a)
 
         except Exception as err:
-            self.logger(level="error", message="Cannot get IP address of Fabric Interconnect A: " + str(err))
+            message_str = "Cannot get IP address of Fabric Interconnect A"
+            self.logger(level="error", message=message_str + ": " + str(err))
+            if self.task is not None:
+                self.task.taskstep_manager.stop_taskstep(
+                    name="EraseFiConfigurations", status="failed", status_message=message_str)
             return False
 
         try:
@@ -1168,7 +874,11 @@ class UcsSystem(GenericUcsDevice):
                 self.logger(level="debug", message="IP address of FI B: " + ip_b)
 
         except Exception as err:
-            self.logger(level="error", message="Cannot get IP address of Fabric Interconnect B: " + str(err))
+            message_str = "Cannot get IP address of Fabric Interconnect B"
+            self.logger(level="error", message=message_str + ": " + str(err))
+            if self.task is not None:
+                self.task.taskstep_manager.stop_taskstep(
+                    name="EraseFiConfigurations", status="failed", status_message=message_str)
             return False
 
         for ip in ip_sw_addr:
@@ -1176,28 +886,34 @@ class UcsSystem(GenericUcsDevice):
 
             # Establishing connection to FI
             try:
+                error_msg = None
                 client = paramiko.SSHClient()
                 client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
                 client.connect(ip, port=22, username=self.username, password=self.password, banner_timeout=30)
 
             except paramiko.AuthenticationException:
-                self.logger(level="error", message="Authentication failed when connecting to Fabric Interconnect " + ip)
-                return False
-
-            except paramiko.ssh_exception.NoValidConnectionsError as err:
-                self.logger(level="error",
-                            message="Error while connecting to Fabric Interconnect " + ip + ": " + err.strerror)
-                return False
+                error_msg = "Authentication failed when connecting to Fabric Interconnect " + ip
+                self.logger(level="error", message=error_msg)
 
             except TypeError as err:
                 self.logger(level="debug",
                             message="Error while connecting to Fabric Interconnect " + ip + ": " + str(err))
-                self.logger(level="error",
-                            message="Error while connecting to Fabric Interconnect " + ip + ". Please try again.")
+                error_msg = "Error while connecting to Fabric Interconnect " + ip + ". Please try again."
+                self.logger(level="error", message=error_msg)
+
+            except Exception as err:
+                error_msg = "Error while connecting to Fabric Interconnect " + ip
+                self.logger(level="error", message=error_msg + ": " + str(err))
+
+            if error_msg:
+                if self.task is not None:
+                    self.task.taskstep_manager.stop_taskstep(
+                        name="EraseFiConfigurations", status="failed", status_message=error_msg)
                 return False
 
             # Erasing configuration of FI
             try:
+                error_msg = None
                 channel = client.invoke_shell()
                 channel.settimeout(20)
 
@@ -1222,14 +938,28 @@ class UcsSystem(GenericUcsDevice):
                 self.set_task_progression(10)
 
             except paramiko.ChannelException as err:
-                self.logger(level="error",
-                            message="Communication failed with Fabric Interconnect " + ip + ": " + str(err))
-                return False
+                error_msg = "Communication failed with Fabric Interconnect " + ip
+                self.logger(level="error", message=error_msg + ": " + str(err))
 
             except (paramiko.buffered_pipe.PipeTimeout, socket.timeout):
-                self.logger(level="error", message="Timeout while communicating with Fabric Interconnect " + ip)
+                error_msg = "Timeout while communicating with Fabric Interconnect " + ip
+                self.logger(level="error", message=error_msg)
+
+            except Exception as err:
+                error_msg = "Error while erasing the configuration of Fabric Interconnect " + ip
+                self.logger(level="error", message=error_msg + ": " + str(err))
+
+            if error_msg:
+                if self.task is not None:
+                    self.task.taskstep_manager.stop_taskstep(
+                        name="EraseFiConfigurations", status="failed", status_message=error_msg)
                 return False
 
+        if self.task is not None:
+            self.task.taskstep_manager.stop_taskstep(
+                name="EraseFiConfigurations", status="successful",
+                status_message=f"Successfully reset Fabric Interconnects of " +
+                               f"{self.metadata.device_type_long} device {self.name}")
         return True
 
     def regenerate_default_keyring_certificate(self):
@@ -1427,10 +1157,17 @@ class UcsSystem(GenericUcsDevice):
         """
         from ucsmsdk.mometa.compute.ComputeRackUnit import ComputeRackUnit
 
+        if self.task is not None:
+            self.task.taskstep_manager.start_taskstep(
+                name="DecommissionAllRackServers", description=f"Decommissioning all rack servers in "
+                                                               f"{self.metadata.device_type_long} device "
+                                                               f"{self.name}")
+
         if not self.is_connected():
             self.connect()
         self.logger(level="info", message="Decommissioning all discovered Rack Servers")
         all_rack_servers = self.handle.query_classid("computeRackUnit")
+        error_msg = None
         for rack_server in all_rack_servers:
             try:
                 self.logger(level="debug", message="Decommissioning server " + rack_server.id +
@@ -1440,17 +1177,26 @@ class UcsSystem(GenericUcsDevice):
                 self.handle.commit()
 
             except UcsException as err:
-                self.logger(level="error",
-                            message="Error while decommissioning server " + rack_server.id + ": " + err.error_descr)
-                return False
+                error_msg = "Error while decommissioning server " + rack_server.id
+                self.logger(level="error", message=error_msg + ": " + err.error_descr)
             except urllib.error.URLError:
-                self.logger(level="error",
-                            message="Timeout Error while decommissioning server " + rack_server.id)
-                return False
+                error_msg = "Timeout Error while decommissioning server " + rack_server.id
+                self.logger(level="error", message=error_msg)
             except Exception as err:
-                self.logger(level="error",
-                            message="Error while decommissioning " + rack_server.id + ": " + str(err))
+                error_msg = "Error while decommissioning server " + rack_server.id
+                self.logger(level="error", message=error_msg + ": " + str(err))
+
+            if error_msg:
+                if self.task is not None:
+                    self.task.taskstep_manager.stop_taskstep(
+                        name="DecommissionAllRackServers", status="failed", status_message=error_msg)
                 return False
+
+        if self.task is not None:
+            self.task.taskstep_manager.stop_taskstep(
+                name="DecommissionAllRackServers", status="successful",
+                status_message=f"Successfully decommissioned all rack servers in {self.metadata.device_type_long} "
+                               f"device {self.name}")
         return True
 
     def erase_virtual_drives(self):
@@ -2186,23 +1932,24 @@ class UcsImc(GenericUcsDevice):
         # Changing handle to the new one
         config.refresh_config_handle()
 
+        is_pushed = True
         if self.connect(bypass_version_checks=bypass_version_checks):
             # Setting the handle with the DHCP IP Address
             config.refresh_config_handle()
             # Pushing objects / Changing handle
             if config.local_users_properties:
-                config.local_users_properties[0].push_object()
+                is_pushed = config.local_users_properties[0].push_object() and is_pushed
             for local_user in config.local_users:
-                local_user.push_object()
+                is_pushed = local_user.push_object() and is_pushed
             if config.admin_networking:
-                config.admin_networking[0].push_object()
+                is_pushed = config.admin_networking[0].push_object() and is_pushed
             self.set_task_progression(35)
-            return True
+            return is_pushed
         else:
             return False
 
     def reset(self, erase_virtual_drives=False, erase_flexflash=False, clear_sel_logs=False, set_drives_status=None,
-              bypass_version_checks=False):
+              bypass_version_checks=False, clear_intersight_claim_status=False):
         """
         Erases all configuration from the UCS IMC
         :param erase_virtual_drives: Whether existing virtual drives should be erased from server before reset
@@ -2210,6 +1957,7 @@ class UcsImc(GenericUcsDevice):
         :param clear_sel_logs: Whether SEL Log should be cleared before reset
         :param set_drives_status: The status to which the drives should be set before reset
         :param bypass_version_checks: Whether the minimum version checks should be bypassed when connecting
+        :param clear_intersight_claim_status: Whether Intersight claim status should be cleared if claimed
         :return: True if reset is successful, False otherwise
         """
 
@@ -2218,6 +1966,19 @@ class UcsImc(GenericUcsDevice):
         if not self.connect(bypass_version_checks=bypass_version_checks):
             self.logger(level="error", message="Unable to connect to UCS IMC")
             return False
+
+        if clear_intersight_claim_status and self.metadata.device_connector_claim_status == "claimed":
+            # If the UCS IMC device is claimed to Intersight unclaim the device
+            if not self.clear_intersight_claim_status():
+                self.logger(level="error", message=f"Error while un-claiming the {self.metadata.device_type_long} "
+                                                   f"device {self.name} from Intersight")
+                return False
+        else:
+            self.task.taskstep_manager.skip_taskstep(
+                name="ClearIntersightClaimStatus",
+                status_message=f"Skipping the unclaim of {self.metadata.device_type_long} device {self.name} since "
+                               f"it is not claimed to Intersight"
+            )
 
         if erase_flexflash:
             self.erase_flexflash()
@@ -2231,14 +1992,23 @@ class UcsImc(GenericUcsDevice):
         if set_drives_status:
             self.set_drives_status(status=set_drives_status)
 
+        if self.task is not None:
+            self.task.taskstep_manager.start_taskstep(
+                name="EraseConfiguration",
+                description=f"Resetting Fabric Interconnects of {self.metadata.device_type_long} device {self.name}")
+
         # Verifying that SSH Service is enabled before trying to connect
         self.logger(level="debug", message="Verifying that SSH service is enabled on UCS IMC")
         try:
             ssh = self.handle.query_dn("sys/svc-ext/ssh-svc")
             ssh_admin_state = ssh.admin_state
 
-        except Exception:
-            self.logger(level="error", message="Unable to get SSH service state on UCS IMC")
+        except Exception as err:
+            message_str = "Unable to get SSH service state on UCS IMC"
+            self.logger(level="error", message=message_str + ": " + str(err))
+            if self.task is not None:
+                self.task.taskstep_manager.stop_taskstep(
+                    name="EraseConfiguration", status="failed", status_message=message_str)
             return False
 
         try:
@@ -2251,8 +2021,12 @@ class UcsImc(GenericUcsDevice):
                 self.logger(level="debug", message="SSH service is enabled on UCS IMC")
                 time.sleep(5)
 
-        except Exception:
-            self.logger(level="error", message="Unable to set SSH service admin state to 'enabled'")
+        except Exception as err:
+            message_str = "Unable to set SSH service admin state to 'enabled'"
+            self.logger(level="error", message=message_str + ": " + str(err))
+            if self.task is not None:
+                self.task.taskstep_manager.stop_taskstep(
+                    name="EraseConfiguration", status="failed", status_message=message_str)
             return False
 
         # Verifying that server is powered on (necessary for performing factory default operation)
@@ -2267,11 +2041,19 @@ class UcsImc(GenericUcsDevice):
                     mo = ComputeRackUnit(server_id="1", parent_mo_or_dn="sys", admin_power="up")
                     self.handle.set_mo(mo=mo)
             else:
-                self.logger(level="error", message="Unable to get server power state via UCS IMC")
+                message_str = "Unable to get server power state via UCS IMC"
+                self.logger(level="error", message=message_str)
+                if self.task is not None:
+                    self.task.taskstep_manager.stop_taskstep(
+                        name="EraseConfiguration", status="failed", status_message=message_str)
                 return False
 
-        except Exception:
-            self.logger(level="error", message="Unable to get server power state via UCS IMC")
+        except Exception as err:
+            message_str = "Unable to get server power state via UCS IMC"
+            self.logger(level="error", message=message_str + ": " + str(err))
+            if self.task is not None:
+                self.task.taskstep_manager.stop_taskstep(
+                    name="EraseConfiguration", status="failed", status_message=message_str)
             return False
 
         self.logger(level="debug", message="Trying to get the UCS IMC IP")
@@ -2282,35 +2064,44 @@ class UcsImc(GenericUcsDevice):
             self.logger(level="debug", message="IP address of UCS IMC: " + ip)
 
         except Exception as err:
-            self.logger(level="error", message="Cannot get IP address of UCS IMC: " + str(err))
+            message_str = "Cannot get IP address of UCS IMC"
+            self.logger(level="error", message=message_str + ": " + str(err))
+            if self.task is not None:
+                self.task.taskstep_manager.stop_taskstep(
+                    name="EraseConfiguration", status="failed", status_message=message_str)
             return False
 
         self.logger(message="Resetting IMC with IP address: " + ip)
 
         # Establishing connection to UCS IMC
         try:
+            error_msg = None
             client = paramiko.SSHClient()
             client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
             client.connect(ip, port=22, username=self.username, password=self.password, banner_timeout=30)
 
         except paramiko.AuthenticationException:
-            self.logger(level="error", message="Authentication failed when connecting to UCS IMC " + ip)
-            return False
-
-        except paramiko.ssh_exception.NoValidConnectionsError as err:
-            self.logger(level="error",
-                        message="Error while connecting to UCS IMC " + ip + ": " + err.strerror)
-            return False
+            error_msg = "Authentication failed when connecting to UCS IMC " + ip
+            self.logger(level="error", message=error_msg)
 
         except TypeError as err:
-            self.logger(level="debug",
-                        message="Error while connecting to Fabric Interconnect " + ip + ": " + str(err))
-            self.logger(level="error",
-                        message="Error while connecting to Fabric Interconnect " + ip + ". Please try again.")
+            error_msg = "Error while connecting to Fabric Interconnect " + ip
+            self.logger(level="debug", message=error_msg + ": " + str(err))
+            self.logger(level="error", message=error_msg + ". Please try again.")
+
+        except Exception as err:
+            error_msg = "Error while connecting to UCS IMC " + ip
+            self.logger(level="error", message=error_msg + ": " + str(err))
+
+        if error_msg:
+            if self.task is not None:
+                self.task.taskstep_manager.stop_taskstep(
+                    name="EraseConfiguration", status="failed", status_message=error_msg)
             return False
 
         # Erasing configuration of IMC
         try:
+            error_msg = None
             channel = client.invoke_shell()
             channel.settimeout(20)
 
@@ -2335,13 +2126,26 @@ class UcsImc(GenericUcsDevice):
             self.set_task_progression(10)
 
         except paramiko.ChannelException as err:
-            self.logger(level="error", message="Communication failed with UCS IMC " + ip + ": " + str(err))
-            return False
+            error_msg = "Communication failed with UCS IMC " + ip + ": " + str(err)
+            self.logger(level="error", message=error_msg)
 
         except (paramiko.buffered_pipe.PipeTimeout, socket.timeout):
-            self.logger(level="error", message="Timeout while communicating with UCS IMC " + ip)
+            error_msg = "Timeout while communicating with UCS IMC " + ip
+            self.logger(level="error", message=error_msg)
+
+        except Exception as err:
+            error_msg = "Error while erasing the configuration of UCS IMC " + ip
+            self.logger(level="error", message=error_msg + str(err))
+
+        if error_msg:
+            if self.task is not None:
+                self.task.taskstep_manager.stop_taskstep(
+                    name="EraseConfiguration", status="failed", status_message=error_msg)
             return False
 
+        if self.task is not None:
+            self.task.taskstep_manager.stop_taskstep(
+                name="EraseConfiguration", status="successful", status_message=error_msg)
         return True
 
     def clear_user_sessions(self, check_ssh=False):

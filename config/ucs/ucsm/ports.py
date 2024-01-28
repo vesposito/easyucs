@@ -1767,11 +1767,11 @@ class UcsSystemUnifiedStoragePort(UcsSystemFcoeStoragePort, UcsSystemAppliancePo
         else:
             self.logger(message="Adding to the handle " + self._CONFIG_NAME + " configuration: " + port_name +
                                 ", waiting for a commit")
+        is_pushed = True
+        is_pushed = UcsSystemFcoeStoragePort.push_object(self=self, commit=commit) and is_pushed
+        is_pushed = UcsSystemAppliancePort.push_object(self=self, commit=commit) and is_pushed
 
-        UcsSystemFcoeStoragePort.push_object(self=self, commit=commit)
-        UcsSystemAppliancePort.push_object(self=self, commit=commit)
-
-        return True
+        return is_pushed
 
 
 class UcsSystemUnifiedUplinkPort(UcsSystemLanUplinkPort, UcsSystemFcoeUplinkPort):
@@ -1887,7 +1887,8 @@ class UcsSystemUnifiedUplinkPort(UcsSystemLanUplinkPort, UcsSystemFcoeUplinkPort
             self.logger(message="Adding to the handle " + self._CONFIG_NAME + " configuration: " + port_name +
                                 ", waiting for a commit")
 
-        UcsSystemFcoeUplinkPort.push_object(self=self, commit=commit)
-        UcsSystemLanUplinkPort.push_object(self=self, commit=commit)
+        is_pushed = True
+        is_pushed = UcsSystemFcoeUplinkPort.push_object(self=self, commit=commit) and is_pushed
+        is_pushed = UcsSystemLanUplinkPort.push_object(self=self, commit=commit) and is_pushed
 
-        return True
+        return is_pushed

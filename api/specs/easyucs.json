@@ -49,7 +49,10 @@
         "type": "object",
         "description": "List of cached orgs from last successful connection with their respective descriptions",
         "example": {
-          "default": "This is the default org"
+          "default": {
+            "description": "This is the default org",
+            "is_shared": false
+          }
         }
       },
       "cancel": {
@@ -67,6 +70,16 @@
         ],
         "example": "cvd"
       },
+      "clear_intersight_claim_status": {
+        "type": "boolean",
+        "description": "Clear Intersight claim status if claimed",
+        "example": true
+      },
+      "clear_sel_logs": {
+        "type": "boolean",
+        "description": "Clear SEL logs from all servers",
+        "example": false
+      },
       "config_uuid": {
         "type": "string",
         "description": "UUID of the config",
@@ -77,10 +90,29 @@
         "description": "Comments in the feedback",
         "example": "I loved the tool"
       },
+      "decommission_rack_servers": {
+        "type": "boolean",
+        "description": "Decommission all rack servers in UCS domain",
+        "example": true
+      },
+      "delete_existing_resource_group_memberships_for_intersight_shared_orgs": {
+        "type": "boolean",
+        "description": "Whether to delete resource membership with organization",
+        "example": false
+      },
       "description": {
         "type": "string",
         "description": "Description of the object",
         "example": "EasyUCS"
+      },
+      "device_connector_access_mode": {
+        "type": "string",
+        "description": "Access mode of device connector",
+        "enum": [
+          "allow-control",
+          "read-only"
+        ],
+        "example": "read-only"
       },
       "device_connector_claim_status": {
         "type": "string",
@@ -100,6 +132,34 @@
         "type": "string",
         "description": "Email of the Intersight user who performed the device claim",
         "example": "abcd.xyz@cisco.com"
+      },
+      "device_connector_proxy": {
+        "type": "object",
+        "description": "Device connector proxy to be enabled in UCS to connect to Intersight",
+        "required": [
+          "proxy_enabled"
+        ],
+        "properties": {
+          "proxy_authentication": {
+            "$ref": "#/components/schemas/proxy_authentication"
+          },
+          "proxy_enabled": {
+            "$ref": "#/components/schemas/proxy_enabled"
+          },
+          "proxy_host": {
+            "$ref": "#/components/schemas/proxy_host"
+          },
+          "proxy_password": {
+            "$ref": "#/components/schemas/proxy_password"
+          },
+          "proxy_port": {
+            "$ref": "#/components/schemas/proxy_port"
+          },
+          "proxy_username": {
+            "$ref": "#/components/schemas/proxy_username"
+          }
+        },
+        "additionalProperties": false
       },
       "device_name": {
         "type": "string",
@@ -147,25 +207,15 @@
         "description": "Email address",
         "example": "abcd.xyz@cisco.com"
       },
-      "evaluation": {
-        "type": "string",
-        "description": "Evaludation of the tool",
-        "example": "Excellent",
-        "enum": [
-          "Excellent",
-          "Poor",
-          "Fair",
-          "Good"
-        ]
+      "erase_flexflash": {
+        "type": "boolean",
+        "description": "Erase FlexFlash from all servers",
+        "example": false
       },
-      "feedback_type": {
-        "type": "string",
-        "description": "Type of feedback",
-        "example": "Bug",
-        "enum": [
-          "Evaluation",
-          "Bug"
-        ]
+      "erase_virtual_drives": {
+        "type": "boolean",
+        "description": "Erase all Virtual Drives from all servers",
+        "example": false
       },
       "fi_ip_list": {
         "type": "array",
@@ -206,7 +256,7 @@
       },
       "force": {
         "type": "boolean",
-        "description": "Whether the fetch operation should bypass failed SDK objects",
+        "description": "Whether the fetch/push operation should bypass failed SDK objects or Intersight license validation",
         "example": false
       },
       "inventory_uuid": {
@@ -329,6 +379,36 @@
         "type": "integer",
         "description": "Progress of the task",
         "example": 15
+      },
+      "proxy_authentication": {
+        "type": "boolean",
+        "description": "Flag stating whether authentication is enabled in proxy",
+        "example": true
+      },
+      "proxy_enabled": {
+        "type": "boolean",
+        "description": "Flag to know whether proxy is enabled",
+        "example": false
+      },
+      "proxy_host": {
+        "type": "string",
+        "description": "IP or FQDN of the proxy",
+        "example": "10.10.10.10"
+      },
+      "proxy_password": {
+        "type": "string",
+        "description": "Password for proxy if authentication enabled",
+        "example": "password"
+      },
+      "proxy_port": {
+        "type": "integer",
+        "description": "Port of the proxy",
+        "example": 5421
+      },
+      "proxy_username": {
+        "type": "string",
+        "description": "Username for proxy if authentication enabled",
+        "example": "admin"
       },
       "recursive": {
         "type": "string",
@@ -469,6 +549,16 @@
         "type": "string",
         "description": "Timestamp of the last successful connection",
         "example": "2022-06-15T09:17:43.418Z"
+      },
+      "timestamp_last_modified": {
+        "type": "string",
+        "description": "Timestamp of the last modification of the object",
+        "example": "2022-06-15T09:17:43.418Z"
+      },
+      "unregister_from_central": {
+        "type": "boolean",
+        "description": "Unregister UCS device from central",
+        "example": false
       },
       "update_existing_intersight_objects": {
         "type": "boolean",
@@ -740,6 +830,9 @@
           },
           "reset": {
             "$ref": "#/components/schemas/device_reset"
+          },
+          "force": {
+            "$ref": "#/components/schemas/force"
           }
         },
         "additionalProperties": false
@@ -750,8 +843,14 @@
           "intersight_device_uuid"
         ],
         "properties": {
+          "access_mode": {
+            "$ref": "#/components/schemas/device_connector_access_mode"
+          },
           "intersight_device_uuid": {
             "$ref": "#/components/schemas/device_uuid"
+          },
+          "proxy_details": {
+            "$ref": "#/components/schemas/device_connector_proxy"
           }
         },
         "additionalProperties": false
@@ -962,6 +1061,36 @@
         },
         "additionalProperties": false
       },
+      "device_reset_post": {
+        "type": "object",
+        "required": [
+          "password"
+        ],
+        "properties": {
+          "password": {
+            "$ref": "#/components/schemas/password"
+          },
+          "clear_intersight_claim_status": {
+            "$ref": "#/components/schemas/clear_intersight_claim_status"
+          },
+          "clear_sel_logs": {
+            "$ref": "#/components/schemas/clear_sel_logs"
+          },
+          "decommission_rack_servers": {
+            "$ref": "#/components/schemas/decommission_rack_servers"
+          },
+          "erase_flexflash": {
+            "$ref": "#/components/schemas/erase_flexflash"
+          },
+          "erase_virtual_drives": {
+            "$ref": "#/components/schemas/erase_virtual_drives"
+          },
+          "unregister_from_central": {
+            "$ref": "#/components/schemas/unregister_from_central"
+          }
+        },
+        "additionalProperties": false
+      },
       "device_send_feedback_post": {
         "type": "object",
         "required": [
@@ -993,6 +1122,9 @@
           "intersight_device_uuid"
         ],
         "properties": {
+          "access_mode": {
+            "$ref": "#/components/schemas/device_connector_access_mode"
+          },
           "device_uuids": {
             "type": "array",
             "items": {
@@ -1001,6 +1133,9 @@
           },
           "intersight_device_uuid": {
             "$ref": "#/components/schemas/device_uuid"
+          },
+          "proxy_details": {
+            "$ref": "#/components/schemas/device_connector_proxy"
           }
         },
         "additionalProperties": false
@@ -1112,6 +1247,9 @@
       "easyucs_settings_put": {
         "type": "object",
         "properties": {
+          "delete_existing_resource_group_memberships_for_intersight_shared_orgs": {
+                "$ref": "#/components/schemas/delete_existing_resource_group_memberships_for_intersight_shared_orgs"
+              },
           "update_existing_intersight_objects": {
             "$ref": "#/components/schemas/update_existing_intersight_objects"
           }
@@ -2399,6 +2537,57 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/fetch"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The corresponding task to follow progress",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "task": {
+                      "$ref": "#/components/schemas/task_uuid"
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400ClientError"
+          },
+          "404": {
+            "$ref": "#/components/responses/404NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/500ServerError"
+          }
+        }
+      }
+    },
+    "/devices/{device_uuid}/actions/reset": {
+      "post": {
+        "tags": [
+          "devices"
+        ],
+        "summary": "Resets a device to factory defaults",
+        "description": "Resets to factory defaults a given device in EasyUCS",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/device_uuid"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/device_reset_post"
               }
             }
           }

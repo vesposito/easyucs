@@ -108,7 +108,7 @@ class TaskManager:
         # We save the task to the repository
         self.parent.repository_manager.save_metadata(task.metadata)
 
-        return task.uuid 
+        return task.uuid
 
     def add_to_pending_tasks(self, pending_task_dict=None):
         """

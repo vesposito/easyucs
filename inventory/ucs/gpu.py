@@ -55,3 +55,30 @@ class UcsImcGpu(UcsGpu, UcsImcInventoryObject):
                                                    attribute_secondary_name="firmware_version")
 
         UcsImcInventoryObject.__init__(self, parent=parent, ucs_sdk_object=graphics_card)
+
+        if self._inventory.load_from == "live":
+            if not self._find_gpu_details():
+                self.temperatures = None
+
+        elif self._inventory.load_from == "file":
+            for attribute in ["temperature"]:
+                setattr(self, attribute, None)
+                if attribute in graphics_card:
+                    setattr(self, attribute, self.get_attribute(ucs_sdk_object=graphics_card, attribute_name=attribute))
+
+    def _find_gpu_details(self):
+        # We check if we already have fetched the list of gpuInventory objects
+        if self._inventory.sdk_objects["gpuInventory"] is not None:
+            gpu_inventory_list = [gpu_inventory for gpu_inventory in self._inventory.sdk_objects["gpuInventory"]
+                                  if "sys/rack-unit-" + self._parent.id + "/equipped-slot-" + self.id + "/"
+                                  in gpu_inventory.dn]
+
+            # We fetch the gpuInventory details for each gpuInventory object
+            if gpu_inventory_list:
+                self.temperatures = []
+                for gpu_inventory in gpu_inventory_list:
+                    if gpu_inventory.temperature not in [None, "", "N/A", "n/a", "NA", "na"]:
+                        self.temperatures.append({"id": gpu_inventory.id, "temperature": gpu_inventory.temperature})
+                return True
+
+        return False
