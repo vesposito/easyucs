@@ -67,11 +67,12 @@ urllib3.disable_warnings()
 
 
 class IntersightDevice(GenericDevice):
-    INTERSIGHT_APPLIANCE_MIN_REQUIRED_VERSION = "1.0.9-631"
+    INTERSIGHT_APPLIANCE_MIN_REQUIRED_VERSION = "1.0.9-655"
 
     def __init__(self, parent=None, uuid=None, target="www.intersight.com", key_id="", private_key_path="",
                  is_hidden=False, is_system=False, system_usage=None, proxy=None, proxy_user=None, proxy_password=None,
-                 logger_handle_log_level="info", log_file_path=None, bypass_version_checks=False):
+                 logger_handle_log_level="info", log_file_path=None, bypass_connection_checks=False,
+                 bypass_version_checks=False):
 
         self.key_id = key_id
         self.private_key_path = private_key_path
@@ -79,6 +80,7 @@ class IntersightDevice(GenericDevice):
         GenericDevice.__init__(self, parent=parent, uuid=uuid, target=target, password="", user="",
                                is_hidden=is_hidden, is_system=is_system, system_usage=system_usage,
                                logger_handle_log_level=logger_handle_log_level, log_file_path=log_file_path,
+                               bypass_connection_checks=bypass_connection_checks,
                                bypass_version_checks=bypass_version_checks)
 
         self.handle = None
@@ -169,7 +171,7 @@ class IntersightDevice(GenericDevice):
         self.inventory_manager = IntersightInventoryManager(parent=self)
         self.report_manager = IntersightReportManager(parent=self)
 
-    def clear(self, orgs=None):
+    def clear_config(self, orgs=None):
         """
         Clears configuration by deleting objects from the Intersight device
         (optionally limited to the list of orgs provided).
@@ -242,6 +244,13 @@ class IntersightDevice(GenericDevice):
 
         count_value = 0
 
+        if self.task is not None:
+            if orgs:
+                message_str = f"Clearing config in orgs {str(orgs)} of Intersight device '{self.name}'"
+            else:
+                message_str = f"Clearing config in all orgs of Intersight device '{self.name}'"
+            self.task.taskstep_manager.start_taskstep(name="ClearConfigIntersightDevice", description=message_str)
+
         for api_class_dict in objects_to_remove_in_order:
             for api_class, sdk_objects_list in api_class_dict.items():
                 api = api_class(api_client=self.handle)
@@ -297,8 +306,7 @@ class IntersightDevice(GenericDevice):
                         # Looping through the results and deleting the relevant ones
                         for obj in results:
                             if not orgs or (hasattr(obj, 'organization') and obj.organization and
-                                                 hasattr(obj.organization,
-                                                         'name') and obj.organization.name in orgs):
+                                            hasattr(obj.organization, 'name') and obj.organization.name in orgs):
                                 assigned_value = None
                                 if sdk_object in ["server_profile", "chassis_profile", "fabric_switch_cluster_profile"]:
 
@@ -369,12 +377,22 @@ class IntersightDevice(GenericDevice):
                                         )
                                         getattr(api, f"delete_{sdk_object}")(moid=obj.moid)
 
+                                elif sdk_object == "organization_organization":
+                                    # Logic to delete orgs
+                                    excluded_policy_names = ["default"]
+                                    if obj.name not in excluded_policy_names:
+                                        self.logger(
+                                            level="info",
+                                            message=f"Deleting {obj.object_type} {obj.name} with MOID {obj.moid}"
+                                        )
+                                        getattr(api, f"delete_{sdk_object}")(moid=obj.moid)
+
                                 elif sdk_object == "resource_group":
                                     # Logic to delete resource groups
-                                    excluded_resource_policies = ["default", "default-rg", "License-Standard",
-                                                                  "License-Essential", "License-Advantage",
-                                                                  "License-Premier"]
-                                    if obj.name not in excluded_resource_policies:
+                                    excluded_policy_names = ["default", "default-rg", "License-Standard",
+                                                             "License-Essential", "License-Advantage",
+                                                             "License-Premier"]
+                                    if obj.name not in excluded_policy_names:
                                         self.logger(
                                             level="info",
                                             message=f"Deleting {obj.object_type} {obj.name} with MOID {obj.moid}"
@@ -422,6 +440,23 @@ class IntersightDevice(GenericDevice):
                         self.logger(level="error",
                                     message="Failed to delete objects of class " + sdk_object + ": " + str(err))
 
+        if self.task is not None:
+            if is_cleared:
+                if orgs:
+                    message_str = f"Successfully cleared config in orgs {str(orgs)} of Intersight device '{self.name}'"
+                else:
+                    message_str = f"Successfully cleared config in all orgs of Intersight device '{self.name}'"
+                self.task.taskstep_manager.stop_taskstep(
+                    name="ClearConfigIntersightDevice", status="successful", status_message=message_str)
+            else:
+                if orgs:
+                    message_str = (f"Error while clearing config in orgs {str(orgs)} of Intersight device " +
+                                   f"'{self.name}'. Check logs.")
+                else:
+                    message_str = (f"Error while clearing config in all orgs of Intersight device '{self.name}'. " +
+                                   f"Check logs.")
+                self.task.taskstep_manager.stop_taskstep(
+                    name="ClearConfigIntersightDevice", status="failed", status_message=message_str)
         return is_cleared
 
     def connect(self, bypass_version_checks=False):
@@ -708,12 +743,13 @@ class IntersightDevice(GenericDevice):
             if self.task is not None:
                 self.task.taskstep_manager.stop_taskstep(
                     name="ValidateIntersightLicense", status="failed",
-                    status_message="Intersight should have 'Essential' or 'Advantage' license to "
-                                   "perform fetch/push operation.")
+                    status_message="Intersight should have 'Essential' or 'Advantage' license to perform"
+                                   "fetch/push operation. To bypass this check enable the 'Force' option and try again")
             return False
 
+        license_states = []
         for license_details in license_info_list.get("results", []):
-            if license_details.get("license_state") in ["Compliance", "TrialPeriod"]:
+            if license_details.get("license_state") in ["Compliance", "TrialPeriod", "OutOfCompliance"]:
                 self.logger(level="info",
                             message="Successfully validated the license of intersight.")
                 if self.task is not None:
@@ -721,12 +757,14 @@ class IntersightDevice(GenericDevice):
                         name="ValidateIntersightLicense", status="successful",
                         status_message="Successfully validated the license of intersight")
                 return True
+            license_states.append(license_details.get("license_state"))
 
         self.logger(level="error", message="Intersight should have 'Essential' or 'Advantage' license to perform"
                                            " fetch/push operation.")
         if self.task is not None:
             self.task.taskstep_manager.stop_taskstep(
                 name="ValidateIntersightLicense", status="failed",
-                status_message="Intersight should have 'Essential' or 'Advantage' license to "
-                               "perform fetch/push operation.")
+                status_message=f"Your Intersight license is in '{', '.join(license_states)}' state, which might prevent "
+                               f"some operations to complete properly. To bypass this check enable the 'Force' option "
+                               f"and try again.")
         return False

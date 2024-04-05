@@ -2684,6 +2684,7 @@ class IntersightUcsDomainProfile(IntersightConfigObject):
         self.system_qos_policy = None
         self.vlan_policies = None
         self.vsan_policies = None
+        self.operational_state = {}
 
         if self._config.load_from == "live":
             # We first need to identify the Moids of the fabric.SwitchProfile objects attached to the UCS Domain Profile
@@ -2702,21 +2703,40 @@ class IntersightUcsDomainProfile(IntersightConfigObject):
             self.vlan_policies = self._get_vlan_policies()
             self.vsan_policies = self._get_vsan_policies()
 
+            # Fetching the status of the profile
+            if hasattr(self._object, "config_context"):
+                if hasattr(self._object.config_context, "config_state_summary"):
+                    self.operational_state.update({
+                        "config_state": getattr(self._object.config_context, "config_state_summary", None)
+                    })
+                if getattr(self._object.config_context, "oper_state", None):
+                    self.operational_state.update({
+                        "profile_state": getattr(self._object.config_context, "oper_state", None)
+                    })
+
         elif self._config.load_from == "file":
-            for attribute in ["network_connectivity_policy", "ntp_policy", "port_policies", "snmp_policy",
-                              "switch_control_policy", "syslog_policy", "system_qos_policy", "vlan_policies",
-                              "vsan_policies"]:
+            for attribute in ["network_connectivity_policy", "ntp_policy", "operational_state", "port_policies",
+                              "snmp_policy", "switch_control_policy", "syslog_policy", "system_qos_policy",
+                              "vlan_policies", "vsan_policies"]:
                 setattr(self, attribute, None)
                 if attribute in self._object:
                     setattr(self, attribute, self.get_attribute(attribute_name=attribute))
 
-            # We use this to make sure all options of a Port/VLAN/VSAN Policy are set to None if they are not present
-            if not self.port_policies:
-                self.port_policies = {"fabric_a": None, "fabric_b": None}
-            if not self.vlan_policies:
-                self.vlan_policies = {"fabric_a": None, "fabric_b": None}
-            if not self.vsan_policies:
-                self.vsan_policies = {"fabric_a": None, "fabric_b": None}
+        self.clean_object()
+
+    def clean_object(self):
+        # We use this to make sure all options of the Port Policies, VLAN Policies and VSAN Policies are set to
+        # None if they are not present
+        for parent_attribute in ["port_policies", "vlan_policies", "vsan_policies"]:
+            for attribute in ["fabric_a", "fabric_b"]:
+                if getattr(self, parent_attribute, None):
+                    if attribute not in getattr(self, parent_attribute):
+                        getattr(self, parent_attribute)[attribute] = None
+
+        if self.operational_state:
+            for attribute in ["config_state", "profile_state"]:
+                if attribute not in self.operational_state:
+                    self.operational_state[attribute] = None
 
     def _get_port_policies(self):
         # Fetches the Port Policies assigned to the UCS Domain Profile
@@ -2822,7 +2842,7 @@ class IntersightUcsDomainProfile(IntersightConfigObject):
         for policy_section in ["network_connectivity_policy", "ntp_policy", "port_policies", "snmp_policy",
                                "switch_control_policy", "syslog_policy", "system_qos_policy", "vlan_policies",
                                "vsan_policies"]:
-            if getattr(self, policy_section, None) is not None:
+            if getattr(self, policy_section, None):
                 if isinstance(getattr(self, policy_section, {}), dict):
                     policy_type = self._POLICY_MAPPING_TABLE.get(policy_section, {}).get("fabric_a")
                     fsp_a_policy_name = getattr(self, policy_section, {}).get("fabric_a")
@@ -2834,25 +2854,27 @@ class IntersightUcsDomainProfile(IntersightConfigObject):
                 if policy_type:
                     object_type = getattr(policy_type, "_INTERSIGHT_SDK_OBJECT_NAME", None)
                     if object_type:
-                        fsp_a_live_policy = self.get_live_object(object_name=fsp_a_policy_name,
-                                                                  object_type=object_type)
-                        if fsp_a_live_policy:
-                            switch_profile_a_kwargs["policy_bucket"].append(fsp_a_live_policy)
-                        else:
-                            self._config.push_summary_manager.add_object_status(
-                                obj=self, obj_detail=f"Attaching {policy_section} '{fsp_a_policy_name}'",
-                                obj_type=self._INTERSIGHT_SDK_OBJECT_NAME, status="failed",
-                                message=f"Failed to find {policy_section} '{fsp_a_policy_name}'")
+                        # If fabric A policy name is missing then skip adding it to policy bucket.
+                        if fsp_a_policy_name:
+                            fsp_a_live_policy = self.get_live_object(object_name=fsp_a_policy_name, object_type=object_type)
+                            if fsp_a_live_policy:
+                                switch_profile_a_kwargs["policy_bucket"].append(fsp_a_live_policy)
+                            else:
+                                self._config.push_summary_manager.add_object_status(
+                                    obj=self, obj_detail=f"Attaching {policy_section} '{fsp_a_policy_name}'",
+                                    obj_type=self._INTERSIGHT_SDK_OBJECT_NAME, status="failed",
+                                    message=f"Failed to find {policy_section} '{fsp_a_policy_name}'")
 
-                        fsp_b_live_policy = self.get_live_object(object_name=fsp_b_policy_name,
-                                                                  object_type=object_type)
-                        if fsp_b_live_policy:
-                            switch_profile_b_kwargs["policy_bucket"].append(fsp_b_live_policy)
-                        else:
-                            self._config.push_summary_manager.add_object_status(
-                                obj=self, obj_detail=f"Attaching {policy_section} '{fsp_b_policy_name}'",
-                                obj_type=self._INTERSIGHT_SDK_OBJECT_NAME, status="failed",
-                                message=f"Failed to find {policy_section} '{fsp_b_policy_name}'")
+                        # If fabric B policy name is missing then skip adding it to policy bucket.
+                        if fsp_b_policy_name:
+                            fsp_b_live_policy = self.get_live_object(object_name=fsp_b_policy_name, object_type=object_type)
+                            if fsp_b_live_policy:
+                                switch_profile_b_kwargs["policy_bucket"].append(fsp_b_live_policy)
+                            else:
+                                self._config.push_summary_manager.add_object_status(
+                                    obj=self, obj_detail=f"Attaching {policy_section} '{fsp_b_policy_name}'",
+                                    obj_type=self._INTERSIGHT_SDK_OBJECT_NAME, status="failed",
+                                    message=f"Failed to find {policy_section} '{fsp_b_policy_name}'")
                     else:
                         err_message = "Missing _INTERSIGHT_SDK_OBJECT_NAME value for " + policy_section
                         self.logger(level="error", message=err_message)

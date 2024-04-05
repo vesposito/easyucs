@@ -28,5 +28,6 @@
       "port_size": [73, 53]
     }
   },
+  "imm_compatible": false,
   "data_sheet_url": "https://www.cisco.com/c/dam/en/us/products/collateral/interfaces-modules/ucs-virtual-interface-card-1225/datasheet_2500_Series_adapter.pdf"
 }

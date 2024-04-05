@@ -1,0 +1,43 @@
+{
+   "easyucs": {
+      "metadata": [
+         {
+            "file_type": "config",
+            "device_type": "intersight",
+            "category": "best-practices",
+            "subcategory": "BIOS",
+            "name": "Intersight BIOS Policy for CPU Intensive on Cisco UCS M6 AMD Servers",
+            "url": "https://www.cisco.com/c/en/us/products/collateral/servers-unified-computing/ucs-c-series-rack-servers/performance-tuning-wp.html",
+            "easyucs_version": "0.9.8.4",
+            "revision": "1.0"
+         }
+      ]
+   },
+   "config": {
+      "orgs": [
+         {
+            "name": "default",
+            "bios_policies": [
+               {
+                  "name": "CPUIntensive-M6-AMD",
+                  "descr": "BIOS Policy for CPU Intensive on Cisco UCS M6 AMD Servers",
+                  "cbs_df_cmn_dram_nps": "NPS4",
+                  "cbs_cmn_gnb_nb_iommu": "Auto",
+                  "smt_mode": "Auto",
+                  "cbs_cmn_cpu_cpb": "Auto",
+                  "cbs_cmn_cpu_global_cstate_ctrl": "Auto",
+                  "cbs_cmn_cpu_l1stream_hw_prefetcher": "Auto",
+                  "cbs_cmn_cpu_l2stream_hw_prefetcher": "Auto",
+                  "cbs_cmn_determinism_slider": "Power",
+                  "cbs_cmn_efficiency_mode_en": "Auto",
+                  "svm_mode": "enabled",
+                  "cbs_df_cmn_acpi_srat_l3numa": "enabled",
+                  "cbs_cmn_apbdis": "1",
+                  "cbs_cmn_fixed_soc_pstate": "P0",
+                  "cisco_xgmi_max_speed": "enabled"
+               }
+            ]
+         }
+      ]
+   }
+}

@@ -11,7 +11,8 @@ from config.ucs.object import UcsSystemConfigObject
 from config.ucs.ucsm.lan import UcsSystemIpPool, UcsSystemMacPool, UcsSystemVnicTemplate, UcsSystemQosPolicy,\
     UcsSystemNetworkControlPolicy, UcsSystemMulticastPolicy, UcsSystemLinkProtocolPolicy,\
     UcsSystemLanConnectivityPolicy, UcsSystemLacpPolicy, UcsSystemFlowControlPolicy, UcsSystemDefaultVnicBehavior,\
-    UcsSystemDynamicVnicConnectionPolicy, UcsSystemVmqConnectionPolicy, UcsSystemUsnicConnectionPolicy
+    UcsSystemDynamicVnicConnectionPolicy, UcsSystemVmqConnectionPolicy, UcsSystemUsnicConnectionPolicy, \
+    UcsSystemSriovHpnConnectionPolicy
 from config.ucs.ucsm.servers import UcsSystemUuidPool, UcsSystemServerPool, UcsSystemServerPoolPolicy,\
     UcsSystemPowerControlPolicy, UcsSystemMaintenancePolicy, UcsSystemGraphicsCardPolicy,\
     UcsSystemLocalDiskConfPolicy, UcsSystemServerPoolPolicyQualifications, UcsSystemPowerSyncPolicy,\
@@ -351,6 +352,7 @@ class UcsSystemOrg(UcsSystemConfigObject):
         "server_pools": "Server Pools",
         "service_profiles": "Service Profiles",
         "spdm_certificate_policies": "SPDM Certificate Policies",
+        "sriov_hpn_connection_policies": "SRIOV HPN Connection Policies",
         "storage_connection_policies": "Storage Connection Policies",
         "storage_profiles": "Storage Profiles",
         "threshold_policies": "Threshold Policies",
@@ -441,6 +443,9 @@ class UcsSystemOrg(UcsSystemConfigObject):
         self.vmq_connection_policies = \
             self._get_generic_element(json_content=json_content, object_class=UcsSystemVmqConnectionPolicy,
                                       name_to_fetch="vmq_connection_policies")
+        self.sriov_hpn_connection_policies = \
+            self._get_generic_element(json_content=json_content, object_class=UcsSystemSriovHpnConnectionPolicy,
+                                      name_to_fetch="sriov_hpn_connection_policies")
         self.maintenance_policies = \
             self._get_generic_element(json_content=json_content, object_class=UcsSystemMaintenancePolicy,
                                       name_to_fetch="maintenance_policies")

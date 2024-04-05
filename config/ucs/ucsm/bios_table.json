@@ -757,6 +757,7 @@
       "available_in_legacy_mode": false,
       "feature_group": "C1 Auto Demotion",
       "legacy_values": [
+         "auto",
          "disabled",
          "enabled",
          "platform-default"
@@ -769,6 +770,7 @@
       "type": "enum",
       "unit": null,
       "values": [
+         "Auto",
          "Disabled",
          "Enabled",
          "Platform Default"
@@ -778,6 +780,7 @@
       "available_in_legacy_mode": false,
       "feature_group": "C1 Auto UnDemotion",
       "legacy_values": [
+         "auto",
          "disabled",
          "enabled",
          "platform-default"
@@ -790,6 +793,7 @@
       "type": "enum",
       "unit": null,
       "values": [
+         "Auto",
          "Disabled",
          "Enabled",
          "Platform Default"
@@ -8620,6 +8624,27 @@
          "Platform Default"
       ]
    },
+   "sha_384_pcr_bank": {
+      "available_in_legacy_mode": false,
+      "feature_group": "Trusted Platform Module",
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "platform-default"
+      ],
+      "maximum": null,
+      "minimum": null,
+      "param_name": "SHA 384 PCR Bank",
+      "step": null,
+      "target_name": "SHA384PCRBank",
+      "type": "enum",
+      "unit": null,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ]
+   },
    "sioc1_linkspeed": {
       "available_in_legacy_mode": false,
       "feature_group": "PCI Slot Link Speed",
@@ -9436,6 +9461,27 @@
          "Platform Default"
       ]
    },
+   "tdx_secure_arbitration_mode": {
+      "available_in_legacy_mode": false,
+      "feature_group": "Trust Domain Extension",
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "platform-default"
+      ],
+      "maximum": null,
+      "minimum": null,
+      "param_name": "TDX Secure Arbitration Mode (SEAM) Loader",
+      "step": null,
+      "target_name": "EnableTdxSeamldr",
+      "type": "enum",
+      "unit": null,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ]
+   },
    "terminal_type": {
       "available_in_legacy_mode": true,
       "feature_group": "Console redirection",
@@ -9495,6 +9541,27 @@
       "param_name": "TPM Minimal Physical Presence",
       "step": null,
       "target_name": "TpmPpiRequired",
+      "type": "enum",
+      "unit": null,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ]
+   },
+   "trust_domain_extension": {
+      "available_in_legacy_mode": false,
+      "feature_group": "Trust Domain Extension",
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "platform-default"
+      ],
+      "maximum": null,
+      "minimum": null,
+      "param_name": "Trust Domain Extension (TDX)",
+      "step": null,
+      "target_name": "EnableTdx",
       "type": "enum",
       "unit": null,
       "values": [
@@ -9667,6 +9734,7 @@
          "12.8gt-s",
          "14.4gt-s",
          "16.0gt-s",
+         "20.0gt-s",
          "9.6gt-s",
          "auto",
          "use-per-link-setting",
@@ -9685,6 +9753,7 @@
          "12.8GT-s",
          "14.4GT-s",
          "16.0GT-s",
+         "20.0GT-s",
          "9.6GT-s",
          "Auto",
          "Use-Per-Link-Setting",

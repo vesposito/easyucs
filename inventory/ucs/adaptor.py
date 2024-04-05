@@ -137,6 +137,8 @@ class UcsAdaptor(GenericUcsInventoryObject):
                 self.sku = "UCSC-P-I8Q25GF"
             elif (vendor, device, subvendor, subdevice) == ("0x8086", "0x1592", "0x1137", "0x02bf"):
                 self.sku = "UCSC-P-I8D100GF"
+            elif (vendor, device, subvendor, subdevice) == ("0x8086", "0x15ff", "0x1137", "0x02d9"):
+                self.sku = "UCSC-O-ID10GC"
             # Mellanox
             elif (vendor, device, subvendor, subdevice) == ("0x15b3", "0x6750", "0x15b3", "0x0016"):
                 self.sku = "N2XX-AMPCI01"
@@ -200,7 +202,7 @@ class UcsAdaptor(GenericUcsInventoryObject):
                           "UCSC-PCIE-ID25GF", "UCSC-P-IQ10GC", "UCSC-P-I8D25GF", "UCSC-P-I8Q25GF", "UCSC-P-I8D100GF",
                           "N2XX-AMPCI01", "UCSC-P-M4D25GF", "UCSC-P-M5D25GF", "UCSC-P-M5S100GF", "UCSC-P-M5D100GF",
                           "UCSC-P-M6DD100GF", "UCSC-PCIE-QNICBT", "UCSC-PCIE-QNICSFP", "UCSC-PCIE-QD25GF",
-                          "UCSC-PCIE-QD40GF", "UCSC-PCIE-QS100GF", "UCSX-MLOM-001", "UCSC-OCP-QD10GC",
+                          "UCSC-PCIE-QD40GF", "UCSC-PCIE-QS100GF", "UCSX-MLOM-001", "UCSC-O-ID10GC", "UCSC-OCP-QD10GC",
                           "UCSC-OCP-QD25GF"]:
             self.type = "nic"
         elif self.sku in ["N2XX-ACPCI01", "UCSC-PCIE-CSC-02", "UCSC-PCIE-C10T-02", "UCSC-MLOM-CSC-02",

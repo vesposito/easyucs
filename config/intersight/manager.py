@@ -111,6 +111,10 @@ class IntersightConfigManager(GenericConfigManager):
                     for field in ["descr", "ucs_server_profile_template"]:
                         if hasattr(server_profile, field) and getattr(server_profile, field):
                             dict_server_profile[field] = getattr(server_profile, field)
+                    if getattr(server_profile, "operational_state", None):
+                        for field in ["config_state", "profile_state"]:
+                            if server_profile.operational_state.get(field):
+                                dict_server_profile[field] = server_profile.operational_state.get(field)
                     json_org["profiles"].append(dict_server_profile)
             if org.ucs_server_profile_templates:
                 for server_profile_template in org.ucs_server_profile_templates:
@@ -126,6 +130,10 @@ class IntersightConfigManager(GenericConfigManager):
                         "name": getattr(domain_profile, "name", None),
                         "type": "ucs_domain_profile"
                     }
+                    if getattr(domain_profile, "operational_state", None):
+                        for field in ["config_state", "profile_state"]:
+                            if domain_profile.operational_state.get(field):
+                                dict_domain_profile[field] = domain_profile.operational_state.get(field)
                     json_org["profiles"].append(dict_domain_profile)
 
             if org.ucs_chassis_profiles:
@@ -134,6 +142,10 @@ class IntersightConfigManager(GenericConfigManager):
                         "name": getattr(chassis_profile, "name", None),
                         "type": "ucs_chassis_profile"
                     }
+                    if getattr(chassis_profile, "operational_state", None):
+                        for field in ["config_state", "profile_state"]:
+                            if chassis_profile.operational_state.get(field):
+                                dict_chassis_profile[field] = chassis_profile.operational_state.get(field)
                     json_org["profiles"].append(dict_chassis_profile)
 
             output_json_orgs.append(json_org)

@@ -9,6 +9,7 @@ import urllib3
 from intersight.api.access_api import AccessApi
 from intersight.api.adapter_api import AdapterApi
 from intersight.api.asset_api import AssetApi
+from intersight.api.compute_api import ComputeApi
 from intersight.api.bios_api import BiosApi
 from intersight.api.boot_api import BootApi
 from intersight.api.certificatemanagement_api import CertificatemanagementApi
@@ -111,6 +112,7 @@ class IntersightConfig(GenericConfig):
                                 {BootApi: ["boot_precision_policy"]},
                                 {CertificatemanagementApi: ["certificatemanagement_policy"]},
                                 {ChassisApi: ["chassis_profile"]},
+                                {ComputeApi: ["compute_blade", "compute_rack_unit"]},
                                 {DeviceconnectorApi: ["deviceconnector_policy"]},
                                 {FabricApi: ["fabric_appliance_pc_role", "fabric_appliance_role",
                                              "fabric_eth_network_control_policy", "fabric_eth_network_group_policy",

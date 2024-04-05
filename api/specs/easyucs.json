@@ -40,6 +40,11 @@
         "description": "UUID of the backup",
         "example": "3a1f3ab9-66fe-4b09-8cef-ead52ce21e7a"
       },
+      "bypass_connection_checks": {
+        "type": "boolean",
+        "description": "Whether the device needs to bypass the connection check or not",
+        "example": false
+      },
       "bypass_version_checks": {
         "type": "boolean",
         "description": "Whether the device needs to bypass the version check or not",
@@ -48,10 +53,17 @@
       "cached_orgs": {
         "type": "object",
         "description": "List of cached orgs from last successful connection with their respective descriptions",
+        "minProperties": 1,
         "example": {
           "default": {
             "description": "This is the default org",
-            "is_shared": false
+            "is_shared": false,
+            "resource_groups": [
+              "default-rg"
+            ],
+            "shared_with_orgs": [
+              "easyucs"
+            ]
           }
         }
       },
@@ -69,6 +81,15 @@
           "cvd"
         ],
         "example": "cvd"
+      },
+      "clear_config_post": {
+        "type": "object",
+        "properties": {
+          "orgs": {
+            "$ref": "#/components/schemas/org_list"
+          }
+        },
+        "additionalProperties": false
       },
       "clear_intersight_claim_status": {
         "type": "boolean",
@@ -89,6 +110,11 @@
         "type": "string",
         "description": "Comments in the feedback",
         "example": "I loved the tool"
+      },
+      "is_custom": {
+        "type": "boolean",
+        "description": "True if configuration/inventory is manually edited by a user otherwise False",
+        "example": false
       },
       "decommission_rack_servers": {
         "type": "boolean",
@@ -329,6 +355,16 @@
           "asc",
           "desc"
         ]
+      },
+      "org_list": {
+        "type": "array",
+        "description": "A list of orgs",
+        "items": {
+          "type": "string",
+          "description": "Name of an org",
+          "example": "default"
+        },
+        "nullable": true
       },
       "origin": {
         "type": "string",
@@ -751,6 +787,18 @@
           }
         }
       },
+      "config_inventory_form_data_post": {
+        "properties": {
+          "force_custom": {
+            "type": "string",
+            "description": "This attribute overwrites the calculated is_custom value. This is an attribute for form-data so it has to be a string instead of boolean.",
+            "enum": [
+              "true",
+              "false"
+            ]
+          }
+        }
+      },
       "config_get": {
         "type": "object",
         "required": [
@@ -763,6 +811,9 @@
         "properties": {
           "category": {
             "$ref": "#/components/schemas/category"
+          },
+          "is_custom": {
+            "$ref": "#/components/schemas/is_custom"
           },
           "device_uuid": {
             "$ref": "#/components/schemas/device_uuid"
@@ -805,6 +856,21 @@
           },
           "uuid": {
             "$ref": "#/components/schemas/uuid"
+          }
+        }
+      },
+      "config_post": {
+        "type": "object",
+        "required": [
+          "config_file"
+        ],
+        "properties": {
+          "config_file": {
+            "type": "string",
+            "format": "binary"
+          },
+          "force_custom": {
+            "$ref": "#/components/schemas/is_custom"
           }
         }
       },
@@ -943,6 +1009,9 @@
           "username"
         ],
         "properties": {
+          "bypass_connection_checks": {
+            "$ref": "#/components/schemas/bypass_connection_checks"
+          },
           "device_type": {
             "allOf": [
               {
@@ -986,6 +1055,9 @@
           "private_key"
         ],
         "properties": {
+          "bypass_connection_checks": {
+            "$ref": "#/components/schemas/bypass_connection_checks"
+          },
           "device_type": {
             "allOf": [
               {
@@ -1022,6 +1094,9 @@
       "device_put_user_password": {
         "type": "object",
         "properties": {
+          "bypass_connection_checks": {
+            "$ref": "#/components/schemas/bypass_connection_checks"
+          },
           "bypass_version_checks": {
             "$ref": "#/components/schemas/bypass_version_checks"
           },
@@ -1043,6 +1118,9 @@
       "device_put_private_key": {
         "type": "object",
         "properties": {
+          "bypass_connection_checks": {
+            "$ref": "#/components/schemas/bypass_connection_checks"
+          },
           "bypass_version_checks": {
             "$ref": "#/components/schemas/bypass_version_checks"
           },
@@ -1136,6 +1214,21 @@
           },
           "proxy_details": {
             "$ref": "#/components/schemas/device_connector_proxy"
+          }
+        },
+        "additionalProperties": false
+      },
+      "devices_actions_clear_intersight_claim_status_post": {
+        "type": "object",
+        "required": [
+          "device_uuids"
+        ],
+        "properties": {
+          "device_uuids": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/device_uuid"
+            }
           }
         },
         "additionalProperties": false
@@ -1248,8 +1341,8 @@
         "type": "object",
         "properties": {
           "delete_existing_resource_group_memberships_for_intersight_shared_orgs": {
-                "$ref": "#/components/schemas/delete_existing_resource_group_memberships_for_intersight_shared_orgs"
-              },
+            "$ref": "#/components/schemas/delete_existing_resource_group_memberships_for_intersight_shared_orgs"
+          },
           "update_existing_intersight_objects": {
             "$ref": "#/components/schemas/update_existing_intersight_objects"
           }
@@ -1287,6 +1380,9 @@
           "uuid"
         ],
         "properties": {
+          "is_custom": {
+            "$ref": "#/components/schemas/is_custom"
+          },
           "device_uuid": {
             "$ref": "#/components/schemas/device_uuid"
           },
@@ -1319,6 +1415,21 @@
           },
           "uuid": {
             "$ref": "#/components/schemas/uuid"
+          }
+        }
+      },
+      "inventory_post": {
+        "type": "object",
+        "required": [
+          "inventory_file"
+        ],
+        "properties": {
+          "inventory_file": {
+            "type": "string",
+            "format": "binary"
+          },
+          "force_custom": {
+            "$ref": "#/components/schemas/is_custom"
           }
         }
       },
@@ -2180,6 +2291,52 @@
         }
       }
     },
+    "/devices/actions/clear_intersight_claim_status": {
+      "post": {
+        "tags": [
+          "devices"
+        ],
+        "summary": "Clears the Intersight Claim Status of a list of devices",
+        "description": "Clears the Intersight Claim Status of a list of devices in EasyUCS.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/devices_actions_clear_intersight_claim_status_post"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "A list of task UUIDs",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "tasks": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/task_uuid"
+                      }
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400ClientError"
+          },
+          "500": {
+            "$ref": "#/components/responses/500ServerError"
+          }
+        }
+      }
+    },
     "/devices/actions/delete": {
       "post": {
         "tags": [
@@ -2476,6 +2633,57 @@
         }
       }
     },
+    "/devices/{device_uuid}/actions/clear_config": {
+      "post": {
+        "tags": [
+          "devices"
+        ],
+        "summary": "Clears configuration of given device",
+        "description": "Clears the complete configuration of given device",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/device_uuid"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/clear_config_post"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The corresponding task to follow progress",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "task": {
+                      "$ref": "#/components/schemas/task_uuid"
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400ClientError"
+          },
+          "404": {
+            "$ref": "#/components/responses/404NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/500ServerError"
+          }
+        }
+      }
+    },
     "/devices/{device_uuid}/actions/clear_sel_logs": {
       "post": {
         "tags": [
@@ -2541,6 +2749,47 @@
             }
           }
         },
+        "responses": {
+          "200": {
+            "description": "The corresponding task to follow progress",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "task": {
+                      "$ref": "#/components/schemas/task_uuid"
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400ClientError"
+          },
+          "404": {
+            "$ref": "#/components/responses/404NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/500ServerError"
+          }
+        }
+      }
+    },
+    "/devices/{device_uuid}/actions/regenerate_certificate": {
+      "post": {
+        "tags": [
+          "devices"
+        ],
+        "summary": "Regenerates certificate of given UCS device",
+        "description": "Regenerates self-signed certificate of given UCS device",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/device_uuid"
+          }
+        ],
         "responses": {
           "200": {
             "description": "The corresponding task to follow progress",
@@ -3131,13 +3380,7 @@
           "content": {
             "multipart/form-data": {
               "schema": {
-                "type": "object",
-                "properties": {
-                  "config_file": {
-                    "type": "string",
-                    "format": "binary"
-                  }
-                }
+                "$ref": "#/components/schemas/config_post"
               }
             }
           }
@@ -3622,13 +3865,7 @@
           "content": {
             "multipart/form-data": {
               "schema": {
-                "type": "object",
-                "properties": {
-                  "inventory_file": {
-                    "type": "string",
-                    "format": "binary"
-                  }
-                }
+                "$ref": "#/components/schemas/inventory_post"
               }
             }
           }

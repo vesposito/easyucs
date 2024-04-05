@@ -227,6 +227,48 @@
                         "default": "",
                         "pattern": "^$|^([1-9]|1[0-5]|MLOM)$"
                      },
+                     "sriov_settings": {
+                        "description": "LAN Connectivity Policy - vNIC SRIOV Settings",
+                        "type": "object",
+                        "properties": {
+                           "number_of_vfs": {
+                              "description": "LAN Connectivity Policy - vNIC SRIOV Settings - Number of VFs",
+                              "type": "integer",
+                              "default": 64,
+                              "minimum": 1,
+                              "maximum": 64
+                           },
+                           "receive_queue_count_per_vf": {
+                              "description": "LAN Connectivity Policy - vNIC SRIOV Settings - Receive Queue Count per VF",
+                              "type": "integer",
+                              "default": 4,
+                              "minimum": 1,
+                              "maximum": 8
+                           },
+                           "transmit_queue_count_per_vf": {
+                              "description": "LAN Connectivity Policy - vNIC SRIOV Settings - Transmit Queue Count per VF",
+                              "type": "integer",
+                              "default": 1,
+                              "minimum": 1,
+                              "maximum": 8
+                           },
+                           "completion_queue_count_per_vf": {
+                              "description": "LAN Connectivity Policy - vNIC SRIOV Settings - Completion Queue Count per VF",
+                              "type": "integer",
+                              "default": 5,
+                              "minimum": 1,
+                              "maximum": 16
+                           },
+                           "interrupt_count_per_vf": {
+                              "description": "LAN Connectivity Policy - vNIC SRIOV Settings - Interrupt Count per VF",
+                              "type": "integer",
+                              "default": 8,
+                              "minimum": 1,
+                              "maximum": 16
+                           }
+                        },
+                        "additionalProperties": false
+                     },
                      "switch_id": {
                         "description": "LAN Connectivity Policy - vNIC Switch ID",
                         "type": "string",
@@ -604,19 +646,84 @@
                         }
                      },
                      {
-                        "$comment": "Below is for setting constraints for usnic_settings & vmq_settings being exlusive",
-                        "if": {
-                           "required": [
-                              "usnic_settings"
-                           ]
-                        },
-                        "then": {
-                           "not": {
-                              "required": [
-                                 "vmq_settings"
-                              ]
+                        "$comment": "Below is for setting constraints for usnic_settings, vmq_settings & sriov_settings being exclusive",
+                        "allOf": [
+                           {
+                              "if": {
+                                 "required": [
+                                    "usnic_settings"
+                                 ]
+                              },
+                              "then": {
+                                 "allOf": [
+                                    {
+                                       "not": {
+                                          "required": [
+                                             "vmq_settings"
+                                          ]
+                                       }
+                                    },
+                                    {
+                                       "not": {
+                                          "required": [
+                                             "sriov_settings"
+                                          ]
+                                       }
+                                    }
+                                 ]
+                              }
+                           },
+                           {
+                              "if": {
+                                 "required": [
+                                    "vmq_settings"
+                                 ]
+                              },
+                              "then": {
+                                 "allOf": [
+                                    {
+                                       "not": {
+                                          "required": [
+                                             "usnic_settings"
+                                          ]
+                                       }
+                                    },
+                                    {
+                                       "not": {
+                                          "required": [
+                                             "sriov_settings"
+                                          ]
+                                       }
+                                    }
+                                 ]
+                              }
+                           },
+                           {
+                              "if": {
+                                 "required": [
+                                    "sriov_settings"
+                                 ]
+                              },
+                              "then": {
+                                 "allOf": [
+                                    {
+                                       "not": {
+                                          "required": [
+                                             "usnic_settings"
+                                          ]
+                                       }
+                                    },
+                                    {
+                                       "not": {
+                                          "required": [
+                                             "vmq_settings"
+                                          ]
+                                       }
+                                    }
+                                 ]
+                              }
                            }
-                        }
+                        ]
                      }
                   ]
                },
@@ -705,6 +812,48 @@
                         "type": "string",
                         "default": "",
                         "pattern": "^$|^([1-9]|1[0-5]|MLOM)$"
+                     },
+                     "sriov_settings": {
+                        "description": "LAN Connectivity Policy - vNIC SRIOV Settings",
+                        "type": "object",
+                        "properties": {
+                           "number_of_vfs": {
+                              "description": "LAN Connectivity Policy - vNIC SRIOV Settings - Number of VFs",
+                              "type": "integer",
+                              "default": 64,
+                              "minimum": 1,
+                              "maximum": 64
+                           },
+                           "receive_queue_count_per_vf": {
+                              "description": "LAN Connectivity Policy - vNIC SRIOV Settings - Receive Queue Count per VF",
+                              "type": "integer",
+                              "default": 4,
+                              "minimum": 1,
+                              "maximum": 8
+                           },
+                           "transmit_queue_count_per_vf": {
+                              "description": "LAN Connectivity Policy - vNIC SRIOV Settings - Transmit Queue Count per VF",
+                              "type": "integer",
+                              "default": 1,
+                              "minimum": 1,
+                              "maximum": 8
+                           },
+                           "completion_queue_count_per_vf": {
+                              "description": "LAN Connectivity Policy - vNIC SRIOV Settings - Completion Queue Count per VF",
+                              "type": "integer",
+                              "default": 5,
+                              "minimum": 1,
+                              "maximum": 16
+                           },
+                           "interrupt_count_per_vf": {
+                              "description": "LAN Connectivity Policy - vNIC SRIOV Settings - Interrupt Count per VF",
+                              "type": "integer",
+                              "default": 8,
+                              "minimum": 1,
+                              "maximum": 16
+                           }
+                        },
+                        "additionalProperties": false
                      },
                      "uplink_port": {
                         "description": "LAN Connectivity Policy - vNIC Uplink Port",
@@ -1030,19 +1179,84 @@
                         }
                      },
                      {
-                        "$comment": "Below is for setting constraints for usnic_settings & vmq_settings being exlusive",
-                        "if": {
-                           "required": [
-                              "usnic_settings"
-                           ]
-                        },
-                        "then": {
-                           "not": {
-                              "required": [
-                                 "vmq_settings"
-                              ]
+                        "$comment": "Below is for setting constraints for usnic_settings, vmq_settings & sriov_settings being exclusive",
+                        "allOf": [
+                           {
+                              "if": {
+                                 "required": [
+                                    "usnic_settings"
+                                 ]
+                              },
+                              "then": {
+                                 "allOf": [
+                                    {
+                                       "not": {
+                                          "required": [
+                                             "vmq_settings"
+                                          ]
+                                       }
+                                    },
+                                    {
+                                       "not": {
+                                          "required": [
+                                             "sriov_settings"
+                                          ]
+                                       }
+                                    }
+                                 ]
+                              }
+                           },
+                           {
+                              "if": {
+                                 "required": [
+                                    "vmq_settings"
+                                 ]
+                              },
+                              "then": {
+                                 "allOf": [
+                                    {
+                                       "not": {
+                                          "required": [
+                                             "usnic_settings"
+                                          ]
+                                       }
+                                    },
+                                    {
+                                       "not": {
+                                          "required": [
+                                             "sriov_settings"
+                                          ]
+                                       }
+                                    }
+                                 ]
+                              }
+                           },
+                           {
+                              "if": {
+                                 "required": [
+                                    "sriov_settings"
+                                 ]
+                              },
+                              "then": {
+                                 "allOf": [
+                                    {
+                                       "not": {
+                                          "required": [
+                                             "usnic_settings"
+                                          ]
+                                       }
+                                    },
+                                    {
+                                       "not": {
+                                          "required": [
+                                             "vmq_settings"
+                                          ]
+                                       }
+                                    }
+                                 ]
+                              }
                            }
-                        }
+                        ]
                      }
                   ]
                },

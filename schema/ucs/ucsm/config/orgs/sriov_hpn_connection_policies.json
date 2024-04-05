@@ -1,0 +1,67 @@
+{
+   "id": "sriov_hpn_connection_policies#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS ucs system config orgs sriov_hpn_connection_policies section",
+   "description": "EasyUCS ucs system config orgs sriov_hpn_connection_policies section JSON schema",
+   "type": "object",
+   "properties": {
+      "comment": {
+         "description": "SRIOV HPN Connection Policy Comments",
+         "type": "string",
+         "default": ""
+      },
+      "name": {
+         "description": "SRIOV HPN Connection Policy Name",
+         "type": "string",
+         "default": "",
+         "pattern": "^[\\-\\.:_a-zA-Z0-9]{1,16}$"
+      },
+      "descr": {
+         "description": "Description of SRIOV HPN Connection Policy",
+         "type": "string",
+         "default": "",
+         "pattern": "^[ !#$%&\\(\\)\\*\\+,\\-\\./:;\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{0,256}$"
+      },
+      "policy_owner": {
+         "description": "SRIOV HPN Connection Policy Owner (for UCS Central)",
+         "type": "string",
+         "enum": [
+            "ucs-central"
+         ]
+      },
+      "number_of_sriov_hpn_vnics": {
+         "description": "SRIOV HPN Connection Policy - Number of vNICs",
+         "type": "string",
+         "default": "0",
+         "pattern": "^[0-9]$|^[0-5][0-9]$|^6[0-4]$"
+      },
+      "transmit_queues": {
+         "description": "SRIOV HPN Connection Policy - Transmit Queues",
+         "type": "string",
+         "default": "1",
+         "pattern": "^[1-8]$"
+      },
+      "receive_queues": {
+         "description": "SRIOV HPN Connection Policy - Receive Queues",
+         "type": "string",
+         "default": "4",
+         "pattern": "^[1-8]$"
+      },
+      "completion_queues": {
+         "description": "SRIOV HPN Connection Policy - Completion Queues",
+         "type": "string",
+         "default": "5",
+         "pattern": "^[1-9]$|^1[0-6]$"
+      },
+      "interrupt_count": {
+         "description": "SRIOV HPN Connection Policy - Interrupt Count",
+         "type": "string",
+         "default": "8",
+         "pattern": "^[1-9]$|^1[0-6]$"
+      }
+   },
+   "additionalProperties": false,
+   "required": [
+      "name"
+   ]
+}

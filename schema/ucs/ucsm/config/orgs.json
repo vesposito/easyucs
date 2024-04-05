@@ -424,6 +424,16 @@
          },
          "minItems": 1
       },
+      "sriov_hpn_connection_policies": {
+         "description": "EasyUCS config/orgs/sriov_hpn_connection_policies section",
+         "type": "array",
+         "items": {
+            "description:": "EasyUCS config/orgs/sriov_hpn_connection_policies element",
+            "type": "object",
+            "$ref": "orgs/sriov_hpn_connection_policies.json"
+         },
+         "minItems": 1
+      },
       "storage_connection_policies": {
          "description": "EasyUCS config/orgs/storage_connection_policies section",
          "type": "array",

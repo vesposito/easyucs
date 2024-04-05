@@ -864,7 +864,7 @@ class UcsCentralVlanGroup(UcsCentralConfigObject):
 
                 if "fabricPooledVlan" in self._config.sdk_objects:
                     vlans = [vlan for vlan in self._config.sdk_objects["fabricPooledVlan"]
-                             if self._parent._dn + "/fabric/lan/net-group-" + self.name in vlan.dn]
+                             if self._parent._dn + "/fabric/lan/net-group-" + self.name + "/" in vlan.dn]
                     if vlans:
                         for vlan in vlans:
                             if vlan.name != self.native_vlan:

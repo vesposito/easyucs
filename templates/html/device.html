@@ -35,6 +35,32 @@
   </div>
 </div>
 
+<div class="modal fade" id="clearConfigModal" tabindex="-1" role="dialog" aria-labelledby="clear_config_label" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="clearConfigModalLabel">Clear Config</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form id = "clearConfigForm">
+          <div class="form-group">
+            <label for="orgs_list" class="col-form-label">Select the Orgs to clear:</label>
+            <select class="form-control" multiple name="org_list" id="orgs_list">
+            </select>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        <button type="submit" class="btn btn-primary" onclick="clearConfig()">Clear Config</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="modal fade" id="editDeviceModal" tabindex="-1" role="dialog" aria-labelledby="edit_device_label" aria-hidden="true">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
@@ -192,6 +218,13 @@
             <select class="form-control" name="inventory_uuid" id="inventories_options">
             </select>
           </div>
+          <div class="form-group">
+            <label for="output_format_options" class="col-form-label">Output Format</label>
+            <select class="form-control" name="output_format" id="output_format_options">
+              <option value="docx">Word (docx)</option>
+              <option value="pdf">PDF</option>
+            </select>
+          </div>
         </form>
       </div>
       <div class="modal-footer">
@@ -239,9 +272,11 @@
           <div class="dropdown-divider"></div>
           <a class="dropdown-item dropdown-toggle" onclick="toggleGenerateReportModal(event)"><span class="mr-2" style="width: 20px; display: inline-block"><i class="fa-solid fa-book"></i></span>Generate Report</a>
           <div id="actions-separator" class="dropdown-divider" style="display: none"></div>
+          <a id="action-clear-config" class="dropdown-item dropdown-toggle" style="display: none" onclick="toggleClearConfigModal(event)"><span class="mr-2" style="width: 20px; display: inline-block"><i class="fa-solid fa-eraser"></i></span>Clear Config</a>
           <a id="action-claim-to-intersight" class="dropdown-item dropdown-toggle" style="display: none" onclick="toggleClaimToIntersightModal(event)"><span class="mr-2" style="width: 20px; display: inline-block"><i class="fa-solid fa-cloud-arrow-up"></i></span>Claim to Intersight</a>
           <a id="action-clear-intersight-claim-status" class="dropdown-item" style="display: none" onclick="clearIntersightClaimStatus()"><span class="mr-2" style="width: 20px; display: inline-block"><i class="fa-solid fa-plug-circle-xmark"></i></span>Clear Intersight Claim Status</a>
           <a id="action-clear-sel-logs" class="dropdown-item" style="display: none" onclick="clearSelLogs()"><span class="mr-2" style="width: 20px; display: inline-block"><i class="fa-solid fa-broom"></i></span>Clear SEL Logs</a>
+          <a id="action-regenerate-certificate" class="dropdown-item" style="display: none" onclick="regenerateCertificate()"><span class="mr-2" style="width: 20px; display: inline-block"><i class="fa-solid fa-key"></i></span>Regenerate Certificate</a>
         </div>
       </div>
     </div>

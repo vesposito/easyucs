@@ -43,7 +43,7 @@ from config.ucs.ucsm.ports import UcsSystemLanUplinkPort, UcsSystemAppliancePort
     UcsSystemLanPortChannel, UcsSystemAppliancePortChannel, UcsSystemBreakoutPort, UcsSystemUnifiedStoragePort, \
     UcsSystemUnifiedUplinkPort, UcsSystemFcoeUplinkPort, UcsSystemFcoeStoragePort, UcsSystemSanPortChannel, \
     UcsSystemFcoePortChannel, UcsSystemSanUplinkPort, UcsSystemSanStoragePort, UcsSystemSanUnifiedPort
-from config.ucs.ucsm.san import UcsSystemFcZoneProfile, UcsSystemSanPinGroup, UcsSystemSanTrafficMonitoringSession, \
+from config.ucs.ucsm.san import UcsSystemFcZoneProfile, UcsSystemOuiPool, UcsSystemSanPinGroup, UcsSystemSanTrafficMonitoringSession, \
     UcsSystemStorageVsan, UcsSystemVsan
 
 
@@ -66,17 +66,20 @@ class GenericUcsConfigManager(GenericConfigManager):
                 json_org["service_profiles"] = []
                 for service_profile in org.service_profiles:
                     dict_service_profile = {}
-                    for field in ["asset_tag", "assigned_server", "name", "policy_owner", "service_profile_template",
-                                  "type", "user_label"]:
-                        if field == "assigned_server":
+                    for field in ["asset_tag", "assigned_server", "name", "policy_owner", "profile_state",
+                                  "service_profile_template", "type", "user_label"]:
+                        if field in ["assigned_server", "profile_state"]:
                             if hasattr(service_profile, "operational_state") and getattr(service_profile,
                                                                                          "operational_state"):
                                 if field in service_profile.operational_state and \
                                         service_profile.operational_state[field]:
                                     dict_service_profile[field] = copy.copy(service_profile.operational_state[field])
-                                    for key in service_profile.operational_state[field]:
-                                        if not dict_service_profile[field][key]:
-                                            dict_service_profile[field].pop(key)
+
+                                    # We remove the None value fields from the dictionary
+                                    if isinstance(service_profile.operational_state[field], dict):
+                                        for key in service_profile.operational_state[field]:
+                                            if not dict_service_profile[field][key]:
+                                                dict_service_profile[field].pop(key)
                         elif hasattr(service_profile, field) and getattr(service_profile, field):
                             dict_service_profile[field] = getattr(service_profile, field)
                     json_org["service_profiles"].append(dict_service_profile)
@@ -241,28 +244,33 @@ class UcsSystemConfigManager(GenericUcsConfigManager):
             if config.sdk_objects["qosclassSlowDrain"]:
                 config.slow_drain_timers.append(UcsSystemSlowDrainTimers(parent=config))
 
-        for ucs_central in config.sdk_objects['policyControlEp']:
-            config.ucs_central.append(UcsSystemUcsCentral(parent=config))
+        if "policyControlEp" in config.sdk_objects:
+            for ucs_central in config.sdk_objects['policyControlEp']:
+                config.ucs_central.append(UcsSystemUcsCentral(parent=config))
 
-        for network_element in config.sdk_objects["networkElement"]:
-            config.management_interfaces.append(UcsSystemManagementInterface(parent=config,
-                                                                             network_element=network_element))
+        if "networkElement" in config.sdk_objects:
+            for network_element in config.sdk_objects["networkElement"]:
+                config.management_interfaces.append(UcsSystemManagementInterface(parent=config,
+                                                                                 network_element=network_element))
 
-        for aaa_locale in config.sdk_objects['aaaLocale']:
-            config.locales.append(UcsSystemLocale(parent=config, aaa_locale=aaa_locale))
+        if "aaaLocale" in config.sdk_objects:
+            for aaa_locale in config.sdk_objects['aaaLocale']:
+                config.locales.append(UcsSystemLocale(parent=config, aaa_locale=aaa_locale))
 
-        for aaa_role in config.sdk_objects["aaaRole"]:
-            config.roles.append(UcsSystemRole(parent=config, aaa_role=aaa_role))
+        if "aaaRole" in config.sdk_objects:
+            for aaa_role in config.sdk_objects["aaaRole"]:
+                config.roles.append(UcsSystemRole(parent=config, aaa_role=aaa_role))
 
-        for aaa_user in config.sdk_objects["aaaUser"]:
-            # We except users that have been automatically pushed by UCS Central for cross-launch authentication since
-            # they are for internal use. They begin with "ucsc_".
-            if hasattr(aaa_user, "name"):
-                if aaa_user.name.startswith("ucsc_"):
-                    self.logger(level="debug", message="Ignoring Local User " + aaa_user.name +
-                                                       " since it has been pushed by UCS Central")
-                else:
-                    config.local_users.append(UcsSystemLocalUser(parent=config, aaa_user=aaa_user))
+        if "aaaUser" in config.sdk_objects:
+            for aaa_user in config.sdk_objects["aaaUser"]:
+                # We except users that have been automatically pushed by UCS Central for cross-launch authentication
+                # since they are for internal use. They begin with "ucsc_".
+                if hasattr(aaa_user, "name"):
+                    if aaa_user.name.startswith("ucsc_"):
+                        self.logger(level="debug", message="Ignoring Local User " + aaa_user.name +
+                                                           " since it has been pushed by UCS Central")
+                    else:
+                        config.local_users.append(UcsSystemLocalUser(parent=config, aaa_user=aaa_user))
 
         for qos_class in list(config.sdk_objects["qosclassEthClassified"] + config.sdk_objects["qosclassFc"] +
                               config.sdk_objects["qosclassEthBE"]):
@@ -273,31 +281,42 @@ class UcsSystemConfigManager(GenericUcsConfigManager):
                 config.fc_zone_profiles.append(UcsSystemFcZoneProfile(parent=config,
                                                                       fabric_fc_zone_profile=fabric_fc_zone_profile))
 
-        for fabric_udld_link_policy in config.sdk_objects["fabricUdldLinkPolicy"]:
-            config.udld_link_policies.append(UcsSystemUdldLinkPolicy(parent=config,
-                                                                     fabric_udld_link_policy=fabric_udld_link_policy))
+        if "fabricUdldLinkPolicy" in config.sdk_objects:
+            for fabric_udld_link_policy in config.sdk_objects["fabricUdldLinkPolicy"]:
+                config.udld_link_policies.append(UcsSystemUdldLinkPolicy(
+                    parent=config, fabric_udld_link_policy=fabric_udld_link_policy)
+                )
 
-        for fabric_eth_link_profile in config.sdk_objects["fabricEthLinkProfile"]:
-            config.link_profiles.append(UcsSystemLinkProfile(parent=config,
-                                                             fabric_eth_link_profile=fabric_eth_link_profile))
+        if "fabricEthLinkProfile" in config.sdk_objects:
+            for fabric_eth_link_profile in config.sdk_objects["fabricEthLinkProfile"]:
+                config.link_profiles.append(UcsSystemLinkProfile(parent=config,
+                                                                 fabric_eth_link_profile=fabric_eth_link_profile))
 
-        for nwctrl_definition in config.sdk_objects["nwctrlDefinition"]:
-            if nwctrl_definition.dn.startswith("fabric/eth-estc"):
-                config.appliance_network_control_policies.append(
-                    UcsSystemApplianceNetworkControlPolicy(parent=config, nwctrl_definition=nwctrl_definition))
+        if "fcpoolOuis" in config.sdk_objects:
+            for fcpool_ouis in config.sdk_objects["fcpoolOuis"]:
+                config.oui_pools.append(UcsSystemOuiPool(parent=config, fcpool_ouis=fcpool_ouis))
+
+        if "nwctrlDefinition" in config.sdk_objects:
+            for nwctrl_definition in config.sdk_objects["nwctrlDefinition"]:
+                if nwctrl_definition.dn.startswith("fabric/eth-estc"):
+                    config.appliance_network_control_policies.append(
+                        UcsSystemApplianceNetworkControlPolicy(parent=config, nwctrl_definition=nwctrl_definition))
 
         # Port configuration
         # We start with Unified Uplink & Unified Storage ports, as those are special and group 2 roles in 1
-        for ether_pio in config.sdk_objects["etherPIo"]:
-            if ether_pio.if_role == "network-fcoe-uplink":
-                config.unified_uplink_ports.append(UcsSystemUnifiedUplinkPort(parent=config, ether_pio=ether_pio))
+        if "etherPIo" in config.sdk_objects:
+            for ether_pio in config.sdk_objects["etherPIo"]:
+                if ether_pio.if_role == "network-fcoe-uplink":
+                    config.unified_uplink_ports.append(UcsSystemUnifiedUplinkPort(parent=config, ether_pio=ether_pio))
 
-        for ether_pio in config.sdk_objects["etherPIo"]:
-            if ether_pio.if_role == "fcoe-nas-storage":
-                config.unified_storage_ports.append(UcsSystemUnifiedStoragePort(parent=config, ether_pio=ether_pio))
+            for ether_pio in config.sdk_objects["etherPIo"]:
+                if ether_pio.if_role == "fcoe-nas-storage":
+                    config.unified_storage_ports.append(UcsSystemUnifiedStoragePort(parent=config, ether_pio=ether_pio))
 
-        for fabric_eth_lan_ep in config.sdk_objects["fabricEthLanEp"]:
-            config.lan_uplink_ports.append(UcsSystemLanUplinkPort(parent=config, fabric_eth_lan_ep=fabric_eth_lan_ep))
+        if "fabricEthLanEp" in config.sdk_objects:
+            for fabric_eth_lan_ep in config.sdk_objects["fabricEthLanEp"]:
+                config.lan_uplink_ports.append(UcsSystemLanUplinkPort(parent=config,
+                                                                      fabric_eth_lan_ep=fabric_eth_lan_ep))
 
         # We remove LAN Uplink ports that are already part of Unified Uplink ports
         for unified_uplink_port in config.unified_uplink_ports:
@@ -315,8 +334,10 @@ class UcsSystemConfigManager(GenericUcsConfigManager):
                                                              for t in re.split('(\d+)', port.dn)]):
             config.server_ports.append(UcsSystemServerPort(parent=config, fabric_dce_sw_srv_ep=fabric_dce_sw_srv_ep))
 
-        for fabric_eth_estc_ep in config.sdk_objects["fabricEthEstcEp"]:
-            config.appliance_ports.append(UcsSystemAppliancePort(parent=config, fabric_eth_estc_ep=fabric_eth_estc_ep))
+        if "fabricEthEstcEp" in config.sdk_objects:
+            for fabric_eth_estc_ep in config.sdk_objects["fabricEthEstcEp"]:
+                config.appliance_ports.append(UcsSystemAppliancePort(parent=config,
+                                                                     fabric_eth_estc_ep=fabric_eth_estc_ep))
 
         # We remove Appliance ports that are already part of Unified Storage ports
         for unified_storage_port in config.unified_storage_ports:
@@ -327,21 +348,26 @@ class UcsSystemConfigManager(GenericUcsConfigManager):
                         unified_storage_port.aggr_id == appliance_port.aggr_id):
                     config.appliance_ports.remove(appliance_port)
 
-        for fabric_vlan in config.sdk_objects["fabricVlan"]:
-            if fabric_vlan.dn.startswith("fabric/lan"):
-                config.vlans.append(UcsSystemVlan(parent=config, fabric_vlan=fabric_vlan))
-            elif fabric_vlan.dn.startswith("fabric/eth-estc"):
-                config.appliance_vlans.append(UcsSystemApplianceVlan(parent=config, fabric_vlan=fabric_vlan))
+        if "fabricVlan" in config.sdk_objects:
+            for fabric_vlan in config.sdk_objects["fabricVlan"]:
+                if fabric_vlan.dn.startswith("fabric/lan"):
+                    config.vlans.append(UcsSystemVlan(parent=config, fabric_vlan=fabric_vlan))
+                elif fabric_vlan.dn.startswith("fabric/eth-estc"):
+                    config.appliance_vlans.append(UcsSystemApplianceVlan(parent=config, fabric_vlan=fabric_vlan))
 
-        for fabric_fc_san_ep in config.sdk_objects["fabricFcSanEp"]:
-            config.san_uplink_ports.append(UcsSystemSanUplinkPort(parent=config, fabric_fc_san_ep=fabric_fc_san_ep))
+        if "fabricFcSanEp" in config.sdk_objects:
+            for fabric_fc_san_ep in config.sdk_objects["fabricFcSanEp"]:
+                config.san_uplink_ports.append(UcsSystemSanUplinkPort(parent=config, fabric_fc_san_ep=fabric_fc_san_ep))
 
-        for fabric_fc_estc_ep in config.sdk_objects["fabricFcEstcEp"]:
-            config.san_storage_ports.append(UcsSystemSanStoragePort(parent=config, fabric_fc_estc_ep=fabric_fc_estc_ep))
+        if "fabricFcEstcEp" in config.sdk_objects:
+            for fabric_fc_estc_ep in config.sdk_objects["fabricFcEstcEp"]:
+                config.san_storage_ports.append(UcsSystemSanStoragePort(parent=config,
+                                                                        fabric_fc_estc_ep=fabric_fc_estc_ep))
 
-        for fabric_fcoe_san_ep in config.sdk_objects["fabricFcoeSanEp"]:
-            config.fcoe_uplink_ports.append(UcsSystemFcoeUplinkPort(parent=config,
-                                                                    fabric_fcoe_san_ep=fabric_fcoe_san_ep))
+        if "fabricFcoeSanEp" in config.sdk_objects:
+            for fabric_fcoe_san_ep in config.sdk_objects["fabricFcoeSanEp"]:
+                config.fcoe_uplink_ports.append(UcsSystemFcoeUplinkPort(parent=config,
+                                                                        fabric_fcoe_san_ep=fabric_fcoe_san_ep))
 
         # We remove FCoE Uplink ports that are already part of Unified Uplink ports
         for unified_uplink_port in config.unified_uplink_ports:
@@ -352,9 +378,10 @@ class UcsSystemConfigManager(GenericUcsConfigManager):
                         unified_uplink_port.aggr_id == fcoe_uplink_port.aggr_id):
                     config.fcoe_uplink_ports.remove(fcoe_uplink_port)
 
-        for fabric_fcoe_estc_ep in config.sdk_objects["fabricFcoeEstcEp"]:
-            config.fcoe_storage_ports.append(UcsSystemFcoeStoragePort(parent=config,
-                                                                      fabric_fcoe_estc_ep=fabric_fcoe_estc_ep))
+        if "fabricFcoeEstcEp" in config.sdk_objects:
+            for fabric_fcoe_estc_ep in config.sdk_objects["fabricFcoeEstcEp"]:
+                config.fcoe_storage_ports.append(UcsSystemFcoeStoragePort(parent=config,
+                                                                          fabric_fcoe_estc_ep=fabric_fcoe_estc_ep))
 
         # We remove FCoE Storage ports that are already part of Unified Storage ports
         for unified_storage_port in config.unified_storage_ports:
@@ -365,39 +392,51 @@ class UcsSystemConfigManager(GenericUcsConfigManager):
                         unified_storage_port.aggr_id == fcoe_storage_port.aggr_id):
                     config.fcoe_storage_ports.remove(fcoe_storage_port)
 
-        for fabric_vsan in config.sdk_objects["fabricVsan"]:
-            if fabric_vsan.dn.startswith("fabric/san"):
-                config.vsans.append(UcsSystemVsan(parent=config, fabric_vsan=fabric_vsan))
-            elif fabric_vsan.dn.startswith("fabric/fc-estc"):
-                config.storage_vsans.append(UcsSystemStorageVsan(parent=config, fabric_vsan=fabric_vsan))
+        if "fabricVsan" in config.sdk_objects:
+            for fabric_vsan in config.sdk_objects["fabricVsan"]:
+                if fabric_vsan.dn.startswith("fabric/san"):
+                    config.vsans.append(UcsSystemVsan(parent=config, fabric_vsan=fabric_vsan))
+                elif fabric_vsan.dn.startswith("fabric/fc-estc"):
+                    config.storage_vsans.append(UcsSystemStorageVsan(parent=config, fabric_vsan=fabric_vsan))
 
-        for fabric_eth_lan_pc in config.sdk_objects["fabricEthLanPc"]:
-            config.lan_port_channels.append(UcsSystemLanPortChannel(parent=config, fabric_eth_lan_pc=fabric_eth_lan_pc))
+        if "fabricEthLanPc" in config.sdk_objects:
+            for fabric_eth_lan_pc in config.sdk_objects["fabricEthLanPc"]:
+                config.lan_port_channels.append(UcsSystemLanPortChannel(parent=config,
+                                                                        fabric_eth_lan_pc=fabric_eth_lan_pc))
 
-        for fabric_fcoe_san_pc in config.sdk_objects["fabricFcoeSanPc"]:
-            config.fcoe_port_channels.append(
-                UcsSystemFcoePortChannel(parent=config, fabric_fcoe_san_pc=fabric_fcoe_san_pc))
+        if "fabricFcoeSanPc" in config.sdk_objects:
+            for fabric_fcoe_san_pc in config.sdk_objects["fabricFcoeSanPc"]:
+                config.fcoe_port_channels.append(
+                    UcsSystemFcoePortChannel(parent=config, fabric_fcoe_san_pc=fabric_fcoe_san_pc))
 
-        for fabric_fc_san_pc in config.sdk_objects["fabricFcSanPc"]:
-            config.san_port_channels.append(
-                UcsSystemSanPortChannel(parent=config, fabric_fc_san_pc=fabric_fc_san_pc))
+        if "fabricFcSanPc" in config.sdk_objects:
+            for fabric_fc_san_pc in config.sdk_objects["fabricFcSanPc"]:
+                config.san_port_channels.append(
+                    UcsSystemSanPortChannel(parent=config, fabric_fc_san_pc=fabric_fc_san_pc))
 
-        for fabric_eth_estc_pc in config.sdk_objects["fabricEthEstcPc"]:
-            config.appliance_port_channels.append(UcsSystemAppliancePortChannel(parent=config,
-                                                                                fabric_eth_estc_pc=fabric_eth_estc_pc))
+        if "fabricEthEstcPc" in config.sdk_objects:
+            for fabric_eth_estc_pc in config.sdk_objects["fabricEthEstcPc"]:
+                config.appliance_port_channels.append(UcsSystemAppliancePortChannel(
+                    parent=config, fabric_eth_estc_pc=fabric_eth_estc_pc)
+                )
 
-        for fabric_net_group in config.sdk_objects["fabricNetGroup"]:
-            # We skip specific internal VLAN Groups that are used for VLAN Port Count Optimization feature
-            if fabric_net_group.type in ["vlan-compression", "vlan-uncompressed", "vp-compression"]:
-                self.logger(level="debug", message="Skipping internal VLAN Group " + fabric_net_group.name)
-            else:
-                config.vlan_groups.append(UcsSystemVlanGroup(parent=config, fabric_net_group=fabric_net_group))
+        if "fabricNetGroup" in config.sdk_objects:
+            for fabric_net_group in config.sdk_objects["fabricNetGroup"]:
+                # We skip specific internal VLAN Groups that are used for VLAN Port Count Optimization feature
+                if fabric_net_group.type in ["vlan-compression", "vlan-uncompressed", "vp-compression"]:
+                    self.logger(level="debug", message="Skipping internal VLAN Group " + fabric_net_group.name)
+                else:
+                    config.vlan_groups.append(UcsSystemVlanGroup(parent=config, fabric_net_group=fabric_net_group))
 
-        for fabric_lan_pin_group in config.sdk_objects["fabricLanPinGroup"]:
-            config.lan_pin_groups.append(UcsSystemLanPinGroup(parent=config, fabric_lan_pin_group=fabric_lan_pin_group))
+        if "fabricLanPinGroup" in config.sdk_objects:
+            for fabric_lan_pin_group in config.sdk_objects["fabricLanPinGroup"]:
+                config.lan_pin_groups.append(UcsSystemLanPinGroup(parent=config,
+                                                                  fabric_lan_pin_group=fabric_lan_pin_group))
 
-        for fabric_san_pin_group in config.sdk_objects["fabricSanPinGroup"]:
-            config.san_pin_groups.append(UcsSystemSanPinGroup(parent=config, fabric_san_pin_group=fabric_san_pin_group))
+        if "fabricSanPinGroup" in config.sdk_objects:
+            for fabric_san_pin_group in config.sdk_objects["fabricSanPinGroup"]:
+                config.san_pin_groups.append(UcsSystemSanPinGroup(parent=config,
+                                                                  fabric_san_pin_group=fabric_san_pin_group))
 
         if "fabricBreakout" in config.sdk_objects:
             for fabric_breakout in config.sdk_objects["fabricBreakout"]:
@@ -452,10 +491,11 @@ class UcsSystemConfigManager(GenericUcsConfigManager):
                                                fabric_eth_lan_flow_monitoring=fabric_eth_lan_flow_monitoring)
                 )
 
-        for org_org in sorted(config.sdk_objects["orgOrg"], key=lambda org: org.dn):
-            if org_org.dn == "org-root":
-                config.orgs.append(UcsSystemOrg(parent=config, org_org=org_org))
-                break
+        if "orgOrg" in config.sdk_objects:
+            for org_org in sorted(config.sdk_objects["orgOrg"], key=lambda org: org.dn):
+                if org_org.dn == "org-root":
+                    config.orgs.append(UcsSystemOrg(parent=config, org_org=org_org))
+                    break
 
         # Removing the list of SDK objects fetched from the live UCS device
         config.sdk_objects = None
@@ -609,7 +649,7 @@ class UcsSystemConfigManager(GenericUcsConfigManager):
 
                 # Wait loop for FI cluster election to complete
                 if self.parent.sys_mode == "cluster":
-                    message_str = "Waiting up to 240 seconds for cluster election to complete"
+                    message_str = "Waiting up to 300 seconds for cluster election to complete"
                     if self.parent.task is not None:
                         self.parent.task.taskstep_manager.start_taskstep(
                             name="WaitForClusterElectionUcsSystem", description=message_str)
@@ -630,7 +670,7 @@ class UcsSystemConfigManager(GenericUcsConfigManager):
                         return False
 
                 elif self.parent.sys_mode == "stand-alone":
-                    message_str = "Waiting up to 180 seconds for initial configuration to complete"
+                    message_str = "Waiting up to 240 seconds for initial configuration to complete"
                     if self.parent.task is not None:
                         self.parent.task.taskstep_manager.start_taskstep(
                             name="WaitForClusterElectionUcsSystem", description=message_str)
@@ -685,7 +725,7 @@ class UcsSystemConfigManager(GenericUcsConfigManager):
                 config.refresh_config_handle()
 
                 if not common.check_web_page(device=self.parent, url="https://" + self.parent.target, str_match="Cisco",
-                                             timeout=160):
+                                             timeout=220):
                     message_str = "Impossible to reconnect to UCS system"
                     if self.parent.task is not None:
                         self.parent.task.taskstep_manager.stop_taskstep(
@@ -789,6 +829,9 @@ class UcsSystemConfigManager(GenericUcsConfigManager):
                 is_pushed = management_interface.push_object() and is_pushed
             if config.call_home:
                 is_pushed = config.call_home[0].push_object() and is_pushed
+            if config.oui_pools:
+                for oui in config.oui_pools:
+                    is_pushed = oui.push_object() and is_pushed
             for timezone_mgmt in config.timezone_mgmt:
                 is_pushed = timezone_mgmt.push_object() and is_pushed
             if config.local_users_properties:
@@ -1260,6 +1303,9 @@ class UcsSystemConfigManager(GenericUcsConfigManager):
         if "fc_zone_profiles" in config_json:
             for policy in config_json["fc_zone_profiles"]:
                 config.fc_zone_profiles.append(UcsSystemFcZoneProfile(parent=config, json_content=policy))
+        if "oui_pools" in config_json:
+            for oui in config_json["oui_pools"]:
+                config.oui_pools.append(UcsSystemOuiPool(parent=config, json_content=oui))
         if "udld_link_policies" in config_json:
             for policy in config_json["udld_link_policies"]:
                 config.udld_link_policies.append(UcsSystemUdldLinkPolicy(parent=config, json_content=policy))
@@ -1871,10 +1917,11 @@ class UcsCentralConfigManager(GenericUcsConfigManager):
         # Put in order the items to append
         config.system.append(UcsCentralSystem(parent=config))
 
-        for network_element in config.sdk_objects["networkElement"]:
-            if network_element.dn.startswith("sys/"):
-                config.management_interfaces.append(UcsCentralManagementInterface(parent=config,
-                                                                                  network_element=network_element))
+        if "networkElement" in config.sdk_objects:
+            for network_element in config.sdk_objects["networkElement"]:
+                if network_element.dn.startswith("sys/"):
+                    config.management_interfaces.append(UcsCentralManagementInterface(parent=config,
+                                                                                      network_element=network_element))
 
         config.date_time.append(UcsCentralDateTimeMgmt(parent=config))
         config.dns.append(UcsCentralDns(parent=config))
@@ -1882,25 +1929,30 @@ class UcsCentralConfigManager(GenericUcsConfigManager):
         config.snmp.append(UcsCentralSnmp(parent=config))
         config.password_profile.append(UcsCentralPasswordProfile(parent=config))
 
-        for aaa_locale in config.sdk_objects['aaaLocale']:
-            if "org-root/deviceprofile-default" in aaa_locale.dn:
-                config.locales.append(UcsCentralLocale(parent=config, aaa_locale=aaa_locale))
-        for aaa_role in config.sdk_objects["aaaRole"]:
-            if "org-root/deviceprofile-default" in aaa_role.dn:
-                config.roles.append(UcsCentralRole(parent=config, aaa_role=aaa_role))
-        for aaa_user in config.sdk_objects["aaaUser"]:
-            if "org-root/deviceprofile-default" in aaa_user.dn:
-                config.local_users.append(UcsCentralLocalUser(parent=config, aaa_user=aaa_user))
+        if "aaaLocale" in config.sdk_objects:
+            for aaa_locale in config.sdk_objects['aaaLocale']:
+                if "org-root/deviceprofile-default" in aaa_locale.dn:
+                    config.locales.append(UcsCentralLocale(parent=config, aaa_locale=aaa_locale))
+        if "aaaRole" in config.sdk_objects:
+            for aaa_role in config.sdk_objects["aaaRole"]:
+                if "org-root/deviceprofile-default" in aaa_role.dn:
+                    config.roles.append(UcsCentralRole(parent=config, aaa_role=aaa_role))
+        if "aaaUser" in config.sdk_objects:
+            for aaa_user in config.sdk_objects["aaaUser"]:
+                if "org-root/deviceprofile-default" in aaa_user.dn:
+                    config.local_users.append(UcsCentralLocalUser(parent=config, aaa_user=aaa_user))
 
-        for org_org in sorted(config.sdk_objects["orgOrg"], key=lambda org: org.dn):
-            if org_org.dn == "org-root":
-                config.orgs.append(UcsCentralOrg(parent=config, org_org=org_org))
-                break
+        if "orgOrg" in config.sdk_objects:
+            for org_org in sorted(config.sdk_objects["orgOrg"], key=lambda org: org.dn):
+                if org_org.dn == "org-root":
+                    config.orgs.append(UcsCentralOrg(parent=config, org_org=org_org))
+                    break
 
-        for org_domain_group in sorted(config.sdk_objects["orgDomainGroup"], key=lambda org: org.dn):
-            if org_domain_group.dn == "domaingroup-root":
-                config.domain_groups.append(UcsCentralDomainGroup(parent=config, org_domain_group=org_domain_group))
-                break
+        if "orgDomainGroup" in config.sdk_objects:
+            for org_domain_group in sorted(config.sdk_objects["orgDomainGroup"], key=lambda org: org.dn):
+                if org_domain_group.dn == "domaingroup-root":
+                    config.domain_groups.append(UcsCentralDomainGroup(parent=config, org_domain_group=org_domain_group))
+                    break
 
         # Determining VxAN aliasing
         if config._determine_vxan_aliasing():

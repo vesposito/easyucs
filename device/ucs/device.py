@@ -49,10 +49,12 @@ class GenericUcsDevice(GenericDevice, DeviceConnector):
     _PUSH_INTERVAL_AFTER_FAIL = 5
 
     def __init__(self, parent=None, uuid=None, target="", user="", password="", is_hidden=False, is_system=False,
-                 system_usage=None, logger_handle_log_level="info", log_file_path=None, bypass_version_checks=False):
+                 system_usage=None, logger_handle_log_level="info", log_file_path=None, bypass_connection_checks=False,
+                 bypass_version_checks=False):
         GenericDevice.__init__(self, parent=parent, uuid=uuid, target=target, password=password, user=user,
                                is_hidden=is_hidden, is_system=is_system, system_usage=system_usage,
                                logger_handle_log_level=logger_handle_log_level, log_file_path=log_file_path,
+                               bypass_connection_checks=bypass_connection_checks,
                                bypass_version_checks=bypass_version_checks)
 
         self.handle = None
@@ -283,10 +285,12 @@ class UcsSystem(GenericUcsDevice):
     UCS_SYSTEM_MIN_REQUIRED_VERSION = "3.1(3a)"
 
     def __init__(self, parent=None, uuid=None, target="", user="", password="", is_hidden=False, is_system=False,
-                 system_usage=None, logger_handle_log_level="info", log_file_path=None, bypass_version_checks=False):
+                 system_usage=None, logger_handle_log_level="info", log_file_path=None, bypass_connection_checks=False,
+                 bypass_version_checks=False):
         GenericUcsDevice.__init__(self, parent=parent, uuid=uuid, target=target, password=password, user=user,
                                   is_hidden=is_hidden, is_system=is_system, system_usage=system_usage,
                                   logger_handle_log_level=logger_handle_log_level, log_file_path=log_file_path,
+                                  bypass_connection_checks=bypass_connection_checks,
                                   bypass_version_checks=bypass_version_checks)
         self.fi_a_model = ""
         self.fi_b_model = ""
@@ -609,8 +613,8 @@ class UcsSystem(GenericUcsDevice):
             self.set_task_progression(30)
 
             # Wait until FI A has processed configuration - needed for FI B to recognize that its peer is configured
-            self.logger(message="Waiting up to 120 seconds for FI A configuration to be processed")
-            if not common.check_web_page(self, "https://" + fi_a_target_ip_address, "Cisco", 120):
+            self.logger(message="Waiting up to 180 seconds for FI A configuration to be processed")
+            if not common.check_web_page(self, "https://" + fi_a_target_ip_address, "Cisco", 180):
                 self.logger(level="error", message="Impossible to reconnect to FI A after the initial configuration")
                 return False
 
@@ -730,11 +734,12 @@ class UcsSystem(GenericUcsDevice):
                                                    f"device {self.name} from Intersight")
                 return False
         else:
-            self.task.taskstep_manager.skip_taskstep(
-                name="ClearIntersightClaimStatus",
-                status_message=f"Skipping the unclaim of {self.metadata.device_type_long} device {self.name} since "
-                               f"it is not claimed to Intersight"
-            )
+            if self.task is not None:
+                self.task.taskstep_manager.skip_taskstep(
+                    name="ClearIntersightClaimStatus",
+                    status_message=f"Skipping the unclaim of {self.metadata.device_type_long} device {self.name} since "
+                                   f"it is not claimed to Intersight"
+                )
 
         if decommission_rack_servers:
             # Decommissioning Rack servers
@@ -743,11 +748,12 @@ class UcsSystem(GenericUcsDevice):
                                                    f"{self.metadata.device_type_long} device {self.name}")
                 return False
         else:
-            self.task.taskstep_manager.skip_taskstep(
-                name="DecommissionAllRackServers",
-                status_message=f"Skipping the decommissioning of rack servers in {self.metadata.device_type_long} "
-                               f"device {self.name}"
-            )
+            if self.task is not None:
+                self.task.taskstep_manager.skip_taskstep(
+                    name="DecommissionAllRackServers",
+                    status_message=f"Skipping the decommissioning of rack servers in {self.metadata.device_type_long} "
+                                   f"device {self.name}"
+                )
 
         if erase_flexflash:
             self.erase_flexflash()
@@ -962,7 +968,7 @@ class UcsSystem(GenericUcsDevice):
                                f"{self.metadata.device_type_long} device {self.name}")
         return True
 
-    def regenerate_default_keyring_certificate(self):
+    def regenerate_certificate(self):
         """
         Regenerates default keyring certificate. The default lifespan is one year.
         :return: True if successful, False otherwise
@@ -973,47 +979,95 @@ class UcsSystem(GenericUcsDevice):
         if not self.is_connected():
             self.connect()
         try:
-            self.logger(level="debug", message="Regenerating Default Keyring Certificate")
+            if self.task is not None:
+                self.task.taskstep_manager.start_taskstep(
+                    name="RegenerateDefaultKeyringCertificate",
+                    description=f"Regenerating Default Keyring Certificate of {self.metadata.device_type_long} " +
+                                f"device {self.name}")
+
+            self.logger(level="info", message="Regenerating Default Keyring Certificate")
 
             mo_keyring = self.handle.query_dn("sys/pki-ext/keyring-default")
             mo_keyring.regen = "true"
 
             cert = x509.load_pem_x509_certificate(mo_keyring.cert.encode(), default_backend())
 
-            self.logger(level="info", message="Current certificate valid until " + str(cert.not_valid_after))
+            self.logger(level="info", message="Current certificate valid until " + str(cert.not_valid_after_utc))
 
             self.handle.add_mo(mo=mo_keyring, modify_present=True)
             self.handle.commit()
             self.logger(level="info", message="Default Keyring Certificate Regenerated")
 
+            if self.task is not None:
+                self.task.taskstep_manager.stop_taskstep(
+                    name="RegenerateDefaultKeyringCertificate", status="successful",
+                    status_message=f"Successfully regenerated Default Keyring Certificate of " +
+                                   f"{self.metadata.device_type_long} device {self.name}")
+
             self.disconnect()
-            self.logger(level="info", message="Waiting up to 30 seconds for the new certificate to be loaded")
-            time.sleep(10)
-            if not common.check_web_page(device=self, url="https://" + self.target, str_match="Cisco", timeout=20):
-                self.logger(level="error",
-                            message="Impossible to reconnect after Regenerating Default Keyring Certificate")
+
+            if self.task is not None:
+                self.task.taskstep_manager.start_taskstep(
+                    name="WaitForCertificateLoad",
+                    description=f"Waiting up to 30 seconds for the new certificate to be loaded on " +
+                                f"{self.metadata.device_type_long} device {self.name}")
+            self.logger(level="info", message="Waiting up to 60 seconds for the new certificate to be loaded")
+            time.sleep(20)
+            if not common.check_web_page(device=self, url="https://" + self.target, str_match="Cisco", timeout=40):
+                error_msg = "Impossible to reconnect after Regenerating Default Keyring Certificate"
+                self.logger(level="error", message=error_msg)
+                if self.task is not None:
+                    self.task.taskstep_manager.stop_taskstep(
+                        name="WaitForCertificateLoad", status="failed", status_message=error_msg)
                 return False
 
+            if self.task is not None:
+                self.task.taskstep_manager.stop_taskstep(
+                    name="WaitForCertificateLoad", status="successful",
+                    status_message=f"Successfully loaded new certificate of " +
+                                   f"{self.metadata.device_type_long} device {self.name}")
+
             self.connect()
+
+            if self.task is not None:
+                self.task.taskstep_manager.start_taskstep(
+                    name="CheckNewCertificateValidity",
+                    description=f"Checking validity of the new certificate loaded on " +
+                                f"{self.metadata.device_type_long} device {self.name}")
             mo_keyring = self.handle.query_dn("sys/pki-ext/keyring-default")
             cert = x509.load_pem_x509_certificate(mo_keyring.cert.encode(), default_backend())
-            self.logger(level="info", message="New certificate valid until " + str(cert.not_valid_after))
+            self.logger(level="info", message="New certificate valid until " + str(cert.not_valid_after_utc))
+            if self.task is not None:
+                self.task.taskstep_manager.stop_taskstep(
+                    name="CheckNewCertificateValidity", status="successful",
+                    status_message=f"New certificate valid until " + str(cert.not_valid_after_utc) + " on "
+                                   f"{self.metadata.device_type_long} device {self.name}")
 
             return True
 
         except UcsException as err:
-            self.logger(level="error",
-                        message="Error while Regenerating Default Keyring Certificate: " + err.error_descr)
+            error_msg = "Error while Regenerating Default Keyring Certificate: " + err.error_descr
+            self.logger(level="error", message=error_msg)
+            if self.task is not None:
+                self.task.taskstep_manager.stop_taskstep(
+                    name="RegenerateDefaultKeyringCertificate", status="failed", status_message=error_msg)
             return False
         except urllib.error.URLError:
-            self.logger(level="error",
-                        message="Timeout Error while Regenerating Default Keyring Certificate")
+            error_msg = "Timeout Error while Regenerating Default Keyring Certificate"
+            self.logger(level="error", message=error_msg)
+            if self.task is not None:
+                self.task.taskstep_manager.stop_taskstep(
+                    name="RegenerateDefaultKeyringCertificate", status="failed", status_message=error_msg)
             return False
         except Exception as err:
-            self.logger(level="error", message="Error while Regenerating Default Keyring Certificate: " + str(err))
+            error_msg = "Error while Regenerating Default Keyring Certificate: " + str(err)
+            self.logger(level="error", message=error_msg)
+            if self.task is not None:
+                self.task.taskstep_manager.stop_taskstep(
+                    name="RegenerateDefaultKeyringCertificate", status="failed", status_message=error_msg)
             return False
 
-    def is_default_keyring_certificate_expired(self):
+    def is_certificate_expired(self):
         """
         Checks if default keyring certificate is expired.
         :return: True if expired, False otherwise
@@ -1793,10 +1847,12 @@ class UcsImc(GenericUcsDevice):
     UCS_IMC_MIN_REQUIRED_VERSION = "3.0(1c)"
 
     def __init__(self, parent=None, uuid=None, target="", user="", password="", is_hidden=False, is_system=False,
-                 system_usage=None, logger_handle_log_level="info", log_file_path=None, bypass_version_checks=False):
+                 system_usage=None, logger_handle_log_level="info", log_file_path=None, bypass_connection_checks=False,
+                 bypass_version_checks=False):
         GenericUcsDevice.__init__(self, parent=parent, uuid=uuid, target=target, user=user, password=password,
                                   is_hidden=is_hidden, is_system=is_system, system_usage=system_usage,
                                   logger_handle_log_level=logger_handle_log_level, log_file_path=log_file_path,
+                                  bypass_connection_checks=bypass_connection_checks,
                                   bypass_version_checks=bypass_version_checks)
         self.handle = ImcHandle(ip=target, username=user, password=password)
         self.platform_type = ""
@@ -1974,11 +2030,12 @@ class UcsImc(GenericUcsDevice):
                                                    f"device {self.name} from Intersight")
                 return False
         else:
-            self.task.taskstep_manager.skip_taskstep(
-                name="ClearIntersightClaimStatus",
-                status_message=f"Skipping the unclaim of {self.metadata.device_type_long} device {self.name} since "
-                               f"it is not claimed to Intersight"
-            )
+            if self.task is not None:
+                self.task.taskstep_manager.skip_taskstep(
+                    name="ClearIntersightClaimStatus",
+                    status_message=f"Skipping the unclaim of {self.metadata.device_type_long} device {self.name} since "
+                                   f"it is not claimed to Intersight"
+                )
 
         if erase_flexflash:
             self.erase_flexflash()
@@ -2147,6 +2204,422 @@ class UcsImc(GenericUcsDevice):
             self.task.taskstep_manager.stop_taskstep(
                 name="EraseConfiguration", status="successful", status_message=error_msg)
         return True
+
+    def regenerate_certificate(self):
+        """
+        Regenerates self-signed certificate. The default lifespan is 3 years.
+        :return: True if successful, False otherwise
+        """
+        from imcsdk.mometa.generate.GenerateCertificateSigningRequest import GenerateCertificateSigningRequest
+
+        country_codes = {
+            "Albania": "AL",
+            "Algeria": "DZ",
+            "American Samoa": "AS",
+            "Andorra": "AD",
+            "Angola": "AO",
+            "Anguilla": "AI",
+            "Antarctica": "AQ",
+            "Antigua and Barbuda": "AG",
+            "Argentina": "AR",
+            "Armenia": "AM",
+            "Aruba": "AW",
+            "Australia": "AU",
+            "Austria": "AT",
+            "Azerbaijan": "AZ",
+            "Bahamas": "BS",
+            "Bahrain": "BH",
+            "Bangladesh": "BD",
+            "Barbados": "BB",
+            "Belarus": "BY",
+            "Belgium": "BE",
+            "Belize": "BZ",
+            "Benin": "BJ",
+            "Bermuda": "BM",
+            "Bhutan": "BT",
+            "Bolivia": "BO",
+            "Bosnia and Herzegovina": "BA",
+            "Botswana": "BW",
+            "Bouvet Island": "BV",
+            "Brazil": "BR",
+            "British Indian Ocean Territory": "IO",
+            "Brunei Darussalam": "BN",
+            "Bulgaria": "BG",
+            "Burkina Faso": "BF",
+            "Burundi": "BI",
+            "Cambodia": "KH",
+            "Cameroon": "CM",
+            "Canada": "CA",
+            "Cape Verde": "CV",
+            "Cayman Islands": "KY",
+            "Central African Republic": "CF",
+            "Chad": "TD",
+            "Chile": "CL",
+            "China": "CN",
+            "Christmas Island": "CX",
+            "Cocos (Keeling) Islands": "CC",
+            "Colombia": "CO",
+            "Comoros": "KM",
+            "Congo": "CD",
+            "Cook Islands": "CK",
+            "Costa Rica": "CR",
+            "Cote D'Ivoire (Ivory Coast)": "CI",
+            "Croatia (Hrvatska)": "HR",
+            "Cuba": "CU",
+            "Cyprus": "CY",
+            "Czech Republic": "CZ",
+            "Czechoslovakia": "CZ",
+            "Denmark": "DK",
+            "Djibouti": "DJ",
+            "Dominica": "DM",
+            "Dominican Republic": "DO",
+            "East Timor": "TL",
+            "Ecuador": "EC",
+            "Egypt": "EG",
+            "El Salvador": "SV",
+            "Equatorial Guinea": "GQ",
+            "Eritrea": "ER",
+            "Estonia": "EE",
+            "Ethiopia": "ET",
+            "Falkland Islands (Malvinas)": "FK",
+            "Faroe Islands": "FO",
+            "Fiji": "FJ",
+            "Finland": "FI",
+            "France": "FR",
+            "France, Metropolitan": "FX",
+            "French Guiana": "GF",
+            "French Polynesia": "PF",
+            "French Southern Territories": "TF",
+            "Gabon": "GA",
+            "Gambia": "GM",
+            "Georgia": "GE",
+            "Germany": "DE",
+            "Ghana": "GH",
+            "Gibraltar": "GI",
+            "Great Britain (UK)": "UK",
+            "Greece": "GR",
+            "Greenland": "GL",
+            "Grenada": "GD",
+            "Guadeloupe": "GP",
+            "Guam": "GU",
+            "Guatemala": "GT",
+            "Guinea": "GN",
+            "Guinea-Bissau": "GW",
+            "Guyana": "GY",
+            "Haiti": "HT",
+            "Heard and McDonald Islands": "HM",
+            "Honduras": "HN",
+            "Hong Kong": "HK",
+            "Hungary": "HU",
+            "Iceland": "IS",
+            "India": "IN",
+            "Indonesia": "ID",
+            "Iran": "IR",
+            "Iraq": "IQ",
+            "Ireland": "IE",
+            "Israel": "IL",
+            "Italy": "IT",
+            "Jamaica": "JM",
+            "Japan": "JP",
+            "Jordan": "JO",
+            "Kazakhstan": "KZ",
+            "Kenya": "KE",
+            "Kiribati": "KI",
+            "Korea (North)": "KP",
+            "Korea (South)": "KR",
+            "Kuwait": "KW",
+            "Kyrgyzstan": "KG",
+            "Laos": "LA",
+            "Latvia": "LV",
+            "Lebanon": "LB",
+            "Lesotho": "LS",
+            "Liberia": "LR",
+            "Libya": "LY",
+            "Liechtenstein": "LI",
+            "Lithuania": "LT",
+            "Luxembourg": "LU",
+            "Macau": "MO",
+            "Macedonia": "MK",
+            "Madagascar": "MG",
+            "Malawi": "MW",
+            "Malaysia": "MY",
+            "Maldives": "MV",
+            "Mali": "ML",
+            "Malta": "MT",
+            "Marshall Islands": "MH",
+            "Martinique": "MQ",
+            "Mauritania": "MR",
+            "Mauritius": "MU",
+            "Mayotte": "YT",
+            "Mexico": "MX",
+            "Micronesia": "FM",
+            "Moldova": "MD",
+            "Monaco": "MC",
+            "Mongolia": "MN",
+            "Montserrat": "MS",
+            "Morocco": "MA",
+            "Mozambique": "MZ",
+            "Myanmar": "MM",
+            "Namibia": "NA",
+            "Nauru": "NR",
+            "Nepal": "NP",
+            "Netherlands": "NL",
+            "Netherlands Antilles": "AN",
+            "Neutral Zone": "NT",
+            "New Caledonia": "NC",
+            "New Zealand (Aotearoa)": "NZ",
+            "Nicaragua": "NI",
+            "Niger": "NE",
+            "Nigeria": "NG",
+            "Niue": "NU",
+            "Norfolk Island": "NF",
+            "Northern Mariana Islands": "MP",
+            "Norway": "NO",
+            "Oman": "OM",
+            "Pakistan": "PK",
+            "Palau": "PW",
+            "Panama": "PA",
+            "Papua New Guinea": "PG",
+            "Paraguay": "PY",
+            "Peru": "PE",
+            "Philippines": "PH",
+            "Pitcairn": "PN",
+            "Poland": "PL",
+            "Portugal": "PT",
+            "Puerto Rico": "PR",
+            "Qatar": "QA",
+            "Reunion": "RE",
+            "Romania": "RO",
+            "Russian Federation": "RU",
+            "Rwanda": "RW",
+            "S. Georgia and S. Sandwich Isls.": "GS",
+            "Saint Kitts and Nevis": "KN",
+            "Saint Lucia": "LC",
+            "Saint Vincent and the Grenadines": "VC",
+            "Samoa": "WS",
+            "San Marino": "SM",
+            "Sao Tome and Principe": "ST",
+            "Saudi Arabia": "SA",
+            "Senegal": "SN",
+            "Seychelles": "SC",
+            "Sierra Leone": "SL",
+            "Singapore": "SG",
+            "Slovak Republic": "SK",
+            "Slovenia": "SI",
+            "Solomon Islands": "SB",
+            "Somalia": "SO",
+            "South Africa": "ZA",
+            "Spain": "ES",
+            "Sri Lanka": "LK",
+            "St. Helena": "SH",
+            "St. Pierre and Miquelon": "PM",
+            "Sudan": "SD",
+            "Suriname": "SR",
+            "Svalbard and Jan Mayen Islands": "SJ",
+            "Swaziland": "SZ",
+            "Sweden": "SE",
+            "Switzerland": "CH",
+            "Syria": "SY",
+            "Taiwan": "TW",
+            "Tajikistan": "TJ",
+            "Tanzania": "TZ",
+            "Thailand": "TH",
+            "Togo": "TG",
+            "Tokelau": "TK",
+            "Tonga": "TO",
+            "Trinidad and Tobago": "TT",
+            "Tunisia": "TN",
+            "Turkey": "TR",
+            "Turkmenistan": "TM",
+            "Turks and Caicos Islands": "TC",
+            "Tuvalu": "TV",
+            "US Minor Outlying Islands": "UM",
+            "USSR (former)": "SU",
+            "Uganda": "UG",
+            "Ukraine": "UA",
+            "United Arab Emirates": "AE",
+            "United Kingdom": "GB",
+            "United States": "US",
+            "Uruguay": "UY",
+            "Uzbekistan": "UZ",
+            "Vanuatu": "VU",
+            "Vatican City State (Holy See)": "VA",
+            "Venezuela": "VE",
+            "Viet Nam": "VN",
+            "Virgin Islands (British)": "VG",
+            "Virgin Islands (U.S.)": "VI",
+            "Wallis and Futuna Islands": "WF",
+            "Western Sahara": "EH",
+            "Yemen": "YE",
+            "Yugoslavia": "YU",
+            "Zaire": "ZR",
+            "Zambia": "ZM",
+            "Zimbabwe": "ZW",
+        }
+        inv_country_codes = {v: k for k, v in country_codes.items()}
+
+        if not self.is_connected():
+            self.connect()
+        try:
+            message_str = f"Getting current Certificate of {self.metadata.device_type_long} device {self.name}"
+            if self.task is not None:
+                self.task.taskstep_manager.start_taskstep(name="GetCurrentCertificateUcsImc", description=message_str)
+            self.logger(level="info", message=message_str)
+
+            current_cert = self.handle.query_classid("CurrentCertificate")
+
+            if current_cert:
+                self.logger(level="info", message="Current certificate valid until " + str(current_cert[0].valid_to))
+                if self.task is not None:
+                    self.task.taskstep_manager.stop_taskstep(
+                        name="GetCurrentCertificateUcsImc", status="successful",
+                        status_message=f"Successfully queried current Certificate of " +
+                                       f"{self.metadata.device_type_long} device {self.name}")
+            else:
+                self.logger(level="error", message="Unable to get current certificate")
+                if self.task is not None:
+                    self.task.taskstep_manager.stop_taskstep(
+                        name="GetCurrentCertificateUcsImc", status="failed",
+                        status_message=f"Unable to get current Certificate of " +
+                                       f"{self.metadata.device_type_long} device {self.name}")
+                return False
+
+            message_str = f"Generating new self-signed CSR for {self.metadata.device_type_long} device {self.name}"
+            if self.task is not None:
+                self.task.taskstep_manager.start_taskstep(name="GenerateSelfSignedCertificateSigningRequestUcsImc",
+                                                          description=message_str)
+            self.logger(level="info", message=message_str)
+
+            mo = GenerateCertificateSigningRequest(parent_mo_or_dn="sys/cert-mgmt")
+
+            params = {
+                "common_name": current_cert[0].common_name,
+                "organization": current_cert[0].organization,
+                "locality": current_cert[0].locality,
+                "state": current_cert[0].state,
+                "country_code": inv_country_codes.get(current_cert[0].country_code, None),
+                "organizational_unit": current_cert[0].organizational_unit,
+                "email": None,
+                "self_signed": "yes"
+            }
+
+            mo.set_prop_multiple(**params)
+            self.handle.add_mo(mo, modify_present=True)
+
+            mo = self.handle.query_classid("GenerateCertificateSigningRequest")
+            if mo[0].csr_status == "Completed CSR":
+                if self.task is not None:
+                    self.task.taskstep_manager.stop_taskstep(
+                        name="GenerateSelfSignedCertificateSigningRequestUcsImc", status="successful",
+                        status_message=f"Successfully generated new self-signed CSR for " +
+                                       f"{self.metadata.device_type_long} device {self.name}")
+            else:
+                self.logger(level="error", message="Unable to get CSR status")
+                if self.task is not None:
+                    self.task.taskstep_manager.stop_taskstep(
+                        name="GenerateSelfSignedCertificateSigningRequestUcsImc", status="failed",
+                        status_message=f"Unable to get status of new self-signed CSR for " +
+                                       f"{self.metadata.device_type_long} device {self.name}")
+                return False
+
+            self.disconnect()
+
+            if self.task is not None:
+                self.task.taskstep_manager.start_taskstep(
+                    name="WaitForCertificateLoad",
+                    description=f"Waiting up to 60 seconds for the new certificate to be loaded on " +
+                                f"{self.metadata.device_type_long} device {self.name}")
+            self.logger(level="info", message="Waiting up to 60 seconds for the new certificate to be loaded")
+            time.sleep(30)
+            if not common.check_web_page(device=self, url="https://" + self.target, str_match="Cisco", timeout=30):
+                error_msg = "Impossible to reconnect after Regenerating Self-Signed Certificate"
+                self.logger(level="error", message=error_msg)
+                if self.task is not None:
+                    self.task.taskstep_manager.stop_taskstep(
+                        name="WaitForCertificateLoad", status="failed", status_message=error_msg)
+                return False
+
+            if self.task is not None:
+                self.task.taskstep_manager.stop_taskstep(
+                    name="WaitForCertificateLoad", status="successful",
+                    status_message=f"Successfully loaded new certificate of " +
+                                   f"{self.metadata.device_type_long} device {self.name}")
+
+            self.connect(retries=5)
+
+            if self.task is not None:
+                self.task.taskstep_manager.start_taskstep(
+                    name="CheckNewCertificateValidity",
+                    description=f"Checking validity of the new certificate loaded on " +
+                                f"{self.metadata.device_type_long} device {self.name}")
+            current_cert = self.handle.query_classid("CurrentCertificate")
+
+            self.logger(level="info", message="New certificate valid until " + str(current_cert[0].valid_to))
+            if self.task is not None:
+                self.task.taskstep_manager.stop_taskstep(
+                    name="CheckNewCertificateValidity", status="successful",
+                    status_message=f"New certificate valid until " + str(current_cert[0].valid_to) + " on "
+                                   f"{self.metadata.device_type_long} device {self.name}")
+
+            return True
+
+        except ImcException as err:
+            error_msg = "Error while Regenerating Self-signed Certificate: " + err.error_descr
+            self.logger(level="error", message=error_msg)
+            if self.task is not None:
+                self.task.taskstep_manager.stop_taskstep(
+                    name="GenerateSelfSignedCertificateSigningRequestUcsImc", status="failed", status_message=error_msg)
+            return False
+        except urllib.error.URLError:
+            error_msg = "Timeout Error while Regenerating Self-Signed Certificate"
+            self.logger(level="error", message=error_msg)
+            if self.task is not None:
+                self.task.taskstep_manager.stop_taskstep(
+                    name="GenerateSelfSignedCertificateSigningRequestUcsImc", status="failed", status_message=error_msg)
+            return False
+        except Exception as err:
+            error_msg = "Error while Regenerating Self-Signed Certificate: " + str(err)
+            self.logger(level="error", message=error_msg)
+            if self.task is not None:
+                self.task.taskstep_manager.stop_taskstep(
+                    name="GenerateSelfSignedCertificateSigningRequestUcsImc", status="failed", status_message=error_msg)
+            return False
+
+    def is_certificate_expired(self):
+        """
+        Checks if existing certificate is expired.
+        :return: True if expired, False otherwise
+        """
+        from cryptography import x509
+        from cryptography.hazmat.backends import default_backend
+
+        if not self.is_connected():
+            self.connect()
+        try:
+            current_cert = self.handle.query_classid("CurrentCertificate")
+            valid_until = datetime.datetime.strptime(current_cert[0].valid_to, '%b %d %H:%M:%S %Y %Z')
+
+            if not datetime.datetime.now() > valid_until:
+                self.logger(
+                    message="The default keyring certificate is still valid until " + str(current_cert[0].valid_to))
+                return False
+
+            self.logger(message="The default keyring certificate is expired since " + str(current_cert[0].valid_to))
+
+            return True
+
+        except UcsException as err:
+            self.logger(level="error",
+                        message="Error while checking expiration of Default Keyring Certificate" + err.error_descr)
+            return False
+        except urllib.error.URLError:
+            self.logger(level="error",
+                        message="Error while checking expiration of Default Keyring Certificate: Timeout error")
+            return False
+        except Exception as err:
+            self.logger(level="error",
+                        message="Error while checking expiration of Default Keyring Certificate: " + str(err))
+            return False
 
     def clear_user_sessions(self, check_ssh=False):
         """
@@ -2538,10 +3011,12 @@ class UcsCentral(GenericUcsDevice):
     UCS_CENTRAL_MIN_REQUIRED_VERSION = "2.0(1a)"
 
     def __init__(self, parent=None, uuid=None, target="", user="", password="", is_hidden=False, is_system=False,
-                 system_usage=None, logger_handle_log_level="info", log_file_path=None, bypass_version_checks=False):
+                 system_usage=None, logger_handle_log_level="info", log_file_path=None, bypass_connection_checks=False,
+                 bypass_version_checks=False):
         GenericUcsDevice.__init__(self, parent=parent, uuid=uuid, target=target, password=password, user=user,
                                   is_hidden=is_hidden, is_system=is_system, system_usage=system_usage,
                                   logger_handle_log_level=logger_handle_log_level, log_file_path=log_file_path,
+                                  bypass_connection_checks=bypass_connection_checks,
                                   bypass_version_checks=bypass_version_checks)
 
         self.handle = UcscHandle(ip=target, username=user, password=password)

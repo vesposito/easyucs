@@ -1146,6 +1146,7 @@
    "c1auto_demotion": {
       "type": "enum",
       "ucsc_token_map": {
+         "Auto": [],
          "disabled": [
             "disabled",
             "Disabled"
@@ -1160,6 +1161,10 @@
          ]
       },
       "ucsm_token_map": {
+         "Auto": [
+            "Auto",
+            "auto"
+         ],
          "disabled": [
             "disabled",
             "Disabled"
@@ -1176,13 +1181,15 @@
       "ucsm_token_name": "c1_auto_demotion",
       "values": [
          "platform-default",
-         "enabled",
-         "disabled"
+         "Auto",
+         "disabled",
+         "enabled"
       ]
    },
    "c1auto_un_demotion": {
       "type": "enum",
       "ucsc_token_map": {
+         "Auto": [],
          "disabled": [
             "disabled",
             "Disabled"
@@ -1197,6 +1204,10 @@
          ]
       },
       "ucsm_token_map": {
+         "Auto": [
+            "Auto",
+            "auto"
+         ],
          "disabled": [
             "disabled",
             "Disabled"
@@ -1213,8 +1224,9 @@
       "ucsm_token_name": "c1_auto_undemotion",
       "values": [
          "platform-default",
-         "enabled",
-         "disabled"
+         "Auto",
+         "disabled",
+         "enabled"
       ]
    },
    "cbs_cmn_apbdis": {
@@ -4517,6 +4529,66 @@
          ]
       },
       "ucsm_token_name": "sw_guard_extensions",
+      "values": [
+         "platform-default",
+         "enabled",
+         "disabled"
+      ]
+   },
+   "enable_tdx": {
+      "type": "enum",
+      "ucsc_token_map": {
+         "disabled": [],
+         "enabled": [],
+         "platform-default": [
+            "Platform Default"
+         ]
+      },
+      "ucsm_token_map": {
+         "disabled": [
+            "disabled",
+            "Disabled"
+         ],
+         "enabled": [
+            "enabled",
+            "Enabled"
+         ],
+         "platform-default": [
+            "Platform Default",
+            "platform-default"
+         ]
+      },
+      "ucsm_token_name": "trust_domain_extension",
+      "values": [
+         "platform-default",
+         "enabled",
+         "disabled"
+      ]
+   },
+   "enable_tdx_seamldr": {
+      "type": "enum",
+      "ucsc_token_map": {
+         "disabled": [],
+         "enabled": [],
+         "platform-default": [
+            "Platform Default"
+         ]
+      },
+      "ucsm_token_map": {
+         "disabled": [
+            "disabled",
+            "Disabled"
+         ],
+         "enabled": [
+            "enabled",
+            "Enabled"
+         ],
+         "platform-default": [
+            "Platform Default",
+            "platform-default"
+         ]
+      },
+      "ucsm_token_name": "tdx_secure_arbitration_mode",
       "values": [
          "platform-default",
          "enabled",
@@ -8983,6 +9055,10 @@
             "16.0GT-s",
             "16.0gt-s"
          ],
+         "20.0GT/s": [
+            "20.0GT-s",
+            "20.0gt-s"
+         ],
          "9.6GT/s": [
             "9.6GT-s",
             "9.6gt-s"
@@ -9017,6 +9093,10 @@
             "16.0GT-s",
             "16.0gt-s"
          ],
+         "20.0GT/s": [
+            "20.0GT-s",
+            "20.0gt-s"
+         ],
          "9.6GT/s": [
             "9.6GT-s",
             "9.6gt-s"
@@ -9038,6 +9118,7 @@
          "12.8GT/s",
          "14.4GT/s",
          "16.0GT/s",
+         "20.0GT/s",
          "9.6GT/s",
          "Auto"
       ]
@@ -9750,6 +9831,36 @@
          ]
       },
       "ucsm_token_name": "sha_256_pcr_bank",
+      "values": [
+         "platform-default",
+         "enabled",
+         "disabled"
+      ]
+   },
+   "sha384pcr_bank": {
+      "type": "enum",
+      "ucsc_token_map": {
+         "disabled": [],
+         "enabled": [],
+         "platform-default": [
+            "Platform Default"
+         ]
+      },
+      "ucsm_token_map": {
+         "disabled": [
+            "disabled",
+            "Disabled"
+         ],
+         "enabled": [
+            "enabled",
+            "Enabled"
+         ],
+         "platform-default": [
+            "Platform Default",
+            "platform-default"
+         ]
+      },
+      "ucsm_token_name": "sha_384_pcr_bank",
       "values": [
          "platform-default",
          "enabled",

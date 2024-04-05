@@ -60,6 +60,63 @@ class UcsCpu(GenericUcsInventoryObject):
                             self.family_name = "Intel Xeon E7-4800 Series processors"
                         elif self.model_short_name[:5] == "E7-88":
                             self.family_name = "Intel Xeon E7-8800 Series processors"
+
+                    if self.model_short_name is not None:
+                        if self.model_short_name[:5] == "E5-24":
+                            if self.model_short_name[-2:] == "v2":
+                                self.family_name = "Intel Xeon E5-2400 v2 Series processors"
+                            else:
+                                self.family_name = "Intel Xeon E5-2400 Series processors"
+                        elif self.model_short_name[:5] == "E5-26":
+                            if self.model_short_name[-2:] == "v2":
+                                self.family_name = "Intel Xeon E5-2600 v2 Series processors"
+                            elif self.model_short_name[-2:] == "v3":
+                                self.family_name = "Intel Xeon E5-2600 v3 Series processors"
+                            elif self.model_short_name[-2:] == "v4":
+                                self.family_name = "Intel Xeon E5-2600 v4 Series processors"
+                            else:
+                                self.family_name = "Intel Xeon E5-2600 Series processors"
+                        elif self.model_short_name[:5] == "E5-46":
+                            if self.model_short_name[-2:] == "v2":
+                                self.family_name = "Intel Xeon E5-4600 v2 Series processors"
+                            elif self.model_short_name[-2:] == "v3":
+                                self.family_name = "Intel Xeon E5-4600 v3 Series processors"
+                            elif self.model_short_name[-2:] == "v4":
+                                self.family_name = "Intel Xeon E5-4600 v4 Series processors"
+                            else:
+                                self.family_name = "Intel Xeon E5-4600 Series processors"
+                        elif self.model_short_name[:5] == "E7-28":
+                            if self.model_short_name[-2:] == "v2":
+                                self.family_name = "Intel Xeon E7-2800 v2 Series processors"
+                            else:
+                                self.family_name = "Intel Xeon E7-2800 Series processors"
+                        elif self.model_short_name[:5] == "E7-48":
+                            if self.model_short_name[-2:] == "v2":
+                                self.family_name = "Intel Xeon E7-4800 v2 Series processors"
+                            elif self.model_short_name[-2:] == "v3":
+                                self.family_name = "Intel Xeon E7-4800 v3 Series processors"
+                            elif self.model_short_name[-2:] == "v4":
+                                self.family_name = "Intel Xeon E7-4800 v4 Series processors"
+                            else:
+                                self.family_name = "Intel Xeon E7-4800 Series processors"
+                        elif self.model_short_name[:5] == "E7-88":
+                            if self.model_short_name[-2:] == "v2":
+                                self.family_name = "Intel Xeon E7-8800 v2 Series processors"
+                            elif self.model_short_name[-2:] == "v3":
+                                self.family_name = "Intel Xeon E7-8800 v3 Series processors"
+                            elif self.model_short_name[-2:] == "v4":
+                                self.family_name = "Intel Xeon E7-8800 v4 Series processors"
+                            else:
+                                self.family_name = "Intel Xeon E7-8800 Series processors"
+                        elif len(self.model_short_name) == 5:
+                            if self.model_short_name[1:3] == "55":
+                                self.family_name = "Intel Xeon 5500 Series processors"
+                            elif self.model_short_name[1:3] == "56":
+                                self.family_name = "Intel Xeon 5600 Series processors"
+                            elif self.model_short_name[1:3] == "65":
+                                self.family_name = "Intel Xeon 6500 Series processors"
+                            elif self.model_short_name[1:3] == "75":
+                                self.family_name = "Intel Xeon 7500 Series processors"
                 else:
                     # We might have an M5/M6 Intel CPU
                     regex2 = r"Xeon\(R\) .* (\d*\w?) CPU"
@@ -82,62 +139,14 @@ class UcsCpu(GenericUcsInventoryObject):
                             if self.model_short_name[1:2] == "4":
                                 self.family_name = "4th Gen Intel Xeon Processor Scalable Family"
 
-                if self.model_short_name is not None:
-                    if self.model_short_name[:5] == "E5-24":
-                        if self.model_short_name[-2:] == "v2":
-                            self.family_name = "Intel Xeon E5-2400 v2 Series processors"
                         else:
-                            self.family_name = "Intel Xeon E5-2400 Series processors"
-                    elif self.model_short_name[:5] == "E5-26":
-                        if self.model_short_name[-2:] == "v2":
-                            self.family_name = "Intel Xeon E5-2600 v2 Series processors"
-                        elif self.model_short_name[-2:] == "v3":
-                            self.family_name = "Intel Xeon E5-2600 v3 Series processors"
-                        elif self.model_short_name[-2:] == "v4":
-                            self.family_name = "Intel Xeon E5-2600 v4 Series processors"
-                        else:
-                            self.family_name = "Intel Xeon E5-2600 Series processors"
-                    elif self.model_short_name[:5] == "E5-46":
-                        if self.model_short_name[-2:] == "v2":
-                            self.family_name = "Intel Xeon E5-4600 v2 Series processors"
-                        elif self.model_short_name[-2:] == "v3":
-                            self.family_name = "Intel Xeon E5-4600 v3 Series processors"
-                        elif self.model_short_name[-2:] == "v4":
-                            self.family_name = "Intel Xeon E5-4600 v4 Series processors"
-                        else:
-                            self.family_name = "Intel Xeon E5-4600 Series processors"
-                    elif self.model_short_name[:5] == "E7-28":
-                        if self.model_short_name[-2:] == "v2":
-                            self.family_name = "Intel Xeon E7-2800 v2 Series processors"
-                        else:
-                            self.family_name = "Intel Xeon E7-2800 Series processors"
-                    elif self.model_short_name[:5] == "E7-48":
-                        if self.model_short_name[-2:] == "v2":
-                            self.family_name = "Intel Xeon E7-4800 v2 Series processors"
-                        elif self.model_short_name[-2:] == "v3":
-                            self.family_name = "Intel Xeon E7-4800 v3 Series processors"
-                        elif self.model_short_name[-2:] == "v4":
-                            self.family_name = "Intel Xeon E7-4800 v4 Series processors"
-                        else:
-                            self.family_name = "Intel Xeon E7-4800 Series processors"
-                    elif self.model_short_name[:5] == "E7-88":
-                        if self.model_short_name[-2:] == "v2":
-                            self.family_name = "Intel Xeon E7-8800 v2 Series processors"
-                        elif self.model_short_name[-2:] == "v3":
-                            self.family_name = "Intel Xeon E7-8800 v3 Series processors"
-                        elif self.model_short_name[-2:] == "v4":
-                            self.family_name = "Intel Xeon E7-8800 v4 Series processors"
-                        else:
-                            self.family_name = "Intel Xeon E7-8800 Series processors"
-                    elif len(self.model_short_name) == 5:
-                        if self.model_short_name[1:3] == "55":
-                            self.family_name = "Intel Xeon 5500 Series processors"
-                        elif self.model_short_name[1:3] == "56":
-                            self.family_name = "Intel Xeon 5600 Series processors"
-                        elif self.model_short_name[1:3] == "65":
-                            self.family_name = "Intel Xeon 6500 Series processors"
-                        elif self.model_short_name[1:3] == "75":
-                            self.family_name = "Intel Xeon 7500 Series processors"
+                            # We might have an M7 5th Gen Intel CPU
+                            regex3 = r"INTEL\(R\) XEON\(R\) .* (\d*\w?\+?)"
+                            res3 = re.search(regex3, self.model)
+                            if res3 is not None:
+                                self.model_short_name = res3.group(1)
+                                if self.model_short_name[1:2] == "5":
+                                    self.family_name = "5th Gen Intel Xeon Processor Scalable Family"
 
 
 class UcsSystemCpu(UcsCpu, UcsSystemInventoryObject):

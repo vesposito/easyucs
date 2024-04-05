@@ -278,10 +278,14 @@ class TaskStepManager:
                 self.logger(level="error", message="Task step " + str(taskstep.name) + " is already running")
                 return None
 
-        # We identify the task step
+        # We identify the task step which must match the name and the order ID of the next planned step
         step = None
+        next_step = self.get_next_taskstep()
+        next_step_id = 0
+        if next_step:
+            next_step_id = next_step.metadata.order
         for taskstep in self.taskstep_list:
-            if taskstep.name == name:
+            if taskstep.name == name and taskstep.metadata.order == next_step_id:
                 step = taskstep
                 break
 

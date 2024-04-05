@@ -58,6 +58,38 @@
          "type": "string",
          "default": ""
       },
+      "operational_state": {
+         "description": "UCS Domain Profile - Operational State",
+         "type": "object",
+         "properties": {
+            "config_state": {
+               "description": "Indicates a profile's configuration deploying state",
+               "type": "string",
+               "enum": [
+                  "None",
+                  "Not-assigned",
+                  "Assigned",
+                  "Preparing",
+                  "Validating",
+                  "Configuring",
+                  "UnConfiguring",
+                  "Analyzing",
+                  "Activating",
+                  "Inconsistent",
+                  "Associated",
+                  "Failed",
+                  "Not-complete",
+                  "Waiting-for-resource"
+               ],
+               "default": "None"
+            },
+            "profile_state": {
+               "description": "Combined state (configState, and operational state of the associated physical resource) to indicate the current state of the profile.",
+               "type": "string"
+            }
+         },
+         "additionalProperties": false
+      },
       "power_policy": {
          "description": "Power Policy associated to UCS Chassis Profile",
          "type": "string",

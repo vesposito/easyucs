@@ -4,9 +4,8 @@
 """ server_policies.py: Easy UCS Deployment Tool """
 import copy
 import re
-
-from common import read_json_file, format_descr, generate_self_signed_cert, get_decoded_pem_certificate, \
-    get_encoded_pem_certificate
+from common import convert_to_range, format_descr, generate_self_signed_cert, get_decoded_pem_certificate, \
+    get_encoded_pem_certificate, read_json_file
 from config.intersight.object import IntersightConfigObject
 from config.intersight.pools import IntersightIpPool, IntersightIqnPool, \
     IntersightMacPool, IntersightWwnnPool, IntersightWwpnPool
@@ -1060,6 +1059,7 @@ class IntersightEthernetAdapterPolicy(IntersightConfigObject):
         self.enable_interrupt_scaling = self.get_attribute(attribute_name="interrupt_scaling",
                                                            attribute_secondary_name="enable_interrupt_scaling")
         self.enable_nvgre_offload = None
+        self.enable_precision_time_protocol = None
         self.enable_vxlan_offload = None
         self.interrupt_settings = None
         self.name = self.get_attribute(attribute_name="name")
@@ -1080,6 +1080,10 @@ class IntersightEthernetAdapterPolicy(IntersightConfigObject):
             if hasattr(self._object, "nvgre_settings"):
                 if self._object.nvgre_settings:
                     self.enable_nvgre_offload = self._object.nvgre_settings.enabled
+
+            if hasattr(self._object, "ptp_settings"):
+                if self._object.ptp_settings:
+                    self.enable_precision_time_protocol = self._object.ptp_settings.enabled
 
             if hasattr(self._object, "arfs_settings"):
                 if self._object.arfs_settings:
@@ -1151,9 +1155,9 @@ class IntersightEthernetAdapterPolicy(IntersightConfigObject):
         elif self._config.load_from == "file":
             for attribute in ["completion_queue_count", "completion_ring_size",
                               "enable_accelerated_receive_flow_steering", "enable_nvgre_offload",
-                              "enable_vxlan_offload", "interrupt_settings", "receive_queue_count", "receive_ring_size",
-                              "roce_settings", "rss_settings", "tcp_offload_settings", "transmit_queue_count",
-                              "transmit_ring_size"]:
+                              "enable_precision_time_protocol", "enable_vxlan_offload", "interrupt_settings",
+                              "receive_queue_count", "receive_ring_size", "roce_settings", "rss_settings",
+                              "tcp_offload_settings", "transmit_queue_count", "transmit_ring_size"]:
                 setattr(self, attribute, None)
                 if attribute in self._object:
                     setattr(self, attribute, self.get_attribute(attribute_name=attribute))
@@ -1237,6 +1241,17 @@ class IntersightEthernetAdapterPolicy(IntersightConfigObject):
             if self.enable_nvgre_offload is not None:
                 nvgre_settings_kwargs["enabled"] = self.enable_nvgre_offload
             kwargs["nvgre_settings"] = VnicNvgreSettings(**nvgre_settings_kwargs)
+
+        if self.enable_precision_time_protocol is not None:
+            from intersight.model.vnic_ptp_settings import VnicPtpSettings
+
+            ptp_settings_kwargs = {
+                "object_type": "vnic.PtpSettings",
+                "class_id": "vnic.PtpSettings"
+            }
+            if self.enable_precision_time_protocol is not None:
+                ptp_settings_kwargs["enabled"] = self.enable_precision_time_protocol
+            kwargs["ptp_settings"] = VnicPtpSettings(**ptp_settings_kwargs)
 
         if self.enable_vxlan_offload is not None:
             from intersight.model.vnic_vxlan_settings import VnicVxlanSettings
@@ -1473,17 +1488,23 @@ class IntersightEthernetNetworkGroupPolicy(IntersightConfigObject):
 
         self.allowed_vlans = None
         self.descr = self.get_attribute(attribute_name="description", attribute_secondary_name="descr")
+        self.enable_q_in_q_tunneling = None
         self.name = self.get_attribute(attribute_name="name")
         self.native_vlan = None
+        self.q_in_q_vlan = None
 
         if self._config.load_from == "live":
             if hasattr(self._object, "vlan_settings"):
                 if self._object.vlan_settings:
-                    self.allowed_vlans = self._object.vlan_settings.allowed_vlans
+                    self.enable_q_in_q_tunneling = self._object.vlan_settings.qinq_enabled
                     self.native_vlan = self._object.vlan_settings.native_vlan
+                    if self.enable_q_in_q_tunneling:
+                        self.q_in_q_vlan = self._object.vlan_settings.qinq_vlan
+                    else:
+                        self.allowed_vlans = self._object.vlan_settings.allowed_vlans
 
         elif self._config.load_from == "file":
-            for attribute in ["allowed_vlans", "native_vlan"]:
+            for attribute in ["allowed_vlans", "enable_q_in_q_tunneling", "native_vlan", "q_in_q_vlan"]:
                 setattr(self, attribute, None)
                 if attribute in self._object:
                     setattr(self, attribute, self.get_attribute(attribute_name=attribute))
@@ -1513,8 +1534,12 @@ class IntersightEthernetNetworkGroupPolicy(IntersightConfigObject):
         }
         if self.allowed_vlans is not None:
             vlan_settings_kwargs["allowed_vlans"] = self.allowed_vlans
+        if self.enable_q_in_q_tunneling is not None:
+            vlan_settings_kwargs["qinq_enabled"] = self.enable_q_in_q_tunneling
         if self.native_vlan is not None:
             vlan_settings_kwargs["native_vlan"] = self.native_vlan
+        if self.q_in_q_vlan is not None:
+            vlan_settings_kwargs["qinq_vlan"] = self.q_in_q_vlan
         if len(vlan_settings_kwargs) != 0:
             kwargs["vlan_settings"] = FabricVlanSettings(**vlan_settings_kwargs)
 
@@ -2886,10 +2911,16 @@ class IntersightLanConnectivityPolicy(IntersightConfigObject):
                                       "ethernet_network_group_policy", "ethernet_network_policy", "ethernet_qos_policy",
                                       "iscsi_boot_policy", "mac_address_allocation_type", "mac_address_pool",
                                       "mac_address_static", "name", "pci_link", "pci_link_assignment_mode", "pci_order",
-                                      "pin_group_name", "slot_id", "switch_id", "uplink_port", "usnic_settings",
-                                      "vmq_settings"]:
+                                      "pin_group_name", "slot_id", "sriov_settings", "switch_id", "uplink_port",
+                                      "usnic_settings", "vmq_settings"]:
                         if attribute not in vnic:
                             vnic[attribute] = None
+
+                    if vnic["sriov_settings"]:
+                        for attribute in ["completion_queue_count_per_vf", "interrupt_count_per_vf", "number_of_vfs",
+                                          "receive_queue_count_per_vf", "transmit_queue_count_per_vf"]:
+                            if attribute not in vnic["sriov_settings"].keys():
+                                vnic["sriov_settings"][attribute] = None
 
                     if vnic["usnic_settings"]:
                         for attribute in ["class_of_service", "number_of_usnics", "usnic_adapter_policy"]:
@@ -3019,6 +3050,15 @@ class IntersightLanConnectivityPolicy(IntersightConfigObject):
                                             vnic["vmq_settings"]["vmmq_adapter_policy"] = self._get_policy_name(
                                                 policy=vmmq_adapter_policy)
                                             break
+                        if vnic_eth_if.sriov_settings:
+                            if vnic_eth_if.sriov_settings.enabled:
+                                vnic["sriov_settings"] = {
+                                    "number_of_vfs": vnic_eth_if.sriov_settings.vf_count,
+                                    "receive_queue_count_per_vf": vnic_eth_if.sriov_settings.rx_count_per_vf,
+                                    "transmit_queue_count_per_vf": vnic_eth_if.sriov_settings.tx_count_per_vf,
+                                    "completion_queue_count_per_vf": vnic_eth_if.sriov_settings.comp_count_per_vf,
+                                    "interrupt_count_per_vf": vnic_eth_if.sriov_settings.int_count_per_vf
+                                }
                         vnics.append(vnic)
 
             return vnics
@@ -3334,6 +3374,26 @@ class IntersightLanConnectivityPolicy(IntersightConfigObject):
                     if vnic["vmq_settings"].get("number_of_virtual_machine_queues") is not None:
                         kwargs_vmq["num_vmqs"] = vnic["vmq_settings"]["number_of_virtual_machine_queues"]
                     kwargs["vmq_settings"] = VnicVmqSettings(**kwargs_vmq)
+
+                # Handling the SRIOV Settings of the vNIC
+                if vnic.get("sriov_settings") is not None:
+                    from intersight.model.vnic_sriov_settings import VnicSriovSettings
+                    kwargs_sriov = {
+                        "object_type": "vnic.SriovSettings",
+                        "class_id": "vnic.SriovSettings",
+                        "enabled": True
+                    }
+                    if vnic["sriov_settings"].get("number_of_vfs") is not None:
+                        kwargs_sriov["vf_count"] = vnic["sriov_settings"]["number_of_vfs"]
+                    if vnic["sriov_settings"].get("receive_queue_count_per_vf") is not None:
+                        kwargs_sriov["rx_count_per_vf"] = vnic["sriov_settings"]["receive_queue_count_per_vf"]
+                    if vnic["sriov_settings"].get("transmit_queue_count_per_vf") is not None:
+                        kwargs_sriov["tx_count_per_vf"] = vnic["sriov_settings"]["transmit_queue_count_per_vf"]
+                    if vnic["sriov_settings"].get("completion_queue_count_per_vf") is not None:
+                        kwargs_sriov["comp_count_per_vf"] = vnic["sriov_settings"]["completion_queue_count_per_vf"]
+                    if vnic["sriov_settings"].get("interrupt_count_per_vf") is not None:
+                        kwargs_sriov["int_count_per_vf"] = vnic["sriov_settings"]["interrupt_count_per_vf"]
+                    kwargs["sriov_settings"] = VnicSriovSettings(**kwargs_sriov)
 
                 vnic_payload = VnicEthIf(**kwargs)
 
@@ -5915,7 +5975,7 @@ class IntersightVirtualMediaPolicy(IntersightConfigObject):
                     kwargs_vmedia_mount["username"] = vmedia_mount["username"]
                 if vmedia_mount.get("password") is not None:
                     kwargs_vmedia_mount["password"] = vmedia_mount["password"]
-                else:
+                elif vmedia_mount.get("username") is not None:
                     self.logger(
                         level="warning",
                         message="No password provided for field 'password' of object vmedia.Mapping"

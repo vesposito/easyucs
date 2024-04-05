@@ -520,9 +520,11 @@
          "type": "string",
          "default": "platform-default",
          "enum": [
+            "Auto",
             "Disabled",
             "Enabled",
             "Platform Default",
+            "auto",
             "disabled",
             "enabled",
             "platform-default"
@@ -533,9 +535,11 @@
          "type": "string",
          "default": "platform-default",
          "enum": [
+            "Auto",
             "Disabled",
             "Enabled",
             "Platform Default",
+            "auto",
             "disabled",
             "enabled",
             "platform-default"
@@ -5663,6 +5667,19 @@
             "platform-default"
          ]
       },
+      "sha_384_pcr_bank": {
+         "description": "BIOS Policy - Trusted Platform Module - SHA 384 PCR Bank",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "Disabled",
+            "Enabled",
+            "Platform Default",
+            "disabled",
+            "enabled",
+            "platform-default"
+         ]
+      },
       "sioc1_linkspeed": {
          "description": "BIOS Policy - PCI Slot Link Speed - SIOC1 LinkSpeed",
          "type": "string",
@@ -6192,6 +6209,19 @@
             "platform-default"
          ]
       },
+      "tdx_secure_arbitration_mode": {
+         "description": "BIOS Policy - Trust Domain Extension - TDX Secure Arbitration Mode (SEAM) Loader",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "Disabled",
+            "Enabled",
+            "Platform Default",
+            "disabled",
+            "enabled",
+            "platform-default"
+         ]
+      },
       "terminal_type": {
          "description": "BIOS Policy - Console redirection - Terminal type",
          "type": "string",
@@ -6224,6 +6254,19 @@
       },
       "tpm_minimal_physical_presence": {
          "description": "BIOS Policy - Trusted Platform Module - TPM Minimal Physical Presence",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "Disabled",
+            "Enabled",
+            "Platform Default",
+            "disabled",
+            "enabled",
+            "platform-default"
+         ]
+      },
+      "trust_domain_extension": {
+         "description": "BIOS Policy - Trust Domain Extension - Trust Domain Extension (TDX)",
          "type": "string",
          "default": "platform-default",
          "enum": [
@@ -6346,6 +6389,8 @@
             "14.4gt-s",
             "16.0GT-s",
             "16.0gt-s",
+            "20.0GT-s",
+            "20.0gt-s",
             "9.6GT-s",
             "9.6gt-s",
             "Auto",

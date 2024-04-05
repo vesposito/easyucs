@@ -152,6 +152,16 @@ python easyucs_api.py
 
 ## Versioning
 
+### 0.9.8.8
+
+* Add support for regenerating SSL certificates for UCSM & CIMC devices in CLI & GUI
+* Add support for cleaning an Intersight account (removes all pools, policies, profiles & templates) in GUI
+* Add support for UCS M7 servers with Emerald Rapids CPUs
+* Add support for VIC QinQ & SRIOV in Intersight config
+* Add support for UCSM custom OUI for FC configuration
+* Bump up minimum Intersight Appliance required version to 1.0.9-655
+* Miscellaneous bug fixes and improvements
+
 ### 0.9.8.7
 
 * Add support for Organization Sharing in Intersight config

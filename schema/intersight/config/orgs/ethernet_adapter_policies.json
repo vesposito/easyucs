@@ -92,6 +92,11 @@
          "type": "boolean",
          "default": false
       },
+      "enable_precision_time_protocol": {
+         "description": "Ethernet Adapter Policy Enable Precision Time Protocol (PTP)",
+         "type": "boolean",
+         "default": false
+      },
       "enable_vxlan_offload": {
          "description": "Ethernet Adapter Policy Enable VXLAN Offload",
          "type": "boolean",
@@ -109,7 +114,7 @@
          "type": "integer",
          "default": 512,
          "minimum": 64,
-         "maximum": 4096
+         "maximum": 16384
       },
       "transmit_queue_count": {
          "description": "Ethernet Adapter Policy Transmit Queue Count",
@@ -123,7 +128,7 @@
          "type": "integer",
          "default": 256,
          "minimum": 64,
-         "maximum": 4096
+         "maximum": 16384
       },
       "uplink_failback_timeout": {
          "description": "Ethernet Adapter Policy Uplink Failback Timeout (seconds)",

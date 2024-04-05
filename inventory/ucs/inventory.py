@@ -201,6 +201,8 @@ class GenericUcsInventory(GenericInventory):
                                     continue
                                 if object_class is UcsImcHbaAdapter and "SAS HBA" in sdk_object.model:
                                     continue
+                                if object_class is UcsImcHbaAdapter and sdk_object.id in ["MRAID"]:
+                                    continue
 
                                 filtered_sdk_objects_list.append(sdk_object)
                             # Handle the case of LAN/SAN Neighbor objects for which we use fiPortDn attribute

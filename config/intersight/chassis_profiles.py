@@ -31,6 +31,7 @@ class IntersightUcsChassisProfile(IntersightConfigObject):
         self.power_policy = None
         self.snmp_policy = None
         self.thermal_policy = None
+        self.operational_state = {}
 
         if self._config.load_from == "live":
             for policy in self._object.policy_bucket:
@@ -43,11 +44,28 @@ class IntersightUcsChassisProfile(IntersightConfigObject):
                 elif policy.object_type == "thermal.Policy":
                     self.thermal_policy = self._get_policy_name(policy)
 
+            # Fetching the status of the profile
+            if hasattr(self._object, "config_context"):
+                if hasattr(self._object.config_context, "config_state_summary"):
+                    self.operational_state.update({
+                        "config_state": getattr(self._object.config_context, "config_state_summary", None)
+                    })
+                if getattr(self._object.config_context, "oper_state", None):
+                    self.operational_state.update({
+                        "profile_state": getattr(self._object.config_context, "oper_state", None)
+                    })
+
         elif self._config.load_from == "file":
-            for attribute in ["imc_access_policy", "power_policy", "snmp_policy", "thermal_policy"]:
+            for attribute in ["imc_access_policy", "operational_state", "power_policy", "snmp_policy",
+                              "thermal_policy"]:
                 setattr(self, attribute, None)
                 if attribute in self._object:
                     setattr(self, attribute, self.get_attribute(attribute_name=attribute))
+
+            if self.operational_state:
+                for attribute in ["config_state", "profile_state"]:
+                    if attribute not in self.operational_state:
+                        self.operational_state[attribute] = None
 
     @IntersightConfigObject.update_taskstep_description()
     def push_object(self):

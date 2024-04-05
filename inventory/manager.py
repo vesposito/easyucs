@@ -136,7 +136,8 @@ class GenericInventoryManager:
             inventory_json_file.close()
             return True
 
-    def import_inventory(self, import_format="json", directory=None, filename=None, inventory=None, metadata=None):
+    def import_inventory(self, import_format="json", directory=None, filename=None, inventory=None, metadata=None,
+                         force_custom=None):
         """
         Imports the specified inventory in the specified import format from the specified filename to inventory_list
         :param import_format: The import format (e.g. "json")
@@ -144,6 +145,9 @@ class GenericInventoryManager:
         :param filename: The name of the file containing the content to be imported
         :param inventory: The inventory content to be imported (if no directory/filename provided)
         :param metadata: The metadata object of to the inventory to be imported (if no inventory or dir/file provided)
+        :param force_custom: If set, then overwrite the value of 'is_custom' flag with whatever is set here. Has to
+        be used in situations where a custom inventory (inventory which is edited), needs to pretend as a non-custom
+        inventory (non-edited inventory).
         :return: Inventory object if import is successful, False otherwise
         """
         if import_format not in ["json"]:
@@ -232,25 +236,30 @@ class GenericInventoryManager:
             # We create a new inventory object
             inventory = self.inventory_class_name(parent=self)
 
+            inventory.load_from = "file"
+            inventory.metadata.easyucs_version = __version__
+
+            # We save the newly calculated md5 hash to the InventoryMetadata object
+            inventory.metadata.hash = complete_json["easyucs"]["metadata"][0]["hash"]
+
+            # We set the origin of the inventory as "file"
+            inventory.metadata.origin = "file"
+
+            # We set the is_custom flag of the inventory
+            if custom:
+                inventory.metadata.is_custom = True
+
+                # Override the 'is_custom' flag of the inventory if it's a custom file (edited by user) and the user
+                # explicitly sets it to pretend to be non-custom (not edited by user).
+                if force_custom is not None:
+                    inventory.metadata.is_custom = force_custom
+
             # We use the provided metadata for the new inventory object if the hash of the file is valid
             if not custom and metadata is not None:
                 self.logger(level="debug", message="Using provided metadata for inventory import")
                 inventory.metadata = metadata
                 inventory.metadata.parent = inventory
                 inventory.uuid = metadata.uuid
-
-            inventory.load_from = "file"
-            inventory.metadata.easyucs_version = __version__
-
-            # We save md5 hash to the InventoryMetadata object
-            inventory.metadata.hash = complete_json["easyucs"]["metadata"][0]["hash"]
-
-            # We set the origin of the inventory as "file"
-            inventory.metadata.origin = "file"
-
-            # We set the custom flag of the inventory
-            if custom:
-                inventory.custom = True
 
             # We fetch all options set in "easyucs" section of the file
             if "easyucs" in complete_json:

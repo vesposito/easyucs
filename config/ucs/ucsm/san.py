@@ -15,6 +15,8 @@ from ucsmsdk.mometa.fabric.FabricSubGroup import FabricSubGroup
 from ucsmsdk.mometa.fabric.FabricVsan import FabricVsan
 from ucsmsdk.mometa.fcpool.FcpoolBlock import FcpoolBlock
 from ucsmsdk.mometa.fcpool.FcpoolInitiators import FcpoolInitiators
+from ucsmsdk.mometa.fcpool.FcpoolOui import FcpoolOui
+from ucsmsdk.mometa.fcpool.FcpoolOuis import FcpoolOuis
 from ucsmsdk.mometa.iqnpool.IqnpoolBlock import IqnpoolBlock
 from ucsmsdk.mometa.iqnpool.IqnpoolPool import IqnpoolPool
 from ucsmsdk.mometa.storage.StorageConnectionPolicy import StorageConnectionPolicy
@@ -564,6 +566,53 @@ class UcsSystemWwxnPool(UcsSystemConfigObject):
         return True
 
 
+class UcsSystemOuiPool(UcsSystemConfigObject):
+    _CONFIG_NAME = "OUI Pools"
+    _CONFIG_SECTION_NAME = "oui_pools"
+    _UCS_SDK_OBJECT_NAME = "fcpoolOuis"
+
+    def __init__(self, parent=None, json_content=None, fcpool_ouis=None):
+        UcsSystemConfigObject.__init__(self, parent=parent, ucs_sdk_object=fcpool_ouis)
+        self.name = None
+        self.fabric = None
+        self.ouis = []
+        if self._config.load_from == "live":
+            self.name = fcpool_ouis.name
+            if "fcpoolOui" in self._config.sdk_objects:
+                for fcpool_oui in self._config.sdk_objects["fcpoolOui"]:
+                    if (fcpool_oui.dn.startswith("sys/switch-" + fcpool_oui.switch_id + "/oui-pool-" + fcpool_ouis.name)
+                            and fcpool_ouis.dn.startswith("sys/switch-" + fcpool_oui.switch_id)):
+                        self.fabric = fcpool_oui.switch_id
+                        self.ouis.append(fcpool_oui.oui)
+
+        elif self._config.load_from == "file":
+            if json_content is not None:
+                if not self.get_attributes_from_json(json_content=json_content):
+                    self.logger(level="error",
+                                message="Unable to get attributes from JSON content for " + self._CONFIG_NAME)
+        self.clean_object()
+
+    def push_object(self, commit=True):
+        if commit:
+            self.logger(message="Pushing " + self._CONFIG_NAME + " configuration: ")
+        else:
+            self.logger(message="Adding to the handle " + self._CONFIG_NAME + " configuration, waiting for a commit")
+
+        fcpool_ouis_parent_mo = f"sys/switch-{self.fabric}"
+        mo_fcpool_ouis = FcpoolOuis(parent_mo_or_dn=fcpool_ouis_parent_mo, name=self.name)
+
+        self._handle.add_mo(mo=mo_fcpool_ouis, modify_present=True)
+
+        for oui in self.ouis:
+            mo_fcpool_oui = FcpoolOui(parent_mo_or_dn=fcpool_ouis_parent_mo + "/oui-pool-" + self.name, oui=oui)
+            self._handle.add_mo(mo=mo_fcpool_oui, modify_present=True)
+
+        if commit:
+            if self.commit(detail=f"{self.name}-{self.fabric}") != True:
+                return False
+        return True
+
+
 class UcsSystemVhbaTemplate(UcsSystemConfigObject):
     _CONFIG_NAME = "vHBA Template"
     _CONFIG_SECTION_NAME = "vhba_templates"
@@ -606,10 +655,13 @@ class UcsSystemVhbaTemplate(UcsSystemConfigObject):
                                  self._parent._dn + "/san-conn-templ-" + self.name + "/" in vlan.dn]
                         if len(vsans) == 1:
                             self.vsan = vsans[0].name
+                        elif len(vsans) == 0:
+                            self.logger(level="error",
+                                        message=f"Missing at-least one VSAN in {self._CONFIG_NAME}: {str(self.name)}")
                         else:
                             self.logger(level="error",
-                                        message="Only one VSAN can be found in a " + self._CONFIG_NAME + " :" + str(
-                                            self.name))
+                                        message=f"More than one VSAN can be found in {self._CONFIG_NAME}: "
+                                                f"{str(self.name)}")
 
                 # Fetching the operational state of the referenced policies
                 self.operational_state.update(

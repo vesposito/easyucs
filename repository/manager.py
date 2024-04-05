@@ -585,6 +585,9 @@ class RepositoryManager:
             self.logger(level="error", message="No Backup Version mentioned for the update")
             return False
 
+        # Dictionary to store the fields to be added into the 'record'
+        fields_to_be_added = {}
+
         for field in record:
             if record[field]:
                 if "uuid" in field:
@@ -600,6 +603,14 @@ class RepositoryManager:
                                 "resource_groups": [],
                                 "shared_with_orgs": []
                             }
+                elif field == "origin" and table in ["configs", "inventories"] and "is_custom" not in record:
+                    # When restoring a backup (from an older version), if 'is_custom' field is not present then we set
+                    # it to 'True' if it's an uploaded config (i.e. origin == file). Otherwise is_custom=False, which is
+                    # the default value set in the metadata object creation.
+                    if record[field] == "file":
+                        fields_to_be_added["is_custom"] = True
+        if fields_to_be_added:
+            record.update(fields_to_be_added)
         return True
 
     def create_backups_folder(self, device=None):

@@ -854,7 +854,7 @@ class IntersightResourcePool(IntersightConfigObject):
         # We use this to make sure all options of a Resource are set to None if they are not present
         if self.resources:
             for resource in self.resources:
-                for attribute in ["moid", "name", "type"]:
+                for attribute in ["moid", "name", "serial", "type"]:
                     if attribute not in resource:
                         resource[attribute] = None
 
@@ -865,35 +865,49 @@ class IntersightResourcePool(IntersightConfigObject):
         resource_list = []
         for selector in selectors:
             if selector["object_type"] == "resource.Selector":
-                # We use a regex to get the MOIDs of resources member of the pool
-                regex_device_moid = r"([a-f0-9]{24})"
-                res_resources = re.findall(regex_device_moid, selector["selector"])
+                # Selectors can either use MOIDs (older method) or Serials to identify resources
+                if "Moid in" in selector["selector"]:
+                    # We use a regex to get the MOIDs of resources member of the pool
+                    regex_device_moid = r"([a-f0-9]{24})"
+                    res_resources = re.findall(regex_device_moid, selector["selector"])
+                    res_identify_by = "moid"
 
-                for resource_moid in res_resources:
-                    device_list = self._device.query(object_type="compute.PhysicalSummary",
-                                                     filter="Moid eq '%s'" % resource_moid)
+                else:
+                    # We use a regex to get the Serial numbers of resources member of the pool
+                    regex_device_serial = r"([A-Z0-9]{11})"
+                    res_resources = re.findall(regex_device_serial, selector["selector"])
+                    res_identify_by = "serial"
 
-                    if device_list:
-                        if len(device_list) != 1:
-                            self.logger(level="warning",
-                                        message="Could not find unique device '" + resource_moid + "' to assign to " +
-                                                self._CONFIG_NAME + " " + self.name)
+                if res_resources:
+                    for resource in res_resources:
+                        if res_identify_by == "moid":
+                            device_list = self._device.query(object_type="compute.PhysicalSummary",
+                                                             filter="Moid eq '%s'" % resource)
                         else:
-                            if hasattr(device_list[0], "name"):
-                                resource_type = None
-                                if device_list[0].source_object_type == "compute.Blade":
-                                    resource_type = "blade"
-                                elif device_list[0].source_object_type == "compute.RackUnit":
-                                    resource_type = "rack"
-                                resource_list.append({"moid": resource_moid, "name": device_list[0].name,
-                                                      "type": resource_type})
-                            else:
+                            device_list = self._device.query(object_type="compute.PhysicalSummary",
+                                                             filter="Serial eq '%s'" % resource)
+
+                        if device_list:
+                            if len(device_list) != 1:
                                 self.logger(level="warning",
-                                            message="Could not find name for device '" + resource_moid +
-                                                    "' to assign to " + self._CONFIG_NAME + " " + self.name)
-                    else:
-                        self.logger(level="warning", message="Could not find device '" + resource_moid +
-                                                             "' to assign to " + self._CONFIG_NAME + " " + self.name)
+                                            message=f"Could not find unique device '{resource}' to assign to "
+                                                    f"{self._CONFIG_NAME} {self.name}")
+                            else:
+                                if hasattr(device_list[0], "name"):
+                                    resource_type = None
+                                    if device_list[0].source_object_type == "compute.Blade":
+                                        resource_type = "blade"
+                                    elif device_list[0].source_object_type == "compute.RackUnit":
+                                        resource_type = "rack"
+                                    resource_list.append({"name": device_list[0].name, "type": resource_type,
+                                                          "serial": device_list[0].serial})
+                                else:
+                                    self.logger(level="warning",
+                                                message=f"Could not find name for device '{resource}' to assign "
+                                                        f"to {self._CONFIG_NAME} {self.name}")
+                        else:
+                            self.logger(level="warning", message=f"Could not find device '{resource}' to assign "
+                                                                 f"to {self._CONFIG_NAME} {self.name}")
         if resource_list:
             return resource_list
 
@@ -914,15 +928,15 @@ class IntersightResourcePool(IntersightConfigObject):
         self.logger(message=f"Pushing {self._CONFIG_NAME} configuration: {self.name}")
 
         # Determining if we have a list of resources
-        moid_list_blades = []
-        moid_list_racks = []
+        serial_list_blades = []
+        serial_list_racks = []
         if self.resources:
             for resource in self.resources:
-                if resource.get("moid"):
+                if resource.get("serial"):
                     if resource.get("type") == "blade":
-                        moid_list_blades.append(resource["moid"])
+                        serial_list_blades.append(resource["serial"])
                     elif resource.get("type") == "rack":
-                        moid_list_racks.append(resource["moid"])
+                        serial_list_racks.append(resource["serial"])
                 elif resource.get("name"):
                     # We need to retrieve the resource MOID
                     device_list = self._device.query(object_type="compute.PhysicalSummary",
@@ -934,11 +948,11 @@ class IntersightResourcePool(IntersightConfigObject):
                                         message="Could not find unique device '" + resource["name"] +
                                                 "' to assign to " + self._CONFIG_NAME + " " + self.name)
                         else:
-                            if hasattr(device_list[0], "moid"):
+                            if hasattr(device_list[0], "serial"):
                                 if resource.get("type") == "blade":
-                                    moid_list_blades.append(device_list[0].moid)
+                                    serial_list_blades.append(device_list[0].serial)
                                 elif resource.get("type") == "rack":
-                                    moid_list_racks.append(device_list[0].moid)
+                                    serial_list_racks.append(device_list[0].serial)
                                 else:
                                     self.logger(level="warning",
                                                 message="Could not find resource type for device '" + resource["name"] +
@@ -958,16 +972,16 @@ class IntersightResourcePool(IntersightConfigObject):
             management_mode = "Intersight"
 
         selector_list = []
-        if moid_list_blades:
+        if serial_list_blades:
             selector = "/api/v1/compute/Blades"
-            selector += "?$filter=(Moid in ('"
-            selector += "','".join(moid_list_blades)
+            selector += "?$filter=(Serial in ('"
+            selector += "','".join(serial_list_blades)
             selector += "'))"  # and (ManagementMode eq '" + management_mode + "')"
             selector_list.append(selector)
-        if moid_list_racks:
+        if serial_list_racks:
             selector = "/api/v1/compute/RackUnits"
-            selector += "?$filter=(Moid in ('"
-            selector += "','".join(moid_list_racks)
+            selector += "?$filter=(Serial in ('"
+            selector += "','".join(serial_list_racks)
             selector += "'))"  # and (ManagementMode eq '" + management_mode + "')"
             selector_list.append(selector)
 

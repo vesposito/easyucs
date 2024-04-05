@@ -11,7 +11,6 @@ from repository.metadata import ConfigMetadata
 
 class GenericConfig:
     def __init__(self, parent=None):
-        self.custom = None
         self.device = parent.parent
         self.load_from = None
         self.options = {}

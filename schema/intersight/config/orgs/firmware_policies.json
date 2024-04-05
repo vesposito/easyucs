@@ -1,85 +1,85 @@
 {
-    "id": "intersight_config_orgs_firmware_policies#",
-    "$schema": "http://json-schema.org/draft-07/schema#",
-    "title": "EasyUCS intersight config orgs firmware_policies section",
-    "description": "EasyUCS intersight config orgs firmware_policies section JSON schema",
-    "type": "object",
-    "properties": {
-       "comment": {
-          "description": "Firmware Policy Comments",
-          "type": "string",
-          "default": ""
-       },
-       "descr": {
-          "description": "Firmware Policy Description",
-          "type": "string",
-          "default": "",
-          "pattern": "^$|^[a-zA-Z0-9]+[\\x00-\\xFF]*$",
-          "maxLength": 1024
-       },
-       "name": {
-          "description": "Firmware Policy Name",
-          "type": "string",
-          "default": "",
-          "pattern": "^[a-zA-Z0-9_.:-]{1,64}$"
-       },
-       "tags": {
-          "description": "Firmware Policy Tags",
-          "type": "array",
-          "items": {
-             "description": "Firmware Policy Tag",
-             "type": "object",
-             "properties": {
-                "key": {
-                   "description": "Firmware Policy Tag Key",
-                   "type": "string",
-                   "default": "",
-                   "minLength": 1,
-                   "maxLength": 128
-                },
-                "value": {
-                   "description": "Firmware Policy Tag Value",
-                   "type": "string",
-                   "default": "",
-                   "minLength": 0,
-                   "maxLength": 256
-                }
-             },
-             "additionalProperties": false,
-             "required": [
-                "key",
-                "value"
-             ]
-          },
-          "minItems": 1
-       },
-       "excluded_components": {
+   "id": "intersight_config_orgs_firmware_policies#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS intersight config orgs firmware_policies section",
+   "description": "EasyUCS intersight config orgs firmware_policies section JSON schema",
+   "type": "object",
+   "properties": {
+      "comment": {
+         "description": "Firmware Policy Comments",
+         "type": "string",
+         "default": ""
+      },
+      "descr": {
+         "description": "Firmware Policy Description",
+         "type": "string",
+         "default": "",
+         "pattern": "^$|^[a-zA-Z0-9]+[\\x00-\\xFF]*$",
+         "maxLength": 1024
+      },
+      "name": {
+         "description": "Firmware Policy Name",
+         "type": "string",
+         "default": "",
+         "pattern": "^[a-zA-Z0-9_.:-]{1,64}$"
+      },
+      "tags": {
+         "description": "Firmware Policy Tags",
+         "type": "array",
+         "items": {
+            "description": "Firmware Policy Tag",
+            "type": "object",
+            "properties": {
+               "key": {
+                  "description": "Firmware Policy Tag Key",
+                  "type": "string",
+                  "default": "",
+                  "minLength": 1,
+                  "maxLength": 128
+               },
+               "value": {
+                  "description": "Firmware Policy Tag Value",
+                  "type": "string",
+                  "default": "",
+                  "minLength": 0,
+                  "maxLength": 256
+               }
+            },
+            "additionalProperties": false,
+            "required": [
+               "key",
+               "value"
+            ]
+         },
+         "minItems": 1
+      },
+      "excluded_components": {
          "description": "The components to be excluded in the server upgrade via policy.",
          "type": "array",
-         "items":{
-          "description": "Firmware Policy Excluded Component",
-          "type": "string",
-          "enum":[
-           "local-disk",
-           "storage-controller"
-          ]
+         "items": {
+            "description": "Firmware Policy Excluded Component",
+            "type": "string",
+            "enum": [
+               "local-disk",
+               "storage-controller"
+            ]
          }
-        },
-       "models": {
+      },
+      "models": {
          "description": "The Server Model and Firmware Version of the policy",
          "type": "array",
          "items": {
             "type": "object",
             "properties": {
-               "firmware_version":{
+               "firmware_version": {
                   "description": "Firmware Policy Firmware Version",
                   "type": "string",
                   "default": ""
                },
-               "server_model":{
+               "server_model": {
                   "description": "Firmware Policy Server Model",
                   "type": "string",
-                  "enum":[
+                  "enum": [
                      "UCSB-B200-M5",
                      "UCSB-B200-M6",
                      "UCSB-B480-M5",
@@ -87,30 +87,31 @@
                      "UCSC-C220-M4",
                      "UCSC-C220-M5",
                      "UCSC-C220-M6",
+                     "UCSC-C220-M7",
                      "UCSC-C225-M6",
                      "UCSC-C240-M4",
                      "UCSC-C240-M5",
                      "UCSC-C240-M6",
+                     "UCSC-C240-M7",
                      "UCSC-C245-M6",
                      "UCSC-C460-M4",
                      "UCSC-C480-M5",
                      "UCSX-210C-M6",
-                     "UCSX-210C-M7", 
-                     "UCSX-220-M7", 
-                     "UCSX-240-M7"
+                     "UCSX-210C-M7",
+                     "UCSX-410C-M7"
                   ]
                }
             },
-            "additionalProperties":false,
-               "required":[
-                  "firmware_version",
-                  "server_model"
-               ]
+            "additionalProperties": false,
+            "required": [
+               "firmware_version",
+               "server_model"
+            ]
          },
          "minItems": 1,
          "maxItems": 6
-      },  
-       "target_platform": {
+      },
+      "target_platform": {
          "description": "The target platform on which the policy to be applied. Either standalone or FI attached. * `Standalone` - Servers which are operating in standalone mode i.e. not connected to a Fabric Interconnected. * `FI-Attached` - Servers which are connected to a Fabric Interconnect that is managed by Intersight.",
          "type": "string",
          "default": "Standalone",
@@ -118,10 +119,10 @@
             "FI-Attached",
             "Standalone"
          ]
-       } 
-     },
-     "additionalProperties":false,
-     "required":[
-       "name"
-     ]
- }
+      }
+   },
+   "additionalProperties": false,
+   "required": [
+      "name"
+   ]
+}

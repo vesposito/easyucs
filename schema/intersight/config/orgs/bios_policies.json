@@ -362,6 +362,7 @@
          "type": "string",
          "default": "platform-default",
          "enum": [
+            "Auto",
             "disabled",
             "enabled",
             "platform-default"
@@ -372,6 +373,7 @@
          "type": "string",
          "default": "platform-default",
          "enum": [
+            "Auto",
             "disabled",
             "enabled",
             "platform-default"
@@ -1134,6 +1136,26 @@
       },
       "enable_sgx": {
          "description": "BIOS Policy - enable_sgx",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "disabled",
+            "enabled",
+            "platform-default"
+         ]
+      },
+      "enable_tdx": {
+         "description": "BIOS Policy - enable_tdx",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "disabled",
+            "enabled",
+            "platform-default"
+         ]
+      },
+      "enable_tdx_seamldr": {
+         "description": "BIOS Policy - enable_tdx_seamldr",
          "type": "string",
          "default": "platform-default",
          "enum": [
@@ -2386,6 +2408,7 @@
             "12.8GT/s",
             "14.4GT/s",
             "16.0GT/s",
+            "20.0GT/s",
             "9.6GT/s",
             "Auto",
             "platform-default"
@@ -2584,6 +2607,16 @@
       },
       "sha256pcr_bank": {
          "description": "BIOS Policy - sha256pcr_bank",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "disabled",
+            "enabled",
+            "platform-default"
+         ]
+      },
+      "sha384pcr_bank": {
+         "description": "BIOS Policy - sha384pcr_bank",
          "type": "string",
          "default": "platform-default",
          "enum": [

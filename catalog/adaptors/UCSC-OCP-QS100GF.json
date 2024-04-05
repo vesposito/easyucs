@@ -9,5 +9,6 @@
       "port_size": [111, 49]
     }
   },
+  "imm_compatible": false,
   "data_sheet_url": "https://www.marvell.com/documents/tacwfd7qkp4g2cmqcbhr/"
 }

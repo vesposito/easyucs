@@ -106,6 +106,45 @@ function clearIntersightClaimStatus(){
 }
 
 /**
+ * Clears the config of the device
+ */
+function clearConfig(){
+  var form_content = $('#clearConfigForm').serializeArray();
+  // Creates a list from all the orgs selected by the user
+  var org_list = [];
+  form_content.forEach(function (org) {
+    if(org.name == "org_list"){
+      org_list.push(org.value);
+    }
+  });
+  var title_text = "";
+  if(org_list.length === 0){
+    title_text = "You are about to clear ALL existing orgs. This is an irreversible action. Do you wish to proceed?";
+  } else {
+    title_text = "You are about to clear the following orgs: " + org_list.toString() + ". This is an irreversible action. Do you wish to proceed?";
+  }
+
+  // The function gets executed only if the user confirms the warning
+  Swal.fire({
+    title: title_text,
+    showDenyButton: true,
+    confirmButtonText: `Yes`,
+    denyButtonText: `No`,
+  }).then((result) => {
+    if (result.isConfirmed) {
+      var query_json = {"orgs": org_list};
+
+      const target_api_endpoint = api_base_url + api_device_endpoint + "/" + current_device_uuid + "/actions/clear_config";
+      const action_type_message = "Clear Config";
+      httpRequestAsync("POST", target_api_endpoint, alertActionStarted.bind(null, action_type_message), query_json);
+    }
+  });
+
+  // Closes the modal
+  $('#clearConfigModal').modal('toggle');
+}
+
+/**
  * Clears the SEL logs of the device
  */
 function clearSelLogs(){
@@ -119,6 +158,25 @@ function clearSelLogs(){
       if (result.isConfirmed) {
         const target_api_endpoint = api_base_url + api_device_endpoint + "/" + current_device_uuid + "/actions/clear_sel_logs";
         const action_type_message = "Clear SEL Logs";
+        httpRequestAsync("POST", target_api_endpoint, alertActionStarted.bind(null, action_type_message));
+      }
+  });
+}
+
+/**
+ * Regenerates the SSL certificate of the device
+ */
+function regenerateCertificate(){
+  // The function gets executed only if the user confirms the warning
+  Swal.fire({
+    title: "Regenerating SSL certificate is an irreversible action. Do you wish to proceed?",
+    showDenyButton: true,
+    confirmButtonText: `Yes`,
+    denyButtonText: `No`,
+  }).then((result) => {
+      if (result.isConfirmed) {
+        const target_api_endpoint = api_base_url + api_device_endpoint + "/" + current_device_uuid + "/actions/regenerate_certificate";
+        const action_type_message = "Regenerate Certificate";
         httpRequestAsync("POST", target_api_endpoint, alertActionStarted.bind(null, action_type_message));
       }
   });
@@ -221,8 +279,14 @@ function displayCatalogConfigs(data){
  * Hides the action "Claim to Intersight" in the Actions button
  */
 function disableClaimToIntersight(){
-  $("#actions-separator").hide();
   $("#action-claim-to-intersight").hide();
+}
+
+/**
+ * Hides the action "Clear Config" in the Actions button
+ */
+function disableClearConfig(){
+  $("#action-clear-config").hide();
 }
 
 /**
@@ -278,18 +342,21 @@ function displayDevice(data){
     `
     avatar_src = "/static/img/intersight_logo.png";
     color = "bg-info";
+    enableClearConfig();
   } else if (current_device.device_type == "ucsm"){
     avatar_src = "/static/img/ucsm_logo.png";
     color = "bg-primary";
     enableClaimToIntersight();
     enableClearIntersightClaimStatus();
     enableClearSelLogs();
+    enableRegenerateCertificate();
   } else if (current_device.device_type == "cimc"){
     avatar_src = "/static/img/cimc_logo.png";
     color = "bg-warning";
     enableClaimToIntersight();
     enableClearIntersightClaimStatus();
     enableClearSelLogs();
+    enableRegenerateCertificate();
   } else if (current_device.device_type == "ucsc"){
     avatar_src = "/static/img/ucsc_logo.png";
     color = "bg-dark";
@@ -430,7 +497,58 @@ function displayIntersightDevices(data){
 }
 
 /**
- * Deletes an object
+ * Displays the Intersight orgs
+ * @param  {JSON} data - Optional: The data returned after getting a list of orgs from the API
+ */
+function displayIntersightOrgs(data){
+    if(!data){
+      console.error('No data to display!');
+      return
+    }
+
+    data = JSON.parse(data);
+
+    if(!data.orgs){
+      return
+    }
+
+    var loaded_orgs = data.orgs;
+
+    var intersight_orgs_list = `
+        <option hidden disabled selected value> -- Select an option -- </option>
+    `;
+
+    var intersight_org_number = 0;
+
+    intersight_org_names = Object.keys(loaded_orgs);
+
+    // Only displays devices of type Intersight
+    intersight_org_names.forEach(function (org) {
+      intersight_org_number += 1;
+      intersight_org_descr = loaded_orgs[org].description
+      if(intersight_org_descr != ""){
+        intersight_orgs_list += `
+        <option value="${org}">${org} - ${intersight_org_descr}</option>
+        `
+      } else {
+        intersight_orgs_list += `
+        <option value="${org}">${org}</option>
+        `
+      }
+    });
+
+    if(intersight_org_number == 0){
+        intersight_orgs_list = `
+        <option value="null">No Intersight org is currently available</option>
+        `
+    }
+
+    document.getElementById('orgs_list').innerHTML = intersight_orgs_list;
+}
+
+
+/**
+ * Displays an object
  * @param  {JSON} data - Optional: The data returned after getting a list of objects from the API
  */
 function displayObjects(data){
@@ -482,6 +600,9 @@ function displayObjects(data){
     loaded_report_list = loaded_object;
     object_type = "report";
     table = reportTable;
+  } else if (data.orgs){
+    console.log(data.orgs)
+    loaded_object = data.orgs;
   } else {
     return
   }
@@ -538,6 +659,24 @@ function displayObjects(data){
     } else if (object_type == "inventory"){
       document.getElementById('inventories_options').innerHTML = object_options_list;
     }
+  } else if(object_type == "orgs"){
+    console.log("youpi")
+    var object_options_list = "";
+    if(loaded_object.length < 1){
+      object_options_list = `
+      <option value="null">No ${object_type} available on this device</option>
+      `
+    } else {
+      loaded_object.forEach(function (object) {
+        object_name = setObjectName(object, object_type);
+        object_options_list += `
+          <option value="${object.uuid}">${object_name}</option>
+        `
+      });
+    }
+    if (object_type == "orgs"){
+      document.getElementById('orgs_list').innerHTML = object_options_list;
+    }
   }
 }
 
@@ -573,7 +712,15 @@ function enableClaimToIntersight(){
 }
 
 /**
- * Shows the action "Enable Clear Intersight Claim Status" in the Actions button
+ * Shows the action "Clear Config" in the Actions button
+ */
+function enableClearConfig(){
+  $("#actions-separator").show();
+  $("#action-clear-config").show();
+}
+
+/**
+ * Shows the action "Clear Intersight Claim Status" in the Actions button
  */
 function enableClearIntersightClaimStatus(){
   $("#actions-separator").show();
@@ -586,6 +733,14 @@ function enableClearIntersightClaimStatus(){
 function enableClearSelLogs(){
   $("#actions-separator").show();
   $("#action-clear-sel-logs").show();
+}
+
+/**
+ * Shows the action "Regenerate Certificate" in the Actions button
+ */
+function enableRegenerateCertificate(){
+  $("#actions-separator").show();
+  $("#action-regenerate-certificate").show();
 }
 
 /**
@@ -611,6 +766,7 @@ function fetchLiveObjectFromDevice(object_type){
  * Generates a report from a config and an inventory
  */
 function generateReport(){
+  var params = {};
   var form_content = $('#generateReportForm').serializeArray();
   var form_json = objectifyForm(form_content);
 
@@ -623,13 +779,26 @@ function generateReport(){
     console.error("Error generating report: missing config or inventory");
     displayAlert("Error generating report:", "Missing configuration or inventory");
     return
+  } else {
+    params["config_uuid"] = form_json.config_uuid;
+    params["inventory_uuid"] = form_json.inventory_uuid;
   }
+
+  // Get the output format
+  var output_formats = [];
+  if(form_json.output_format && ["docx", "pdf"].includes(form_json.output_format)){
+    output_formats.push(form_json.output_format);
+  } else {
+    // We default to Word (docx)
+    output_formats.push("docx");
+  }
+  params["output_formats"] = output_formats;
 
   target_api_endpoint = api_base_url + api_device_endpoint + "/" + current_device_uuid +"/reports/actions/generate";
   const action_type_message = "Generating Report";
 
   // Generates the report and creates an alert
-  httpRequestAsync("POST", target_api_endpoint, alertActionStarted.bind(null,action_type_message), form_json);
+  httpRequestAsync("POST", target_api_endpoint, alertActionStarted.bind(null,action_type_message), params);
 
   // Closes the modal
   $('#generateReportModal').modal('toggle');
@@ -694,6 +863,13 @@ function getIntersightDevices(){
   // Only gets the Intersight devices
   var filter = ["device_type", "==", "intersight"]
   getFromDb(callback = displayIntersightDevices, object_type = "device", device_uuid = null, uuid = null, filter = filter);
+}
+
+/**
+ * Gets the list of Intersight orgs from the API
+ */
+function getIntersightOrgs(){
+  getFromDb(callback = displayIntersightOrgs, object_type = "orgs", device_uuid = current_device_uuid, uuid = null, filter = filter);
 }
 
 /**
@@ -962,6 +1138,16 @@ function toggleClaimToIntersightModal(event){
   removeEventPropagation(event);
   getIntersightDevices();
   $('#claimToIntersightModal').modal('toggle');
+}
+
+/**
+ * Toggles the modal with the form to perform a clear config
+ * @param  {Event} event - The click event
+ */
+function toggleClearConfigModal(event){
+  removeEventPropagation(event);
+  getIntersightOrgs();
+  $('#clearConfigModal').modal('toggle');
 }
 
 /**

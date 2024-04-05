@@ -28,5 +28,6 @@
       "port_size": [82, 55]
     }
   },
+  "imm_compatible": false,
   "data_sheet_url": "https://www.cisco.com/c/dam/en/us/products/collateral/servers-unified-computing/ucs-c-series-rack-servers/qlogic-qle2692-data-sheet.pdf"
 }

@@ -28,5 +28,6 @@
       "port_size": [73, 47]
     }
   },
+  "imm_compatible": false,
   "data_sheet_url": "https://www.intel.com/content/dam/doc/product-brief/ethernet-server-adapter-x520-t2-brief.pdf"
 }

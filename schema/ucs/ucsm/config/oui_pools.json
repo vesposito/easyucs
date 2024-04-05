@@ -1,0 +1,41 @@
+{
+  "id": "ucs_system_config_oui_pools#",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "EasyUCS ucs system config custom oui section",
+  "description": "EasyUCS ucs system config Custom OUI section JSON schema",
+  "type": "object",
+  "properties": {
+    "oui_pools": {
+      "description": "Organizationally Unique Identifiers of the device",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "description": "List of oui pools",
+        "properties": {
+          "name": {
+            "description": "OUI Pool Name",
+            "type": "string"
+          },
+          "fabric": {
+            "description": "Fabric ID of Breakout Port (\"A\" or \"B\")",
+            "type": "string",
+            "enum": [
+              "a",
+              "A",
+              "b",
+              "B"
+            ]
+          },
+          "ouis": {
+            "description": "Organizationally Unique Identifier of the device",
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^0x[0-9a-fA-F]{6}$"
+            }
+          }
+        }
+      }
+    }
+  }
+}

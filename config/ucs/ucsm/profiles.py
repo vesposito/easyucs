@@ -39,6 +39,7 @@ from ucsmsdk.mometa.vnic.VnicIScsiStaticTargetIf import VnicIScsiStaticTargetIf
 from ucsmsdk.mometa.vnic.VnicIpV4MgmtPooledAddr import VnicIpV4MgmtPooledAddr
 from ucsmsdk.mometa.vnic.VnicIpV6MgmtPooledAddr import VnicIpV6MgmtPooledAddr
 from ucsmsdk.mometa.vnic.VnicLun import VnicLun
+from ucsmsdk.mometa.vnic.VnicSriovHpnConPolicyRef import VnicSriovHpnConPolicyRef
 from ucsmsdk.mometa.vnic.VnicUsnicConPolicyRef import VnicUsnicConPolicyRef
 from ucsmsdk.mometa.vnic.VnicVlan import VnicVlan
 from ucsmsdk.mometa.vnic.VnicVmqConPolicyRef import VnicVmqConPolicyRef
@@ -48,8 +49,9 @@ from ucsmsdk.ucsmethodfactory import ls_instantiate_n_named_template, ls_instant
 
 from config.ucs.object import UcsSystemConfigObject
 from config.ucs.ucsm.lan import UcsSystemDynamicVnicConnectionPolicy, UcsSystemIpPool, UcsSystemLanConnectivityPolicy, \
-    UcsSystemMacPool, UcsSystemNetworkControlPolicy, UcsSystemLanPinGroup, UcsSystemQosPolicy, \
-    UcsSystemUsnicConnectionPolicy, UcsSystemVmqConnectionPolicy, UcsSystemVnicTemplate
+    UcsSystemLanPinGroup, UcsSystemMacPool, UcsSystemNetworkControlPolicy, UcsSystemQosPolicy, \
+    UcsSystemSriovHpnConnectionPolicy, UcsSystemUsnicConnectionPolicy, UcsSystemVmqConnectionPolicy, \
+    UcsSystemVnicTemplate
 from config.ucs.ucsm.san import UcsSystemIqnPool, UcsSystemSanConnectivityPolicy, UcsSystemStorageConnectionPolicy, \
     UcsSystemWwnnPool, UcsSystemSanPinGroup, UcsSystemVhbaTemplate, UcsSystemWwpnPool
 from config.ucs.ucsm.servers import UcsSystemBiosPolicy, UcsSystemBootPolicy, UcsSystemGraphicsCardPolicy, \
@@ -114,6 +116,7 @@ class UcsSystemServiceProfile(UcsSystemConfigObject):
                 "network_control_policy": UcsSystemNetworkControlPolicy,
                 "pin_group": UcsSystemLanPinGroup,
                 "qos_policy": UcsSystemQosPolicy,
+                "sriov_hpn_connection_policy": UcsSystemSriovHpnConnectionPolicy,
                 "stats_threshold_policy": UcsSystemThresholdPolicy,
                 "usnic_connection_policy": UcsSystemUsnicConnectionPolicy,
                 "vmq_connection_policy": UcsSystemVmqConnectionPolicy,
@@ -549,6 +552,7 @@ class UcsSystemServiceProfile(UcsSystemConfigObject):
                                     if vnic["order"] == "unspecified":
                                         vnic["order"] = None
                                     vnic.update({"fabric": vnic_ether.switch_id})
+                                    vnic.update({"q_in_q": vnic_ether.q_in_q})
                                     vnic.update({"pin_group": vnic_ether.pin_to_group_name})
                                     vnic.update({"cdn_source": vnic_ether.cdn_source})
                                     vnic.update({"cdn_name": vnic_ether.admin_cdn_name})
@@ -590,6 +594,19 @@ class UcsSystemServiceProfile(UcsSystemConfigObject):
                                                         policy_name="vmq_connection_policy"
                                                     )
                                                 )
+                                    if "vnicSriovHpnConPolicyRef" in self._parent._config.sdk_objects:
+                                        for vnic_policy in self._config.sdk_objects["vnicSriovHpnConPolicyRef"]:
+                                            if self._parent._dn + "/ls-" + self.name + "/" + "ether-" + \
+                                                    vnic['name'] + "/" in vnic_policy.dn:
+                                                vnic.update(
+                                                    {"sriov_hpn_connection_policy": vnic_policy.con_policy_name})
+                                                oper_state.update(
+                                                    self.get_operational_state(
+                                                        policy_dn=vnic_policy.oper_con_policy_name,
+                                                        separator="/sriov-hpn-con-",
+                                                        policy_name="sriov_hpn_connection_policy"
+                                                    )
+                                                )
                                     if "vnicEtherIf" in self._config.sdk_objects:
                                         vnic.update({"vlans": []})
                                         for vlan in vnic_ether_if_list:
@@ -599,6 +616,8 @@ class UcsSystemServiceProfile(UcsSystemConfigObject):
                                                     vnic.update({"vlan_native": vlan.name})
                                                 else:
                                                     vnic['vlans'].append(vlan.name)
+                                                if vlan.is_qin_q_vlan in ["yes", "true"]:
+                                                    vnic.update({"vlan_q_in_q": vlan.name})
 
                                     if "fabricNetGroupRef" in self._parent._config.sdk_objects:
                                         vnic.update({"vlan_groups": []})
@@ -1273,10 +1292,11 @@ class UcsSystemServiceProfile(UcsSystemConfigObject):
 
                 for element in self.vnics:
                     for value in ["vlans", "vnic_template", "adapter_policy", "name", "cdn_source", "cdn_name",
-                                  "vlan_native", "order", "fabric", "mac_address_pool", "mtu", "qos_policy",
-                                  "network_control_policy", "dynamic_vnic", "pin_group", "stats_threshold_policy",
-                                  "mac_address", "vlan_groups", "operational_state", "redundancy_pair",
-                                  "usnic_connection_policy", "vmq_connection_policy"]:
+                                  "vlan_native", "vlan_q_in_q", "order", "fabric", "q_in_q", "mac_address_pool", "mtu",
+                                  "qos_policy", "network_control_policy", "dynamic_vnic", "pin_group",
+                                  "stats_threshold_policy", "mac_address", "vlan_groups", "operational_state",
+                                  "redundancy_pair", "usnic_connection_policy", "vmq_connection_policy",
+                                  "sriov_hpn_connection_policy"]:
                         if value not in element:
                             element[value] = None
 
@@ -1285,8 +1305,8 @@ class UcsSystemServiceProfile(UcsSystemConfigObject):
 
                     if element["operational_state"]:
                         for policy in ["adapter_policy", "mac_address_pool", "network_control_policy", "pin_group",
-                                       "qos_policy", "stats_threshold_policy", "usnic_connection_policy",
-                                       "vmq_connection_policy", "vnic_template"]:
+                                       "qos_policy", "sriov_hpn_connection_policy", "stats_threshold_policy",
+                                       "usnic_connection_policy", "vmq_connection_policy", "vnic_template"]:
                             if policy not in element["operational_state"]:
                                 element["operational_state"][policy] = None
                             else:
@@ -1514,6 +1534,7 @@ class UcsSystemServiceProfile(UcsSystemConfigObject):
                                       pin_to_group_name=vnic['pin_group'],
                                       order=vnic['order'],
                                       switch_id=vnic['fabric'],
+                                      q_in_q=vnic['q_in_q'],
                                       admin_cdn_name=vnic['cdn_name'],
                                       cdn_source=vnic['cdn_source'],
                                       nw_ctrl_policy_name=vnic['network_control_policy'],
@@ -1528,16 +1549,28 @@ class UcsSystemServiceProfile(UcsSystemConfigObject):
 
             if vnic['dynamic_vnic']:
                 VnicDynamicConPolicyRef(parent_mo_or_dn=mo_vnic_ether, con_policy_name=vnic['dynamic_vnic'])
+            elif vnic['sriov_hpn_connection_policy']:
+                VnicSriovHpnConPolicyRef(parent_mo_or_dn=mo_vnic_ether,
+                                         con_policy_name=vnic['sriov_hpn_connection_policy'])
             elif vnic['usnic_connection_policy']:
                 VnicUsnicConPolicyRef(parent_mo_or_dn=mo_vnic_ether, con_policy_name=vnic['usnic_connection_policy'])
             elif vnic['vmq_connection_policy']:
                 VnicVmqConPolicyRef(parent_mo_or_dn=mo_vnic_ether, con_policy_name=vnic['vmq_connection_policy'])
 
             if vnic['vlan_native']:
-                VnicEtherIf(parent_mo_or_dn=mo_vnic_ether, name=vnic['vlan_native'], default_net="yes")
+                if vnic['vlan_q_in_q'] == vnic['vlan_native']:
+                    vnic_q_in_q = "yes"
+                else:
+                    vnic_q_in_q = "no"
+                VnicEtherIf(parent_mo_or_dn=mo_vnic_ether, name=vnic['vlan_native'], default_net="yes",
+                            is_qin_q_vlan=vnic_q_in_q)
             if vnic['vlans']:
                 for vlan in vnic['vlans']:
-                    VnicEtherIf(parent_mo_or_dn=mo_vnic_ether, name=vlan, default_net="no")
+                    if vnic['vlan_q_in_q'] == vlan:
+                        vnic_q_in_q = "yes"
+                    else:
+                        vnic_q_in_q = "no"
+                    VnicEtherIf(parent_mo_or_dn=mo_vnic_ether, name=vlan, default_net="no", is_qin_q_vlan=vnic_q_in_q)
             if vnic['vlan_groups']:
                 for vlan_group in vnic['vlan_groups']:
                     FabricNetGroupRef(parent_mo_or_dn=mo_vnic_ether, name=vlan_group)

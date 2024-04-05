@@ -43,7 +43,7 @@ class DeviceManager:
 
     def add_device(self, metadata=None, device_type=None, uuid=None, target=None, username=None, password=None,
                    key_id=None, private_key_path=None, is_hidden=False, is_system=False, system_usage=None,
-                   logger_handle_log_level=None, bypass_version_checks=False):
+                   logger_handle_log_level=None, bypass_connection_checks=False, bypass_version_checks=False):
         """
         Adds a device to the list of devices
         :param metadata: The metadata object of to the device to be added (if no device details provided)
@@ -58,6 +58,7 @@ class DeviceManager:
         :param is_system: Whether the device is a system device
         :param system_usage: If device is a system device, indicates the usage for this system device (e.g. "catalog")
         :param logger_handle_log_level: The log level of the device to be added (e.g. "info", "debug", ...)
+        :param bypass_connection_checks: Whether the device needs to bypass the connection check or not
         :param bypass_version_checks: Whether the device needs to bypass the version check or not
         :return: UUID of device if add is successful, False otherwise
         """
@@ -72,6 +73,7 @@ class DeviceManager:
             is_hidden = metadata.is_hidden
             is_system = metadata.is_system
             system_usage = metadata.system_usage
+            bypass_connection_checks = metadata.bypass_connection_checks
             bypass_version_checks = metadata.bypass_version_checks
 
         if device_type is None:
@@ -99,27 +101,32 @@ class DeviceManager:
             device = UcsImc(parent=self, uuid=uuid, target=target, user=username, password=password,
                             is_hidden=is_hidden, is_system=is_system, system_usage=system_usage,
                             logger_handle_log_level=logger_handle_log_level,
+                            bypass_connection_checks=bypass_connection_checks,
                             bypass_version_checks=bypass_version_checks)
         elif device_type == "intersight":
             if target:
                 device = IntersightDevice(parent=self, uuid=uuid, target=target, key_id=key_id,
                                           private_key_path=private_key_path, is_hidden=is_hidden, is_system=is_system,
                                           system_usage=system_usage, logger_handle_log_level=logger_handle_log_level,
+                                          bypass_connection_checks=bypass_connection_checks,
                                           bypass_version_checks=bypass_version_checks)
             else:
                 device = IntersightDevice(parent=self, uuid=uuid, key_id=key_id, private_key_path=private_key_path,
                                           is_hidden=is_hidden, is_system=is_system, system_usage=system_usage,
                                           logger_handle_log_level=logger_handle_log_level,
+                                          bypass_connection_checks=bypass_connection_checks,
                                           bypass_version_checks=bypass_version_checks)
         elif device_type == "ucsc":
             device = UcsCentral(parent=self, uuid=uuid, target=target, user=username, password=password,
                                 is_hidden=is_hidden, is_system=is_system, system_usage=system_usage,
                                 logger_handle_log_level=logger_handle_log_level,
+                                bypass_connection_checks=bypass_connection_checks,
                                 bypass_version_checks=bypass_version_checks)
         elif device_type == "ucsm":
             device = UcsSystem(parent=self, uuid=uuid, target=target, user=username, password=password,
                                is_hidden=is_hidden, is_system=is_system, system_usage=system_usage,
                                logger_handle_log_level=logger_handle_log_level,
+                               bypass_connection_checks=bypass_connection_checks,
                                bypass_version_checks=bypass_version_checks)
         else:
             self.logger(level="error", message="Device type not recognized. Could not add device")
@@ -245,7 +252,8 @@ class DeviceManager:
         # return sorted(self.device_list, key=lambda device: device.metadata.timestamp)[-1]
         return self.device_list[-1]
 
-    def import_device(self, import_format="json", directory=None, filename=None, device=None, metadata=None):
+    def import_device(self, import_format="json", directory=None, filename=None, device=None, metadata=None,
+                      force_custom=None):
         """
         Imports the specified device in the specified import format from the specified filename to device_list
         :param import_format: The import format (e.g. "json")
@@ -253,6 +261,9 @@ class DeviceManager:
         :param filename: The name of the file containing the content to be imported
         :param device: The device content to be imported (if no directory/filename provided)
         :param metadata: The metadata object of to the device to be imported (if no device or dir/file provided)
+        :param force_custom: If set, then overwrite the value of 'is_custom' flag with whatever is set here. Has to
+        be used in situations where a custom device (device which is edited), needs to pretend as a non-custom
+        device (non-edited device).
         :return: Device object if import is successful, False otherwise
         """
         if import_format not in ["json"]:
@@ -369,13 +380,6 @@ class DeviceManager:
                 else:
                     return False
 
-                # We use the provided metadata for the new device object if the hash of the file is valid
-                if not custom and metadata is not None:
-                    self.logger(level="debug", message="Using provided metadata for device import")
-                    device.metadata = metadata
-                    device.metadata.parent = device
-                    device.uuid = metadata.uuid
-
                 device.load_from = "file"
                 device.metadata.easyucs_version = __version__
 
@@ -387,7 +391,19 @@ class DeviceManager:
 
                 # We set the custom flag of the device
                 if custom:
-                    device.custom = True
+                    device.metadata.is_custom = True
+
+                    # Override the 'is_custom' flag of the device if it's a custom file (edited by user) and the user
+                    # explicitly sets it to pretend to be non-custom (not edited by user).
+                    if force_custom is not None:
+                        device.metadata.is_custom = force_custom
+
+                # We use the provided metadata for the new device object if the hash of the file is valid
+                if not custom and metadata is not None:
+                    self.logger(level="debug", message="Using provided metadata for device import")
+                    device.metadata = metadata
+                    device.metadata.parent = device
+                    device.uuid = metadata.uuid
 
                 self.logger(message="Device import successful. Appending device to the list of devices")
                 # We add the device to the list of devices

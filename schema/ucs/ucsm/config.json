@@ -306,6 +306,16 @@
          "minItems": 1,
          "maxItems": 1
       },
+       "oui_pools": {
+         "description": "EasyUCS config/oui_pools section",
+         "type": "array",
+         "items": {
+            "description": "EasyUCS config/oui_pools element",
+            "type": "object",
+            "$ref": "config/oui_pools.json"
+         },
+         "minItems": 1
+      },
       "port_auto_discovery_policy": {
          "description": "EasyUCS config/port_auto_discovery_policy section",
          "type": "array",

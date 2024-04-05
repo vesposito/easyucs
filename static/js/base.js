@@ -19,6 +19,7 @@ var api_report_endpoint = '/reports';
 var api_backup_endpoint = '/backups';
 var api_notification_endpoint = '/notifications';
 var api_log_endpoint = '/logs/session';
+var api_orgs_endpoint = '/orgs';
 
 var bulk_actions_limit = 500;
 var tasks_displayed_limit = 200;
@@ -760,7 +761,7 @@ function getDevicesTypesInfo(callback = null){
 /**
  * Gets an object from the database
  * @param  {Function} callback - Optional: The function to execute while the call has returned
- * @param  {String} object_type - The type of object to get {backup/config/device/inventory/log/notification/report/task}
+ * @param  {String} object_type - The type of object to get {backup/config/device/inventory/log/notification/orgs/report/task}
  * @param  {String} device_uuid - The ID of the device to which the object belongs
  * @param  {String} uuid - Optional: The ID of the object (stays null if the object is a device)
  * @param  {Array} filter - Optional: The filter to apply to the query, attribute should be one of {"==", "!=", ">", ">=", "<", "<="}
@@ -861,6 +862,13 @@ function getFromDb(callback = null, object_type = null, device_uuid = null, uuid
         target_api_endpoint+= api_notification_endpoint;
     } else if (object_type == "log"){
         target_api_endpoint+= api_log_endpoint;
+    } else if (object_type == "orgs"){
+        if(device_uuid){
+            target_api_endpoint+= api_device_endpoint + "/" + device_uuid + api_orgs_endpoint;
+        } else {
+            console.error("Impossible to get orgs: missing device UUID");
+            return
+        }
     } else {
         console.error("Impossible to get object: incorrect object_type attribute - " + object_type);
         return
@@ -1069,6 +1077,8 @@ function handleHttpResponse(callback, received_http_response){
             } else {
                 displayAlert(received_http_response.statusText);
             }
+            // We refresh the data on the page since we got an error
+            refreshData();
         }
     }
 }

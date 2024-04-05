@@ -28,5 +28,6 @@
       "port_size": [73, 47]
     }
   },
+  "imm_compatible": false,
   "data_sheet_url": "https://www.intel.com/content/dam/www/public/us/en/documents/product-briefs/ethernet-x550-brief.pdf"
 }

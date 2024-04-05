@@ -209,38 +209,40 @@ function addDevicesTableView(element_id, devices){
   `
   <div class = "col-md-12">
     <div class="tab-content" id="nav-tabContent">
-          <div class="card">
-              <div class="card-body">
-                  <form id = "deviceActionForm" onchange = "onSelectedObjectsChanged('device');">
-                      <div class = "row">
-                        <div id="deviceTableButtonContainer" class="col-md-12 d-none">
-                            <button type="button" class="btn btn-success dropdown-toggle mb-3" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Actions</button>
-                            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                                <a id="claimToIntersightAction" class="dropdown-item" type="submit" onclick="toggleClaimToIntersightMultipleDevicesModal(event)"><span class="mr-2" style="width: 20px; display: inline-block"><i class="fa-solid fa-cloud-arrow-up"></i></span>Claim Device(s) to Intersight</a>
-                                <div class="dropdown-divider"></div>
-                                <a class="dropdown-item" type="submit" onclick="deleteMultipleDevices()"><span class="mr-2" style="width:20px; display: inline-block"><i class="fa-solid fa-trash"></i></span>Delete Device(s)</a>
-                            </div>
-                        </div>
-                      </div>
-                      <table id="deviceTable" class="table table-bordered table-striped table-hover">
-                          <thead>
-                              <tr>
-                                  <th><input type="checkbox" id="deviceTable_selectAll" name="select_all" value="1" onclick = "handleSelectAll('device', this);"></th>
-                                  <th>Device type</th>
-                                  <th>Device name</th>
-                                  <th>Creation date</th>
-                                  <th>Claimed</th>
-                                  <th>Username</th>
-                                  <th>Version</th>
-                                  <th>Target</th>
-                              </tr>
-                          </thead>
-                          <tbody>
-                          </tbody>
-                      </table>
-                  </form>
+      <div class="card">
+        <div class="card-body">
+          <form id="deviceActionForm" onchange="onSelectedObjectsChanged('device');">
+            <div class="row">
+              <div id="deviceTableButtonContainer" class="col-md-12 d-none">
+                <button type="button" class="btn btn-success dropdown-toggle mb-3" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Actions</button>
+                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                  <a id="claimToIntersightAction" class="dropdown-item" type="submit" onclick="toggleClaimToIntersightMultipleDevicesModal(event)"><span class="mr-2" style="width: 20px; display: inline-block"><i class="fa-solid fa-cloud-arrow-up"></i></span>Claim Device(s) to Intersight</a>
+                  <a id="clearIntersightClaimStatusAction" class="dropdown-item" type="submit" onclick="clearIntersightClaimStatusMultipleDevices()"><span class="mr-2" style="width: 20px; display: inline-block"><i class="fa-solid fa-plug-circle-xmark"></i></span>Clear Device(s) Intersight Claim Status</a>
+                  <div class="dropdown-divider"></div>
+                    <a class="dropdown-item" type="submit" onclick="deleteMultipleDevices()"><span class="mr-2" style="width:20px; display: inline-block"><i class="fa-solid fa-trash"></i></span>Delete Device(s)</a>
+                  </div>
+                </div>
               </div>
-          </div>
+              <table id="deviceTable" class="table table-bordered table-striped table-hover">
+                <thead>
+                  <tr>
+                    <th><input type="checkbox" id="deviceTable_selectAll" name="select_all" value="1" onclick = "handleSelectAll('device', this);"></th>
+                    <th>Device type</th>
+                    <th>Device name</th>
+                    <th>Creation date</th>
+                    <th>Intersight claim status</th>
+                    <th>Username</th>
+                    <th>Version</th>
+                    <th>Target</th>
+                  </tr>
+                </thead>
+                <tbody>
+                </tbody>
+              </table>
+            </div>
+          </form>
+        </div>
+      </div>
     </div>
   </div>
   `
@@ -254,7 +256,7 @@ function addDevicesTableView(element_id, devices){
   // For each device, we create the specific row in the DataTable
   devices.map( device => {
     var device_version = "unknown";
-    var claimed = "No information";
+    var claimed = "N/A";
     var on_click = `window.location='/devices/${device.device_uuid}';`
     if(device.device_version != undefined){
       device_version = device.device_version;
@@ -376,6 +378,7 @@ function completeDeviceForm(device_type){
     document.getElementById('password').disabled = true;
     document.getElementById('key_id').disabled = false;
     document.getElementById('private_key').disabled = false;
+    document.getElementById('bypass-connection-check-form').classList.remove("d-none");
   } else {
     document.getElementById('ucs-device-form').classList.remove("d-none");
     document.getElementById('intersight-device-form').classList.add("d-none");
@@ -383,6 +386,7 @@ function completeDeviceForm(device_type){
     document.getElementById('private_key').disabled = true;
     document.getElementById('username').disabled = false;
     document.getElementById('password').disabled = false;
+    document.getElementById('bypass-connection-check-form').classList.remove("d-none");
   }
 
   // Displays the elements on the page
@@ -396,6 +400,14 @@ function createDevice(){
   // Collects the content of the form and transforms it into an object
   form_content = $('#createDeviceForm').serializeArray();
   form_json = objectifyForm(form_content);
+
+  if(form_json.bypass_connection_checks && form_json.bypass_connection_checks == "on"){
+    form_json.bypass_connection_checks = true;
+  } else if(form_json.bypass_connection_checks && form_json.bypass_connection_checks == "off"){
+    form_json.bypass_connection_checks = false;
+  }
+
+  addScrollLoader(device_view_container_id, full = false);
 
   // Pushed the new device to the db
   pushToDb(getDevices, "device", null, form_json);
@@ -458,6 +470,45 @@ function deleteMultipleDevices(){
         // Deletes the selected objects and refreshes the objects
         deleteMultipleFromDb(getDevices, 'device', null, object_uuid_list);
       }
+  });
+}
+
+
+/**
+ * Clears the Intersight Claim Status of a list of selected devices - devices are selected through the checkboxes
+ */
+function clearIntersightClaimStatusMultipleDevices(){
+
+  if(selected_objects["device"].length > bulk_actions_limit){
+    raiseBulkActionLimitAlert(selected_objects["device"].length);
+    return
+  }
+
+  var object_name_list = [];
+  var object_uuid_list = [];
+
+  for(obj of selected_objects["device"]){
+    object_name_list.push(" " + obj["device_name"]);
+    object_uuid_list.push(obj["device_uuid"]);
+  }
+
+  var form_json = {};
+
+  // The function gets executed only if the user confirms the warning
+  Swal.fire({
+    title: "Do you really want to clear the Intersight Claim Status of the following device objects?",
+    text: object_name_list,
+    showDenyButton: true,
+    confirmButtonText: `Yes`,
+    denyButtonText: `No`,
+  }).then((result) => {
+    if (result.isConfirmed) {
+      form_json["device_uuids"] = object_uuid_list
+
+      const target_api_endpoint = api_base_url + api_device_endpoint + "/actions/clear_intersight_claim_status";
+      const action_type_message = "Clearing Intersight Claim Status of device(s)";
+      httpRequestAsync("POST", target_api_endpoint, alertActionStarted.bind(null,action_type_message), form_json);
+    }
   });
 }
 
@@ -587,7 +638,8 @@ function onSearchChanged(){
  * Refreshes dynamic data on the page
  */
 function refreshData(){
-  getDevices(); 
+  removeScrollLoader();
+  getDevices();
 }
 
 /**
@@ -638,6 +690,12 @@ function toggleObjectActionsButton(selected_objects){
     $("#claimToIntersightAction").removeClass('d-none');
   } else {
     $("#claimToIntersightAction").addClass('d-none');
+  }
+
+  if(allowed_actions.includes("clear_intersight_claim_status")){
+    $("#clearIntersightClaimStatusAction").removeClass('d-none');
+  } else {
+    $("#clearIntersightClaimStatusAction").addClass('d-none');
   }
 }
 

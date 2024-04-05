@@ -963,7 +963,7 @@ class UcsImcStorageLocalDisk(UcsStorageLocalDisk, UcsImcInventoryObject):
                     self.block_size = int(storage_local_disk_props_list[0].block_size)
                 if storage_local_disk_props_list[0].boot_drive:
                     self.bootable = storage_local_disk_props_list[0].boot_drive
-                if storage_local_disk_props_list[0].block_count:
+                if storage_local_disk_props_list[0].block_count not in [None, "", "N/A"]:
                     self.number_of_blocks = int(storage_local_disk_props_list[0].block_count)
                 if storage_local_disk_props_list[0].raw_size:
                     self.size_raw = int(storage_local_disk_props_list[0].raw_size.split(" ")[0])

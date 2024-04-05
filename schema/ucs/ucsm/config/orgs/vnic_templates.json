@@ -112,6 +112,15 @@
             "updating-template"
          ]
       },
+      "q_in_q": {
+         "description": "vNIC Template - Enable QinQ",
+         "type": "string",
+         "default": "disabled",
+         "enum": [
+            "disabled",
+            "enabled"
+         ]
+      },
       "pin_group": {
          "description": "vNIC Template - Pin Group",
          "type": "string",
@@ -136,6 +145,7 @@
          "default": "dynamic-vnic",
          "enum": [
             "dynamic-vnic",
+            "sriov-hpn",
             "usnic",
             "vmq"
          ]
@@ -148,6 +158,12 @@
       },
       "vlan_native": {
          "description": "vNIC Template - VLAN Native",
+         "type": "string",
+         "default": "",
+         "pattern": "^[\\-\\.:_a-zA-Z0-9]{1,32}$"
+      },
+      "vlan_q_in_q": {
+         "description": "vNIC Template - VLAN QinQ",
          "type": "string",
          "default": "",
          "pattern": "^[\\-\\.:_a-zA-Z0-9]{1,32}$"

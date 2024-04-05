@@ -209,6 +209,17 @@ class IntersightUcsServerProfile(IntersightGenericUcsServerProfile):
             # Fetching the identities which are already consumed by the profile
             self.operational_state.update(self._get_identities())
 
+            # Fetching the status of the profile
+            if hasattr(self._object, "config_context"):
+                if hasattr(self._object.config_context, "config_state_summary"):
+                    self.operational_state.update({
+                        "config_state": getattr(self._object.config_context, "config_state_summary", None)
+                    })
+                if getattr(self._object.config_context, "oper_state", None):
+                    self.operational_state.update({
+                        "profile_state": getattr(self._object.config_context, "oper_state", None)
+                    })
+
             # Fetching the identities (reservations) which are not yet consumed by the profile
             if hasattr(self._object, "reservation_references"):
                 for reservation_reference in self._object.reservation_references:
@@ -278,21 +289,23 @@ class IntersightUcsServerProfile(IntersightGenericUcsServerProfile):
             if hasattr(self._object, "assigned_server"):
                 if self._object.assigned_server:
                     if self._object.assigned_server.object_type == "compute.Blade":
-                        self.assigned_server = {"server_type": "Blade"}
+                        self.operational_state["assigned_server"] = {"server_type": "Blade"}
                         server_details = self._get_server(self._object.assigned_server)
                         if server_details:
                             (
-                                self.assigned_server["chassis_id"],
-                                self.assigned_server["slot_id"],
-                                self.assigned_server["model"],
+                                self.operational_state["assigned_server"]["serial_number"],
+                                self.operational_state["assigned_server"]["chassis_id"],
+                                self.operational_state["assigned_server"]["slot_id"],
+                                self.operational_state["assigned_server"]["model"],
                             ) = server_details
                     elif self._object.assigned_server.object_type == "compute.RackUnit":
-                        self.assigned_server = {"server_type": "Rack"}
+                        self.operational_state["assigned_server"] = {"server_type": "Rack"}
                         server_details = self._get_server(self._object.assigned_server)
                         if server_details:
                             (
-                                self.assigned_server["server_id"],
-                                self.assigned_server["model"],
+                                self.operational_state["assigned_server"]["serial_number"],
+                                self.operational_state["assigned_server"]["server_id"],
+                                self.operational_state["assigned_server"]["model"],
                             ) = server_details
 
             if hasattr(self._object, "server_assignment_mode") and self._object.server_assignment_mode == "None":
@@ -310,32 +323,6 @@ class IntersightUcsServerProfile(IntersightGenericUcsServerProfile):
                                 "slot_id": self._object.server_pre_assign_by_slot.slot_id
                             }
 
-            # if hasattr(self._object, "associated_server"):
-            #     if self._object.associated_server:
-            #         if self._object.associated_server.object_type == "compute.Blade":
-            #             self.associated_server = {"server_type": "Blade"}
-            #             server_details = self._get_server(
-            #                 self._object.associated_server
-            #             )
-            #             if server_details:
-            #                 (
-            #                     self.associated_server["chassis_id"],
-            #                     self.associated_server["slot_id"],
-            #                     self.associated_server["model"],
-            #                 ) = server_details
-            #         elif (
-            #             self._object.associated_server.object_type == "compute.RackUnit"
-            #         ):
-            #             self.associated_server = {"server_type": "Rack"}
-            #             server_details = self._get_server(
-            #                 self._object.associated_server
-            #             )
-            #             if server_details:
-            #                 (
-            #                     self.associated_server["server_id"],
-            #                     self.associated_server["model"],
-            #                 ) = server_details
-
         elif self._config.load_from == "file":
             for attribute in [
                 "adapter_configuration_policy", "assigned_server", "bios_policy", "boot_policy",
@@ -352,23 +339,18 @@ class IntersightUcsServerProfile(IntersightGenericUcsServerProfile):
                 if attribute in self._object:
                     setattr(self, attribute, self.get_attribute(attribute_name=attribute))
 
-            # if self.associated_server:
-            #     for attribute in [
-            #         "model",
-            #         "server_id",
-            #         "chassis_id",
-            #         "slot_id",
-            #         "server_type",
-            #     ]:
-            #         if attribute not in self.associated_server:
-            #             self.associated_server[attribute] = None
-
         self.clean_object()
 
     def clean_object(self):
         # We use this to make sure all attributes of assigned_server, reservations and operational_state
         # are set to None if they are not present
+
+        # This 'assigned_server' is deprecated. Start using 'assigned_server' from operational state.
+        # TODO: Remove this after couple of releases
         if self.assigned_server:
+            self.logger(level="warning", message="Attribute 'assigned_server' under server profile is deprecated and "
+                                                 "will be ignored. New location is 'assigned_server' under "
+                                                 "'operational_state'")
             for attribute in ["chassis_id", "model", "server_id", "server_type", "slot_id"]:
                 if attribute not in self.assigned_server:
                     self.assigned_server[attribute] = None
@@ -381,7 +363,7 @@ class IntersightUcsServerProfile(IntersightGenericUcsServerProfile):
                         reservation[attribute] = None
 
         if self.operational_state:
-            for attribute in ["identities"]:
+            for attribute in ["assigned_server", "config_state", "identities", "profile_state"]:
                 if attribute not in self.operational_state:
                     self.operational_state[attribute] = None
 
@@ -391,6 +373,11 @@ class IntersightUcsServerProfile(IntersightGenericUcsServerProfile):
                                       "vhba_name", "vnic_name"]:
                         if attribute not in identity:
                             identity[attribute] = None
+
+            if self.operational_state["assigned_server"]:
+                for attribute in ["chassis_id", "model", "serial_number", "server_id", "server_type", "slot_id"]:
+                    if attribute not in self.operational_state["assigned_server"]:
+                        self.operational_state["assigned_server"][attribute] = None
 
         if self.server_pre_assign_by_slot:
             for attribute in ["chassis_id", "domain_name", "slot_id"]:
@@ -409,9 +396,10 @@ class IntersightUcsServerProfile(IntersightGenericUcsServerProfile):
             return None
         else:
             if server_obj.object_type == "compute.Blade":
-                return server_obj_list[0].chassis_id, server_obj_list[0].slot_id, server_obj_list[0].model
+                return server_obj_list[0].serial, server_obj_list[0].chassis_id, server_obj_list[0].slot_id, \
+                    server_obj_list[0].model
             elif server_obj.object_type == "compute.RackUnit":
-                return server_obj_list[0].server_id, server_obj_list[0].model
+                return server_obj_list[0].serial, server_obj_list[0].server_id, server_obj_list[0].model
         return None
 
     def _get_ucs_server_profile_template(self):

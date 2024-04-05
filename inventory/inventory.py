@@ -10,7 +10,6 @@ from repository.metadata import InventoryMetadata
 
 class GenericInventory:
     def __init__(self, parent=None):
-        self.custom = False
         self.device = parent.parent
         self.load_from = None
         self.parent = parent

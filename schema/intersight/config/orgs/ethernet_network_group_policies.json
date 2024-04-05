@@ -58,10 +58,20 @@
          "type": "string",
          "default": ""
       },
+      "enable_q_in_q_tunneling": {
+         "description": "Ethernet Network Group Policy - Enable QinQ Tunneling",
+         "type": "boolean",
+         "default": false
+      },
       "native_vlan": {
          "description": "Ethernet Network Group Policy - Native VLAN",
          "type": "integer",
-         "default": 0
+         "default": 1
+      },
+      "q_in_q_vlan": {
+         "description": "Ethernet Network Group Policy - QinQ VLAN",
+         "type": "integer",
+         "default": 2
       }
    },
    "additionalProperties": false,

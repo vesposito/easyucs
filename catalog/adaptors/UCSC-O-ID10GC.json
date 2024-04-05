@@ -1,0 +1,19 @@
+{
+  "model_short_name": "Intel X710-T2L 2x10G",
+  "rear_file_name": "UCSC-O-ID10GC.png",
+  "rear_file_size": [475,113],
+  "rear_ports": {
+    "x/1": {
+      "port_coord": [248, 42],
+      "port_type": "rj45",
+      "port_size": [73, 47]
+    },
+    "x/2": {
+      "port_coord": [375, 42],
+      "port_type": "rj45",
+      "port_size": [73, 47]
+    }
+  },
+  "imm_compatible": false,
+  "data_sheet_url": "https://www.cisco.com/c/dam/en/us/products/collateral/servers-unified-computing/ucs-c-series-rack-servers/intel-x710-t2l-ethernet-network-adapter-product-brief.pdf"
+}

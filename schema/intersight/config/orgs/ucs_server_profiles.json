@@ -68,7 +68,7 @@
          "default": ""
       },
       "assigned_server": {
-         "description": "Server assigned to UCS Server Profile ",
+         "description": "DEPRECATED: Server assigned to UCS Server Profile ",
          "type": "object",
          "properties": {
             "model": {
@@ -206,6 +206,67 @@
          "description": "UCS Server Profile - Operational State",
          "type": "object",
          "properties": {
+            "assigned_server": {
+               "description": "Server assigned to UCS Server Profile ",
+               "type": "object",
+               "properties": {
+                  "model": {
+                     "description": "Server Model associated UCS Server Profile",
+                     "type": "string",
+                     "default": ""
+                  },
+                  "server_id": {
+                     "description": "ID of Rack Server assigned to UCS Server Profile",
+                     "type": "integer",
+                     "default": ""
+                  },
+                  "chassis_id": {
+                     "description": "Chassis ID of Blade Server assigned to UCS Server Profile",
+                     "type": "string",
+                     "default": ""
+                  },
+                  "serial_number": {
+                     "description": "Serial number of the Server assigned to UCS Server Profile",
+                     "type": "string",
+                     "default": ""
+                  },
+                  "slot_id": {
+                     "description": "Slot ID of Blade Server assigned to UCS Server Profile",
+                     "type": "integer",
+                     "default": ""
+                  },
+                  "server_type": {
+                     "description": "Object Type of Server assigned to UCS Server Profile",
+                     "type": "string",
+                     "enum": [
+                        "Rack",
+                        "Blade"
+                     ]
+                  }
+               },
+               "additionalProperties": false
+            },
+            "config_state": {
+               "description": "Indicates a profile's configuration deploying state",
+               "type": "string",
+               "enum": [
+                  "None",
+                  "Not-assigned",
+                  "Assigned",
+                  "Preparing",
+                  "Validating",
+                  "Configuring",
+                  "UnConfiguring",
+                  "Analyzing",
+                  "Activating",
+                  "Inconsistent",
+                  "Associated",
+                  "Failed",
+                  "Not-complete",
+                  "Waiting-for-resource"
+               ],
+               "default": "None"
+            },
             "identities": {
                "description": "Identities associated to UCS Server Profile",
                "type": "array",
@@ -266,6 +327,10 @@
                   ]
                },
                "minItems": 1
+            },
+            "profile_state": {
+               "description": "Combined state (configState, and operational state of the associated physical resource) to indicate the current state of the profile.",
+               "type": "string"
             }
          },
          "additionalProperties": false

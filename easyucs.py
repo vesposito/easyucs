@@ -189,7 +189,7 @@ def init_process(device, args, config_string):
 
                     # We now need to wait to be able to configure the device using the configuration
                     if device.sys_mode == "cluster":
-                        device.logger(message="Waiting up to 240 seconds for cluster election to complete")
+                        device.logger(message="Waiting up to 300 seconds for cluster election to complete")
                         time.sleep(80)
                         if config.system:
                             if config.system[0].virtual_ip:
@@ -202,7 +202,7 @@ def init_process(device, args, config_string):
                             exit()
 
                     elif device.sys_mode == "stand-alone":
-                        device.logger(message="Waiting up to 180 seconds for initial configuration to complete")
+                        device.logger(message="Waiting up to 240 seconds for initial configuration to complete")
                         time.sleep(20)
 
                         # TODO Handle Ipv6
@@ -243,7 +243,7 @@ def init_process(device, args, config_string):
                     config.refresh_config_handle()
 
                     if not common.check_web_page(device=device, url="https://" + device.target,
-                                                 str_match="Cisco", timeout=160):
+                                                 str_match="Cisco", timeout=220):
                         device.logger(level="error", message="Impossible to reconnect to UCS system")
                         exit()
 
@@ -357,19 +357,20 @@ def init_process(device, args, config_string):
             exit()
 
         device.set_task_progression(10)
-        if device.is_default_keyring_certificate_expired():
+        if device.is_certificate_expired():
             device.set_task_progression(25)
-            device.regenerate_default_keyring_certificate()
+            device.regenerate_certificate()
         else:
             if not args.yes:
-                if not common.query_yes_no("Default keyring certificate is still valid. " +
+                if not common.query_yes_no("Existing certificate is still valid. " +
                                            "Are you sure you want to regenerate it on " + device.name + "?"):
                     # User declined regenerate certificate query
-                    device.logger(level="warning", message="The default keyring certificate is still valid. " +
+                    device.logger(level="warning", message="The existing certificate is still valid. " +
                                                            "Skipping regenerate operation.")
+                    device.disconnect()
                     exit()
 
-            device.regenerate_default_keyring_certificate()
+            device.regenerate_certificate()
 
     elif args.scope == "device" and args.action == "clear_sel_logs":
         # Clears SEL Logs of all discovered servers of UCS Device
@@ -630,8 +631,8 @@ def main():
     parser_schemas_create = subparsers_schemas.add_parser('create', help='Create schemas of a device',
                                                           epilog=example_schemas_create_text,
                                                           formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser_schemas_create.add_argument('-i', '--ip', dest='ip', action='store', help='Device IP address/Hostname',
-                                       required=True)
+    parser_schemas_create.add_argument('-i', '--ip', dest='ip', action='store',
+                                       help='Device IP address/Hostname (or FQDN for Intersight)', required=True)
     parser_schemas_create.add_argument('-u', '--username', dest='username', action='store',
                                        help='Device Account Username', required=True)
     parser_schemas_create.add_argument('-p', '--password', dest='password', action='store',
@@ -675,7 +676,7 @@ def main():
 
     # Create the parsers for the "regenerate_certificate" action of device
     parser_device_regen_cert = subparsers_device.add_parser('regenerate_certificate',
-                                                            help='Regenerate self-signed certificate of an UCS system',
+                                                            help='Regenerate self-signed certificate of an UCS device',
                                                             epilog=example_device_regenerate_certificate_text,
                                                             formatter_class=argparse.RawDescriptionHelpFormatter)
     parser_device_regen_cert.add_argument('-i', '--ip', dest='ip', action='store', help='Device IP address/Hostname',
@@ -685,7 +686,7 @@ def main():
     parser_device_regen_cert.add_argument('-p', '--password', dest='password', action='store',
                                           help='Device Account Password', required=True)
     parser_device_regen_cert.add_argument('-t', '--device_type', dest='device_type', action='store',
-                                          choices=['ucsm'], required=True, help='Device type')
+                                          choices=['cimc', 'ucsm'], required=True, help='Device type')
 
     parser_device_regen_cert.add_argument('-v', '--verbose', dest='log', action='store_true', help='Print debug log')
     parser_device_regen_cert.add_argument('-l', '--logfile', dest='logfile', action='store', help='Print log in a file')
@@ -797,74 +798,76 @@ def main():
                 parser_config_push.print_help()
                 exit()
         else:
-            if args.username is None or args.password is None:
-                print("UCS device type requires --username (-u) and --password (-p) arguments!")
-                parser_config_push.print_help()
-                exit()
-
-    # Checking arguments compliance for config push
-    if args.scope == "config" and args.action == "push":
-        if args.setup and args.file is None:
-            print("--setup (-s) requires --file (-f) argument!")
-            parser_config_push.print_help()
-            exit()
-
-        if args.setup and args.device_type is None:
-            print("--setup (-s) requires --device_type (-t) argument!")
-            parser_config_push.print_help()
-            exit()
-
-        if args.reset and args.file and args.setup is None:
-            print("--reset (-r) with --file (-f) requires --setup (-s) argument!")
-            parser_config_push.print_help()
-            exit()
-
-        if args.reset:
-            if args.ip is None or args.username is None or args.password is None:
-                print("--reset (-r) requires --ip (-i), --username (-u) and --password (-p) arguments!")
-                parser_config_push.print_help()
-                exit()
-
-        if args.file and args.setup is None:
-            if args.ip is None or args.username is None or args.password is None:
-                print("--file (-f) without --setup (-s) requires --ip (-i), --username (-u) " +
-                      "and --password (-p) arguments!")
-                parser_config_push.print_help()
-                exit()
-
-        if args.setup and args.file and args.reset is False:
-            if args.ip or args.username or args.password:
-                print("--ip (-i), --username (-u) and --password (-p) arguments are not allowed with " +
-                      "--setup (-s) with --file (-f)!")
-                parser_config_push.print_help()
-                exit()
-
-        if args.reset is False and args.file is None and args.setup is None:
-            print("At least one action argument is required!")
-            parser_config_push.print_help()
-            exit()
-
-        if args.setup:
-            # Verify input is valid IP address(es)
-            if len(args.setup) == 1:
-                # We are running in standalone mode or IMC
-                if not common.is_ip_address_valid(args.setup[0]):
-                    print("Invalid IP address for setup action: " + args.setup[0])
+            # Checking arguments compliance for UCS devices
+            if args.scope == "config" and args.action == "push":
+                # Checking arguments compliance for config push
+                if args.setup and args.file is None:
+                    print("--setup (-s) requires --file (-f) argument!")
+                    parser_config_push.print_help()
                     exit()
-            elif len(args.setup) == 2:
-                # We are running in cluster mode
-                if not common.is_ip_address_valid(args.setup[0]):
-                    print("Invalid IP address for setup action: " + args.setup[0])
+
+                if args.setup and args.device_type is None:
+                    print("--setup (-s) requires --device_type (-t) argument!")
+                    parser_config_push.print_help()
                     exit()
-                elif not common.is_ip_address_valid(args.setup[1]):
-                    print("Invalid IP address for setup action: " + args.setup[1])
+
+                if args.reset and args.file and args.setup is None:
+                    print("--reset (-r) with --file (-f) requires --setup (-s) argument!")
+                    parser_config_push.print_help()
                     exit()
+
+                if args.reset:
+                    if args.ip is None or args.username is None or args.password is None:
+                        print("--reset (-r) requires --ip (-i), --username (-u) and --password (-p) arguments!")
+                        parser_config_push.print_help()
+                        exit()
+
+                if args.file and args.setup is None:
+                    if args.ip is None or args.username is None or args.password is None:
+                        print("--file (-f) without --setup (-s) requires --ip (-i), --username (-u) " +
+                              "and --password (-p) arguments!")
+                        parser_config_push.print_help()
+                        exit()
+
+                if args.setup and args.file and args.reset is False:
+                    if args.ip or args.username or args.password:
+                        print("--ip (-i), --username (-u) and --password (-p) arguments are not allowed with " +
+                              "--setup (-s) with --file (-f)!")
+                        parser_config_push.print_help()
+                        exit()
+
+                if args.reset is False and args.file is None and args.setup is None:
+                    print("At least one action argument is required!")
+                    parser_config_push.print_help()
+                    exit()
+
+                if args.setup:
+                    # Verify input is valid IP address(es)
+                    if len(args.setup) == 1:
+                        # We are running in standalone mode or IMC
+                        if not common.is_ip_address_valid(args.setup[0]):
+                            print("Invalid IP address for setup action: " + args.setup[0])
+                            exit()
+                    elif len(args.setup) == 2:
+                        # We are running in cluster mode
+                        if not common.is_ip_address_valid(args.setup[0]):
+                            print("Invalid IP address for setup action: " + args.setup[0])
+                            exit()
+                        elif not common.is_ip_address_valid(args.setup[1]):
+                            print("Invalid IP address for setup action: " + args.setup[1])
+                            exit()
+                    else:
+                        # We have too many IP addresses as input
+                        print("Too many arguments given for --setup!")
+                        exit()
             else:
-                # We have too many IP addresses as input
-                print("Too many arguments given for --setup!")
-                exit()
+                # Checking arguments compliance for all other operations
+                if args.username is None or args.password is None:
+                    print("UCS device type requires --username (-u) and --password (-p) arguments!")
+                    parser_config_push.print_help()
+                    exit()
 
-        if args.file:
+        if hasattr(args, "file") and args.file:
             # Open JSON configuration file
             json_file = open(args.file)
             json_string = json_file.read()

@@ -56,10 +56,13 @@ class UcsCentralVhbaTemplate(UcsCentralConfigObject):
                                  self._parent._dn + "/san-conn-templ-" + self.name + "/" in vlan.dn]
                         if len(vsans) == 1:
                             self.vsan = vsans[0].name
+                        elif len(vsans) == 0:
+                            self.logger(level="error",
+                                        message=f"Missing at-least one VSAN in {self._CONFIG_NAME}: {str(self.name)}")
                         else:
                             self.logger(level="error",
-                                        message="Only one VSAN can be found in a " + self._CONFIG_NAME + " :" + str(
-                                            self.name))
+                                        message=f"More than one VSAN can be found in {self._CONFIG_NAME}: "
+                                                f"{str(self.name)}")
 
                 # Fetching the operational state of the referenced policies
                 self.operational_state = {}

@@ -1,0 +1,55 @@
+{
+   "easyucs": {
+      "metadata": [
+         {
+            "file_type": "config",
+            "device_type": "intersight",
+            "category": "best-practices",
+            "subcategory": "BIOS",
+            "name": "Intersight BIOS Policy for Java Application Server on Cisco UCS M5 Servers",
+            "url": "https://www.cisco.com/c/en/us/products/collateral/servers-unified-computing/ucs-b-series-blade-servers/white-paper-c11-744678.html",
+            "easyucs_version": "0.9.8.4",
+            "revision": "1.0"
+         }
+      ]
+   },
+   "config": {
+      "orgs": [
+         {
+            "name": "default",
+            "bios_policies": [
+               {
+                  "name": "Java-M5",
+                  "descr": "BIOS Policy for Java Application Server on Cisco UCS M5 Servers",
+                  "enhanced_intel_speed_step_tech": "platform-default",
+                  "intel_hyper_threading_tech": "platform-default",
+  				  "intel_virtualization_technology": "disabled",
+                  "intel_vt_for_directed_io": "disabled",
+				  "cpu_performance": "platform-default",
+                  "llc_prefetch": "platform-default",
+                  "direct_cache_access": "platform-default",
+                  "cpu_power_management": "custom",
+                  "intel_turbo_boost_tech": "platform-default",
+                  "pstate_coord_type": "platform-default",
+                  "cpu_energy_performance": "platform-default",
+                  "processor_cstate": "disabled",
+                  "processor_c1e": "disabled",
+                  "processor_c3report": "disabled",
+                  "processor_c6report": "disabled",
+                  "package_cstate_limit": "platform-default",
+                  "pwr_perf_tuning": "platform-default",
+                  "hwpm_enable": "platform-default",
+                  "work_load_config": "platform-default",
+                  "auto_cc_state": "platform-default",
+                  "numa_optimized": "platform-default",
+                  "imc_interleave": "platform-default",
+                  "xpt_prefetch": "platform-default",
+                  "kti_prefetch": "platform-default",
+                  "snc": "platform-default",
+                  "select_memory_ras_configuration": "platform-default"
+               }
+            ]
+         }
+      ]
+   }
+}

@@ -18,5 +18,6 @@
       "port_size": [111, 49]
     }
   },
+  "imm_compatible": false,
   "data_sheet_url": "https://www.cisco.com/c/dam/en/us/products/collateral/interfaces-modules/ucs-virtual-interface-card-1225/fastlinq-QL45611HLCU-ethernet-adapter.pdf"
 }

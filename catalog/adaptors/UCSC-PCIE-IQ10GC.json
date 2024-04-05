@@ -48,5 +48,6 @@
       "port_size": [73, 50]
     }
   },
+  "imm_compatible": false,
   "data_sheet_url": "https://www.intel.com/content/dam/www/public/us/en/documents/product-briefs/ethernet-x710-t4-brief.pdf"
 }

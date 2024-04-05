@@ -36,6 +36,7 @@ from ucsmsdk.mometa.adaptor.AdaptorHostEthIfProfile import AdaptorHostEthIfProfi
 from ucsmsdk.mometa.adaptor.AdaptorHostFcIfProfile import AdaptorHostFcIfProfile
 from ucsmsdk.mometa.adaptor.AdaptorHostIscsiIfProfile import AdaptorHostIscsiIfProfile
 from ucsmsdk.mometa.adaptor.AdaptorProtocolProfile import AdaptorProtocolProfile
+from ucsmsdk.mometa.adaptor.AdaptorPTP import AdaptorPTP
 from ucsmsdk.mometa.adaptor.AdaptorQual import AdaptorQual
 from ucsmsdk.mometa.adaptor.AdaptorRssProfile import AdaptorRssProfile
 from ucsmsdk.mometa.bios.BiosTokenSettings import BiosTokenSettings
@@ -3489,6 +3490,7 @@ class UcsSystemEthernetAdapterPolicy(UcsSystemConfigObject):
         self.roce_properties = []
         self.advance_filter = None
         self.interrupt_scaling = None
+        self.adaptor_ptp = None
 
         if self._config.load_from == "live":
             if adaptor_host_eth_if_profile is not None:
@@ -3618,6 +3620,13 @@ class UcsSystemEthernetAdapterPolicy(UcsSystemConfigObject):
                                 self.interrupt_scaling = adapt.admin_state
                                 break
 
+                if "adaptorPTP" in self._parent._config.sdk_objects:
+                    for adapt in self._config.sdk_objects["adaptorPTP"]:
+                        if self._parent._dn:
+                            if self._parent._dn + "/eth-profile-" + self.name + "/" in adapt.dn:
+                                self.adaptor_ptp = adapt.admin_state
+                                break
+
         elif self._config.load_from == "file":
             if json_content is not None:
                 if not self.get_attributes_from_json(json_content=json_content):
@@ -3686,9 +3695,11 @@ class UcsSystemEthernetAdapterPolicy(UcsSystemConfigObject):
                                       )
         else:
             AdaptorEthRoCEProfile(parent_mo_or_dn=mo_adaptor_host_eth_if_profile, admin_state=self.roce)
+
         AdaptorEthAdvFilterProfile(parent_mo_or_dn=mo_adaptor_host_eth_if_profile, admin_state=self.advance_filter)
         AdaptorEthInterruptScalingProfile(parent_mo_or_dn=mo_adaptor_host_eth_if_profile,
                                           admin_state=self.interrupt_scaling)
+        AdaptorPTP(parent_mo_or_dn=mo_adaptor_host_eth_if_profile, admin_state=self.adaptor_ptp)
 
         self._handle.add_mo(mo=mo_adaptor_host_eth_if_profile, modify_present=True)
         if commit:

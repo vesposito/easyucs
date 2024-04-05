@@ -57,30 +57,82 @@
          "description": "Resource Pool Assigned Resources",
          "type": "array",
          "items": {
-            "properties": {
-               "moid": {
-                  "description": "Resource Pool Assigned Resource - Moid",
-                  "type": "string",
-                  "default": ""
+            "type": "object",
+            "anyOf": [
+               {
+                  "properties": {
+                     "moid": {
+                        "description": "Resource Pool Assigned Resource - Moid",
+                        "type": "string",
+                        "default": ""
+                     },
+                     "name": {
+                        "description": "Resource Pool Assigned Resource - Name",
+                        "type": "string",
+                        "default": ""
+                     },
+                     "type": {
+                        "description": "Resource Pool Assigned Resource - Type",
+                        "type": "string",
+                        "enum": [
+                           "blade",
+                           "rack"
+                        ]
+                     }
+                  },
+                  "additionalProperties": false,
+                  "anyOf": [
+                     {
+                        "required": [
+                           "name",
+                           "type"
+                        ]
+                     },
+                     {
+                        "required": [
+                           "moid",
+                           "type"
+                        ]
+                     }
+                  ]
                },
-               "name": {
-                  "description": "Resource Pool Assigned Resource - Name",
-                  "type": "string",
-                  "default": ""
-               },
-               "type": {
-                  "description": "Resource Pool Assigned Resource - Type",
-                  "type": "string",
-                  "enum": [
-                     "blade",
-                     "rack"
+               {
+                  "properties": {
+                     "serial": {
+                        "description": "Resource Pool Assigned Resource - Serial",
+                        "type": "string",
+                        "default": ""
+                     },
+                     "name": {
+                        "description": "Resource Pool Assigned Resource - Name",
+                        "type": "string",
+                        "default": ""
+                     },
+                     "type": {
+                        "description": "Resource Pool Assigned Resource - Type",
+                        "type": "string",
+                        "enum": [
+                           "blade",
+                           "rack"
+                        ]
+                     }
+                  },
+                  "additionalProperties": false,
+                  "anyOf": [
+                     {
+                        "required": [
+                           "name",
+                           "type"
+                        ]
+                     },
+                     {
+                        "required": [
+                           "serial",
+                           "type"
+                        ]
+                     }
                   ]
                }
-            },
-            "additionalProperties": false,
-            "required": [
-               "name",
-               "type"
             ]
          },
          "minItems": 1

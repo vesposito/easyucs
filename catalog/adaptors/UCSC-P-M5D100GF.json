@@ -28,5 +28,6 @@
       "port_size": [108, 50]
     }
   },
+  "imm_compatible": false,
   "data_sheet_url": "https://www.cisco.com/c/dam/en/us/products/collateral/servers-unified-computing/ucs-c-series-rack-servers/pb-connectx-5-en-card_cisco-7b_Jan-2020.pdf"
 }

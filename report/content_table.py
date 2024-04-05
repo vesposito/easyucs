@@ -7,6 +7,7 @@ from docx.enum.table import WD_CELL_VERTICAL_ALIGNMENT
 from docx.shared import Pt
 
 from report.content import GenericReportContent
+from reportlab.lib import colors
 
 import textwrap
 from reportlab.platypus import Paragraph, KeepTogether, Table, TableStyle, Spacer
@@ -146,6 +147,7 @@ class GenericReportTable(GenericReportContent):
         self.column_number = len(self.cells_list[0])
 
     def add_in_word_report(self):
+        # TO-DO: To make incompatible hardware more visible in the report similar to PDF REPORT,
         # self.logger(level="debug", message="Adding " + self.__class__.__name__ + " in word")
         table = self.report.document.add_table(rows=self.row_number, cols=self.column_number,
                                                style=self.style)
@@ -194,6 +196,30 @@ class GenericReportTable(GenericReportContent):
             "Rows": [[cell if not isinstance(cell, bool) else ("Yes" if cell else "No") for cell in row] for row in
                      self.cells_list[1:]]
         }
+
+        # Check if the headers contain "Compatible HW?" and "Compatible FW?"
+        headers = content["CellsList"]["Headers"]
+        rows = content["CellsList"]["Rows"]
+
+        compatible_hw_index = -1
+        compatible_fw_index = -1
+
+        # Find the index of "Compatible HW?" and "Compatible FW?" headers if present
+        if "Compatible HW?" in headers:
+            compatible_hw_index = headers.index("Compatible HW?")
+        if "Compatible FW?" in headers:
+            compatible_fw_index = headers.index("Compatible FW?")
+
+        # Check if either of the headers is present
+        if compatible_hw_index != -1 or compatible_fw_index != -1:
+            # If at least one of the headers is present, check for incompatibility
+            incompatible_hardware = any(
+                row[compatible_hw_index] == "No" for row in rows) if compatible_hw_index != -1 else False
+            incompatible_firmware = any(
+                row[compatible_fw_index] == "No" for row in rows) if compatible_fw_index != -1 else False
+
+            content["IncompatibleHardware"] = incompatible_hardware
+            content["IncompatibleFirmware"] = incompatible_firmware
 
     def add_in_pdf_report(self):
         if self.font_size > 8 or not self.font_size:
@@ -280,6 +306,17 @@ class GenericReportTable(GenericReportContent):
                 else:
                     bg_color = "#ffffff"
                 tables.setStyle(TableStyle([("BACKGROUND", (0, each), (-1, each), bg_color)]))
+
+            # Checking if the table has "Compatible HW?" / "Compatible FW?" columns
+            if "Compatible HW?" in self.cells_list[0] or "Compatible FW?" in self.cells_list[0]:
+                for i in range(len(self.cells_list)):
+                    for j in range(len(self.cells_list[i])):
+                        # Check if the value is No for Compatible HW or Compatible FW
+                        if self.cells_list[0][j] == "Compatible HW?" and self.cells_list[i][j] == "No":
+                            tables.setStyle(TableStyle([('BACKGROUND', (j, i), (j, i), colors.red)]))
+                        elif self.cells_list[0][j] == "Compatible FW?" and self.cells_list[i][j] == "No":
+                            tables.setStyle(TableStyle([('BACKGROUND', (j, i), (j, i), colors.yellow)]))
+
             self.report.pdf_element_list.append(KeepTogether(tables))
         except ValueError as err:
             self.logger(
