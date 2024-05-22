@@ -81,49 +81,128 @@ from config.intersight.server_profiles import (
 class IntersightAccountDetails(IntersightConfigObject):
     _CONFIG_NAME = "Account Details"
     _CONFIG_SECTION_NAME = "account_details"
-    _INTERSIGHT_SDK_OBJECT_NAME = "iam.SessionLimits"
+    _INTERSIGHT_SDK_OBJECT_NAME = "iam.Account"
 
-    def __init__(self, parent=None, iam_session_limits=None):
-        IntersightConfigObject.__init__(self, parent=parent, sdk_object=iam_session_limits)
+    def __init__(self, parent=None, iam_account=None):
+        IntersightConfigObject.__init__(self, parent=parent, sdk_object=iam_account)
 
-        self.account_name = None
-        self.default_idle_timeout = self.get_attribute(attribute_name="idle_time_out",
-                                                       attribute_secondary_name="default_idle_timeout")
-        self.default_session_timeout = self.get_attribute(attribute_name="session_time_out",
-                                                          attribute_secondary_name="default_session_timeout")
-        self.per_user_limit = self.get_attribute(attribute_name="per_user_limit")
+        self.account_name = self.get_attribute(attribute_name="name", attribute_secondary_name="account_name")
+        self.api_keys_maximum_expiration_time = None
+        self.api_keys_without_expiry = None
+        self.audit_log_retention_period = None
+        self.default_idle_timeout = None
+        self.default_session_timeout = None
+        self.oauth_applications_maximum_expiration_time = None
+        self.oauth_applications_without_expiry = None
+        self.per_user_limit = None
 
         if self._config.load_from == "live":
-            self.account_name = self._get_account_name()
+            self.audit_log_retention_period = self._get_audit_log_retention_period()
+            self._get_iam_resource_limits_info()
+            self._get_iam_session_limits_info()
 
         elif self._config.load_from == "file":
-            for attribute in ["account_name"]:
+            for attribute in ["api_keys_maximum_expiration_time", "api_keys_without_expiry",
+                              "audit_log_retention_period", "oauth_applications_maximum_expiration_time",
+                              "oauth_applications_without_expiry"]:
                 setattr(self, attribute, None)
                 if attribute in self._object:
                     setattr(self, attribute, self.get_attribute(attribute_name=attribute))
 
-    def _get_account_name(self):
-        # Fetches the Intersight account name
-        if "iam_account" in self._config.sdk_objects:
-            if len(self._config.sdk_objects["iam_account"]) != 1:
-                self.logger(level="error",
-                            message="Unable to determine a unique iam.Account object for fetching the account name")
-                return None
-
-            if hasattr(self._config.sdk_objects["iam_account"][0], "name"):
-                return self._config.sdk_objects["iam_account"][0].name
+    def _get_audit_log_retention_period(self):
+        # Fetches the Intersight Audit Log Retention Policy
+        if "aaa_retention_policy" in self._config.sdk_objects:
+            for retention_policy in self._config.sdk_objects["aaa_retention_policy"]:
+                if retention_policy.name == "AuditLogPolicy":
+                    return retention_policy.retention_period
 
         return None
 
+    def _get_iam_resource_limits_info(self):
+        # Fetches the Intersight API Keys & OAuth Apps expiration info
+        if "iam_resource_limits" in self._config.sdk_objects:
+            if len(self._config.sdk_objects["iam_resource_limits"]) != 1:
+                self.logger(level="error",
+                            message="Unable to determine a unique iam.ResourceLimits object for fetching " +
+                                    "API Keys & OAuth Apps expiration info")
+                return False
+
+            if hasattr(self._config.sdk_objects["iam_resource_limits"][0], "max_api_key_expiry"):
+                self.api_keys_maximum_expiration_time = \
+                    int(self._config.sdk_objects["iam_resource_limits"][0].max_api_key_expiry / 86400)
+            if hasattr(self._config.sdk_objects["iam_resource_limits"][0], "allow_api_keys_without_expiry"):
+                self.api_keys_without_expiry = \
+                    self._config.sdk_objects["iam_resource_limits"][0].allow_api_keys_without_expiry
+            if hasattr(self._config.sdk_objects["iam_resource_limits"][0], "max_api_key_expiry"):
+                self.oauth_applications_maximum_expiration_time = \
+                   int(self._config.sdk_objects["iam_resource_limits"][0].max_app_registration_expiry / 86400)
+            if hasattr(self._config.sdk_objects["iam_resource_limits"][0], "allow_api_keys_without_expiry"):
+                self.oauth_applications_without_expiry = \
+                    self._config.sdk_objects["iam_resource_limits"][0].allow_app_registrations_without_expiry
+            return True
+
+        return False
+
+    def _get_iam_session_limits_info(self):
+        # Fetches the Intersight Session Limits expiration info
+        if "iam_session_limits" in self._config.sdk_objects:
+            if len(self._config.sdk_objects["iam_session_limits"]) != 1:
+                self.logger(level="error",
+                            message="Unable to determine a unique iam.SessionLimits object for fetching " +
+                                    "Session Limits info")
+                return False
+
+            if hasattr(self._config.sdk_objects["iam_session_limits"][0], "idle_time_out"):
+                self.default_idle_timeout = self._config.sdk_objects["iam_session_limits"][0].idle_time_out
+            if hasattr(self._config.sdk_objects["iam_session_limits"][0], "session_time_out"):
+                self.default_session_timeout = self._config.sdk_objects["iam_session_limits"][0].session_time_out
+            if hasattr(self._config.sdk_objects["iam_session_limits"][0], "per_user_limit"):
+                self.per_user_limit = self._config.sdk_objects["iam_session_limits"][0].per_user_limit
+            return True
+
+        return False
+
     @IntersightConfigObject.update_taskstep_description(attribute_name="account_name")
     def push_object(self):
-        self.logger(message=f"Pushing {self._CONFIG_NAME} configuration: {self.account_name}")
+        self.logger(message=f"Pushing {self._CONFIG_NAME} configuration")
 
-        # We first need to fetch the existing iam.SessionLimits object
-        iam_session_limits_list = self._device.query(object_type=self._INTERSIGHT_SDK_OBJECT_NAME)
+        # # We first need to fetch the existing iam.Account object
+        # iam_account_list = self._device.query(object_type=self._INTERSIGHT_SDK_OBJECT_NAME)
+        # from intersight.api.iam_api import IamApi
+        #
+        # if len(iam_account_list) != 1:
+        #     self.logger(level="error", message="Could not push " + self._CONFIG_NAME + " (Account). " +
+        #                                        "Could not find existing iam.Account object")
+        #     return False
+        #
+        # iam_account = iam_account_list[0]
+        # something_to_commit = False
+        # if self.account_name:
+        #     iam_account.name = self.account_name
+        #     something_to_commit = True
+        # if self.tags:
+        #     iam_account.tags = self.create_tags()
+        #     something_to_commit = True
+        #
+        # if something_to_commit:
+        #     if self.account_name:
+        #         detail = self.account_name + " - Account"
+        #     else:
+        #         detail = "Account"
+        #     if not self.commit(object_type=self._INTERSIGHT_SDK_OBJECT_NAME, payload=iam_account,
+        #                        key_attributes=["moid"], detail=detail, modify_present=True):
+        #         return False
+
+        if self.account_name:
+            self.logger(level="warning", message="Setting account name is not yet supported")
+        if self.tags:
+            self.logger(level="warning", message="Setting account tags is not yet supported")
+
+        # We then need to fetch the existing iam.SessionLimits object
+        iam_session_limits_list = self._device.query(object_type="iam.SessionLimits")
 
         if len(iam_session_limits_list) != 1:
-            self.logger(level="error", message="Could not push " + self._CONFIG_NAME + ". " +
+            self.logger(level="error", message="Could not push " + self._CONFIG_NAME + " (Session Limits). " +
                                                "Could not find existing iam.SessionLimits object")
             return False
 
@@ -140,8 +219,69 @@ class IntersightAccountDetails(IntersightConfigObject):
             something_to_commit = True
 
         if something_to_commit:
-            if not self.commit(object_type=self._INTERSIGHT_SDK_OBJECT_NAME, payload=iam_session_limits,
-                               key_attributes=["moid"], detail=self.account_name):
+            if self.account_name:
+                detail = self.account_name + " - Session Limits"
+            else:
+                detail = "Session Limits"
+            if not self.commit(object_type="iam.SessionLimits", payload=iam_session_limits,
+                               key_attributes=["moid"], detail=detail, modify_present=True):
+                return False
+
+        # We then need to fetch the existing aaa.RetentionPolicy object
+        aaa_retention_policy_list = self._device.query(object_type="aaa.RetentionPolicy")
+
+        if len(aaa_retention_policy_list) != 1:
+            self.logger(level="error", message="Could not push " + self._CONFIG_NAME + " (Audit Log Retention). " +
+                                               "Could not find existing aaa.RetentionPolicy object")
+            return False
+
+        aaa_retention_policy = aaa_retention_policy_list[0]
+        something_to_commit = False
+        if self.audit_log_retention_period:
+            aaa_retention_policy.retention_period = self.audit_log_retention_period
+            something_to_commit = True
+
+        if something_to_commit:
+            if self.account_name:
+                detail = self.account_name + " - Audit Log Retention"
+            else:
+                detail = "Audit Log Retention"
+            if not self.commit(object_type="aaa.RetentionPolicy", payload=aaa_retention_policy,
+                               key_attributes=["moid"], detail=detail, modify_present=True):
+                return False
+
+        # We last need to fetch the existing iam.ResourceLimits object
+        iam_resource_limits_list = self._device.query(object_type="iam.ResourceLimits")
+
+        if len(iam_resource_limits_list) != 1:
+            self.logger(level="error",
+                        message="Could not push " + self._CONFIG_NAME + " (API Keys & OAuth Expiration). " +
+                                "Could not find existing iam.ResourceLimits object")
+            return False
+
+        iam_resource_limits = iam_resource_limits_list[0]
+        something_to_commit = False
+        if self.api_keys_maximum_expiration_time:
+            iam_resource_limits.max_api_key_expiry = int(self.api_keys_maximum_expiration_time * 86400)
+            something_to_commit = True
+        if self.api_keys_without_expiry is not None:
+            iam_resource_limits.allow_api_keys_without_expiry = self.api_keys_without_expiry
+            something_to_commit = True
+        if self.oauth_applications_maximum_expiration_time:
+            iam_resource_limits.max_app_registration_expiry = \
+                int(self.oauth_applications_maximum_expiration_time * 86400)
+            something_to_commit = True
+        if self.oauth_applications_without_expiry is not None:
+            iam_resource_limits.allow_app_registrations_without_expiry = self.oauth_applications_without_expiry
+            something_to_commit = True
+
+        if something_to_commit:
+            if self.account_name:
+                detail = self.account_name + " - API Keys & OAuth Expiration"
+            else:
+                detail = "API Keys & OAuth Expiration"
+            if not self.commit(object_type="iam.ResourceLimits", payload=iam_resource_limits,
+                               key_attributes=["moid"], detail=detail, modify_present=True):
                 return False
 
         return True

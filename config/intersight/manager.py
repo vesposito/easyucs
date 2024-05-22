@@ -57,12 +57,11 @@ class IntersightConfigManager(GenericConfigManager):
 
         self.logger(level="debug", message="Finished fetching Intersight SDK objects for config")
 
-        for iam_session_limits in config.sdk_objects["iam_session_limits"]:
-            # We make sure this iam.SessionLimits object is linked to an account, as in some rare cases there might
-            # be more than one iam.SessionLimits object, only one of which is linked to the account
-            if iam_session_limits.account:
-                config.account_details.append(IntersightAccountDetails(parent=config,
-                                                                       iam_session_limits=iam_session_limits))
+        for iam_account in config.sdk_objects["iam_account"]:
+            config.account_details.append(IntersightAccountDetails(parent=config,
+                                                                   iam_account=iam_account))
+            # There should be only one iam.Account, so we take the first object we find
+            break
 
         for iam_permission in config.sdk_objects["iam_permission"]:
             config.roles.append(IntersightRole(parent=config, iam_permission=iam_permission))
@@ -304,7 +303,7 @@ class IntersightConfigManager(GenericConfigManager):
         if "account_details" in config_json:
             for account_details in config_json["account_details"]:
                 config.account_details.append(IntersightAccountDetails(parent=config,
-                                                                       iam_session_limits=account_details))
+                                                                       iam_account=account_details))
 
         if "roles" in config_json:
             for role in config_json["roles"]:

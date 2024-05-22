@@ -23,6 +23,12 @@
          "default": "",
          "pattern": "^[a-zA-Z0-9_.-]{1,64}$"
       },
+      "user_label": {
+         "description": "UCS Chassis Profile User Label",
+         "type": "string",
+         "default": "",
+         "pattern": "^[a-zA-Z0-9!#$%&*+,\\(\\)\\[\\]\\{\\}|\\/\\.\\?@_:;~-]{1,64}$"
+      },
       "tags": {
          "description": "UCS Chassis Profile Tags",
          "type": "array",

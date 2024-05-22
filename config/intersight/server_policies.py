@@ -47,6 +47,11 @@ class IntersightAdapterConfigurationPolicy(IntersightConfigObject):
                                 adapter_configuration["enable_port_channel"] = \
                                     adapter_adapter_config.port_channel_settings["enabled"]
 
+                        if hasattr(adapter_adapter_config, "physical_nic_mode_settings"):
+                            if adapter_adapter_config.physical_nic_mode_settings:
+                                adapter_configuration["enable_physical_nic_mode"] = \
+                                    adapter_adapter_config.physical_nic_mode_settings["phy_nic_enabled"]
+
                         if hasattr(adapter_adapter_config, "dce_interface_settings"):
                             if adapter_adapter_config.dce_interface_settings:
                                 for adapter_dce_interface_settings in adapter_adapter_config.dce_interface_settings:
@@ -70,15 +75,16 @@ class IntersightAdapterConfigurationPolicy(IntersightConfigObject):
         # We use this to make sure all options of a VIC Adapter Configuration are set to None if they are not present
         if self.vic_adapter_configurations:
             for adapter_config in self.vic_adapter_configurations:
-                for attribute in ["dce_interface_settings", "enable_fip", "enable_lldp", "enable_port_channel",
-                                  "pci_slot"]:
+                for attribute in ["dce_interface_settings", "enable_fip", "enable_lldp", "enable_physical_nic_mode",
+                                  "enable_port_channel", "pci_slot"]:
                     if attribute not in adapter_config:
                         adapter_config[attribute] = None
 
-                for dce_interface_settings in adapter_config["dce_interface_settings"]:
-                    for attribute in ["fec_mode", "interface_id"]:
-                        if attribute not in dce_interface_settings:
-                            dce_interface_settings[attribute] = None
+                if adapter_config.get("dce_interface_settings"):
+                    for dce_interface_settings in adapter_config["dce_interface_settings"]:
+                        for attribute in ["fec_mode", "interface_id"]:
+                            if attribute not in dce_interface_settings:
+                                dce_interface_settings[attribute] = None
 
     @IntersightConfigObject.update_taskstep_description()
     def push_object(self):
@@ -160,6 +166,17 @@ class IntersightAdapterConfigurationPolicy(IntersightConfigObject):
                     }
                     adapter_adapter_config_kwargs["port_channel_settings"] = \
                         AdapterPortChannelSettings(**adapter_port_channel_settings_kwargs)
+
+                if vic_adapter_config["enable_physical_nic_mode"] is not None:
+                    from intersight.model.adapter_physical_nic_mode_settings import AdapterPhysicalNicModeSettings
+
+                    physical_nic_mode_settings_kwargs = {
+                        "object_type": "adapter.PhysicalNicModeSettings",
+                        "class_id": "adapter.PhysicalNicModeSettings",
+                        "phy_nic_enabled": vic_adapter_config["enable_physical_nic_mode"]
+                    }
+                    adapter_adapter_config_kwargs["physical_nic_mode_settings"] = \
+                        AdapterPhysicalNicModeSettings(**physical_nic_mode_settings_kwargs)
 
                 settings.append(AdapterAdapterConfig(**adapter_adapter_config_kwargs))
 
@@ -265,6 +282,9 @@ class IntersightBootPolicy(IntersightConfigObject):
                         boot_entry["slot"] = boot_device.slot
                         boot_entry["interface_name"] = boot_device.interface_name
                         boot_entry["port"] = boot_device.port
+                    elif boot_device.class_id in ["boot.FlexMmc"]:
+                        boot_entry["device_type"] = "flex_mmc"
+                        boot_entry["subtype"] = boot_device.subtype
                     elif boot_device.class_id in ["boot.LocalCdd"]:
                         boot_entry["device_type"] = "local_cdd"
                     elif boot_device.class_id in ["boot.LocalDisk"]:
@@ -444,6 +464,27 @@ class IntersightBootPolicy(IntersightConfigObject):
                     kwargs_boot_device["bootloader"] = BootBootloader(**kwargs_bootloader)
 
                     kwargs["boot_devices"].append(BootLocalDisk(**kwargs_boot_device))
+
+                elif boot_device["device_type"] == "flex_mmc":
+                    from intersight.model.boot_flex_mmc import BootFlexMmc
+                    kwargs_boot_device = {
+                        "object_type": "boot.FlexMmc",
+                        "class_id": "boot.FlexMmc",
+                        "name": boot_device["device_name"]
+                    }
+                    if boot_device["enabled"] is not None:
+                        kwargs_boot_device["enabled"] = boot_device["enabled"]
+                    if boot_device["subtype"] is not None:
+                        kwargs_boot_device["subtype"] = boot_device["subtype"]
+                    if boot_device["bootloader_name"] is not None:
+                        kwargs_bootloader["name"] = boot_device["bootloader_name"]
+                    if boot_device["bootloader_path"] is not None:
+                        kwargs_bootloader["path"] = boot_device["bootloader_path"]
+                    if boot_device["bootloader_description"] is not None:
+                        kwargs_bootloader["description"] = boot_device["bootloader_description"]
+                    kwargs_boot_device["bootloader"] = BootBootloader(**kwargs_bootloader)
+
+                    kwargs["boot_devices"].append(BootFlexMmc(**kwargs_boot_device))
 
                 elif boot_device["device_type"] == "nvme":
                     from intersight.model.boot_nvme import BootNvme
@@ -3142,7 +3183,7 @@ class IntersightLanConnectivityPolicy(IntersightConfigObject):
                 if vnic.get("mac_address_allocation_type") is not None:
                     kwargs["mac_address_type"] = vnic["mac_address_allocation_type"].upper()
                 if vnic.get("mac_address_allocation_type") in ["pool"]:
-                    if vnic["mac_address_pool"] is not None:
+                    if vnic.get("mac_address_pool") is not None:
                         # We need to identify the MAC Pool object reference
                         mac_pool = self.get_live_object(
                             object_name=vnic["mac_address_pool"],
@@ -5186,6 +5227,7 @@ class IntersightStoragePolicy(IntersightConfigObject):
         self.use_jbod_for_vd_creation = self.get_attribute(attribute_name="use_jbod_for_vd_creation")
         self.unused_disks_state = self.get_attribute(attribute_name="unused_disks_state")
         self.m2_configuration = None
+        self.hybrid_slot_configuration = None
         self.global_hot_spares = self.get_attribute(attribute_name="global_hot_spares")
         self.drive_group = None
         self.single_drive_raid_configuration = None
@@ -5196,11 +5238,21 @@ class IntersightStoragePolicy(IntersightConfigObject):
                                                                     param_value=self.unused_disks_state,
                                                                     param_type="file")
 
+            if (getattr(self._object, "direct_attached_nvme_slots", None) or
+                    getattr(self._object, "raid_attached_nvme_slots", None)):
+                hybrid_slot_configuration = {}
+                if getattr(self._object, "direct_attached_nvme_slots", None):
+                    hybrid_slot_configuration["direct_attached_nvme_slots"] = self._object.direct_attached_nvme_slots
+                if getattr(self._object, "raid_attached_nvme_slots", None):
+                    hybrid_slot_configuration["raid_attached_nvme_slots"] = self._object.raid_attached_nvme_slots
+                self.hybrid_slot_configuration = hybrid_slot_configuration
+
             if hasattr(self._object, "m2_virtual_drive"):
                 if self._object.m2_virtual_drive:
                     self.m2_configuration = {
                         "enable": self._object.m2_virtual_drive.enable,
-                        "controller_slot": self._object.m2_virtual_drive.controller_slot
+                        "controller_slot": self._object.m2_virtual_drive.controller_slot,
+                        "name": self._object.m2_virtual_drive.name
                     }
 
             if hasattr(self._object, "drive_group"):
@@ -5305,7 +5357,8 @@ class IntersightStoragePolicy(IntersightConfigObject):
                                 param_type="file")
 
         elif self._config.load_from == "file":
-            for attribute in ["m2_configuration", "drive_group", "single_drive_raid_configuration"]:
+            for attribute in ["drive_group", "hybrid_slot_configuration", "m2_configuration",
+                              "single_drive_raid_configuration"]:
                 setattr(self, attribute, None)
                 if attribute in self._object:
                     setattr(self, attribute, self.get_attribute(attribute_name=attribute))
@@ -5315,8 +5368,14 @@ class IntersightStoragePolicy(IntersightConfigObject):
     def clean_object(self):
         # We use this to make sure all attributes of M.2 Virtual Drive are set to None
         # if they are not present
+
+        if self.hybrid_slot_configuration:
+            for hsc_attribute in ["direct_attached_nvme_slots", "raid_attached_nvme_slots"]:
+                if hsc_attribute not in self.hybrid_slot_configuration:
+                    self.hybrid_slot_configuration[hsc_attribute] = None
+
         if self.m2_configuration:
-            for m2_attribute in ["enable", "controller_slot"]:
+            for m2_attribute in ["controller_slot", "enable", "name"]:
                 if m2_attribute not in self.m2_configuration:
                     self.m2_configuration[m2_attribute] = None
 
@@ -5451,6 +5510,11 @@ class IntersightStoragePolicy(IntersightConfigObject):
                                                                          param_type="live")
         if self.global_hot_spares is not None:
             kwargs["global_hot_spares"] = self.global_hot_spares
+
+        if self.hybrid_slot_configuration:
+            kwargs["direct_attached_nvme_slots"] = self.hybrid_slot_configuration.get("direct_attached_nvme_slots")
+            kwargs["raid_attached_nvme_slots"] = self.hybrid_slot_configuration.get("raid_attached_nvme_slots")
+
         if self.m2_configuration is not None and self.m2_configuration.get("enable"):
             from intersight.model.storage_m2_virtual_drive_config import StorageM2VirtualDriveConfig
             m2_configuration_kwargs = {
@@ -5461,6 +5525,8 @@ class IntersightStoragePolicy(IntersightConfigObject):
                 m2_configuration_kwargs["enable"] = self.m2_configuration["enable"]
             if self.m2_configuration.get("controller_slot"):
                 m2_configuration_kwargs["controller_slot"] = self.m2_configuration["controller_slot"]
+            if self.m2_configuration.get("name"):
+                m2_configuration_kwargs["name"] = self.m2_configuration["name"]
             kwargs["m2_virtual_drive"] = StorageM2VirtualDriveConfig(**m2_configuration_kwargs)
         if self.single_drive_raid_configuration is not None and self.single_drive_raid_configuration.get("enable"):
             from intersight.model.storage_r0_drive import StorageR0Drive

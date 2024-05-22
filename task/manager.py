@@ -283,10 +283,11 @@ class TaskManager:
         self.task_list.remove(task_to_remove)
         return True
 
-    def set_task_progression(self, uuid=None):
+    def set_task_progression(self, uuid=None, progress=None):
         """
         Sets the progression of the task in progress attribute
         :param uuid: UUID of the task
+        :param progress: Set the progression to this value if provided, otherwise calculate it
         :return: True if successful, False otherwise
         """
         if uuid is None:
@@ -308,17 +309,20 @@ class TaskManager:
 
         current_taskstep = task.taskstep_manager.get_current_taskstep()
         if current_taskstep:
-            current_step_id = current_taskstep.metadata.order
-            # If the task step is currently in status "successful" or "skipped", we count it as completed
-            if current_taskstep.metadata.status in ["successful", "skipped"]:
-                current_step_id += 1
+            if progress:
+                task.metadata.progress = progress
+            else:
+                current_step_id = current_taskstep.metadata.order
+                # If the task step is currently in status "successful" or "skipped", we count it as completed
+                if current_taskstep.metadata.status in ["successful", "skipped"]:
+                    current_step_id += 1
 
-            completed_weight_sum = 0
-            for step in task.taskstep_manager.taskstep_list[0:current_step_id - 1]:
-                if step.metadata.weight:
-                    completed_weight_sum += step.metadata.weight
+                completed_weight_sum = 0
+                for step in task.taskstep_manager.taskstep_list[0:current_step_id - 1]:
+                    if step.metadata.weight:
+                        completed_weight_sum += step.metadata.weight
 
-            task.metadata.progress = int(100 / weight_sum * completed_weight_sum)
+                task.metadata.progress = int(100 / weight_sum * completed_weight_sum)
         else:
             # There is no current task step running, so the task is either not started or completed/failed
             if all(step.metadata.status is None for step in task.taskstep_manager.taskstep_list):

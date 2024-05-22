@@ -3684,6 +3684,27 @@
          "Platform Default"
       ]
    },
+   "ioat_configuration": {
+      "available_in_legacy_mode": false,
+      "feature_group": "Processor",
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "platform-default"
+      ],
+      "maximum": null,
+      "minimum": null,
+      "param_name": "IOAT Configuration",
+      "step": null,
+      "target_name": "IOATConfigCpm",
+      "type": "enum",
+      "unit": null,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ]
+   },
    "ioemezz1_linkspeed": {
       "available_in_legacy_mode": false,
       "feature_group": "PCI Slot Link Speed",
@@ -4573,6 +4594,70 @@
          "GEN2",
          "GEN3",
          "GEN4",
+         "Platform Default"
+      ]
+   },
+   "mmio_high_base": {
+      "available_in_legacy_mode": false,
+      "feature_group": "MMIO High Base",
+      "legacy_values": [
+         "16t",
+         "1t",
+         "24t",
+         "2t",
+         "32t",
+         "40t",
+         "4t",
+         "512g",
+         "56t",
+         "platform-default"
+      ],
+      "maximum": null,
+      "minimum": null,
+      "param_name": "MMIO High Base",
+      "step": null,
+      "target_name": "MmiohBase",
+      "type": "enum",
+      "unit": null,
+      "values": [
+         "16T",
+         "1T",
+         "24T",
+         "2T",
+         "32T",
+         "40T",
+         "4T",
+         "512G",
+         "56T",
+         "Platform Default"
+      ]
+   },
+   "mmio_high_granularity_size": {
+      "available_in_legacy_mode": false,
+      "feature_group": "MMIO High Granularity Size",
+      "legacy_values": [
+         "1024g",
+         "16g",
+         "1g",
+         "256g",
+         "4g",
+         "64g",
+         "platform-default"
+      ],
+      "maximum": null,
+      "minimum": null,
+      "param_name": "MMIO High Granularity Size",
+      "step": null,
+      "target_name": "MmiohSize",
+      "type": "enum",
+      "unit": null,
+      "values": [
+         "1024G",
+         "16G",
+         "1G",
+         "256G",
+         "4G",
+         "64G",
          "Platform Default"
       ]
    },

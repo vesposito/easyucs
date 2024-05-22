@@ -106,6 +106,7 @@ class IntersightGenericUcsServerProfile(IntersightConfigObject):
         self.descr = self.get_attribute(attribute_name="description", attribute_secondary_name="descr")
         self.name = self.get_attribute(attribute_name="name")
         self.target_platform = self.get_attribute(attribute_name="target_platform")
+        self.user_label = self.get_attribute(attribute_name="user_label")
 
         self.adapter_configuration_policy = None
         self.bios_policy = None
@@ -664,6 +665,8 @@ class IntersightUcsServerProfile(IntersightGenericUcsServerProfile):
                     target_profile["description"] = self.descr
                 if self.tags is not None:
                     target_profile["tags"] = self.create_tags()
+                if self.user_label is not None:
+                    target_profile["user_label"] = self.user_label
 
                 if self.resource_pool is not None:
                     # We need to identify the Resource Pool object reference
@@ -1093,6 +1096,8 @@ class IntersightUcsServerProfile(IntersightGenericUcsServerProfile):
             kwargs["tags"] = self.create_tags()
         if self.uuid_allocation_type is not None:
             kwargs["uuid_address_type"] = self.uuid_allocation_type.upper()
+        if self.user_label is not None:
+            kwargs["user_label"] = self.user_label
         if self.target_platform is not None:
             if self.target_platform in ["FI-Attached"]:
                 kwargs["target_platform"] = "FIAttached"

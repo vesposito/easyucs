@@ -101,6 +101,11 @@
                   "description": "Adapter Configuration Policy - VIC Adapter Configuration - Enable LLDP",
                   "default": true
                },
+               "enable_physical_nic_mode": {
+                  "type": "boolean",
+                  "description": "Adapter Configuration Policy - VIC Adapter Configuration - Enable Physical NIC Mode",
+                  "default": false
+               },
                "enable_port_channel": {
                   "type": "boolean",
                   "description": "Adapter Configuration Policy - VIC Adapter Configuration - Enable Port-Channel",
@@ -115,6 +120,61 @@
             },
             "required": [
                "pci_slot"
+            ],
+            "allOf": [
+               {
+                  "$comment": "Below is for setting constraints for enable_physical_nic_mode",
+                  "if": {
+                     "properties": {
+                        "enable_physical_nic_mode": {
+                           "enum": [
+                              true
+                           ]
+                        }
+                     },
+                     "required": [
+                        "enable_physical_nic_mode"
+                     ]
+                  },
+                  "then": {
+                     "allOf": [
+                        {
+                           "required": [
+                              "enable_fip",
+                              "enable_lldp",
+                              "enable_port_channel"
+                           ]
+                        },
+                        {
+                           "properties": {
+                              "enable_fip": {
+                                 "enum": [
+                                    false
+                                 ]
+                              }
+                           }
+                        },
+                        {
+                           "properties": {
+                              "enable_lldp": {
+                                 "enum": [
+                                    false
+                                 ]
+                              }
+                           }
+                        },
+                        {
+                           "properties": {
+                              "enable_port_channel": {
+                                 "enum": [
+                                    false
+                                 ]
+                              }
+                           }
+                        }
+                     ]
+                  }
+               }
             ]
          }
       }

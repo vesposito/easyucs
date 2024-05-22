@@ -6,6 +6,7 @@
 import copy
 import urllib3
 
+from intersight.api.aaa_api import AaaApi
 from intersight.api.access_api import AccessApi
 from intersight.api.adapter_api import AdapterApi
 from intersight.api.asset_api import AssetApi
@@ -105,7 +106,8 @@ class IntersightConfig(GenericConfig):
     def _fetch_sdk_objects(self, force=False):
         MAX_OBJECTS_PER_FETCH_CALL = 100
 
-        sdk_objects_to_fetch = [{AccessApi: ["access_policy"]},
+        sdk_objects_to_fetch = [{AaaApi: ["aaa_retention_policy"]},
+                                {AccessApi: ["access_policy"]},
                                 {AdapterApi: ["adapter_config_policy"]},
                                 {AssetApi: ["asset_device_registration"]},
                                 {BiosApi: ["bios_policy"]},
@@ -132,8 +134,8 @@ class IntersightConfig(GenericConfig):
                                 {IamApi: ["iam_account", "iam_end_point_role", "iam_end_point_user",
                                           "iam_end_point_user_policy", "iam_end_point_user_role", "iam_idp",
                                           "iam_ldap_group", "iam_ldap_policy", "iam_ldap_provider", "iam_permission",
-                                          "iam_qualifier", "iam_resource_roles", "iam_role", "iam_session_limits",
-                                          "iam_user", "iam_user_group"]},
+                                          "iam_qualifier", "iam_resource_limits", "iam_resource_roles", "iam_role",
+                                          "iam_session_limits", "iam_user", "iam_user_group"]},
                                 {IppoolApi: ["ippool_pool", "ippool_reservation", "ippool_ip_lease"]},
                                 {IpmioverlanApi: ["ipmioverlan_policy"]},
                                 {IqnpoolApi: ["iqnpool_pool", "iqnpool_reservation", "iqnpool_lease"]},

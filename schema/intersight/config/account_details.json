@@ -15,6 +15,55 @@
          "type": "string",
          "default": ""
       },
+      "tags": {
+         "description": "Account Details Tags",
+         "type": "array",
+         "items": {
+            "description": "Account Details Tag",
+            "type": "object",
+            "properties": {
+               "key": {
+                  "description": "Account Details Tag Key",
+                  "type": "string",
+                  "default": "",
+                  "minLength": 1,
+                  "maxLength": 128
+               },
+               "value": {
+                  "description": "Account Details Tag Value",
+                  "type": "string",
+                  "default": "",
+                  "minLength": 0,
+                  "maxLength": 256
+               }
+            },
+            "additionalProperties": false,
+            "required": [
+               "key",
+               "value"
+            ]
+         },
+         "minItems": 1
+      },
+      "api_keys_maximum_expiration_time": {
+         "description": "Account Details API Keys Maximum Expiration Time (Days)",
+         "type": "integer",
+         "default": 180,
+         "minimum": 1,
+         "maximum": 360
+      },
+      "api_keys_without_expiry": {
+         "description": "Account Details API Keys without Expiry",
+         "type": "boolean",
+         "default": false
+      },
+      "audit_log_retention_period": {
+         "description": "Account Details Audit Log Retention Period (Months)",
+         "type": "integer",
+         "default": 48,
+         "minimum": 6,
+         "maximum": 48
+      },
       "default_idle_timeout": {
          "description": "Account Details Default Idle Timeout",
          "type": "integer",
@@ -24,6 +73,18 @@
          "description": "Account Details Default Session Timeout",
          "type": "integer",
          "default": 57600
+      },
+      "oauth_applications_maximum_expiration_time": {
+         "description": "Account Details OAuth Applications Maximum Expiration Time (Days)",
+         "type": "integer",
+         "default": 180,
+         "minimum": 1,
+         "maximum": 360
+      },
+      "oauth_applications_without_expiry": {
+         "description": "Account Details OAuth Applications without Expiry",
+         "type": "boolean",
+         "default": false
       },
       "per_user_limit": {
          "description": "Account Details Per User Limit",

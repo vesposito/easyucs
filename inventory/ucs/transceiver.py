@@ -127,6 +127,8 @@ class UcsSystemTransceiver(UcsTransceiver, UcsSystemInventoryObject):
             "fet": {"sku": "FET-10G", "length": "<=100m"},
             "10gbasesrs": {"sku": "SFP-10G-SR-S", "length": "<=400m"},
             "10gbaselrs": {"sku": "SFP-10G-LR-S", "length": "<=10km"},
+            "10gbasezr": {"sku": "SFP-10G-ZR", "length": "<=80km"},
+            "10gbasezrs": {"sku": "SFP-10G-ZR-S", "length": "<=80km"},
             # SFP+ 10Gbps transceivers Indeterminate models
             "10gbasesr": {"sku": "SFP-10G-SR/SR-S", "length": "<=400m"},
             "10gbaselr": {"sku": "SFP-10G-LR/LR-S", "length": "<=10km"},
@@ -134,6 +136,7 @@ class UcsSystemTransceiver(UcsTransceiver, UcsSystemInventoryObject):
             # SFP28 25Gbps transceivers
             "h25gsrs": {"sku": "SFP-25G-SR-S", "length": "<=100m"},
             "h25glrs": {"sku": "SFP-10/25G-LR-S", "length": "<=10km"},
+            "sfp25gsl": {"sku": "SFP-25G-SL", "length": "<=30m"},
 
             # QSFP+ 40Gbps transceivers
             "qsfpqsa": {"sku": "CVR-QSFP-SFP10G", "length": "n/a"},
@@ -149,6 +152,7 @@ class UcsSystemTransceiver(UcsTransceiver, UcsSystemInventoryObject):
             "qsfp100gsl4": {"sku": "QSFP-100G-SL4", "length": "<=30m"},
             "qsfp100g40gbidi": {"sku": "QSFP-40/100-SRBD", "length": "<=100m"},
             "qsfp100gsmsr": {"sku": "QSFP-100G-SM-SR", "length": "<=2km"},
+            "qsfp100gsr1.2": {"sku": "QSFP-100G-SR1.2", "length": "<=100m"},
             "qsfp100gcr4": {"sku": "QSFP-100G-SR4-S", "length": "<=100m"},
             "qsfp100gsr4": {"sku": "QSFP-100G-SR4-S", "length": "<=100m"},
             "qsfp100gsr4s": {"sku": "QSFP-100G-SR4-S", "length": "<=100m"},

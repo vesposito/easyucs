@@ -11,29 +11,27 @@ import socket
 import threading
 import time
 import urllib
-import urllib3
-import json
 
 import paramiko
 import requests
+from imcsdk import __version__ as imcsdk_sdk_version
 from imcsdk.imccoremeta import ImcVersion
 from imcsdk.imcexception import ImcException
 from imcsdk.imchandle import ImcHandle
 from imcsdk.imcmeta import VersionMeta as ImcVersionMeta
 from imcsdk.mometa.comm.CommSsh import CommSsh as imcsdk_CommSsh
-from imcsdk import __version__ as imcsdk_sdk_version
+from ucscsdk import __version__ as ucscsdk_sdk_version
 from ucscsdk.ucsccoremeta import UcscVersion
 from ucscsdk.ucscexception import UcscException
 from ucscsdk.ucschandle import UcscHandle
 from ucscsdk.ucscmeta import VersionMeta as UcscVersionMeta
-from ucscsdk import __version__ as ucscsdk_sdk_version
-from ucsmsdk.mometa.firmware.FirmwareDownloader import FirmwareDownloader
+from ucsmsdk import __version__ as ucsmsdk_sdk_version
 from ucsmsdk.mometa.comm.CommSsh import CommSsh as ucsmsdk_CommSsh
+from ucsmsdk.mometa.firmware.FirmwareDownloader import FirmwareDownloader
 from ucsmsdk.ucscoremeta import UcsVersion
 from ucsmsdk.ucsexception import UcsException
 from ucsmsdk.ucshandle import UcsHandle
 from ucsmsdk.ucsmeta import version as ucsmsdk_ucs_version
-from ucsmsdk import __version__ as ucsmsdk_sdk_version
 
 import common
 from backup.ucs.manager import UcsCentralBackupManager, UcsImcBackupManager, UcsSystemBackupManager
@@ -94,7 +92,7 @@ class GenericUcsDevice(GenericDevice, DeviceConnector):
                     message="Using " + self.metadata.device_type_long + " SDK version " + str(self.version_sdk))
         for i in range(retries):
             if i != 0:
-                self.logger(message="Connection attempt number " + str(i+1))
+                self.logger(message="Connection attempt number " + str(i + 1))
                 time.sleep(5)
             self.logger(message="Trying to connect to " + self.metadata.device_type_long + ": " + self.target)
             try:
@@ -202,8 +200,8 @@ class GenericUcsDevice(GenericDevice, DeviceConnector):
                 continue
             except Exception as err:
                 self.logger(level="error", message="Error while trying to connect to " +
-                                                   self.metadata.device_type_long + ": " +
-                                                   self.target + ": " + str(err))
+                                                   self.metadata.device_type_long + ": " + self.target + ": " +
+                                                   str(err), set_api_error_message=False)
                 continue
         self.metadata.is_reachable = False
         if self.task is not None and task_name is not None:
@@ -964,8 +962,9 @@ class UcsSystem(GenericUcsDevice):
         if self.task is not None:
             self.task.taskstep_manager.stop_taskstep(
                 name="EraseFiConfigurations", status="successful",
-                status_message=f"Successfully reset Fabric Interconnects of " +
-                               f"{self.metadata.device_type_long} device {self.name}")
+                status_message=f"Successfully reset Fabric Interconnects of {self.metadata.device_type_long} " +
+                               f"device {self.name}"
+            )
         return True
 
     def regenerate_certificate(self):
@@ -1040,7 +1039,7 @@ class UcsSystem(GenericUcsDevice):
             if self.task is not None:
                 self.task.taskstep_manager.stop_taskstep(
                     name="CheckNewCertificateValidity", status="successful",
-                    status_message=f"New certificate valid until " + str(cert.not_valid_after_utc) + " on "
+                    status_message=f"New certificate valid until " + str(cert.not_valid_after_utc) + " on " +
                                    f"{self.metadata.device_type_long} device {self.name}")
 
             return True
@@ -1337,7 +1336,7 @@ class UcsSystem(GenericUcsDevice):
         if self.task is not None:
             self.task.taskstep_manager.start_taskstep(
                 name="ClearSelLogsUcsSystem", description="Clearing all System Event Logs of all discovered servers")
-                                                        
+
         self.logger(level="info", message="Clearing all System Event Logs of all discovered servers")
         all_logs = self.handle.query_classid("sysdebugMEpLog")
         return_code = True
@@ -1361,7 +1360,7 @@ class UcsSystem(GenericUcsDevice):
                 return_code = False
 
         if return_code:
-            self.logger(level="info", message="Successfully cleared all System Event Logs of all discovered servers")          
+            self.logger(level="info", message="Successfully cleared all System Event Logs of all discovered servers")
             if self.task is not None:
                 self.task.taskstep_manager.stop_taskstep(
                     name="ClearSelLogsUcsSystem", status="successful",
@@ -1371,7 +1370,7 @@ class UcsSystem(GenericUcsDevice):
                 self.task.taskstep_manager.stop_taskstep(
                     name="ClearSelLogsUcsSystem", status="failed",
                     status_message=f"Failed to clear all System Event Logs of all discovered servers")
-                    
+
         return return_code
 
     def set_drives_status(self, status=None):
@@ -2074,7 +2073,6 @@ class UcsImc(GenericUcsDevice):
 
                 mo_ssh = imcsdk_CommSsh(parent_mo_or_dn="sys/svc-ext", admin_state="enabled")
                 self.handle.set_mo(mo_ssh)
-                self.handle.commit()
                 self.logger(level="debug", message="SSH service is enabled on UCS IMC")
                 time.sleep(5)
 
@@ -2590,8 +2588,6 @@ class UcsImc(GenericUcsDevice):
         Checks if existing certificate is expired.
         :return: True if expired, False otherwise
         """
-        from cryptography import x509
-        from cryptography.hazmat.backends import default_backend
 
         if not self.is_connected():
             self.connect()
@@ -3157,9 +3153,6 @@ class UcsCentral(GenericUcsDevice):
 
         self.version_max_supported_by_sdk = max_supported_version
 
-    def _set_device_connector_info(self):
-        pass
-
     def _set_device_name_and_version(self):
         """
         Sets the device name and version attributes of the device.
@@ -3180,58 +3173,3 @@ class UcsCentral(GenericUcsDevice):
         self.metadata.device_name = self.name
         if hasattr(self.version, "version"):
             self.metadata.device_version = self.version.version
-
-
-def BlindUcs(parent=None, target="", user="", password="", logger_handle_log_level="info", log_file_path=None):
-    self = GenericUcsDevice(parent=parent, target=target, password=password, user=user,
-                            logger_handle_log_level=logger_handle_log_level, log_file_path=log_file_path)
-    self.logger(message="Trying to determine UCS device type...")
-
-    self.handle = UcsHandle(ip=target, username=user, password=password)
-    try:
-        self.handle.login()
-    except Exception:
-        pass
-
-    if self.handle.is_valid():
-        self.handle.logout()
-        self = UcsSystem(target=target, password=password, user=user,
-                         logger_handle_log_level=logger_handle_log_level, log_file_path=log_file_path)
-        return self
-    else:
-        self.handle = ImcHandle(ip=target, username=user, password=password)
-        try:
-            self.handle.login()
-        except Exception:
-            pass
-
-        try:
-            query = self.handle.query_dn("sys")
-        except Exception:
-            query = None
-
-        if query:
-            self.handle.logout()
-            self = UcsImc(target=target, password=password, user=user,
-                          logger_handle_log_level=logger_handle_log_level, log_file_path=log_file_path)
-            return self
-        else:
-            self.handle = UcscHandle(ip=target, username=user, password=password)
-            try:
-                self.handle.login()
-            except Exception:
-                pass
-
-            try:
-                query = self.handle.query_dn("sys")
-            except Exception:
-                query = None
-
-            if query:
-                self.handle.logout()
-                self = UcsCentral(target=target, password=password, user=user,
-                                  logger_handle_log_level=logger_handle_log_level, log_file_path=log_file_path)
-                return self
-            else:
-                self.logger(message="Impossible to determine if your device is an UCS System, UCS IMC or UCS Central")
-                return self

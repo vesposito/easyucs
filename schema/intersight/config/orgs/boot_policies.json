@@ -78,6 +78,7 @@
                   "description": "Boot Policy - Device Member of Boot Order - Device Type",
                   "type": "string",
                   "enum": [
+                     "flex_mmc",
                      "http_boot",
                      "iscsi_boot",
                      "local_cdd",
@@ -218,7 +219,7 @@
                   "default": ""
                },
                "subtype": {
-                  "description": "Boot Policy - Device Member of Boot Order - SD Card/USB/Virtual Media Subtype",
+                  "description": "Boot Policy - Device Member of Boot Order - FlexMMC/SD Card/USB/Virtual Media Subtype",
                   "type": "string",
                   "default": "None",
                   "enum": [
@@ -226,6 +227,8 @@
                      "cimc-mapped-hdd",
                      "flex-util",
                      "flex-flash",
+                     "flexmmc-mapped-dvd",
+                     "flexmmc-mapped-hdd",
                      "kvm-mapped-dvd",
                      "kvm-mapped-hdd",
                      "kvm-mapped-fdd",
@@ -254,6 +257,122 @@
                "device_name"
             ],
             "allOf": [
+               {
+                  "$comment": "Below is for setting constraints for flex_mmc device type",
+                  "if": {
+                     "properties": {
+                        "device_type": {
+                           "enum": [
+                              "flex_mmc"
+                           ]
+                        }
+                     },
+                     "required": [
+                        "device_type"
+                     ]
+                  },
+                  "then": {
+                     "allOf": [
+                        {
+                           "not": {
+                              "anyOf": [
+                                 {
+                                    "required": [
+                                       "dns_ip"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
+                                       "gateway_ip"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
+                                       "interface_name"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
+                                       "interface_source"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
+                                       "ip_config_type"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
+                                       "ip_type"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
+                                       "lun"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
+                                       "mac_address"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
+                                       "network_mask"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
+                                       "port"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
+                                       "prefix_length"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
+                                       "protocol"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
+                                       "slot"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
+                                       "static_ip"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
+                                       "target_wwpn"
+                                    ]
+                                 },
+                                 {
+                                    "required": [
+                                       "uri"
+                                    ]
+                                 }
+                              ]
+                           }
+                        },
+                        {
+                           "properties": {
+                              "subtype": {
+                                 "enum": [
+                                    "flexmmc-mapped-dvd",
+                                    "flexmmc-mapped-hdd",
+                                    "None"
+                                 ]
+                              }
+                           }
+                        }
+                     ]
+                  }
+               },
                {
                   "$comment": "Below is for setting constraints for iscsi_boot device type",
                   "if": {

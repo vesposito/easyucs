@@ -42,16 +42,16 @@ def hasattr_table_record(cls):
 
 
 class RepositoryManager:
-    REPOSITORY_FOLDER_NAME: str = "data"
-    REPOSITORY_DB_FOLDER_NAME: str = "db"
-    REPOSITORY_DB_FILE_NAME: str = "easyucs.db"
+    REPOSITORY_BACKUPS_FOLDER_NAME: str = "backups"
     REPOSITORY_DB_BACKUP_NAME = "db_backup.json"
+    REPOSITORY_DB_FILE_NAME: str = "easyucs.db"
+    REPOSITORY_DB_FOLDER_NAME: str = "db"
     REPOSITORY_DEVICES_FOLDER_NAME: str = "devices"
     REPOSITORY_FILES_FOLDER_NAME: str = "files"
+    REPOSITORY_FOLDER_NAME: str = "data"
+    REPOSITORY_IMAGES_FOLDER_NAME: str = "images"
     REPOSITORY_KEYS_FOLDER_NAME: str = "keys"
     REPOSITORY_KEY_FILE_NAME: str = "easyucs.key"
-    REPOSITORY_BACKUPS_FOLDER_NAME: str = "backups"
-    REPOSITORY_IMAGES_FOLDER_NAME: str = "images"
     REPOSITORY_TMP_FOLDER_NAME: str = "tmp"
     SAMPLES_FOLDER_NAME: str = "samples"
     SETTINGS_FILE_NAME: str = "settings.json"

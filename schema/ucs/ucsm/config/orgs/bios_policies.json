@@ -2439,6 +2439,19 @@
             "platform-default"
          ]
       },
+      "ioat_configuration": {
+         "description": "BIOS Policy - Processor - IOAT Configuration",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "Disabled",
+            "Enabled",
+            "Platform Default",
+            "disabled",
+            "enabled",
+            "platform-default"
+         ]
+      },
       "ioemezz1_linkspeed": {
          "description": "BIOS Policy - PCI Slot Link Speed - IOEMezz1 LinkSpeed",
          "type": "string",
@@ -3016,6 +3029,54 @@
             "gen2",
             "gen3",
             "gen4",
+            "platform-default"
+         ]
+      },
+      "mmio_high_base": {
+         "description": "BIOS Policy - MMIO High Base - MMIO High Base",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "16T",
+            "16t",
+            "1T",
+            "1t",
+            "24T",
+            "24t",
+            "2T",
+            "2t",
+            "32T",
+            "32t",
+            "40T",
+            "40t",
+            "4T",
+            "4t",
+            "512G",
+            "512g",
+            "56T",
+            "56t",
+            "Platform Default",
+            "platform-default"
+         ]
+      },
+      "mmio_high_granularity_size": {
+         "description": "BIOS Policy - MMIO High Granularity Size - MMIO High Granularity Size",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "1024G",
+            "1024g",
+            "16G",
+            "16g",
+            "1G",
+            "1g",
+            "256G",
+            "256g",
+            "4G",
+            "4g",
+            "64G",
+            "64g",
+            "Platform Default",
             "platform-default"
          ]
       },

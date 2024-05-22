@@ -23,6 +23,11 @@
          "default": "",
          "pattern": "^[a-zA-Z0-9_.:-]{1,64}$"
       },
+      "configure_subnet_at_block_level": {
+         "description": "Set True to configure subnet at block level else False",
+         "type": "boolean",
+         "default": false
+      },
       "tags": {
          "description": "IP Pool Tags",
          "type": "array",
@@ -53,6 +58,109 @@
          },
          "minItems": 1
       },
+      "ipv4_blocks": {
+         "description": "Blocks of IPv4 Addresses in IP Pool",
+         "type": "array",
+         "items": {
+            "type": "object",
+            "oneOf": [
+               {
+                  "properties": {
+                     "from": {
+                        "description": "First IPv4 Address of Block",
+                        "type": "string",
+                        "pattern": "^$|^([1-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\\.([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\\.([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\\.([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])$"
+                     },
+                     "to": {
+                        "description": "Last IPv4 Address of Block",
+                        "type": "string",
+                        "pattern": "^$|^([1-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\\.([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\\.([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\\.([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])$"
+                     },
+                     "ipv4_configuration": {
+                        "description": "IPv4 Configuration of Block",
+                        "type": "object",
+                        "properties": {
+                           "gateway": {
+                              "description": "IPv4 Default Gateway of Block",
+                              "type": "string",
+                              "pattern": "^$|^([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\\.([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\\.([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\\.([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])$"
+                           },
+                           "netmask": {
+                              "description": "IPv4 Subnet Mask of Block",
+                              "type": "string",
+                              "pattern": "^$|^(((255\\.){3}(255|254|252|248|240|224|192|128|0+))|((255\\.){2}(255|254|252|248|240|224|192|128|0+)\\.0)|((255\\.)(255|254|252|248|240|224|192|128|0+)(\\.0+){2})|((255|254|252|248|240|224|192|128|0+)(\\.0+){3}))$"
+                           },
+                           "primary_dns": {
+                              "description": "Primary DNS IPv4 Address of Block",
+                              "type": "string",
+                              "pattern": "^$|^([1-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\\.([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\\.([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\\.([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])$"
+                           },
+                           "secondary_dns": {
+                              "description": "Secondary DNS IPv4 Address of Block",
+                              "type": "string",
+                              "pattern": "^$|^([1-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\\.([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\\.([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\\.([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])$"
+                           }
+                        },
+                     "additionalProperties": false
+                     }
+                  },
+                  "additionalProperties": false,
+                  "required": [
+                     "from",
+                     "to"
+                  ]
+               },
+               {
+                  "properties": {
+                     "from": {
+                        "description": "First IPv4 Address of Block",
+                        "type": "string",
+                        "pattern": "^$|^([1-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\\.([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\\.([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\\.([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])$"
+                     },
+                     "size": {
+                        "description": "Size of IPv4 Address Block",
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 1024
+                     },
+                     "ipv4_configuration": {
+                        "description": "IPv4 Configuration of Block",
+                        "type": "object",
+                        "properties": {
+                           "gateway": {
+                              "description": "IPv4 Default Gateway of Block",
+                              "type": "string",
+                              "pattern": "^$|^([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\\.([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\\.([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\\.([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])$"
+                           },
+                           "netmask": {
+                              "description": "IPv4 Subnet Mask of Block",
+                              "type": "string",
+                              "pattern": "^$|^(((255\\.){3}(255|254|252|248|240|224|192|128|0+))|((255\\.){2}(255|254|252|248|240|224|192|128|0+)\\.0)|((255\\.)(255|254|252|248|240|224|192|128|0+)(\\.0+){2})|((255|254|252|248|240|224|192|128|0+)(\\.0+){3}))$"
+                           },
+                           "primary_dns": {
+                              "description": "Primary DNS IPv4 Address of Block",
+                              "type": "string",
+                              "pattern": "^$|^([1-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\\.([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\\.([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\\.([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])$"
+                           },
+                           "secondary_dns": {
+                              "description": "Secondary DNS IPv4 Address of Block",
+                              "type": "string",
+                              "pattern": "^$|^([1-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\\.([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\\.([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\\.([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])$"
+                           }
+                        },
+                        "additionalProperties": false
+                     }
+                  },
+                  "additionalProperties": false,
+                  "required": [
+                     "from",
+                     "size"
+                  ]
+               }
+            ]
+         },
+         "minItems": 1
+      },
       "ipv4_configuration": {
          "description": "IP Pool IPv4 Configuration",
          "type": "object",
@@ -79,6 +187,119 @@
             }
          },
          "additionalProperties": false
+      },
+      "ipv6_blocks": {
+         "description": "Blocks of IPv6 Addresses in IP Pool",
+         "type": "array",
+         "items": {
+            "type": "object",
+            "oneOf": [
+               {
+                  "properties": {
+                     "from": {
+                        "description": "First IPv6 Address of Block",
+                        "type": "string",
+                        "pattern": "^$|^(([0-9A-Fa-f]{1,4}:([0-9A-Fa-f]{1,4}:([0-9A-Fa-f]{1,4}:([0-9A-Fa-f]{1,4}:([0-9A-Fa-f]{1,4}:[0-9A-Fa-f]{0,4}|:[0-9A-Fa-f]{1,4})?|(:[0-9A-Fa-f]{1,4}){0,2})|(:[0-9A-Fa-f]{1,4}){0,3})|(:[0-9A-Fa-f]{1,4}){0,4})|:(:[0-9A-Fa-f]{1,4}){0,5})((:[0-9A-Fa-f]{1,4}){2}|:(25[0-5]|(2[0-4]|1[0-9]|[1-9])?[0-9])(\\.(25[0-5]|(2[0-4]|1[0-9]|[1-9])?[0-9])){3})|(([0-9A-Fa-f]{1,4}:){1,6}|:):[0-9A-Fa-f]{0,4}|([0-9A-Fa-f]{1,4}:){7}:)$"
+                     },
+                     "to": {
+                        "description": "Last IPv6 Address of Block",
+                        "type": "string",
+                        "pattern": "^$|^(([0-9A-Fa-f]{1,4}:([0-9A-Fa-f]{1,4}:([0-9A-Fa-f]{1,4}:([0-9A-Fa-f]{1,4}:([0-9A-Fa-f]{1,4}:[0-9A-Fa-f]{0,4}|:[0-9A-Fa-f]{1,4})?|(:[0-9A-Fa-f]{1,4}){0,2})|(:[0-9A-Fa-f]{1,4}){0,3})|(:[0-9A-Fa-f]{1,4}){0,4})|:(:[0-9A-Fa-f]{1,4}){0,5})((:[0-9A-Fa-f]{1,4}){2}|:(25[0-5]|(2[0-4]|1[0-9]|[1-9])?[0-9])(\\.(25[0-5]|(2[0-4]|1[0-9]|[1-9])?[0-9])){3})|(([0-9A-Fa-f]{1,4}:){1,6}|:):[0-9A-Fa-f]{0,4}|([0-9A-Fa-f]{1,4}:){7}:)$"
+                     },
+                     "ipv6_configuration": {
+                        "description": "IPv6 Configuration of Block",
+                        "type": "object",
+                        "properties": {
+                           "gateway": {
+                              "description": "IPv6 Default Gateway of Block",
+                              "type": "string",
+                              "pattern": "^$|^(([0-9A-Fa-f]{1,4}:([0-9A-Fa-f]{1,4}:([0-9A-Fa-f]{1,4}:([0-9A-Fa-f]{1,4}:([0-9A-Fa-f]{1,4}:[0-9A-Fa-f]{0,4}|:[0-9A-Fa-f]{1,4})?|(:[0-9A-Fa-f]{1,4}){0,2})|(:[0-9A-Fa-f]{1,4}){0,3})|(:[0-9A-Fa-f]{1,4}){0,4})|:(:[0-9A-Fa-f]{1,4}){0,5})((:[0-9A-Fa-f]{1,4}){2}|:(25[0-5]|(2[0-4]|1[0-9]|[1-9])?[0-9])(\\.(25[0-5]|(2[0-4]|1[0-9]|[1-9])?[0-9])){3})|(([0-9A-Fa-f]{1,4}:){1,6}|:):[0-9A-Fa-f]{0,4}|([0-9A-Fa-f]{1,4}:){7}:)$"
+                           },
+                           "prefix": {
+                              "description": "IPv6 Prefix of Block",
+                              "type": "integer",
+                              "minimum": 1,
+                              "maximum": 128
+                           },
+                           "primary_dns": {
+                              "description": "Primary DNS IPv6 Address of Block",
+                              "type": "string",
+                              "pattern": "^$|^(([0-9A-Fa-f]{1,4}:([0-9A-Fa-f]{1,4}:([0-9A-Fa-f]{1,4}:([0-9A-Fa-f]{1,4}:([0-9A-Fa-f]{1,4}:[0-9A-Fa-f]{0,4}|:[0-9A-Fa-f]{1,4})?|(:[0-9A-Fa-f]{1,4}){0,2})|(:[0-9A-Fa-f]{1,4}){0,3})|(:[0-9A-Fa-f]{1,4}){0,4})|:(:[0-9A-Fa-f]{1,4}){0,5})((:[0-9A-Fa-f]{1,4}){2}|:(25[0-5]|(2[0-4]|1[0-9]|[1-9])?[0-9])(\\.(25[0-5]|(2[0-4]|1[0-9]|[1-9])?[0-9])){3})|(([0-9A-Fa-f]{1,4}:){1,6}|:):[0-9A-Fa-f]{0,4}|([0-9A-Fa-f]{1,4}:){7}:)$"
+                           },
+                           "secondary_dns": {
+                              "description": "Secondary DNS IPv6 Address of Block",
+                              "type": "string",
+                              "pattern": "^$|^(([0-9A-Fa-f]{1,4}:([0-9A-Fa-f]{1,4}:([0-9A-Fa-f]{1,4}:([0-9A-Fa-f]{1,4}:([0-9A-Fa-f]{1,4}:[0-9A-Fa-f]{0,4}|:[0-9A-Fa-f]{1,4})?|(:[0-9A-Fa-f]{1,4}){0,2})|(:[0-9A-Fa-f]{1,4}){0,3})|(:[0-9A-Fa-f]{1,4}){0,4})|:(:[0-9A-Fa-f]{1,4}){0,5})((:[0-9A-Fa-f]{1,4}){2}|:(25[0-5]|(2[0-4]|1[0-9]|[1-9])?[0-9])(\\.(25[0-5]|(2[0-4]|1[0-9]|[1-9])?[0-9])){3})|(([0-9A-Fa-f]{1,4}:){1,6}|:):[0-9A-Fa-f]{0,4}|([0-9A-Fa-f]{1,4}:){7}:)$"
+                           }
+                        },
+                       "additionalProperties": false,
+                       "required": [
+                          "prefix",
+                          "gateway"
+                       ]
+                    }
+                  },
+                  "additionalProperties": false,
+                  "required": [
+                     "from",
+                     "to"
+                  ]
+               },
+               {
+                  "properties": {
+                     "from": {
+                        "description": "First IPv6 Address of Block",
+                        "type": "string",
+                        "pattern": "^$|^(([0-9A-Fa-f]{1,4}:([0-9A-Fa-f]{1,4}:([0-9A-Fa-f]{1,4}:([0-9A-Fa-f]{1,4}:([0-9A-Fa-f]{1,4}:[0-9A-Fa-f]{0,4}|:[0-9A-Fa-f]{1,4})?|(:[0-9A-Fa-f]{1,4}){0,2})|(:[0-9A-Fa-f]{1,4}){0,3})|(:[0-9A-Fa-f]{1,4}){0,4})|:(:[0-9A-Fa-f]{1,4}){0,5})((:[0-9A-Fa-f]{1,4}){2}|:(25[0-5]|(2[0-4]|1[0-9]|[1-9])?[0-9])(\\.(25[0-5]|(2[0-4]|1[0-9]|[1-9])?[0-9])){3})|(([0-9A-Fa-f]{1,4}:){1,6}|:):[0-9A-Fa-f]{0,4}|([0-9A-Fa-f]{1,4}:){7}:)$"
+                     },
+                     "size": {
+                        "description": "Size of IPv6 Address Block",
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 1024
+                     },
+                     "ipv6_configuration": {
+                       "description": "IPv6 Configuration of Block",
+                       "type": "object",
+                       "properties": {
+                          "gateway": {
+                             "description": "IPv6 Default Gateway of Block",
+                             "type": "string",
+                             "pattern": "^$|^(([0-9A-Fa-f]{1,4}:([0-9A-Fa-f]{1,4}:([0-9A-Fa-f]{1,4}:([0-9A-Fa-f]{1,4}:([0-9A-Fa-f]{1,4}:[0-9A-Fa-f]{0,4}|:[0-9A-Fa-f]{1,4})?|(:[0-9A-Fa-f]{1,4}){0,2})|(:[0-9A-Fa-f]{1,4}){0,3})|(:[0-9A-Fa-f]{1,4}){0,4})|:(:[0-9A-Fa-f]{1,4}){0,5})((:[0-9A-Fa-f]{1,4}){2}|:(25[0-5]|(2[0-4]|1[0-9]|[1-9])?[0-9])(\\.(25[0-5]|(2[0-4]|1[0-9]|[1-9])?[0-9])){3})|(([0-9A-Fa-f]{1,4}:){1,6}|:):[0-9A-Fa-f]{0,4}|([0-9A-Fa-f]{1,4}:){7}:)$"
+                          },
+                          "prefix": {
+                             "description": "IPv6 Prefix of Block",
+                             "type": "integer",
+                             "minimum": 1,
+                             "maximum": 128
+                          },
+                          "primary_dns": {
+                             "description": "Primary DNS IPv6 Address of Block",
+                             "type": "string",
+                             "pattern": "^$|^(([0-9A-Fa-f]{1,4}:([0-9A-Fa-f]{1,4}:([0-9A-Fa-f]{1,4}:([0-9A-Fa-f]{1,4}:([0-9A-Fa-f]{1,4}:[0-9A-Fa-f]{0,4}|:[0-9A-Fa-f]{1,4})?|(:[0-9A-Fa-f]{1,4}){0,2})|(:[0-9A-Fa-f]{1,4}){0,3})|(:[0-9A-Fa-f]{1,4}){0,4})|:(:[0-9A-Fa-f]{1,4}){0,5})((:[0-9A-Fa-f]{1,4}){2}|:(25[0-5]|(2[0-4]|1[0-9]|[1-9])?[0-9])(\\.(25[0-5]|(2[0-4]|1[0-9]|[1-9])?[0-9])){3})|(([0-9A-Fa-f]{1,4}:){1,6}|:):[0-9A-Fa-f]{0,4}|([0-9A-Fa-f]{1,4}:){7}:)$"
+                          },
+                          "secondary_dns": {
+                             "description": "Secondary DNS IPv6 Address of Block",
+                             "type": "string",
+                             "pattern": "^$|^(([0-9A-Fa-f]{1,4}:([0-9A-Fa-f]{1,4}:([0-9A-Fa-f]{1,4}:([0-9A-Fa-f]{1,4}:([0-9A-Fa-f]{1,4}:[0-9A-Fa-f]{0,4}|:[0-9A-Fa-f]{1,4})?|(:[0-9A-Fa-f]{1,4}){0,2})|(:[0-9A-Fa-f]{1,4}){0,3})|(:[0-9A-Fa-f]{1,4}){0,4})|:(:[0-9A-Fa-f]{1,4}){0,5})((:[0-9A-Fa-f]{1,4}){2}|:(25[0-5]|(2[0-4]|1[0-9]|[1-9])?[0-9])(\\.(25[0-5]|(2[0-4]|1[0-9]|[1-9])?[0-9])){3})|(([0-9A-Fa-f]{1,4}:){1,6}|:):[0-9A-Fa-f]{0,4}|([0-9A-Fa-f]{1,4}:){7}:)$"
+                          }
+                       },
+                       "additionalProperties": false,
+                       "required": [
+                          "prefix",
+                          "gateway"
+                       ]
+                    }
+                  },
+                  "additionalProperties": false,
+                  "required": [
+                     "from",
+                     "size"
+                  ]
+               }
+            ]
+         },
+         "minItems": 1
       },
       "ipv6_configuration": {
          "description": "IP Pool IPv6 Configuration",
@@ -111,104 +332,6 @@
             "prefix",
             "gateway"
          ]
-      },
-      "ipv4_blocks": {
-         "description": "Blocks of IPv4 Addresses in IP Pool",
-         "type": "array",
-         "items": {
-            "type": "object",
-            "oneOf": [
-               {
-                  "properties": {
-                     "from": {
-                        "description": "First IPv4 Address of Block",
-                        "type": "string",
-                        "pattern": "^$|^([1-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\\.([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\\.([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\\.([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])$"
-                     },
-                     "to": {
-                        "description": "Last IPv4 Address of Block",
-                        "type": "string",
-                        "pattern": "^$|^([1-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\\.([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\\.([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\\.([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])$"
-                     }
-                  },
-                  "additionalProperties": false,
-                  "required": [
-                     "from",
-                     "to"
-                  ]
-               },
-               {
-                  "properties": {
-                     "from": {
-                        "description": "First IPv4 Address of Block",
-                        "type": "string",
-                        "pattern": "^$|^([1-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\\.([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\\.([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\\.([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])$"
-                     },
-                     "size": {
-                        "description": "Size of IPv4 Address Block",
-                        "type": "integer",
-                        "minimum": 1,
-                        "maximum": 1024
-                     }
-                  },
-                  "additionalProperties": false,
-                  "required": [
-                     "from",
-                     "size"
-                  ]
-               }
-            ]
-         },
-         "minItems": 1
-      },
-      "ipv6_blocks": {
-         "description": "Blocks of IPv6 Addresses in IP Pool",
-         "type": "array",
-         "items": {
-            "type": "object",
-            "oneOf": [
-               {
-                  "properties": {
-                     "from": {
-                        "description": "First IPv6 Address of Block",
-                        "type": "string",
-                        "pattern": "^$|^(([0-9A-Fa-f]{1,4}:([0-9A-Fa-f]{1,4}:([0-9A-Fa-f]{1,4}:([0-9A-Fa-f]{1,4}:([0-9A-Fa-f]{1,4}:[0-9A-Fa-f]{0,4}|:[0-9A-Fa-f]{1,4})?|(:[0-9A-Fa-f]{1,4}){0,2})|(:[0-9A-Fa-f]{1,4}){0,3})|(:[0-9A-Fa-f]{1,4}){0,4})|:(:[0-9A-Fa-f]{1,4}){0,5})((:[0-9A-Fa-f]{1,4}){2}|:(25[0-5]|(2[0-4]|1[0-9]|[1-9])?[0-9])(\\.(25[0-5]|(2[0-4]|1[0-9]|[1-9])?[0-9])){3})|(([0-9A-Fa-f]{1,4}:){1,6}|:):[0-9A-Fa-f]{0,4}|([0-9A-Fa-f]{1,4}:){7}:)$"
-                     },
-                     "to": {
-                        "description": "Last IPv6 Address of Block",
-                        "type": "string",
-                        "pattern": "^$|^(([0-9A-Fa-f]{1,4}:([0-9A-Fa-f]{1,4}:([0-9A-Fa-f]{1,4}:([0-9A-Fa-f]{1,4}:([0-9A-Fa-f]{1,4}:[0-9A-Fa-f]{0,4}|:[0-9A-Fa-f]{1,4})?|(:[0-9A-Fa-f]{1,4}){0,2})|(:[0-9A-Fa-f]{1,4}){0,3})|(:[0-9A-Fa-f]{1,4}){0,4})|:(:[0-9A-Fa-f]{1,4}){0,5})((:[0-9A-Fa-f]{1,4}){2}|:(25[0-5]|(2[0-4]|1[0-9]|[1-9])?[0-9])(\\.(25[0-5]|(2[0-4]|1[0-9]|[1-9])?[0-9])){3})|(([0-9A-Fa-f]{1,4}:){1,6}|:):[0-9A-Fa-f]{0,4}|([0-9A-Fa-f]{1,4}:){7}:)$"
-                     }
-                  },
-                  "additionalProperties": false,
-                  "required": [
-                     "from",
-                     "to"
-                  ]
-               },
-               {
-                  "properties": {
-                     "from": {
-                        "description": "First IPv6 Address of Block",
-                        "type": "string",
-                        "pattern": "^$|^(([0-9A-Fa-f]{1,4}:([0-9A-Fa-f]{1,4}:([0-9A-Fa-f]{1,4}:([0-9A-Fa-f]{1,4}:([0-9A-Fa-f]{1,4}:[0-9A-Fa-f]{0,4}|:[0-9A-Fa-f]{1,4})?|(:[0-9A-Fa-f]{1,4}){0,2})|(:[0-9A-Fa-f]{1,4}){0,3})|(:[0-9A-Fa-f]{1,4}){0,4})|:(:[0-9A-Fa-f]{1,4}){0,5})((:[0-9A-Fa-f]{1,4}){2}|:(25[0-5]|(2[0-4]|1[0-9]|[1-9])?[0-9])(\\.(25[0-5]|(2[0-4]|1[0-9]|[1-9])?[0-9])){3})|(([0-9A-Fa-f]{1,4}:){1,6}|:):[0-9A-Fa-f]{0,4}|([0-9A-Fa-f]{1,4}:){7}:)$"
-                     },
-                     "size": {
-                        "description": "Size of IPv6 Address Block",
-                        "type": "integer",
-                        "minimum": 1,
-                        "maximum": 1024
-                     }
-                  },
-                  "additionalProperties": false,
-                  "required": [
-                     "from",
-                     "size"
-                  ]
-               }
-            ]
-         },
-         "minItems": 1
       },
       "reservations": {
          "description": "Blocks of IPv4 Addresses in IP Pool",

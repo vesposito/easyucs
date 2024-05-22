@@ -29,7 +29,7 @@ Minimum versions of UCS devices :
 * UCS Manager: ***3.2(1d)*** or above
 * UCS IMC: ***3.0(1c)*** or above
 * UCS Central: ***2.0(1a)*** or above
-* Intersight SaaS ***(no prerequisite)*** & Appliance: ***1.0.9-655*** or above
+* Intersight SaaS ***(no prerequisite)*** & Appliance: ***1.0.9-675*** or above
 
 This tool requires ***Python 3.8+*** to work. *Python 2.x* is not supported.
 
@@ -151,6 +151,16 @@ python easyucs_api.py
 
 
 ## Versioning
+
+### 0.9.8.9
+
+* Add support for subnet-level configuration for IP Pools in Intersight config
+* Add support for User Labels on Chassis & Domain Profiles in Intersight config
+* Add support for Physical NIC mode in Adapter Config Policy in Intersight config
+* Add support for Hybrid Slots configuration in Storage Policy in Intersight config
+* Add support for FlexMMC in Boot Policy in Intersight config
+* Bump up minimum Intersight Appliance required version to 1.0.9-675
+* Miscellaneous bug fixes and improvements
 
 ### 0.9.8.8
 
@@ -325,6 +335,8 @@ Initial release
 * **Tony Frank** - *PDF reporting*
 * **Prabhu Ganesh** - *Various enhancements*
 * **Rushab Mohanlal Jain** - *Various enhancements*
+* **Abhinav Sinha** - *Various enhancements*
+* **Jayasree Vulavala** - *Various enhancements*
 
 ## License
 

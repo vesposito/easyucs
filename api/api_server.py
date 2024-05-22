@@ -102,13 +102,13 @@ def timeout_wrapper(action_func):
                 easyucs.logger(level="debug",
                                message="Waiting up to " + str(time_left) + " seconds for the " + str(action_type) +
                                        " " + str(object_type) + " operation on thread '" +
-                                       str(action_thread.getName()) + "' to finish...")
+                                       str(action_thread.name) + "' to finish...")
             time.sleep(1)
             i += 1
 
         if thread_cancelled:
             easyucs.logger(level="debug",
-                           message="Received signal to cancel the task. Killing thread " + str(action_thread.getName())
+                           message="Received signal to cancel the task. Killing thread " + str(action_thread.name)
                                    + "...")
             terminate_thread(action_thread)
 
@@ -117,7 +117,7 @@ def timeout_wrapper(action_func):
 
         elif action_thread.is_alive():
             easyucs.logger(level="debug",
-                           message="Timeout exceeded. Killing thread " + str(action_thread.getName()) + "...")
+                           message="Timeout exceeded. Killing thread " + str(action_thread.name) + "...")
             terminate_thread(action_thread)
 
             # We stop the task
@@ -154,6 +154,7 @@ def fetch_config_inventory(device=None, force=False):
     """
     Performs config and inventory fetch sequentially
     :param device: The device for which the fetch is to be performed
+    :param force: Force the config & inventory fetch to continue even if facing errors
     :return: True if both config and inventory are fetched successfully else False
     """
     if device is None:
@@ -386,8 +387,9 @@ def perform_action(device=None, action_type="", object_type="", task_uuid=None, 
         easyucs.logger(level="error", message="No device provided")
         sys.exit()
 
-    if action_type not in ["add_device", "claim_to_intersight", "clear_config", "clear_intersight_claim_status", "clear_sel_logs",
-                           "fetch", "generate", "push", "regenerate_certificate", "reset", "test_connection"]:
+    if action_type not in ["add_device", "claim_to_intersight", "clear_config", "clear_intersight_claim_status",
+                           "clear_sel_logs", "fetch", "generate", "push", "regenerate_certificate", "reset",
+                           "test_connection"]:
         easyucs.logger(level="error", message="Invalid action type provided")
         sys.exit()
 
@@ -412,7 +414,7 @@ def perform_action(device=None, action_type="", object_type="", task_uuid=None, 
             status_message = easyucs.api_error_message
             if not status_message:
                 status_message = "Failed to connect to " + device.metadata.device_type_long + " device"
-            easyucs.task_manager.stop_task(uuid=task_uuid, status="failed", status_message=status_message)
+            easyucs.task_manager.stop_task(uuid=task_uuid, status="failed", status_message=status_message[:255])
             if action_type == "add_device":
                 easyucs.device_manager.remove_device(uuid=str(device.metadata.device_uuid))
 
@@ -469,7 +471,7 @@ def perform_action(device=None, action_type="", object_type="", task_uuid=None, 
             status_message = easyucs.api_error_message
             if not status_message:
                 status_message = "Failed to connect to " + device.metadata.device_type_long + " device"
-            easyucs.task_manager.stop_task(uuid=task_uuid, status="failed", status_message=status_message)
+            easyucs.task_manager.stop_task(uuid=task_uuid, status="failed", status_message=status_message[:255])
             sys.exit()
 
         # Since we were able to connect, we save the device metadata in case they have changed (version & name)
@@ -489,7 +491,7 @@ def perform_action(device=None, action_type="", object_type="", task_uuid=None, 
             if not status_message:
                 status_message = "Failed to connect to " + intersight_device.metadata.device_type_long + " device"
             device.task.taskstep_manager.stop_taskstep(name="ConnectIntersightDevice", status="failed",
-                                                       status_message=status_message)
+                                                       status_message=status_message[:255])
             easyucs.task_manager.stop_task(uuid=task_uuid, status="failed", status_message=status_message)
             sys.exit()
 
@@ -628,7 +630,7 @@ def response_handle(response=None, code=400, mimetype="application/json"):
 
 def terminate_task_scheduler(sig, frame):
     easyucs.logger(level="error", message="Received interrupt signal - Stopping task scheduler thread '" +
-                                          str(easyucs.task_manager.scheduler_thread.getName()) + "'")
+                                          str(easyucs.task_manager.scheduler_thread.name) + "'")
     terminate_thread(easyucs.task_manager.scheduler_thread)
     sys.exit()
 
@@ -649,14 +651,14 @@ def terminate_thread(thread):
     exc = ctypes.py_object(SystemExit)
     res = ctypes.pythonapi.PyThreadState_SetAsyncExc(ctypes.c_long(thread.ident), exc)
     if res == 0:
-        easyucs.logger(level="error", message=f"Unable to terminate the thread {thread.getName()}. " +
+        easyucs.logger(level="error", message=f"Unable to terminate the thread {thread.name}. " +
                                               f"Non existent thread id")
         return False
     elif res > 1:
         # """if it returns a number greater than one, you're in trouble,
         # and you should call it again with exc=NULL to revert the effect"""
         ctypes.pythonapi.PyThreadState_SetAsyncExc(thread.ident, None)
-        easyucs.logger(level="error", message=f"Unable to terminate the thread {thread.getName()}. " +
+        easyucs.logger(level="error", message=f"Unable to terminate the thread {thread.name}. " +
                                               f"PyThreadState_SetAsyncExc failed")
         return False
     return True
@@ -2177,6 +2179,11 @@ def device_uuid_configs(device_uuid):
 
             device = load_object(object_type="device", object_uuid=device_uuid)
             if device:
+                if device.task is not None:
+                    response = response_handle(response="Device already has a task running: " + str(device.task.uuid),
+                                               code=400)
+                    return response
+
                 try:
                     file = request.files['config_file']
                     json_file = file.read().decode("utf-8")
@@ -2621,6 +2628,11 @@ def device_uuid_inventories(device_uuid):
 
             device = load_object(object_type="device", object_uuid=device_uuid)
             if device:
+                if device.task is not None:
+                    response = response_handle(response="Device already has a task running: " + str(device.task.uuid),
+                                               code=400)
+                    return response
+                
                 try:
                     file = request.files['inventory_file']
                     json_file = file.read().decode("utf-8")

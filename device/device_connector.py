@@ -168,30 +168,52 @@ class DeviceConnector:
         if not self.is_connected():
             return False
 
-        if self.metadata.device_connector_claim_status != "claimed":
-
-            # Setting the device connector access mode (only for CIMC and UCSM devices)
-            if self.metadata.device_type in ["cimc", "ucsm"] and access_mode:
-                self.set_device_connector_access_mode(access_mode=access_mode)
-            elif self.task is not None:
+        if self.metadata.device_connector_claim_status == "claimed":
+            self.logger(level="info",
+                        message=f"{self.metadata.device_type_long} device {self.name}" +
+                                f" is already claimed to account {self.metadata.device_connector_ownership_name}.")
+            
+            if self.task is not None:
+                # If the device is already claimed then we skip the task steps SetDeviceConnectorAccessMode and
+                # ConfigureDeviceConnectorProxy, and fail the task step ClaimDeviceToIntersight.
                 self.task.taskstep_manager.skip_taskstep(
                     name="SetDeviceConnectorAccessMode",
                     status_message=f"Skipping setting device connector access mode of "
                                    f"{self.metadata.device_type_long} device {self.name}"
                 )
-
-            # Setting the device connector proxy settings
-            if proxy_details:
-                self.set_device_connector_proxy(**proxy_details)
-            elif self.task is not None:
                 self.task.taskstep_manager.skip_taskstep(
                     name="ConfigureDeviceConnectorProxy",
                     status_message=f"Skipped configuring device connector proxy of "
                                    f"{self.metadata.device_type_long} device {self.name}"
                 )
+                self.task.taskstep_manager.stop_taskstep(
+                    name="ClaimDeviceToIntersight", status="failed",
+                    status_message=f"{self.metadata.device_type_long} device {self.name}" +
+                                   f" is already claimed to account {self.metadata.device_connector_ownership_name}.")
+            return False
 
-            # Waiting until connection is established or failed
-            self._set_device_connector_info(wait_for_connection_status=True)
+        # Setting the device connector access mode (only for CIMC and UCSM devices)
+        if self.metadata.device_type in ["cimc", "ucsm"] and access_mode:
+            self.set_device_connector_access_mode(access_mode=access_mode)
+        elif self.task is not None:
+            self.task.taskstep_manager.skip_taskstep(
+                name="SetDeviceConnectorAccessMode",
+                status_message=f"Skipping setting device connector access mode of {self.metadata.device_type_long} "
+                               f"device {self.name}"
+            )
+
+        # Setting the device connector proxy settings
+        if proxy_details:
+            self.set_device_connector_proxy(**proxy_details)
+        elif self.task is not None:
+            self.task.taskstep_manager.skip_taskstep(
+                name="ConfigureDeviceConnectorProxy",
+                status_message=f"Skipped configuring device connector proxy of {self.metadata.device_type_long} "
+                               f"device {self.name}"
+            )
+
+        # Waiting until connection is established or failed
+        self._set_device_connector_info(wait_for_connection_status=True)
 
         if self.task is not None:
             self.task.taskstep_manager.start_taskstep(name="ClaimDeviceToIntersight",
@@ -208,117 +230,104 @@ class DeviceConnector:
                                                          status_message=err_message)
             return False
 
-        if self.metadata.device_connector_claim_status != "claimed":
+        if intersight_device.is_appliance:
+            platform_type = ""
+            if self.metadata.device_type == "cimc":
+                platform_type = "IMC"
+            elif self.metadata.device_type == "ucsm":
+                platform_type = "UCSFI"
+            elif self.metadata.device_type == "imm":
+                platform_type = "UCSFIISM"
 
-            if intersight_device.is_appliance:
-                platform_type = ""
-                if self.metadata.device_type == "cimc":
-                    platform_type = "IMC"
-                elif self.metadata.device_type == "ucsm":
-                    platform_type = "UCSFI"
-                elif self.metadata.device_type == "imm":
-                    platform_type = "UCSFIISM"
-
-                try:
-                    appliance_api = ApplianceApi(api_client=intersight_device.handle)
-                    kwargs = {
-                        "Hostname": self.target,
-                        "Username": self.username,
-                        "Password": self.password,
-                        "PlatformType": platform_type
-                    }
-                    appliance_api.create_appliance_device_claim(ApplianceDeviceClaim(**kwargs))
-                    self.logger(level="info",
-                                message=f"Claiming of {self.metadata.device_type_long} {self.name}" +
-                                        f" started on {intersight_device.metadata.device_type_long}" +
-                                        f" {intersight_device.target}")
-                    if self.task is not None:
-                        self.task.taskstep_manager.stop_taskstep(
-                            name="ClaimDeviceToIntersight", status="successful",
-                            status_message=f"Claiming of {self.metadata.device_type_long} {self.name}" +
-                                           f" started on {intersight_device.metadata.device_type_long}" +
-                                           f" {intersight_device.target}")
-                except (ApiValueError, ApiTypeError, ApiException) as err:
-                    self.logger(level="error",
-                                message=f"Error while claiming {self.metadata.device_type_long} {self.name}" +
-                                        f" to {intersight_device.metadata.device_type_long}" +
-                                        f" {intersight_device.target}: {str(err)}")
-                    if self.task is not None:
-                        self.task.taskstep_manager.stop_taskstep(
-                            name="ClaimDeviceToIntersight", status="failed",
-                            status_message=f"Error while claiming {self.metadata.device_type_long} {self.name}" +
-                                           f" to {intersight_device.metadata.device_type_long}" +
-                                           f" {intersight_device.target}")
-                    return False
-            else:
-                # We are in SaaS condition
-                if "Claim Code" not in self._device_connector_info:
-                    self.logger(level="error",
-                                message=f"Error while claiming {self.metadata.device_type_long} {self.name}" +
-                                        f" to {intersight_device.metadata.device_type_long} {intersight_device.name}:" +
-                                        f" 'Claim Code' not found, please check proxy settings or try"
-                                        f" again after some time")
-                    if self.task is not None:
-                        self.task.taskstep_manager.stop_taskstep(
-                            name="ClaimDeviceToIntersight", status="failed",
-                            status_message=f"Error while claiming {self.metadata.device_type_long} {self.name}" +
-                                           f" to {intersight_device.metadata.device_type_long}" +
-                                           f" {intersight_device.target}: 'Claim Code' not found, please check proxy "
-                                           f"settings or try again after some time")
-                    return False
-
-                try:
-                    kwargs = {
-                        "SecurityToken": self._device_connector_info["Claim Code"],
-                        "SerialNumber": self._device_connector_info["Device ID"]
-                    }
-
-                    asset_api = AssetApi(api_client=intersight_device.handle)
-                    asset_api.create_asset_device_claim(AssetDeviceClaim(**kwargs))
-                    self.logger(level="info",
-                                message=f"{self.metadata.device_type_long} device {self.name} claimed to " +
-                                        f"{intersight_device.metadata.device_type_long} {intersight_device.name}")
-                    if self.task is not None:
-                        self.task.taskstep_manager.stop_taskstep(
-                            name="ClaimDeviceToIntersight", status="successful",
-                            status_message=f"Successfully claimed {self.metadata.device_type_long} device " +
-                                           f"{self.name} to {intersight_device.metadata.device_type_long} " +
-                                           f"{intersight_device.name}")
-                except (ApiValueError, ApiTypeError, ApiException) as err:
-                    self.logger(level="error",
-                                message=f"Error while claiming {self.metadata.device_type_long} {self.name}" +
-                                        f" to {intersight_device.metadata.device_type_long} {intersight_device.name}:" +
-                                        f" {str(err)}")
-                    if self.task is not None:
-                        self.task.taskstep_manager.stop_taskstep(
-                            name="ClaimDeviceToIntersight", status="failed",
-                            status_message=f"Error while claiming {self.metadata.device_type_long} {self.name}" +
-                                           f" to {intersight_device.metadata.device_type_long}" +
-                                           f" {intersight_device.name}")
-                    return False
-                except Exception as err:
-                    self.logger(level="error",
-                                message=f"Error while claiming {self.metadata.device_type_long} {self.name}" +
-                                        f" to {intersight_device.metadata.device_type_long} {intersight_device.name}:" +
-                                        f" {str(err)}")
-                    if self.task is not None:
-                        self.task.taskstep_manager.stop_taskstep(
-                            name="ClaimDeviceToIntersight", status="failed",
-                            status_message=f"Error while claiming {self.metadata.device_type_long} {self.name}" +
-                                           f" to {intersight_device.metadata.device_type_long}" +
-                                           f" {intersight_device.name}")
-                    return False
+            try:
+                appliance_api = ApplianceApi(api_client=intersight_device.handle)
+                kwargs = {
+                    "Hostname": self.target,
+                    "Username": self.username,
+                    "Password": self.password,
+                    "PlatformType": platform_type
+                }
+                appliance_api.create_appliance_device_claim(ApplianceDeviceClaim(**kwargs))
+                self.logger(level="info",
+                            message=f"Claiming of {self.metadata.device_type_long} {self.name}" +
+                                    f" started on {intersight_device.metadata.device_type_long}" +
+                                    f" {intersight_device.target}")
+                if self.task is not None:
+                    self.task.taskstep_manager.stop_taskstep(
+                        name="ClaimDeviceToIntersight", status="successful",
+                        status_message=f"Claiming of {self.metadata.device_type_long} {self.name}" +
+                                       f" started on {intersight_device.metadata.device_type_long}" +
+                                       f" {intersight_device.target}")
+            except (ApiValueError, ApiTypeError, ApiException) as err:
+                self.logger(level="error",
+                            message=f"Error while claiming {self.metadata.device_type_long} {self.name}" +
+                                    f" to {intersight_device.metadata.device_type_long}" +
+                                    f" {intersight_device.target}: {str(err)}")
+                if self.task is not None:
+                    self.task.taskstep_manager.stop_taskstep(
+                        name="ClaimDeviceToIntersight", status="failed",
+                        status_message=f"Error while claiming {self.metadata.device_type_long} {self.name}" +
+                                       f" to {intersight_device.metadata.device_type_long}" +
+                                       f" {intersight_device.target}")
+                return False
         else:
-            self.logger(level="info",
-                        message=f"{self.metadata.device_type_long} device {self.name}" +
-                                f" is already claimed to account {self.metadata.device_connector_ownership_name}.")
-            if self.task is not None:
-                self.task.taskstep_manager.stop_taskstep(
-                    name="ClaimDeviceToIntersight", status="failed",
-                    status_message=f"{self.metadata.device_type_long} device {self.name}" +
-                                   f" is already claimed to account {self.metadata.device_connector_ownership_name}.")
+            # We are in SaaS condition
+            if "Claim Code" not in self._device_connector_info:
+                self.logger(level="error",
+                            message=f"Error while claiming {self.metadata.device_type_long} {self.name}" +
+                                    f" to {intersight_device.metadata.device_type_long} {intersight_device.name}:" +
+                                    f" 'Claim Code' not found, please check proxy settings or try"
+                                    f" again after some time")
+                if self.task is not None:
+                    self.task.taskstep_manager.stop_taskstep(
+                        name="ClaimDeviceToIntersight", status="failed",
+                        status_message=f"Error while claiming {self.metadata.device_type_long} {self.name}" +
+                                       f" to {intersight_device.metadata.device_type_long}" +
+                                       f" {intersight_device.target}: 'Claim Code' not found, please check proxy "
+                                       f"settings or try again after some time")
+                return False
 
-            return False
+            try:
+                kwargs = {
+                    "SecurityToken": self._device_connector_info["Claim Code"],
+                    "SerialNumber": self._device_connector_info["Device ID"]
+                }
+
+                asset_api = AssetApi(api_client=intersight_device.handle)
+                asset_api.create_asset_device_claim(AssetDeviceClaim(**kwargs))
+                self.logger(level="info",
+                            message=f"{self.metadata.device_type_long} device {self.name} claimed to " +
+                                    f"{intersight_device.metadata.device_type_long} {intersight_device.name}")
+                if self.task is not None:
+                    self.task.taskstep_manager.stop_taskstep(
+                        name="ClaimDeviceToIntersight", status="successful",
+                        status_message=f"Successfully claimed {self.metadata.device_type_long} device " +
+                                       f"{self.name} to {intersight_device.metadata.device_type_long} " +
+                                       f"{intersight_device.name}")
+            except (ApiValueError, ApiTypeError, ApiException) as err:
+                self.logger(level="error",
+                            message=f"Error while claiming {self.metadata.device_type_long} {self.name}" +
+                                    f" to {intersight_device.metadata.device_type_long} {intersight_device.name}:" +
+                                    f" {str(err)}")
+                if self.task is not None:
+                    self.task.taskstep_manager.stop_taskstep(
+                        name="ClaimDeviceToIntersight", status="failed",
+                        status_message=f"Error while claiming {self.metadata.device_type_long} {self.name}" +
+                                       f" to {intersight_device.metadata.device_type_long}" +
+                                       f" {intersight_device.name}")
+                return False
+            except Exception as err:
+                self.logger(level="error",
+                            message=f"Error while claiming {self.metadata.device_type_long} {self.name}" +
+                                    f" to {intersight_device.metadata.device_type_long} {intersight_device.name}:" +
+                                    f" {str(err)}")
+                if self.task is not None:
+                    self.task.taskstep_manager.stop_taskstep(
+                        name="ClaimDeviceToIntersight", status="failed",
+                        status_message=f"Error while claiming {self.metadata.device_type_long} {self.name}" +
+                                       f" to {intersight_device.metadata.device_type_long}" +
+                                       f" {intersight_device.name}")
+                return False
 
         if self.task is not None:
             self.logger(message="Refreshing Intersight Device Connector info")

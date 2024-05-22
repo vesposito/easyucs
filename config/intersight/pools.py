@@ -64,7 +64,9 @@ class IntersightIpPool(IntersightConfigObject):
         self.ipv6_configuration = None
         self.name = self.get_attribute(attribute_name="name")
         self.reservations = []
-
+        self.configure_subnet_at_block_level = self.get_attribute(attribute_name="enable_block_level_subnet_config",
+                                                                  attribute_secondary_name="configure_subnet_at_block_"
+                                                                                           "level")
         if self._config.load_from == "live":
             # Fetches the common IPv4 configuration parameters of the IP Pool (netmask, gateway and DNS servers)
             if hasattr(self._object, "ip_v4_config"):
@@ -105,12 +107,37 @@ class IntersightIpPool(IntersightConfigObject):
             # Fetches the IPv4 Blocks configurations
             if hasattr(self._object, "ip_v4_blocks"):
                 for ipv4_block in self._object.ip_v4_blocks:
-                    self.ipv4_blocks.append({"from": ipv4_block._from, "to": ipv4_block.to})
+                    if self.configure_subnet_at_block_level:
+                        # Add ipv4_configuration to ipv4_block if block level subnet configuration is enabled
+                        if ipv4_block.ip_v4_config:
+                            ipv4_configuration = {
+                                "gateway": ipv4_block.ip_v4_config.gateway,
+                                "netmask": ipv4_block.ip_v4_config.netmask,
+                                "primary_dns": ipv4_block.ip_v4_config.primary_dns,
+                                "secondary_dns": ipv4_block.ip_v4_config.secondary_dns
+                            }
+                            self.ipv4_blocks.append({"from": ipv4_block._from, "ipv4_configuration": ipv4_configuration,
+                                                     "to": ipv4_block.to})
+
+                    else:
+                        self.ipv4_blocks.append({"from": ipv4_block._from, "to": ipv4_block.to})
 
             # Fetches the IPv6 Blocks configurations
             if hasattr(self._object, "ip_v6_blocks"):
                 for ipv6_block in self._object.ip_v6_blocks:
-                    self.ipv6_blocks.append({"from": ipv6_block._from, "to": ipv6_block.to})
+                    if self.configure_subnet_at_block_level:
+                        # Add ipv6_configuration to ipv6_block if block level subnet configuration is enabled
+                        if ipv6_block.ip_v6_config:
+                            ipv6_configuration = {
+                                "gateway": ipv6_block.ip_v6_config.gateway,
+                                "prefix": ipv6_block.ip_v6_config.prefix,
+                                "primary_dns": ipv6_block.ip_v6_config.primary_dns,
+                                "secondary_dns": ipv6_block.ip_v6_config.secondary_dns
+                            }
+                            self.ipv6_blocks.append({"from": ipv6_block._from, "ipv6_configuration": ipv6_configuration,
+                                                     "to": ipv6_block.to})
+                    else:
+                        self.ipv6_blocks.append({"from": ipv6_block._from, "to": ipv6_block.to})
 
             # Fetches the IP reservations
             self.reservations = self._get_reservations()
@@ -177,6 +204,7 @@ class IntersightIpPool(IntersightConfigObject):
         self.logger(message=f"Pushing {self._CONFIG_NAME} configuration: {self.name}")
 
         ipv4_config = None
+        # get pool-level ipv4_configuration
         if self.ipv4_configuration:
             from intersight.model.ippool_ip_v4_config import IppoolIpV4Config
             kwargs = {
@@ -194,6 +222,7 @@ class IntersightIpPool(IntersightConfigObject):
             ipv4_config = IppoolIpV4Config(**kwargs)
 
         ipv6_config = None
+        # get pool-level ipv6_configuration
         if self.ipv6_configuration:
             from intersight.model.ippool_ip_v6_config import IppoolIpV6Config
             kwargs = {
@@ -223,6 +252,10 @@ class IntersightIpPool(IntersightConfigObject):
                     kwargs["to"] = ipv4_block["to"]
                 elif ipv4_block.get("size"):
                     kwargs["size"] = ipv4_block["size"]
+                # Add ipv4_configuration to ipv4_block if block level subnet is defined
+                if self.configure_subnet_at_block_level:
+                    kwargs["ip_v4_config"] = ipv4_block["ipv4_configuration"]
+
                 ipv4_blocks.append(IppoolIpV4Block(**kwargs))
 
         ipv6_blocks = []
@@ -241,6 +274,9 @@ class IntersightIpPool(IntersightConfigObject):
                         ipaddress.IPv6Address(kwargs["_from"])) + 1
                 elif ipv6_block.get("size"):
                     kwargs["size"] = ipv6_block["size"]
+                # Add ipv6_configuration to ipv6_block if block level subnet is defined
+                if self.configure_subnet_at_block_level:
+                    kwargs["ip_v6_config"] = ipv6_block["ipv6_configuration"]
 
                 ipv6_blocks.append(IppoolIpV6Block(**kwargs))
 
@@ -264,6 +300,7 @@ class IntersightIpPool(IntersightConfigObject):
             kwargs["ip_v4_config"] = ipv4_config
         if ipv6_config is not None:
             kwargs["ip_v6_config"] = ipv6_config
+        kwargs["enable_block_level_subnet_config"] = self.configure_subnet_at_block_level
 
         ippool_pool = IppoolPool(**kwargs)
 

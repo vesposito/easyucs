@@ -86,6 +86,12 @@
                   "MSTOR-RAID-2",
                   "MSTOR-RAID-1,MSTOR-RAID-2"
                ]
+            },
+            "name": {
+               "description": "Name of the M.2 virtual drive.",
+               "type": "string",
+               "pattern": "^[A-Za-z0-9_:.-]{1,15}$",
+               "default": ""
             }
          },
          "additionalProperties": false
@@ -94,6 +100,22 @@
          "description": "A collection of disks that is to be used as hot spares, globally, for all the RAID groups. Allowed value is a number range separated by a comma or a hyphen.",
          "type": "string",
          "default": ""
+      },
+      "hybrid_slot_configuration": {
+         "description": "Hybrid Slot Configuration",
+         "type": "object",
+         "properties": {
+            "direct_attached_nvme_slots_config": {
+               "description": "Only U.3 NVMe drives has to be specified, entered slots will be moved to Direct attached mode. Allowed slots are 1-4, 101-104. Allowed value is a comma or hyphen separated number range.",
+               "type": "string",
+               "default": ""
+            },
+            "raid_attached_nvme_slots": {
+               "description": "Only U.3 NVMe drives has to be specified, entered slots will be moved to Direct attached mode. Allowed slots are 1-4, 101-104. Allowed value is a comma or hyphen separated number range..",
+               "type": "string",
+               "default": ""
+            }
+         }
       },
       "drive_group": {
          "description": "List of Drive Groups associated with Storage Policy",

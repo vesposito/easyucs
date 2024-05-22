@@ -1,6 +1,6 @@
 openapi: 3.0.3
 info:
-  version: '0.9.8.5'
+  version: '0.9.8.9'
   title: EasyUCS API
   description: Description of EasyUCS API
 servers:

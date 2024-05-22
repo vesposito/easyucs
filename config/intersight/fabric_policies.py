@@ -2682,6 +2682,7 @@ class IntersightUcsDomainProfile(IntersightConfigObject):
         self.switch_control_policy = None
         self.syslog_policy = None
         self.system_qos_policy = None
+        self.user_label = self.get_attribute(attribute_name="user_label")
         self.vlan_policies = None
         self.vsan_policies = None
         self.operational_state = {}
@@ -2809,6 +2810,8 @@ class IntersightUcsDomainProfile(IntersightConfigObject):
             kwargs["description"] = self.descr
         if self.tags is not None:
             kwargs["tags"] = self.create_tags()
+        if self.user_label is not None:
+            kwargs["user_label"] = self.user_label
 
         fabric_switch_cluster_profile = FabricSwitchClusterProfile(**kwargs)
 

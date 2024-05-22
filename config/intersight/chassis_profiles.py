@@ -24,6 +24,7 @@ class IntersightUcsChassisProfile(IntersightConfigObject):
 
         self.descr = self.get_attribute(attribute_name="description", attribute_secondary_name="descr")
         self.name = self.get_attribute(attribute_name="name")
+        self.user_label = self.get_attribute(attribute_name="user_label")
         # ToDo
         # self.assigned_chassis = None
         # self.associated_chassis = None
@@ -89,6 +90,8 @@ class IntersightUcsChassisProfile(IntersightConfigObject):
             kwargs["description"] = self.descr
         if self.tags is not None:
             kwargs["tags"] = self.create_tags()
+        if self.user_label is not None:
+            kwargs["user_label"] = self.user_label
 
         kwargs["policy_bucket"] = []
         if self.imc_access_policy is not None:

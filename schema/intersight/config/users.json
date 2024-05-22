@@ -35,8 +35,5 @@
          "minItems": 1
       }
    },
-   "additionalProperties": false,
-   "required": [
-      "email"
-   ]
+   "additionalProperties": false
 }
