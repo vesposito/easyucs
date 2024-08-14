@@ -100,6 +100,7 @@ class GenericDrawRackFront(GenericUcsDrawObject):
                 if disk.id in [str(i["id"]) for i in self.json_file["disks_slots"]]:
                     disk_list.append(UcsSystemDrawStorageLocalDisk(parent=disk, parent_draw=self))
                     self.disk_slots_used.append(int(disk.id))
+        # TODO: NVMe Disks need rework to prevent having to paste layer each time and integrate it into get_nvme_disks()
         return disk_list
 
 
@@ -122,6 +123,7 @@ class UcsSystemDrawRackFront(GenericDrawRackFront, GenericUcsDrawEquipment):
         self.nvme_disks = []
         if hasattr(self._parent, "nvme_drives") and "disks_slots" in self.json_file:
             self.nvme_disks = self.get_nvme_disks()
+            # TODO: NVME Disks need rework to prevent having to paste layer each time and integrate it into get_nvme_disks()
             for disk in self.nvme_disks:
                 self.paste_layer(disk.picture, disk.picture_offset)
 
@@ -226,12 +228,19 @@ class GenericDrawRackRear(GenericUcsDrawObject):
                                         {"id": "2", "sku": "UCSC-RIS2A-22XM7"},
                                         {"id": "3", "sku": "UCSC-RIS3A-22XM7"}]
 
-        elif self._parent.model in ["UCSC-C240-M7SX", "UCSC-C240-M7SN"]:
+        elif self._parent.model in ["UCSC-C240-M7SX", "UCSC-C240-M7SN", "UCSC-C245-M8SX"]:
             # Since we don't have any object that gives us which PCIe risers are available, we have to force a default
-            # We do this for C240 M7, since it is mandatory for the draw operation
+            # We do this for C240 M7/C245 M8, since it is mandatory for the draw operation
             self._parent_pcie_risers = [{"id": "1", "sku": "UCSC-RIS1A-240-D"},
                                         {"id": "2", "sku": "UCSC-RIS2A-240-D"},
                                         {"id": "3", "sku": "UCSC-RIS3A-240-D"}]
+
+        elif self._parent.model in ["UCSC-C225-M8S", "UCSC-C225-M8N"]:
+            # Since we don't have any object that gives us which PCIe risers are available, we have to force a default
+            # We do this for C225 M8, since it is mandatory for the draw operation
+            self._parent_pcie_risers = [{"id": "1", "sku": "UCSC-RIS1A-225M8"},
+                                        {"id": "2", "sku": "UCSC-RIS2A-225M8"},
+                                        {"id": "3", "sku": "UCSC-RIS3A-225M8"}]
 
         else:
             return pcie_riser_list
@@ -778,7 +787,7 @@ class UcsSystemDrawInfraRack(UcsSystemDrawInfraEquipment):
     def set_wire(self):
         # Handling wire from server to FI or FEX
         for adaptor in self.rack.adaptor_list:
-            for adapt_port in adaptor.ports:
+            for adapt_port in getattr(adaptor, "ports", []):
                 # Search for peer information
                 if hasattr(adapt_port, "peer"):
                     peer = adapt_port.peer

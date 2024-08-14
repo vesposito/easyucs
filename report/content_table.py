@@ -291,6 +291,10 @@ class GenericReportTable(GenericReportContent):
                 if self.cells_list[0][j] == "Description" and len(str(self.cells_list[i][j])) >= 156:
                     p = self.cells_list[i][j]
                     self.cells_list[i][j] = textwrap.shorten(p, width=10, placeholder='...')
+                elif len(str(self.cells_list[i][j])) >= 1000:
+                    # FIXME: This is a temporary fix, ideally if length of characters is too long in a cell, then
+                    #  split the cells into multiple cells.
+                    self.cells_list[i][j] = self.cells_list[i][j][:1000] + " ..."
                 column.append(str(self.cells_list[i][j]))
             table.append(column)
 

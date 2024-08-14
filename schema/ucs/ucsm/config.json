@@ -284,6 +284,17 @@
          },
          "minItems": 1
       },
+      "macsec": {
+         "description": "EasyUCS config/macsec section",
+         "type": "array",
+         "items": {
+            "description": "EasyUCS config/macsec element",
+            "type": "object",
+            "$ref": "config/macsec.json"
+         },
+         "minItems": 1,
+         "maxItems": 1
+      },
       "management_interfaces": {
          "description": "EasyUCS config/management_interfaces section",
          "type": "array",
@@ -326,6 +337,16 @@
          },
          "minItems": 1,
          "maxItems": 1
+      },
+      "power_groups": {
+         "description": "EasyUCS config/power_groups section",
+         "type": "array",
+         "items": {
+            "description": "EasyUCS config/power_groups element",
+            "type": "object",
+            "$ref": "config/power_groups.json"
+         },
+         "minItems": 1
       },
       "pre_login_banner": {
          "description": "EasyUCS pre_login_banner section",
@@ -519,6 +540,16 @@
          },
          "minItems": 1,
          "maxItems": 1
+      },
+      "traffic_monitoring_configuration": {
+         "description": "EasyUCS config/traffic_monitoring_configuration section",
+         "type": "array",
+         "items": {
+            "description": "EasyUCS config/traffic_monitoring_configuration element",
+            "type": "object",
+            "$ref": "config/traffic_monitoring_configuration.json"
+         },
+         "minItems": 1
       },
       "ucs_central": {
          "description": "EasyUCS config/ucs_central section",

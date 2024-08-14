@@ -1,0 +1,12 @@
+{
+   "model_short_name": "1A",
+   "rear_file_name": "UCSC-RIS1A_1B-225M8.png",
+   "rear_file_size": [455, 136],
+   "pcie_slots": [
+      {
+         "id": 1,
+         "width": "half",
+         "coord": [20, 22]
+      }
+   ]
+}

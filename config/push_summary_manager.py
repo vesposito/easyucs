@@ -3,6 +3,7 @@
 
 """ push_summary_manager.py: Easy UCS Deployment Tool """
 from config.object import GenericConfigObject
+from config.ucs.object import GenericUcsConfigObject
 
 
 class PushSummaryManager:
@@ -57,13 +58,21 @@ class PushSummaryManager:
         if not obj_detail:
             # TODO: Make sure that all `commit()` methods have a proper `detail` attribute. Especially for UCSM and
             #  UCSC devices
-            self.logger(level="error", message="Invalid Object detail")
-            return False
+            if not isinstance(obj, GenericUcsConfigObject):
+                self.logger(level="error", message="Invalid Object detail")
+                return False
+            else:
+                self.logger(level="debug", message="Invalid Object detail")
+                return False
         if not obj_type:
             # TODO: Handled the scenario for empty `obj_type`. This can happen for UCSC and UCSM when we are calling
             #  `commit()`, without calling any `add_mo()`.
-            self.logger(level="error", message="Invalid Object type")
-            return False
+            if not isinstance(obj, GenericUcsConfigObject):
+                self.logger(level="error", message="Invalid Object type")
+                return False
+            else:
+                self.logger(level="debug", message="Invalid Object type")
+                return False
         if status not in ["success", "skipped", "failed"]:
             self.logger(level="error", message="Invalid object push status")
             return False
@@ -171,7 +180,14 @@ class PushSummaryManager:
                         element_count = 0
                         for element in getattr(current_object, attribute):
                             if isinstance(element, GenericConfigObject):
-                                attribute_name = current_object._CONFIG_SECTION_ATTRIBUTES_MAP[attribute]
+                                attribute_name = ""
+                                if attribute in current_object._CONFIG_SECTION_ATTRIBUTES_MAP:
+                                    attribute_name = current_object._CONFIG_SECTION_ATTRIBUTES_MAP[attribute]
+                                else:
+                                    # This is not a good behavior, but we do this to avoid exceptions.
+                                    attribute_name = attribute
+                                    current_object.logger(level="error", message=f"'{attribute}' not found in "
+                                                                                 f"_CONFIG_SECTION_ATTRIBUTES_MAP")
                                 # Element of the list is an EasyUCS object
                                 if attribute_name not in push_summary_pointer:
                                     push_summary_pointer[attribute_name] = []

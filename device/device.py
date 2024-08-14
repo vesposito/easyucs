@@ -20,7 +20,7 @@ from repository.metadata import DeviceMetadata
 class GenericDevice:
     def __init__(self, parent=None, uuid=None, target="", user="", password="", is_hidden=False, is_system=False,
                  system_usage=None, logger_handle_log_level="info", log_file_path=None, bypass_connection_checks=False,
-                 bypass_version_checks=False):
+                 bypass_version_checks=False, user_label=None):
         self.bypass_connection_checks = bypass_connection_checks
         self.bypass_version_checks = bypass_version_checks
         self.load_from = None
@@ -39,6 +39,7 @@ class GenericDevice:
         self.version = None
         self.version_max_supported_by_sdk = None
         self.version_min_required = None
+        self.user_label = user_label
 
         if not self.uuid:
             self.uuid = python_uuid.uuid4()
@@ -46,7 +47,7 @@ class GenericDevice:
         # Needs to be created after UUID
         self.metadata = DeviceMetadata(
             parent=self, device_name=target, is_hidden=is_hidden, is_system=is_system, system_usage=system_usage,
-            bypass_connection_checks=bypass_connection_checks, bypass_version_checks=bypass_version_checks)
+            bypass_connection_checks=bypass_connection_checks, bypass_version_checks=bypass_version_checks, user_label=user_label)
 
         self.logger_handle_log_level = logger_handle_log_level
         self._log_file_path = log_file_path

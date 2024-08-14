@@ -400,17 +400,98 @@
                               }
                            }
                         ]
+                     },
+                     "vnic_template": {
+                        "description": "LAN Connectivity Policy - vNIC Source Template Name",
+                        "type": "string",
+                        "default": "",
+                        "pattern": "^[a-zA-Z0-9-._:]{1,31}$|^[a-zA-Z0-9_.:-]{1,64}/[a-zA-Z0-9-._:]{1,31}$"
                      }
                   },
                   "additionalProperties": false,
-                  "required": [
-                     "name",
-                     "switch_id",
-                     "ethernet_adapter_policy",
-                     "ethernet_qos_policy",
-                     "mac_address_allocation_type"
-                  ],
                   "allOf": [
+                     {
+                        "$comment": "Below is for setting constraints for vnic_template if vnic is created from a template",
+                        "if": {
+                           "properties": {
+                              "vnic_template": {
+                                 "type": "string"
+                              }
+                           },
+                           "required": [
+                              "vnic_template"
+                           ]
+                        },
+                        "then": {
+                           "allOf": [
+                              {
+                                 "required": [
+                                    "name"
+                                 ]
+                              },
+                              {
+                                 "not" : {
+                                    "anyOf": [
+                                       {
+                                          "required": [
+                                             "cdn_source"
+                                          ]
+                                       },
+                                       {
+                                          "required": [
+                                             "cdn_value"
+                                          ]
+                                       },
+                                       {
+                                          "required": [
+                                             "enable_failover"
+                                          ]
+                                       },
+                                       {
+                                          "required": [
+                                             "ethernet_network_control_policy"
+                                          ]
+                                       },
+                                       {
+                                          "required": [
+                                             "ethernet_network_group_policy"
+                                          ]
+                                       },
+                                       {
+                                          "required": [
+                                             "ethernet_qos_policy"
+                                          ]
+                                       },
+                                       {
+                                          "required": [
+                                             "sriov_settings"
+                                          ]
+                                       },
+                                       {
+                                          "required": [
+                                             "usnic_settings"
+                                          ]
+                                       },
+                                       {
+                                          "required": [
+                                             "vmq_settings"
+                                          ]
+                                       }
+                                   ]
+                                 }
+                              }
+                           ]
+                        },
+                        "else": {
+                           "required": [
+                              "name",
+                              "switch_id",
+                              "ethernet_adapter_policy",
+                              "ethernet_qos_policy",
+                              "mac_address_allocation_type"
+                           ]
+                        }
+                     },
                      {
                         "$comment": "Below is for setting constraints for automatic_pci_link_assignment with value true",
                         "if": {

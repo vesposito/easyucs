@@ -95,7 +95,8 @@ class GenericUcsInventory(GenericInventory):
                                         " for class " + sdk_object_name + ": Connection refused")
                 except urllib.error.URLError:
                     self.logger(level="error", message="Timeout error while fetching " +
-                                                       self.device.metadata.device_type_long + " class " + sdk_object_name)
+                                                       self.device.metadata.device_type_long + " class " +
+                                                       sdk_object_name)
                 except Exception as err:
                     self.logger(level="error", message="Error while fetching " + self.device.metadata.device_type_long +
                                                        " class " + sdk_object_name + ": " + str(err))
@@ -201,13 +202,18 @@ class GenericUcsInventory(GenericInventory):
                                     continue
                                 if object_class is UcsImcHbaAdapter and "SAS HBA" in sdk_object.model:
                                     continue
-                                if object_class is UcsImcHbaAdapter and sdk_object.id in ["MRAID"]:
+                                if object_class is UcsImcHbaAdapter and sdk_object.id in ["MRAID", "MRAID1", "MRAID2"]:
                                     continue
 
                                 filtered_sdk_objects_list.append(sdk_object)
                             # Handle the case of LAN/SAN Neighbor objects for which we use fiPortDn attribute
                             elif hasattr(sdk_object, "fi_port_dn"):
                                 if dn == sdk_object.fi_port_dn:
+                                    filtered_sdk_objects_list.append(sdk_object)
+
+                            # Handle the case of PCIe Nodes GPUs objects for which we use enclosureDn attribute
+                            elif hasattr(sdk_object, "enclosure_dn") and "/pcie-node-" in dn:
+                                if dn == sdk_object.enclosure_dn:
                                     filtered_sdk_objects_list.append(sdk_object)
 
                         easyucs_objects_list = []
@@ -289,16 +295,16 @@ class UcsSystemInventory(GenericUcsInventory):
 
         # List of SDK objects to fetch that are specific to UCS System
         sdk_objects_to_fetch = ["adaptorUnitExtn", "computeBlade", "computePersonality", "equipmentCrossFabricModule",
-                                "equipmentFex", "equipmentFruVariant", "equipmentIOCard", "equipmentRackEnclosure",
-                                "equipmentSwitchCard", "equipmentSwitchIOCard", "equipmentTpm", "equipmentXcvr",
-                                "etherPIo", "etherServerIntFIo", "etherSwitchIntFIo", "fcPIo", "firmwareRunning",
-                                "firmwareStatus", "graphicsCard", "licenseFeature", "licenseFile", "licenseInstance",
-                                "licenseServerHostId", "lsServer", "memoryErrorStats", "mgmtConnection",
-                                "mgmtInterface", "mgmtVnet", "moInvKv", "networkElement", "networkLanNeighborEntry",
-                                "networkLldpNeighborEntry", "networkSanNeighborEntry", "storageEmbeddedStorage",
-                                "storageFlexFlashCard", "storageNvmeStats", "storageSsdHealthStats", "swVlanPortNs",
-                                "vnicIpV4MgmtPooledAddr", "vnicIpV4PooledAddr", "vnicIpV4StaticAddr",
-                                "vnicIpV6StaticAddr", "vnicIpV6MgmtPooledAddr"]
+                                "equipmentFex", "equipmentFruVariant", "equipmentIOCard", "equipmentPcieNode",
+                                "equipmentRackEnclosure", "equipmentSwitchCard", "equipmentSwitchIOCard",
+                                "equipmentTpm", "equipmentXcvr", "etherPIo", "etherServerIntFIo", "etherSwitchIntFIo",
+                                "fcPIo", "firmwareRunning", "firmwareStatus", "graphicsCard", "licenseFeature",
+                                "licenseFile", "licenseInstance", "licenseServerHostId", "lsServer", "memoryErrorStats",
+                                "mgmtConnection", "mgmtInterface", "mgmtVnet", "moInvKv", "networkElement",
+                                "networkLanNeighborEntry", "networkLldpNeighborEntry", "networkSanNeighborEntry",
+                                "storageEmbeddedStorage", "storageFlexFlashCard", "storageNvmeStats",
+                                "storageSsdHealthStats", "swVlanPortNs", "vnicIpV4MgmtPooledAddr", "vnicIpV4PooledAddr",
+                                "vnicIpV4StaticAddr", "vnicIpV6StaticAddr", "vnicIpV6MgmtPooledAddr"]
         self.logger(level="debug",
                     message="Fetching " + self.device.metadata.device_type_long + " SDK objects for inventory")
 

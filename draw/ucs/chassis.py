@@ -10,6 +10,7 @@ from draw.ucs.adaptor import UcsSystemDrawAdaptor
 from draw.ucs.blade import GenericUcsDrawBlade
 from draw.ucs.psu import GenericUcsDrawPsu
 from draw.ucs.port import UcsSystemDrawPort
+from draw.ucs.pcie_node import GenericUcsDrawPcieNode
 from draw.wire import UcsSystemDrawWire
 from draw.ucs.storage import GenericUcsDrawStorageEnclosure
 from PIL import Image, ImageDraw, ImageFont
@@ -29,6 +30,7 @@ class UcsSystemDrawChassisFront(GenericUcsDrawEquipment):
 
         if "blades_slots" in self.json_file:
             self.blades = self.get_blades()
+            self.pcie_nodes = self.get_pcie_nodes()
         if "psus_slots" in self.json_file:
             self.power_supplies = self.get_power_supplies()
         if ("blades_slots" or "psus_slots") in self.json_file:
@@ -49,6 +51,16 @@ class UcsSystemDrawChassisFront(GenericUcsDrawEquipment):
         blade_list = [blade for blade in blade_list if blade.picture_size]
         return blade_list
 
+    def get_pcie_nodes(self):
+        pcie_node_list = []
+        for pcie_node in self._parent.pcie_nodes:
+            pcie_node_list.append(GenericUcsDrawPcieNode(pcie_node, self))
+            # blade_list = remove_not_completed_in_list(blade_list)
+        # blade_list = remove_not_supported_in_list(blade_list)
+        # We only keep the blades that have been fully created -> picture
+        pcie_node_list = [pcie_node for pcie_node in pcie_node_list if pcie_node.picture_size]
+        return pcie_node_list
+
     def get_power_supplies(self):
         psu_list = []
         for psu in self._parent.power_supplies:
@@ -61,7 +73,7 @@ class UcsSystemDrawChassisFront(GenericUcsDrawEquipment):
         return psu_list
 
     def fill_blanks(self):  # Fill blade slot
-        if len(self._parent.blades)-1 < len(self.json_file["blades_slots"]):
+        if len(self._parent.blades) + len(self._parent.pcie_nodes) - 1 < len(self.json_file["blades_slots"]):
             used_slot = []
             potential_slot = []
             unused_slot = []
@@ -77,6 +89,8 @@ class UcsSystemDrawChassisFront(GenericUcsDrawEquipment):
                 if getattr(slot, "sku", "") in ["UCSX-410C-M7"]:
                     # We handle the specific case of compute nodes taking 2 slots in the 9508 chassis
                     used_slot.append(int(slot.slot_id) + 1)
+                used_slot.append(int(slot.slot_id))
+            for slot in self._parent.pcie_nodes:
                 used_slot.append(int(slot.slot_id))
             for slot in self.json_file["blades_slots"]:
                 potential_slot.append(slot["id"])
@@ -1114,7 +1128,7 @@ class UcsSystemDrawInfraChassis(UcsSystemDrawInfraEquipment):
                                                                     easyucs_fabric_port=peer_port._parent))
                                 # self.wires = remove_not_completed_in_list(self.wires)
                         else:
-                            self.logger(level="error", message="Peer not found3")
+                            self.logger(level="error", message="Peer not found")
 
                     if peer_fex:
                         # Find and calculate coordinates of the peer point on the FEX

@@ -569,6 +569,13 @@ class UcsSystemServiceProfile(UcsSystemConfigObject):
                                             if self._parent._dn + "/ls-" + self.name + "/" + "ether-" + \
                                                     vnic['name'] + "/" in vnic_policy.dn:
                                                 vnic.update({"dynamic_vnic": vnic_policy.con_policy_name})
+                                                oper_state.update(
+                                                    self.get_operational_state(
+                                                        policy_dn=vnic_policy.oper_con_policy_name,
+                                                        separator="/dynamic-con-",
+                                                        policy_name="dynamic_vnic"
+                                                    )
+                                                )
                                     if "vnicUsnicConPolicyRef" in self._parent._config.sdk_objects:
                                         for vnic_policy in self._config.sdk_objects["vnicUsnicConPolicyRef"]:
                                             if self._parent._dn + "/ls-" + self.name + "/" + "ether-" + \

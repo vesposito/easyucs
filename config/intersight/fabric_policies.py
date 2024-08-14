@@ -314,133 +314,7 @@ class IntersightFabricPortPolicy(IntersightConfigObject):
                 setattr(self, attribute, None)
                 if attribute in self._object:
                     setattr(self, attribute, self.get_attribute(attribute_name=attribute))
-
-            # We use this to make sure all options of an Appliance Port-Channel are set to None if they are not present
-            if self.appliance_port_channels:
-                for appliance_port_channel in self.appliance_port_channels:
-                    for attribute in ["admin_speed", "ethernet_network_control_policy", "ethernet_network_group_policy",
-                                      "interfaces", "mode", "pc_id", "priority"]:
-                        if attribute not in appliance_port_channel:
-                            appliance_port_channel[attribute] = None
-
-                    if appliance_port_channel["interfaces"]:
-                        for interface in appliance_port_channel["interfaces"]:
-                            for attribute_intf in ["aggr_id", "port_id", "slot_id"]:
-                                if attribute_intf not in interface:
-                                    interface[attribute_intf] = None
-
-            # We use this to make sure all options of an Appliance Port are set to None if they are not present
-            if self.appliance_ports:
-                for appliance_port in self.appliance_ports:
-                    for attribute in ["admin_speed", "aggr_id", "ethernet_network_control_policy",
-                                      "ethernet_network_group_policy", "fec", "mode", "port_id", "priority", "slot_id"]:
-                        if attribute not in appliance_port:
-                            appliance_port[attribute] = None
-
-            # We use this to make sure all options of Breakout Ports are set to None if they are not present
-            if self.breakout_ports:
-                for breakout_port in self.breakout_ports:
-                    for attribute in ["mode", "port_id", "slot_id"]:
-                        if attribute not in breakout_port:
-                            breakout_port[attribute] = None
-
-            # We use this to make sure all options of a FCoE Port-Channel are set to None if they are not present
-            if self.fcoe_port_channels:
-                for fcoe_port_channel in self.fcoe_port_channels:
-                    for attribute in ["admin_speed", "interfaces", "link_aggregation_policy", "link_control_policy",
-                                      "pc_id"]:
-                        if attribute not in fcoe_port_channel:
-                            fcoe_port_channel[attribute] = None
-
-                    if fcoe_port_channel["interfaces"]:
-                        for interface in fcoe_port_channel["interfaces"]:
-                            for attribute_intf in ["aggr_id", "port_id", "slot_id"]:
-                                if attribute_intf not in interface:
-                                    interface[attribute_intf] = None
-
-            # We use this to make sure all options of a FCoE Uplink Port are set to None if they are not present
-            if self.fcoe_uplink_ports:
-                for fcoe_uplink_port in self.fcoe_uplink_ports:
-                    for attribute in ["admin_speed", "aggr_id", "fec", "link_control_policy", "port_id", "slot_id"]:
-                        if attribute not in fcoe_uplink_port:
-                            fcoe_uplink_port[attribute] = None
-
-            # We use this to make sure all options of a LAN Pin Group are set to None if they are not present
-            if self.lan_pin_groups:
-                for lan_pin_group in self.lan_pin_groups:
-                    for attribute in ["aggr_id", "name", "pc_id", "port_id", "slot_id"]:
-                        if attribute not in lan_pin_group:
-                            lan_pin_group[attribute] = None
-
-            # We use this to make sure all options of a LAN Port-Channel are set to None if they are not present
-            if self.lan_port_channels:
-                for lan_port_channel in self.lan_port_channels:
-                    for attribute in ["admin_speed", "ethernet_network_group_policy", "flow_control_policy",
-                                      "interfaces", "link_aggregation_policy", "link_control_policy", "pc_id"]:
-                        if attribute not in lan_port_channel:
-                            lan_port_channel[attribute] = None
-
-                    if lan_port_channel["interfaces"]:
-                        for interface in lan_port_channel["interfaces"]:
-                            for attribute_intf in ["aggr_id", "port_id", "slot_id"]:
-                                if attribute_intf not in interface:
-                                    interface[attribute_intf] = None
-
-            # We use this to make sure all options of a LAN Uplink Port are set to None if they are not present
-            if self.lan_uplink_ports:
-                for lan_uplink_port in self.lan_uplink_ports:
-                    for attribute in ["admin_speed", "aggr_id", "ethernet_network_group_policy", "fec",
-                                      "flow_control_policy", "link_control_policy", "port_id", "slot_id"]:
-                        if attribute not in lan_uplink_port:
-                            lan_uplink_port[attribute] = None
-
-            # We use this to make sure all options of a SAN Pin Group are set to None if they are not present
-            if self.san_pin_groups:
-                for san_pin_group in self.san_pin_groups:
-                    for attribute in ["aggr_id", "fcoe", "name", "pc_id", "port_id", "slot_id"]:
-                        if attribute not in san_pin_group:
-                            san_pin_group[attribute] = None
-
-            # We use this to make sure all options of a SAN Port-Channel are set to None if they are not present
-            if self.san_port_channels:
-                for san_port_channel in self.san_port_channels:
-                    for attribute in ["admin_speed", "fill_pattern", "interfaces", "pc_id", "vsan_id"]:
-                        if attribute not in san_port_channel:
-                            san_port_channel[attribute] = None
-
-                    if san_port_channel["interfaces"]:
-                        for interface in san_port_channel["interfaces"]:
-                            for attribute_intf in ["aggr_id", "port_id", "slot_id"]:
-                                if attribute_intf not in interface:
-                                    interface[attribute_intf] = None
-
-            # We use this to make sure all options of a SAN Storage Port are set to None if they are not present
-            if self.san_storage_ports:
-                for san_storage_port in self.san_storage_ports:
-                    for attribute in ["admin_speed", "aggr_id", "port_id", "slot_id", "vsan_id"]:
-                        if attribute not in san_storage_port:
-                            san_storage_port[attribute] = None
-
-            # We use this to make sure all options of SAN Unified Ports are set to None if they are not present
-            if self.san_unified_ports:
-                for attribute in ["port_id_end", "port_id_start", "slot_id"]:
-                    if attribute not in self.san_unified_ports:
-                        self.san_unified_ports[attribute] = None
-
-            # We use this to make sure all options of a SAN Uplink Port are set to None if they are not present
-            if self.san_uplink_ports:
-                for san_uplink_port in self.san_uplink_ports:
-                    for attribute in ["admin_speed", "aggr_id", "fill_pattern", "port_id", "slot_id", "vsan_id"]:
-                        if attribute not in san_uplink_port:
-                            san_uplink_port[attribute] = None
-
-            # We use this to make sure all options of a Server Port are set to None if they are not present
-            if self.server_ports:
-                for server_port in self.server_ports:
-                    for attribute in ["aggr_id", "connected_device_type", "connected_device_id", "fec", "port_id",
-                                      "slot_id"]:
-                        if attribute not in server_port:
-                            server_port[attribute] = None
+        self.clean_object()
 
     def _get_appliance_port_channels(self):
         # Fetches the Appliance Port Channels configuration of a Port Policy
@@ -474,10 +348,19 @@ class IntersightFabricPortPolicy(IntersightConfigObject):
                                 if len(eth_network_group_policy) == 1:
                                     ethernet_network_group_policy = eth_network_group_policy[0].name
 
+                        admin_speed = None
+                        enable_25g_auto_neg = None
+                        if hasattr(fabric_appliance_pc_role, "admin_speed"):
+                            admin_speed = fabric_appliance_pc_role.admin_speed
+                            if fabric_appliance_pc_role.admin_speed == "NegAuto25Gbps":
+                                admin_speed = "25Gbps"
+                                enable_25g_auto_neg = True
+
                         appliance_port_channels.append(
                             {"interfaces": interfaces,
                              "pc_id": fabric_appliance_pc_role.pc_id,
-                             "admin_speed": fabric_appliance_pc_role.admin_speed,
+                             "admin_speed": admin_speed,
+                             "enable_25gb_copper_cable_negotiation": enable_25g_auto_neg,
                              "mode": fabric_appliance_pc_role.mode,
                              "priority": fabric_appliance_pc_role.priority,
                              "ethernet_network_control_policy": ethernet_network_control_policy,
@@ -508,11 +391,21 @@ class IntersightFabricPortPolicy(IntersightConfigObject):
                             if eth_network_group_policy:
                                 if len(eth_network_group_policy) == 1:
                                     ethernet_network_group_policy = eth_network_group_policy[0].name
+
+                        admin_speed = None
+                        enable_25g_auto_neg = None
+                        if hasattr(fabric_appliance_role, "admin_speed"):
+                            admin_speed = fabric_appliance_role.admin_speed
+                            if fabric_appliance_role.admin_speed == "NegAuto25Gbps":
+                                admin_speed = "25Gbps"
+                                enable_25g_auto_neg = True
+
                         if fabric_appliance_role.aggregate_port_id != 0:
                             appliance_ports.append({"slot_id": fabric_appliance_role.slot_id,
                                                     "port_id": fabric_appliance_role.aggregate_port_id,
                                                     "aggr_id": fabric_appliance_role.port_id,
-                                                    "admin_speed": fabric_appliance_role.admin_speed,
+                                                    "admin_speed": admin_speed,
+                                                    "enable_25gb_copper_cable_negotiation": enable_25g_auto_neg,
                                                     "fec": fabric_appliance_role.fec,
                                                     "mode": fabric_appliance_role.mode,
                                                     "priority": fabric_appliance_role.priority,
@@ -521,7 +414,9 @@ class IntersightFabricPortPolicy(IntersightConfigObject):
                         else:
                             appliance_ports.append({"slot_id": fabric_appliance_role.slot_id,
                                                     "port_id": fabric_appliance_role.port_id,
-                                                    "admin_speed": fabric_appliance_role.admin_speed,
+                                                    "aggr_id": None,
+                                                    "admin_speed": admin_speed,
+                                                    "enable_25gb_copper_cable_negotiation": enable_25g_auto_neg,
                                                     "fec": fabric_appliance_role.fec,
                                                     "mode": fabric_appliance_role.mode,
                                                     "priority": fabric_appliance_role.priority,
@@ -540,29 +435,39 @@ class IntersightFabricPortPolicy(IntersightConfigObject):
                 if hasattr(fabric_port_mode, "port_policy"):
                     if fabric_port_mode.port_policy.moid == self._moid and \
                             getattr(fabric_port_mode, "custom_mode", None) == "BreakoutEthernet10G":
-                        breakout_ports.append({"slot_id": fabric_port_mode.slot_id,
-                                               "port_id": fabric_port_mode.port_id_start,
-                                               "mode": "4x10g"})
+                        if fabric_port_mode.port_id_start and fabric_port_mode.port_id_end:
+                            for port_id in range(fabric_port_mode.port_id_start, fabric_port_mode.port_id_end + 1):
+                                breakout_ports.append({"slot_id": fabric_port_mode.slot_id,
+                                                       "port_id": port_id,
+                                                       "mode": "4x10g"})
                     elif fabric_port_mode.port_policy.moid == self._moid and \
                             getattr(fabric_port_mode, "custom_mode", None) == "BreakoutEthernet25G":
-                        breakout_ports.append({"slot_id": fabric_port_mode.slot_id,
-                                               "port_id": fabric_port_mode.port_id_start,
-                                               "mode": "4x25g"})
+                        if fabric_port_mode.port_id_start and fabric_port_mode.port_id_end:
+                            for port_id in range(fabric_port_mode.port_id_start, fabric_port_mode.port_id_end + 1):
+                                breakout_ports.append({"slot_id": fabric_port_mode.slot_id,
+                                                       "port_id": port_id,
+                                                       "mode": "4x25g"})
                     elif fabric_port_mode.port_policy.moid == self._moid and \
                             getattr(fabric_port_mode, "custom_mode", None) == "BreakoutFibreChannel8G":
-                        breakout_ports.append({"slot_id": fabric_port_mode.slot_id,
-                                               "port_id": fabric_port_mode.port_id_start,
-                                               "mode": "4x8g"})
+                        if fabric_port_mode.port_id_start and fabric_port_mode.port_id_end:
+                            for port_id in range(fabric_port_mode.port_id_start, fabric_port_mode.port_id_end + 1):
+                                breakout_ports.append({"slot_id": fabric_port_mode.slot_id,
+                                                       "port_id": port_id,
+                                                       "mode": "4x8g"})
                     elif fabric_port_mode.port_policy.moid == self._moid and \
                             getattr(fabric_port_mode, "custom_mode", None) == "BreakoutFibreChannel16G":
-                        breakout_ports.append({"slot_id": fabric_port_mode.slot_id,
-                                               "port_id": fabric_port_mode.port_id_start,
-                                               "mode": "4x16g"})
+                        if fabric_port_mode.port_id_start and fabric_port_mode.port_id_end:
+                            for port_id in range(fabric_port_mode.port_id_start, fabric_port_mode.port_id_end + 1):
+                                breakout_ports.append({"slot_id": fabric_port_mode.slot_id,
+                                                       "port_id": port_id,
+                                                       "mode": "4x16g"})
                     elif fabric_port_mode.port_policy.moid == self._moid and \
                             getattr(fabric_port_mode, "custom_mode", None) == "BreakoutFibreChannel32G":
-                        breakout_ports.append({"slot_id": fabric_port_mode.slot_id,
-                                               "port_id": fabric_port_mode.port_id_start,
-                                               "mode": "4x32g"})
+                        if fabric_port_mode.port_id_start and fabric_port_mode.port_id_end:
+                            for port_id in range(fabric_port_mode.port_id_start, fabric_port_mode.port_id_end + 1):
+                                breakout_ports.append({"slot_id": fabric_port_mode.slot_id,
+                                                       "port_id": port_id,
+                                                       "mode": "4x32g"})
 
             return breakout_ports
 
@@ -601,9 +506,18 @@ class IntersightFabricPortPolicy(IntersightConfigObject):
                                 if len(fabric_link_control_policy) == 1:
                                     link_control_policy = fabric_link_control_policy[0].name
 
+                        admin_speed = None
+                        enable_25g_auto_neg = None
+                        if hasattr(fabric_fcoe_uplink_pc_role, "admin_speed"):
+                            admin_speed = fabric_fcoe_uplink_pc_role.admin_speed
+                            if fabric_fcoe_uplink_pc_role.admin_speed == "NegAuto25Gbps":
+                                admin_speed = "25Gbps"
+                                enable_25g_auto_neg = True
+
                         fcoe_port_channels.append({"interfaces": interfaces,
                                                    "pc_id": fabric_fcoe_uplink_pc_role.pc_id,
-                                                   "admin_speed": fabric_fcoe_uplink_pc_role.admin_speed,
+                                                   "admin_speed": admin_speed,
+                                                   "enable_25gb_copper_cable_negotiation": enable_25g_auto_neg,
                                                    "link_aggregation_policy": link_aggregation_policy,
                                                    "link_control_policy": link_control_policy})
 
@@ -626,18 +540,28 @@ class IntersightFabricPortPolicy(IntersightConfigObject):
                                 if len(fabric_link_control_policy) == 1:
                                     link_control_policy = fabric_link_control_policy[0].name
 
+                        admin_speed = None
+                        enable_25g_auto_neg = None
+                        if hasattr(fabric_fcoe_uplink_role, "admin_speed"):
+                            admin_speed = fabric_fcoe_uplink_role.admin_speed
+                            if fabric_fcoe_uplink_role.admin_speed == "NegAuto25Gbps":
+                                admin_speed = "25Gbps"
+                                enable_25g_auto_neg = True
+
                         if fabric_fcoe_uplink_role.aggregate_port_id != 0:
                             fcoe_uplink_ports.append({"slot_id": fabric_fcoe_uplink_role.slot_id,
                                                       "port_id": fabric_fcoe_uplink_role.aggregate_port_id,
                                                       "aggr_id": fabric_fcoe_uplink_role.port_id,
-                                                      "admin_speed": fabric_fcoe_uplink_role.admin_speed,
+                                                      "admin_speed": admin_speed,
+                                                      "enable_25gb_copper_cable_negotiation": enable_25g_auto_neg,
                                                       "fec": fabric_fcoe_uplink_role.fec,
                                                       "link_control_policy": link_control_policy})
                         else:
                             fcoe_uplink_ports.append({"slot_id": fabric_fcoe_uplink_role.slot_id,
                                                       "port_id": fabric_fcoe_uplink_role.port_id,
                                                       "aggr_id": None,
-                                                      "admin_speed": fabric_fcoe_uplink_role.admin_speed,
+                                                      "admin_speed": admin_speed,
+                                                      "enable_25gb_copper_cable_negotiation": enable_25g_auto_neg,
                                                       "fec": fabric_fcoe_uplink_role.fec,
                                                       "link_control_policy": link_control_policy})
 
@@ -732,9 +656,18 @@ class IntersightFabricPortPolicy(IntersightConfigObject):
                                 if len(fabric_link_control_policy) == 1:
                                     link_control_policy = fabric_link_control_policy[0].name
 
+                        admin_speed = None
+                        enable_25g_auto_neg = None
+                        if hasattr(fabric_uplink_pc_role, "admin_speed"):
+                            admin_speed = fabric_uplink_pc_role.admin_speed
+                            if fabric_uplink_pc_role.admin_speed == "NegAuto25Gbps":
+                                admin_speed = "25Gbps"
+                                enable_25g_auto_neg = True
+
                         lan_port_channels.append({"interfaces": interfaces,
                                                   "pc_id": fabric_uplink_pc_role.pc_id,
-                                                  "admin_speed": fabric_uplink_pc_role.admin_speed,
+                                                  "admin_speed": admin_speed,
+                                                  "enable_25gb_copper_cable_negotiation": enable_25g_auto_neg,
                                                   "ethernet_network_group_policy": ethernet_network_group_policy,
                                                   "flow_control_policy": flow_control_policy,
                                                   "link_aggregation_policy": link_aggregation_policy,
@@ -774,11 +707,21 @@ class IntersightFabricPortPolicy(IntersightConfigObject):
                             if fabric_link_control_policy:
                                 if len(fabric_link_control_policy) == 1:
                                     link_control_policy = fabric_link_control_policy[0].name
+
+                        admin_speed = None
+                        enable_25g_auto_neg = None
+                        if hasattr(fabric_uplink_role, "admin_speed"):
+                            admin_speed = fabric_uplink_role.admin_speed
+                            if fabric_uplink_role.admin_speed == "NegAuto25Gbps":
+                                admin_speed = "25Gbps"
+                                enable_25g_auto_neg = True
+
                         if fabric_uplink_role.aggregate_port_id != 0:
                             lan_uplink_ports.append({"slot_id": fabric_uplink_role.slot_id,
                                                      "port_id": fabric_uplink_role.aggregate_port_id,
                                                      "aggr_id": fabric_uplink_role.port_id,
-                                                     "admin_speed": fabric_uplink_role.admin_speed,
+                                                     "admin_speed": admin_speed,
+                                                     "enable_25gb_copper_cable_negotiation": enable_25g_auto_neg,
                                                      "fec": fabric_uplink_role.fec,
                                                      "ethernet_network_group_policy": ethernet_network_group_policy,
                                                      "flow_control_policy": flow_control_policy,
@@ -787,7 +730,8 @@ class IntersightFabricPortPolicy(IntersightConfigObject):
                             lan_uplink_ports.append({"slot_id": fabric_uplink_role.slot_id,
                                                      "port_id": fabric_uplink_role.port_id,
                                                      "aggr_id": None,
-                                                     "admin_speed": fabric_uplink_role.admin_speed,
+                                                     "admin_speed": admin_speed,
+                                                     "enable_25gb_copper_cable_negotiation": enable_25g_auto_neg,
                                                      "fec": fabric_uplink_role.fec,
                                                      "ethernet_network_group_policy": ethernet_network_group_policy,
                                                      "flow_control_policy": flow_control_policy,
@@ -958,6 +902,139 @@ class IntersightFabricPortPolicy(IntersightConfigObject):
 
         return None
 
+    def clean_object(self):
+        # We use this to make sure all options of an Appliance Port-Channel are set to None if they are not present
+        if self.appliance_port_channels:
+            for appliance_port_channel in self.appliance_port_channels:
+                for attribute in ["admin_speed", "enable_25gb_copper_cable_negotiation",
+                                  "ethernet_network_control_policy", "ethernet_network_group_policy", "interfaces",
+                                  "mode", "pc_id", "priority"]:
+                    if attribute not in appliance_port_channel:
+                        appliance_port_channel[attribute] = None
+
+                if appliance_port_channel["interfaces"]:
+                    for interface in appliance_port_channel["interfaces"]:
+                        for attribute_intf in ["aggr_id", "port_id", "slot_id"]:
+                            if attribute_intf not in interface:
+                                interface[attribute_intf] = None
+
+        # We use this to make sure all options of an Appliance Port are set to None if they are not present
+        if self.appliance_ports:
+            for appliance_port in self.appliance_ports:
+                for attribute in ["admin_speed", "aggr_id", "enable_25gb_copper_cable_negotiation",
+                                  "ethernet_network_control_policy", "ethernet_network_group_policy", "fec",
+                                  "mode", "port_id", "priority", "slot_id"]:
+                    if attribute not in appliance_port:
+                        appliance_port[attribute] = None
+
+        # We use this to make sure all options of Breakout Ports are set to None if they are not present
+        if self.breakout_ports:
+            for breakout_port in self.breakout_ports:
+                for attribute in ["mode", "port_id", "slot_id"]:
+                    if attribute not in breakout_port:
+                        breakout_port[attribute] = None
+
+        # We use this to make sure all options of a FCoE Port-Channel are set to None if they are not present
+        if self.fcoe_port_channels:
+            for fcoe_port_channel in self.fcoe_port_channels:
+                for attribute in ["admin_speed", "enable_25gb_copper_cable_negotiation", "interfaces",
+                                  "link_aggregation_policy", "link_control_policy", "pc_id"]:
+                    if attribute not in fcoe_port_channel:
+                        fcoe_port_channel[attribute] = None
+
+                if fcoe_port_channel["interfaces"]:
+                    for interface in fcoe_port_channel["interfaces"]:
+                        for attribute_intf in ["aggr_id", "port_id", "slot_id"]:
+                            if attribute_intf not in interface:
+                                interface[attribute_intf] = None
+
+        # We use this to make sure all options of a FCoE Uplink Port are set to None if they are not present
+        if self.fcoe_uplink_ports:
+            for fcoe_uplink_port in self.fcoe_uplink_ports:
+                for attribute in ["admin_speed", "aggr_id", "enable_25gb_copper_cable_negotiation", "fec",
+                                  "link_control_policy", "port_id", "slot_id"]:
+                    if attribute not in fcoe_uplink_port:
+                        fcoe_uplink_port[attribute] = None
+
+        # We use this to make sure all options of a LAN Pin Group are set to None if they are not present
+        if self.lan_pin_groups:
+            for lan_pin_group in self.lan_pin_groups:
+                for attribute in ["aggr_id", "name", "pc_id", "port_id", "slot_id"]:
+                    if attribute not in lan_pin_group:
+                        lan_pin_group[attribute] = None
+
+        # We use this to make sure all options of a LAN Port-Channel are set to None if they are not present
+        if self.lan_port_channels:
+            for lan_port_channel in self.lan_port_channels:
+                for attribute in ["admin_speed", "enable_25gb_copper_cable_negotiation",
+                                  "ethernet_network_group_policy", "flow_control_policy", "interfaces",
+                                  "link_aggregation_policy", "link_control_policy", "pc_id"]:
+                    if attribute not in lan_port_channel:
+                        lan_port_channel[attribute] = None
+
+                if lan_port_channel["interfaces"]:
+                    for interface in lan_port_channel["interfaces"]:
+                        for attribute_intf in ["aggr_id", "port_id", "slot_id"]:
+                            if attribute_intf not in interface:
+                                interface[attribute_intf] = None
+
+        # We use this to make sure all options of a LAN Uplink Port are set to None if they are not present
+        if self.lan_uplink_ports:
+            for lan_uplink_port in self.lan_uplink_ports:
+                for attribute in ["admin_speed", "aggr_id", "enable_25gb_copper_cable_negotiation",
+                                  "ethernet_network_group_policy", "fec", "flow_control_policy",
+                                  "link_control_policy", "port_id", "slot_id"]:
+                    if attribute not in lan_uplink_port:
+                        lan_uplink_port[attribute] = None
+
+        # We use this to make sure all options of a SAN Pin Group are set to None if they are not present
+        if self.san_pin_groups:
+            for san_pin_group in self.san_pin_groups:
+                for attribute in ["aggr_id", "fcoe", "name", "pc_id", "port_id", "slot_id"]:
+                    if attribute not in san_pin_group:
+                        san_pin_group[attribute] = None
+
+        # We use this to make sure all options of a SAN Port-Channel are set to None if they are not present
+        if self.san_port_channels:
+            for san_port_channel in self.san_port_channels:
+                for attribute in ["admin_speed", "fill_pattern", "interfaces", "pc_id", "vsan_id"]:
+                    if attribute not in san_port_channel:
+                        san_port_channel[attribute] = None
+
+                if san_port_channel["interfaces"]:
+                    for interface in san_port_channel["interfaces"]:
+                        for attribute_intf in ["aggr_id", "port_id", "slot_id"]:
+                            if attribute_intf not in interface:
+                                interface[attribute_intf] = None
+
+        # We use this to make sure all options of a SAN Storage Port are set to None if they are not present
+        if self.san_storage_ports:
+            for san_storage_port in self.san_storage_ports:
+                for attribute in ["admin_speed", "aggr_id", "port_id", "slot_id", "vsan_id"]:
+                    if attribute not in san_storage_port:
+                        san_storage_port[attribute] = None
+
+        # We use this to make sure all options of SAN Unified Ports are set to None if they are not present
+        if self.san_unified_ports:
+            for attribute in ["port_id_end", "port_id_start", "slot_id"]:
+                if attribute not in self.san_unified_ports:
+                    self.san_unified_ports[attribute] = None
+
+        # We use this to make sure all options of a SAN Uplink Port are set to None if they are not present
+        if self.san_uplink_ports:
+            for san_uplink_port in self.san_uplink_ports:
+                for attribute in ["admin_speed", "aggr_id", "fill_pattern", "port_id", "slot_id", "vsan_id"]:
+                    if attribute not in san_uplink_port:
+                        san_uplink_port[attribute] = None
+
+        # We use this to make sure all options of a Server Port are set to None if they are not present
+        if self.server_ports:
+            for server_port in self.server_ports:
+                for attribute in ["aggr_id", "connected_device_type", "connected_device_id", "fec", "port_id",
+                                  "slot_id"]:
+                    if attribute not in server_port:
+                        server_port[attribute] = None
+
     @IntersightConfigObject.update_taskstep_description()
     def push_object(self):
         from intersight.model.fabric_port_policy import FabricPortPolicy
@@ -1085,6 +1162,8 @@ class IntersightFabricPortPolicy(IntersightConfigObject):
                     kwargs["pc_id"] = appliance_port_channel["pc_id"]
                 if appliance_port_channel["admin_speed"] is not None:
                     kwargs["admin_speed"] = appliance_port_channel["admin_speed"]
+                if appliance_port_channel["enable_25gb_copper_cable_negotiation"]:
+                    kwargs["admin_speed"] = "NegAuto25Gbps"
                 if appliance_port_channel["mode"] is not None:
                     kwargs["mode"] = appliance_port_channel["mode"]
                 if appliance_port_channel["priority"] is not None:
@@ -1163,6 +1242,8 @@ class IntersightFabricPortPolicy(IntersightConfigObject):
                     kwargs["fec"] = appliance_port["fec"]
                 if appliance_port["admin_speed"] is not None:
                     kwargs["admin_speed"] = appliance_port["admin_speed"]
+                if appliance_port["enable_25gb_copper_cable_negotiation"]:
+                    kwargs["admin_speed"] = "NegAuto25Gbps"
                 if appliance_port["mode"] is not None:
                     kwargs["mode"] = appliance_port["mode"]
                 if appliance_port["priority"] is not None:
@@ -1276,6 +1357,8 @@ class IntersightFabricPortPolicy(IntersightConfigObject):
                     kwargs["pc_id"] = fcoe_port_channel["pc_id"]
                 if fcoe_port_channel["admin_speed"] is not None:
                     kwargs["admin_speed"] = fcoe_port_channel["admin_speed"]
+                if fcoe_port_channel["enable_25gb_copper_cable_negotiation"]:
+                    kwargs["admin_speed"] = "NegAuto25Gbps"
 
                 if fcoe_port_channel["link_aggregation_policy"] is not None:
                     # We first need to identify the Link Aggregation Policy object reference
@@ -1348,6 +1431,8 @@ class IntersightFabricPortPolicy(IntersightConfigObject):
                     kwargs["fec"] = fcoe_uplink_port["fec"]
                 if fcoe_uplink_port["admin_speed"] is not None:
                     kwargs["admin_speed"] = fcoe_uplink_port["admin_speed"]
+                if fcoe_uplink_port["enable_25gb_copper_cable_negotiation"]:
+                    kwargs["admin_speed"] = "NegAuto25Gbps"
 
                 if fcoe_uplink_port["link_control_policy"] is not None:
                     # We first need to identify the Link Control Policy object reference
@@ -1428,6 +1513,8 @@ class IntersightFabricPortPolicy(IntersightConfigObject):
                     kwargs["pc_id"] = lan_port_channel["pc_id"]
                 if lan_port_channel["admin_speed"] is not None:
                     kwargs["admin_speed"] = lan_port_channel["admin_speed"]
+                if lan_port_channel["enable_25gb_copper_cable_negotiation"]:
+                    kwargs["admin_speed"] = "NegAuto25Gbps"
 
                 if lan_port_channel["ethernet_network_group_policy"] is not None:
                     # We first need to identify the Ethernet Network Group Policy object reference
@@ -1542,6 +1629,8 @@ class IntersightFabricPortPolicy(IntersightConfigObject):
                     kwargs["fec"] = lan_uplink_port["fec"]
                 if lan_uplink_port["admin_speed"] is not None:
                     kwargs["admin_speed"] = lan_uplink_port["admin_speed"]
+                if lan_uplink_port["enable_25gb_copper_cable_negotiation"]:
+                    kwargs["admin_speed"] = "NegAuto25Gbps"
 
                 if lan_uplink_port["ethernet_network_group_policy"] is not None:
                     # We first need to identify the Ethernet Network Group Policy object reference
@@ -2641,275 +2730,5 @@ class IntersightFabricVsanPolicy(IntersightConfigObject):
                 detail = self.name + " - VSAN " + str(vsan["name"])
                 self.commit(object_type="fabric.Vsan", payload=fabric_vsan, detail=detail,
                             key_attributes=["name", "vsan_id", "fc_network_policy"])
-
-        return True
-
-
-class IntersightUcsDomainProfile(IntersightConfigObject):
-    _CONFIG_NAME = "UCS Domain Profile"
-    _CONFIG_SECTION_NAME = "ucs_domain_profiles"
-    _INTERSIGHT_SDK_OBJECT_NAME = "fabric.SwitchClusterProfile"
-    _POLICY_MAPPING_TABLE = {
-        "network_connectivity_policy": IntersightNetworkConnectivityPolicy,
-        "ntp_policy": IntersightNtpPolicy,
-        "port_policies": {
-            "fabric_a": IntersightFabricPortPolicy,
-            "fabric_b": IntersightFabricPortPolicy
-        },
-        "snmp_policy": IntersightSnmpPolicy,
-        "switch_control_policy": IntersightFabricSwitchControlPolicy,
-        "syslog_policy": IntersightSyslogPolicy,
-        "system_qos_policy": IntersightFabricSystemQosPolicy,
-        "vlan_policies": {
-            "fabric_a": IntersightFabricVlanPolicy,
-            "fabric_b": IntersightFabricVlanPolicy
-        },
-        "vsan_policies": {
-            "fabric_a": IntersightFabricVsanPolicy,
-            "fabric_b": IntersightFabricVsanPolicy
-        }
-    }
-
-    def __init__(self, parent=None, fabric_switch_cluster_profile=None):
-        IntersightConfigObject.__init__(self, parent=parent, sdk_object=fabric_switch_cluster_profile)
-
-        self.descr = self.get_attribute(attribute_name="description", attribute_secondary_name="descr")
-        self.name = self.get_attribute(attribute_name="name")
-        self.network_connectivity_policy = None
-        self.ntp_policy = None
-        self.port_policies = None
-        self.snmp_policy = None
-        self.switch_control_policy = None
-        self.syslog_policy = None
-        self.system_qos_policy = None
-        self.user_label = self.get_attribute(attribute_name="user_label")
-        self.vlan_policies = None
-        self.vsan_policies = None
-        self.operational_state = {}
-
-        if self._config.load_from == "live":
-            # We first need to identify the Moids of the fabric.SwitchProfile objects attached to the UCS Domain Profile
-            self._switch_profiles = self.get_config_objects_from_ref(ref=self._object.switch_profiles)
-            if self._switch_profiles:
-                for switch_profile in self._switch_profiles:
-                    for policy in switch_profile.policy_bucket:
-                        for (policy_name, intersight_policy) in self._POLICY_MAPPING_TABLE.items():
-                            if not isinstance(intersight_policy, dict) and \
-                                    policy.object_type == getattr(intersight_policy, "_INTERSIGHT_SDK_OBJECT_NAME",
-                                                                  None):
-                                setattr(self, policy_name, self._get_policy_name(policy))
-                                break
-
-            self.port_policies = self._get_port_policies()
-            self.vlan_policies = self._get_vlan_policies()
-            self.vsan_policies = self._get_vsan_policies()
-
-            # Fetching the status of the profile
-            if hasattr(self._object, "config_context"):
-                if hasattr(self._object.config_context, "config_state_summary"):
-                    self.operational_state.update({
-                        "config_state": getattr(self._object.config_context, "config_state_summary", None)
-                    })
-                if getattr(self._object.config_context, "oper_state", None):
-                    self.operational_state.update({
-                        "profile_state": getattr(self._object.config_context, "oper_state", None)
-                    })
-
-        elif self._config.load_from == "file":
-            for attribute in ["network_connectivity_policy", "ntp_policy", "operational_state", "port_policies",
-                              "snmp_policy", "switch_control_policy", "syslog_policy", "system_qos_policy",
-                              "vlan_policies", "vsan_policies"]:
-                setattr(self, attribute, None)
-                if attribute in self._object:
-                    setattr(self, attribute, self.get_attribute(attribute_name=attribute))
-
-        self.clean_object()
-
-    def clean_object(self):
-        # We use this to make sure all options of the Port Policies, VLAN Policies and VSAN Policies are set to
-        # None if they are not present
-        for parent_attribute in ["port_policies", "vlan_policies", "vsan_policies"]:
-            for attribute in ["fabric_a", "fabric_b"]:
-                if getattr(self, parent_attribute, None):
-                    if attribute not in getattr(self, parent_attribute):
-                        getattr(self, parent_attribute)[attribute] = None
-
-        if self.operational_state:
-            for attribute in ["config_state", "profile_state"]:
-                if attribute not in self.operational_state:
-                    self.operational_state[attribute] = None
-
-    def _get_port_policies(self):
-        # Fetches the Port Policies assigned to the UCS Domain Profile
-        port_policies = {"fabric_a": None, "fabric_b": None}
-        for switch_profile in self._switch_profiles:
-            for policy in switch_profile.policy_bucket:
-                if policy.object_type == getattr(IntersightFabricPortPolicy, "_INTERSIGHT_SDK_OBJECT_NAME", None):
-                    if switch_profile.name[-2:] == "-A":
-                        port_policies["fabric_a"] = self._get_policy_name(policy)
-                    elif switch_profile.name[-2:] == "-B":
-                        port_policies["fabric_b"] = self._get_policy_name(policy)
-
-        if port_policies["fabric_a"] or port_policies["fabric_b"]:
-            return port_policies
-        else:
-            return None
-
-    def _get_vlan_policies(self):
-        # Fetches the VLAN Policies assigned to the UCS Domain Profile
-        vlan_policies = {"fabric_a": None, "fabric_b": None}
-        for switch_profile in self._switch_profiles:
-            for policy in switch_profile.policy_bucket:
-                if policy.object_type == getattr(IntersightFabricVlanPolicy, "_INTERSIGHT_SDK_OBJECT_NAME", None):
-                    if switch_profile.name[-2:] == "-A":
-                        vlan_policies["fabric_a"] = self._get_policy_name(policy)
-                    elif switch_profile.name[-2:] == "-B":
-                        vlan_policies["fabric_b"] = self._get_policy_name(policy)
-
-        if vlan_policies["fabric_a"] or vlan_policies["fabric_b"]:
-            return vlan_policies
-        else:
-            return None
-
-    def _get_vsan_policies(self):
-        # Fetches the VSAN Policies assigned to the UCS Domain Profile
-        vsan_policies = {"fabric_a": None, "fabric_b": None}
-        for switch_profile in self._switch_profiles:
-            for policy in switch_profile.policy_bucket:
-                if policy.object_type == getattr(IntersightFabricVsanPolicy, "_INTERSIGHT_SDK_OBJECT_NAME", None):
-                    if switch_profile.name[-2:] == "-A":
-                        vsan_policies["fabric_a"] = self._get_policy_name(policy)
-                    elif switch_profile.name[-2:] == "-B":
-                        vsan_policies["fabric_b"] = self._get_policy_name(policy)
-
-        if vsan_policies["fabric_a"] or vsan_policies["fabric_b"]:
-            return vsan_policies
-        else:
-            return None
-
-    @IntersightConfigObject.update_taskstep_description()
-    def push_object(self):
-        from intersight.model.fabric_switch_cluster_profile import FabricSwitchClusterProfile
-
-        self.logger(message=f"Pushing {self._CONFIG_NAME} configuration: {self.name}")
-
-        # We identify the parent organization as it will be used many times
-        org = self.get_parent_org_relationship()
-        if not org:
-            return False
-
-        # We first need to push the main fabric.SwitchClusterProfile object
-        kwargs = {
-            "object_type": self._INTERSIGHT_SDK_OBJECT_NAME,
-            "class_id": self._INTERSIGHT_SDK_OBJECT_NAME,
-            "organization": org
-        }
-        if self.name is not None:
-            kwargs["name"] = self.name
-        if self.descr is not None:
-            kwargs["description"] = self.descr
-        if self.tags is not None:
-            kwargs["tags"] = self.create_tags()
-        if self.user_label is not None:
-            kwargs["user_label"] = self.user_label
-
-        fabric_switch_cluster_profile = FabricSwitchClusterProfile(**kwargs)
-
-        fscp = self.commit(
-            object_type=self._INTERSIGHT_SDK_OBJECT_NAME,
-            payload=fabric_switch_cluster_profile,
-            detail=self.name,
-            return_relationship=True
-        )
-        if not fscp:
-            return False
-
-        # We now need to push the fabric.SwitchProfile objects for both Fabric Interconnects
-        # FIXME: Add support for single Fabric Interconnect
-        from intersight.model.fabric_switch_profile import FabricSwitchProfile
-        switch_profile_a_kwargs = {
-            "object_type": "fabric.SwitchProfile",
-            "class_id": "fabric.SwitchProfile",
-            "switch_cluster_profile": fscp,
-            "policy_bucket": []
-        }
-        if self.name is not None:
-            switch_profile_a_kwargs["name"] = self.name + "-A"
-        if self.descr is not None:
-            switch_profile_a_kwargs["description"] = self.descr
-
-        switch_profile_b_kwargs = copy.deepcopy(switch_profile_a_kwargs)
-        if self.name is not None:
-            switch_profile_b_kwargs["name"] = self.name + "-B"
-
-        for policy_section in ["network_connectivity_policy", "ntp_policy", "port_policies", "snmp_policy",
-                               "switch_control_policy", "syslog_policy", "system_qos_policy", "vlan_policies",
-                               "vsan_policies"]:
-            if getattr(self, policy_section, None):
-                if isinstance(getattr(self, policy_section, {}), dict):
-                    policy_type = self._POLICY_MAPPING_TABLE.get(policy_section, {}).get("fabric_a")
-                    fsp_a_policy_name = getattr(self, policy_section, {}).get("fabric_a")
-                    fsp_b_policy_name = getattr(self, policy_section, {}).get("fabric_b")
-                else:
-                    policy_type = self._POLICY_MAPPING_TABLE.get(policy_section, None)
-                    fsp_a_policy_name = fsp_b_policy_name = getattr(self, policy_section, None)
-
-                if policy_type:
-                    object_type = getattr(policy_type, "_INTERSIGHT_SDK_OBJECT_NAME", None)
-                    if object_type:
-                        # If fabric A policy name is missing then skip adding it to policy bucket.
-                        if fsp_a_policy_name:
-                            fsp_a_live_policy = self.get_live_object(object_name=fsp_a_policy_name, object_type=object_type)
-                            if fsp_a_live_policy:
-                                switch_profile_a_kwargs["policy_bucket"].append(fsp_a_live_policy)
-                            else:
-                                self._config.push_summary_manager.add_object_status(
-                                    obj=self, obj_detail=f"Attaching {policy_section} '{fsp_a_policy_name}'",
-                                    obj_type=self._INTERSIGHT_SDK_OBJECT_NAME, status="failed",
-                                    message=f"Failed to find {policy_section} '{fsp_a_policy_name}'")
-
-                        # If fabric B policy name is missing then skip adding it to policy bucket.
-                        if fsp_b_policy_name:
-                            fsp_b_live_policy = self.get_live_object(object_name=fsp_b_policy_name, object_type=object_type)
-                            if fsp_b_live_policy:
-                                switch_profile_b_kwargs["policy_bucket"].append(fsp_b_live_policy)
-                            else:
-                                self._config.push_summary_manager.add_object_status(
-                                    obj=self, obj_detail=f"Attaching {policy_section} '{fsp_b_policy_name}'",
-                                    obj_type=self._INTERSIGHT_SDK_OBJECT_NAME, status="failed",
-                                    message=f"Failed to find {policy_section} '{fsp_b_policy_name}'")
-                    else:
-                        err_message = "Missing _INTERSIGHT_SDK_OBJECT_NAME value for " + policy_section
-                        self.logger(level="error", message=err_message)
-                        self._config.push_summary_manager.add_object_status(
-                            obj=self, obj_detail=f"Attaching {policy_section} '{getattr(self, policy_section)}'",
-                            obj_type=self._INTERSIGHT_SDK_OBJECT_NAME, status="failed", message=err_message)
-
-                else:
-                    err_message = "Missing entry for " + policy_section + " in _POLICY_MAPPING_TABLE"
-                    self.logger(level="error", message=err_message)
-                    self._config.push_summary_manager.add_object_status(
-                        obj=self, obj_detail=f"Attaching {policy_section} '{getattr(self, policy_section)}'",
-                        obj_type=self._INTERSIGHT_SDK_OBJECT_NAME, status="failed", message=err_message)
-
-        fabric_switch_profile_a = FabricSwitchProfile(**switch_profile_a_kwargs)
-
-        fspa = self.commit(
-            object_type="fabric.SwitchProfile",
-            payload=fabric_switch_profile_a,
-            detail=self.name + " - Switch Profile FI A"
-        )
-        if not fspa:
-            return False
-
-        fabric_switch_profile_b = FabricSwitchProfile(**switch_profile_b_kwargs)
-
-        fspb = self.commit(
-            object_type="fabric.SwitchProfile",
-            payload=fabric_switch_profile_b,
-            detail=self.name + " - Switch Profile FI B"
-        )
-        if not fspb:
-            return False
 
         return True

@@ -52,6 +52,16 @@ class GenericDrawObject:
             obj.picture = obj.picture.rotate(90, expand=1)
             return obj
 
+    def rotate_text(self, font, text, x, y, fill, angle=0):
+        # Replace draw.text for text that needs to be rotated as the default function cannot do it
+        # Only used for the X-Series infra SP info
+        left, top, right, bottom = self.draw.textbbox((0, 0), text, font=font)
+        txt = Image.new(self.draw.mode, (right, bottom))
+        d = ImageDraw.Draw(txt)
+        d.text((0, 0), text, font=font, fill=fill)
+        txt = txt.rotate(angle, expand=1)
+        self.paste_layer(txt, (int(x - txt.width / 2), int(y - txt.height / 2)))
+
     def logger(self, level='info', message="No message"):
         if not self._parent_having_logger:
             self._parent_having_logger = self._find_logger()
@@ -83,6 +93,8 @@ class GenericDrawObject:
             folder_path = "catalog/chassis/"
         elif self._parent.__class__.__name__ in ["UcsSystemBlade", "UcsImcServerNode"]:
             folder_path = "catalog/blades/"
+        elif self._parent.__class__.__name__ == "UcsSystemPcieNode":
+            folder_path = "catalog/pcie_nodes/"
         elif self._parent.__class__.__name__ == "UcsSystemPsu":
             folder_path = "catalog/power_supplies/"
         elif self._parent.__class__.__name__ == "UcsSystemStorageLocalDisk":

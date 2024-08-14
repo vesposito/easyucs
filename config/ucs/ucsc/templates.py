@@ -13,12 +13,21 @@ from ucscsdk.mometa.vnic.VnicLanConnTempl import VnicLanConnTempl
 from ucscsdk.mometa.vnic.VnicSanConnTempl import VnicSanConnTempl
 from ucscsdk.mometa.vnic.VnicUsnicConPolicyRef import VnicUsnicConPolicyRef
 from ucscsdk.mometa.vnic.VnicVmqConPolicyRef import VnicVmqConPolicyRef
+from config.ucs.ucsc.policies import (UcsCentralDynamicVnicConnectionPolicy, UcsCentralMacPool,
+                                      UcsCentralNetworkControlPolicy, UcsCentralQosPolicy, UcsCentralThresholdPolicy,
+                                      UcsCentralUsnicConnectionPolicy, UcsCentralVmqConnectionPolicy, UcsCentralWwpnPool)
 
 
 class UcsCentralVhbaTemplate(UcsCentralConfigObject):
     _CONFIG_NAME = "vHBA Template"
     _CONFIG_SECTION_NAME = "vhba_templates"
     _UCS_SDK_OBJECT_NAME = "vnicSanConnTempl"
+    _POLICY_MAPPING_TABLE = {
+        "pin_group": None,
+        "qos_policy": UcsCentralQosPolicy,
+        "stats_threshold_policy": UcsCentralThresholdPolicy,
+        "wwpn_pool": UcsCentralWwpnPool
+    }
 
     def __init__(self, parent=None, json_content=None, vhba_san_conn_templ=None):
         UcsCentralConfigObject.__init__(self, parent=parent, ucs_sdk_object=vhba_san_conn_templ)
@@ -155,12 +164,23 @@ class UcsCentralVnicTemplate(UcsCentralConfigObject):
     _CONFIG_NAME = "vNIC Template"
     _CONFIG_SECTION_NAME = "vnic_templates"
     _UCS_SDK_OBJECT_NAME = "vnicLanConnTempl"
+    _POLICY_MAPPING_TABLE = {
+        "dynamic_vnic_connection_policy": UcsCentralDynamicVnicConnectionPolicy,
+        "mac_address_pool": UcsCentralMacPool,
+        "network_control_policy": UcsCentralNetworkControlPolicy,
+        "pin_group": None,
+        "qos_policy": UcsCentralQosPolicy,
+        "stats_threshold_policy": UcsCentralThresholdPolicy,
+        "usnic_connection_policy": UcsCentralUsnicConnectionPolicy,
+        "vmq_connection_policy": UcsCentralVmqConnectionPolicy,
+    }
 
     def __init__(self, parent=None, json_content=None, vnic_lan_conn_templ=None):
         UcsCentralConfigObject.__init__(self, parent=parent, ucs_sdk_object=vnic_lan_conn_templ)
         self.name = None
         self.fabric = None
         self.descr = None
+        self.dynamic_vnic_connection_policy = None
         self.redundancy_type = None
         self.peer_redundancy_template = None
         self.qos_policy = None
@@ -173,11 +193,11 @@ class UcsCentralVnicTemplate(UcsCentralConfigObject):
         self.pin_group = None
         self.stats_threshold_policy = None
         self.network_control_policy = None
-        self.connection_policy = None
-        self.connection_policy_name = None
+        self.usnic_connection_policy = None
         self.vlan_native = None
         self.vlans = []
         self.vlan_groups = []
+        self.vmq_connection_policy = None
         self.operational_state = None
 
         if self._config.load_from == "live":
@@ -200,45 +220,43 @@ class UcsCentralVnicTemplate(UcsCentralConfigObject):
                 self.operational_state = {}
 
                 # Looking for the connection_policy
-                if "vnicDynamicConPolicyRef" in self._parent._config.sdk_objects and not self.connection_policy:
+                if ("vnicDynamicConPolicyRef" in self._parent._config.sdk_objects and
+                        not self.dynamic_vnic_connection_policy):
                     for policy in self._config.sdk_objects["vnicDynamicConPolicyRef"]:
                         if self._parent._dn:
                             if self._parent._dn + "/lan-conn-templ-" + self.name + "/" in policy.dn:
-                                self.connection_policy = "dynamic-vnic"
-                                self.connection_policy_name = policy.con_policy_name
+                                self.dynamic_vnic_connection_policy = policy.con_policy_name
                                 self.operational_state.update(
                                     self.get_operational_state(
                                         policy_dn=policy.oper_con_policy_name,
                                         separator="/dynamic-con-",
-                                        policy_name="connection_policy"
+                                        policy_name="dynamic_vnic_connection_policy"
                                     )
                                 )
                                 break
-                if "vnicUsnicConPolicyRef" in self._parent._config.sdk_objects and not self.connection_policy:
+                if "vnicUsnicConPolicyRef" in self._parent._config.sdk_objects and not self.usnic_connection_policy:
                     for policy in self._config.sdk_objects["vnicUsnicConPolicyRef"]:
                         if self._parent._dn:
                             if self._parent._dn + "/lan-conn-templ-" + self.name + "/" in policy.dn:
-                                self.connection_policy = "usnic"
-                                self.connection_policy_name = policy.con_policy_name
+                                self.usnic_connection_policy = policy.con_policy_name
                                 self.operational_state.update(
                                     self.get_operational_state(
                                         policy_dn=policy.oper_con_policy_name,
                                         separator="/usnic-con-",
-                                        policy_name="connection_policy"
+                                        policy_name="usnic_connection_policy"
                                     )
                                 )
                                 break
-                if "vnicVmqConPolicyRef" in self._parent._config.sdk_objects and not self.connection_policy:
+                if "vnicVmqConPolicyRef" in self._parent._config.sdk_objects and not self.vmq_connection_policy:
                     for policy in self._config.sdk_objects["vnicVmqConPolicyRef"]:
                         if self._parent._dn:
                             if self._parent._dn + "/lan-conn-templ-" + self.name + "/" in policy.dn:
-                                self.connection_policy = "vmq"
-                                self.connection_policy_name = policy.con_policy_name
+                                self.vmq_connection_policy = policy.con_policy_name
                                 self.operational_state.update(
                                     self.get_operational_state(
                                         policy_dn=policy.oper_con_policy_name,
                                         separator="/vmq-con-",
-                                        policy_name="connection_policy"
+                                        policy_name="vmq_connection_policy"
                                     )
                                 )
                                 break
@@ -296,8 +314,9 @@ class UcsCentralVnicTemplate(UcsCentralConfigObject):
                     self.logger(level="error",
                                 message="Unable to get attributes from JSON content for " + self._CONFIG_NAME)
 
-                for policy in ["mac_address_pool", "network_control_policy", "peer_redundancy_template", "qos_policy",
-                               "stats_threshold_policy"]:
+                for policy in ["dynamic_vnic_connection_policy", "mac_address_pool", "network_control_policy",
+                               "peer_redundancy_template", "qos_policy", "stats_threshold_policy",
+                               "usnic_connection_policy", "vmq_connection_policy"]:
                     if not self.operational_state:
                         self.operational_state = {}
                     if policy not in self.operational_state:
@@ -344,16 +363,15 @@ class UcsCentralVnicTemplate(UcsCentralConfigObject):
                                                  pin_to_group_name=self.pin_group,
                                                  stats_policy_name=self.stats_threshold_policy)
 
-        if self.connection_policy:
-            if self.connection_policy == "dynamic_vnic" or self.connection_policy == "dynamic-vnic":
-                VnicDynamicConPolicyRef(parent_mo_or_dn=mo_vnic_lan_conn_temp,
-                                        con_policy_name=self.connection_policy_name)
-            elif self.connection_policy == "usNIC" or self.connection_policy == "usnic":
-                VnicUsnicConPolicyRef(parent_mo_or_dn=mo_vnic_lan_conn_temp,
-                                      con_policy_name=self.connection_policy_name)
-            elif self.connection_policy == "VMQ" or self.connection_policy == "vmq":
-                VnicVmqConPolicyRef(parent_mo_or_dn=mo_vnic_lan_conn_temp,
-                                    con_policy_name=self.connection_policy_name)
+        if self.dynamic_vnic_connection_policy:
+            VnicDynamicConPolicyRef(parent_mo_or_dn=mo_vnic_lan_conn_temp,
+                                    con_policy_name=self.dynamic_vnic_connection_policy)
+        if self.usnic_connection_policy:
+            VnicUsnicConPolicyRef(parent_mo_or_dn=mo_vnic_lan_conn_temp,
+                                  con_policy_name=self.usnic_connection_policy)
+        if self.vmq_connection_policy:
+            VnicVmqConPolicyRef(parent_mo_or_dn=mo_vnic_lan_conn_temp,
+                                con_policy_name=self.vmq_connection_policy)
 
         # self._handle.add_mo(mo=mo_vnic_lan_conn_temp, modify_present=True)
         # if commit:

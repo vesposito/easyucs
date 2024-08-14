@@ -1,0 +1,134 @@
+{
+   "id": "intersight_config_orgs_vhba_templates#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS intersight config orgs vhba_templates section",
+   "description": "EasyUCS intersight config orgs vhba_templates section JSON schema",
+   "type": "object",
+   "properties": {
+      "comment": {
+         "description": "vHBA Template Comments",
+         "type": "string",
+         "default": ""
+      },
+      "descr": {
+         "description": "vHBA Template Description",
+         "type": "string",
+         "default": "",
+         "pattern": "^$|^[a-zA-Z0-9]+[\\x00-\\xFF]*$",
+         "maxLength": 1024
+      },
+      "enable_override": {
+         "description": "When enabled, the configuration of the derived instances may override the template configuration",
+         "type": "boolean",
+         "default": true
+      },
+      "fc_zone_policies": {
+         "description": "vHBA Template - vHBA FC Zone Policies",
+         "type": "array",
+         "items": {
+            "description": "vHBA Template - vHBA FC Zone Policy",
+            "type": "string",
+            "default": "",
+            "pattern": "^([a-zA-Z0-9_.:-]{1,64}/)?[a-zA-Z0-9_.:-]{1,64}$"
+         },
+         "minItems": 1
+      },
+      "fibre_channel_adapter_policy": {
+         "description": "vHBA Template - vHBA Fibre Channel Adapter Policy",
+         "type": "string",
+         "default": "",
+         "pattern": "^([a-zA-Z0-9_.:-]{1,64}/)?[a-zA-Z0-9_.:-]{1,64}$"
+      },
+      "fibre_channel_network_policy": {
+         "description": "vHBA Template - vHBA Fibre Channel Network Policy",
+         "type": "string",
+         "default": "",
+         "pattern": "^([a-zA-Z0-9_.:-]{1,64}/)?[a-zA-Z0-9_.:-]{1,64}$"
+      },
+      "fibre_channel_qos_policy": {
+         "description": "vHBA Template - vHBA Fibre Channel QoS Policy",
+         "type": "string",
+         "default": "",
+         "pattern": "^([a-zA-Z0-9_.:-]{1,64}/)?[a-zA-Z0-9_.:-]{1,64}$"
+      },
+      "name": {
+         "description": "vHBA Template - vHBA Name",
+         "type": "string",
+         "default": "",
+         "pattern": "^[a-zA-Z0-9_.-]{1,64}$"
+      },
+      "persistent_lun_bindings": {
+         "description": "vHBA Template - Persistent LUN Bindings",
+         "type": "boolean",
+         "default": false
+      },
+      "pin_group_name": {
+         "description": "vHBA Template - Pin Group Name",
+         "type": "string",
+         "default": "",
+         "pattern": "^$|^[a-zA-Z0-9_.:-]{1,64}$"
+      },
+      "switch_id": {
+         "description": "The fabric port to which the vHBAs will be associated",
+         "type": "string",
+         "default": "A",
+         "enum": [
+            "None",
+            "A",
+            "B"
+         ]
+      },
+      "tags": {
+         "description": "vHBA Template Tags",
+         "type": "array",
+         "items": {
+            "description": "vHBA Template Tag",
+            "type": "object",
+            "properties": {
+               "key": {
+                  "description": "vHBA Template Tag Key",
+                  "type": "string",
+                  "default": "",
+                  "minLength": 1,
+                  "maxLength": 128
+               },
+               "value": {
+                  "description": "vHBA Template Tag Value",
+                  "type": "string",
+                  "default": "",
+                  "minLength": 0,
+                  "maxLength": 256
+               }
+            },
+            "additionalProperties": false,
+            "required": [
+               "key",
+               "value"
+            ]
+         },
+         "minItems": 1
+      },
+      "vhba_type": {
+         "description": "vHBA Template - VHBA Type configuration",
+         "type": "string",
+         "default": "fc-initiator",
+         "enum": [
+            "fc-initiator",
+            "fc-nvme-initiator",
+            "fc-nvme-target",
+            "fc-target"
+         ]
+      },
+      "wwpn_pool": {
+         "description": "vHBA Template - vHBA WWPN Pool Name",
+         "type": "string",
+         "default": "",
+         "pattern": "^([a-zA-Z0-9_.:-]{1,64}/)?[a-zA-Z0-9_.:-]{1,64}$"
+      }
+   },
+   "additionalProperties": false,
+   "required": [
+      "fibre_channel_qos_policy",
+      "name"
+   ]
+}

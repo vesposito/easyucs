@@ -93,6 +93,7 @@ from ucsmsdk.mometa.compute.ComputeModularChassisFanPolicy import ComputeModular
 from ucsmsdk.mometa.compute.ComputePortDiscPolicy import ComputePortDiscPolicy
 from ucsmsdk.mometa.compute.ComputePsuPolicy import ComputePsuPolicy
 from ucsmsdk.mometa.compute.ComputePowerExtendedPolicy import ComputePowerExtendedPolicy
+from ucsmsdk.mometa.compute.ComputePowerSavePolicy import ComputePowerSavePolicy
 from ucsmsdk.mometa.compute.ComputeServerDiscPolicy import ComputeServerDiscPolicy
 from ucsmsdk.mometa.compute.ComputeServerMgmtPolicy import ComputeServerMgmtPolicy
 from ucsmsdk.mometa.fabric.FabricFcSan import FabricFcSan
@@ -126,7 +127,12 @@ from ucsmsdk.mometa.policy.PolicyPortConfig import PolicyPortConfig
 from ucsmsdk.mometa.policy.PolicyPowerMgmt import PolicyPowerMgmt
 from ucsmsdk.mometa.policy.PolicyPsu import PolicyPsu
 from ucsmsdk.mometa.policy.PolicySecurity import PolicySecurity
+from ucsmsdk.mometa.power.PowerChassisMember import PowerChassisMember
+from ucsmsdk.mometa.power.PowerFexMember import PowerFexMember
+from ucsmsdk.mometa.power.PowerFIMember import PowerFIMember
+from ucsmsdk.mometa.power.PowerGroup import PowerGroup
 from ucsmsdk.mometa.power.PowerMgmtPolicy import PowerMgmtPolicy
+from ucsmsdk.mometa.power.PowerRackUnitMember import PowerRackUnitMember
 from ucsmsdk.mometa.sysdebug.SysdebugBackupBehavior import SysdebugBackupBehavior
 from ucsmsdk.mometa.sysdebug.SysdebugMEpLogPolicy import SysdebugMEpLogPolicy
 from ucsmsdk.mometa.top.TopInfoPolicy import TopInfoPolicy
@@ -1134,6 +1140,7 @@ class UcsSystemGlobalPolicies(UcsSystemConfigObject):
         self.power_policy = None
         self.power_policy_owner = None
         self.power_save_policy = None
+        self.power_save_policy_owner = None
         self.power_extended_policy = None
         self.fan_control_policy = None
         self.fan_control_policy_owner = None
@@ -1197,7 +1204,11 @@ class UcsSystemGlobalPolicies(UcsSystemConfigObject):
                 self.power_policy = self._config.sdk_objects["computePsuPolicy"][0].redundancy
                 if self._config.sdk_objects["computePsuPolicy"][0].policy_owner in ["policy"]:
                     self.power_policy_owner = "ucs-central"
-                self.power_save_policy = self._config.sdk_objects["computePsuPolicy"][0].mode
+
+            if "computePowerSavePolicy" in self._config.sdk_objects:
+                self.power_save_policy = self._config.sdk_objects["computePowerSavePolicy"][0].mode
+                if self._config.sdk_objects["computePowerSavePolicy"][0].policy_owner in ["policy"]:
+                    self.power_save_policy_owner = "ucs-central"
 
             if "computePowerExtendedPolicy" in self._config.sdk_objects:
                 self.power_extended_policy = self._config.sdk_objects["computePowerExtendedPolicy"][0].extended_mode
@@ -1357,11 +1368,18 @@ class UcsSystemGlobalPolicies(UcsSystemConfigObject):
                     return False
 
         if self.power_policy:
-            mo_compute_psu_policy = ComputePsuPolicy(parent_mo_or_dn=parent_mo_root, redundancy=self.power_policy,
-                                                     mode=self.power_save_policy)
+            mo_compute_psu_policy = ComputePsuPolicy(parent_mo_or_dn=parent_mo_root, redundancy=self.power_policy)
             self._handle.add_mo(mo_compute_psu_policy, modify_present=True)
             if commit:
                 if self.commit("Power Policy") != True:
+                    return False
+
+        if self.power_save_policy:
+            mo_compute_power_save_policy = ComputePowerSavePolicy(parent_mo_or_dn=parent_mo_root,
+                                                                  mode=self.power_save_policy)
+            self._handle.add_mo(mo_compute_power_save_policy, modify_present=True)
+            if commit:
+                if self.commit("Power Save Policy") != True:
                     return False
 
         if self.power_extended_policy:
@@ -1851,6 +1869,8 @@ class UcsSystemCommunicationServices(UcsSystemConfigObject):
                     self.https_service[0]["allowed_ssl_protocols"] = "all"
                 elif self.https_service[0]["allowed_ssl_protocols"] == "tlsv1.2":
                     self.https_service[0]["allowed_ssl_protocols"] = "tlsv1_2"
+                elif self.https_service[0]["allowed_ssl_protocols"] == "tlsv1.3":
+                    self.https_service[0]["allowed_ssl_protocols"] = "tlsv1_3"
 
             if "commCimxml" in self._config.sdk_objects:
                 self.cim_xml_service = self._config.sdk_objects["commCimxml"][0].admin_state
@@ -3359,4 +3379,105 @@ class UcsSystemPortAutoDiscoveryPolicy(UcsSystemConfigObject):
         if commit:
             if self.commit() != True:
                 return False
+        return True
+
+
+class UcsSystemPowerGroup(UcsSystemConfigObject):
+    _CONFIG_NAME = "Power Group"
+    _CONFIG_SECTION_NAME = "power_groups"
+
+    def __init__(self, parent=None, json_content=None, power_group=None):
+        UcsSystemConfigObject.__init__(self, parent=parent, ucs_sdk_object=power_group)
+
+        self.name = None
+        self.descr = None
+        self.input_power = None
+        self.members = []
+
+        if self._config.load_from == "live":
+            self.name = power_group.name
+            self.descr = power_group.descr
+            self.input_power = power_group.admin_peak
+
+            if "powerChassisMember" in self._config.sdk_objects:
+                for power_chassis_member in self._config.sdk_objects["powerChassisMember"]:
+                    if power_group.dn + "/" in power_chassis_member.dn:
+                        self.members.append({"type": "chassis", "id": power_chassis_member.id})
+
+            if "powerFexMember" in self._config.sdk_objects:
+                for power_fex_member in self._config.sdk_objects["powerFexMember"]:
+                    if power_group.dn + "/" in power_fex_member.dn:
+                        self.members.append({"type": "fex", "id": power_fex_member.id})
+
+            if "powerFIMember" in self._config.sdk_objects:
+                for power_fi_member in self._config.sdk_objects["powerFIMember"]:
+                    if power_group.dn + "/" in power_fi_member.dn:
+                        if power_fi_member.fi_id not in ["NONE"]:
+                            self.members.append({"type": "fabric_interconnect", "id": power_fi_member.fi_id})
+
+            if "powerRackUnitMember" in self._config.sdk_objects:
+                for power_rack_unit_member in self._config.sdk_objects["powerRackUnitMember"]:
+                    if power_group.dn + "/" in power_rack_unit_member.dn:
+                        self.members.append({"type": "rack", "id": power_rack_unit_member.id})
+
+        elif self._config.load_from == "file":
+            if json_content is not None:
+                if not self.get_attributes_from_json(json_content=json_content):
+                    self.logger(level="error",
+                                message="Unable to get attributes from JSON content for " + self._CONFIG_NAME)
+
+                for element in self.members:
+                    for value in ["id", "type"]:
+                        if value not in element:
+                            element[value] = None
+
+        self.clean_object()
+
+    def push_object(self, commit=True):
+        if commit:
+            self.logger(message="Pushing " + self._CONFIG_NAME)
+        else:
+            self.logger(message="Adding to the handle " + self._CONFIG_NAME + " configuration" +
+                                ", waiting for a commit")
+
+        mo_power = "sys/power-ep"
+        mo_power_group = PowerGroup(parent_mo_or_dn=mo_power, name=self.name, descr=self.descr,
+                                    admin_peak=self.input_power)
+        self._handle.add_mo(mo=mo_power_group, modify_present=True)
+        if commit:
+            if self.commit(detail="Power Group " + str(self.name)) != True:
+                return False
+
+        for member in self.members:
+            if member["type"] == "chassis":
+                mo_power_chassis_member = PowerChassisMember(parent_mo_or_dn=mo_power_group, id=member["id"])
+                self._handle.add_mo(mo=mo_power_chassis_member, modify_present=True)
+                if commit:
+                    if self.commit(detail="Member Chassis " + str(member["id"])) != True:
+                        return False
+            elif member["type"] == "fabric_interconnect":
+                if member["id"] == "A":
+                    fi_id = "1"
+                elif member["id"] == "B":
+                    fi_id = "2"
+                else:
+                    fi_id = None
+                mo_power_fi_member = PowerFIMember(parent_mo_or_dn=mo_power_group, id=fi_id)
+                self._handle.add_mo(mo=mo_power_fi_member, modify_present=True)
+                if commit:
+                    if self.commit(detail="Member FI " + str(member["id"])) != True:
+                        return False
+            elif member["type"] == "fex":
+                mo_power_fex_member = PowerFexMember(parent_mo_or_dn=mo_power_group, id=member["id"])
+                self._handle.add_mo(mo=mo_power_fex_member, modify_present=True)
+                if commit:
+                    if self.commit(detail="Member Fex " + str(member["id"])) != True:
+                        return False
+            elif member["type"] == "rack":
+                mo_power_rack_unit_member = PowerRackUnitMember(parent_mo_or_dn=mo_power_group, id=member["id"])
+                self._handle.add_mo(mo=mo_power_rack_unit_member, modify_present=True)
+                if commit:
+                    if self.commit(detail="Member Rack " + str(member["id"])) != True:
+                        return False
+
         return True

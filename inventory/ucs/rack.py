@@ -228,6 +228,8 @@ class UcsSystemRack(UcsRack, UcsSystemInventoryObject):
     def _find_pcie_risers(self):
         # Since we don't have any object that gives us which PCIe risers are available, we have to guess
         # We only add risers that we are absolutely sure about.
+        if not self.sku:
+            return False
 
         # We do this for C240 M5SD, since it is mandatory for the draw operation
         if self.sku == "UCSC-C240-M5SD":
@@ -363,6 +365,65 @@ class UcsSystemRack(UcsRack, UcsSystemInventoryObject):
             elif riser3b:
                 self.pcie_risers.append({"id": "3", "sku": "UCSC-RIS3B-24XM7"})
 
+        # We also do this for C225 M8, since it is mandatory for the draw operation
+        elif any(self.sku.startswith(x) for x in ["UCSC-C225-M8"]):
+            riser1a = False
+            riser2a = False
+            riser3a = False
+            if self.adaptors:
+                for adaptor in self.adaptors:
+                    if adaptor.pci_slot in ["1"]:
+                        riser1a = True
+                    if adaptor.pci_slot in ["2"]:
+                        riser2a = True
+                    elif adaptor.pci_slot in ["3"]:
+                        riser3a = True
+
+            self.pcie_risers = []
+            if riser1a:
+                self.pcie_risers.append({"id": "1", "sku": "UCSC-RIS1A-225M8"})
+            if riser2a:
+                self.pcie_risers.append({"id": "2", "sku": "UCSC-RIS2A-225M8"})
+            if riser3a:
+                self.pcie_risers.append({"id": "3", "sku": "UCSC-RIS3A-225M8"})
+
+        # We also do this for C245 M8, since it is mandatory for the draw operation
+        elif any(self.sku.startswith(x) for x in ["UCSC-C245-M8"]):
+            riser1b = False
+            riser3b = False
+            if self.storage_controllers:
+                for storage_controller in self.storage_controllers:
+                    if storage_controller.disks:
+                        for disk in storage_controller.disks:
+                            if disk.id in ["101", "102"]:
+                                riser1b = True
+                            elif disk.id in ["103", "104"]:
+                                riser3b = True
+
+            riser1a = False
+            riser2a = False
+            riser3a = False
+            if self.adaptors:
+                for adaptor in self.adaptors:
+                    if adaptor.pci_slot in ["1", "2", "3"]:
+                        riser1a = True
+                    if adaptor.pci_slot in ["4", "5", "6"]:
+                        riser2a = True
+                    elif adaptor.pci_slot in ["8"]:
+                        riser3a = True
+
+            self.pcie_risers = []
+            if riser1a:
+                self.pcie_risers.append({"id": "1", "sku": "UCSC-RIS1A-240-D"})
+            elif riser1b:
+                self.pcie_risers.append({"id": "1", "sku": "UCSC-RIS1B-245M8"})
+            if riser2a:
+                self.pcie_risers.append({"id": "2", "sku": "UCSC-RIS2A-240-D"})
+            if riser3a:
+                self.pcie_risers.append({"id": "3", "sku": "UCSC-RIS3A-240-D"})
+            elif riser3b:
+                self.pcie_risers.append({"id": "3", "sku": "UCSC-RIS3B-245M8"})
+
         return False
 
     def _generate_draw(self):
@@ -421,15 +482,15 @@ class UcsSystemRack(UcsRack, UcsSystemInventoryObject):
         if self._inventory.load_from == "live":
             return self._inventory.get_inventory_objects_under_dn(dn=self.dn + "/mgmt",
                                                                   object_class=UcsSystemMgmtInterface, parent=self) + \
-                   self._inventory.get_inventory_objects_under_dn(dn=self.dn + "/mgmt",
-                                                                  object_class=UcsSystemMgmtInterfaceInband,
-                                                                  parent=self)
+                self._inventory.get_inventory_objects_under_dn(dn=self.dn + "/mgmt",
+                                                               object_class=UcsSystemMgmtInterfaceInband,
+                                                               parent=self)
         elif self._inventory.load_from == "file" and "mgmt_interfaces" in self._ucs_sdk_object:
             return [UcsSystemMgmtInterface(self, mgmt_if) for mgmt_if in self._ucs_sdk_object["mgmt_interfaces"]
                     if "type" in mgmt_if and mgmt_if["type"] in [None, "outband"]] + \
-                   [UcsSystemMgmtInterfaceInband(self, mgmt_interface) for mgmt_interface in
-                    self._ucs_sdk_object["mgmt_interfaces"]
-                    if "type" in mgmt_interface and mgmt_interface["type"] in ["inband"]]
+                [UcsSystemMgmtInterfaceInband(self, mgmt_interface) for mgmt_interface in
+                 self._ucs_sdk_object["mgmt_interfaces"]
+                 if "type" in mgmt_interface and mgmt_interface["type"] in ["inband"]]
         else:
             return []
 
@@ -507,6 +568,7 @@ class UcsSystemRack(UcsRack, UcsSystemInventoryObject):
                             "UCSB-MLOM-40G-04",  # VIC 1440
                             "UCSB-VIC-M84-4P",  # VIC 1480
                             "UCSB-ML-V5Q10G",  # VIC 15411
+
                             "UCSC-PCIE-CSC-02",  # VIC 1225
                             "UCSC-PCIE-C10T-02",  # VIC 1225T
                             "UCSC-MLOM-CSC-02",  # VIC 1227
@@ -521,15 +583,19 @@ class UcsSystemRack(UcsRack, UcsSystemInventoryObject):
                             "UCSC-PCIE-C100-04",  # VIC 1495
                             "UCSC-MLOM-C100-04",  # VIC 1497
                             "UCSC-P-V5Q50G",  # VIC 15425
+                            "UCSC-M-V5Q50GV2",  # VIC 15427
                             "UCSC-M-V5Q50G",  # VIC 15428
                             "UCSC-P-V5D200G",  # VIC 15235
+                            "UCSC-M-V5D200GV2",  # VIC 15237
                             "UCSC-M-V5D200G",  # VIC 15238
+
                             "UCSX-V4-Q25GML",  # VIC 14425
                             "UCSX-V4-Q25GME",  # VIC 14825
+                            "UCSX-ML-V5D200GV2",  # VIC 15230
                             "UCSX-ML-V5D200G",  # VIC 15231
                             "UCSX-ML-V5Q50G",  # VIC 15420
                             "UCSX-ME-V5Q50G"  # VIC 15422
-                            ]:
+                        ]:
                             adaptor.driver_name_ethernet = current_driver["name"]
                             adaptor.driver_version_ethernet = current_driver["version"]
                             self.logger(level="debug",
@@ -551,6 +617,7 @@ class UcsSystemRack(UcsRack, UcsSystemInventoryObject):
                             "UCSB-MLOM-40G-04",  # VIC 1440
                             "UCSB-VIC-M84-4P",  # VIC 1480
                             "UCSB-ML-V5Q10G",  # VIC 15411
+
                             "UCSC-PCIE-CSC-02",  # VIC 1225
                             "UCSC-PCIE-C10T-02",  # VIC 1225T
                             "UCSC-MLOM-CSC-02",  # VIC 1227
@@ -565,15 +632,19 @@ class UcsSystemRack(UcsRack, UcsSystemInventoryObject):
                             "UCSC-PCIE-C100-04",  # VIC 1495
                             "UCSC-MLOM-C100-04",  # VIC 1497
                             "UCSC-P-V5Q50G",  # VIC 15425
+                            "UCSC-M-V5Q50GV2",  # VIC 15427
                             "UCSC-M-V5Q50G",  # VIC 15428
                             "UCSC-P-V5D200G",  # VIC 15235
+                            "UCSC-M-V5D200GV2",  # VIC 15237
                             "UCSC-M-V5D200G",  # VIC 15238
+
                             "UCSX-V4-Q25GML",  # VIC 14425
                             "UCSX-V4-Q25GME",  # VIC 14825
+                            "UCSX-ML-V5D200GV2",  # VIC 15230
                             "UCSX-ML-V5D200G",  # VIC 15231
                             "UCSX-ML-V5Q50G",  # VIC 15420
                             "UCSX-ME-V5Q50G"  # VIC 15422
-                            ]:
+                        ]:
                             adaptor.driver_name_fibre_channel = current_driver["name"]
                             adaptor.driver_version_fibre_channel = current_driver["version"]
                             self.logger(level="debug",
@@ -792,6 +863,31 @@ class UcsImcRack(UcsRack, UcsImcInventoryObject):
                        "3B(2 Slots x4)": "UCSC-RIS3B-24XM7",
                        "3C(1 Slot x16)": "UCSC-RIS3C-240-D"}
         }
+        c225_m8_pcie_risers_matrix = {
+            "riser1": {"No Riser": "None",
+                       "1A(1 Slot x16)": "UCSC-RIS1A-225M8",
+                       "1B(1 Slot x16)": "UCSC-RIS1B-225M8",
+                       "1C(1 Slot x16)": "UCSC-RIS1C-225M8"},
+            "riser2": {"No Riser": "None",
+                       "2A(1 Slot x16)": "UCSC-RIS2A-225M8",
+                       "2B(1 Slot x16)": "UCSC-RIS2B-225M8"},
+            "riser3": {"No Riser": "None",
+                       "3A(1 Slot x16)": "UCSC-RIS3A-225M8",
+                       "3C(1 Slot x16)": "UCSC-RIS3C-225M8"}
+        }
+        c245_m8_pcie_risers_matrix = {
+            "riser1": {"No Riser": "None",
+                       "1A(2 Slots x8, 1 Slot x16)": "UCSC-RIS1A-240-D",
+                       "1B(2 Slots x4, 1 Slot x8)": "UCSC-RIS1B-245M8",
+                       "1C(2 Slots x16)": "UCSC-RIS1C-245M8"},
+            "riser2": {"No Riser": "None",
+                       "2A(2 Slots x8, 1 Slot x16)": "UCSC-RIS2A-240-D",
+                       "2C(2 Slots x16)": "UCSC-RIS2C-245M8"},
+            "riser3": {"No Riser": "None",
+                       "(2 Slots x8)": "UCSC-RIS3A-240-D",
+                       "3B(2 Slots x4)": "UCSC-RIS3B-245M8",
+                       "3C(1 Slot x16)": "UCSC-RIS3C-240-D"}
+        }
 
         # We check if we already have fetched the list of systemBoardUnit objects
         if "systemBoardUnit" in self._inventory.sdk_objects:
@@ -962,6 +1058,78 @@ class UcsImcRack(UcsRack, UcsImcInventoryObject):
 
                         return True
 
+                    # Handling C245 M8 servers
+                    if all(x in self.sku for x in ["C245", "M8"]) or all(x in self.sku for x in ["C245", "M7"]):
+                        pci_riser1_entry = None
+                        pci_riser2_entry = None
+                        pci_riser3_entry = None
+                        for (key, value) in c245_m8_pcie_risers_matrix["riser1"].items():
+                            if system_board_unit.riser1 == key:
+                                pci_riser1_entry = {"id": "1", "sku": value}
+                                if value not in ["None"]:
+                                    self.pcie_risers.append(pci_riser1_entry)
+                                continue
+                        for (key, value) in c245_m8_pcie_risers_matrix["riser2"].items():
+                            if system_board_unit.riser2 == key:
+                                pci_riser2_entry = {"id": "2", "sku": value}
+                                if value not in ["None"]:
+                                    self.pcie_risers.append(pci_riser2_entry)
+                                continue
+                        for (key, value) in c245_m8_pcie_risers_matrix["riser3"].items():
+                            if system_board_unit.riser3 == key:
+                                pci_riser3_entry = {"id": "3", "sku": value}
+                                if value not in ["None"]:
+                                    self.pcie_risers.append(pci_riser3_entry)
+                                continue
+
+                        if not pci_riser1_entry:
+                            self.logger(level="warning",
+                                        message="Could not find PCI riser 1 SKU for value: " + system_board_unit.riser1)
+                        if not pci_riser2_entry:
+                            self.logger(level="warning",
+                                        message="Could not find PCI riser 2 SKU for value: " + system_board_unit.riser2)
+                        if not pci_riser3_entry:
+                            self.logger(level="warning",
+                                        message="Could not find PCI riser 3 SKU for value: " + system_board_unit.riser3)
+
+                        return True
+
+                    # Handling C225 M8 servers
+                    if all(x in self.sku for x in ["C225", "M8"]) or all(x in self.sku for x in ["C225", "M7"]):
+                        pci_riser1_entry = None
+                        pci_riser2_entry = None
+                        pci_riser3_entry = None
+                        for (key, value) in c225_m8_pcie_risers_matrix["riser1"].items():
+                            if system_board_unit.riser1 == key:
+                                pci_riser1_entry = {"id": "1", "sku": value}
+                                if value not in ["None"]:
+                                    self.pcie_risers.append(pci_riser1_entry)
+                                continue
+                        for (key, value) in c225_m8_pcie_risers_matrix["riser2"].items():
+                            if system_board_unit.riser2 == key:
+                                pci_riser2_entry = {"id": "2", "sku": value}
+                                if value not in ["None"]:
+                                    self.pcie_risers.append(pci_riser2_entry)
+                                continue
+                        for (key, value) in c225_m8_pcie_risers_matrix["riser3"].items():
+                            if system_board_unit.riser3 == key:
+                                pci_riser3_entry = {"id": "3", "sku": value}
+                                if value not in ["None"]:
+                                    self.pcie_risers.append(pci_riser3_entry)
+                                continue
+
+                        if not pci_riser1_entry:
+                            self.logger(level="warning",
+                                        message="Could not find PCI riser 1 SKU for value: " + system_board_unit.riser1)
+                        if not pci_riser2_entry:
+                            self.logger(level="warning",
+                                        message="Could not find PCI riser 2 SKU for value: " + system_board_unit.riser2)
+                        if not pci_riser3_entry:
+                            self.logger(level="warning",
+                                        message="Could not find PCI riser 3 SKU for value: " + system_board_unit.riser3)
+
+                        return True
+
         return False
 
     def _get_adaptors(self):
@@ -1030,10 +1198,10 @@ class UcsImcRack(UcsRack, UcsImcInventoryObject):
     def _get_nvme_drives(self):
         if self._inventory.load_from == "live":
             return self._inventory.get_inventory_objects_under_dn(dn=self.dn, object_class=UcsImcStorageNvmeDrive,
-                                                                  parent=self) +\
-                   self._inventory.get_inventory_objects_under_dn(dn=self.dn,
-                                                                  object_class=UcsImcStorageControllerNvmeDrive,
-                                                                  parent=self)
+                                                                  parent=self) + \
+                self._inventory.get_inventory_objects_under_dn(dn=self.dn,
+                                                               object_class=UcsImcStorageControllerNvmeDrive,
+                                                               parent=self)
         elif self._inventory.load_from == "file" and "nvme_drives" in self._ucs_sdk_object:
             return [UcsImcStorageNvmeDrive(self, nvme_drive) for nvme_drive in self._ucs_sdk_object["nvme_drives"]]
         else:

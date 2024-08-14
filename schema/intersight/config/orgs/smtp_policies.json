@@ -84,8 +84,9 @@
       },
       "sender_email": {
          "description": "SMTP Policy Alert Sender Address",
-         "format": "email",
-         "default": ""
+         "type": "string",
+         "default": "",
+         "pattern": "^$|^[a-zA-Z0-9.!#$%&\\'*+\\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$"
       },
       "smtp_recipients": {
          "description": "SMTP Policy Mail Alert Recipients",

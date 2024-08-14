@@ -27,7 +27,7 @@
          "description": "UCS Server Profile User Label",
          "type": "string",
          "default": "",
-         "pattern": "^[a-zA-Z0-9!#$%&*+,\\(\\)\\[\\]\\{\\}|\\/\\.\\?@_:;~-]{1,64}$"
+         "pattern": "^[a-zA-Z0-9 !#$%&*+,()\\[\\]{}|/.?@_:;~-]{1,64}$"
       },
       "tags": {
          "description": "UCS Server Profile Tags",
@@ -629,11 +629,6 @@
                   {
                      "required": [
                         "imc_access_policy"
-                     ]
-                  },
-                  {
-                     "required": [
-                        "thermal_policy"
                      ]
                   }
                ]

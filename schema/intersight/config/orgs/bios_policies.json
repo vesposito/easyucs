@@ -390,6 +390,23 @@
             "platform-default"
          ]
       },
+      "cbs_cmn_apbdis_df_pstate_rs": {
+         "description": "BIOS Policy - cbs_cmn_apbdis_df_pstate_rs",
+         "type": "string",
+         "default": "platform-default",
+         "pattern": "^([0-2])$|^(platform-default)$"
+      },
+      "cbs_cmn_cpu_avx512": {
+         "description": "BIOS Policy - cbs_cmn_cpu_avx512",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "Auto",
+            "disabled",
+            "enabled",
+            "platform-default"
+         ]
+      },
       "cbs_cmn_cpu_cpb": {
          "description": "BIOS Policy - cbs_cmn_cpu_cpb",
          "type": "string",
@@ -448,6 +465,12 @@
             "platform-default"
          ]
       },
+      "cbs_cmn_cpu_sev_asid_space_limit": {
+         "description": "BIOS Policy - cbs_cmn_cpu_sev_asid_space_limit",
+         "type": "string",
+         "default": "platform-default",
+         "pattern": "^([1-9]|[1-9]\\d|[1-9]\\d{2}|100[0-7])$|^(platform-default)$"
+      },
       "cbs_cmn_cpu_smee": {
          "description": "BIOS Policy - cbs_cmn_cpu_smee",
          "type": "string",
@@ -481,6 +504,17 @@
             "platform-default"
          ]
       },
+      "cbs_cmn_edc_control_throttle": {
+         "description": "BIOS Policy - cbs_cmn_edc_control_throttle",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "Auto",
+            "disabled",
+            "enabled",
+            "platform-default"
+         ]
+      },
       "cbs_cmn_efficiency_mode_en": {
          "description": "BIOS Policy - cbs_cmn_efficiency_mode_en",
          "type": "string",
@@ -488,6 +522,18 @@
          "enum": [
             "Auto",
             "Enabled",
+            "platform-default"
+         ]
+      },
+      "cbs_cmn_efficiency_mode_en_rs": {
+         "description": "BIOS Policy - cbs_cmn_efficiency_mode_en_rs",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "Balanced Memory Performance Mode",
+            "Efficiency Mode",
+            "High Performance Mode",
+            "Maximum IO Performance Mode",
             "platform-default"
          ]
       },
@@ -526,6 +572,28 @@
             "platform-default"
          ]
       },
+      "cbs_cmn_gnb_smu_dffo_rs": {
+         "description": "BIOS Policy - cbs_cmn_gnb_smu_dffo_rs",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "Auto",
+            "disabled",
+            "enabled",
+            "platform-default"
+         ]
+      },
+      "cbs_cmn_gnb_smu_dlwm_support": {
+         "description": "BIOS Policy - cbs_cmn_gnb_smu_dlwm_support",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "Auto",
+            "disabled",
+            "enabled",
+            "platform-default"
+         ]
+      },
       "cbs_cmn_gnb_smucppc": {
          "description": "BIOS Policy - cbs_cmn_gnb_smucppc",
          "type": "string",
@@ -548,6 +616,27 @@
             "platform-default"
          ]
       },
+      "cbs_cmn_mem_ctrller_pwr_dn_en_ddr": {
+         "description": "BIOS Policy - cbs_cmn_mem_ctrller_pwr_dn_en_ddr",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "Auto",
+            "disabled",
+            "enabled",
+            "platform-default"
+         ]
+      },
+      "cbs_cmn_mem_dram_refresh_rate": {
+         "description": "BIOS Policy - cbs_cmn_mem_dram_refresh_rate",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "3.9 usec",
+            "7.8 usec",
+            "platform-default"
+         ]
+      },
       "cbs_cmn_mem_map_bank_interleave_ddr4": {
          "description": "BIOS Policy - cbs_cmn_mem_map_bank_interleave_ddr4",
          "type": "string",
@@ -555,6 +644,67 @@
          "enum": [
             "Auto",
             "disabled",
+            "enabled",
+            "platform-default"
+         ]
+      },
+      "cbs_cmn_mem_speed_ddr47xx2": {
+         "description": "BIOS Policy - cbs_cmn_mem_speed_ddr47xx2",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "1067MHz",
+            "1200MHz",
+            "1333MHz",
+            "1467MHz",
+            "1600MHz",
+            "667MHz",
+            "800MHz",
+            "933MHz",
+            "Auto",
+            "platform-default"
+         ]
+      },
+      "cbs_cmn_mem_speed_ddr47xx3": {
+         "description": "BIOS Policy - cbs_cmn_mem_speed_ddr47xx3",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "1067MHz",
+            "1200MHz",
+            "1333MHz",
+            "1467MHz",
+            "1600MHz",
+            "1633MHz",
+            "1667MHz",
+            "1700MHz",
+            "1733MHz",
+            "1767MHz",
+            "1800MHz",
+            "400MHz",
+            "800MHz",
+            "933MHz",
+            "Auto",
+            "platform-default"
+         ]
+      },
+      "cbs_cmn_preferred_io7xx2": {
+         "description": "BIOS Policy - cbs_cmn_preferred_io7xx2",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "Auto",
+            "Manual",
+            "platform-default"
+         ]
+      },
+      "cbs_cmn_preferred_io7xx3": {
+         "description": "BIOS Policy - cbs_cmn_preferred_io7xx3",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "Auto",
+            "Bus",
             "platform-default"
          ]
       },
@@ -568,21 +718,67 @@
             "platform-default"
          ]
       },
+      "cbs_cmnx_gmi_force_link_width_rs": {
+         "description": "BIOS Policy - cbs_cmnx_gmi_force_link_width_rs",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "0",
+            "1",
+            "2",
+            "Auto",
+            "platform-default"
+         ]
+      },
       "cbs_cpu_ccd_ctrl_ssp": {
          "description": "BIOS Policy - cbs_cpu_ccd_ctrl_ssp",
          "type": "string",
          "default": "platform-default",
          "enum": [
+            "10 CCDs",
             "2 CCDs",
             "3 CCDs",
             "4 CCDs",
             "6 CCDs",
+            "8 CCDs",
             "Auto",
             "platform-default"
          ]
       },
       "cbs_cpu_core_ctrl": {
          "description": "BIOS Policy - cbs_cpu_core_ctrl",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "Auto",
+            "FIVE (5 + 0)",
+            "FOUR (4 + 0)",
+            "ONE (1 + 0)",
+            "SEVEN (7 + 0)",
+            "SIX (6 + 0)",
+            "THREE (3 + 0)",
+            "TWO (2 + 0)",
+            "platform-default"
+         ]
+      },
+      "cbs_cpu_down_core_ctrl_bergamo": {
+         "description": "BIOS Policy - cbs_cpu_down_core_ctrl_bergamo",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "Auto",
+            "EIGHT (4 + 4)",
+            "FOUR (2 + 2)",
+            "FOURTEEN (7 + 7)",
+            "SIX (3 + 3)",
+            "TEN (5 + 5)",
+            "TWELVE (6 + 6)",
+            "TWO (1 + 1)",
+            "platform-default"
+         ]
+      },
+      "cbs_cpu_down_core_ctrl_genoa": {
+         "description": "BIOS Policy - cbs_cpu_down_core_ctrl_genoa",
          "type": "string",
          "default": "platform-default",
          "enum": [
@@ -608,6 +804,52 @@
             "platform-default"
          ]
       },
+      "cbs_dbg_cpu_gen_cpu_wdt": {
+         "description": "BIOS Policy - cbs_dbg_cpu_gen_cpu_wdt",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "Auto",
+            "disabled",
+            "enabled",
+            "platform-default"
+         ]
+      },
+      "cbs_dbg_cpu_lapic_mode": {
+         "description": "BIOS Policy - cbs_dbg_cpu_lapic_mode",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "Auto",
+            "Compatibility",
+            "X2APIC",
+            "XAPIC",
+            "platform-default"
+         ]
+      },
+      "cbs_dbg_cpu_lapic_mode7xx2": {
+         "description": "BIOS Policy - cbs_dbg_cpu_lapic_mode7xx2",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "Auto",
+            "X2APIC",
+            "XAPIC",
+            "platform-default"
+         ]
+      },
+      "cbs_dbg_cpu_lapic_mode7xx3": {
+         "description": "BIOS Policy - cbs_dbg_cpu_lapic_mode7xx3",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "Auto",
+            "Compatibility",
+            "X2APIC",
+            "XAPIC",
+            "platform-default"
+         ]
+      },
       "cbs_dbg_cpu_snp_mem_cover": {
          "description": "BIOS Policy - cbs_dbg_cpu_snp_mem_cover",
          "type": "string",
@@ -625,6 +867,18 @@
          "type": "string",
          "default": "platform-default",
          "pattern": "^(\\d|[1-9]\\d|[1-9]\\d{2}|[1-9]\\d{3}|[1-9]\\d{4}|[1-9]\\d{5}|10[0-3]\\d{4}|104[0-7]\\d{3}|1048[0-4]\\d{2}|10485[0-6]\\d|104857[0-6])$|^(platform-default)$"
+      },
+      "cbs_df_cmn4link_max_xgmi_speed": {
+         "description": "BIOS Policy - cbs_df_cmn4link_max_xgmi_speed",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "20Gbps",
+            "25Gbps",
+            "32Gbps",
+            "Auto",
+            "platform-default"
+         ]
       },
       "cbs_df_cmn_acpi_srat_l3numa": {
          "description": "BIOS Policy - cbs_df_cmn_acpi_srat_l3numa",
@@ -650,6 +904,24 @@
             "platform-default"
          ]
       },
+      "cbs_df_cmn_dram_scrub_time": {
+         "description": "BIOS Policy - cbs_df_cmn_dram_scrub_time",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "1 hour",
+            "12 hours",
+            "16 hours",
+            "24 hours",
+            "4 hours",
+            "48 hours",
+            "6 hours",
+            "8 hours",
+            "Auto",
+            "Disabled",
+            "platform-default"
+         ]
+      },
       "cbs_df_cmn_mem_intlv": {
          "description": "BIOS Policy - cbs_df_cmn_mem_intlv",
          "type": "string",
@@ -660,6 +932,17 @@
             "Die",
             "None",
             "Socket",
+            "platform-default"
+         ]
+      },
+      "cbs_df_cmn_mem_intlv_control": {
+         "description": "BIOS Policy - cbs_df_cmn_mem_intlv_control",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "Auto",
+            "disabled",
+            "enabled",
             "platform-default"
          ]
       },
@@ -677,11 +960,35 @@
             "platform-default"
          ]
       },
+      "cbs_df_dbg_xgmi_link_cfg": {
+         "description": "BIOS Policy - cbs_df_dbg_xgmi_link_cfg",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "2 xGMI Links",
+            "3 xGMI Links",
+            "4 xGMI Links",
+            "Auto",
+            "platform-default"
+         ]
+      },
+      "cbs_gnb_dbg_pcie_tbt_support": {
+         "description": "BIOS Policy - cbs_gnb_dbg_pcie_tbt_support",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "Auto",
+            "disabled",
+            "enabled",
+            "platform-default"
+         ]
+      },
       "cbs_sev_snp_support": {
          "description": "BIOS Policy - cbs_sev_snp_support",
          "type": "string",
          "default": "platform-default",
          "enum": [
+            "Auto",
             "disabled",
             "enabled",
             "platform-default"
@@ -1017,6 +1324,17 @@
          "type": "string",
          "default": "platform-default",
          "enum": [
+            "disabled",
+            "enabled",
+            "platform-default"
+         ]
+      },
+      "dfx_osb_en": {
+         "description": "BIOS Policy - dfx_osb_en",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "Auto",
             "disabled",
             "enabled",
             "platform-default"
@@ -1429,6 +1747,16 @@
             "platform-default"
          ]
       },
+      "ioat_config_cpm": {
+         "description": "BIOS Policy - ioat_config_cpm",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "disabled",
+            "enabled",
+            "platform-default"
+         ]
+      },
       "ioh_error_enable": {
          "description": "BIOS Policy - ioh_error_enable",
          "type": "string",
@@ -1714,6 +2042,37 @@
             "2.5 GB",
             "3 GB",
             "Auto",
+            "platform-default"
+         ]
+      },
+      "mmioh_base": {
+         "description": "BIOS Policy - mmioh_base",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "16T",
+            "1T",
+            "24T",
+            "2T",
+            "32T",
+            "40T",
+            "4T",
+            "512G",
+            "56T",
+            "platform-default"
+         ]
+      },
+      "mmioh_size": {
+         "description": "BIOS Policy - mmioh_size",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "1024G",
+            "16G",
+            "1G",
+            "256G",
+            "4G",
+            "64G",
             "platform-default"
          ]
       },
@@ -2085,6 +2444,7 @@
             "GEN2",
             "GEN3",
             "GEN4",
+            "GEN5",
             "platform-default"
          ]
       },
@@ -2294,6 +2654,7 @@
             "512M",
             "64G",
             "8G",
+            "Auto",
             "Invalid Config.",
             "platform-default"
          ]
@@ -2451,6 +2812,26 @@
             "platform-default"
          ]
       },
+      "resize_bar_support": {
+         "description": "BIOS Policy - resize_bar_support",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "disabled",
+            "enabled",
+            "platform-default"
+         ]
+      },
+      "runtime_post_package_repair": {
+         "description": "BIOS Policy - runtime_post_package_repair",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "disabled",
+            "enabled",
+            "platform-default"
+         ]
+      },
       "sata_mode_select": {
          "description": "BIOS Policy - sata_mode_select",
          "type": "string",
@@ -2485,6 +2866,16 @@
             "Hard PPR",
             "Soft PPR",
             "disabled",
+            "platform-default"
+         ]
+      },
+      "serial_mux": {
+         "description": "BIOS Policy - serial_mux",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "disabled",
+            "enabled",
             "platform-default"
          ]
       },

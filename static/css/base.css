@@ -309,7 +309,9 @@ div.jsoneditor-value.jsoneditor-null {
 div.jsoneditor-value.jsoneditor-invalid {
   color: var(--dark_grey)!important;
 }
-
+a.repoFolderRow {
+  color: inherit;
+}
 
 @media (min-width: 1800px){
 .col-xxl-2 {

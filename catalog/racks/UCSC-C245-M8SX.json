@@ -1,0 +1,326 @@
+{
+   "model_short_name": "C245 M8SX",
+   "rear_file_name": "UCSC-C245-M8_rear.png",
+   "front_file_name": "UCSC-C245-M8SX_front.png",
+   "rear_file_size": [2925, 547],
+   "front_file_size": [2890, 540],
+   "pcie_riser_slots": [
+      {
+         "id": 1,
+         "coord": [260, 26]
+      },
+      {
+         "id": 2,
+         "coord": [1090, 26]
+      },
+      {
+         "id": 3,
+         "coord": [1994, 26]
+      }
+   ],
+   "pcie_riser_models": [
+      {
+         "name": "UCSC-FBRS2-C240M6",
+         "type": "blank",
+         "riser_ids": [1, 2],
+         "description": "Blanking Panel"
+      },
+      {
+         "name": "UCSC-FBRS3-C240M6",
+         "type": "blank",
+         "riser_ids": [3],
+         "description": "Blanking Panel"
+      }
+   ],
+   "mlom_slots": [
+      {
+         "id": 1,
+         "coord": [266,438]
+      }
+   ],
+   "mlom_models": [
+      {
+         "name": "UCSC-MLOM-BLK-M6",
+         "type": "blank",
+         "description": "MLOM Blanking Panel M6"
+      }
+   ],
+   "pcie_models": [
+      {
+         "name": "UCSC-PCIF-01F",
+         "type": "blank",
+         "width": "full",
+         "description": "PCIe Full Height blanking panel for UCS C-Series Server"
+      },
+      {
+         "name": "UCSC-PCIF-01H",
+         "type": "blank",
+         "width": "half",
+         "description": "PCIe Low Profile blanking panel for UCS C-Series Server"
+      }
+   ],
+   "psus_slots_rear": [
+      {
+         "id": 1,
+         "coord": [1822, 283]
+      },
+      {
+         "id": 2,
+         "coord": [2295, 283]
+      }
+   ],
+   "psus_models": [
+      {
+         "name": "UCSC-PSU2V2-1400W",
+         "description": "1400W V2 AC Power Supply (200 - 240V) for 2U & 4U C Series"
+      },
+      {
+         "name": "UCSC-PSU2V2-1200W",
+         "description": "1200W / 800W V2 AC Power Supply for 2U C-Series Servers"
+      },
+      {
+         "name": "UCSC-PSU-930WDC",
+         "description": "930W -48V DC Common Slot Power Supply for c-series servers"
+      },
+      {
+         "name": "UCSC-PSU2V2-930DC",
+         "description": "930 W - 48V V2 DC Power Supply for 2U C-Series Servers"
+      },
+      {
+         "name": "UCSC-PSU2V2-650W",
+         "description": "650W V2 AC Power Supply for 2U C-Series Servers"
+      },
+      {
+         "name": "UCSC-PSU-650W",
+         "description": "650W power supply for C-series rack servers"
+      },
+      {
+         "name": "UCSC-PSU2-1200",
+         "description": "1200W 2u Power Supply For UCS"
+      },
+      {
+         "name": "UCSC-PSU2-1400W",
+         "description": "1400W AC Power Supply (200 - 240V) 2U & 4U C Series Servers"
+      },
+      {
+         "name": "UCSC-PSU-BLKP1U",
+         "type": "blank",
+         "description": "Power Supply Blanking Panel for C240 M4 servers"
+      }
+   ],
+   "disks_slots": [
+      {
+         "id": 1,
+         "format": "sff_m5",
+         "orientation": "vertical",
+         "coord": [219, 44],
+         "size": [437, 97]
+      },
+      {
+         "id": 2,
+         "format": "sff_m5",
+         "orientation": "vertical",
+         "coord": [321, 44],
+         "size": [437, 97]
+      },
+      {
+         "id": 3,
+         "format": "sff_m5",
+         "orientation": "vertical",
+         "coord": [423, 44],
+         "size": [437, 97]
+      },
+      {
+         "id": 4,
+         "format": "sff_m5",
+         "orientation": "vertical",
+         "coord": [525, 44],
+         "size": [437, 97]
+      },
+      {
+         "id": 5,
+         "format": "sff_m5",
+         "orientation": "vertical",
+         "coord": [627, 44],
+         "size": [437, 97]
+      },
+      {
+         "id": 6,
+         "format": "sff_m5",
+         "orientation": "vertical",
+         "coord": [729, 44],
+         "size": [437, 97]
+      },
+      {
+         "id": 7,
+         "format": "sff_m5",
+         "orientation": "vertical",
+         "coord": [831, 44],
+         "size": [437, 97]
+      },
+      {
+         "id": 8,
+         "format": "sff_m5",
+         "orientation": "vertical",
+         "coord": [933, 44],
+         "size": [437, 97]
+      },
+      {
+         "id": 9,
+         "format": "sff_m5",
+         "orientation": "vertical",
+         "coord": [1035, 44],
+         "size": [437, 97]
+      },
+      {
+         "id": 10,
+         "format": "sff_m5",
+         "orientation": "vertical",
+         "coord": [1137, 44],
+         "size": [437, 97]
+      },
+      {
+         "id": 11,
+         "format": "sff_m5",
+         "orientation": "vertical",
+         "coord": [1239, 44],
+         "size": [437, 97]
+      },
+      {
+         "id": 12,
+         "format": "sff_m5",
+         "orientation": "vertical",
+         "coord": [1341, 44],
+         "size": [437, 97]
+      },
+      {
+         "id": 13,
+         "format": "sff_m5",
+         "orientation": "vertical",
+         "coord": [1443, 44],
+         "size": [437, 97]
+      },
+      {
+         "id": 14,
+         "format": "sff_m5",
+         "orientation": "vertical",
+         "coord": [1545, 44],
+         "size": [437, 97]
+      },
+      {
+         "id": 15,
+         "format": "sff_m5",
+         "orientation": "vertical",
+         "coord": [1647, 44],
+         "size": [437, 97]
+      },
+      {
+         "id": 16,
+         "format": "sff_m5",
+         "orientation": "vertical",
+         "coord": [1749, 44],
+         "size": [437, 97]
+      },
+      {
+         "id": 17,
+         "format": "sff_m5",
+         "orientation": "vertical",
+         "coord": [1851, 44],
+         "size": [437, 97]
+      },
+      {
+         "id": 18,
+         "format": "sff_m5",
+         "orientation": "vertical",
+         "coord": [1953, 44],
+         "size": [437, 97]
+      },
+      {
+         "id": 19,
+         "format": "sff_m5",
+         "orientation": "vertical",
+         "coord": [2055, 44],
+         "size": [437, 97]
+      },
+      {
+         "id": 20,
+         "format": "sff_m5",
+         "orientation": "vertical",
+         "coord": [2157, 44],
+         "size": [437, 97]
+      },
+      {
+         "id": 21,
+         "format": "sff_m5",
+         "orientation": "vertical",
+         "coord": [2259, 44],
+         "size": [437, 97]
+      },
+      {
+         "id": 22,
+         "format": "sff_m5",
+         "orientation": "vertical",
+         "coord": [2361, 44],
+         "size": [437, 97]
+      },
+      {
+         "id": 23,
+         "format": "sff_m5",
+         "orientation": "vertical",
+         "coord": [2463, 44],
+         "size": [437, 97]
+      },
+      {
+         "id": 24,
+         "format": "sff_m5",
+         "orientation": "vertical",
+         "coord": [2565, 44],
+         "size": [437, 97]
+      }
+   ],
+   "disks_models": [
+      {
+         "name": "UCSC-BBLKD-S2",
+         "type": "blank",
+         "format": "sff_m5",
+         "description": "C-Series M5 SFF drive blanking panel"
+      }
+   ],
+   "imm_compatible": true,
+   "imm_min_required_version": "4.3(4b)",
+   "spec_sheet_url": "https://www.cisco.com/c/dam/en/us/products/collateral/servers-unified-computing/ucs-c-series-rack-servers/ucs-c245-m8-sff-rack-server.pdf",
+   "data_sheet_url": "https://www.cisco.com/c/en/us/products/collateral/servers-unified-computing/ucs-c-series-rack-servers/ucs-c245-m8-rack-server-ds.html",
+   "specs": {
+      "form_factor": "2RU",
+      "cpu": {
+         "sockets": 2,
+         "family_name": {
+            "genoa": "AMD EPYC 4th Gen Processors"
+         }
+      },
+      "memory": {
+         "dimm_type": "DDR5",
+         "dimm_slots": 24,
+         "max_speed": 4800,
+         "max_capacity": 6291456,
+         "dcpmm_support": false
+      },
+      "dimensions": {
+         "centimeters": {
+            "height": 8.7,
+            "width": 42.9,
+            "depth": 76.2
+         },
+         "inches": {
+            "height": 3.42,
+            "width": 16.9,
+            "depth": 30
+         },
+         "rack_units": 2
+      },
+      "weight": {
+         "lb": 61.7,
+         "kg": 28
+      }
+   }
+}

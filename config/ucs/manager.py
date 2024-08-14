@@ -17,34 +17,46 @@ import common
 from __init__ import __version__
 from config.manager import GenericConfigManager
 from config.plot import UcsSystemOrgConfigPlot, UcsSystemServiceProfileConfigPlot
-from config.ucs.cimc.imc import UcsImcAdapterCard, UcsImcAdminNetwork, UcsImcBios, UcsImcBootOrder, \
-    UcsImcChassisInventory, UcsImcCommunicationsServices, UcsImcDynamicStorageZoning, UcsImcIpBlockingProperties, \
-    UcsImcIpFilteringProperties, UcsImcLdap, UcsImcLocalUser, UcsImcLocalUsersProperties, UcsImcLoggingControls, \
-    UcsImcPlatformEventFilter, UcsImcPowerCapConfiguration, UcsImcPowerPolicies, UcsImcSecureKeyManagement, \
-    UcsImcSerialOverLanProperties, UcsImcServerProperties, UcsImcSmtpProperties, UcsImcSnmp, UcsImcStorageController, \
+from config.ucs.cimc.imc import (
+    UcsImcAdapterCard, UcsImcAdminNetwork, UcsImcBios, UcsImcBootOrder, UcsImcChassisInventory,
+    UcsImcCommunicationsServices, UcsImcDynamicStorageZoning, UcsImcIpBlockingProperties,
+    UcsImcIpFilteringProperties, UcsImcLdap, UcsImcLocalUser, UcsImcLocalUsersProperties, UcsImcLoggingControls,
+    UcsImcPlatformEventFilter, UcsImcPowerCapConfiguration, UcsImcPowerPolicies, UcsImcSecureKeyManagement,
+    UcsImcSerialOverLanProperties, UcsImcServerProperties, UcsImcSmtpProperties, UcsImcSnmp, UcsImcStorageController,
     UcsImcStorageFlexFlashController, UcsImcTimezoneMgmt, UcsImcVirtualMedia, UcsImcVKvmProperties
+)
 from config.ucs.config import UcsImcConfig, UcsSystemConfig, UcsCentralConfig
 from config.ucs.device_connector import UcsDeviceConnector
 from config.ucs.ucsc.domain_groups import UcsCentralDomainGroup
 from config.ucs.ucsc.orgs import UcsCentralOrg
-from config.ucs.ucsc.system import UcsCentralDateTimeMgmt, UcsCentralDns, UcsCentralLocalUser, UcsCentralLocale, \
-    UcsCentralManagementInterface, UcsCentralPasswordProfile, UcsCentralRole, UcsCentralSnmp, UcsCentralSyslog, \
-    UcsCentralSystem
-from config.ucs.ucsm.admin import UcsSystemAuthentication, UcsSystemBackupExportPolicy, UcsSystemCallHome, \
-    UcsSystemUcsCentral, UcsSystemCommunicationServices, UcsSystemDns, UcsSystemFaultPolicy, UcsSystemGlobalPolicies, \
-    UcsSystemInformation, UcsSystemKmipCertificationPolicy, UcsSystemLdap, UcsSystemLocalUser, \
-    UcsSystemLocalUsersProperties, UcsSystemLocale, UcsSystemManagementInterface, UcsSystemOrg, \
-    UcsSystemPortAutoDiscoveryPolicy, UcsSystemPreLoginBanner, UcsSystemRadius, UcsSystemRole, UcsSystemSelPolicy, \
-    UcsSystemSwitchingMode, UcsSystemSyslog, UcsSystemTacacs, UcsSystemTimezoneMgmt
-from config.ucs.ucsm.lan import UcsSystemApplianceNetworkControlPolicy, UcsSystemApplianceVlan, UcsSystemLanPinGroup, \
-    UcsSystemLanTrafficMonitoringSession, UcsSystemLinkProfile, UcsSystemNetflowMonitoring, UcsSystemQosSystemClass, \
-    UcsSystemSlowDrainTimers, UcsSystemUdldLinkPolicy, UcsSystemVlan, UcsSystemVlanGroup
-from config.ucs.ucsm.ports import UcsSystemLanUplinkPort, UcsSystemAppliancePort, UcsSystemServerPort, \
-    UcsSystemLanPortChannel, UcsSystemAppliancePortChannel, UcsSystemBreakoutPort, UcsSystemUnifiedStoragePort, \
-    UcsSystemUnifiedUplinkPort, UcsSystemFcoeUplinkPort, UcsSystemFcoeStoragePort, UcsSystemSanPortChannel, \
-    UcsSystemFcoePortChannel, UcsSystemSanUplinkPort, UcsSystemSanStoragePort, UcsSystemSanUnifiedPort
-from config.ucs.ucsm.san import UcsSystemFcZoneProfile, UcsSystemOuiPool, UcsSystemSanPinGroup, UcsSystemSanTrafficMonitoringSession, \
+from config.ucs.ucsc.system import (
+    UcsCentralDateTimeMgmt, UcsCentralDns, UcsCentralLocalUser, UcsCentralLocale, UcsCentralManagementInterface,
+    UcsCentralPasswordProfile, UcsCentralRole, UcsCentralSnmp, UcsCentralSyslog, UcsCentralSystem
+)
+from config.ucs.ucsm.admin import (
+    UcsSystemAuthentication, UcsSystemBackupExportPolicy, UcsSystemCallHome, UcsSystemUcsCentral,
+    UcsSystemCommunicationServices, UcsSystemDns, UcsSystemFaultPolicy, UcsSystemGlobalPolicies,
+    UcsSystemInformation, UcsSystemKmipCertificationPolicy, UcsSystemLdap, UcsSystemLocalUser,
+    UcsSystemLocalUsersProperties, UcsSystemLocale, UcsSystemManagementInterface, UcsSystemOrg,
+    UcsSystemPortAutoDiscoveryPolicy, UcsSystemPowerGroup, UcsSystemPreLoginBanner, UcsSystemRadius, UcsSystemRole,
+    UcsSystemSelPolicy, UcsSystemSwitchingMode, UcsSystemSyslog, UcsSystemTacacs, UcsSystemTimezoneMgmt
+)
+from config.ucs.ucsm.lan import (
+    UcsSystemApplianceNetworkControlPolicy, UcsSystemApplianceVlan, UcsSystemLanPinGroup,
+    UcsSystemLanTrafficMonitoringSession, UcsSystemLinkProfile, UcsSystemMacSec, UcsSystemNetflowMonitoring,
+    UcsSystemQosSystemClass, UcsSystemSlowDrainTimers, UcsSystemTrafficMonitoringConfiguration, UcsSystemUdldLinkPolicy,
+    UcsSystemVlan, UcsSystemVlanGroup
+)
+from config.ucs.ucsm.ports import (
+    UcsSystemLanUplinkPort, UcsSystemAppliancePort, UcsSystemServerPort, UcsSystemLanPortChannel,
+    UcsSystemAppliancePortChannel, UcsSystemBreakoutPort, UcsSystemUnifiedStoragePort, UcsSystemUnifiedUplinkPort,
+    UcsSystemFcoeUplinkPort, UcsSystemFcoeStoragePort, UcsSystemSanPortChannel, UcsSystemFcoePortChannel,
+    UcsSystemSanUplinkPort, UcsSystemSanStoragePort, UcsSystemSanUnifiedPort
+)
+from config.ucs.ucsm.san import (
+    UcsSystemFcZoneProfile, UcsSystemOuiPool, UcsSystemSanPinGroup, UcsSystemSanTrafficMonitoringSession,
     UcsSystemStorageVsan, UcsSystemVsan
+)
 
 
 class GenericUcsConfigManager(GenericConfigManager):
@@ -230,6 +242,9 @@ class UcsSystemConfigManager(GenericUcsConfigManager):
         config.call_home.append(UcsSystemCallHome(parent=config))
         config.backup_export_policy.append(UcsSystemBackupExportPolicy(parent=config))
         config.global_policies.append(UcsSystemGlobalPolicies(parent=config))
+        if "powerGroup" in config.sdk_objects:
+            for power_group in config.sdk_objects['powerGroup']:
+                config.power_groups.append(UcsSystemPowerGroup(parent=config, power_group=power_group))
         config.dns.extend(UcsSystemDns(parent=config).dns)
         if "mgmtKmipCertPolicy" in config.sdk_objects:
             if config.sdk_objects["mgmtKmipCertPolicy"]:
@@ -472,6 +487,10 @@ class UcsSystemConfigManager(GenericUcsConfigManager):
                 if fi_b_fc_ports_presence and self.parent.fi_b_model not in ["N10-S6100", "N10-S6200"]:
                     config.san_unified_ports.append(UcsSystemSanUnifiedPort(parent=config, fabric="B"))
 
+        if "fabricMonOriginSVI" in config.sdk_objects:
+            if config.sdk_objects["fabricMonOriginSVI"]:
+                config.traffic_monitoring_configuration.append(UcsSystemTrafficMonitoringConfiguration(parent=config))
+
         if "fabricEthMon" in config.sdk_objects:
             for fabric_eth_mon in config.sdk_objects["fabricEthMon"]:
                 config.lan_traffic_monitoring_sessions.append(
@@ -490,6 +509,13 @@ class UcsSystemConfigManager(GenericUcsConfigManager):
                     UcsSystemNetflowMonitoring(parent=config,
                                                fabric_eth_lan_flow_monitoring=fabric_eth_lan_flow_monitoring)
                 )
+
+        if "fabricMacSec" in config.sdk_objects:
+            for fabric_mac_sec in config.sdk_objects["fabricMacSec"]:
+                if fabric_mac_sec.dn == "fabric/lan/macsec":
+                    config.macsec.append(
+                        UcsSystemMacSec(parent=config, fabric_mac_sec=fabric_mac_sec)
+                    )
 
         if "orgOrg" in config.sdk_objects:
             for org_org in sorted(config.sdk_objects["orgOrg"], key=lambda org: org.dn):
@@ -882,6 +908,8 @@ class UcsSystemConfigManager(GenericUcsConfigManager):
             self.logger(message="Now configuring Equipment section")
             if config.global_policies:
                 is_pushed = config.global_policies[0].push_object() and is_pushed
+            for power_group in config.power_groups:
+                is_pushed = power_group.push_object() and is_pushed
             if config.kmip_client_cert_policy:
                 is_pushed = config.kmip_client_cert_policy[0].push_object() and is_pushed
             if config.sel_policy:
@@ -1206,6 +1234,9 @@ class UcsSystemConfigManager(GenericUcsConfigManager):
             for port_auto_discovery_policy in config.port_auto_discovery_policy:
                 is_pushed = port_auto_discovery_policy.push_object() and is_pushed
 
+            if config.traffic_monitoring_configuration:
+                is_pushed = config.traffic_monitoring_configuration[0].push_object() and is_pushed
+
             for lan_traffic_monitoring_session in config.lan_traffic_monitoring_sessions:
                 is_pushed = lan_traffic_monitoring_session.push_object() and is_pushed
 
@@ -1214,6 +1245,9 @@ class UcsSystemConfigManager(GenericUcsConfigManager):
 
             for netflow_monitoring in config.netflow_monitoring:
                 is_pushed = netflow_monitoring.push_object() and is_pushed
+
+            for macsec in config.macsec:
+                is_pushed = macsec.push_object() and is_pushed
 
             if self.parent.task is not None:
                 self.parent.task.taskstep_manager.stop_taskstep(
@@ -1344,6 +1378,9 @@ class UcsSystemConfigManager(GenericUcsConfigManager):
         if "global_policies" in config_json:
             config.global_policies.append(UcsSystemGlobalPolicies(parent=config,
                                                                   json_content=config_json["global_policies"][0]))
+        if "power_groups" in config_json:
+            for power_group_json in config_json["power_groups"]:
+                config.power_groups.append(UcsSystemPowerGroup(parent=config, json_content=power_group_json))
         if "management_interfaces" in config_json:
             for management_interface_json in config_json["management_interfaces"]:
                 config.management_interfaces.append(
@@ -1423,6 +1460,10 @@ class UcsSystemConfigManager(GenericUcsConfigManager):
             for port_auto_discovery_policy in config_json["port_auto_discovery_policy"]:
                 config.port_auto_discovery_policy.append(
                     UcsSystemPortAutoDiscoveryPolicy(parent=config, json_content=port_auto_discovery_policy))
+        if "traffic_monitoring_configuration" in config_json:
+            config.traffic_monitoring_configuration.append(
+                UcsSystemTrafficMonitoringConfiguration(
+                    parent=config, json_content=config_json["traffic_monitoring_configuration"][0]))
         if "lan_traffic_monitoring_sessions" in config_json:
             for lan_traffic_monitoring_session in config_json["lan_traffic_monitoring_sessions"]:
                 config.lan_traffic_monitoring_sessions.append(
@@ -1435,6 +1476,9 @@ class UcsSystemConfigManager(GenericUcsConfigManager):
             for netflow_monitoring in config_json["netflow_monitoring"]:
                 config.netflow_monitoring.append(
                     UcsSystemNetflowMonitoring(parent=config, json_content=netflow_monitoring))
+        if "macsec" in config_json:
+            for macsec in config_json["macsec"]:
+                config.macsec.append(UcsSystemMacSec(parent=config, json_content=macsec))
 
         if "orgs" in config_json:
             for org in config_json["orgs"]:
@@ -2012,6 +2056,10 @@ class UcsCentralConfigManager(GenericUcsConfigManager):
                 is_pushed = role.push_object() and is_pushed
             for local_user in config.local_users:
                 is_pushed = local_user.push_object() and is_pushed
+
+            if config.domain_groups:
+                for domain_group in config.domain_groups:
+                    is_pushed = domain_group.push_object() and is_pushed
 
             if config.orgs:
                 for org in config.orgs:

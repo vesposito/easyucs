@@ -40,6 +40,23 @@
             "yes"
          ]
       },
+      "4_link_xgmi_max_speed": {
+         "description": "BIOS Policy - Processor - 4-link xGMI max speed",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "20Gbps",
+            "20gbps",
+            "25Gbps",
+            "25gbps",
+            "32Gbps",
+            "32gbps",
+            "Auto",
+            "Platform Default",
+            "auto",
+            "platform-default"
+         ]
+      },
       "acpi10_support": {
          "description": "BIOS Policy - ACPI10 Support - ACPI10 Support",
          "type": "string",
@@ -417,6 +434,21 @@
             "platform-default"
          ]
       },
+      "avx512": {
+         "description": "BIOS Policy - Processor - AVX512",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "Auto",
+            "Disabled",
+            "Enabled",
+            "Platform Default",
+            "auto",
+            "disabled",
+            "enabled",
+            "platform-default"
+         ]
+      },
       "bank_group_swap": {
          "description": "BIOS Policy - Processor - Bank Group Swap",
          "type": "string",
@@ -545,11 +577,43 @@
             "platform-default"
          ]
       },
+      "cbs_df_cmn_mem_intlv_control": {
+         "description": "BIOS Policy - Memory Interleaving - Memory Interleaving",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "Auto",
+            "Disabled",
+            "Enabled",
+            "Platform Default",
+            "auto",
+            "disabled",
+            "enabled",
+            "platform-default"
+         ]
+      },
+      "cbs_df_cmn_mem_intlv_sp5": {
+         "description": "BIOS Policy - Memory Interleaving - Memory Interleaving",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "Auto",
+            "Disabled",
+            "Enabled",
+            "Platform Default",
+            "auto",
+            "disabled",
+            "enabled",
+            "platform-default"
+         ]
+      },
       "ccd_control": {
          "description": "BIOS Policy - Processor - CCD Control",
          "type": "string",
          "default": "platform-default",
          "enum": [
+            "10-CCDs",
+            "10-ccds",
             "2-CCDs",
             "2-ccds",
             "3-CCDs",
@@ -558,6 +622,8 @@
             "4-ccds",
             "6-CCDs",
             "6-ccds",
+            "8-CCDs",
+            "8-ccds",
             "Auto",
             "Platform Default",
             "auto",
@@ -784,6 +850,21 @@
             "platform-default"
          ]
       },
+      "core_watchdog_timer_enable": {
+         "description": "BIOS Policy - Processor - Core Watchdog Timer Enable",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "Auto",
+            "Disabled",
+            "Enabled",
+            "Platform Default",
+            "auto",
+            "disabled",
+            "enabled",
+            "platform-default"
+         ]
+      },
       "cppc": {
          "description": "BIOS Policy - Processor - CPPC",
          "type": "string",
@@ -801,6 +882,31 @@
       },
       "cpu_downcore_control": {
          "description": "BIOS Policy - Processor - CPU Downcore control",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "Auto",
+            "FIVE--5---0-",
+            "FOUR--4---0-",
+            "ONE--1---0-",
+            "Platform Default",
+            "SEVEN--7---0-",
+            "SIX--6---0-",
+            "THREE--3---0-",
+            "TWO--2---0-",
+            "auto",
+            "five--5---0-",
+            "four--4---0-",
+            "one--1---0-",
+            "platform-default",
+            "seven--7---0-",
+            "six--6---0-",
+            "three--3---0-",
+            "two--2---0-"
+         ]
+      },
+      "cpu_downcore_control_f19_m10h_1fh": {
+         "description": "BIOS Policy - Processor - CPU Downcore control F19 M10h-1Fh",
          "type": "string",
          "default": "platform-default",
          "enum": [
@@ -1033,8 +1139,38 @@
             "platform-default"
          ]
       },
+      "dfx_osb_configuration": {
+         "description": "BIOS Policy - DFX OSB Configuration - DFX OSB Configuration",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "Auto",
+            "Disabled",
+            "Enabled",
+            "Platform Default",
+            "auto",
+            "disabled",
+            "enabled",
+            "platform-default"
+         ]
+      },
       "direct_cache_access": {
          "description": "BIOS Policy - Direct Cache Access - Direct Cache Access",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "Auto",
+            "Disabled",
+            "Enabled",
+            "Platform Default",
+            "auto",
+            "disabled",
+            "enabled",
+            "platform-default"
+         ]
+      },
+      "dlwm_support": {
+         "description": "BIOS Policy - Processor - DLWM Support",
          "type": "string",
          "default": "platform-default",
          "enum": [
@@ -1116,6 +1252,27 @@
             "platform-default"
          ]
       },
+      "dram_scrub_time": {
+         "description": "BIOS Policy - DRAM Scrub Time - DRAM Scrub Time",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "1-hour",
+            "12-hours",
+            "16-hours",
+            "24-hours",
+            "4-hours",
+            "48-hours",
+            "6-hours",
+            "8-hours",
+            "Auto",
+            "Disabled",
+            "Platform Default",
+            "auto",
+            "disabled",
+            "platform-default"
+         ]
+      },
       "dram_sw_thermal_throttling": {
          "description": "BIOS Policy - Processor - DRAM SW Thermal Throttling",
          "type": "string",
@@ -1131,6 +1288,21 @@
       },
       "eadr_support": {
          "description": "BIOS Policy - EadrSupport - eADR Support",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "Auto",
+            "Disabled",
+            "Enabled",
+            "Platform Default",
+            "auto",
+            "disabled",
+            "enabled",
+            "platform-default"
+         ]
+      },
+      "edc_control_throttle": {
+         "description": "BIOS Policy - Processor - EDC Control Throttle",
          "type": "string",
          "default": "platform-default",
          "enum": [
@@ -1319,6 +1491,12 @@
             "p3",
             "platform-default"
          ]
+      },
+      "fixed_soc_pstate_sp5_f19h": {
+         "description": "BIOS Policy - Processor - Fixed SOC Pstate SP5 F19h",
+         "type": "string",
+         "default": "platform-default",
+         "pattern": "platform-default|^[0-2]$"
       },
       "flow_control": {
          "description": "BIOS Policy - Console redirection - Flow Control",
@@ -2800,6 +2978,23 @@
             "platform-default"
          ]
       },
+      "local_apic_mode": {
+         "description": "BIOS Policy - Processor - Local APIC Mode",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "Auto",
+            "Compatibility",
+            "Platform Default",
+            "X2APIC",
+            "XAPIC",
+            "auto",
+            "compatibility",
+            "platform-default",
+            "x2apic",
+            "xapic"
+         ]
+      },
       "local_x2_apic": {
          "description": "BIOS Policy - Local X2 Apic - Local X2 Apic",
          "type": "string",
@@ -2908,6 +3103,72 @@
             "Platform Default",
             "disabled",
             "enabled",
+            "platform-default"
+         ]
+      },
+      "memory_clock_speed_7xx2": {
+         "description": "BIOS Policy - Processor - Memory Clock Speed 7xx2",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "1067MHz",
+            "1067mhz",
+            "1200MHz",
+            "1200mhz",
+            "1333MHz",
+            "1333mhz",
+            "1467MHz",
+            "1467mhz",
+            "1600MHz",
+            "1600mhz",
+            "667MHz",
+            "667mhz",
+            "800MHz",
+            "800mhz",
+            "933MHz",
+            "933mhz",
+            "Auto",
+            "Platform Default",
+            "auto",
+            "platform-default"
+         ]
+      },
+      "memory_clock_speed_7xx3": {
+         "description": "BIOS Policy - Processor - Memory Clock Speed 7xx3",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "1067MHz",
+            "1067mhz",
+            "1200MHz",
+            "1200mhz",
+            "1333MHz",
+            "1333mhz",
+            "1467MHz",
+            "1467mhz",
+            "1600MHz",
+            "1600mhz",
+            "1633MHz",
+            "1633mhz",
+            "1667MHz",
+            "1667mhz",
+            "1700MHz",
+            "1700mhz",
+            "1733MHz",
+            "1733mhz",
+            "1767MHz",
+            "1767mhz",
+            "1800MHz",
+            "1800mhz",
+            "400MHz",
+            "400mhz",
+            "800MHz",
+            "800mhz",
+            "933MHz",
+            "933mhz",
+            "Auto",
+            "Platform Default",
+            "auto",
             "platform-default"
          ]
       },
@@ -4822,6 +5083,21 @@
             "platform-default"
          ]
       },
+      "pcie_ten_bit_tag_support": {
+         "description": "BIOS Policy - Processor - PCIe Ten Bit Tag Support",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "Auto",
+            "Disabled",
+            "Enabled",
+            "Platform Default",
+            "auto",
+            "disabled",
+            "enabled",
+            "platform-default"
+         ]
+      },
       "pciromclp": {
          "description": "BIOS Policy - PCI ROM CLP - PCIROMCLP",
          "type": "string",
@@ -4874,6 +5150,21 @@
             "platform-default"
          ]
       },
+      "power_down_enable": {
+         "description": "BIOS Policy - Processor - Power Down Enable",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "Auto",
+            "Disabled",
+            "Enabled",
+            "Platform Default",
+            "auto",
+            "disabled",
+            "enabled",
+            "platform-default"
+         ]
+      },
       "power_on_password": {
          "description": "BIOS Policy - PCI Slot LINK Speed - Power On Password",
          "type": "string",
@@ -4884,6 +5175,23 @@
             "Platform Default",
             "disabled",
             "enabled",
+            "platform-default"
+         ]
+      },
+      "power_profile_selection_f19h": {
+         "description": "BIOS Policy - Processor - Power Profile Selection F19h",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "Balanced-Memory-Performance-Mode",
+            "Efficiency-Mode",
+            "High-Performance-Mode",
+            "Maximum-IO-Performance-Mode",
+            "Platform Default",
+            "balanced-memory-performance-mode",
+            "efficiency-mode",
+            "high-performance-mode",
+            "maximum-io-performance-mode",
             "platform-default"
          ]
       },
@@ -4901,6 +5209,32 @@
             "disabled",
             "energy-efficient",
             "performance",
+            "platform-default"
+         ]
+      },
+      "preferred_io_7xx2": {
+         "description": "BIOS Policy - Processor - Preferred IO 7xx2",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "Auto",
+            "Manual",
+            "Platform Default",
+            "auto",
+            "manual",
+            "platform-default"
+         ]
+      },
+      "preferred_io_7xx3": {
+         "description": "BIOS Policy - Processor - Preferred IO 7xx3",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "Auto",
+            "Bus",
+            "Platform Default",
+            "auto",
+            "bus",
             "platform-default"
          ]
       },
@@ -4935,8 +5269,10 @@
             "64g",
             "8G",
             "8g",
+            "Auto",
             "Invalid-Config.",
             "Platform Default",
+            "auto",
             "invalid-config.",
             "platform-default"
          ]
@@ -5222,6 +5558,19 @@
             "platform-default"
          ]
       },
+      "re_size_bar_support": {
+         "description": "BIOS Policy - Resizable Bar Support - Re-Size BAR Support",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "Disabled",
+            "Enabled",
+            "Platform Default",
+            "disabled",
+            "enabled",
+            "platform-default"
+         ]
+      },
       "rear_nvme1_link_speed": {
          "description": "BIOS Policy - PCI Slot LINK Speed - Rear NVME1 Link Speed",
          "type": "string",
@@ -5340,6 +5689,19 @@
             "platform-default",
             "reset",
             "stay-off"
+         ]
+      },
+      "runtime_post_package_repair": {
+         "description": "BIOS Policy - PostPackageRepair - Runtime Post Package Repair",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "Disabled",
+            "Enabled",
+            "Platform Default",
+            "disabled",
+            "enabled",
+            "platform-default"
          ]
       },
       "sas_raid": {
@@ -5572,6 +5934,19 @@
             "soft-ppr"
          ]
       },
+      "serial_mux": {
+         "description": "BIOS Policy - Serial Mux - Serial Mux",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "Disabled",
+            "Enabled",
+            "Platform Default",
+            "disabled",
+            "enabled",
+            "platform-default"
+         ]
+      },
       "serial_port_a_enable": {
          "description": "BIOS Policy - Serial port A enable - Serial port A enable",
          "type": "string",
@@ -5600,14 +5975,22 @@
             "platform-default"
          ]
       },
+      "sev_es_asid_space_limit": {
+         "description": "BIOS Policy - Processor - SEV-ES ASID Space Limit",
+         "type": "string",
+         "default": "platform-default",
+         "pattern": "platform-default|^[1-9]$|^[1-9][0-9]$|^[1-9][0-9][0-9]$|^100[0-7]$"
+      },
       "sev_snp_support": {
          "description": "BIOS Policy - Processor - SEV-SNP Support",
          "type": "string",
          "default": "platform-default",
          "enum": [
+            "Auto",
             "Disabled",
             "Enabled",
             "Platform Default",
+            "auto",
             "disabled",
             "enabled",
             "platform-default"
@@ -6671,6 +7054,37 @@
             "Platform Default",
             "disabled",
             "enabled",
+            "platform-default"
+         ]
+      },
+      "xgmi_force_link_width": {
+         "description": "BIOS Policy - Processor - xGMI Force Link Width",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "0",
+            "1",
+            "2",
+            "Auto",
+            "Platform Default",
+            "auto",
+            "platform-default"
+         ]
+      },
+      "xgmi_link_configuration": {
+         "description": "BIOS Policy - Processor - xGMI Link Configuration",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "2-xGMI-Links",
+            "2-xgmi-links",
+            "3-xGMI-Links",
+            "3-xgmi-links",
+            "4-xGMI-Links",
+            "4-xgmi-links",
+            "Auto",
+            "Platform Default",
+            "auto",
             "platform-default"
          ]
       },

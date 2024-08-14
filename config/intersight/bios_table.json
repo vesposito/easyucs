@@ -1271,6 +1271,47 @@
          "Auto"
       ]
    },
+   "cbs_cmn_apbdis_df_pstate_rs": {
+      "pattern": "^([0-2])$|^(platform-default)$",
+      "type": "integer",
+      "ucsm_token_name": "fixed_soc_pstate_sp5_f19h"
+   },
+   "cbs_cmn_cpu_avx512": {
+      "type": "enum",
+      "ucsc_token_map": {
+         "Auto": [],
+         "disabled": [],
+         "enabled": [],
+         "platform-default": [
+            "Platform Default"
+         ]
+      },
+      "ucsm_token_map": {
+         "Auto": [
+            "Auto",
+            "auto"
+         ],
+         "disabled": [
+            "disabled",
+            "Disabled"
+         ],
+         "enabled": [
+            "enabled",
+            "Enabled"
+         ],
+         "platform-default": [
+            "Platform Default",
+            "platform-default"
+         ]
+      },
+      "ucsm_token_name": "avx512",
+      "values": [
+         "platform-default",
+         "Auto",
+         "disabled",
+         "enabled"
+      ]
+   },
    "cbs_cmn_cpu_cpb": {
       "type": "enum",
       "ucsc_token_map": {
@@ -1528,6 +1569,11 @@
          "enabled"
       ]
    },
+   "cbs_cmn_cpu_sev_asid_space_limit": {
+      "pattern": "^([1-9]|[1-9]\\d|[1-9]\\d{2}|100[0-7])$|^(platform-default)$",
+      "type": "integer",
+      "ucsm_token_name": "sev_es_asid_space_limit"
+   },
    "cbs_cmn_cpu_smee": {
       "type": "enum",
       "ucsc_token_map": {
@@ -1666,6 +1712,42 @@
          "Power"
       ]
    },
+   "cbs_cmn_edc_control_throttle": {
+      "type": "enum",
+      "ucsc_token_map": {
+         "Auto": [],
+         "disabled": [],
+         "enabled": [],
+         "platform-default": [
+            "Platform Default"
+         ]
+      },
+      "ucsm_token_map": {
+         "Auto": [
+            "Auto",
+            "auto"
+         ],
+         "disabled": [
+            "disabled",
+            "Disabled"
+         ],
+         "enabled": [
+            "enabled",
+            "Enabled"
+         ],
+         "platform-default": [
+            "Platform Default",
+            "platform-default"
+         ]
+      },
+      "ucsm_token_name": "edc_control_throttle",
+      "values": [
+         "platform-default",
+         "Auto",
+         "disabled",
+         "enabled"
+      ]
+   },
    "cbs_cmn_efficiency_mode_en": {
       "type": "enum",
       "ucsc_token_map": {
@@ -1701,6 +1783,48 @@
          "platform-default",
          "Auto",
          "Enabled"
+      ]
+   },
+   "cbs_cmn_efficiency_mode_en_rs": {
+      "type": "enum",
+      "ucsc_token_map": {
+         "Balanced Memory Performance Mode": [],
+         "Efficiency Mode": [],
+         "High Performance Mode": [],
+         "Maximum IO Performance Mode": [],
+         "platform-default": [
+            "Platform Default"
+         ]
+      },
+      "ucsm_token_map": {
+         "Balanced Memory Performance Mode": [
+            "Balanced-Memory-Performance-Mode",
+            "balanced-memory-performance-mode"
+         ],
+         "Efficiency Mode": [
+            "Efficiency-Mode",
+            "efficiency-mode"
+         ],
+         "High Performance Mode": [
+            "High-Performance-Mode",
+            "high-performance-mode"
+         ],
+         "Maximum IO Performance Mode": [
+            "Maximum-IO-Performance-Mode",
+            "maximum-io-performance-mode"
+         ],
+         "platform-default": [
+            "Platform Default",
+            "platform-default"
+         ]
+      },
+      "ucsm_token_name": "power_profile_selection_f19h",
+      "values": [
+         "platform-default",
+         "Balanced Memory Performance Mode",
+         "Efficiency Mode",
+         "High Performance Mode",
+         "Maximum IO Performance Mode"
       ]
    },
    "cbs_cmn_fixed_soc_pstate": {
@@ -1859,6 +1983,51 @@
          "enabled"
       ]
    },
+   "cbs_cmn_gnb_smu_dffo_rs": {
+      "type": "enum",
+      "values": [
+         "platform-default",
+         "Auto",
+         "disabled",
+         "enabled"
+      ]
+   },
+   "cbs_cmn_gnb_smu_dlwm_support": {
+      "type": "enum",
+      "ucsc_token_map": {
+         "Auto": [],
+         "disabled": [],
+         "enabled": [],
+         "platform-default": [
+            "Platform Default"
+         ]
+      },
+      "ucsm_token_map": {
+         "Auto": [
+            "Auto",
+            "auto"
+         ],
+         "disabled": [
+            "disabled",
+            "Disabled"
+         ],
+         "enabled": [
+            "enabled",
+            "Enabled"
+         ],
+         "platform-default": [
+            "Platform Default",
+            "platform-default"
+         ]
+      },
+      "ucsm_token_name": "dlwm_support",
+      "values": [
+         "platform-default",
+         "Auto",
+         "disabled",
+         "enabled"
+      ]
+   },
    "cbs_cmn_gnb_smucppc": {
       "type": "enum",
       "ucsc_token_map": {
@@ -1951,6 +2120,50 @@
          "enabled"
       ]
    },
+   "cbs_cmn_mem_ctrller_pwr_dn_en_ddr": {
+      "type": "enum",
+      "ucsc_token_map": {
+         "Auto": [],
+         "disabled": [],
+         "enabled": [],
+         "platform-default": [
+            "Platform Default"
+         ]
+      },
+      "ucsm_token_map": {
+         "Auto": [
+            "Auto",
+            "auto"
+         ],
+         "disabled": [
+            "disabled",
+            "Disabled"
+         ],
+         "enabled": [
+            "enabled",
+            "Enabled"
+         ],
+         "platform-default": [
+            "Platform Default",
+            "platform-default"
+         ]
+      },
+      "ucsm_token_name": "power_down_enable",
+      "values": [
+         "platform-default",
+         "Auto",
+         "disabled",
+         "enabled"
+      ]
+   },
+   "cbs_cmn_mem_dram_refresh_rate": {
+      "type": "enum",
+      "values": [
+         "platform-default",
+         "3.9 usec",
+         "7.8 usec"
+      ]
+   },
    "cbs_cmn_mem_map_bank_interleave_ddr4": {
       "type": "enum",
       "ucsc_token_map": {
@@ -1962,6 +2175,7 @@
             "disabled",
             "Disabled"
          ],
+         "enabled": [],
          "platform-default": [
             "Platform Default",
             "platform-default"
@@ -1976,6 +2190,7 @@
             "disabled",
             "Disabled"
          ],
+         "enabled": [],
          "platform-default": [
             "Platform Default",
             "platform-default"
@@ -1985,7 +2200,248 @@
       "values": [
          "platform-default",
          "Auto",
-         "disabled"
+         "disabled",
+         "enabled"
+      ]
+   },
+   "cbs_cmn_mem_speed_ddr47xx2": {
+      "type": "enum",
+      "ucsc_token_map": {
+         "1067MHz": [],
+         "1200MHz": [],
+         "1333MHz": [],
+         "1467MHz": [],
+         "1600MHz": [],
+         "667MHz": [],
+         "800MHz": [],
+         "933MHz": [],
+         "Auto": [],
+         "platform-default": [
+            "Platform Default"
+         ]
+      },
+      "ucsm_token_map": {
+         "1067MHz": [
+            "1067MHz",
+            "1067mhz"
+         ],
+         "1200MHz": [
+            "1200MHz",
+            "1200mhz"
+         ],
+         "1333MHz": [
+            "1333MHz",
+            "1333mhz"
+         ],
+         "1467MHz": [
+            "1467MHz",
+            "1467mhz"
+         ],
+         "1600MHz": [
+            "1600MHz",
+            "1600mhz"
+         ],
+         "667MHz": [
+            "667MHz",
+            "667mhz"
+         ],
+         "800MHz": [
+            "800MHz",
+            "800mhz"
+         ],
+         "933MHz": [
+            "933MHz",
+            "933mhz"
+         ],
+         "Auto": [
+            "Auto",
+            "auto"
+         ],
+         "platform-default": [
+            "Platform Default",
+            "platform-default"
+         ]
+      },
+      "ucsm_token_name": "memory_clock_speed_7xx2",
+      "values": [
+         "platform-default",
+         "667MHz",
+         "800MHz",
+         "933MHz",
+         "1067MHz",
+         "1200MHz",
+         "1333MHz",
+         "1467MHz",
+         "1600MHz",
+         "Auto"
+      ]
+   },
+   "cbs_cmn_mem_speed_ddr47xx3": {
+      "type": "enum",
+      "ucsc_token_map": {
+         "1067MHz": [],
+         "1200MHz": [],
+         "1333MHz": [],
+         "1467MHz": [],
+         "1600MHz": [],
+         "1633MHz": [],
+         "1667MHz": [],
+         "1700MHz": [],
+         "1733MHz": [],
+         "1767MHz": [],
+         "1800MHz": [],
+         "400MHz": [],
+         "800MHz": [],
+         "933MHz": [],
+         "Auto": [],
+         "platform-default": [
+            "Platform Default"
+         ]
+      },
+      "ucsm_token_map": {
+         "1067MHz": [
+            "1067MHz",
+            "1067mhz"
+         ],
+         "1200MHz": [
+            "1200MHz",
+            "1200mhz"
+         ],
+         "1333MHz": [
+            "1333MHz",
+            "1333mhz"
+         ],
+         "1467MHz": [
+            "1467MHz",
+            "1467mhz"
+         ],
+         "1600MHz": [
+            "1600MHz",
+            "1600mhz"
+         ],
+         "1633MHz": [
+            "1633MHz",
+            "1633mhz"
+         ],
+         "1667MHz": [
+            "1667MHz",
+            "1667mhz"
+         ],
+         "1700MHz": [
+            "1700MHz",
+            "1700mhz"
+         ],
+         "1733MHz": [
+            "1733MHz",
+            "1733mhz"
+         ],
+         "1767MHz": [
+            "1767MHz",
+            "1767mhz"
+         ],
+         "1800MHz": [
+            "1800MHz",
+            "1800mhz"
+         ],
+         "400MHz": [
+            "400MHz",
+            "400mhz"
+         ],
+         "800MHz": [
+            "800MHz",
+            "800mhz"
+         ],
+         "933MHz": [
+            "933MHz",
+            "933mhz"
+         ],
+         "Auto": [
+            "Auto",
+            "auto"
+         ],
+         "platform-default": [
+            "Platform Default",
+            "platform-default"
+         ]
+      },
+      "ucsm_token_name": "memory_clock_speed_7xx3",
+      "values": [
+         "platform-default",
+         "400MHz",
+         "800MHz",
+         "933MHz",
+         "1067MHz",
+         "1200MHz",
+         "1333MHz",
+         "1467MHz",
+         "1600MHz",
+         "1633MHz",
+         "1667MHz",
+         "1700MHz",
+         "1733MHz",
+         "1767MHz",
+         "1800MHz",
+         "Auto"
+      ]
+   },
+   "cbs_cmn_preferred_io7xx2": {
+      "type": "enum",
+      "ucsc_token_map": {
+         "Auto": [],
+         "Manual": [],
+         "platform-default": [
+            "Platform Default"
+         ]
+      },
+      "ucsm_token_map": {
+         "Auto": [
+            "Auto",
+            "auto"
+         ],
+         "Manual": [
+            "Manual",
+            "manual"
+         ],
+         "platform-default": [
+            "Platform Default",
+            "platform-default"
+         ]
+      },
+      "ucsm_token_name": "preferred_io_7xx2",
+      "values": [
+         "platform-default",
+         "Auto",
+         "Manual"
+      ]
+   },
+   "cbs_cmn_preferred_io7xx3": {
+      "type": "enum",
+      "ucsc_token_map": {
+         "Auto": [],
+         "Bus": [],
+         "platform-default": [
+            "Platform Default"
+         ]
+      },
+      "ucsm_token_map": {
+         "Auto": [
+            "Auto",
+            "auto"
+         ],
+         "Bus": [
+            "Bus",
+            "bus"
+         ],
+         "platform-default": [
+            "Platform Default",
+            "platform-default"
+         ]
+      },
+      "ucsm_token_name": "preferred_io_7xx3",
+      "values": [
+         "platform-default",
+         "Auto",
+         "Bus"
       ]
    },
    "cbs_cmnc_tdp_ctl": {
@@ -2025,24 +2481,26 @@
          "Manual"
       ]
    },
-   "cbs_cpu_ccd_ctrl_ssp": {
+   "cbs_cmnx_gmi_force_link_width_rs": {
       "type": "enum",
       "ucsc_token_map": {
-         "2 CCDs": [
-            "2-CCDs",
-            "2-ccds"
+         "0": [],
+         "1": [],
+         "2": [],
+         "Auto": [],
+         "platform-default": [
+            "Platform Default"
+         ]
+      },
+      "ucsm_token_map": {
+         "0": [
+            "0"
          ],
-         "3 CCDs": [
-            "3-CCDs",
-            "3-ccds"
+         "1": [
+            "1"
          ],
-         "4 CCDs": [
-            "4-CCDs",
-            "4-ccds"
-         ],
-         "6 CCDs": [
-            "6-CCDs",
-            "6-ccds"
+         "2": [
+            "2"
          ],
          "Auto": [
             "Auto",
@@ -2053,7 +2511,19 @@
             "platform-default"
          ]
       },
-      "ucsm_token_map": {
+      "ucsm_token_name": "xgmi_force_link_width",
+      "values": [
+         "platform-default",
+         "0",
+         "1",
+         "2",
+         "Auto"
+      ]
+   },
+   "cbs_cpu_ccd_ctrl_ssp": {
+      "type": "enum",
+      "ucsc_token_map": {
+         "10 CCDs": [],
          "2 CCDs": [
             "2-CCDs",
             "2-ccds"
@@ -2069,6 +2539,41 @@
          "6 CCDs": [
             "6-CCDs",
             "6-ccds"
+         ],
+         "8 CCDs": [],
+         "Auto": [
+            "Auto",
+            "auto"
+         ],
+         "platform-default": [
+            "Platform Default",
+            "platform-default"
+         ]
+      },
+      "ucsm_token_map": {
+         "10 CCDs": [
+            "10-CCDs",
+            "10-ccds"
+         ],
+         "2 CCDs": [
+            "2-CCDs",
+            "2-ccds"
+         ],
+         "3 CCDs": [
+            "3-CCDs",
+            "3-ccds"
+         ],
+         "4 CCDs": [
+            "4-CCDs",
+            "4-ccds"
+         ],
+         "6 CCDs": [
+            "6-CCDs",
+            "6-ccds"
+         ],
+         "8 CCDs": [
+            "8-CCDs",
+            "8-ccds"
          ],
          "Auto": [
             "Auto",
@@ -2086,6 +2591,8 @@
          "3 CCDs",
          "4 CCDs",
          "6 CCDs",
+         "8 CCDs",
+         "10 CCDs",
          "Auto"
       ]
    },
@@ -2180,6 +2687,107 @@
          "TWO (2 + 0)"
       ]
    },
+   "cbs_cpu_down_core_ctrl_bergamo": {
+      "type": "enum",
+      "values": [
+         "platform-default",
+         "Auto",
+         "EIGHT (4 + 4)",
+         "FOUR (2 + 2)",
+         "FOURTEEN (7 + 7)",
+         "SIX (3 + 3)",
+         "TEN (5 + 5)",
+         "TWELVE (6 + 6)",
+         "TWO (1 + 1)"
+      ]
+   },
+   "cbs_cpu_down_core_ctrl_genoa": {
+      "type": "enum",
+      "ucsc_token_map": {
+         "Auto": [],
+         "FIVE (5 + 0)": [
+            "FIVE-(5-+-0)",
+            "five-(5-+-0)"
+         ],
+         "FOUR (4 + 0)": [
+            "FOUR-(4-+-0)",
+            "four-(4-+-0)"
+         ],
+         "ONE (1 + 0)": [
+            "ONE-(1-+-0)",
+            "one-(1-+-0)"
+         ],
+         "SEVEN (7 + 0)": [
+            "SEVEN-(7-+-0)",
+            "seven-(7-+-0)"
+         ],
+         "SIX (6 + 0)": [
+            "SIX-(6-+-0)",
+            "six-(6-+-0)"
+         ],
+         "THREE (3 + 0)": [
+            "THREE-(3-+-0)",
+            "three-(3-+-0)"
+         ],
+         "TWO (2 + 0)": [
+            "TWO-(2-+-0)",
+            "two-(2-+-0)"
+         ],
+         "platform-default": [
+            "Platform Default"
+         ]
+      },
+      "ucsm_token_map": {
+         "Auto": [
+            "Auto",
+            "auto"
+         ],
+         "FIVE (5 + 0)": [
+            "FIVE--5---0-",
+            "five--5---0-"
+         ],
+         "FOUR (4 + 0)": [
+            "FOUR--4---0-",
+            "four--4---0-"
+         ],
+         "ONE (1 + 0)": [
+            "ONE--1---0-",
+            "one--1---0-"
+         ],
+         "SEVEN (7 + 0)": [
+            "SEVEN--7---0-",
+            "seven--7---0-"
+         ],
+         "SIX (6 + 0)": [
+            "SIX--6---0-",
+            "six--6---0-"
+         ],
+         "THREE (3 + 0)": [
+            "THREE--3---0-",
+            "three--3---0-"
+         ],
+         "TWO (2 + 0)": [
+            "TWO--2---0-",
+            "two--2---0-"
+         ],
+         "platform-default": [
+            "Platform Default",
+            "platform-default"
+         ]
+      },
+      "ucsm_token_name": "cpu_downcore_control_f19_m10h_1fh",
+      "values": [
+         "platform-default",
+         "Auto",
+         "FIVE (5 + 0)",
+         "FOUR (4 + 0)",
+         "ONE (1 + 0)",
+         "SEVEN (7 + 0)",
+         "SIX (6 + 0)",
+         "THREE (3 + 0)",
+         "TWO (2 + 0)"
+      ]
+   },
    "cbs_cpu_smt_ctrl": {
       "type": "enum",
       "ucsc_token_map": {
@@ -2224,6 +2832,103 @@
          "Auto",
          "disabled",
          "enabled"
+      ]
+   },
+   "cbs_dbg_cpu_gen_cpu_wdt": {
+      "type": "enum",
+      "ucsc_token_map": {
+         "Auto": [],
+         "disabled": [],
+         "enabled": [],
+         "platform-default": [
+            "Platform Default"
+         ]
+      },
+      "ucsm_token_map": {
+         "Auto": [
+            "Auto",
+            "auto"
+         ],
+         "disabled": [
+            "disabled",
+            "Disabled"
+         ],
+         "enabled": [
+            "enabled",
+            "Enabled"
+         ],
+         "platform-default": [
+            "Platform Default",
+            "platform-default"
+         ]
+      },
+      "ucsm_token_name": "core_watchdog_timer_enable",
+      "values": [
+         "platform-default",
+         "Auto",
+         "disabled",
+         "enabled"
+      ]
+   },
+   "cbs_dbg_cpu_lapic_mode": {
+      "type": "enum",
+      "ucsc_token_map": {
+         "Auto": [],
+         "Compatibility": [],
+         "X2APIC": [],
+         "XAPIC": [],
+         "platform-default": [
+            "Platform Default"
+         ]
+      },
+      "ucsm_token_map": {
+         "Auto": [
+            "Auto",
+            "auto"
+         ],
+         "Compatibility": [
+            "Compatibility",
+            "compatibility"
+         ],
+         "X2APIC": [
+            "X2APIC",
+            "x2apic"
+         ],
+         "XAPIC": [
+            "XAPIC",
+            "xapic"
+         ],
+         "platform-default": [
+            "Platform Default",
+            "platform-default"
+         ]
+      },
+      "ucsm_token_name": "local_apic_mode",
+      "values": [
+         "platform-default",
+         "Auto",
+         "Compatibility",
+         "X2APIC",
+         "XAPIC"
+      ]
+   },
+   "cbs_dbg_cpu_lapic_mode7xx2": {
+      "type": "enum",
+      "values": [
+         "platform-default",
+         "Auto",
+         "X2APIC",
+         "XAPIC"
+      ]
+   },
+   "cbs_dbg_cpu_lapic_mode7xx3": {
+      "type": "enum",
+      "values": [
+         "platform-default",
+         "Auto",
+         "Compatibility",
+         "X2APIC",
+         "XAPIC"
       ]
    },
    "cbs_dbg_cpu_snp_mem_cover": {
@@ -2285,6 +2990,48 @@
       "pattern": "^(\\d|[1-9]\\d|[1-9]\\d{2}|[1-9]\\d{3}|[1-9]\\d{4}|[1-9]\\d{5}|10[0-3]\\d{4}|104[0-7]\\d{3}|1048[0-4]\\d{2}|10485[0-6]\\d|104857[0-6])$|^(platform-default)$",
       "type": "integer",
       "ucsm_token_name": "snp_memory_size_to_cover_in_mb"
+   },
+   "cbs_df_cmn4link_max_xgmi_speed": {
+      "type": "enum",
+      "ucsc_token_map": {
+         "20Gbps": [],
+         "25Gbps": [],
+         "32Gbps": [],
+         "Auto": [],
+         "platform-default": [
+            "Platform Default"
+         ]
+      },
+      "ucsm_token_map": {
+         "20Gbps": [
+            "20Gbps",
+            "20gbps"
+         ],
+         "25Gbps": [
+            "25Gbps",
+            "25gbps"
+         ],
+         "32Gbps": [
+            "32Gbps",
+            "32gbps"
+         ],
+         "Auto": [
+            "Auto",
+            "auto"
+         ],
+         "platform-default": [
+            "Platform Default",
+            "platform-default"
+         ]
+      },
+      "ucsm_token_name": "4_link_xgmi_max_speed",
+      "values": [
+         "platform-default",
+         "20Gbps",
+         "25Gbps",
+         "32Gbps",
+         "Auto"
+      ]
    },
    "cbs_df_cmn_acpi_srat_l3numa": {
       "type": "enum",
@@ -2396,6 +3143,76 @@
          "NPS4"
       ]
    },
+   "cbs_df_cmn_dram_scrub_time": {
+      "type": "enum",
+      "ucsc_token_map": {
+         "1 hour": [],
+         "12 hours": [],
+         "16 hours": [],
+         "24 hours": [],
+         "4 hours": [],
+         "48 hours": [],
+         "6 hours": [],
+         "8 hours": [],
+         "Auto": [],
+         "Disabled": [],
+         "platform-default": [
+            "Platform Default"
+         ]
+      },
+      "ucsm_token_map": {
+         "1 hour": [
+            "1-hour"
+         ],
+         "12 hours": [
+            "12-hours"
+         ],
+         "16 hours": [
+            "16-hours"
+         ],
+         "24 hours": [
+            "24-hours"
+         ],
+         "4 hours": [
+            "4-hours"
+         ],
+         "48 hours": [
+            "48-hours"
+         ],
+         "6 hours": [
+            "6-hours"
+         ],
+         "8 hours": [
+            "8-hours"
+         ],
+         "Auto": [
+            "Auto",
+            "auto"
+         ],
+         "Disabled": [
+            "Disabled",
+            "disabled"
+         ],
+         "platform-default": [
+            "Platform Default",
+            "platform-default"
+         ]
+      },
+      "ucsm_token_name": "dram_scrub_time",
+      "values": [
+         "platform-default",
+         "1 hour",
+         "4 hours",
+         "6 hours",
+         "8 hours",
+         "12 hours",
+         "16 hours",
+         "24 hours",
+         "48 hours",
+         "Auto",
+         "Disabled"
+      ]
+   },
    "cbs_df_cmn_mem_intlv": {
       "type": "enum",
       "ucsc_token_map": {
@@ -2458,6 +3275,42 @@
          "Die",
          "None",
          "Socket"
+      ]
+   },
+   "cbs_df_cmn_mem_intlv_control": {
+      "type": "enum",
+      "ucsc_token_map": {
+         "Auto": [],
+         "disabled": [],
+         "enabled": [],
+         "platform-default": [
+            "Platform Default"
+         ]
+      },
+      "ucsm_token_map": {
+         "Auto": [
+            "Auto",
+            "auto"
+         ],
+         "disabled": [
+            "disabled",
+            "Disabled"
+         ],
+         "enabled": [
+            "enabled",
+            "Enabled"
+         ],
+         "platform-default": [
+            "Platform Default",
+            "platform-default"
+         ]
+      },
+      "ucsm_token_name": "cbs_df_cmn_mem_intlv_control",
+      "values": [
+         "platform-default",
+         "Auto",
+         "disabled",
+         "enabled"
       ]
    },
    "cbs_df_cmn_mem_intlv_size": {
@@ -2527,9 +3380,88 @@
          "Auto"
       ]
    },
+   "cbs_df_dbg_xgmi_link_cfg": {
+      "type": "enum",
+      "ucsc_token_map": {
+         "2 xGMI Links": [],
+         "3 xGMI Links": [],
+         "4 xGMI Links": [],
+         "Auto": [],
+         "platform-default": [
+            "Platform Default"
+         ]
+      },
+      "ucsm_token_map": {
+         "2 xGMI Links": [
+            "2-xGMI-Links",
+            "2-xgmi-links"
+         ],
+         "3 xGMI Links": [
+            "3-xGMI-Links",
+            "3-xgmi-links"
+         ],
+         "4 xGMI Links": [
+            "4-xGMI-Links",
+            "4-xgmi-links"
+         ],
+         "Auto": [
+            "Auto",
+            "auto"
+         ],
+         "platform-default": [
+            "Platform Default",
+            "platform-default"
+         ]
+      },
+      "ucsm_token_name": "xgmi_link_configuration",
+      "values": [
+         "platform-default",
+         "2 xGMI Links",
+         "3 xGMI Links",
+         "4 xGMI Links",
+         "Auto"
+      ]
+   },
+   "cbs_gnb_dbg_pcie_tbt_support": {
+      "type": "enum",
+      "ucsc_token_map": {
+         "Auto": [],
+         "disabled": [],
+         "enabled": [],
+         "platform-default": [
+            "Platform Default"
+         ]
+      },
+      "ucsm_token_map": {
+         "Auto": [
+            "Auto",
+            "auto"
+         ],
+         "disabled": [
+            "disabled",
+            "Disabled"
+         ],
+         "enabled": [
+            "enabled",
+            "Enabled"
+         ],
+         "platform-default": [
+            "Platform Default",
+            "platform-default"
+         ]
+      },
+      "ucsm_token_name": "pcie_ten_bit_tag_support",
+      "values": [
+         "platform-default",
+         "Auto",
+         "disabled",
+         "enabled"
+      ]
+   },
    "cbs_sev_snp_support": {
       "type": "enum",
       "ucsc_token_map": {
+         "Auto": [],
          "disabled": [
             "disabled",
             "Disabled"
@@ -2544,6 +3476,10 @@
          ]
       },
       "ucsm_token_map": {
+         "Auto": [
+            "Auto",
+            "auto"
+         ],
          "disabled": [
             "disabled",
             "Disabled"
@@ -2560,8 +3496,9 @@
       "ucsm_token_name": "sev_snp_support",
       "values": [
          "platform-default",
-         "enabled",
-         "disabled"
+         "Auto",
+         "disabled",
+         "enabled"
       ]
    },
    "cdn_enable": {
@@ -4081,6 +5018,42 @@
          "disabled"
       ]
    },
+   "dfx_osb_en": {
+      "type": "enum",
+      "ucsc_token_map": {
+         "Auto": [],
+         "disabled": [],
+         "enabled": [],
+         "platform-default": [
+            "Platform Default"
+         ]
+      },
+      "ucsm_token_map": {
+         "Auto": [
+            "Auto",
+            "auto"
+         ],
+         "disabled": [
+            "disabled",
+            "Disabled"
+         ],
+         "enabled": [
+            "enabled",
+            "Enabled"
+         ],
+         "platform-default": [
+            "Platform Default",
+            "platform-default"
+         ]
+      },
+      "ucsm_token_name": "dfx_osb_configuration",
+      "values": [
+         "platform-default",
+         "Auto",
+         "disabled",
+         "enabled"
+      ]
+   },
    "direct_cache_access": {
       "type": "enum",
       "ucsc_token_map": {
@@ -4492,6 +5465,35 @@
    },
    "enable_rmt": {
       "type": "enum",
+      "ucsc_token_map": {
+         "disabled": [
+            "disabled",
+            "Disabled"
+         ],
+         "enabled": [
+            "enabled",
+            "Enabled"
+         ],
+         "platform-default": [
+            "Platform Default",
+            "platform-default"
+         ]
+      },
+      "ucsm_token_map": {
+         "disabled": [
+            "disabled",
+            "Disabled"
+         ],
+         "enabled": [
+            "enabled",
+            "Enabled"
+         ],
+         "platform-default": [
+            "Platform Default",
+            "platform-default"
+         ]
+      },
+      "ucsm_token_name": "rank_margin_tool",
       "values": [
          "platform-default",
          "enabled",
@@ -5608,6 +6610,36 @@
          "disabled"
       ]
    },
+   "ioat_config_cpm": {
+      "type": "enum",
+      "ucsc_token_map": {
+         "disabled": [],
+         "enabled": [],
+         "platform-default": [
+            "Platform Default"
+         ]
+      },
+      "ucsm_token_map": {
+         "disabled": [
+            "disabled",
+            "Disabled"
+         ],
+         "enabled": [
+            "enabled",
+            "Enabled"
+         ],
+         "platform-default": [
+            "Platform Default",
+            "platform-default"
+         ]
+      },
+      "ucsm_token_name": "ioat_configuration",
+      "values": [
+         "platform-default",
+         "enabled",
+         "disabled"
+      ]
+   },
    "ioh_error_enable": {
       "type": "enum",
       "values": [
@@ -6510,6 +7542,132 @@
          "2.5 GB",
          "3 GB",
          "Auto"
+      ]
+   },
+   "mmioh_base": {
+      "type": "enum",
+      "ucsc_token_map": {
+         "16T": [],
+         "1T": [],
+         "24T": [],
+         "2T": [],
+         "32T": [],
+         "40T": [],
+         "4T": [],
+         "512G": [],
+         "56T": [],
+         "platform-default": [
+            "Platform Default"
+         ]
+      },
+      "ucsm_token_map": {
+         "16T": [
+            "16T",
+            "16t"
+         ],
+         "1T": [
+            "1T",
+            "1t"
+         ],
+         "24T": [
+            "24T",
+            "24t"
+         ],
+         "2T": [
+            "2T",
+            "2t"
+         ],
+         "32T": [
+            "32T",
+            "32t"
+         ],
+         "40T": [
+            "40T",
+            "40t"
+         ],
+         "4T": [
+            "4T",
+            "4t"
+         ],
+         "512G": [
+            "512G",
+            "512g"
+         ],
+         "56T": [
+            "56T",
+            "56t"
+         ],
+         "platform-default": [
+            "Platform Default",
+            "platform-default"
+         ]
+      },
+      "ucsm_token_name": "mmio_high_base",
+      "values": [
+         "platform-default",
+         "512G",
+         "1T",
+         "2T",
+         "4T",
+         "16T",
+         "24T",
+         "32T",
+         "40T",
+         "56T"
+      ]
+   },
+   "mmioh_size": {
+      "type": "enum",
+      "ucsc_token_map": {
+         "1024G": [],
+         "16G": [],
+         "1G": [],
+         "256G": [],
+         "4G": [],
+         "64G": [],
+         "platform-default": [
+            "Platform Default"
+         ]
+      },
+      "ucsm_token_map": {
+         "1024G": [
+            "1024G",
+            "1024g"
+         ],
+         "16G": [
+            "16G",
+            "16g"
+         ],
+         "1G": [
+            "1G",
+            "1g"
+         ],
+         "256G": [
+            "256G",
+            "256g"
+         ],
+         "4G": [
+            "4G",
+            "4g"
+         ],
+         "64G": [
+            "64G",
+            "64g"
+         ],
+         "platform-default": [
+            "Platform Default",
+            "platform-default"
+         ]
+      },
+      "ucsm_token_name": "mmio_high_granularity_size",
+      "values": [
+         "platform-default",
+         "1G",
+         "4G",
+         "16G",
+         "64G",
+         "256G",
+         "1024G"
       ]
    },
    "network_stack": {
@@ -7672,6 +8830,7 @@
             "GEN4",
             "gen4"
          ],
+         "GEN5": [],
          "platform-default": [
             "Platform Default",
             "platform-default"
@@ -7702,6 +8861,7 @@
             "GEN4",
             "gen4"
          ],
+         "GEN5": [],
          "platform-default": [
             "Platform Default",
             "platform-default"
@@ -7715,7 +8875,8 @@
          "GEN1",
          "GEN2",
          "GEN3",
-         "GEN4"
+         "GEN4",
+         "GEN5"
       ]
    },
    "pcie_slot_mstorraid_option_rom": {
@@ -8519,6 +9680,7 @@
             "8G",
             "8g"
          ],
+         "Auto": [],
          "Invalid Config.": [
             "Invalid-Config.",
             "invalid-config."
@@ -8581,6 +9743,10 @@
             "8G",
             "8g"
          ],
+         "Auto": [
+            "Auto",
+            "auto"
+         ],
          "Invalid Config.": [
             "Invalid-Config.",
             "invalid-config."
@@ -8606,6 +9772,7 @@
          "128M",
          "256M",
          "512M",
+         "Auto",
          "Invalid Config."
       ]
    },
@@ -9291,6 +10458,66 @@
          "Bootloader"
       ]
    },
+   "resize_bar_support": {
+      "type": "enum",
+      "ucsc_token_map": {
+         "disabled": [],
+         "enabled": [],
+         "platform-default": [
+            "Platform Default"
+         ]
+      },
+      "ucsm_token_map": {
+         "disabled": [
+            "disabled",
+            "Disabled"
+         ],
+         "enabled": [
+            "enabled",
+            "Enabled"
+         ],
+         "platform-default": [
+            "Platform Default",
+            "platform-default"
+         ]
+      },
+      "ucsm_token_name": "re_size_bar_support",
+      "values": [
+         "platform-default",
+         "enabled",
+         "disabled"
+      ]
+   },
+   "runtime_post_package_repair": {
+      "type": "enum",
+      "ucsc_token_map": {
+         "disabled": [],
+         "enabled": [],
+         "platform-default": [
+            "Platform Default"
+         ]
+      },
+      "ucsm_token_map": {
+         "disabled": [
+            "disabled",
+            "Disabled"
+         ],
+         "enabled": [
+            "enabled",
+            "Enabled"
+         ],
+         "platform-default": [
+            "Platform Default",
+            "platform-default"
+         ]
+      },
+      "ucsm_token_name": "runtime_post_package_repair",
+      "values": [
+         "platform-default",
+         "enabled",
+         "disabled"
+      ]
+   },
    "sata_mode_select": {
       "type": "enum",
       "ucsc_token_map": {
@@ -9463,6 +10690,36 @@
          "disabled",
          "Hard PPR",
          "Soft PPR"
+      ]
+   },
+   "serial_mux": {
+      "type": "enum",
+      "ucsc_token_map": {
+         "disabled": [],
+         "enabled": [],
+         "platform-default": [
+            "Platform Default"
+         ]
+      },
+      "ucsm_token_map": {
+         "disabled": [
+            "disabled",
+            "Disabled"
+         ],
+         "enabled": [
+            "enabled",
+            "Enabled"
+         ],
+         "platform-default": [
+            "Platform Default",
+            "platform-default"
+         ]
+      },
+      "ucsm_token_name": "serial_mux",
+      "values": [
+         "platform-default",
+         "enabled",
+         "disabled"
       ]
    },
    "serial_port_aenable": {

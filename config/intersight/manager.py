@@ -129,11 +129,22 @@ class IntersightConfigManager(GenericConfigManager):
                         "name": getattr(domain_profile, "name", None),
                         "type": "ucs_domain_profile"
                     }
+                    for field in ["descr", "ucs_domain_profile_template"]:
+                        if hasattr(domain_profile, field) and getattr(domain_profile, field):
+                            dict_domain_profile[field] = getattr(domain_profile, field)
                     if getattr(domain_profile, "operational_state", None):
                         for field in ["config_state", "profile_state"]:
                             if domain_profile.operational_state.get(field):
                                 dict_domain_profile[field] = domain_profile.operational_state.get(field)
                     json_org["profiles"].append(dict_domain_profile)
+            
+            if org.ucs_domain_profile_templates:
+                for domain_profile_template in org.ucs_domain_profile_templates:
+                    dict_domain_profile_template = {
+                        "name": getattr(domain_profile_template, "name", None),
+                        "type": "ucs_domain_profile_template"
+                    }
+                    json_org["profiles"].append(dict_domain_profile_template)
 
             if org.ucs_chassis_profiles:
                 for chassis_profile in org.ucs_chassis_profiles:
@@ -141,11 +152,22 @@ class IntersightConfigManager(GenericConfigManager):
                         "name": getattr(chassis_profile, "name", None),
                         "type": "ucs_chassis_profile"
                     }
+                    for field in ["descr", "ucs_chassis_profile_template"]:
+                        if hasattr(chassis_profile, field) and getattr(chassis_profile, field):
+                            dict_chassis_profile[field] = getattr(chassis_profile, field)
                     if getattr(chassis_profile, "operational_state", None):
                         for field in ["config_state", "profile_state"]:
                             if chassis_profile.operational_state.get(field):
                                 dict_chassis_profile[field] = chassis_profile.operational_state.get(field)
                     json_org["profiles"].append(dict_chassis_profile)
+
+            if org.ucs_chassis_profile_templates:
+                for chassis_profile_template in org.ucs_chassis_profile_templates:
+                    dict_chassis_profile_template = {
+                        "name": getattr(chassis_profile_template, "name", None),
+                        "type": "ucs_chassis_profile_template"
+                    }
+                    json_org["profiles"].append(dict_chassis_profile_template)
 
             output_json_orgs.append(json_org)
 

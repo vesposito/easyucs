@@ -123,18 +123,20 @@
          "default": "",
          "pattern": "^[\\-\\.:_a-zA-Z0-9]{0,16}$"
       },
-      "connection_policy": {
-         "description": "vNIC Template - Connection Policy",
+      "dynamic_vnic_connection_policy": {
+         "description": "vNIC Template - Dynamic vNIC Connection Policy Name",
          "type": "string",
-         "default": "dynamic-vnic",
-         "enum": [
-            "dynamic-vnic",
-            "usnic",
-            "vmq"
-         ]
+         "default": "",
+         "pattern": "^[\\-\\.:_a-zA-Z0-9]{0,16}$"
       },
-      "connection_policy_name": {
-         "description": "vNIC Template - Connection Policy Name",
+      "usnic_connection_policy": {
+         "description": "vNIC Template - usNIC Connection Policy Name",
+         "type": "string",
+         "default": "",
+         "pattern": "^[\\-\\.:_a-zA-Z0-9]{0,16}$"
+      },
+      "vmq_connection_policy": {
+         "description": "vNIC Template - VMQ Connection Policy Name",
          "type": "string",
          "default": "",
          "pattern": "^[\\-\\.:_a-zA-Z0-9]{0,16}$"
@@ -169,17 +171,59 @@
          "description": "vNIC Template - Operational State",
          "type": "object",
          "properties": {
-            "connection_policy": {
-               "description": "vNIC Template - Operational State - Connection Policy",
+            "dynamic_vnic_connection_policy": {
+               "description": "vNIC Template - Operational State - Dynamic vNIC Connection Policy",
                "type": "object",
                "properties": {
                   "name": {
-                     "description": "vNIC Template - Operational State - Connection Policy - Name",
+                     "description": "vNIC Template - Operational State - Dynamic vNIC Connection Policy - Name",
                      "type": "string",
                      "default": ""
                   },
                   "org": {
-                     "description": "vNIC Template - Operational State - Connection Policy - Org",
+                     "description": "vNIC Template - Operational State - Dynamic vNIC Connection Policy  - Org",
+                     "type": "string",
+                     "default": ""
+                  }
+               },
+               "additionalProperties": false,
+               "required": [
+                  "name",
+                  "org"
+               ]
+            },
+            "usnic_connection_policy": {
+               "description": "vNIC Template - Operational State - usNIC Connection Policy",
+               "type": "object",
+               "properties": {
+                  "name": {
+                     "description": "vNIC Template - Operational State - usNIC Connection Policy - Name",
+                     "type": "string",
+                     "default": ""
+                  },
+                  "org": {
+                     "description": "vNIC Template - Operational State - usNIC Connection Policy  - Org",
+                     "type": "string",
+                     "default": ""
+                  }
+               },
+               "additionalProperties": false,
+               "required": [
+                  "name",
+                  "org"
+               ]
+            },
+            "vmq_connection_policy": {
+               "description": "vNIC Template - Operational State - VMQ Connection Policy",
+               "type": "object",
+               "properties": {
+                  "name": {
+                     "description": "vNIC Template - Operational State - VMQ Connection Policy - Name",
+                     "type": "string",
+                     "default": ""
+                  },
+                  "org": {
+                     "description": "vNIC Template - Operational State - VMQ Connection Policy  - Org",
                      "type": "string",
                      "default": ""
                   }

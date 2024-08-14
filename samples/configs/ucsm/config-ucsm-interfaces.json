@@ -7,8 +7,8 @@
             "category": "samples",
             "subcategory": "Interfaces",
             "name": "UCS Manager interfaces-related sections configuration sample",
-            "easyucs_version": "0.9.0",
-            "revision": "1.1"
+            "easyucs_version": "0.9.8.10",
+            "revision": "1.2"
          }
       ]
    },
@@ -387,7 +387,6 @@
                   "template_type": "initial-template",
                   "pin_group": "",
                   "stats_threshold_policy": "default",
-                  "connection_policy": "dynamic-vnic",
                   "fabric": "A-B",
                   "vlans": [
                      "100",

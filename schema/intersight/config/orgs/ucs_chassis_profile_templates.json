@@ -1,0 +1,81 @@
+{
+   "id": "intersight_config_orgs_ucs_chassis_profile_templates#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS intersight config orgs chassis_profile_templates section",
+   "description": "EasyUCS intersight config orgs chassis_profile_templates section JSON schema",
+   "type": "object",
+   "properties": {
+      "comment": {
+         "description": "UCS Chassis Profile Template Comments",
+         "type": "string",
+         "default": ""
+      },
+      "descr": {
+         "description": "UCS Chassis Profile Template Description",
+         "type": "string",
+         "default": "",
+         "pattern": "^$|^[a-zA-Z0-9]+[\\x00-\\xFF]*$",
+         "maxLength": 1024
+      },
+      "name": {
+         "description": "UCS Chassis Profile Template Name",
+         "type": "string",
+         "default": "",
+         "pattern": "^[a-zA-Z0-9_.-]{1,64}$"
+      },
+      "tags": {
+         "description": "UCS Chassis Profile Template Tags",
+         "type": "array",
+         "items": {
+            "description": "UCS Chassis Profile Template Tag",
+            "type": "object",
+            "properties": {
+               "key": {
+                  "description": "UCS Chassis Profile Template Tag Key",
+                  "type": "string",
+                  "default": "",
+                  "minLength": 1,
+                  "maxLength": 128
+               },
+               "value": {
+                  "description": "UCS Chassis Profile Template Tag Value",
+                  "type": "string",
+                  "default": "",
+                  "minLength": 0,
+                  "maxLength": 256
+               }
+            },
+            "additionalProperties": false,
+            "required": [
+               "key",
+               "value"
+            ]
+         },
+         "minItems": 1
+      },
+      "imc_access_policy": {
+         "description": "IMC Access Policy associated to UCS Chassis Profile Template",
+         "type": "string",
+         "default": ""
+      },
+      "power_policy": {
+         "description": "Power Policy associated to UCS Chassis Profile Template",
+         "type": "string",
+         "default": ""
+      },
+      "snmp_policy": {
+         "description": "SNMP Policy associated to UCS Chassis Profile Template",
+         "type": "string",
+         "default": ""
+      },
+      "thermal_policy": {
+         "description": "Thermal Policy associated to UCS Chassis Profile Template",
+         "type": "string",
+         "default": ""
+      }
+   },
+   "additionalProperties": false,
+   "required": [
+      "name"
+   ]
+}

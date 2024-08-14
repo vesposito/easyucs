@@ -33,15 +33,23 @@ class UcsSystemPsu(UcsPsu, UcsSystemInventoryObject):
         if hasattr(self, "sku"):
             if self.sku == "NXK-PAC-400W ":
                 self.sku = "NXK-PAC-400W"
-            if self.sku == " UCSC-PSUF-1050W ":
+            elif self.sku == " UCSC-PSUF-1050W ":
                 self.sku = "UCSC-PSUF-1050W"
+            elif self.sku == "UCSC-PSU1-1050W-341-0638-03":
+                self.sku = "UCSC-PSU1-1050W"
+            elif self.sku == "UCSC-PSU1-1200W-341-0775-01":
+                self.sku = "UCSC-PSU1-1200W"
+            elif self.sku == "UCSC-PSU1-1600W-341-0732-04":
+                self.sku = "UCSC-PSU1-1600W"
+            elif self.sku == "UCSC-PSU1-2300W-341-0770-01":
+                self.sku = "UCSC-PSU1-2300W"
 
         # Small fix for when PSU is not present in UCS catalog
         if hasattr(self, "sku"):
             if not self.sku:
                 if self.model:
                     if self.model in ["N2200-PAC-400W", "N2200-PAC-400W-B", "NXA-PAC-1100W-PE2", "NXA-PAC-1200W-PE"] \
-                            or self.model.startswith("UCSC-PSU"):
+                            or self.model.startswith("UCSC-PSU") or self.model.startswith("UCS-PSU"):
                         self.sku = self.model
 
 

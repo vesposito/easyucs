@@ -297,11 +297,6 @@
                      "required": [
                         "imc_access_policy"
                      ]
-                  },
-                  {
-                     "required": [
-                        "thermal_policy"
-                     ]
                   }
                ]
             }

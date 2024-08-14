@@ -60,7 +60,9 @@
          "enum": [
             "UCS-FI-6454",
             "UCS-FI-64108",
-            "UCS-FI-6536"
+            "UCS-FI-6536",
+            "UCSX-S9108-100G",
+            "unknown"
          ]
       },
       "appliance_port_channels": {
@@ -82,6 +84,11 @@
                      "40Gbps",
                      "100Gbps"
                   ]
+               },
+               "enable_25gb_copper_cable_negotiation": {
+                  "description": "Port Policy - Appliance Port Channel - Enable 25Gb Copper Cable Negotiation",
+                  "type": "boolean",
+                  "default": false
                },
                "pc_id": {
                   "description": "Port Policy - Appliance Port Channel - Port Channel ID",
@@ -208,6 +215,11 @@
                      "100Gbps"
                   ]
                },
+                "enable_25gb_copper_cable_negotiation": {
+                  "description": "Port Policy - Appliance Port - Enable 25Gb Copper Cable Negotiation",
+                  "type": "boolean",
+                  "default": false
+               },
                "fec": {
                   "description": "Port Policy - Appliance Port - FEC",
                   "type": "string",
@@ -320,6 +332,11 @@
                      "100Gbps"
                   ]
                },
+               "enable_25gb_copper_cable_negotiation": {
+                  "description": "Port Policy - FCoE Port Channel - Enable 25Gb Copper Cable Negotiation",
+                  "type": "boolean",
+                  "default": false
+               },
                "pc_id": {
                   "description": "Port Policy - FCoE Port Channel - Port Channel ID",
                   "type": "integer",
@@ -419,6 +436,11 @@
                      "40Gbps",
                      "100Gbps"
                   ]
+               },
+               "enable_25gb_copper_cable_negotiation": {
+                  "description": "Port Policy - FCoE Uplink Port - Enable 25Gb Copper Cable Negotiation",
+                  "type": "boolean",
+                  "default": false
                },
                "fec": {
                   "description": "Port Policy - FCoE Uplink Port - FEC",
@@ -544,6 +566,11 @@
                      "100Gbps"
                   ]
                },
+               "enable_25gb_copper_cable_negotiation": {
+                  "description": "Port Policy - LAN Port Channel - Enable 25Gb Copper Cable Negotiation",
+                  "type": "boolean",
+                  "default": false
+               },
                "pc_id": {
                   "description": "Port Policy - LAN Port Channel - Port Channel ID",
                   "type": "integer",
@@ -652,6 +679,11 @@
                      "40Gbps",
                      "100Gbps"
                   ]
+               },
+               "enable_25gb_copper_cable_negotiation": {
+                  "description": "Port Policy - LAN Uplink Port - Enable 25Gb Copper Cable Negotiation",
+                  "type": "boolean",
+                  "default": false
                },
                "fec": {
                   "description": "Port Policy - LAN Uplink Port - FEC",

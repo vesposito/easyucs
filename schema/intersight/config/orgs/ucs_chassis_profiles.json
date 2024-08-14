@@ -27,7 +27,7 @@
          "description": "UCS Chassis Profile User Label",
          "type": "string",
          "default": "",
-         "pattern": "^[a-zA-Z0-9!#$%&*+,\\(\\)\\[\\]\\{\\}|\\/\\.\\?@_:;~-]{1,64}$"
+         "pattern": "^[a-zA-Z0-9 !#$%&*+,()\\[\\]{}|/.?@_:;~-]{1,64}$"
       },
       "tags": {
          "description": "UCS Chassis Profile Tags",
@@ -65,7 +65,7 @@
          "default": ""
       },
       "operational_state": {
-         "description": "UCS Domain Profile - Operational State",
+         "description": "UCS Chassis Profile - Operational State",
          "type": "object",
          "properties": {
             "config_state": {
@@ -92,6 +92,28 @@
             "profile_state": {
                "description": "Combined state (configState, and operational state of the associated physical resource) to indicate the current state of the profile.",
                "type": "string"
+            },
+            "assigned_chassis": {
+               "description": "Chassis assigned to UCS Chassis Profile ",
+               "type": "object",
+               "properties": {
+                  "model": {
+                     "description": "Chassis Model associated UCS Chassis Profile",
+                     "type": "string",
+                     "default": ""
+                  },
+                  "chassis_id": {
+                     "description": "Chassis ID assigned to UCS Chassis Profile",
+                     "type": "integer",
+                     "default": ""
+                  },
+                  "serial_number": {
+                     "description": "Serial number of the Chassis assigned to UCS Chassis Profile",
+                     "type": "string",
+                     "default": ""
+                  } 
+               },
+               "additionalProperties": false
             }
          },
          "additionalProperties": false
@@ -108,6 +130,11 @@
       },
       "thermal_policy": {
          "description": "Thermal Policy associated to UCS Chassis Profile",
+         "type": "string",
+         "default": ""
+      },
+      "ucs_chassis_profile_template": {
+         "description": "Source UCS Chassis Profile Template from which this UCS Chassis Profile has been derived",
          "type": "string",
          "default": ""
       }

@@ -110,7 +110,7 @@ class DeviceMetadata(GenericMetadata):
                  file_path=None, file_type="device", hash=None, intersight_device_uuid=None, images_path=None,
                  is_custom=False, is_hidden=False, is_reachable=False, is_system=False, key_id=None, name=None,
                  origin=None, parent=None, password=None, private_key_path=None, system_usage=None, tags=[],
-                 target=None, timestamp=None, timestamp_last_connected=None, username=None, uuid=None):
+                 target=None, timestamp=None, timestamp_last_connected=None, username=None, user_label=None, uuid=None):
         GenericMetadata.__init__(self, db_record=db_record, device_name=device_name, device_uuid=device_uuid,
                                  device_version=device_version, easyucs_version=easyucs_version, file_path=file_path,
                                  file_type=file_type, hash=hash, is_hidden=is_hidden, is_system=is_system, name=name,
@@ -136,6 +136,7 @@ class DeviceMetadata(GenericMetadata):
         self.target = target
         self.timestamp_last_connected = timestamp_last_connected
         self.username = username
+        self.user_label = user_label
 
         if self.parent:
             if not self.key_id:
@@ -223,9 +224,9 @@ class TaskMetadata(GenericTaskMetadata):
     OBJECT_TYPE = "task"
 
     def __init__(self, db_record=None, description=None, config_uuid=None, device_name=None, device_uuid=None,
-                 easyucs_version=None,  inventory_uuid=None, name=None, parent=None, progress=None, report_uuid=None,
-                 status="pending", status_message=None, target_device_uuid=None, timestamp=None, timestamp_start=None,
-                 timestamp_stop=None, uuid=None):
+                 easyucs_version=None,  inventory_uuid=None, name=None, parent=None, progress=None, repo_file_path=None,
+                 repo_file_uuid=None, report_uuid=None, status="pending", status_message=None, target_device_uuid=None,
+                 timestamp=None, timestamp_start=None, timestamp_stop=None, uuid=None):
         GenericTaskMetadata.__init__(self, db_record=db_record, description=description,
                                      easyucs_version=easyucs_version, name=name, parent=parent, status=status,
                                      status_message=status_message, timestamp=timestamp,
@@ -234,6 +235,8 @@ class TaskMetadata(GenericTaskMetadata):
         self.device_name = device_name
         self.device_uuid = device_uuid
         self.inventory_uuid = inventory_uuid
+        self.repo_file_path = repo_file_path
+        self.repo_file_uuid = repo_file_uuid
         self.report_uuid = report_uuid
         self.target_device_uuid = target_device_uuid
         self.progress = progress
@@ -254,3 +257,36 @@ class TaskStepMetadata(GenericTaskMetadata):
         self.order = order
         self.task_uuid = task_uuid
         self.weight = weight
+
+
+class RepoFileMetadata(GenericMetadata):
+    TABLE_RECORD = RepoFileRecord
+    OBJECT_TYPE = "repofile"
+
+    def __init__(self, file_path=None, md5=None, sha1=None, sha256=None, timestamp=None, uuid=None):
+        GenericMetadata.__init__(self, timestamp=timestamp, uuid=uuid)
+        self.file_path = file_path
+        self.md5 = md5
+        self.sha1 = sha1
+        self.sha256 = sha256
+
+
+class RepoSyncToDeviceMetadata(GenericMetadata):
+    TABLE_RECORD = RepoSyncToDeviceRecord
+    OBJECT_TYPE = "reposynctodevice"
+
+    def __init__(self, description=None, device_name=None, device_type=None, device_uuid=None,
+                 file_download_link=None, file_uuid=None, firmware_image_type=None, image_type=None, name=None, org_name=None,
+                 supported_models=None, tags=None, timestamp=None, uuid=None, vendor=None, version=None):
+        GenericMetadata.__init__(self, device_name=device_name, device_uuid=device_uuid, name=name, tags=tags,
+                                 timestamp=timestamp, uuid=uuid)
+        self.description = description
+        self.device_type = device_type
+        self.file_download_link = file_download_link
+        self.file_uuid = file_uuid
+        self.firmware_image_type = firmware_image_type
+        self.image_type = image_type
+        self.org_name = org_name
+        self.supported_models = supported_models
+        self.vendor = vendor
+        self.version = version

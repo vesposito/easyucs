@@ -172,6 +172,12 @@
                            "B"
                         ]
                      },
+                     "vhba_template": {
+                        "description": "SAN Connectivity Policy - vHBA Source Template Name",
+                        "type": "string",
+                        "default": "",
+                        "pattern": "^[a-zA-Z0-9-._:]{1,31}$|^[a-zA-Z0-9_.:-]{1,64}/[a-zA-Z0-9-._:]{1,31}$"
+                     },
                      "vhba_type": {
                         "description": "SAN Connectivity Policy - vHBA Type",
                         "type": "string",
@@ -206,15 +212,60 @@
                      }
                   },
                   "additionalProperties": false,
-                  "required": [
-                     "fibre_channel_adapter_policy",
-                     "fibre_channel_network_policy",
-                     "fibre_channel_qos_policy",
-                     "name",
-                     "switch_id",
-                     "wwpn_allocation_type"
-                  ],
                   "allOf": [
+                     {
+                        "$comment": "Below is for setting constraints for vhba_template if vnic is created from a template",
+                        "if": {
+                           "properties": {
+                              "vhba_template": {
+                                 "type": "string"
+                              }
+                           },
+                           "required": [
+                              "vhba_template"
+                           ]
+                        },
+                        "then": {
+                           "allOf": [
+                              {
+                                 "required": [
+                                    "name"
+                                 ]
+                              },
+                              {
+                                 "not" : {
+                                    "anyOf": [
+                                       {
+                                          "required": [
+                                             "fibre_channel_qos_policy"
+                                          ]
+                                       },
+                                       {
+                                          "required": [
+                                             "persistent_lun_bindings"
+                                          ]
+                                       },
+                                       {
+                                          "required": [
+                                             "vhba_type"
+                                          ]
+                                       }
+                                   ]
+                                 }
+                              }
+                           ]
+                        },
+                        "else": {
+                           "required": [
+                              "fibre_channel_adapter_policy",
+                              "fibre_channel_network_policy",
+                              "fibre_channel_qos_policy",
+                              "name",
+                              "switch_id",
+                              "wwpn_allocation_type"
+                           ]
+                        }
+                     },
                      {
                         "$comment": "Below is for setting constraints for automatic_pci_link_assignment with value true",
                         "if": {

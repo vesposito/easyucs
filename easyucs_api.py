@@ -15,13 +15,16 @@ from api.api_server import app as easyucs_backend
 from api.api_server import start
 from device.manager import DeviceManager
 from urls.gui import app as easyucs_frontend
+from urls.repo import app as easyucs_repo
+from urls.repo import start as repo_start
 from repository.manager import RepositoryManager
 from task.manager import TaskManager
 
 application = DispatcherMiddleware(
     easyucs_frontend, 
     {
-        '/api/v1': easyucs_backend
+        '/api/v1': easyucs_backend,
+        '/repo': easyucs_repo
     }
 )
 
@@ -262,7 +265,8 @@ class Easyucs:
 
 
 def main():
-    easyucs = Easyucs(logger_handle_log_level="info")
+    easyucs = Easyucs(logger_handle_log_level="debug")
+    repo_start(easyucs_object=easyucs)
     start(easyucs_object=easyucs)
 
 

@@ -21,10 +21,14 @@ from ucsmsdk.mometa.fabric.FabricEthVlanPortEp import FabricEthVlanPortEp
 from ucsmsdk.mometa.fabric.FabricLacpPolicy import FabricLacpPolicy
 from ucsmsdk.mometa.fabric.FabricLanPinGroup import FabricLanPinGroup
 from ucsmsdk.mometa.fabric.FabricLanPinTarget import FabricLanPinTarget
+from ucsmsdk.mometa.fabric.FabricMacSec import FabricMacSec
+from ucsmsdk.mometa.fabric.FabricMonOriginIP import FabricMonOriginIP
+from ucsmsdk.mometa.fabric.FabricMonOriginSVI import FabricMonOriginSVI
 from ucsmsdk.mometa.fabric.FabricMulticastPolicy import FabricMulticastPolicy
 from ucsmsdk.mometa.fabric.FabricNetGroup import FabricNetGroup
 from ucsmsdk.mometa.fabric.FabricNetGroupRef import FabricNetGroupRef
 from ucsmsdk.mometa.fabric.FabricPooledVlan import FabricPooledVlan
+from ucsmsdk.mometa.fabric.FabricRemoteConfig import FabricRemoteConfig
 from ucsmsdk.mometa.fabric.FabricSubGroup import FabricSubGroup
 from ucsmsdk.mometa.fabric.FabricUdldLinkPolicy import FabricUdldLinkPolicy
 from ucsmsdk.mometa.fabric.FabricUdldPolicy import FabricUdldPolicy
@@ -1086,264 +1090,6 @@ class UcsSystemMacPool(UcsSystemConfigObject):
         return True
 
 
-class UcsSystemVnicTemplate(UcsSystemConfigObject):
-    _CONFIG_NAME = "vNIC Template"
-    _CONFIG_SECTION_NAME = "vnic_templates"
-    _UCS_SDK_OBJECT_NAME = "vnicLanConnTempl"
-
-    def __init__(self, parent=None, json_content=None, vnic_lan_conn_templ=None):
-        UcsSystemConfigObject.__init__(self, parent=parent, ucs_sdk_object=vnic_lan_conn_templ)
-        self.name = None
-        self.fabric = None
-        self.descr = None
-        self.redundancy_type = None
-        self.peer_redundancy_template = None
-        self.qos_policy = None
-        self.cdn_source = None
-        self.cdn_name = None
-        self.target = []
-        self.mtu = None
-        self.mac_address_pool = None
-        self.template_type = None
-        self.pin_group = None
-        self.q_in_q = None
-        self.stats_threshold_policy = None
-        self.network_control_policy = None
-        self.connection_policy = None
-        self.connection_policy_name = None
-        self.vlan_native = None
-        self.vlan_q_in_q = None
-        self.vlans = []
-        self.vlan_groups = []
-        self.operational_state = None
-
-        if self._config.load_from == "live":
-            if vnic_lan_conn_templ is not None:
-                self.name = vnic_lan_conn_templ.name
-                self.fabric = vnic_lan_conn_templ.switch_id
-                self.descr = vnic_lan_conn_templ.descr
-                self.redundancy_type = vnic_lan_conn_templ.redundancy_pair_type
-                self.peer_redundancy_template = vnic_lan_conn_templ.peer_redundancy_templ_name
-                self.qos_policy = vnic_lan_conn_templ.qos_policy_name
-                self.cdn_source = vnic_lan_conn_templ.cdn_source
-                self.cdn_name = vnic_lan_conn_templ.admin_cdn_name
-                self.target = vnic_lan_conn_templ.target.split(',')
-                self.mtu = vnic_lan_conn_templ.mtu
-                self.mac_address_pool = vnic_lan_conn_templ.ident_pool_name
-                self.template_type = vnic_lan_conn_templ.templ_type
-                self.pin_group = vnic_lan_conn_templ.pin_to_group_name
-                self.stats_threshold_policy = vnic_lan_conn_templ.stats_policy_name
-                self.network_control_policy = vnic_lan_conn_templ.nw_ctrl_policy_name
-                self.q_in_q = vnic_lan_conn_templ.q_in_q
-                self.operational_state = {}
-
-                # Looking for the connection_policy
-                if "vnicDynamicConPolicyRef" in self._parent._config.sdk_objects and not self.connection_policy:
-                    for policy in self._config.sdk_objects["vnicDynamicConPolicyRef"]:
-                        if self._parent._dn:
-                            if self._parent._dn + "/lan-conn-templ-" + self.name + "/" in policy.dn:
-                                self.connection_policy = "dynamic-vnic"
-                                self.connection_policy_name = policy.con_policy_name
-                                self.operational_state.update(
-                                    self.get_operational_state(
-                                        policy_dn=policy.oper_con_policy_name,
-                                        separator="/dynamic-con-",
-                                        policy_name="connection_policy"
-                                    )
-                                )
-                                break
-                if "vnicUsnicConPolicyRef" in self._parent._config.sdk_objects and not self.connection_policy:
-                    for policy in self._config.sdk_objects["vnicUsnicConPolicyRef"]:
-                        if self._parent._dn:
-                            if self._parent._dn + "/lan-conn-templ-" + self.name + "/" in policy.dn:
-                                self.connection_policy = "usnic"
-                                self.connection_policy_name = policy.con_policy_name
-                                self.operational_state.update(
-                                    self.get_operational_state(
-                                        policy_dn=policy.oper_con_policy_name,
-                                        separator="/usnic-con-",
-                                        policy_name="connection_policy"
-                                    )
-                                )
-                                break
-                if "vnicVmqConPolicyRef" in self._parent._config.sdk_objects and not self.connection_policy:
-                    for policy in self._config.sdk_objects["vnicVmqConPolicyRef"]:
-                        if self._parent._dn:
-                            if self._parent._dn + "/lan-conn-templ-" + self.name + "/" in policy.dn:
-                                self.connection_policy = "vmq"
-                                self.connection_policy_name = policy.con_policy_name
-                                self.operational_state.update(
-                                    self.get_operational_state(
-                                        policy_dn=policy.oper_con_policy_name,
-                                        separator="/vmq-con-",
-                                        policy_name="connection_policy"
-                                    )
-                                )
-                                break
-                if "vnicSriovHpnConPolicyRef" in self._parent._config.sdk_objects and not self.connection_policy:
-                    for policy in self._config.sdk_objects["vnicSriovHpnConPolicyRef"]:
-                        if self._parent._dn:
-                            if self._parent._dn + "/lan-conn-templ-" + self.name + "/" in policy.dn:
-                                self.connection_policy = "sriov-hpn"
-                                self.connection_policy_name = policy.con_policy_name
-                                self.operational_state.update(
-                                    self.get_operational_state(
-                                        policy_dn=policy.oper_con_policy_name,
-                                        separator="/sriov-hpn-con-",
-                                        policy_name="connection_policy"
-                                    )
-                                )
-                                break
-
-                if "vnicEtherIf" in self._config.sdk_objects:
-                    if self._parent._dn:
-                        vlans = [vlan for vlan in self._config.sdk_objects["vnicEtherIf"] if
-                                 self._parent._dn + "/lan-conn-templ-" + self.name + "/" in vlan.dn]
-                        if vlans:
-                            for vlan in vlans:
-                                if vlan.default_net in ["yes", "true"]:
-                                    self.vlan_native = vlan.name
-                                else:
-                                    self.vlans.append(vlan.name)
-                                if vlan.is_qin_q_vlan in ["yes", "true"]:
-                                    self.vlan_q_in_q = vlan.name
-                if "fabricNetGroupRef" in self._config.sdk_objects:
-                    if self._parent._dn:
-                        vlans = [vlan for vlan in self._config.sdk_objects["fabricNetGroupRef"] if
-                                 self._parent._dn + "/lan-conn-templ-" + self.name + "/" in vlan.dn]
-                        if vlans:
-                            for vlan in vlans:
-                                self.vlan_groups.append(vlan.name)
-
-                # Fetching the operational state of the referenced policies
-                self.operational_state.update(
-                    self.get_operational_state(
-                        policy_dn=vnic_lan_conn_templ.oper_nw_ctrl_policy_name,
-                        separator="/nwctrl-",
-                        policy_name="network_control_policy"
-                    )
-                )
-                self.operational_state.update(
-                    self.get_operational_state(
-                        policy_dn=vnic_lan_conn_templ.oper_peer_redundancy_templ_name,
-                        separator="/lan-conn-templ-",
-                        policy_name="peer_redundancy_template"
-                    )
-                )
-                self.operational_state.update(
-                    self.get_operational_state(
-                        policy_dn=vnic_lan_conn_templ.oper_qos_policy_name,
-                        separator="/ep-qos-",
-                        policy_name="qos_policy"
-                    )
-                )
-                self.operational_state.update(
-                    self.get_operational_state(
-                        policy_dn=vnic_lan_conn_templ.oper_stats_policy_name,
-                        separator="/thr-policy-",
-                        policy_name="stats_threshold_policy"
-                    )
-                )
-
-        elif self._config.load_from == "file":
-            if json_content is not None:
-                if not self.get_attributes_from_json(json_content=json_content):
-                    self.logger(level="error",
-                                message="Unable to get attributes from JSON content for " + self._CONFIG_NAME)
-
-                for policy in ["mac_address_pool", "network_control_policy", "peer_redundancy_template", "qos_policy",
-                               "stats_threshold_policy"]:
-                    if not self.operational_state:
-                        self.operational_state = {}
-                    if policy not in self.operational_state:
-                        self.operational_state[policy] = None
-                    else:
-                        for value in ["name", "org"]:
-                            if value not in self.operational_state[policy]:
-                                self.operational_state[policy][value] = None
-
-        self.clean_object()
-
-    def push_object(self, commit=True):
-        if commit:
-            self.logger(message="Pushing " + self._CONFIG_NAME + " configuration: " + str(self.name))
-        else:
-            self.logger(message="Adding to the handle " + self._CONFIG_NAME + " configuration: " + str(self.name) +
-                                ", waiting for a commit")
-
-        if hasattr(self._parent, '_dn'):
-            parent_mo = self._parent._dn
-        else:
-            self.logger(level="error",
-                        message="Impossible to find the parent dn of " + self._CONFIG_NAME + " : " + str(self.name))
-            return False
-
-        target = None
-        if self.target:
-            if self.target.__class__.__name__ == "list":
-                target = ','.join(self.target)
-            # Target can be "adaptor" in the SDK but written "adapter" in the GUI
-            target = target.replace("adapter", "adaptor")
-
-        redundancy_pair_type = "none" if self.redundancy_type == "no-redundancy" else self.redundancy_type
-        mo_vnic_lan_conn_temp = VnicLanConnTempl(parent_mo_or_dn=parent_mo, switch_id=self.fabric.upper(),
-                                                 name=self.name, descr=self.descr, target=target,
-                                                 cdn_source=self.cdn_source,
-                                                 nw_ctrl_policy_name=self.network_control_policy,
-                                                 admin_cdn_name=self.cdn_name,
-                                                 q_in_q=self.q_in_q,
-                                                 redundancy_pair_type=redundancy_pair_type,
-                                                 qos_policy_name=self.qos_policy,
-                                                 peer_redundancy_templ_name=self.peer_redundancy_template,
-                                                 templ_type=self.template_type, mtu=self.mtu,
-                                                 ident_pool_name=self.mac_address_pool,
-                                                 pin_to_group_name=self.pin_group,
-                                                 stats_policy_name=self.stats_threshold_policy)
-
-        if self.connection_policy:
-            if self.connection_policy == "dynamic_vnic" or self.connection_policy == "dynamic-vnic":
-                VnicDynamicConPolicyRef(parent_mo_or_dn=mo_vnic_lan_conn_temp,
-                                        con_policy_name=self.connection_policy_name)
-            elif self.connection_policy == "usNIC" or self.connection_policy == "usnic":
-                VnicUsnicConPolicyRef(parent_mo_or_dn=mo_vnic_lan_conn_temp,
-                                      con_policy_name=self.connection_policy_name)
-            elif self.connection_policy == "VMQ" or self.connection_policy == "vmq":
-                VnicVmqConPolicyRef(parent_mo_or_dn=mo_vnic_lan_conn_temp,
-                                    con_policy_name=self.connection_policy_name)
-
-        # self._handle.add_mo(mo=mo_vnic_lan_conn_temp, modify_present=True)
-        # if commit:
-        #     if self.commit(detail=self.name) != True:
-        #         return False
-
-        if self.vlans:
-            for vlan in self.vlans:
-                if vlan == self.vlan_native:
-                    # Avoid an issue when the native VLAN is written in the VLANS section and VLAN Native parameter
-                    continue
-                if self.vlan_q_in_q == vlan:
-                    vnic_q_in_q = "yes"
-                else:
-                    vnic_q_in_q = "no"
-                VnicEtherIf(parent_mo_or_dn=mo_vnic_lan_conn_temp, name=vlan, default_net="no",
-                            is_qin_q_vlan=vnic_q_in_q)
-        if self.vlan_native:
-            if self.vlan_q_in_q == self.vlan_native:
-                vnic_q_in_q = "yes"
-            else:
-                vnic_q_in_q = "no"
-            VnicEtherIf(parent_mo_or_dn=mo_vnic_lan_conn_temp, name=self.vlan_native, default_net="yes",
-                        is_qin_q_vlan=vnic_q_in_q)
-        if self.vlan_groups:
-            for vlan in self.vlan_groups:
-                FabricNetGroupRef(parent_mo_or_dn=mo_vnic_lan_conn_temp, name=vlan)
-
-        self._handle.add_mo(mo=mo_vnic_lan_conn_temp, modify_present=True)
-        if commit:
-            if self.commit(detail=self.name) != True:
-                return False
-
-
 class UcsSystemQosPolicy(UcsSystemConfigObject):
     _CONFIG_NAME = "QoS Policy"
     _CONFIG_SECTION_NAME = "qos_policies"
@@ -1829,399 +1575,6 @@ class UcsSystemLacpPolicy(UcsSystemConfigObject):
         return True
 
 
-class UcsSystemLanConnectivityPolicy(UcsSystemConfigObject):
-    _CONFIG_NAME = "LAN Connectivity Policy"
-    _CONFIG_SECTION_NAME = "lan_connectivity_policies"
-    _UCS_SDK_OBJECT_NAME = "vnicLanConnPolicy"
-    _POLICY_MAPPING_TABLE = {
-        "vnics": [
-            {
-                "adapter_policy": UcsSystemEthernetAdapterPolicy,
-                "mac_address_pool": UcsSystemMacPool,
-                "network_control_policy": UcsSystemNetworkControlPolicy,
-                "pin_group": UcsSystemLanPinGroup,
-                "qos_policy": UcsSystemQosPolicy,
-                "stats_threshold_policy": UcsSystemThresholdPolicy,
-                "vnic_template": UcsSystemVnicTemplate
-            }
-        ]
-    }
-
-    def __init__(self, parent=None, json_content=None, vnic_lan_conn_policy=None):
-        UcsSystemConfigObject.__init__(self, parent=parent, ucs_sdk_object=vnic_lan_conn_policy)
-        self.name = None
-        self.descr = None
-        self.vnics = []
-        self.iscsi_vnics = []
-
-        if self._config.load_from == "live":
-            if vnic_lan_conn_policy is not None:
-                self.name = vnic_lan_conn_policy.name
-                self.descr = vnic_lan_conn_policy.descr
-
-                if "vnicEther" in self._parent._config.sdk_objects:
-                    for vnic_ether in self._config.sdk_objects["vnicEther"]:
-                        if self._parent._dn:
-                            if self._parent._dn + "/lan-conn-pol-" + self.name + "/" in vnic_ether.dn:
-                                oper_state = {}
-                                vnic = {"_object_type": "vnics"}
-                                vnic.update({"name": vnic_ether.name})
-                                vnic.update({"adapter_policy": vnic_ether.adaptor_profile_name})
-                                vnic.update({"order": vnic_ether.order})
-
-                                if vnic_ether.nw_templ_name:
-                                    vnic.update({"vnic_template": vnic_ether.nw_templ_name})
-                                    vnic.update({"redundancy_pair": vnic_ether.redundancy_pair_type})
-                                else:
-                                    vnic.update({"fabric": vnic_ether.switch_id})
-                                    vnic.update({"q_in_q": vnic_ether.q_in_q})
-                                    vnic.update({"mac_address_pool": vnic_ether.ident_pool_name})
-                                    if not vnic_ether.ident_pool_name and vnic_ether.addr == "derived":
-                                        vnic.update({"mac_address": "hardware-default"})
-                                    vnic.update({"mtu": vnic_ether.mtu})
-                                    vnic.update({"qos_policy": vnic_ether.qos_policy_name})
-                                    vnic.update({"network_control_policy": vnic_ether.nw_ctrl_policy_name})
-                                    vnic.update({"cdn_source": vnic_ether.cdn_source})
-                                    vnic.update({"cdn_name": vnic_ether.admin_cdn_name})
-                                    vnic.update({"pin_group": vnic_ether.pin_to_group_name})
-                                    vnic.update({"stats_threshold_policy": vnic_ether.stats_policy_name})
-
-                                    vnic.update({"dynamic_vnic_connection_policy": None})
-                                    vnic.update({"usnic_connection_policy": None})
-                                    vnic.update({"vmq_connection_policy": None})
-                                    vnic.update({"sriov_hpn_connection_policy": None})
-                                    if "vnicDynamicConPolicyRef" in self._parent._config.sdk_objects:
-                                        for conn_policy in self._config.sdk_objects["vnicDynamicConPolicyRef"]:
-                                            if self._parent._dn + "/lan-conn-pol-" + self.name + '/ether-' + \
-                                                    vnic['name'] + '/' in conn_policy.dn:
-                                                vnic.update(
-                                                    {"dynamic_vnic_connection_policy": conn_policy.con_policy_name})
-                                                # Added the operational state of connection policy for manual type
-                                                oper_state.update(
-                                                    self.get_operational_state(
-                                                        policy_dn=conn_policy.oper_con_policy_name,
-                                                        separator="/dynamic-con-",
-                                                        policy_name="dynamic_vnic_connection_policy"
-                                                    )
-                                                )
-                                                break
-                                    if "vnicUsnicConPolicyRef" in self._parent._config.sdk_objects \
-                                            and not vnic['usnic_connection_policy']:
-                                        for conn_policy in self._config.sdk_objects["vnicUsnicConPolicyRef"]:
-                                            if self._parent._dn + "/lan-conn-pol-" + self.name + '/ether-' + \
-                                                    vnic['name'] + '/' in conn_policy.dn:
-                                                vnic.update({"usnic_connection_policy": conn_policy.con_policy_name})
-                                                # Added the operational state of connection policy for manual type
-                                                oper_state.update(
-                                                    self.get_operational_state(
-                                                        policy_dn=conn_policy.oper_con_policy_name,
-                                                        separator="/usnic-con-",
-                                                        policy_name="usnic_connection_policy"
-                                                    )
-                                                )
-                                                break
-                                    if "vnicVmqConPolicyRef" in self._parent._config.sdk_objects \
-                                            and not vnic['vmq_connection_policy']:
-                                        for conn_policy in self._config.sdk_objects["vnicVmqConPolicyRef"]:
-                                            if self._parent._dn + "/lan-conn-pol-" + self.name + '/ether-' + \
-                                                    vnic['name'] + '/' in conn_policy.dn:
-                                                vnic.update({"vmq_connection_policy": conn_policy.con_policy_name})
-                                                # Added the operational state of connection policy for manual type
-                                                oper_state.update(
-                                                    self.get_operational_state(
-                                                        policy_dn=conn_policy.oper_con_policy_name,
-                                                        separator="/vmq-con-",
-                                                        policy_name="vmq_connection_policy"
-                                                    )
-                                                )
-                                                break
-                                    if "vnicSriovHpnConPolicyRef" in self._parent._config.sdk_objects \
-                                            and not vnic['sriov_hpn_connection_policy']:
-                                        for conn_policy in self._config.sdk_objects["vnicSriovHpnConPolicyRef"]:
-                                            if self._parent._dn + "/lan-conn-pol-" + self.name + '/ether-' + \
-                                                    vnic['name'] + '/' in conn_policy.dn:
-                                                vnic.update(
-                                                    {"sriov_hpn_connection_policy": conn_policy.con_policy_name})
-                                                # Added the operational state of connection policy for manual type
-                                                oper_state.update(
-                                                    self.get_operational_state(
-                                                        policy_dn=conn_policy.oper_con_policy_name,
-                                                        separator="/sriov-hpn-con-",
-                                                        policy_name="sriov_hpn_connection_policy"
-                                                    )
-                                                )
-                                                break
-
-                                    if "vnicEtherIf" in self._parent._config.sdk_objects:
-                                        vnic.update({"vlans": []})
-                                        for vnic_ether_if in self._config.sdk_objects["vnicEtherIf"]:
-                                            if self._parent._dn + "/lan-conn-pol-" + self.name + '/ether-' + \
-                                                    vnic['name'] + '/' in vnic_ether_if.dn:
-                                                if vnic_ether_if.default_net == "yes":
-                                                    vnic.update({"vlan_native": vnic_ether_if.name})
-                                                else:
-                                                    vnic['vlans'].append(vnic_ether_if.name)
-                                                if vnic_ether_if.is_qin_q_vlan in ["yes", "true"]:
-                                                    vnic.update({"vlan_q_in_q": vnic_ether_if.name})
-
-                                    if "fabricNetGroupRef" in self._parent._config.sdk_objects:
-                                        vnic.update({"vlan_groups": []})
-                                        for fabric_net_group_ref in self._config.sdk_objects["fabricNetGroupRef"]:
-                                            if self._parent._dn + "/lan-conn-pol-" + self.name + '/ether-' + \
-                                                    vnic['name'] + '/' in fabric_net_group_ref.dn:
-                                                vnic['vlan_groups'].append(fabric_net_group_ref.name)
-
-                                # Fetching the operational state of the referenced policies
-                                oper_state.update(
-                                    self.get_operational_state(
-                                        policy_dn=vnic_ether.oper_adaptor_profile_name,
-                                        separator="/eth-profile-",
-                                        policy_name="adapter_policy"
-                                    )
-                                )
-                                oper_state.update(
-                                    self.get_operational_state(
-                                        policy_dn=vnic_ether.oper_nw_ctrl_policy_name,
-                                        separator="/nwctrl-",
-                                        policy_name="network_control_policy"
-                                    )
-                                )
-                                oper_state.update(
-                                    self.get_operational_state(
-                                        policy_dn=vnic_ether.oper_pin_to_group_name,
-                                        separator="/lan-pin-group-",
-                                        policy_name="pin_group"
-                                    )
-                                )
-                                oper_state.update(
-                                    self.get_operational_state(
-                                        policy_dn=vnic_ether.oper_qos_policy_name,
-                                        separator="/ep-qos-",
-                                        policy_name="qos_policy"
-                                    )
-                                )
-                                oper_state.update(
-                                    self.get_operational_state(
-                                        policy_dn=vnic_ether.oper_stats_policy_name,
-                                        separator="/thr-policy-",
-                                        policy_name="stats_threshold_policy"
-                                    )
-                                )
-                                oper_state.update(
-                                    self.get_operational_state(
-                                        policy_dn=vnic_ether.oper_nw_templ_name,
-                                        separator="/lan-conn-templ-",
-                                        policy_name="vnic_template"
-                                    )
-                                )
-
-                                vnic['operational_state'] = oper_state
-
-                                self.vnics.append(vnic)
-
-                if "vnicIScsiLCP" in self._parent._config.sdk_objects:
-                    for vnic_iscsi_lcp in self._config.sdk_objects["vnicIScsiLCP"]:
-                        if self._parent._dn:
-                            if self._parent._dn + "/lan-conn-pol-" + self.name + "/" in vnic_iscsi_lcp.dn:
-                                oper_state = {}
-                                vnic = {}
-                                vnic.update({"name": vnic_iscsi_lcp.name})
-                                vnic.update({"overlay_vnic": vnic_iscsi_lcp.vnic_name})
-                                vnic.update({"iscsi_adapter_policy": vnic_iscsi_lcp.adaptor_profile_name})
-                                vnic.update({"mac_address_pool": vnic_iscsi_lcp.ident_pool_name})
-
-                                if "vnicVlan" in self._parent._config.sdk_objects:
-                                    for vnicvlan in self._config.sdk_objects["vnicVlan"]:
-                                        if self._parent._dn + "/lan-conn-pol-" + self.name + '/iscsi-' + \
-                                                vnic['name'] + '/' in vnicvlan.dn:
-                                            vnic.update({"vlan": vnicvlan.vlan_name})
-                                            break
-                                oper_state.update(
-                                    self.get_operational_state(
-                                        policy_dn=vnic_iscsi_lcp.oper_adaptor_profile_name,
-                                        separator="/iscsi-profile-",
-                                        policy_name="iscsi_adapter_policy"
-                                    )
-                                )
-                                vnic['operational_state'] = oper_state
-
-                                self.iscsi_vnics.append(vnic)
-
-        elif self._config.load_from == "file":
-            if json_content is not None:
-                if not self.get_attributes_from_json(json_content=json_content):
-                    self.logger(level="error",
-                                message="Unable to get attributes from JSON content for " + self._CONFIG_NAME)
-
-                for element in self.vnics:
-                    for value in ["adapter_policy", "cdn_name", "cdn_source", "dynamic_vnic_connection_policy",
-                                  "fabric", "mac_address", "mac_address_pool", "mtu", "name", "network_control_policy",
-                                  "order", "operational_state", "pin_group", "q_in_q", "qos_policy", "redundancy_pair",
-                                  "sriov_hpn_connection_policy", "stats_threshold_policy", "usnic_connection_policy",
-                                  "vlans", "vlan_groups", "vlan_native", "vlan_q_in_q", "vmq_connection_policy",
-                                  "vnic_template"]:
-                        if value not in element:
-                            element[value] = None
-
-                    for policy in ["adapter_policy", "mac_address_pool", "network_control_policy", "pin_group",
-                                   "qos_policy", "stats_threshold_policy", "vnic_template"]:
-                        if element["operational_state"]:
-                            if policy not in element["operational_state"]:
-                                element["operational_state"][policy] = None
-                            else:
-                                for value in ["name", "org"]:
-                                    if value not in element["operational_state"][policy]:
-                                        element["operational_state"][policy][value] = None
-
-                    # Flagging this as a vNIC
-                    element["_object_type"] = "vnics"
-
-                for element in self.iscsi_vnics:
-                    for value in ["vlan", "mac_address_pool", "overlay_vnic", "name", "iscsi_adapter_policy",
-                                  "operational_state"]:
-                        if value not in element:
-                            element[value] = None
-
-                    if element["operational_state"]:
-                        for policy in ["iscsi_adapter_policy"]:
-                            if policy not in element["operational_state"]:
-                                element["operational_state"][policy] = None
-                            else:
-                                for value in ["name", "org"]:
-                                    if value not in element["operational_state"][policy]:
-                                        element["operational_state"][policy][value] = None
-
-        self.clean_object()
-
-    def push_object(self, commit=True):
-        if commit:
-            self.logger(message="Pushing " + self._CONFIG_NAME + " configuration: " + str(self.name))
-        else:
-            self.logger(message="Adding to the handle " + self._CONFIG_NAME + " configuration: " + str(self.name) +
-                                ", waiting for a commit")
-
-        if hasattr(self._parent, '_dn'):
-            parent_mo = self._parent._dn
-        else:
-            self.logger(level="error",
-                        message="Impossible to find the parent dn of " + self._CONFIG_NAME + " : " + str(self.name))
-            return False
-
-        mo_vnic_lan_conn_policy = VnicLanConnPolicy(parent_mo_or_dn=parent_mo, name=self.name, descr=self.descr)
-        self._handle.add_mo(mo=mo_vnic_lan_conn_policy, modify_present=True)
-        if commit:
-            if self.commit(detail=self.name) != True:
-                return False
-
-        if self.vnics:
-            for vnic in self.vnics:
-                if vnic['vnic_template']:
-                    mo_vnic_ether = VnicEther(parent_mo_or_dn=mo_vnic_lan_conn_policy,
-                                              adaptor_profile_name=vnic['adapter_policy'],
-                                              nw_templ_name=vnic['vnic_template'],
-                                              # redundancy_pair_type=vnic['redundancy_pair'],
-                                              name=vnic['name'],
-                                              order=vnic['order'])
-                    self._handle.add_mo(mo=mo_vnic_ether, modify_present=True)
-                    # We need to commit the interface first and then add the vlan and connection policy to it
-                    if commit:
-                        if self.commit(detail=vnic['name'] + " on " + str(self.name)) != True:
-                            # We can use continue because the commit buffer is discard if it's an SDK error exception
-                            continue
-                else:
-                    if vnic['fabric']:
-                        vnic['fabric'] = vnic['fabric'].upper()
-                    mac_address_pool = vnic["mac_address_pool"]
-                    mac_address = vnic["mac_address"]
-                    if mac_address == "hardware-default":
-                        mac_address_pool = ""
-                        mac_address = "derived"
-                    mo_vnic_ether = VnicEther(parent_mo_or_dn=mo_vnic_lan_conn_policy,
-                                              name=vnic['name'], mtu=vnic['mtu'],
-                                              adaptor_profile_name=vnic['adapter_policy'],
-                                              order=vnic['order'], switch_id=vnic['fabric'],
-                                              q_in_q=vnic['q_in_q'],
-                                              ident_pool_name=mac_address_pool,
-                                              addr=mac_address,
-                                              qos_policy_name=vnic['qos_policy'],
-                                              nw_ctrl_policy_name=vnic['network_control_policy'],
-                                              cdn_source=vnic['cdn_source'],
-                                              admin_cdn_name=vnic['cdn_name'],
-                                              pin_to_group_name=vnic['pin_group'],
-                                              stats_policy_name=vnic["stats_threshold_policy"])
-                    self._handle.add_mo(mo=mo_vnic_ether, modify_present=True)
-                    # We need to commit the interface first and then add the vlan and connection policy to it
-                    if commit:
-                        if self.commit(detail=vnic['name'] + " on " + str(self.name)) != True:
-                            # We can use continue because the commit buffer is discard if it's an SDK error exception
-                            continue
-
-                    # Creating connection_policy
-                    if vnic["dynamic_vnic_connection_policy"]:
-                        # connection_policy = "SRIOV-VMFEX"
-                        VnicDynamicConPolicyRef(parent_mo_or_dn=mo_vnic_ether,
-                                                con_policy_name=vnic["dynamic_vnic_connection_policy"])
-                    elif vnic["sriov_hpn_connection_policy"]:
-                        # connection_policy = "SRIOV-HPN"
-                        VnicSriovHpnConPolicyRef(parent_mo_or_dn=mo_vnic_ether,
-                                                 con_policy_name=vnic["sriov_hpn_connection_policy"])
-                    elif vnic["usnic_connection_policy"]:
-                        # connection_policy = "SRIOV-USNIC"
-                        VnicUsnicConPolicyRef(parent_mo_or_dn=mo_vnic_ether,
-                                              con_policy_name=vnic["usnic_connection_policy"])
-                    elif vnic["vmq_connection_policy"]:
-                        # connection_policy = "VMQ"
-                        VnicVmqConPolicyRef(parent_mo_or_dn=mo_vnic_ether,
-                                            con_policy_name=vnic["vmq_connection_policy"])
-
-                    # Adding the vlans
-                    if vnic['vlan_native']:
-                        if vnic['vlan_q_in_q'] == vnic['vlan_native']:
-                            vnic_q_in_q = "yes"
-                        else:
-                            vnic_q_in_q = "no"
-                        mo_vnic_ether_if = VnicEtherIf(parent_mo_or_dn=mo_vnic_ether,
-                                                       name=vnic['vlan_native'],
-                                                       default_net="yes",
-                                                       is_qin_q_vlan=vnic_q_in_q)
-                        self._handle.add_mo(mo_vnic_ether_if, modify_present=True)
-                    if vnic['vlans']:
-                        for vlan in vnic['vlans']:
-                            if vnic['vlan_q_in_q'] == vlan:
-                                vnic_q_in_q = "yes"
-                            else:
-                                vnic_q_in_q = "no"
-                            mo_vnic_ether_if = VnicEtherIf(parent_mo_or_dn=mo_vnic_ether,
-                                                           name=vlan,
-                                                           default_net="no",
-                                                           is_qin_q_vlan=vnic_q_in_q)
-                            self._handle.add_mo(mo_vnic_ether_if, modify_present=True)
-
-                    # Adding the vlan groups
-                    if vnic['vlan_groups']:
-                        for vlan_group in vnic['vlan_groups']:
-                            mo_fabric_net_group_ref = FabricNetGroupRef(parent_mo_or_dn=mo_vnic_ether,
-                                                                        name=vlan_group)
-                            self._handle.add_mo(mo_fabric_net_group_ref, modify_present=True)
-
-                self._handle.add_mo(mo=mo_vnic_ether, modify_present=True)
-
-            for iscsi_vnic in self.iscsi_vnics:
-                mo_vnic_iscsi_lcp = VnicIScsiLCP(parent_mo_or_dn=mo_vnic_lan_conn_policy,
-                                                 adaptor_profile_name=iscsi_vnic["iscsi_adapter_policy"],
-                                                 ident_pool_name=iscsi_vnic["mac_address_pool"],
-                                                 name=iscsi_vnic["name"],
-                                                 vnic_name=iscsi_vnic["overlay_vnic"])
-                VnicVlan(parent_mo_or_dn=mo_vnic_iscsi_lcp, name="", vlan_name=iscsi_vnic["vlan"])
-
-                self._handle.add_mo(mo=mo_vnic_iscsi_lcp, modify_present=True)
-
-        if commit:
-            if self.commit(detail=self.name) != True:
-                return False
-        return True
-
-
 class UcsSystemLanTrafficMonitoringSession(UcsSystemConfigObject):
     _CONFIG_NAME = "LAN Traffic Monitoring Session"
     _CONFIG_SECTION_NAME = "lan_traffic_monitoring_sessions"
@@ -2232,8 +1585,15 @@ class UcsSystemLanTrafficMonitoringSession(UcsSystemConfigObject):
         self.admin_state = None
         self.admin_speed = None
         self.destination = []
+        self.destination_ip = None
+        self.enable_packet_truncation = None
+        self.erspan_id = None
         self.fabric = None
+        self.ip_dscp = None
+        self.ip_ttl = None
+        self.maximum_transmission_unit = None
         self.name = None
+        self.session_type = None
         self.sources = []
         self.span_control_packets = None
         if self._config.load_from == "live":
@@ -2241,27 +1601,43 @@ class UcsSystemLanTrafficMonitoringSession(UcsSystemConfigObject):
                 self.admin_state = fabric_eth_mon.admin_state
                 self.fabric = fabric_eth_mon.id
                 self.name = fabric_eth_mon.name
+                self.session_type = fabric_eth_mon.session_type
                 self.span_control_packets = fabric_eth_mon.span_ctrl_pkts
+
+                if self.session_type == "erspan-source":
+                    # This is an ERSPAN session
+                    if "fabricRemoteConfig" in self._config.sdk_objects:
+                        for fabric_remote_config in self._config.sdk_objects["fabricRemoteConfig"]:
+                            if fabric_eth_mon.dn + "/" in fabric_remote_config.dn:
+                                self.destination_ip = fabric_remote_config.dest_ip
+                                self.enable_packet_truncation = fabric_remote_config.is_mtu
+                                self.erspan_id = fabric_remote_config.erspan_id
+                                self.ip_dscp = fabric_remote_config.ip_dscp
+                                self.ip_ttl = fabric_remote_config.ip_ttl
+                                self.maximum_transmission_unit = fabric_remote_config.mtu
+                                break
+                else:
+                    # This is a local SPAN session
+                    if "fabricEthMonDestEp" in self._config.sdk_objects:
+                        # Based on fabric ID and session name, fetching the destination details of a monitoring session
+                        for fabric_eth_mon_dest_ep in self._config.sdk_objects["fabricEthMonDestEp"]:
+                            fabric = fabric_eth_mon_dest_ep.switch_id
+                            name = fabric_eth_mon_dest_ep.dn.split("/")[3].replace("eth-mon-", "")
+                            if self.fabric == fabric and self.name == name:
+                                self.admin_speed = fabric_eth_mon_dest_ep.admin_speed
+                                destination = {"slot_id": fabric_eth_mon_dest_ep.slot_id}
+                                if fabric_eth_mon_dest_ep.aggr_port_id not in ["", "0"]:
+                                    destination.update({"aggr_id": fabric_eth_mon_dest_ep.port_id})
+                                    destination.update({"port_id": fabric_eth_mon_dest_ep.aggr_port_id})
+                                else:
+                                    destination.update({"aggr_id": None})
+                                    destination.update({"port_id": fabric_eth_mon_dest_ep.port_id})
+                                self.destination.append(destination)
+                                break
+
                 directions = {}
                 uplink_port_type_list = ["uplink-port", "fcoeuplink-port", "storage", "nas-port"]
                 port_channel_type_list = ["port-channel", "fcoeuplink-portchannel"]
-
-                if "fabricEthMonDestEp" in self._config.sdk_objects:
-                    # Based on fabric ID and session name, fetching the destination details of a monitoring session
-                    for fabric_eth_mon_dest_ep in self._config.sdk_objects["fabricEthMonDestEp"]:
-                        fabric = fabric_eth_mon_dest_ep.switch_id
-                        name = fabric_eth_mon_dest_ep.dn.split("/")[3].replace("eth-mon-", "")
-                        if self.fabric == fabric and self.name == name:
-                            self.admin_speed = fabric_eth_mon_dest_ep.admin_speed
-                            destination = {"slot_id": fabric_eth_mon_dest_ep.slot_id}
-                            if fabric_eth_mon_dest_ep.aggr_port_id not in ["", "0"]:
-                                destination.update({"aggr_id": fabric_eth_mon_dest_ep.port_id})
-                                destination.update({"port_id": fabric_eth_mon_dest_ep.aggr_port_id})
-                            else:
-                                destination.update({"aggr_id": None})
-                                destination.update({"port_id": fabric_eth_mon_dest_ep.port_id})
-                            self.destination.append(destination)
-                            break
 
                 # To get direction field of all sources in a monitoring session
                 if "fabricEthMonSrcEp" in self._config.sdk_objects:
@@ -2339,11 +1715,22 @@ class UcsSystemLanTrafficMonitoringSession(UcsSystemConfigObject):
 
         parent_mo = "fabric/lanmon/" + self.fabric
         mo_fabric_eth_mon = FabricEthMon(name=self.name, parent_mo_or_dn=parent_mo, admin_state=self.admin_state,
-                                         span_ctrl_pkts=self.span_control_packets, id=self.fabric)
+                                         span_ctrl_pkts=self.span_control_packets, id=self.fabric,
+                                         session_type=self.session_type)
         self._handle.add_mo(mo=mo_fabric_eth_mon, modify_present=True)
         if commit:
             if self.commit(detail=self.name) != True:
                 return False
+
+        if self.session_type == "erspan-source":
+            mo_fabric_remote_config = FabricRemoteConfig(parent_mo_or_dn=mo_fabric_eth_mon, dest_ip=self.destination_ip,
+                                                         is_mtu=self.enable_packet_truncation, erspan_id=self.erspan_id,
+                                                         ip_dscp=self.ip_dscp, ip_ttl=self.ip_ttl,
+                                                         mtu=self.maximum_transmission_unit)
+            self._handle.add_mo(mo=mo_fabric_remote_config, modify_present=True)
+            if commit:
+                if self.commit(detail="ERSPAN Source Configuration") != True:
+                    return False
 
         if self.destination:
             if self.destination[0].get("aggr_id"):
@@ -2455,6 +1842,65 @@ class UcsSystemLanTrafficMonitoringSession(UcsSystemConfigObject):
                             source_status_failed = True
         if source_status_failed:
             return False
+
+
+class UcsSystemTrafficMonitoringConfiguration(UcsSystemConfigObject):
+    _CONFIG_NAME = "Traffic Monitoring Configuration"
+    _CONFIG_SECTION_NAME = "traffic_monitoring_configuration"
+
+    def __init__(self, parent=None, json_content=None):
+        UcsSystemConfigObject.__init__(self, parent=parent)
+        self.origin_interfaces_ip = []
+        self.origin_interface_source_vlan = None
+
+        if self._config.load_from == "live":
+            if "fabricMonOriginSVI" in self._config.sdk_objects:
+                if self._config.sdk_objects["fabricMonOriginSVI"]:
+                    self.origin_interface_source_vlan = self._config.sdk_objects["fabricMonOriginSVI"][0].source_vlan
+
+            if "fabricMonOriginIP" in self._config.sdk_objects:
+                if self._config.sdk_objects["fabricMonOriginIP"]:
+                    for fabric_mon_origin_ip in self._config.sdk_objects["fabricMonOriginIP"]:
+                        origin_interface_ip = {
+                            "fabric": fabric_mon_origin_ip.fabric_id,
+                            "source_ip": fabric_mon_origin_ip.addr,
+                            "default_gateway": fabric_mon_origin_ip.def_gw,
+                            "subnet_mask": fabric_mon_origin_ip.subnet
+                        }
+                        self.origin_interfaces_ip.append(origin_interface_ip)
+
+        elif self._config.load_from == "file":
+            if json_content is not None:
+                if not self.get_attributes_from_json(json_content=json_content):
+                    self.logger(level="error",
+                                message="Unable to get attributes from JSON content for " + self._CONFIG_NAME)
+
+                for element in self.origin_interfaces_ip:
+                    for value in ["default_gateway", "fabric", "source_ip", "subnet_mask"]:
+                        if value not in element:
+                            element[value] = None
+
+    def push_object(self, commit=True):
+        if commit:
+            self.logger(message="Pushing " + self._CONFIG_NAME)
+        else:
+            self.logger(message="Adding to the handle " + self._CONFIG_NAME + " configuration" +
+                                ", waiting for a commit")
+
+        mo_erspan = "fabric/remote-traffic-mon"
+        mo_fabric_mon_origin_svi = FabricMonOriginSVI(parent_mo_or_dn=mo_erspan,
+                                                      source_vlan=self.origin_interface_source_vlan)
+        if self.origin_interfaces_ip:
+            for origin_interface_ip in self.origin_interfaces_ip:
+                FabricMonOriginIP(parent_mo_or_dn=mo_fabric_mon_origin_svi, fabric_id=origin_interface_ip["fabric"],
+                                  addr=origin_interface_ip["source_ip"], def_gw=origin_interface_ip["default_gateway"],
+                                  subnet=origin_interface_ip["subnet_mask"])
+
+        self._handle.add_mo(mo_fabric_mon_origin_svi, modify_present=True)
+        if commit:
+            if self.commit() != True:
+                return False
+        return True
 
 
 class UcsSystemDynamicVnicConnectionPolicy(UcsSystemConfigObject):
@@ -2741,6 +2187,713 @@ class UcsSystemNetflowMonitoring(UcsSystemConfigObject):
         mo_fabric_eth_lan_flow_monitoring = FabricEthLanFlowMonitoring(parent_mo_or_dn=parent_mo,
                                                                        admin_state=self.admin_state)
         self._handle.add_mo(mo=mo_fabric_eth_lan_flow_monitoring, modify_present=True)
+        if commit:
+            if self.commit(detail="Admin State") != True:
+                return False
+
+        return True
+
+
+class UcsSystemVnicTemplate(UcsSystemConfigObject):
+    _CONFIG_NAME = "vNIC Template"
+    _CONFIG_SECTION_NAME = "vnic_templates"
+    _UCS_SDK_OBJECT_NAME = "vnicLanConnTempl"
+    _POLICY_MAPPING_TABLE = {
+        "mac_address_pool": UcsSystemMacPool,
+        "network_control_policy": UcsSystemNetworkControlPolicy,
+        "pin_group": UcsSystemLanPinGroup,
+        "qos_policy": UcsSystemQosPolicy,
+        "sriov_hpn_connection_policy": UcsSystemSriovHpnConnectionPolicy,
+        "stats_threshold_policy": UcsSystemThresholdPolicy,
+        "usnic_connection_policy": UcsSystemUsnicConnectionPolicy,
+        "vmq_connection_policy": UcsSystemVmqConnectionPolicy,
+    }
+
+    def __init__(self, parent=None, json_content=None, vnic_lan_conn_templ=None):
+        UcsSystemConfigObject.__init__(self, parent=parent, ucs_sdk_object=vnic_lan_conn_templ)
+        self.name = None
+        self.fabric = None
+        self.descr = None
+        self.redundancy_type = None
+        self.peer_redundancy_template = None
+        self.qos_policy = None
+        self.cdn_source = None
+        self.cdn_name = None
+        self.target = []
+        self.mtu = None
+        self.mac_address_pool = None
+        self.template_type = None
+        self.pin_group = None
+        self.q_in_q = None
+        self.dynamic_vnic_connection_policy = None
+        self.stats_threshold_policy = None
+        self.sriov_hpn_connection_policy = None
+        self.network_control_policy = None
+        self.usnic_connection_policy = None
+        self.vmq_connection_policy = None
+        self.vlan_native = None
+        self.vlan_q_in_q = None
+        self.vlans = []
+        self.vlan_groups = []
+        self.operational_state = None
+
+        if self._config.load_from == "live":
+            if vnic_lan_conn_templ is not None:
+                self.name = vnic_lan_conn_templ.name
+                self.fabric = vnic_lan_conn_templ.switch_id
+                self.descr = vnic_lan_conn_templ.descr
+                self.redundancy_type = vnic_lan_conn_templ.redundancy_pair_type
+                self.peer_redundancy_template = vnic_lan_conn_templ.peer_redundancy_templ_name
+                self.qos_policy = vnic_lan_conn_templ.qos_policy_name
+                self.cdn_source = vnic_lan_conn_templ.cdn_source
+                self.cdn_name = vnic_lan_conn_templ.admin_cdn_name
+                self.target = vnic_lan_conn_templ.target.split(',')
+                self.mtu = vnic_lan_conn_templ.mtu
+                self.mac_address_pool = vnic_lan_conn_templ.ident_pool_name
+                self.template_type = vnic_lan_conn_templ.templ_type
+                self.pin_group = vnic_lan_conn_templ.pin_to_group_name
+                self.stats_threshold_policy = vnic_lan_conn_templ.stats_policy_name
+                self.network_control_policy = vnic_lan_conn_templ.nw_ctrl_policy_name
+                self.q_in_q = vnic_lan_conn_templ.q_in_q
+                self.operational_state = {}
+
+                # Looking for the connection_policy
+                if "vnicDynamicConPolicyRef" in self._parent._config.sdk_objects and \
+                        not self.dynamic_vnic_connection_policy:
+                    for policy in self._config.sdk_objects["vnicDynamicConPolicyRef"]:
+                        if self._parent._dn:
+                            if self._parent._dn + "/lan-conn-templ-" + self.name + "/" in policy.dn:
+                                self.dynamic_vnic_connection_policy = policy.con_policy_name
+                                self.operational_state.update(
+                                    self.get_operational_state(
+                                        policy_dn=policy.oper_con_policy_name,
+                                        separator="/dynamic-con-",
+                                        policy_name="dynamic_vnic_connection_policy"
+                                    )
+                                )
+                                break
+                if "vnicUsnicConPolicyRef" in self._parent._config.sdk_objects and not self.usnic_connection_policy:
+                    for policy in self._config.sdk_objects["vnicUsnicConPolicyRef"]:
+                        if self._parent._dn:
+                            if self._parent._dn + "/lan-conn-templ-" + self.name + "/" in policy.dn:
+                                self.usnic_connection_policy = policy.con_policy_name
+                                self.operational_state.update(
+                                    self.get_operational_state(
+                                        policy_dn=policy.oper_con_policy_name,
+                                        separator="/usnic-con-",
+                                        policy_name="usnic_connection_policy"
+                                    )
+                                )
+                                break
+                if "vnicVmqConPolicyRef" in self._parent._config.sdk_objects and not self.vmq_connection_policy:
+                    for policy in self._config.sdk_objects["vnicVmqConPolicyRef"]:
+                        if self._parent._dn:
+                            if self._parent._dn + "/lan-conn-templ-" + self.name + "/" in policy.dn:
+                                self.vmq_connection_policy = policy.con_policy_name
+                                self.operational_state.update(
+                                    self.get_operational_state(
+                                        policy_dn=policy.oper_con_policy_name,
+                                        separator="/vmq-con-",
+                                        policy_name="vmq_connection_policy"
+                                    )
+                                )
+                                break
+                if "vnicSriovHpnConPolicyRef" in self._parent._config.sdk_objects and \
+                        not self.sriov_hpn_connection_policy:
+                    for policy in self._config.sdk_objects["vnicSriovHpnConPolicyRef"]:
+                        if self._parent._dn:
+                            if self._parent._dn + "/lan-conn-templ-" + self.name + "/" in policy.dn:
+                                self.sriov_hpn_connection_policy = policy.con_policy_name
+                                self.operational_state.update(
+                                    self.get_operational_state(
+                                        policy_dn=policy.oper_con_policy_name,
+                                        separator="/sriov-hpn-con-",
+                                        policy_name="sriov_hpn_connection_policy"
+                                    )
+                                )
+                                break
+
+                if "vnicEtherIf" in self._config.sdk_objects:
+                    if self._parent._dn:
+                        vlans = [vlan for vlan in self._config.sdk_objects["vnicEtherIf"] if
+                                 self._parent._dn + "/lan-conn-templ-" + self.name + "/" in vlan.dn]
+                        if vlans:
+                            for vlan in vlans:
+                                if vlan.default_net in ["yes", "true"]:
+                                    self.vlan_native = vlan.name
+                                else:
+                                    self.vlans.append(vlan.name)
+                                if vlan.is_qin_q_vlan in ["yes", "true"]:
+                                    self.vlan_q_in_q = vlan.name
+                if "fabricNetGroupRef" in self._config.sdk_objects:
+                    if self._parent._dn:
+                        vlans = [vlan for vlan in self._config.sdk_objects["fabricNetGroupRef"] if
+                                 self._parent._dn + "/lan-conn-templ-" + self.name + "/" in vlan.dn]
+                        if vlans:
+                            for vlan in vlans:
+                                self.vlan_groups.append(vlan.name)
+
+                # Fetching the operational state of the referenced policies
+                self.operational_state.update(
+                    self.get_operational_state(
+                        policy_dn=vnic_lan_conn_templ.oper_nw_ctrl_policy_name,
+                        separator="/nwctrl-",
+                        policy_name="network_control_policy"
+                    )
+                )
+                self.operational_state.update(
+                    self.get_operational_state(
+                        policy_dn=vnic_lan_conn_templ.oper_peer_redundancy_templ_name,
+                        separator="/lan-conn-templ-",
+                        policy_name="peer_redundancy_template"
+                    )
+                )
+                self.operational_state.update(
+                    self.get_operational_state(
+                        policy_dn=vnic_lan_conn_templ.oper_qos_policy_name,
+                        separator="/ep-qos-",
+                        policy_name="qos_policy"
+                    )
+                )
+                self.operational_state.update(
+                    self.get_operational_state(
+                        policy_dn=vnic_lan_conn_templ.oper_stats_policy_name,
+                        separator="/thr-policy-",
+                        policy_name="stats_threshold_policy"
+                    )
+                )
+
+        elif self._config.load_from == "file":
+            if json_content is not None:
+                if not self.get_attributes_from_json(json_content=json_content):
+                    self.logger(level="error",
+                                message="Unable to get attributes from JSON content for " + self._CONFIG_NAME)
+
+                for policy in ["dynamic_vnic_connection_policy", "mac_address_pool", "network_control_policy",
+                               "peer_redundancy_template", "qos_policy", "sriov_hpn_connection_policy",
+                               "stats_threshold_policy", "usnic_connection_policy", "vmq_connection_policy"]:
+                    if not self.operational_state:
+                        self.operational_state = {}
+                    if policy not in self.operational_state:
+                        self.operational_state[policy] = None
+                    else:
+                        for value in ["name", "org"]:
+                            if value not in self.operational_state[policy]:
+                                self.operational_state[policy][value] = None
+
+        self.clean_object()
+
+    def push_object(self, commit=True):
+        if commit:
+            self.logger(message="Pushing " + self._CONFIG_NAME + " configuration: " + str(self.name))
+        else:
+            self.logger(message="Adding to the handle " + self._CONFIG_NAME + " configuration: " + str(self.name) +
+                                ", waiting for a commit")
+
+        if hasattr(self._parent, '_dn'):
+            parent_mo = self._parent._dn
+        else:
+            self.logger(level="error",
+                        message="Impossible to find the parent dn of " + self._CONFIG_NAME + " : " + str(self.name))
+            return False
+
+        target = None
+        if self.target:
+            if self.target.__class__.__name__ == "list":
+                target = ','.join(self.target)
+            # Target can be "adaptor" in the SDK but written "adapter" in the GUI
+            target = target.replace("adapter", "adaptor")
+
+        redundancy_pair_type = "none" if self.redundancy_type == "no-redundancy" else self.redundancy_type
+        mo_vnic_lan_conn_temp = VnicLanConnTempl(parent_mo_or_dn=parent_mo, switch_id=self.fabric.upper(),
+                                                 name=self.name, descr=self.descr, target=target,
+                                                 cdn_source=self.cdn_source,
+                                                 nw_ctrl_policy_name=self.network_control_policy,
+                                                 admin_cdn_name=self.cdn_name,
+                                                 q_in_q=self.q_in_q,
+                                                 redundancy_pair_type=redundancy_pair_type,
+                                                 qos_policy_name=self.qos_policy,
+                                                 peer_redundancy_templ_name=self.peer_redundancy_template,
+                                                 templ_type=self.template_type, mtu=self.mtu,
+                                                 ident_pool_name=self.mac_address_pool,
+                                                 pin_to_group_name=self.pin_group,
+                                                 stats_policy_name=self.stats_threshold_policy)
+
+        if self.dynamic_vnic_connection_policy:
+            VnicDynamicConPolicyRef(parent_mo_or_dn=mo_vnic_lan_conn_temp,
+                                    con_policy_name=self.dynamic_vnic_connection_policy)
+        if self.usnic_connection_policy:
+            VnicUsnicConPolicyRef(parent_mo_or_dn=mo_vnic_lan_conn_temp,
+                                  con_policy_name=self.usnic_connection_policy)
+        if self.vmq_connection_policy:
+            VnicVmqConPolicyRef(parent_mo_or_dn=mo_vnic_lan_conn_temp,
+                                con_policy_name=self.vmq_connection_policy)
+        if self.sriov_hpn_connection_policy:
+            VnicSriovHpnConPolicyRef(parent_mo_or_dn=mo_vnic_lan_conn_temp,
+                                     con_policy_name=self.sriov_hpn_connection_policy)
+
+        # self._handle.add_mo(mo=mo_vnic_lan_conn_temp, modify_present=True)
+        # if commit:
+        #     if self.commit(detail=self.name) != True:
+        #         return False
+
+        if self.vlans:
+            for vlan in self.vlans:
+                if vlan == self.vlan_native:
+                    # Avoid an issue when the native VLAN is written in the VLANS section and VLAN Native parameter
+                    continue
+                if self.vlan_q_in_q == vlan:
+                    vnic_q_in_q = "yes"
+                else:
+                    vnic_q_in_q = "no"
+                VnicEtherIf(parent_mo_or_dn=mo_vnic_lan_conn_temp, name=vlan, default_net="no",
+                            is_qin_q_vlan=vnic_q_in_q)
+        if self.vlan_native:
+            if self.vlan_q_in_q == self.vlan_native:
+                vnic_q_in_q = "yes"
+            else:
+                vnic_q_in_q = "no"
+            VnicEtherIf(parent_mo_or_dn=mo_vnic_lan_conn_temp, name=self.vlan_native, default_net="yes",
+                        is_qin_q_vlan=vnic_q_in_q)
+        if self.vlan_groups:
+            for vlan in self.vlan_groups:
+                FabricNetGroupRef(parent_mo_or_dn=mo_vnic_lan_conn_temp, name=vlan)
+
+        self._handle.add_mo(mo=mo_vnic_lan_conn_temp, modify_present=True)
+        if commit:
+            if self.commit(detail=self.name) != True:
+                return False
+
+
+class UcsSystemLanConnectivityPolicy(UcsSystemConfigObject):
+    _CONFIG_NAME = "LAN Connectivity Policy"
+    _CONFIG_SECTION_NAME = "lan_connectivity_policies"
+    _UCS_SDK_OBJECT_NAME = "vnicLanConnPolicy"
+    _POLICY_MAPPING_TABLE = {
+        "vnics": [
+            {
+                "adapter_policy": UcsSystemEthernetAdapterPolicy,
+                "mac_address_pool": UcsSystemMacPool,
+                "network_control_policy": UcsSystemNetworkControlPolicy,
+                "pin_group": UcsSystemLanPinGroup,
+                "qos_policy": UcsSystemQosPolicy,
+                "sriov_hpn_connection_policy": UcsSystemSriovHpnConnectionPolicy,
+                "stats_threshold_policy": UcsSystemThresholdPolicy,
+                "usnic_connection_policy": UcsSystemUsnicConnectionPolicy,
+                "vmq_connection_policy": UcsSystemVmqConnectionPolicy,
+                "vnic_template": UcsSystemVnicTemplate
+            }
+        ]
+    }
+
+    def __init__(self, parent=None, json_content=None, vnic_lan_conn_policy=None):
+        UcsSystemConfigObject.__init__(self, parent=parent, ucs_sdk_object=vnic_lan_conn_policy)
+        self.name = None
+        self.descr = None
+        self.vnics = []
+        self.iscsi_vnics = []
+
+        if self._config.load_from == "live":
+            if vnic_lan_conn_policy is not None:
+                self.name = vnic_lan_conn_policy.name
+                self.descr = vnic_lan_conn_policy.descr
+
+                if "vnicEther" in self._parent._config.sdk_objects:
+                    for vnic_ether in self._config.sdk_objects["vnicEther"]:
+                        if self._parent._dn:
+                            if self._parent._dn + "/lan-conn-pol-" + self.name + "/" in vnic_ether.dn:
+                                oper_state = {}
+                                vnic = {"_object_type": "vnics"}
+                                vnic.update({"name": vnic_ether.name})
+                                vnic.update({"adapter_policy": vnic_ether.adaptor_profile_name})
+                                vnic.update({"order": vnic_ether.order})
+
+                                if vnic_ether.nw_templ_name:
+                                    vnic.update({"vnic_template": vnic_ether.nw_templ_name})
+                                    vnic.update({"redundancy_pair": vnic_ether.redundancy_pair_type})
+                                else:
+                                    vnic.update({"fabric": vnic_ether.switch_id})
+                                    vnic.update({"q_in_q": vnic_ether.q_in_q})
+                                    vnic.update({"mac_address_pool": vnic_ether.ident_pool_name})
+                                    if not vnic_ether.ident_pool_name and vnic_ether.addr == "derived":
+                                        vnic.update({"mac_address": "hardware-default"})
+                                    vnic.update({"mtu": vnic_ether.mtu})
+                                    vnic.update({"qos_policy": vnic_ether.qos_policy_name})
+                                    vnic.update({"network_control_policy": vnic_ether.nw_ctrl_policy_name})
+                                    vnic.update({"cdn_source": vnic_ether.cdn_source})
+                                    vnic.update({"cdn_name": vnic_ether.admin_cdn_name})
+                                    vnic.update({"pin_group": vnic_ether.pin_to_group_name})
+                                    vnic.update({"stats_threshold_policy": vnic_ether.stats_policy_name})
+
+                                    vnic.update({"dynamic_vnic_connection_policy": None})
+                                    vnic.update({"usnic_connection_policy": None})
+                                    vnic.update({"vmq_connection_policy": None})
+                                    vnic.update({"sriov_hpn_connection_policy": None})
+                                    if "vnicDynamicConPolicyRef" in self._parent._config.sdk_objects:
+                                        for conn_policy in self._config.sdk_objects["vnicDynamicConPolicyRef"]:
+                                            if self._parent._dn + "/lan-conn-pol-" + self.name + '/ether-' + \
+                                                    vnic['name'] + '/' in conn_policy.dn:
+                                                vnic.update(
+                                                    {"dynamic_vnic_connection_policy": conn_policy.con_policy_name})
+                                                # Added the operational state of connection policy for manual type
+                                                oper_state.update(
+                                                    self.get_operational_state(
+                                                        policy_dn=conn_policy.oper_con_policy_name,
+                                                        separator="/dynamic-con-",
+                                                        policy_name="dynamic_vnic_connection_policy"
+                                                    )
+                                                )
+                                                break
+                                    if "vnicUsnicConPolicyRef" in self._parent._config.sdk_objects \
+                                            and not vnic['usnic_connection_policy']:
+                                        for conn_policy in self._config.sdk_objects["vnicUsnicConPolicyRef"]:
+                                            if self._parent._dn + "/lan-conn-pol-" + self.name + '/ether-' + \
+                                                    vnic['name'] + '/' in conn_policy.dn:
+                                                vnic.update({"usnic_connection_policy": conn_policy.con_policy_name})
+                                                # Added the operational state of connection policy for manual type
+                                                oper_state.update(
+                                                    self.get_operational_state(
+                                                        policy_dn=conn_policy.oper_con_policy_name,
+                                                        separator="/usnic-con-",
+                                                        policy_name="usnic_connection_policy"
+                                                    )
+                                                )
+                                                break
+                                    if "vnicVmqConPolicyRef" in self._parent._config.sdk_objects \
+                                            and not vnic['vmq_connection_policy']:
+                                        for conn_policy in self._config.sdk_objects["vnicVmqConPolicyRef"]:
+                                            if self._parent._dn + "/lan-conn-pol-" + self.name + '/ether-' + \
+                                                    vnic['name'] + '/' in conn_policy.dn:
+                                                vnic.update({"vmq_connection_policy": conn_policy.con_policy_name})
+                                                # Added the operational state of connection policy for manual type
+                                                oper_state.update(
+                                                    self.get_operational_state(
+                                                        policy_dn=conn_policy.oper_con_policy_name,
+                                                        separator="/vmq-con-",
+                                                        policy_name="vmq_connection_policy"
+                                                    )
+                                                )
+                                                break
+                                    if "vnicSriovHpnConPolicyRef" in self._parent._config.sdk_objects \
+                                            and not vnic['sriov_hpn_connection_policy']:
+                                        for conn_policy in self._config.sdk_objects["vnicSriovHpnConPolicyRef"]:
+                                            if self._parent._dn + "/lan-conn-pol-" + self.name + '/ether-' + \
+                                                    vnic['name'] + '/' in conn_policy.dn:
+                                                vnic.update(
+                                                    {"sriov_hpn_connection_policy": conn_policy.con_policy_name})
+                                                # Added the operational state of connection policy for manual type
+                                                oper_state.update(
+                                                    self.get_operational_state(
+                                                        policy_dn=conn_policy.oper_con_policy_name,
+                                                        separator="/sriov-hpn-con-",
+                                                        policy_name="sriov_hpn_connection_policy"
+                                                    )
+                                                )
+                                                break
+
+                                    if "vnicEtherIf" in self._parent._config.sdk_objects:
+                                        vnic.update({"vlans": []})
+                                        for vnic_ether_if in self._config.sdk_objects["vnicEtherIf"]:
+                                            if self._parent._dn + "/lan-conn-pol-" + self.name + '/ether-' + \
+                                                    vnic['name'] + '/' in vnic_ether_if.dn:
+                                                if vnic_ether_if.default_net == "yes":
+                                                    vnic.update({"vlan_native": vnic_ether_if.name})
+                                                else:
+                                                    vnic['vlans'].append(vnic_ether_if.name)
+                                                if vnic_ether_if.is_qin_q_vlan in ["yes", "true"]:
+                                                    vnic.update({"vlan_q_in_q": vnic_ether_if.name})
+
+                                    if "fabricNetGroupRef" in self._parent._config.sdk_objects:
+                                        vnic.update({"vlan_groups": []})
+                                        for fabric_net_group_ref in self._config.sdk_objects["fabricNetGroupRef"]:
+                                            if self._parent._dn + "/lan-conn-pol-" + self.name + '/ether-' + \
+                                                    vnic['name'] + '/' in fabric_net_group_ref.dn:
+                                                vnic['vlan_groups'].append(fabric_net_group_ref.name)
+
+                                # Fetching the operational state of the referenced policies
+                                oper_state.update(
+                                    self.get_operational_state(
+                                        policy_dn=vnic_ether.oper_adaptor_profile_name,
+                                        separator="/eth-profile-",
+                                        policy_name="adapter_policy"
+                                    )
+                                )
+                                oper_state.update(
+                                    self.get_operational_state(
+                                        policy_dn=vnic_ether.oper_nw_ctrl_policy_name,
+                                        separator="/nwctrl-",
+                                        policy_name="network_control_policy"
+                                    )
+                                )
+                                oper_state.update(
+                                    self.get_operational_state(
+                                        policy_dn=vnic_ether.oper_pin_to_group_name,
+                                        separator="/lan-pin-group-",
+                                        policy_name="pin_group"
+                                    )
+                                )
+                                oper_state.update(
+                                    self.get_operational_state(
+                                        policy_dn=vnic_ether.oper_qos_policy_name,
+                                        separator="/ep-qos-",
+                                        policy_name="qos_policy"
+                                    )
+                                )
+                                oper_state.update(
+                                    self.get_operational_state(
+                                        policy_dn=vnic_ether.oper_stats_policy_name,
+                                        separator="/thr-policy-",
+                                        policy_name="stats_threshold_policy"
+                                    )
+                                )
+                                oper_state.update(
+                                    self.get_operational_state(
+                                        policy_dn=vnic_ether.oper_nw_templ_name,
+                                        separator="/lan-conn-templ-",
+                                        policy_name="vnic_template"
+                                    )
+                                )
+
+                                vnic['operational_state'] = oper_state
+
+                                self.vnics.append(vnic)
+
+                if "vnicIScsiLCP" in self._parent._config.sdk_objects:
+                    for vnic_iscsi_lcp in self._config.sdk_objects["vnicIScsiLCP"]:
+                        if self._parent._dn:
+                            if self._parent._dn + "/lan-conn-pol-" + self.name + "/" in vnic_iscsi_lcp.dn:
+                                oper_state = {}
+                                vnic = {}
+                                vnic.update({"name": vnic_iscsi_lcp.name})
+                                vnic.update({"overlay_vnic": vnic_iscsi_lcp.vnic_name})
+                                vnic.update({"iscsi_adapter_policy": vnic_iscsi_lcp.adaptor_profile_name})
+                                vnic.update({"mac_address_pool": vnic_iscsi_lcp.ident_pool_name})
+
+                                if "vnicVlan" in self._parent._config.sdk_objects:
+                                    for vnicvlan in self._config.sdk_objects["vnicVlan"]:
+                                        if self._parent._dn + "/lan-conn-pol-" + self.name + '/iscsi-' + \
+                                                vnic['name'] + '/' in vnicvlan.dn:
+                                            vnic.update({"vlan": vnicvlan.vlan_name})
+                                            break
+                                oper_state.update(
+                                    self.get_operational_state(
+                                        policy_dn=vnic_iscsi_lcp.oper_adaptor_profile_name,
+                                        separator="/iscsi-profile-",
+                                        policy_name="iscsi_adapter_policy"
+                                    )
+                                )
+                                vnic['operational_state'] = oper_state
+
+                                self.iscsi_vnics.append(vnic)
+
+        elif self._config.load_from == "file":
+            if json_content is not None:
+                if not self.get_attributes_from_json(json_content=json_content):
+                    self.logger(level="error",
+                                message="Unable to get attributes from JSON content for " + self._CONFIG_NAME)
+
+                for element in self.vnics:
+                    for value in ["adapter_policy", "cdn_name", "cdn_source", "dynamic_vnic_connection_policy",
+                                  "fabric", "mac_address", "mac_address_pool", "mtu", "name", "network_control_policy",
+                                  "order", "operational_state", "pin_group", "q_in_q", "qos_policy", "redundancy_pair",
+                                  "sriov_hpn_connection_policy", "stats_threshold_policy", "usnic_connection_policy",
+                                  "vlans", "vlan_groups", "vlan_native", "vlan_q_in_q", "vmq_connection_policy",
+                                  "vnic_template"]:
+                        if value not in element:
+                            element[value] = None
+
+                    for policy in ["adapter_policy", "mac_address_pool", "network_control_policy", "pin_group",
+                                   "qos_policy", "stats_threshold_policy", "vnic_template"]:
+                        if element["operational_state"]:
+                            if policy not in element["operational_state"]:
+                                element["operational_state"][policy] = None
+                            else:
+                                for value in ["name", "org"]:
+                                    if value not in element["operational_state"][policy]:
+                                        element["operational_state"][policy][value] = None
+
+                    # Flagging this as a vNIC
+                    element["_object_type"] = "vnics"
+
+                for element in self.iscsi_vnics:
+                    for value in ["vlan", "mac_address_pool", "overlay_vnic", "name", "iscsi_adapter_policy",
+                                  "operational_state"]:
+                        if value not in element:
+                            element[value] = None
+
+                    if element["operational_state"]:
+                        for policy in ["iscsi_adapter_policy"]:
+                            if policy not in element["operational_state"]:
+                                element["operational_state"][policy] = None
+                            else:
+                                for value in ["name", "org"]:
+                                    if value not in element["operational_state"][policy]:
+                                        element["operational_state"][policy][value] = None
+
+        self.clean_object()
+
+    def push_object(self, commit=True):
+        if commit:
+            self.logger(message="Pushing " + self._CONFIG_NAME + " configuration: " + str(self.name))
+        else:
+            self.logger(message="Adding to the handle " + self._CONFIG_NAME + " configuration: " + str(self.name) +
+                                ", waiting for a commit")
+
+        if hasattr(self._parent, '_dn'):
+            parent_mo = self._parent._dn
+        else:
+            self.logger(level="error",
+                        message="Impossible to find the parent dn of " + self._CONFIG_NAME + " : " + str(self.name))
+            return False
+
+        mo_vnic_lan_conn_policy = VnicLanConnPolicy(parent_mo_or_dn=parent_mo, name=self.name, descr=self.descr)
+        self._handle.add_mo(mo=mo_vnic_lan_conn_policy, modify_present=True)
+        if commit:
+            if self.commit(detail=self.name) != True:
+                return False
+
+        if self.vnics:
+            for vnic in self.vnics:
+                if vnic['vnic_template']:
+                    # TODO: Handle initial-template pushing
+                    mo_vnic_ether = VnicEther(parent_mo_or_dn=mo_vnic_lan_conn_policy,
+                                              adaptor_profile_name=vnic['adapter_policy'],
+                                              nw_templ_name=vnic['vnic_template'],
+                                              # redundancy_pair_type=vnic['redundancy_pair'],
+                                              name=vnic['name'],
+                                              order=vnic['order'])
+                    self._handle.add_mo(mo=mo_vnic_ether, modify_present=True)
+                    # We need to commit the interface first and then add the vlan and connection policy to it
+                    if commit:
+                        if self.commit(detail=vnic['name'] + " on " + str(self.name)) != True:
+                            # We can use continue because the commit buffer is discard if it's an SDK error exception
+                            continue
+                else:
+                    if vnic['fabric']:
+                        vnic['fabric'] = vnic['fabric'].upper()
+                    mac_address_pool = vnic["mac_address_pool"]
+                    mac_address = vnic["mac_address"]
+                    if mac_address == "hardware-default":
+                        mac_address_pool = ""
+                        mac_address = "derived"
+                    mo_vnic_ether = VnicEther(parent_mo_or_dn=mo_vnic_lan_conn_policy,
+                                              name=vnic['name'], mtu=vnic['mtu'],
+                                              adaptor_profile_name=vnic['adapter_policy'],
+                                              order=vnic['order'], switch_id=vnic['fabric'],
+                                              q_in_q=vnic['q_in_q'],
+                                              ident_pool_name=mac_address_pool,
+                                              addr=mac_address,
+                                              qos_policy_name=vnic['qos_policy'],
+                                              nw_ctrl_policy_name=vnic['network_control_policy'],
+                                              cdn_source=vnic['cdn_source'],
+                                              admin_cdn_name=vnic['cdn_name'],
+                                              pin_to_group_name=vnic['pin_group'],
+                                              stats_policy_name=vnic["stats_threshold_policy"])
+                    self._handle.add_mo(mo=mo_vnic_ether, modify_present=True)
+                    # We need to commit the interface first and then add the vlan and connection policy to it
+                    if commit:
+                        if self.commit(detail=vnic['name'] + " on " + str(self.name)) != True:
+                            # We can use continue because the commit buffer is discard if it's an SDK error exception
+                            continue
+
+                    # Creating connection_policy
+                    if vnic["dynamic_vnic_connection_policy"]:
+                        # connection_policy = "SRIOV-VMFEX"
+                        VnicDynamicConPolicyRef(parent_mo_or_dn=mo_vnic_ether,
+                                                con_policy_name=vnic["dynamic_vnic_connection_policy"])
+                    elif vnic["sriov_hpn_connection_policy"]:
+                        # connection_policy = "SRIOV-HPN"
+                        VnicSriovHpnConPolicyRef(parent_mo_or_dn=mo_vnic_ether,
+                                                 con_policy_name=vnic["sriov_hpn_connection_policy"])
+                    elif vnic["usnic_connection_policy"]:
+                        # connection_policy = "SRIOV-USNIC"
+                        VnicUsnicConPolicyRef(parent_mo_or_dn=mo_vnic_ether,
+                                              con_policy_name=vnic["usnic_connection_policy"])
+                    elif vnic["vmq_connection_policy"]:
+                        # connection_policy = "VMQ"
+                        VnicVmqConPolicyRef(parent_mo_or_dn=mo_vnic_ether,
+                                            con_policy_name=vnic["vmq_connection_policy"])
+
+                    # Adding the vlans
+                    if vnic['vlan_native']:
+                        if vnic['vlan_q_in_q'] == vnic['vlan_native']:
+                            vnic_q_in_q = "yes"
+                        else:
+                            vnic_q_in_q = "no"
+                        mo_vnic_ether_if = VnicEtherIf(parent_mo_or_dn=mo_vnic_ether,
+                                                       name=vnic['vlan_native'],
+                                                       default_net="yes",
+                                                       is_qin_q_vlan=vnic_q_in_q)
+                        self._handle.add_mo(mo_vnic_ether_if, modify_present=True)
+                    if vnic['vlans']:
+                        for vlan in vnic['vlans']:
+                            if vnic['vlan_q_in_q'] == vlan:
+                                vnic_q_in_q = "yes"
+                            else:
+                                vnic_q_in_q = "no"
+                            mo_vnic_ether_if = VnicEtherIf(parent_mo_or_dn=mo_vnic_ether,
+                                                           name=vlan,
+                                                           default_net="no",
+                                                           is_qin_q_vlan=vnic_q_in_q)
+                            self._handle.add_mo(mo_vnic_ether_if, modify_present=True)
+
+                    # Adding the vlan groups
+                    if vnic['vlan_groups']:
+                        for vlan_group in vnic['vlan_groups']:
+                            mo_fabric_net_group_ref = FabricNetGroupRef(parent_mo_or_dn=mo_vnic_ether,
+                                                                        name=vlan_group)
+                            self._handle.add_mo(mo_fabric_net_group_ref, modify_present=True)
+
+                self._handle.add_mo(mo=mo_vnic_ether, modify_present=True)
+
+            for iscsi_vnic in self.iscsi_vnics:
+                mo_vnic_iscsi_lcp = VnicIScsiLCP(parent_mo_or_dn=mo_vnic_lan_conn_policy,
+                                                 adaptor_profile_name=iscsi_vnic["iscsi_adapter_policy"],
+                                                 ident_pool_name=iscsi_vnic["mac_address_pool"],
+                                                 name=iscsi_vnic["name"],
+                                                 vnic_name=iscsi_vnic["overlay_vnic"])
+                VnicVlan(parent_mo_or_dn=mo_vnic_iscsi_lcp, name="", vlan_name=iscsi_vnic["vlan"])
+
+                self._handle.add_mo(mo=mo_vnic_iscsi_lcp, modify_present=True)
+
+        if commit:
+            if self.commit(detail=self.name) != True:
+                return False
+        return True
+
+
+class UcsSystemMacSec(UcsSystemConfigObject):
+    _CONFIG_NAME = "MACsec"
+    _CONFIG_SECTION_NAME = "macsec"
+    _UCS_SDK_OBJECT_NAME = "fabricMacSec"
+
+    def __init__(self, parent=None, json_content=None, fabric_mac_sec=None):
+        UcsSystemConfigObject.__init__(self, parent=parent, ucs_sdk_object=fabric_mac_sec)
+        self.admin_state = None
+        if self._config.load_from == "live":
+            if fabric_mac_sec is not None:
+                self.admin_state = fabric_mac_sec.admin_state
+
+            # TODO: Complete support for MACsec
+
+        elif self._config.load_from == "file":
+            if json_content is not None:
+                if not self.get_attributes_from_json(json_content=json_content):
+                    self.logger(level="error",
+                                message="Unable to get attributes from JSON content for " + self._CONFIG_NAME)
+
+        self.clean_object()
+
+    def push_object(self, commit=True):
+        if commit:
+            self.logger(message="Pushing " + self._CONFIG_NAME + " configuration")
+        else:
+            self.logger(message="Adding to the handle " + self._CONFIG_NAME + " configuration" +
+                                ", waiting for a commit")
+
+        parent_mo = "fabric/lan"
+        mo_fabric_mac_sec = FabricMacSec(parent_mo_or_dn=parent_mo, admin_state=self.admin_state)
+        self._handle.add_mo(mo=mo_fabric_mac_sec, modify_present=True)
         if commit:
             if self.commit(detail="Admin State") != True:
                 return False

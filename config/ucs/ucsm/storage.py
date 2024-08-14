@@ -10,6 +10,7 @@ from ucsmsdk.mometa.lstorage.LstorageDasScsiLun import LstorageDasScsiLun
 from ucsmsdk.mometa.lstorage.LstorageDiskGroupConfigPolicy import LstorageDiskGroupConfigPolicy
 from ucsmsdk.mometa.lstorage.LstorageDiskGroupQualifier import LstorageDiskGroupQualifier
 from ucsmsdk.mometa.lstorage.LstorageDriveSecurity import LstorageDriveSecurity
+from ucsmsdk.mometa.lstorage.LstorageHybridDriveSlotConfig import LstorageHybridDriveSlotConfig
 from ucsmsdk.mometa.lstorage.LstorageLocal import LstorageLocal
 from ucsmsdk.mometa.lstorage.LstorageLocalDiskConfigRef import LstorageLocalDiskConfigRef
 from ucsmsdk.mometa.lstorage.LstorageLogin import LstorageLogin
@@ -182,6 +183,7 @@ class UcsSystemStorageProfile(UcsSystemConfigObject):
         self.local_luns = []
         self.lun_sets = []
         self.controller_definitions = []
+        self.hybrid_slot_configuration = []
 
         if self._config.load_from == "live":
             if lstorage_profile is not None:
@@ -289,6 +291,16 @@ class UcsSystemStorageProfile(UcsSystemConfigObject):
                                             break
                                 self.lun_sets.append(lun_set)
 
+                if "lstorageHybridDriveSlotConfig" in self._parent._config.sdk_objects:
+                    for hybrid_drive_policy in self._config.sdk_objects["lstorageHybridDriveSlotConfig"]:
+                        if self._parent._dn:
+                            if storage_policy_dn in hybrid_drive_policy.dn:
+                                policy = {}
+                                policy.update({"direct_attached_slots": hybrid_drive_policy.direct_attached_slots})
+                                policy.update({"raid_attached_slots": hybrid_drive_policy.raid_attached_slots})
+                                self.hybrid_slot_configuration.append(policy)
+                                break
+
         elif self._config.load_from == "file":
             if json_content is not None:
                 if not self.get_attributes_from_json(json_content=json_content):
@@ -323,6 +335,10 @@ class UcsSystemStorageProfile(UcsSystemConfigObject):
                 for element in self.lun_sets:
                     for value in ["name", "disk_slot_range", "raid_level", "strip_size", "access_policy", "read_policy",
                                   "write_cache_policy", "io_policy", "drive_cache", "security"]:
+                        if value not in element:
+                            element[value] = None
+                for element in self.hybrid_slot_configuration:
+                    for value in ["direct_attached_slots", "raid_attached_slots"]:
                         if value not in element:
                             element[value] = None
 
@@ -403,6 +419,12 @@ class UcsSystemStorageProfile(UcsSystemConfigObject):
                                         security=lun_set['security'],
                                         strip_size=lun_set['strip_size'],
                                         write_cache_policy=lun_set['write_cache_policy'])
+
+        if self.hybrid_slot_configuration:
+            for policy in self.hybrid_slot_configuration:
+                LstorageHybridDriveSlotConfig(parent_mo_or_dn=mo_lstorage_profile,
+                                              direct_attached_slots=policy['direct_attached_slots'],
+                                              raid_attached_slots=policy['raid_attached_slots'])
 
         self._handle.add_mo(mo=mo_lstorage_profile, modify_present=True)
 

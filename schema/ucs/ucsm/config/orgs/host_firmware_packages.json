@@ -52,7 +52,7 @@
                "items": {
                   "description": "Host Firmware Package Excluded Component Item",
                   "type": "string",
-                  "enum": [
+                  "enum":[
                      "adapter",
                      "adaptor",
                      "bios",
@@ -71,6 +71,7 @@
                      "hba-optionrom",
                      "host-nic",
                      "host-nic-optionrom",
+                     "intel-amc",
                      "local-disk",
                      "nvme-mswitch-fw",
                      "nvme-mswitch",
@@ -85,6 +86,7 @@
                      "storage-controller",
                      "storage-controller-onboard-device",
                      "storage-controller-onboard-device-cpld",
+                     "storage-controller-onboard-device-psoc",
                      "storage-device-bridge",
                      "storage-dev-bridge",
                      "storage-bridge-device",
@@ -152,6 +154,7 @@
                            "board-controller",
                            "chassis-board-controller",
                            "cmc",
+                           "cpld",
                            "fi-service-pack",
                            "flexflash-controller",
                            "gpus",
@@ -162,6 +165,7 @@
                            "hba-optionrom",
                            "host-nic",
                            "host-nic-optionrom",
+                           "intel-amc",
                            "iocard",
                            "local-disk",
                            "mgmt-service-pack",
@@ -171,12 +175,14 @@
                            "plx-switch",
                            "pci-switch-fw",
                            "psu",
+                           "retimer",
                            "sas-expander-regular-fw",
                            "sas-exp-reg-fw",
                            "sas-expander",
                            "storage-controller",
                            "storage-controller-onboard-device",
                            "storage-controller-onboard-device-cpld",
+                           "storage-controller-onboard-device-psoc",
                            "storage-device-bridge",
                            "storage-dev-bridge",
                            "storage-bridge-device",
@@ -184,6 +190,7 @@
                            "switch-kernel",
                            "switch-software",
                            "system",
+                           "ubm",
                            "unspecified"
                         ]
                      },

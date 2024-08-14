@@ -1,0 +1,65 @@
+{
+   "id": "ucs_system_config_traffic_monitoring_configuration#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS ucs system config traffic_monitoring_configuration section",
+   "description": "EasyUCS ucs system config traffic_monitoring_configuration section JSON schema",
+   "type": "object",
+   "properties": {
+      "origin_interface_source_vlan": {
+         "description": "Source VLAN of the Origin Interface (SVI) for ERSPAN Traffic Monitoring",
+         "type": "string",
+         "default": "",
+         "pattern": "^[\\-\\.:_a-zA-Z0-9]{1,32}$"
+      },
+      "origin_interfaces_ip": {
+         "description": "Origin Interfaces IPs for ERSPAN Traffic Monitoring",
+         "type": "array",
+         "items": {
+            "description": "Origin Interface IP for ERSPAN Traffic Monitoring",
+            "type": "object",
+            "properties": {
+               "default_gateway": {
+                  "description": "Default Gateway of the Origin Interface IP for ERSPAN Traffic Monitoring",
+                  "type": "string",
+                  "default": "",
+                  "format": "ipv4"
+               },
+               "fabric": {
+                  "description": "Fabric ID of the Origin Interface IP for ERSPAN Traffic Monitoring (\"A\" or \"B\")",
+                  "type": "string",
+                  "enum": [
+                     "a",
+                     "A",
+                     "b",
+                     "B"
+                  ]
+               },
+               "source_ip": {
+                  "description": "Source IP of the Origin Interface IP for ERSPAN Traffic Monitoring",
+                  "type": "string",
+                  "default": "",
+                  "format": "ipv4"
+               },
+               "subnet_mask": {
+                  "description": "Subnet Mask of the Origin Interface IP for ERSPAN Traffic Monitoring",
+                  "type": "string",
+                  "default": "255.255.255.0",
+                  "format": "ipv4"
+               }
+            },
+            "additionalProperties": false,
+            "required": [
+               "default_gateway",
+               "fabric",
+               "source_ip"
+            ]
+         },
+         "minItems": 0,
+         "maxItems": 2
+      }
+  },
+   "additionalProperties": false,
+   "required": [
+      "origin_interface_source_vlan"
+   ]
+}

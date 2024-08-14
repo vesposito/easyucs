@@ -33,11 +33,13 @@ class UcsCpu(GenericUcsInventoryObject):
                 if res_amd is not None:
                     self.model_short_name = res_amd.group(1)
                 if self.model_short_name[-1] == "1":
-                    self.family_name = "AMD EPYC 7001 Series processors"
+                    self.family_name = "AMD EPYC 7001 Series Processors"
                 elif self.model_short_name[-1] == "2":
-                    self.family_name = "AMD EPYC 7002 Series processors"
+                    self.family_name = "2nd Gen AMD EPYC 7002 Series Processors"
                 elif self.model_short_name[-1] == "3":
-                    self.family_name = "AMD EPYC 7003 Series processors"
+                    self.family_name = "3rd Gen AMD EPYC 7003 Series Processors"
+                elif self.model_short_name[-1] == "4":
+                    self.family_name = "4th Gen AMD EPYC 9004 Series Processors"
 
             else:
                 # We have an Intel processor. Getting its model short name

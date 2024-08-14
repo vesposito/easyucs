@@ -55,7 +55,8 @@ class TaskManager:
             return None
 
     def add_task(self, metadata=None, uuid=None, name=None, description=None, config_uuid=None, device_name=None,
-                 device_uuid=None, inventory_uuid=None, report_uuid=None, target_device_uuid=None):
+                 device_uuid=None, inventory_uuid=None, repo_file_path=None, repo_file_uuid=None, report_uuid=None,
+                 target_device_uuid=None):
         """
         Adds a task to the list of tasks
         :param metadata: The metadata object of to the task to be added (if no task details provided)
@@ -66,6 +67,8 @@ class TaskManager:
         :param device_name: The name of the device related to the task (optional)
         :param device_uuid: The UUID of the device related to the task (optional)
         :param inventory_uuid: The UUID of the inventory related to the task (optional)
+        :param repo_file_path: The Path to the repo file related to the task (optional)
+        :param repo_file_uuid: The UUID of the repo file related to the task (optional)
         :param report_uuid: The UUID of the report related to the task (optional)
         :param target_device_uuid: The UUID of the target device related to the task (optional)
         :return: UUID of task if add is successful, False otherwise
@@ -81,9 +84,9 @@ class TaskManager:
 
         task = Task(parent=self, uuid=uuid, name=name, description=description)
         task.metadata.easyucs_version = __version__
-        
-        for attribute in ["config_uuid", "device_name", "device_uuid", "inventory_uuid", "report_uuid",
-                          "target_device_uuid"]:
+
+        for attribute in ["config_uuid", "device_name", "device_uuid", "inventory_uuid", "repo_file_path",
+                          "repo_file_uuid", "report_uuid", "target_device_uuid"]:
             if eval(attribute):
                 setattr(task.metadata, attribute, eval(attribute))
 
@@ -112,7 +115,7 @@ class TaskManager:
 
     def add_to_pending_tasks(self, pending_task_dict=None):
         """
-        Adds the task to the system's/device's task queue
+        Adds the task to the system's/device's/repo's task queue
         :param pending_task_dict: Dictionary containing the details of the task pending to be executed
         :return: True if successful, False otherwise
         """
@@ -125,23 +128,23 @@ class TaskManager:
             self.logger(level="error", message="The task that needs to be added to the Queue could not be found")
             return False
 
-        obj = None
         if task.metadata.device_uuid:
             obj = self.parent.device_manager.find_device_by_uuid(uuid=task.metadata.device_uuid)
-
+        else:
+            obj = self.parent.repository_manager.repo
         if obj:
             if obj.task is not None:
-                # Device is already busy. We put the task in the device's queued tasks queue.
+                # Device/Repo is already busy. We put the task in the device's/repo's queued tasks queue.
                 self.logger(
                     level="info",
-                    message=f"Device {str(obj.uuid)} already has a task running: {obj.task.uuid}. " +
-                            f"Waiting for device to be available for task {str(task.uuid)}."
+                    message=f"{'Device ' + str(obj.uuid) if hasattr(obj, 'uuid') else 'Repo'} already has a task "
+                            f"running: {obj.task.uuid}. Waiting for device to be available for task {str(task.uuid)}."
                 )
                 if not obj.queued_tasks.full():
                     # Adding task to the device's tasks queue
                     obj.queued_tasks.put(pending_task_dict, timeout=10)
                 else:
-                    self.logger(level="error", message=f"Device's tasks queue is full with "
+                    self.logger(level="error", message=f"Device's/Repo's tasks queue is full with "
                                                        f"{obj.queued_tasks.qsize()} queued tasks!")
                     return False
             else:
@@ -477,16 +480,18 @@ class TaskManager:
                 continue
 
             if not task.cancel:
-                obj = None
                 if task.metadata.device_uuid:
                     obj = self.parent.device_manager.find_device_by_uuid(uuid=task.metadata.device_uuid)
-
+                else:
+                    obj = self.parent.repository_manager.repo
                 if obj:
                     if obj.task is not None:
-                        # Device is already busy. We put the task back at the end of the device's queued tasks.
+                        # Device/Repo is already busy. We put the task back at the end of the device's/repo's
+                        # queued tasks.
                         self.logger(
-                            message=f"Device {str(obj.uuid)} already has a task running: {obj.task.uuid}. " +
-                                    f"Waiting for device to be available for task {str(task.uuid)}."
+                            message=f"{'Device ' + str(obj.uuid) if hasattr(obj, 'uuid') else 'Repo'} already has a "
+                                    f"task running: {obj.task.uuid}. Waiting for device/repo to be available "
+                                    f"for task {str(task.uuid)}."
                         )
                         obj.queued_tasks.put(pending_task)
                     else:
@@ -504,10 +509,10 @@ class TaskManager:
                         action_thread.start()
                         continue
                 else:
-                    err_message = ""
                     if task.metadata.device_uuid:
                         err_message = "Unable to find device with UUID " + task.metadata.device_uuid
-
+                    else:
+                        err_message = "Unable to get repo attribute from Repository Manager"
                     self.logger(level="error", message=err_message)
                     self.stop_task(uuid=task.uuid, status="failed", status_message=err_message)
 

@@ -123,6 +123,12 @@
                "disabled",
                "enabled"
             ]
+         },
+         "policy_owner": {
+            "type": "string",
+            "enum": [
+                "ucs-central"
+            ]
          }
       },
       "additionalProperties": false

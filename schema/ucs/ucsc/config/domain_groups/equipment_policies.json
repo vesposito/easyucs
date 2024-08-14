@@ -108,6 +108,7 @@
          "enum": [
             "grid",
             "n+1",
+            "n+2",
             "non-redundant"
          ]
       },
@@ -129,6 +130,37 @@
             "no",
             "true",
             "yes"
+         ]
+      },
+      "power_save_policy": {
+         "description": "Power Save Policy Mode",
+         "type": "string",
+         "default": "Disable",
+         "enum": [
+            "Disable",
+            "Enable"
+         ]
+      },
+      "power_extended_policy": {
+         "description": "Cisco UCS X9508 Chassis Power Extended Policy Mode",
+         "type": "string",
+         "default": "Disable",
+         "enum": [
+            "Disable",
+            "Enable"
+         ]
+      },
+      "x9508_chassis_fan_control_policy": {
+         "description": "Cisco UCS X9508 Chassis Fan Control Policy (Speed)",
+         "type": "string",
+         "default": "acoustic",
+         "enum": [
+            "acoustic",
+            "balanced",
+            "high-power",
+            "low-power",
+            "max-power",
+            "performance"
          ]
       },
       "rack_server_discovery_policy": {

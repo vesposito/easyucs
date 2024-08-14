@@ -1,0 +1,12 @@
+{
+   "model_short_name": "3A",
+   "rear_file_name": "UCSC-RIS3A-225M8.png",
+   "rear_file_size": [485, 137],
+   "pcie_slots": [
+      {
+         "id": 3,
+         "width": "half",
+         "coord": [88, 22]
+      }
+   ]
+}

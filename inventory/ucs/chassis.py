@@ -10,6 +10,7 @@ from inventory.ucs.blade import UcsSystemBlade
 from inventory.ucs.fabric import UcsSystemFi
 from inventory.ucs.object import GenericUcsInventoryObject, UcsImcInventoryObject, UcsSystemInventoryObject
 from inventory.ucs.port import UcsSystemIomPort, UcsSystemSiocPort
+from inventory.ucs.pcie_node import UcsSystemPcieNode
 from inventory.ucs.psu import UcsImcPsu, UcsSystemPsu
 from inventory.ucs.server_node import UcsImcServerNode
 from inventory.ucs.storage import UcsImcStorageEnclosure, UcsSystemStorageEnclosure, UcsImcStorageLocalDisk, \
@@ -147,6 +148,7 @@ class UcsSystemChassis(UcsChassis, UcsSystemInventoryObject):
         self.blades = self._get_blades()
         self.fabric_interconnects = self._get_fabric_interconnects()
         self.io_modules = self._get_io_modules()
+        self.pcie_nodes = self._get_pcie_nodes()
         self.storage_enclosures = self._get_storage_enclosures()
         self.x_fabric_modules = self._get_x_fabric_modules()
         self.slots_max = self._get_chassis_slots_max()
@@ -298,6 +300,15 @@ class UcsSystemChassis(UcsChassis, UcsSystemInventoryObject):
             return self._inventory.get_inventory_objects_under_dn(dn=self.dn, object_class=UcsSystemIom, parent=self)
         elif self._inventory.load_from == "file" and "io_modules" in self._ucs_sdk_object:
             return [UcsSystemIom(self, iom) for iom in self._ucs_sdk_object["io_modules"]]
+        else:
+            return []
+
+    def _get_pcie_nodes(self):
+        if self._inventory.load_from == "live":
+            return self._inventory.get_inventory_objects_under_dn(dn=self.dn, object_class=UcsSystemPcieNode,
+                                                                  parent=self)
+        elif self._inventory.load_from == "file" and "pcie_nodes" in self._ucs_sdk_object:
+            return [UcsSystemPcieNode(self, pcie_node) for pcie_node in self._ucs_sdk_object["pcie_nodes"]]
         else:
             return []
 

@@ -9,7 +9,9 @@ from config.intersight.object import IntersightConfigObject
 
 from config.intersight.chassis_profiles import (
     IntersightUcsChassisProfile,
+    IntersightUcsChassisProfileTemplate
 )
+from config.intersight.network_policies import IntersightVhbaTemplate, IntersightVnicTemplate
 from config.intersight.pools import (
     IntersightIpPool,
     IntersightIqnPool,
@@ -28,8 +30,7 @@ from config.intersight.fabric_policies import (
     IntersightFabricSwitchControlPolicy,
     IntersightFabricSystemQosPolicy,
     IntersightFabricVlanPolicy,
-    IntersightFabricVsanPolicy,
-    IntersightUcsDomainProfile,
+    IntersightFabricVsanPolicy
 )
 from config.intersight.server_policies import (
     IntersightAdapterConfigurationPolicy,
@@ -74,7 +75,11 @@ from config.intersight.server_policies import (
 )
 from config.intersight.server_profiles import (
     IntersightUcsServerProfile,
-    IntersightUcsServerProfileTemplate,
+    IntersightUcsServerProfileTemplate
+)
+from config.intersight.domain_profiles import (
+    IntersightUcsDomainProfile,
+    IntersightUcsDomainProfileTemplate,
 )
 
 
@@ -147,9 +152,9 @@ class IntersightAccountDetails(IntersightConfigObject):
         # Fetches the Intersight Session Limits expiration info
         if "iam_session_limits" in self._config.sdk_objects:
             if len(self._config.sdk_objects["iam_session_limits"]) != 1:
-                self.logger(level="error",
+                self.logger(level="warning",
                             message="Unable to determine a unique iam.SessionLimits object for fetching " +
-                                    "Session Limits info")
+                                    "Session Limits info. Check access rights.")
                 return False
 
             if hasattr(self._config.sdk_objects["iam_session_limits"][0], "idle_time_out"):
@@ -324,6 +329,7 @@ class IntersightOrganization(IntersightConfigObject):
         "multicast_policies": "Multicast Policies",
         "network_connectivity_policies": "Network Connectivity Policies",
         "ntp_policies": "NTP Policies",
+        "persistent_memory_policies": "Persistent Memory Policies",
         "port_policies": "Port Policies",
         "power_policies": "Power Policies",
         "resource_pools": "Resource Pools",
@@ -338,14 +344,18 @@ class IntersightOrganization(IntersightConfigObject):
         "syslog_policies": "Syslog Policies",
         "system_qos_policies": "System QOS Policies",
         "thermal_policies": "Thermal Policies",
+        "ucs_chassis_profile_templates": "UCS Chassis Profile Templates",
         "ucs_chassis_profiles": "UCS Chassis Profiles",
+        "ucs_domain_profile_templates": "UCS Domain Profile Templates",
         "ucs_domain_profiles": "UCS Domain Profiles",
         "ucs_server_profile_templates": "UCS Server Profile Templates",
         "ucs_server_profiles": "UCS Server Profiles",
         "uuid_pools": "UUID Pools",
+        "vhba_templates": "vHBA Templates",
         "virtual_kvm_policies": "Virtual KVM Policies",
         "virtual_media_policies": "Virtual Media Policies",
         "vlan_policies": "VLAN Policies",
+        "vnic_templates": "vNIC Templates",
         "vsan_policies": "VSAN Policies",
         "wwnn_pools": "WWNN Pools",
         "wwpn_pools": "WWPN Pools"
@@ -458,6 +468,11 @@ class IntersightOrganization(IntersightConfigObject):
             json_content=organization_organization,
             object_class=IntersightFabricVsanPolicy,
             name_to_fetch="vsan_policies",
+        )
+        self.ucs_domain_profile_templates = self._get_generic_element(
+            json_content=organization_organization,
+            object_class=IntersightUcsDomainProfileTemplate,
+            name_to_fetch="ucs_domain_profile_templates",
         )
         self.ucs_domain_profiles = self._get_generic_element(
             json_content=organization_organization,
@@ -656,10 +671,27 @@ class IntersightOrganization(IntersightConfigObject):
             object_class=IntersightVirtualMediaPolicy,
             name_to_fetch="virtual_media_policies",
         )
+        self.ucs_chassis_profile_templates = self._get_generic_element(
+            json_content=organization_organization,
+            object_class=IntersightUcsChassisProfileTemplate,
+            name_to_fetch="ucs_chassis_profile_templates",
+        )
         self.ucs_chassis_profiles = self._get_generic_element(
             json_content=organization_organization,
             object_class=IntersightUcsChassisProfile,
             name_to_fetch="ucs_chassis_profiles",
+        )
+
+        # Network Policies
+        self.vhba_templates = self._get_generic_element(
+            json_content=organization_organization,
+            object_class=IntersightVhbaTemplate,
+            name_to_fetch="vhba_templates"
+        )
+        self.vnic_templates = self._get_generic_element(
+            json_content=organization_organization,
+            object_class=IntersightVnicTemplate,
+            name_to_fetch="vnic_templates"
         )
 
         # Server Profile Templates
@@ -862,8 +894,10 @@ class IntersightOrganization(IntersightConfigObject):
             'ldap_policies', 'network_connectivity_policies', 'ntp_policies', 'persistent_memory_policies',
             'power_policies', 'sd_card_policies', 'serial_over_lan_policies', 'smtp_policies', 'snmp_policies',
             'ssh_policies', 'storage_policies', 'syslog_policies', 'thermal_policies', 'virtual_kvm_policies',
-            'virtual_media_policies', 'lan_connectivity_policies', 'san_connectivity_policies', 'port_policies',
-            'ucs_domain_profiles', 'ucs_chassis_profiles', 'ucs_server_profile_templates', 'ucs_server_profiles']
+            'virtual_media_policies', 'vnic_templates', 'lan_connectivity_policies', 'vhba_templates',
+            'san_connectivity_policies', 'port_policies', 'ucs_domain_profile_templates', 'ucs_domain_profiles',
+            'ucs_chassis_profile_templates', 'ucs_chassis_profiles', 'ucs_server_profile_templates',
+            'ucs_server_profiles']
 
         is_pushed = True
         for config_object_type in objects_to_push_in_order:

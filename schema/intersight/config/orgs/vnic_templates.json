@@ -1,0 +1,307 @@
+{
+   "id": "intersight_config_orgs_vnic_templates#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS intersight config orgs vnic_templates section",
+   "description": "EasyUCS intersight config orgs vnic_templates section JSON schema",
+   "type": "object",
+   "properties": {
+      "cdn_source": {
+         "description": "vNIC Template - vNIC CDN Source",
+         "type": "string",
+         "default": "vnic",
+         "enum": [
+            "user",
+            "vnic"
+         ]
+      },
+      "cdn_value": {
+         "description": "vNIC Template - vNIC CDN Value",
+         "type": "string",
+         "default": "",
+         "maxLength": 31,
+         "pattern": "^[a-zA-Z0-9\\-\\ ._:]*$"
+      },
+      "comment": {
+         "description": "vNIC Template Comments",
+         "type": "string",
+         "default": ""
+      },
+      "descr": {
+         "description": "vNIC Template Description",
+         "type": "string",
+         "default": "",
+         "pattern": "^$|^[a-zA-Z0-9]+[\\x00-\\xFF]*$",
+         "maxLength": 1024
+      },
+      "enable_failover": {
+         "description": "Enabling failover ensures that traffic from the vNIC automatically fails over to the secondary Fabric Interconnect, in case the specified Fabric Interconnect path goes down. Failover applies only to Cisco VICs that are connected to a Fabric Interconnect cluster.",
+         "type": "boolean",
+         "default": true
+      },
+      "enable_override": {
+         "description": "When enabled, the configuration of the derived instances may override the template configuration",
+         "type": "boolean",
+         "default": true
+      },
+      "ethernet_adapter_policy": {
+         "description": "vNIC Template - vNIC Ethernet Adapter Policy",
+         "type": "string",
+         "default": "",
+         "pattern": "^([a-zA-Z0-9_.:-]{1,64}/)?[a-zA-Z0-9_.:-]{1,64}$"
+      },
+      "ethernet_network_control_policy": {
+         "description": "vNIC Template - vNIC Ethernet Network Control Policy",
+         "type": "string",
+         "default": "",
+         "pattern": "^([a-zA-Z0-9_.:-]{1,64}/)?[a-zA-Z0-9_.:-]{1,64}$"
+      },
+      "ethernet_network_group_policy": {
+         "description": "vNIC Template - vNIC Ethernet Network Group Policy",
+         "type": "string",
+         "default": "",
+         "pattern": "^([a-zA-Z0-9_.:-]{1,64}/)?[a-zA-Z0-9_.:-]{1,64}$"
+      },
+      "ethernet_qos_policy": {
+         "description": "vNIC Template - vNIC Ethernet QoS Policy",
+         "type": "string",
+         "default": "",
+         "pattern": "^([a-zA-Z0-9_.:-]{1,64}/)?[a-zA-Z0-9_.:-]{1,64}$"
+      },
+      "iscsi_boot_policy": {
+         "description": "vNIC Template - vNIC iSCSI Boot Policy",
+         "type": "string",
+         "default": "",
+         "pattern": "^([a-zA-Z0-9_.:-]{1,64}/)?[a-zA-Z0-9_.:-]{1,64}$"
+      },
+      "mac_address_pool": {
+         "description": "vNIC Template - vNIC MAC Address Pool Name",
+         "type": "string",
+         "default": "",
+         "pattern": "^([a-zA-Z0-9_.:-]{1,64}/)?[a-zA-Z0-9_.:-]{1,64}$"
+      },
+      "name": {
+         "description": "vNIC Template - vNIC Name",
+         "type": "string",
+         "default": "",
+         "pattern": "^[a-zA-Z0-9_.-]{1,64}$"
+      },
+      "pin_group_name": {
+         "description": "vNIC Template - Pin Group Name",
+         "type": "string",
+         "default": "",
+         "pattern": "^$|^[a-zA-Z0-9_.:-]{1,64}$"
+      },
+      "sriov_settings": {
+         "description": "vNIC Template - vNIC SRIOV Settings",
+         "type": "object",
+         "properties": {
+            "completion_queue_count_per_vf": {
+               "description": "vNIC Template - vNIC SRIOV Settings - Completion Queue Count per VF",
+               "type": "integer",
+               "default": 5,
+               "minimum": 1,
+               "maximum": 16
+            },
+            "interrupt_count_per_vf": {
+               "description": "LAN Connectivity Policy - vNIC SRIOV Settings - Interrupt Count per VF",
+               "type": "integer",
+               "default": 8,
+               "minimum": 1,
+               "maximum": 16
+            },
+            "number_of_vfs": {
+               "description": "vNIC Template - vNIC SRIOV Settings - Number of VFs",
+               "type": "integer",
+               "default": 64,
+               "minimum": 1,
+               "maximum": 64
+            },
+            "receive_queue_count_per_vf": {
+               "description": "vNIC Template - vNIC SRIOV Settings - Receive Queue Count per VF",
+               "type": "integer",
+               "default": 4,
+               "minimum": 1,
+               "maximum": 8
+            },
+            "transmit_queue_count_per_vf": {
+               "description": "vNIC Template - vNIC SRIOV Settings - Transmit Queue Count per VF",
+               "type": "integer",
+               "default": 1,
+               "minimum": 1,
+               "maximum": 8
+            }
+         },
+         "additionalProperties": false
+      },
+      "switch_id": {
+         "description": "The fabric port to which the vNICs will be associated",
+         "type": "string",
+         "default": "A",
+         "enum": [
+            "None",
+            "A",
+            "B"
+         ]
+      },
+      "tags": {
+         "description": "vNIC Template Tags",
+         "type": "array",
+         "items": {
+            "description": "vNIC Template Tag",
+            "type": "object",
+            "properties": {
+               "key": {
+                  "description": "vNIC Template Tag Key",
+                  "type": "string",
+                  "default": "",
+                  "minLength": 1,
+                  "maxLength": 128
+               },
+               "value": {
+                  "description": "vNIC Template Tag Value",
+                  "type": "string",
+                  "default": "",
+                  "minLength": 0,
+                  "maxLength": 256
+               }
+            },
+            "additionalProperties": false,
+            "required": [
+               "key",
+               "value"
+            ]
+         },
+         "minItems": 1
+      },
+      "usnic_settings": {
+         "description": "vNIC Template - vNIC usNIC Settings",
+         "type": "object",
+         "properties": {
+            "number_of_usnics": {
+               "description": "vNIC Template - vNIC usNIC Settings - Number of usNICs",
+               "type": "integer",
+               "default": 0,
+               "minimum": 0,
+               "maximum": 225
+            },
+            "usnic_adapter_policy": {
+               "description": "vNIC Template - vNIC usNIC Settings - usNIC Adapter Policy Name",
+               "type": "string",
+               "default": "",
+               "pattern": "^([a-zA-Z0-9_.:-]{1,64}/)?[a-zA-Z0-9_.:-]{1,64}$"
+            }
+         },
+         "additionalProperties": false
+      },
+      "vmq_settings": {
+         "description": "vNIC Template - vNIC VMQ Settings",
+         "type": "object",
+         "properties": {
+            "enable_virtual_machine_multi_queue": {
+               "description": "vNIC Template - vNIC VMQ Settings - Enable Virtual Machine Multi-Queue",
+               "type": "boolean",
+               "default": false
+            },
+            "number_of_interrupts": {
+               "description": "vNIC Template - vNIC VMQ Settings - Number of Interrupts",
+               "type": "integer",
+               "default": 16,
+               "minimum": 1,
+               "maximum": 514
+            },
+            "number_of_sub_vnics": {
+               "description": "vNIC Template - vNIC VMQ Settings - Number of Sub vNICs",
+               "type": "integer",
+               "default": 64,
+               "minimum": 0,
+               "maximum": 64
+            },
+            "number_of_virtual_machine_queues": {
+               "description": "vNIC Template - vNIC VMQ Settings - Number of Virtual Machine Queues",
+               "type": "integer",
+               "default": 4,
+               "minimum": 1,
+               "maximum": 128
+            },
+            "vmmq_adapter_policy": {
+               "description": "vNIC Template - vNIC VMQ Settings - VMMQ Adapter Policy Name",
+               "type": "string",
+               "default": "",
+               "pattern": "^([a-zA-Z0-9_.:-]{1,64}/)?[a-zA-Z0-9_.:-]{1,64}$"
+            }
+         },
+         "additionalProperties": false,
+         "allOf": [
+            {
+               "$comment": "Below is for setting constraints for enable_virtual_machine_multi_queue with value true",
+               "if": {
+                  "properties": {
+                     "enable_virtual_machine_multi_queue": {
+                        "enum": [
+                           true
+                        ]
+                     }
+                  },
+                  "required": [
+                     "enable_virtual_machine_multi_queue"
+                  ]
+               },
+               "then": {
+                  "not": {
+                     "anyOf": [
+                        {
+                           "required": [
+                              "number_of_interrupts"
+                           ]
+                        },
+                        {
+                           "required": [
+                              "number_of_virtual_machine_queues"
+                           ]
+                        }
+                     ]
+                  }
+               }
+            },
+            {
+               "$comment": "Below is for setting constraints for enable_virtual_machine_multi_queue with value false",
+               "if": {
+                  "properties": {
+                     "enable_virtual_machine_multi_queue": {
+                        "enum": [
+                           false
+                        ]
+                     }
+                  },
+                  "required": [
+                     "enable_virtual_machine_multi_queue"
+                  ]
+               },
+               "then": {
+                  "not": {
+                     "anyOf": [
+                        {
+                           "required": [
+                              "number_of_sub_vnics"
+                           ]
+                        },
+                        {
+                           "required": [
+                              "vmmq_adapter_policy"
+                           ]
+                        }
+                     ]
+                  }
+               }
+            }
+         ]
+      }
+   },
+   "additionalProperties": false,
+   "required": [
+      "name",
+      "ethernet_network_control_policy",
+      "ethernet_network_group_policy",
+      "ethernet_qos_policy"
+   ]
+}

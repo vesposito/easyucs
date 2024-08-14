@@ -375,6 +375,31 @@
             ]
          },
          "minItems": 1
+      },
+      "hybrid_slot_configuration": {
+         "description": "Storage Profile - Hybrid Slot Configuration",
+         "type": "array",
+         "items": {
+            "description": "Storage Profile - Hybrid Configuration Policy",
+            "type": "object",
+            "properties": {
+               "direct_attached_slots": {
+                  "description": "Storage Profile - Hybrid Configuration Policy - Direct-Attached Slots",
+                  "type": "string",
+                  "default": "",
+                  "pattern": "([0-9]+(,[0-9]+)*)*"
+               },
+               "raid_attached_slots": {
+                  "description": "Storage Profile - Hybrid Configuration Policy - RAID-Attached Slots",
+                  "type": "string",
+                  "default": "",
+                  "pattern": "([0-9]+(,[0-9]+)*)*"
+               }
+            },
+            "additionalProperties": false
+         },
+         "minItems": 1,
+         "maxItems": 1
       }
    },
    "additionalProperties": false

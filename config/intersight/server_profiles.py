@@ -45,8 +45,6 @@ from config.intersight.server_policies import (
     IntersightVirtualKvmPolicy,
     IntersightVirtualMediaPolicy
 )
-from config.ucs.ucsc.profiles import UcsCentralServiceProfile
-from config.ucs.ucsm.profiles import UcsSystemServiceProfile
 
 
 class IntersightGenericUcsServerProfile(IntersightConfigObject):
@@ -177,7 +175,9 @@ class IntersightUcsServerProfile(IntersightGenericUcsServerProfile):
             # If this UCS Server Profile is derived from a UCS Server Profile Template, we only get the source template
             if hasattr(self._object, "src_template"):
                 if self._object.src_template:
-                    self.ucs_server_profile_template = self._get_ucs_server_profile_template()
+                    ucs_server_profile_template = self._get_policy_name(policy=self._object.src_template)
+                    if ucs_server_profile_template:
+                        self.ucs_server_profile_template = ucs_server_profile_template
 
             if not self.ucs_server_profile_template:
                 self.uuid_allocation_type = self.get_attribute(attribute_name="uuid_address_type",
@@ -401,25 +401,6 @@ class IntersightUcsServerProfile(IntersightGenericUcsServerProfile):
                     server_obj_list[0].model
             elif server_obj.object_type == "compute.RackUnit":
                 return server_obj_list[0].serial, server_obj_list[0].server_id, server_obj_list[0].model
-        return None
-
-    def _get_ucs_server_profile_template(self):
-        # Fetches the source UCS Server Profile Template of a UCS Server Profile
-        if "server_profile_template" in self._config.sdk_objects:
-            for server_profile_template in self._config.sdk_objects["server_profile_template"]:
-                if server_profile_template.moid == self._object.src_template.moid:
-                    # If the referenced SPT exists in a shared org, then we return "<org_name>/<spt_name>"
-                    if self._object.organization.moid != server_profile_template.organization.moid:
-                        source_org_list = self.get_config_objects_from_ref(ref=server_profile_template.organization)
-                        if len(source_org_list) != 1:
-                            self.logger(level="debug",
-                                        message=f"Could not find the appropriate "
-                                                f"{str(server_profile_template.organization.object_type)}"
-                                                f" with MOID {str(server_profile_template.organization.moid)}")
-                        else:
-                            return f"{source_org_list[0].name}/{server_profile_template.name}"
-                    return server_profile_template.name
-
         return None
 
     def _get_management_type(self, pool_name=None):

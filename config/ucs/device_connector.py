@@ -140,7 +140,7 @@ class UcsDeviceConnector(GenericUcsConfigObject):
                 self.proxy_port = str(response[0]["ProxyPort"])
                 if "ProxyUsername" in response[0]:
                     self.proxy_username = response[0]["ProxyUsername"]
-                    self.logger(level="warning", message="Password of " + self._CONFIG_NAME + " Proxy username" +
+                    self.logger(level="warning", message="Password of " + self._CONFIG_NAME + " Proxy username " +
                                                          self.proxy_username + " can't be exported")
         except KeyError as err:
             self.logger(level="error", message="Could not find key parameter " + str(err))

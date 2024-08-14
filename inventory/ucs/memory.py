@@ -89,13 +89,21 @@ class UcsImcMemoryArray(UcsMemoryArray, UcsImcInventoryObject):
             "UCSC-C480-M5": 6291456,
             # C220 M6
             "UCSC-C220-M6S": 4194304, "UCSC-C220-M6N": 4194304,
+            # C225 M6
+            "UCSC-C225-M6S": 4194304, "UCSC-C225-M6N": 4194304,
             # C240 M6
             "UCSC-C240-M6S": 8388608, "UCSC-C240-M6SX": 8388608, "UCSC-C240-M6N": 8388608, "UCSC-C240-M6SN": 8388608,
             "UCSC-C240-M6L": 8388608,
+            # C245 M6
+            "UCSC-C245-M6SX": 8388608,
             # C220 M7
             "UCSC-C220-M7S": 4194304, "UCSC-C220-M7N": 4194304,
             # C240 M7
-            "UCSC-C240-M7SX": 8388608, "UCSC-C240-M7SN": 8388608
+            "UCSC-C240-M7SX": 8388608, "UCSC-C240-M7SN": 8388608,
+            # C225 M8
+            "UCSC-C225-M8S": 1572864, "UCSC-C225-M8N": 1572864,
+            # C245 M8
+            "UCSC-C245-M8SX": 6291456
         }
         if hasattr(self._parent, "model"):
             if self._parent.model in max_ram_capacity:

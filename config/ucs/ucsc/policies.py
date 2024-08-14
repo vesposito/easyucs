@@ -176,7 +176,6 @@ from ucscsdk.mometa.vnic.VnicVmqConPolicyRef import VnicVmqConPolicyRef
 from ucscsdk.ucscexception import UcscException
 
 from config.ucs.object import UcsCentralConfigObject
-from config.ucs.ucsc.templates import UcsCentralVhbaTemplate, UcsCentralVnicTemplate
 from config.ucs.ucsc.pools import UcsCentralMacPool, UcsCentralWwnnPool, UcsCentralWwpnPool
 from common import read_json_file
 
@@ -4596,6 +4595,7 @@ class UcsCentralVmqConnectionPolicy(UcsCentralConfigObject):
 
 
 class UcsCentralLanConnectivityPolicy(UcsCentralConfigObject):
+    from config.ucs.ucsc.templates import UcsCentralVnicTemplate
     _CONFIG_NAME = "LAN Connectivity Policy"
     _CONFIG_SECTION_NAME = "lan_connectivity_policies"
     _UCS_SDK_OBJECT_NAME = "vnicLanConnPolicy"
@@ -4991,6 +4991,7 @@ class UcsCentralLanConnectivityPolicy(UcsCentralConfigObject):
 
 
 class UcsCentralSanConnectivityPolicy(UcsCentralConfigObject):
+    from config.ucs.ucsc.templates import UcsCentralVhbaTemplate
     _CONFIG_NAME = "SAN Connectivity Policy"
     _CONFIG_SECTION_NAME = "san_connectivity_policies"
     _UCS_SDK_OBJECT_NAME = "vnicSanConnPolicy"

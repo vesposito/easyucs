@@ -141,6 +141,13 @@
             "Enable"
          ]
       },
+      "power_save_policy_owner": {
+         "description": "Power Save Policy Owner (for UCS Central)",
+         "type": "string",
+         "enum": [
+            "ucs-central"
+         ]
+      },
       "power_extended_policy": {
          "description": "Cisco UCS X9508 Chassis Power Extended Policy Mode",
          "type": "string",

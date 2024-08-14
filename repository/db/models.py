@@ -97,6 +97,7 @@ class DeviceRecord(Base):
     private_key_path = Column(String(256))
     target = Column(String(100))
     username = Column(String(100))
+    user_label = Column(String(256))
 
 
 class InventoryRecord(Base):
@@ -172,6 +173,8 @@ class TaskRecord(Base):
     device_name = Column(String(100))
     device_uuid = Column(String(36))
     inventory_uuid = Column(String(36))
+    repo_file_path = Column(String(256))
+    repo_file_uuid = Column(String(36))
     report_uuid = Column(String(36))
     target_device_uuid = Column(String(36))
     timestamp = Column(DateTime())
@@ -195,3 +198,36 @@ class TaskStepRecord(Base):
     order = Column(Integer())
     task_uuid = Column(String(36), nullable=False, primary_key=True)
     weight = Column(Integer())
+
+
+class RepoFileRecord(Base):
+    __tablename__ = "repofiles"
+
+    file_path = Column(String(4096), unique=True)
+    md5 = Column(String(128))
+    sha1 = Column(String(160))
+    sha256 = Column(String(256))
+    timestamp = Column(DateTime())
+    uuid = Column(String(36), nullable=False, primary_key=True)
+
+
+class RepoSyncToDeviceRecord(Base):
+    __tablename__ = "reposynctodevice"
+
+    device_name = Column(String(100))
+    device_type = Column(String(100))
+    device_uuid = Column(String(36))
+    file_download_link = Column(String(4096))
+    file_uuid = Column(String(36))
+    org_name = Column(String(62))
+    timestamp = Column(DateTime())
+    uuid = Column(String(36), nullable=False, primary_key=True)
+
+    description = Column(String(4096))
+    firmware_image_type = Column(String(64))
+    image_type = Column(String(16))
+    name = Column(String(128))
+    supported_models = Column(JSON)
+    tags = Column(JSON)
+    vendor = Column(String(36))
+    version = Column(String(128))

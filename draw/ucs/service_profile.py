@@ -109,6 +109,9 @@ class UcsSystemDrawInfraServiceProfile(UcsSystemDrawInfraEquipment):
                         equipment.blade_list = equipment.get_blades()
                     if "psus_slots_rear" in equipment.json_file:
                         equipment.psu_list = equipment.get_power_supplies()
+                # We have to check differently as there is no difference in compute slots or pcie slots on the json file
+                if hasattr(equipment, "pcie_nodes") and equipment.pcie_nodes:
+                    equipment.pcie_nodes = equipment.get_pcie_nodes()
                 if "psus_slots" in equipment.json_file:
                     equipment.psu_list = equipment.get_power_supplies()
                 if "disks_slots_rear" in equipment.json_file:
@@ -123,7 +126,13 @@ class UcsSystemDrawInfraServiceProfile(UcsSystemDrawInfraEquipment):
             elif "Rack" in equipment.__class__.__name__:
                 equip_type = "rack"
                 equipment.storage_controller_list = equipment.get_storage_controllers()
+                if equipment._parent.sku in ["UCSC-C480-M5"]:
+                    equipment.cpu_modules = equipment.get_cpu_modules()
+                equipment.nvme_list = equipment.get_nvme_disks()
+                for disk in equipment.nvme_list:
+                    self.paste_layer(disk.picture, disk.picture_offset)
                 equipment.fill_blanks()
+            # Draw text related to equipment drawn above
             self.draw_equipment_service_profile_info(equip_type, equipment)
 
         self.parse_template_list()
@@ -204,6 +213,9 @@ class UcsSystemDrawInfraServiceProfile(UcsSystemDrawInfraEquipment):
                             if len(name) > len(max_name):
                                 max_name = name
                             length = blade.picture_size[0]
+                            # Exception for X-Series as it's drawn vertically
+                            if "x_fabric_modules_slots" in equipment.json_file:
+                                length = blade.picture_size[1]
                             if length < min_length_equipment:
                                 min_length_equipment = length
                 elif "Enclosure" in equipment.__class__.__name__:
@@ -398,22 +410,42 @@ class UcsSystemDrawInfraServiceProfile(UcsSystemDrawInfraEquipment):
                     cover = self.generate_cover(cover_color, blade.picture_size)
                     self.paste_layer(cover, blade.picture_offset)
 
+                    # Draw service profile info
                     if service_profile_name:
                         left, top, right, bottom = self.draw.textbbox((0, 0), service_profile_name, font=font_name)
                         l_org, t_org, r_org, b_org = self.draw.textbbox((0, 0), service_profile_org, font=font_org)
+                        # Exception for X-Series to draw text vertically / draw.text cannot rotate text
+                        if "x_fabric_modules_slots" in equipment.json_file:
+                            # Draw service profile name info
+                            self.rotate_text(font=font_name, text=service_profile_name,
+                                             x=(blade.picture_offset[0] + blade.picture_size[0] / 2),
+                                             y=(blade.picture_offset[1] + blade.picture_size[1] / 2),
+                                             fill=fill_color, angle=90)
 
-                        # Draw service profile name info
-                        self.draw.text(
-                            (blade.picture_offset[0] + blade.picture_size[0] / 2,
-                             blade.picture_offset[1] + blade.picture_size[1] / 2),
-                            service_profile_name, fill=fill_color, font=font_name, align="center", anchor="mm")
+                            # Draw service profile org info
+                            # Align center:
+                            # y = (blade.picture_offset[1] + blade.picture_size[1] / 2 - (b_org - t_org) / 2)
+                            # Align top:
+                            # y = (blade.picture_offset[1] + r_org - b_org)
+                            self.rotate_text(font=font_org, text=service_profile_org,
+                                             # x=(blade.picture_offset[0] + blade.picture_size[0] - b_org), # Angle 270
+                                             x=(blade.picture_offset[0] + b_org /2),
+                                             y=(blade.picture_offset[1] + blade.picture_size[1] / 2),
+                                             fill=fill_color, angle=90)
+                        else:
+                            # Draw service profile name info
+                            self.draw.text(
+                                (blade.picture_offset[0] + blade.picture_size[0] / 2,
+                                 blade.picture_offset[1] + blade.picture_size[1] / 2),
+                                service_profile_name, fill=fill_color, font=font_name, align="center", anchor="mm")
 
-                        # Draw service profile org info
-                        self.draw.text(
-                            (blade.picture_offset[0] + blade.picture_size[0] / 2 - (r_org - l_org) / 2,
-                             blade.picture_offset[1] + (t_org - b_org) / 8 + 15),
-                            service_profile_org, fill=fill_color, font=font_org)
+                            # Draw service profile org info
+                            self.draw.text(
+                                (blade.picture_offset[0] + blade.picture_size[0] / 2 - (r_org - l_org) / 2,
+                                 blade.picture_offset[1] + (t_org - b_org) / 8 + 15),
+                                service_profile_org, fill=fill_color, font=font_org)
 
+                    # Draw equipment info
                     if equipment._parent.user_label:
                         chassis_info = "Chassis #" + equipment._parent.id + " - " + equipment._parent.user_label
                     else:

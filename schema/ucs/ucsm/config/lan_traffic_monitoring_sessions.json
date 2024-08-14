@@ -61,6 +61,28 @@
          "minItems": 1,
          "maxItems": 1
       },
+      "destination_ip": {
+         "description": "Destination IP of the ERSPAN LAN Traffic Monitoring session",
+         "type": "string",
+         "format": "ipv4"
+      },
+      "enable_packet_truncation": {
+         "description": "Enable Packet Truncation for the ERSPAN LAN Traffic Monitoring session",
+         "type": "string",
+         "default": "no",
+         "enum": [
+            "false",
+            "no",
+            "true",
+            "yes"
+         ]
+      },
+      "erspan_id": {
+         "description": "ERSPAN ID of ERSPAN LAN Traffic Monitoring session",
+         "type": "string",
+         "default": "0",
+         "pattern": "^[0-9]$|^[1-9][0-9]$|^[1-9][0-9][0-9]$|^10[0-1][0-9]$|^102[0-3]$"
+      },
       "fabric": {
          "description": "Fabric ID of the LAN Traffic Monitoring session (\"A\" or \"B\")",
          "type": "string",
@@ -71,11 +93,38 @@
             "B"
          ]
       },
+      "ip_dscp": {
+         "description": "IP DSCP value for the ERSPAN LAN Traffic Monitoring session",
+         "type": "string",
+         "default": "0",
+         "pattern": "^[0-9]$|^[1-5][0-9]$|^6[0-3]$"
+      },
+      "ip_ttl": {
+         "description": "IP TTL value for the ERSPAN LAN Traffic Monitoring session",
+         "type": "string",
+         "default": "64",
+         "pattern": "^[1-9]$|^[1-9][0-9]$|^1[0-9][0-9]$|^2[0-4][0-9]$|^25[0-5]$"
+      },
+      "maximum_transmission_unit": {
+         "description": "Maximum Transmission Unit (MTU) of the ERSPAN LAN Traffic Monitoring session",
+         "type": "string",
+         "default": "1518",
+         "pattern": "^6[4-9]$|^[7-9][0-9]$|^[1-9][0-9][0-9]$|^1[0-4][0-9][0-9]$|^150[0-9]$|^151[0-8]$"
+      },
       "name": {
          "description": "Name of the LAN Traffic Monitoring session",
          "type": "string",
          "default": "",
          "pattern": "^[\\-\\.:_a-zA-Z0-9]{1,16}$"
+      },
+      "session_type": {
+         "description": "Type of LAN Traffic Monitoring session (Local or ERSPAN)",
+         "type": "string",
+         "default": "span-local",
+         "enum": [
+            "erspan-source",
+            "span-local"
+         ]
       },
       "sources": {
          "description": "All sources added to the LAN Traffic Monitoring session",

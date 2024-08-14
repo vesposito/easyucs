@@ -613,131 +613,6 @@ class UcsSystemOuiPool(UcsSystemConfigObject):
         return True
 
 
-class UcsSystemVhbaTemplate(UcsSystemConfigObject):
-    _CONFIG_NAME = "vHBA Template"
-    _CONFIG_SECTION_NAME = "vhba_templates"
-    _UCS_SDK_OBJECT_NAME = "vnicSanConnTempl"
-
-    def __init__(self, parent=None, json_content=None, vhba_san_conn_templ=None):
-        UcsSystemConfigObject.__init__(self, parent=parent, ucs_sdk_object=vhba_san_conn_templ)
-        self.name = None
-        self.fabric = None
-        self.descr = None
-        self.redundancy_type = None
-        self.peer_redundancy_template = None
-        self.template_type = None
-        self.qos_policy = None
-        self.pin_group = None
-        self.max_data_field_size = None
-        self.vsan = None
-        self.wwpn_pool = None
-        self.stats_threshold_policy = None
-        self.operational_state = None
-
-        if self._config.load_from == "live":
-            if vhba_san_conn_templ is not None:
-                self.name = vhba_san_conn_templ.name
-                self.fabric = vhba_san_conn_templ.switch_id
-                self.descr = vhba_san_conn_templ.descr
-                self.redundancy_type = vhba_san_conn_templ.redundancy_pair_type
-                self.peer_redundancy_template = vhba_san_conn_templ.peer_redundancy_templ_name
-                self.template_type = vhba_san_conn_templ.templ_type
-                self.qos_policy = vhba_san_conn_templ.qos_policy_name
-                self.pin_group = vhba_san_conn_templ.pin_to_group_name
-                self.max_data_field_size = vhba_san_conn_templ.max_data_field_size
-                self.wwpn_pool = vhba_san_conn_templ.ident_pool_name
-                self.stats_threshold_policy = vhba_san_conn_templ.stats_policy_name
-                self.operational_state = {}
-
-                if "vnicFcIf" in self._config.sdk_objects and not self.vsan:
-                    if self._parent._dn:
-                        vsans = [vlan for vlan in self._config.sdk_objects["vnicFcIf"] if
-                                 self._parent._dn + "/san-conn-templ-" + self.name + "/" in vlan.dn]
-                        if len(vsans) == 1:
-                            self.vsan = vsans[0].name
-                        elif len(vsans) == 0:
-                            self.logger(level="error",
-                                        message=f"Missing at-least one VSAN in {self._CONFIG_NAME}: {str(self.name)}")
-                        else:
-                            self.logger(level="error",
-                                        message=f"More than one VSAN can be found in {self._CONFIG_NAME}: "
-                                                f"{str(self.name)}")
-
-                # Fetching the operational state of the referenced policies
-                self.operational_state.update(
-                    self.get_operational_state(
-                        policy_dn=vhba_san_conn_templ.oper_peer_redundancy_templ_name,
-                        separator="/san-conn-templ-",
-                        policy_name="peer_redundancy_template"
-                    )
-                )
-                self.operational_state.update(
-                    self.get_operational_state(
-                        policy_dn=vhba_san_conn_templ.oper_qos_policy_name,
-                        separator="/ep-qos-",
-                        policy_name="qos_policy"
-                    )
-                )
-                self.operational_state.update(
-                    self.get_operational_state(
-                        policy_dn=vhba_san_conn_templ.oper_stats_policy_name,
-                        separator="/thr-policy-",
-                        policy_name="stats_threshold_policy"
-                    )
-                )
-
-        elif self._config.load_from == "file":
-            if json_content is not None:
-                if not self.get_attributes_from_json(json_content=json_content):
-                    self.logger(level="error",
-                                message="Unable to get attributes from JSON content for " + self._CONFIG_NAME)
-
-                for policy in ["peer_redundancy_template", "qos_policy", "stats_threshold_policy"]:
-                    if not self.operational_state:
-                        self.operational_state = {}
-                    if policy not in self.operational_state:
-                        self.operational_state[policy] = None
-                    else:
-                        for value in ["name", "org"]:
-                            if value not in self.operational_state[policy]:
-                                self.operational_state[policy][value] = None
-
-        self.clean_object()
-
-    def push_object(self, commit=True):
-        if commit:
-            self.logger(message="Pushing " + self._CONFIG_NAME + " configuration: " + str(self.name))
-        else:
-            self.logger(message="Adding to the handle " + self._CONFIG_NAME + " configuration: " + str(self.name) +
-                                ", waiting for a commit")
-
-        if hasattr(self._parent, '_dn'):
-            parent_mo = self._parent._dn
-        else:
-            self.logger(level="error",
-                        message="Impossible to find the parent dn of " + self._CONFIG_NAME + " : " + str(self.name))
-            return False
-
-        redundancy_pair_type = "none" if self.redundancy_type == "no-redundancy" else self.redundancy_type
-        mo_vnic_san_conn_temp = VnicSanConnTempl(parent_mo_or_dn=parent_mo, switch_id=self.fabric.upper(),
-                                                 name=self.name, descr=self.descr,
-                                                 redundancy_pair_type=redundancy_pair_type,
-                                                 qos_policy_name=self.qos_policy,
-                                                 peer_redundancy_templ_name=self.peer_redundancy_template,
-                                                 templ_type=self.template_type, ident_pool_name=self.wwpn_pool,
-                                                 max_data_field_size=self.max_data_field_size,
-                                                 pin_to_group_name=self.pin_group,
-                                                 stats_policy_name=self.stats_threshold_policy)
-        if self.vsan:
-            VnicFcIf(parent_mo_or_dn=mo_vnic_san_conn_temp, name=self.vsan)
-
-        self._handle.add_mo(mo=mo_vnic_san_conn_temp, modify_present=True)
-        if commit:
-            if self.commit(detail=self.name) != True:
-                return False
-        return True
-
-
 class UcsSystemDefaultVhbaBehavior(UcsSystemConfigObject):
     _CONFIG_NAME = "Default vHBA Behavior"
     _CONFIG_SECTION_NAME = "default_vhba_behavior"
@@ -856,248 +731,6 @@ class UcsSystemFcZoneProfile(UcsSystemConfigObject):
         if commit:
             if self.commit(detail=self.name) != True:
                 return False
-        return True
-
-
-class UcsSystemSanConnectivityPolicy(UcsSystemConfigObject):
-    _CONFIG_NAME = "SAN Connectivity Policy"
-    _CONFIG_SECTION_NAME = "san_connectivity_policies"
-    _UCS_SDK_OBJECT_NAME = "vnicSanConnPolicy"
-    _POLICY_MAPPING_TABLE = {
-        "wwnn_pool": UcsSystemWwnnPool,
-        "vhbas": [
-            {
-                "adapter_policy": UcsSystemFibreChannelAdapterPolicy,
-                "pin_group": UcsSystemSanPinGroup,
-                "qos_policy": UcsSystemQosPolicy,
-                "stats_threshold_policy": UcsSystemThresholdPolicy,
-                "vhba_template": UcsSystemVhbaTemplate,
-                "wwpn_pool": UcsSystemWwpnPool
-            }
-        ]
-    }
-
-    def __init__(self, parent=None, json_content=None, vnic_san_conn_policy=None):
-        UcsSystemConfigObject.__init__(self, parent=parent, ucs_sdk_object=vnic_san_conn_policy)
-        self.name = None
-        self.descr = None
-        self.wwnn_pool = None
-        self.vhbas = []
-        self.vhba_initiator_groups = []
-
-        if self._config.load_from == "live":
-            if vnic_san_conn_policy is not None:
-                self.name = vnic_san_conn_policy.name
-                self.descr = vnic_san_conn_policy.descr
-
-                if "vnicFcNode" in self._parent._config.sdk_objects:
-                    for vnic_fc in self._config.sdk_objects["vnicFcNode"]:
-                        if self._parent._dn:
-                            if self._parent._dn + "/san-conn-pol-" + self.name + '/' in vnic_fc.dn:
-                                self.wwnn_pool = vnic_fc.ident_pool_name
-                                break
-
-                if "vnicFc" in self._parent._config.sdk_objects:
-                    for vnic_fc in self._config.sdk_objects["vnicFc"]:
-                        if self._parent._dn:
-                            if self._parent._dn + "/san-conn-pol-" + self.name + '/' in vnic_fc.dn:
-                                vhba = {"_object_type": "vhbas"}
-                                vhba.update({"name": vnic_fc.name})
-                                vhba.update({"adapter_policy": vnic_fc.adaptor_profile_name})
-                                vhba.update({"order": vnic_fc.order})
-                                if vnic_fc.nw_templ_name:
-                                    vhba.update({"vhba_template": vnic_fc.nw_templ_name})
-                                else:
-                                    vhba.update({"fabric": vnic_fc.switch_id})
-                                    vhba.update({"wwpn_pool": vnic_fc.ident_pool_name})
-                                    vhba.update({"pin_group": vnic_fc.pin_to_group_name})
-                                    vhba.update({"persistent_binding": vnic_fc.pers_bind})
-                                    vhba.update({"max_data_field_size": vnic_fc.max_data_field_size})
-                                    vhba.update({"qos_policy": vnic_fc.qos_policy_name})
-                                    vhba.update({"stats_threshold_policy": vnic_fc.stats_policy_name})
-
-                                    if vhba["persistent_binding"] == "1":
-                                        vhba["persistent_binding"] = "enabled"
-
-                                    if "vnicFcIf" in self._parent._config.sdk_objects:
-                                        for conn_policy in self._config.sdk_objects["vnicFcIf"]:
-                                            if self._parent._dn + "/san-conn-pol-" + self.name + '/fc-' + vhba['name'] \
-                                                    + '/' in conn_policy.dn:
-                                                vhba.update({"vsan": conn_policy.name})
-                                                break
-
-                                # Fetching the operational state of the referenced policies
-                                oper_state = {}
-                                oper_state.update(
-                                    self.get_operational_state(
-                                        policy_dn=vnic_fc.oper_adaptor_profile_name,
-                                        separator="/fc-profile-",
-                                        policy_name="adapter_policy"
-                                    )
-                                )
-                                oper_state.update(
-                                    self.get_operational_state(
-                                        policy_dn=vnic_fc.oper_pin_to_group_name,
-                                        separator="/san-pin-group-",
-                                        policy_name="pin_group"
-                                    )
-                                )
-                                oper_state.update(
-                                    self.get_operational_state(
-                                        policy_dn=vnic_fc.oper_qos_policy_name,
-                                        separator="/ep-qos-",
-                                        policy_name="qos_policy"
-                                    )
-                                )
-                                oper_state.update(
-                                    self.get_operational_state(
-                                        policy_dn=vnic_fc.oper_stats_policy_name,
-                                        separator="/thr-policy-",
-                                        policy_name="stats_threshold_policy"
-                                    )
-                                )
-                                oper_state.update(
-                                    self.get_operational_state(
-                                        policy_dn=vnic_fc.oper_nw_templ_name,
-                                        separator="/san-conn-templ-",
-                                        policy_name="vhba_template"
-                                    )
-                                )
-
-                                vhba['operational_state'] = oper_state
-
-                                self.vhbas.append(vhba)
-
-                if "storageIniGroup" in self._parent._config.sdk_objects:
-                    for ini_group in self._config.sdk_objects["storageIniGroup"]:
-                        if self._parent._dn:
-                            if self._parent._dn + "/san-conn-pol-" + self.name + '/' in ini_group.dn:
-                                group = {}
-                                group.update({"name": ini_group.name})
-                                group.update({"descr": ini_group.descr})
-                                if "vnicFcGroupDef" in self._parent._config.sdk_objects:
-                                    for fc_group in self._config.sdk_objects["vnicFcGroupDef"]:
-                                        if self._parent._dn + "/san-conn-pol-" + self.name + '/grp-' + group['name'] + \
-                                                '/fc' in fc_group.dn:
-                                            group.update(
-                                                {"storage_connection_policy": fc_group.storage_conn_policy_name})
-                                            break
-                                if "storageInitiator" in self._parent._config.sdk_objects:
-                                    group.update({"initiators": []})
-                                    for init in self._config.sdk_objects["storageInitiator"]:
-                                        if self._parent._dn + "/san-conn-pol-" + self.name + '/grp-' + group['name'] + \
-                                                '/' in init.dn:
-                                            group['initiators'].append(init.name)
-
-                                self.vhba_initiator_groups.append(group)
-
-        elif self._config.load_from == "file":
-            if json_content is not None:
-                if not self.get_attributes_from_json(json_content=json_content):
-                    self.logger(level="error",
-                                message="Unable to get attributes from JSON content for " + self._CONFIG_NAME)
-
-                for element in self.vhbas:
-                    for value in ["adapter_policy", "vhba_template", "fabric", "name", "order", "wwpn_pool",
-                                  "persistent_binding", "max_data_field_size", "qos_policy", "vsan", "pin_group",
-                                  "stats_threshold_policy", "operational_state"]:
-                        if value not in element:
-                            element[value] = None
-
-                    for policy in ["adapter_policy", "pin_group", "qos_policy", "stats_threshold_policy",
-                                   "vhba_template", "wwpn_pool"]:
-                        if element["operational_state"]:
-                            if policy not in element["operational_state"]:
-                                element["operational_state"][policy] = None
-                            else:
-                                for value in ["name", "org"]:
-                                    if value not in element["operational_state"][policy]:
-                                        element["operational_state"][policy][value] = None
-
-                    # Flagging this as a vHBA
-                    element["_object_type"] = "vhbas"
-
-                for element in self.vhba_initiator_groups:
-                    for value in ["storage_connection_policy", "initiators", "name", "descr"]:
-                        if value not in element:
-                            element[value] = None
-
-        self.clean_object()
-
-    def push_object(self, commit=True):
-        if commit:
-            self.logger(message="Pushing " + self._CONFIG_NAME + " configuration: " + str(self.name))
-        else:
-            self.logger(message="Adding to the handle " + self._CONFIG_NAME + " configuration: " + str(self.name) +
-                                ", waiting for a commit")
-
-        if hasattr(self._parent, '_dn'):
-            parent_mo = self._parent._dn
-        else:
-            self.logger(level="error",
-                        message="Impossible to find the parent dn of " + self._CONFIG_NAME + " : " + str(self.name))
-            return False
-
-        mo_vnic_san_conn_policy = VnicSanConnPolicy(parent_mo_or_dn=parent_mo, name=self.name, descr=self.descr)
-        if self.wwnn_pool:
-            VnicFcNode(parent_mo_or_dn=mo_vnic_san_conn_policy, ident_pool_name=self.wwnn_pool)
-        self._handle.add_mo(mo=mo_vnic_san_conn_policy, modify_present=True)
-        if self.commit(detail=self.name) != True:
-            return False
-
-        if self.vhbas:
-            for vhba in self.vhbas:
-                if vhba['vhba_template']:
-                    mo_vnic_fc = VnicFc(parent_mo_or_dn=mo_vnic_san_conn_policy,
-                                        adaptor_profile_name=vhba['adapter_policy'],
-                                        nw_templ_name=vhba['vhba_template'], name=vhba['name'],
-                                        order=vhba['order'])
-
-                    self._handle.add_mo(mo=mo_vnic_fc, modify_present=True)
-                    if commit:
-                        if self.commit(detail=vhba['name']) != True:
-                            continue
-                else:
-                    if vhba['fabric']:
-                        vhba['fabric'] = vhba['fabric'].upper()
-                    mo_vnic_fc = VnicFc(parent_mo_or_dn=mo_vnic_san_conn_policy, name=vhba['name'], order=vhba['order'],
-                                        switch_id=vhba['fabric'],
-                                        ident_pool_name=vhba['wwpn_pool'], pers_bind=vhba['persistent_binding'],
-                                        max_data_field_size=vhba['max_data_field_size'],
-                                        adaptor_profile_name=vhba['adapter_policy'], qos_policy_name=vhba['qos_policy'],
-                                        pin_to_group_name=vhba["pin_group"],
-                                        stats_policy_name=vhba["stats_threshold_policy"])
-
-                    # Adding the vsan
-                    if 'vsan' in vhba:
-                        mo_vnic_ether_if = VnicFcIf(parent_mo_or_dn=mo_vnic_fc, name=vhba['vsan'])
-                        self._handle.add_mo(mo_vnic_ether_if, modify_present=True)
-
-                    self._handle.add_mo(mo=mo_vnic_fc, modify_present=True)
-                    if commit:
-                        if self.commit(detail=vhba['name']) != True:
-                            continue
-
-        if self.vhba_initiator_groups:
-            for initiator in self.vhba_initiator_groups:
-                mo_ini_group = StorageIniGroup(parent_mo_or_dn=mo_vnic_san_conn_policy,
-                                               name=initiator['name'],
-                                               descr=initiator['descr'])
-                if initiator['storage_connection_policy']:
-                    VnicFcGroupDef(parent_mo_or_dn=mo_ini_group,
-                                   storage_conn_policy_name=initiator['storage_connection_policy'])
-                if initiator['initiators']:
-                    for sto_initiator in initiator['initiators']:
-                        StorageInitiator(parent_mo_or_dn=mo_ini_group, name=sto_initiator)
-
-                self._handle.add_mo(mo=mo_ini_group, modify_present=True)
-                if commit:
-                    if self.commit(detail=initiator['name']) != True:
-                        return False
-
-        # if commit:
-        #   if self.commit(detail=self.name):
-        #      return False
         return True
 
 
@@ -1500,3 +1133,377 @@ class UcsSystemIqnPool(UcsSystemConfigObject):
         if commit:
             if self.commit(detail=self.name) != True:
                 return False
+
+
+class UcsSystemVhbaTemplate(UcsSystemConfigObject):
+    _CONFIG_NAME = "vHBA Template"
+    _CONFIG_SECTION_NAME = "vhba_templates"
+    _UCS_SDK_OBJECT_NAME = "vnicSanConnTempl"
+    _POLICY_MAPPING_TABLE = {
+        "adapter_policy": UcsSystemFibreChannelAdapterPolicy,
+        "pin_group": UcsSystemSanPinGroup,
+        "qos_policy": UcsSystemQosPolicy,
+        "stats_threshold_policy": UcsSystemThresholdPolicy,
+        "wwpn_pool": UcsSystemWwpnPool
+    }
+
+    def __init__(self, parent=None, json_content=None, vhba_san_conn_templ=None):
+        UcsSystemConfigObject.__init__(self, parent=parent, ucs_sdk_object=vhba_san_conn_templ)
+        self.name = None
+        self.fabric = None
+        self.descr = None
+        self.redundancy_type = None
+        self.peer_redundancy_template = None
+        self.template_type = None
+        self.qos_policy = None
+        self.pin_group = None
+        self.max_data_field_size = None
+        self.vsan = None
+        self.wwpn_pool = None
+        self.stats_threshold_policy = None
+        self.operational_state = None
+
+        if self._config.load_from == "live":
+            if vhba_san_conn_templ is not None:
+                self.name = vhba_san_conn_templ.name
+                self.fabric = vhba_san_conn_templ.switch_id
+                self.descr = vhba_san_conn_templ.descr
+                self.redundancy_type = vhba_san_conn_templ.redundancy_pair_type
+                self.peer_redundancy_template = vhba_san_conn_templ.peer_redundancy_templ_name
+                self.template_type = vhba_san_conn_templ.templ_type
+                self.qos_policy = vhba_san_conn_templ.qos_policy_name
+                self.pin_group = vhba_san_conn_templ.pin_to_group_name
+                self.max_data_field_size = vhba_san_conn_templ.max_data_field_size
+                self.wwpn_pool = vhba_san_conn_templ.ident_pool_name
+                self.stats_threshold_policy = vhba_san_conn_templ.stats_policy_name
+                self.operational_state = {}
+
+                if "vnicFcIf" in self._config.sdk_objects and not self.vsan:
+                    if self._parent._dn:
+                        vsans = [vlan for vlan in self._config.sdk_objects["vnicFcIf"] if
+                                 self._parent._dn + "/san-conn-templ-" + self.name + "/" in vlan.dn]
+                        if len(vsans) == 1:
+                            self.vsan = vsans[0].name
+                        elif len(vsans) == 0:
+                            self.logger(level="error",
+                                        message=f"Missing at-least one VSAN in {self._CONFIG_NAME}: {str(self.name)}")
+                        else:
+                            self.logger(level="error",
+                                        message=f"More than one VSAN can be found in {self._CONFIG_NAME}: "
+                                                f"{str(self.name)}")
+
+                # Fetching the operational state of the referenced policies
+                self.operational_state.update(
+                    self.get_operational_state(
+                        policy_dn=vhba_san_conn_templ.oper_peer_redundancy_templ_name,
+                        separator="/san-conn-templ-",
+                        policy_name="peer_redundancy_template"
+                    )
+                )
+                self.operational_state.update(
+                    self.get_operational_state(
+                        policy_dn=vhba_san_conn_templ.oper_qos_policy_name,
+                        separator="/ep-qos-",
+                        policy_name="qos_policy"
+                    )
+                )
+                self.operational_state.update(
+                    self.get_operational_state(
+                        policy_dn=vhba_san_conn_templ.oper_stats_policy_name,
+                        separator="/thr-policy-",
+                        policy_name="stats_threshold_policy"
+                    )
+                )
+
+        elif self._config.load_from == "file":
+            if json_content is not None:
+                if not self.get_attributes_from_json(json_content=json_content):
+                    self.logger(level="error",
+                                message="Unable to get attributes from JSON content for " + self._CONFIG_NAME)
+
+                for policy in ["peer_redundancy_template", "qos_policy", "stats_threshold_policy"]:
+                    if not self.operational_state:
+                        self.operational_state = {}
+                    if policy not in self.operational_state:
+                        self.operational_state[policy] = None
+                    else:
+                        for value in ["name", "org"]:
+                            if value not in self.operational_state[policy]:
+                                self.operational_state[policy][value] = None
+
+        self.clean_object()
+
+    def push_object(self, commit=True):
+        if commit:
+            self.logger(message="Pushing " + self._CONFIG_NAME + " configuration: " + str(self.name))
+        else:
+            self.logger(message="Adding to the handle " + self._CONFIG_NAME + " configuration: " + str(self.name) +
+                                ", waiting for a commit")
+
+        if hasattr(self._parent, '_dn'):
+            parent_mo = self._parent._dn
+        else:
+            self.logger(level="error",
+                        message="Impossible to find the parent dn of " + self._CONFIG_NAME + " : " + str(self.name))
+            return False
+
+        redundancy_pair_type = "none" if self.redundancy_type == "no-redundancy" else self.redundancy_type
+        mo_vnic_san_conn_temp = VnicSanConnTempl(parent_mo_or_dn=parent_mo, switch_id=self.fabric.upper(),
+                                                 name=self.name, descr=self.descr,
+                                                 redundancy_pair_type=redundancy_pair_type,
+                                                 qos_policy_name=self.qos_policy,
+                                                 peer_redundancy_templ_name=self.peer_redundancy_template,
+                                                 templ_type=self.template_type, ident_pool_name=self.wwpn_pool,
+                                                 max_data_field_size=self.max_data_field_size,
+                                                 pin_to_group_name=self.pin_group,
+                                                 stats_policy_name=self.stats_threshold_policy)
+        if self.vsan:
+            VnicFcIf(parent_mo_or_dn=mo_vnic_san_conn_temp, name=self.vsan)
+
+        self._handle.add_mo(mo=mo_vnic_san_conn_temp, modify_present=True)
+        if commit:
+            if self.commit(detail=self.name) != True:
+                return False
+        return True
+
+
+class UcsSystemSanConnectivityPolicy(UcsSystemConfigObject):
+    _CONFIG_NAME = "SAN Connectivity Policy"
+    _CONFIG_SECTION_NAME = "san_connectivity_policies"
+    _UCS_SDK_OBJECT_NAME = "vnicSanConnPolicy"
+    _POLICY_MAPPING_TABLE = {
+        "wwnn_pool": UcsSystemWwnnPool,
+        "vhbas": [
+            {
+                "adapter_policy": UcsSystemFibreChannelAdapterPolicy,
+                "pin_group": UcsSystemSanPinGroup,
+                "qos_policy": UcsSystemQosPolicy,
+                "stats_threshold_policy": UcsSystemThresholdPolicy,
+                "vhba_template": UcsSystemVhbaTemplate,
+                "wwpn_pool": UcsSystemWwpnPool
+            }
+        ]
+    }
+
+    def __init__(self, parent=None, json_content=None, vnic_san_conn_policy=None):
+        UcsSystemConfigObject.__init__(self, parent=parent, ucs_sdk_object=vnic_san_conn_policy)
+        self.name = None
+        self.descr = None
+        self.wwnn_pool = None
+        self.vhbas = []
+        self.vhba_initiator_groups = []
+
+        if self._config.load_from == "live":
+            if vnic_san_conn_policy is not None:
+                self.name = vnic_san_conn_policy.name
+                self.descr = vnic_san_conn_policy.descr
+
+                if "vnicFcNode" in self._parent._config.sdk_objects:
+                    for vnic_fc in self._config.sdk_objects["vnicFcNode"]:
+                        if self._parent._dn:
+                            if self._parent._dn + "/san-conn-pol-" + self.name + '/' in vnic_fc.dn:
+                                self.wwnn_pool = vnic_fc.ident_pool_name
+                                break
+
+                if "vnicFc" in self._parent._config.sdk_objects:
+                    for vnic_fc in self._config.sdk_objects["vnicFc"]:
+                        if self._parent._dn:
+                            if self._parent._dn + "/san-conn-pol-" + self.name + '/' in vnic_fc.dn:
+                                vhba = {"_object_type": "vhbas"}
+                                vhba.update({"name": vnic_fc.name})
+                                vhba.update({"adapter_policy": vnic_fc.adaptor_profile_name})
+                                vhba.update({"order": vnic_fc.order})
+                                if vnic_fc.nw_templ_name:
+                                    vhba.update({"vhba_template": vnic_fc.nw_templ_name})
+                                else:
+                                    vhba.update({"fabric": vnic_fc.switch_id})
+                                    vhba.update({"wwpn_pool": vnic_fc.ident_pool_name})
+                                    vhba.update({"pin_group": vnic_fc.pin_to_group_name})
+                                    vhba.update({"persistent_binding": vnic_fc.pers_bind})
+                                    vhba.update({"max_data_field_size": vnic_fc.max_data_field_size})
+                                    vhba.update({"qos_policy": vnic_fc.qos_policy_name})
+                                    vhba.update({"stats_threshold_policy": vnic_fc.stats_policy_name})
+
+                                    if vhba["persistent_binding"] == "1":
+                                        vhba["persistent_binding"] = "enabled"
+
+                                    if "vnicFcIf" in self._parent._config.sdk_objects:
+                                        for conn_policy in self._config.sdk_objects["vnicFcIf"]:
+                                            if self._parent._dn + "/san-conn-pol-" + self.name + '/fc-' + vhba['name'] \
+                                                    + '/' in conn_policy.dn:
+                                                vhba.update({"vsan": conn_policy.name})
+                                                break
+
+                                # Fetching the operational state of the referenced policies
+                                oper_state = {}
+                                oper_state.update(
+                                    self.get_operational_state(
+                                        policy_dn=vnic_fc.oper_adaptor_profile_name,
+                                        separator="/fc-profile-",
+                                        policy_name="adapter_policy"
+                                    )
+                                )
+                                oper_state.update(
+                                    self.get_operational_state(
+                                        policy_dn=vnic_fc.oper_pin_to_group_name,
+                                        separator="/san-pin-group-",
+                                        policy_name="pin_group"
+                                    )
+                                )
+                                oper_state.update(
+                                    self.get_operational_state(
+                                        policy_dn=vnic_fc.oper_qos_policy_name,
+                                        separator="/ep-qos-",
+                                        policy_name="qos_policy"
+                                    )
+                                )
+                                oper_state.update(
+                                    self.get_operational_state(
+                                        policy_dn=vnic_fc.oper_stats_policy_name,
+                                        separator="/thr-policy-",
+                                        policy_name="stats_threshold_policy"
+                                    )
+                                )
+                                oper_state.update(
+                                    self.get_operational_state(
+                                        policy_dn=vnic_fc.oper_nw_templ_name,
+                                        separator="/san-conn-templ-",
+                                        policy_name="vhba_template"
+                                    )
+                                )
+
+                                vhba['operational_state'] = oper_state
+
+                                self.vhbas.append(vhba)
+
+                if "storageIniGroup" in self._parent._config.sdk_objects:
+                    for ini_group in self._config.sdk_objects["storageIniGroup"]:
+                        if self._parent._dn:
+                            if self._parent._dn + "/san-conn-pol-" + self.name + '/' in ini_group.dn:
+                                group = {}
+                                group.update({"name": ini_group.name})
+                                group.update({"descr": ini_group.descr})
+                                if "vnicFcGroupDef" in self._parent._config.sdk_objects:
+                                    for fc_group in self._config.sdk_objects["vnicFcGroupDef"]:
+                                        if self._parent._dn + "/san-conn-pol-" + self.name + '/grp-' + group['name'] + \
+                                                '/fc' in fc_group.dn:
+                                            group.update(
+                                                {"storage_connection_policy": fc_group.storage_conn_policy_name})
+                                            break
+                                if "storageInitiator" in self._parent._config.sdk_objects:
+                                    group.update({"initiators": []})
+                                    for init in self._config.sdk_objects["storageInitiator"]:
+                                        if self._parent._dn + "/san-conn-pol-" + self.name + '/grp-' + group['name'] + \
+                                                '/' in init.dn:
+                                            group['initiators'].append(init.name)
+
+                                self.vhba_initiator_groups.append(group)
+
+        elif self._config.load_from == "file":
+            if json_content is not None:
+                if not self.get_attributes_from_json(json_content=json_content):
+                    self.logger(level="error",
+                                message="Unable to get attributes from JSON content for " + self._CONFIG_NAME)
+
+                for element in self.vhbas:
+                    for value in ["adapter_policy", "vhba_template", "fabric", "name", "order", "wwpn_pool",
+                                  "persistent_binding", "max_data_field_size", "qos_policy", "vsan", "pin_group",
+                                  "stats_threshold_policy", "operational_state"]:
+                        if value not in element:
+                            element[value] = None
+
+                    for policy in ["adapter_policy", "pin_group", "qos_policy", "stats_threshold_policy",
+                                   "vhba_template", "wwpn_pool"]:
+                        if element["operational_state"]:
+                            if policy not in element["operational_state"]:
+                                element["operational_state"][policy] = None
+                            else:
+                                for value in ["name", "org"]:
+                                    if value not in element["operational_state"][policy]:
+                                        element["operational_state"][policy][value] = None
+
+                    # Flagging this as a vHBA
+                    element["_object_type"] = "vhbas"
+
+                for element in self.vhba_initiator_groups:
+                    for value in ["storage_connection_policy", "initiators", "name", "descr"]:
+                        if value not in element:
+                            element[value] = None
+
+        self.clean_object()
+
+    def push_object(self, commit=True):
+        if commit:
+            self.logger(message="Pushing " + self._CONFIG_NAME + " configuration: " + str(self.name))
+        else:
+            self.logger(message="Adding to the handle " + self._CONFIG_NAME + " configuration: " + str(self.name) +
+                                ", waiting for a commit")
+
+        if hasattr(self._parent, '_dn'):
+            parent_mo = self._parent._dn
+        else:
+            self.logger(level="error",
+                        message="Impossible to find the parent dn of " + self._CONFIG_NAME + " : " + str(self.name))
+            return False
+
+        mo_vnic_san_conn_policy = VnicSanConnPolicy(parent_mo_or_dn=parent_mo, name=self.name, descr=self.descr)
+        if self.wwnn_pool:
+            VnicFcNode(parent_mo_or_dn=mo_vnic_san_conn_policy, ident_pool_name=self.wwnn_pool)
+        self._handle.add_mo(mo=mo_vnic_san_conn_policy, modify_present=True)
+        if self.commit(detail=self.name) != True:
+            return False
+
+        if self.vhbas:
+            for vhba in self.vhbas:
+                if vhba['vhba_template']:
+                    mo_vnic_fc = VnicFc(parent_mo_or_dn=mo_vnic_san_conn_policy,
+                                        adaptor_profile_name=vhba['adapter_policy'],
+                                        nw_templ_name=vhba['vhba_template'], name=vhba['name'],
+                                        order=vhba['order'])
+
+                    self._handle.add_mo(mo=mo_vnic_fc, modify_present=True)
+                    if commit:
+                        if self.commit(detail=vhba['name']) != True:
+                            continue
+                else:
+                    if vhba['fabric']:
+                        vhba['fabric'] = vhba['fabric'].upper()
+                    mo_vnic_fc = VnicFc(parent_mo_or_dn=mo_vnic_san_conn_policy, name=vhba['name'], order=vhba['order'],
+                                        switch_id=vhba['fabric'],
+                                        ident_pool_name=vhba['wwpn_pool'], pers_bind=vhba['persistent_binding'],
+                                        max_data_field_size=vhba['max_data_field_size'],
+                                        adaptor_profile_name=vhba['adapter_policy'], qos_policy_name=vhba['qos_policy'],
+                                        pin_to_group_name=vhba["pin_group"],
+                                        stats_policy_name=vhba["stats_threshold_policy"])
+
+                    # Adding the vsan
+                    if 'vsan' in vhba:
+                        mo_vnic_ether_if = VnicFcIf(parent_mo_or_dn=mo_vnic_fc, name=vhba['vsan'])
+                        self._handle.add_mo(mo_vnic_ether_if, modify_present=True)
+
+                    self._handle.add_mo(mo=mo_vnic_fc, modify_present=True)
+                    if commit:
+                        if self.commit(detail=vhba['name']) != True:
+                            continue
+
+        if self.vhba_initiator_groups:
+            for initiator in self.vhba_initiator_groups:
+                mo_ini_group = StorageIniGroup(parent_mo_or_dn=mo_vnic_san_conn_policy,
+                                               name=initiator['name'],
+                                               descr=initiator['descr'])
+                if initiator['storage_connection_policy']:
+                    VnicFcGroupDef(parent_mo_or_dn=mo_ini_group,
+                                   storage_conn_policy_name=initiator['storage_connection_policy'])
+                if initiator['initiators']:
+                    for sto_initiator in initiator['initiators']:
+                        StorageInitiator(parent_mo_or_dn=mo_ini_group, name=sto_initiator)
+
+                self._handle.add_mo(mo=mo_ini_group, modify_present=True)
+                if commit:
+                    if self.commit(detail=initiator['name']) != True:
+                        return False
+
+        # if commit:
+        #   if self.commit(detail=self.name):
+        #      return False
+        return True

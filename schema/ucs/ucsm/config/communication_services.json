@@ -212,7 +212,8 @@
                   "enum": [
                      "default",
                      "all",
-                     "tlsv1_2"
+                     "tlsv1_2",
+                     "tlsv1_3"
                   ]
                },
                "policy_owner": {

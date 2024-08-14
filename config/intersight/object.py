@@ -742,3 +742,15 @@ class IntersightConfigObject(GenericConfigObject):
             # We instantiate an Intersight Config Object for each corresponding SDK object
             easyucs_objects_list.append(object_class(org, sdk_object))
         return easyucs_objects_list
+
+    def __getitem__(self, item):
+        return getattr(self, item)
+
+    def __setitem__(self, key, value):
+        setattr(self, key, value)
+
+    def __contains__(self, key):
+        return key in self.__dict__
+
+    def get(self, key, default=None):
+        return getattr(self, key, default)

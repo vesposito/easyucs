@@ -1,0 +1,28 @@
+{
+   "model_short_name": "X440p",
+   "front_file_name": "UCSX-440P.png",
+   "front_file_size": [289,1755],
+   "imm_compatible": true,
+   "spec_sheet_url": "https://www.cisco.com/c/dam/en/us/products/collateral/servers-unified-computing/ucs-x-series-modular-system/x440p-specsheet.pdf",
+   "data_sheet_url": "https://www.cisco.com/c/en/us/products/collateral/servers-unified-computing/ucs-x-series-modular-system/ucs-x440p-pcle-node-ds.html",
+   "specs": {
+      "form_factor": "1-slot",
+      "dimensions": {
+         "centimeters": {
+            "height": 45.7,
+            "width": 28.65,
+            "depth": 60.2
+         },
+         "inches": {
+            "height": 1.8,
+            "width": 11.28,
+            "depth": 23.7
+         },
+         "rack_units": 0
+      },
+      "weight": {
+         "lb": 17.9,
+         "kg": 8.12
+      }
+   }
+}

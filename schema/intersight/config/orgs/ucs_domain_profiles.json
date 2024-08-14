@@ -27,7 +27,7 @@
          "description": "UCS Domain Profile User Label",
          "type": "string",
          "default": "",
-         "pattern": "^[a-zA-Z0-9!#$%&*+,\\(\\)\\[\\]\\{\\}|\\/\\.\\?@_:;~-]{1,64}$"
+         "pattern": "^[a-zA-Z0-9 !#$%&*+,()\\[\\]{}|/.?@_:;~-]{1,64}$"
       },
       "tags": {
          "description": "UCS Domain Profile Tags",
@@ -135,6 +135,11 @@
       },
       "system_qos_policy": {
          "description": "UCS Domain Profile System QoS Policy",
+         "type": "string",
+         "default": ""
+      },
+      "ucs_domain_profile_template": {
+         "description": "Source UCS Domain Profile Template from which this UCS Domain Profile has been derived",
          "type": "string",
          "default": ""
       },

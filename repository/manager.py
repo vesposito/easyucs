@@ -3,6 +3,7 @@
 
 """ manager.py: Easy UCS Deployment Tool """
 
+import certifi
 import contextlib
 import copy
 import datetime
@@ -10,24 +11,30 @@ import inspect
 import json
 import os
 import shutil
+import sqlalchemy.exc
+import threading
 import uuid as python_uuid
 
 from cryptography.fernet import Fernet
+from sqlite3 import IntegrityError
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session
 from sqlalchemy.orm import sessionmaker
+from watchdog.observers import Observer
+from watchdog.events import FileSystemEventHandler
 
 from __init__ import EASYUCS_ROOT, __version__
 from backup.backup import GenericBackup
-from common import read_json_file, validate_json
+from common import password_generator, read_json_file, validate_json
 from config.config import GenericConfig
 from device.device import GenericDevice
 from inventory.inventory import GenericInventory
 from report.report import GenericReport
 from repository.db import models
 from repository import metadata
+from repository.repo import Repo
 from repository.metadata import GenericMetadata, BackupMetadata, ConfigMetadata, DeviceMetadata, InventoryMetadata, \
-    ReportMetadata, GenericTaskMetadata, TaskMetadata, TaskStepMetadata
+    ReportMetadata, GenericTaskMetadata, TaskMetadata, TaskStepMetadata, RepoFileMetadata, RepoSyncToDeviceMetadata
 
 
 def hasattr_table_record(cls):
@@ -43,10 +50,14 @@ def hasattr_table_record(cls):
 
 class RepositoryManager:
     REPOSITORY_BACKUPS_FOLDER_NAME: str = "backups"
+    REPOSITORY_CA_CERTS_FILE_NAME: str = "ca_cert.pem"
+    REPOSITORY_CA_CERTS_FOLDER_NAME: str = "ca_certs"
     REPOSITORY_DB_BACKUP_NAME = "db_backup.json"
     REPOSITORY_DB_FILE_NAME: str = "easyucs.db"
     REPOSITORY_DB_FOLDER_NAME: str = "db"
+    REPOSITORY_DEVICES_CACHE_FOLDER_NAME: str = "cache"
     REPOSITORY_DEVICES_FOLDER_NAME: str = "devices"
+    REPOSITORY_DEVICES_OS_FIRMWARE_FILE_NAME: str = "os_firmware.json"
     REPOSITORY_FILES_FOLDER_NAME: str = "files"
     REPOSITORY_FOLDER_NAME: str = "data"
     REPOSITORY_IMAGES_FOLDER_NAME: str = "images"
@@ -55,6 +66,7 @@ class RepositoryManager:
     REPOSITORY_TMP_FOLDER_NAME: str = "tmp"
     SAMPLES_FOLDER_NAME: str = "samples"
     SETTINGS_FILE_NAME: str = "settings.json"
+    SOFTWARE_REPOSITORY_FOLDER_NAME: str = "repo"
     TABLE_TO_METADATA_MAPPING = {}  # It's a mapping from table name to its "(Metadata, DB record)"
     for table in inspect.getmembers(metadata, hasattr_table_record):
         TABLE_TO_METADATA_MAPPING[table[1].TABLE_RECORD.__tablename__] = (table[1], table[1].TABLE_RECORD)
@@ -68,12 +80,14 @@ class RepositoryManager:
         self.parent = parent
 
         self._parent_having_logger = self._find_logger()
+        self.repo = Repo(parent=self)
 
         self._init_tmp()
         self._init_key()
         self._init_db()
         self._init_settings()
         self._init_config_catalog()
+        self._init_repo()
 
     def _delete_device(self, metadata=None, delete_keys=True):
         """
@@ -177,6 +191,10 @@ class RepositoryManager:
             db_table_name = models.InventoryRecord
         elif isinstance(metadata, ReportMetadata):
             db_table_name = models.ReportRecord
+        elif isinstance(metadata, RepoFileMetadata):
+            db_table_name = models.RepoFileRecord
+        elif isinstance(metadata, RepoSyncToDeviceMetadata):
+            db_table_name = models.RepoSyncToDeviceRecord
         else:
             self.logger(level="error", message="Not a valid metadata!")
             return False
@@ -197,6 +215,122 @@ class RepositoryManager:
             self.logger(message=f"Successfully deleted {metadata.file_type} with UUID {str(metadata.uuid)} from DB")
         return True
 
+    class WatchdogEventHandler(FileSystemEventHandler):
+        def __init__(self, parent, observed_path):
+            self.parent = parent
+            self.observed_path = observed_path
+            # If observed_path is symlink, then we determine the real path.
+            self.real_observed_path = os.path.realpath(observed_path)
+
+        def get_relative_path(self, path, start=EASYUCS_ROOT):
+            """
+            Function to get the path relative to the start (EASYUCS_ROOT). This also handles situation where
+            self.observed_path is a symlink to another path (self.real_observed_path).
+            """
+            return os.path.relpath(
+                os.path.join(self.observed_path,
+                             os.path.relpath(path, start=self.real_observed_path)),
+                start=start)
+
+        def on_any_event(self, event):
+            try:
+                if event.is_directory:
+                    return
+                elif event.event_type == 'created':
+                    self.parent.logger(level="debug",
+                                       message=f"Watchdog received 'created' event - "
+                                               f"{self.get_relative_path(event.src_path)}.")
+                    file_metadata = self.parent.repo.create_repofile_metadata(
+                        file_path=self.get_relative_path(event.src_path, start=EASYUCS_ROOT))
+                    self.parent.save_metadata(metadata=file_metadata)
+                elif event.event_type == 'modified':
+                    self.parent.logger(level="debug",
+                                       message=f"Watchdog received 'modified' event - "
+                                               f"{self.get_relative_path(event.src_path)}.")
+                    repo_file_list = self.parent.get_metadata(object_type="repofile",
+                                                              repo_file_path=self.get_relative_path(event.src_path,
+                                                                                                    start=EASYUCS_ROOT))
+                    if len(repo_file_list) < 1:
+                        # If there is no record for the file in DB, then we create one.
+                        repo_file_list.append(self.parent.repo.create_repofile_metadata(
+                            file_path=self.get_relative_path(event.src_path, start=EASYUCS_ROOT)))
+                        self.parent.save_metadata(metadata=repo_file_list[0])
+
+                    # We reset the values of checksums to None in case of a modified event
+                    if repo_file_list[0].md5 is not None or repo_file_list[0].sha1 is not None or \
+                            repo_file_list[0].sha256 is not None:
+                        repo_file_list[0].md5 = None
+                        repo_file_list[0].sha1 = None
+                        repo_file_list[0].sha256 = None
+                        self.parent.save_metadata(metadata=repo_file_list[0])
+                elif event.event_type == 'deleted':
+                    self.parent.logger(level="debug",
+                                       message=f"Watchdog received 'deleted' event - "
+                                               f"{self.get_relative_path(event.src_path)}.")
+                    repo_file_list = self.parent.get_metadata(object_type="repofile",
+                                                              repo_file_path=self.get_relative_path(event.src_path,
+                                                                                                    start=EASYUCS_ROOT))
+                    if len(repo_file_list) < 1:
+                        self.parent.logger(level="debug", message=f"Could not find the entry of the file: "
+                                                                  f"{self.get_relative_path(str(event.src_path))}")
+                        return
+
+                    # Delete all the sync to device records related to this file
+                    synctodevice_metadata = self.parent.get_metadata(object_type="reposynctodevice",
+                                                                     filter=("file_uuid", "==",
+                                                                             str(repo_file_list[0].uuid)))
+                    for sync_metadata in synctodevice_metadata:
+                        self.parent._delete_metadata(metadata=sync_metadata)
+
+                    self.parent._delete_metadata(metadata=repo_file_list[0])
+                elif event.event_type == 'moved':
+                    self.parent.logger(level="debug",
+                                       message=f"Watchdog received 'moved' event - "
+                                               f"{self.get_relative_path(event.src_path)}.")
+                    repo_file_list = self.parent.get_metadata(object_type="repofile",
+                                                              repo_file_path=self.get_relative_path(event.src_path,
+                                                                                                    start=EASYUCS_ROOT))
+                    if len(repo_file_list) < 1:
+                        # If there is no record for the file in DB, then we create one.
+                        repo_file_list.append(self.parent.repo.create_repofile_metadata(
+                            file_path=self.get_relative_path(event.src_path, start=EASYUCS_ROOT)))
+
+                    # Because the file is moved/renamed delete all the sync to device records related to this file
+                    synctodevice_metadata = self.parent.get_metadata(object_type="reposynctodevice",
+                                                                     filter=("file_uuid", "==",
+                                                                             str(repo_file_list[0].uuid)))
+                    for sync_metadata in synctodevice_metadata:
+                        self.parent._delete_metadata(metadata=sync_metadata)
+
+                    repo_file_list[0].file_path = self.get_relative_path(event.dest_path, start=EASYUCS_ROOT)
+                    self.parent.save_metadata(metadata=repo_file_list[0])
+            except Exception as err:
+                if isinstance(err, sqlalchemy.exc.IntegrityError) and isinstance(err.orig, IntegrityError):
+                    self.parent.logger(level="warning",
+                                       message=f"While handling Watchdog event '{str(event.event_type)}' "
+                                               f"encountered the 'UniqueViolation' error for file '{event.src_path}'")
+                else:
+                    self.parent.logger(level="error",
+                                       message=f"While handling Watchdog event '{str(event.event_type)}' "
+                                               f"encountered the error: {str(err)}")
+
+    def _repo_watchdog(self, path):
+        """
+        Function which starts the watchdog monitoring
+        :param path: Absolute path which needs to be monitored
+        """
+        event_handler = self.WatchdogEventHandler(parent=self, observed_path=path)
+        observer = Observer()
+        self.logger(message=f"Monitoring file hosting path {path}")
+        observer.schedule(event_handler, os.path.realpath(path), recursive=True)
+        observer.start()
+        try:
+            while observer.is_alive():
+                observer.join(1)
+        finally:
+            observer.stop()
+            observer.join()
+
     def _find_logger(self):
         # Method to find the object having a logger - it can be high up in the hierarchy of objects
         current_object = self
@@ -209,9 +343,35 @@ class RepositoryManager:
             print("WARNING: No logger found in Repository Manager")
             return None
 
-    def _init_settings(self):
+    def _init_repo(self):
+        """
+        Initializes repo directory, also starts a watchdog on the repo path
+        :return: True if repo directory exists (or created) and watchdog started
+        """
+
+        repo_path = os.path.abspath(os.path.join(EASYUCS_ROOT, self.REPOSITORY_FOLDER_NAME,
+                                                 self.SOFTWARE_REPOSITORY_FOLDER_NAME))
+        if not os.path.exists(repo_path):
+            self.logger(message="Creating Software Repository directory " + repo_path)
+            os.makedirs(repo_path)
+
+        self.watchdog_thread = threading.Thread(target=self._repo_watchdog, name="repo_watchdog",
+                                                args=(repo_path,))
+
+        self.watchdog_thread.start()
+
+        # Delete the 'repofile' records which does not exist in repo folder.
+        repofiles_metadata = self.get_metadata(object_type="repofile")
+        for repofile_metadata in repofiles_metadata:
+            if not os.path.exists(os.path.join(EASYUCS_ROOT, repofile_metadata.file_path)):
+                self._delete_metadata(metadata=repofile_metadata)
+
+        return True
+
+    def _init_settings(self, file_update=False):
         """
         Initializes Settings
+        :param file_update: Update the settings file with the initialized settings
         :return: True if settings init is successful, False otherwise
         """
         file_contents = read_json_file(file_path=self.SETTINGS_FILE_NAME)
@@ -221,6 +381,13 @@ class RepositoryManager:
             raise ValueError("Failed to validate settings.json file")
 
         self.settings = copy.deepcopy(file_contents)
+
+        if file_update:
+            with open(os.path.abspath(os.path.join(EASYUCS_ROOT, self.SETTINGS_FILE_NAME)), "w") as settings_file:
+                for content in ['default_password', 'default_password_mutual_chap_authentication']:
+                    if content in file_contents["convert_settings"]:
+                        del file_contents["convert_settings"][content]
+                json.dump(file_contents, settings_file, indent=3)
         return True
 
     def _init_config_catalog(self):
@@ -646,6 +813,31 @@ class RepositoryManager:
             return False
 
         return True
+    
+    def create_cache_folder(self, device=None):
+        """
+        Create the cache folder in the repository if it does not exist already
+        :param device: Device for which to create the cache folder
+        """
+        if device is None:
+            self.logger(level="error", message="No device given for create cache folder operation!")
+            return False
+        else:
+            if not isinstance(device, GenericDevice):
+                self.logger(level="error", message="Not a valid device provided!")
+                return False
+            device_uuid = str(device.uuid)
+
+        directory_full_path = os.path.abspath(
+            os.path.join(EASYUCS_ROOT, self.REPOSITORY_FOLDER_NAME, self.REPOSITORY_FILES_FOLDER_NAME,
+                         self.REPOSITORY_DEVICES_FOLDER_NAME, device_uuid, self.REPOSITORY_DEVICES_CACHE_FOLDER_NAME))
+
+        # Creating folder in case it does not exist yet
+        if not os.path.exists(directory_full_path):
+            self.logger(level="debug", message="Creating folder: " + directory_full_path)
+            os.makedirs(directory_full_path)
+
+        return True
 
     def create_images_folder(self, device=None):
         """
@@ -724,11 +916,12 @@ class RepositoryManager:
             json.dump(backup_json, f, indent=3)
         return file_path
 
-    def restore_db_backup(self, db_backup_file="", db_backup_data=None):
+    def restore_db_backup(self, db_backup_file="", db_backup_data=None, restore_repo=False):
         """
         Function to restore DB from a json backup
         :param db_backup_file: JSON file path which contains the DB backup
         :param db_backup_data: Backed up DB data in JSON format
+        :param restore_repo: Whether to restore the repofiles and reposynctodevice tables (default: false)
         :return: True if successful, False otherwise
         """
         if not db_backup_data and not db_backup_file:
@@ -751,6 +944,9 @@ class RepositoryManager:
 
         # Adding the records from the backed up DB
         for table, records in db_backup_data["db"].items():
+            if not restore_repo and table in ["repofiles", "reposynctodevice"]:
+                # If "restore_repo" is false then we don't restore the "repofiles" and "reposynctodevice" tables.
+                continue
             for record in records:
                 self._update_backup_record(record=record, table=table, backup_version=backup_easyucs_version)
                 metadata = self.TABLE_TO_METADATA_MAPPING[table][0](**record)
@@ -871,7 +1067,7 @@ class RepositoryManager:
         return result
 
     def get_metadata(self, object_type=None, uuid=None, device_uuid=None, task_uuid=None, filter=None,
-                     order_by=("timestamp", "desc"), limit=None, page=0):
+                     repo_file_path=None, order_by=("timestamp", "desc"), limit=None, page=0):
         """
         Gets all GenericMetadata objects from reading Database
         :param object_type: Type of object to get metadata of (config/device/inventory/report)
@@ -879,6 +1075,7 @@ class RepositoryManager:
         :param device_uuid: Filter results to only include entries for a given device UUID
         :param task_uuid: Filter results to only include entries for a given task UUID
         :param filter: Optional tuple of attributes to filter in the get operation
+        :param repo_file_path: Path to the file in repo
         :param order_by: Order of returned objects (Tuple with object attribute and order [desc, asc])
         :param limit: Number of returned objects
         :param page: Page number of returned objects
@@ -952,6 +1149,12 @@ class RepositoryManager:
             metadata_object_type = TaskStepMetadata
             if order_by[0] == "timestamp":
                 order_by = ("timestamp_start", order_by[1])
+        elif object_type == "repofile":
+            db_table_name = models.RepoFileRecord
+            metadata_object_type = RepoFileMetadata
+        elif object_type == "reposynctodevice":
+            db_table_name = models.RepoSyncToDeviceRecord
+            metadata_object_type = RepoSyncToDeviceMetadata
         else:
             self.logger(level="error", message="Not a valid object type")
             return []
@@ -979,7 +1182,7 @@ class RepositoryManager:
                         if limit is not None:
                             offset = int(page) * int(limit)
                         filter_logger_string += " offset " + str(offset)
-                    if not device_uuid and not task_uuid:
+                    if not device_uuid and not task_uuid and not repo_file_path:
                         if not uuid:
                             self.logger(level="debug",
                                         message="Querying " + object_type + " metadata from DB" + filter_logger_string)
@@ -1030,6 +1233,18 @@ class RepositoryManager:
                         else:
                             db_records = session.query(db_table_name).filter(
                                 getattr(db_table_name, "task_uuid") == str(task_uuid)).order_by(
+                                getattr(getattr(db_table_name, order_by[0]), order_by[1])()).offset(offset).limit(limit)
+                    elif repo_file_path:
+                        self.logger(level="debug", message="Querying " + object_type + " metadata for repo file " +
+                                                           str(repo_file_path) + " from DB" + filter_logger_string)
+                        # We query the DB using file_path as filter and order_by (attribute_name & asc/desc order)
+                        if filter is not None:
+                            db_records = session.query(db_table_name).filter(eval(filter_string)).filter(
+                                getattr(db_table_name, "file_path") == str(repo_file_path)).order_by(
+                                getattr(getattr(db_table_name, order_by[0]), order_by[1])()).offset(offset).limit(limit)
+                        else:
+                            db_records = session.query(db_table_name).filter(
+                                getattr(db_table_name, "file_path") == str(repo_file_path)).order_by(
                                 getattr(getattr(db_table_name, order_by[0]), order_by[1])()).offset(offset).limit(limit)
 
                 metadata_list = []
@@ -1116,6 +1331,41 @@ class RepositoryManager:
 
         return False
 
+    def save_os_firmware_data_to_repository(self, device=None, os_firmware_data=None):
+        """
+        Saves OS and Firmware metadata to the device cache in the repository
+        :param device: Device to which this OS and Firmware data belongs
+        :param os_firmware_data: OS and Firmware data which needs to be saved
+        :return: True if successful, False otherwise
+        """
+        if not device:
+            self.logger(level="error",
+                        message="Device must be given to save OS and Firmware metadata to repository!")
+            return False
+
+        if not os_firmware_data:
+            self.logger(level="error",
+                        message="Metadata must be given to save OS and Firmware metadata to repository!")
+            return False
+
+        # Creating folder in case it does not exist yet
+        if self.create_cache_folder(device=device):
+            os_firmware_path = os.path.abspath(os.path.join(
+                EASYUCS_ROOT, self.REPOSITORY_FOLDER_NAME, self.REPOSITORY_FILES_FOLDER_NAME,
+                self.REPOSITORY_DEVICES_FOLDER_NAME, str(device.metadata.uuid),
+                self.REPOSITORY_DEVICES_CACHE_FOLDER_NAME,
+                self.REPOSITORY_DEVICES_OS_FIRMWARE_FILE_NAME))
+        else:
+            os_firmware_path = os.path.abspath(os.path.join(EASYUCS_ROOT, "."))
+
+        with open(os_firmware_path, "w") as file:
+            json.dump(os_firmware_data, file, indent=3)
+
+        device.metadata.cache_path = os.path.dirname(os_firmware_path)
+        self.save_metadata(device.metadata)
+
+        return True
+
     def save_key_to_repository(self, private_key=None, device_uuid=None):
         """
         Saves private key to the repository
@@ -1188,6 +1438,12 @@ class RepositoryManager:
             elif isinstance(metadata, TaskStepMetadata):
                 if metadata.db_record is None:
                     metadata.db_record = models.TaskStepRecord()
+            elif isinstance(metadata, RepoFileMetadata):
+                if metadata.db_record is None:
+                    metadata.db_record = models.RepoFileRecord()
+            elif isinstance(metadata, RepoSyncToDeviceMetadata):
+                if metadata.db_record is None:
+                    metadata.db_record = models.RepoSyncToDeviceRecord()
             if metadata.db_record:
                 for attribute in vars(metadata):
                     if "uuid" in attribute:

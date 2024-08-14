@@ -192,6 +192,28 @@ class DeviceConnector:
                                    f" is already claimed to account {self.metadata.device_connector_ownership_name}.")
             return False
 
+        # Checking and clearing Intersight claim status if necessary
+        if not intersight_device.is_appliance:
+            # Determine the expected Cloud DNS value based on the target
+            if "qa.starshipcloud.com" in intersight_device.target:
+                expected_cloud_dns = ["qaconnect.starshipcloud.com"]
+            elif "staging.starshipcloud.com" in intersight_device.target:
+                expected_cloud_dns = ["stagingconnect.starshipcloud.com"]
+            else:
+                # List of acceptable DNS values for Intersight prod
+                expected_cloud_dns = [
+                    "svc.ucs-connect.com",
+                    "svc.intersight.com",
+                    "svc-static1.intersight.com",
+                    "svc-static1.ucs-connect.com"
+                ]
+            # Retrieve current Cloud DNS value from the Device Connector
+            current_cloud_dns = self._device_connector_info.get("Intersight URL")
+            # Compare current Cloud DNS with the expected Cloud DNS
+            if current_cloud_dns not in expected_cloud_dns:
+                # Call clear_intersight_claim_status if Cloud DNS values are different
+                self.clear_intersight_claim_status(intersight_device.target)
+
         # Setting the device connector access mode (only for CIMC and UCSM devices)
         if self.metadata.device_type in ["cimc", "ucsm"] and access_mode:
             self.set_device_connector_access_mode(access_mode=access_mode)
@@ -355,7 +377,7 @@ class DeviceConnector:
 
         return True
 
-    def clear_intersight_claim_status(self):
+    def clear_intersight_claim_status(self, intersight_target="svc.intersight.com"):
         """
         Clears Intersight Claim Status
         :return: True if successful, False otherwise
@@ -387,7 +409,13 @@ class DeviceConnector:
 
         if login_cookie:
             try:
-                data = '{"CloudDns":"svc.intersight.com", "ForceResetIdentity":true, "ResetIdentity":true}'
+                if intersight_target.endswith("qa.starshipcloud.com"):
+                    cloud_dns = "qaconnect.starshipcloud.com"
+                elif intersight_target.endswith("staging.starshipcloud.com"):
+                    cloud_dns = "stagingconnect.starshipcloud.com"
+                else:
+                    cloud_dns = "svc.intersight.com"
+                data = json.dumps({"CloudDns": cloud_dns, "ForceResetIdentity": True, "ResetIdentity": True})
                 response = requests.put(uri, verify=False, headers=auth_header, data=data)
                 if response.status_code == 200:
                     if response.json():

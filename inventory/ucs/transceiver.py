@@ -132,6 +132,7 @@ class UcsSystemTransceiver(UcsTransceiver, UcsSystemInventoryObject):
             # SFP+ 10Gbps transceivers Indeterminate models
             "10gbasesr": {"sku": "SFP-10G-SR/SR-S", "length": "<=400m"},
             "10gbaselr": {"sku": "SFP-10G-LR/LR-S", "length": "<=10km"},
+            "10gbaseer": {"sku": "SFP-10G-ER/ER-S", "length": "<=40km"},
 
             # SFP28 25Gbps transceivers
             "h25gsrs": {"sku": "SFP-25G-SR-S", "length": "<=100m"},
@@ -158,7 +159,8 @@ class UcsSystemTransceiver(UcsTransceiver, UcsSystemInventoryObject):
             "qsfp100gsr4s": {"sku": "QSFP-100G-SR4-S", "length": "<=100m"},
             "qsfp100glr4s": {"sku": "QSFP-100G-LR4-S", "length": "<=10km"},
             "qsfp100gdr": {"sku": "QSFP-100G-DR-S", "length": "<=500m"},
-            "qsfp100gfr": {"sku": "QSFP-100G-FR-S", "length": "<=2km"}
+            "qsfp100gfr": {"sku": "QSFP-100G-FR-S", "length": "<=2km"},
+            "qsfp100gpsm4s": {"sku": "QSFP-100G-PSM4-S", "length": "<=500m"}
         }
         for transceiver_type in transceiver_types_matrix.keys():
             if self.type == transceiver_type:

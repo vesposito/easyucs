@@ -43,7 +43,8 @@ class DeviceManager:
 
     def add_device(self, metadata=None, device_type=None, uuid=None, target=None, username=None, password=None,
                    key_id=None, private_key_path=None, is_hidden=False, is_system=False, system_usage=None,
-                   logger_handle_log_level=None, bypass_connection_checks=False, bypass_version_checks=False):
+                   logger_handle_log_level=None, bypass_connection_checks=False,
+                   bypass_version_checks=False, user_label=None):
         """
         Adds a device to the list of devices
         :param metadata: The metadata object of to the device to be added (if no device details provided)
@@ -60,6 +61,7 @@ class DeviceManager:
         :param logger_handle_log_level: The log level of the device to be added (e.g. "info", "debug", ...)
         :param bypass_connection_checks: Whether the device needs to bypass the connection check or not
         :param bypass_version_checks: Whether the device needs to bypass the version check or not
+        :param user_label: The user defined label about the device.
         :return: UUID of device if add is successful, False otherwise
         """
         if isinstance(metadata, DeviceMetadata):
@@ -75,6 +77,7 @@ class DeviceManager:
             system_usage = metadata.system_usage
             bypass_connection_checks = metadata.bypass_connection_checks
             bypass_version_checks = metadata.bypass_version_checks
+            user_label = metadata.user_label
 
         if device_type is None:
             self.logger(level="error", message="Missing device_type in device add request!")
@@ -102,32 +105,34 @@ class DeviceManager:
                             is_hidden=is_hidden, is_system=is_system, system_usage=system_usage,
                             logger_handle_log_level=logger_handle_log_level,
                             bypass_connection_checks=bypass_connection_checks,
-                            bypass_version_checks=bypass_version_checks)
+                            bypass_version_checks=bypass_version_checks, user_label=user_label)
         elif device_type == "intersight":
             if target:
                 device = IntersightDevice(parent=self, uuid=uuid, target=target, key_id=key_id,
                                           private_key_path=private_key_path, is_hidden=is_hidden, is_system=is_system,
                                           system_usage=system_usage, logger_handle_log_level=logger_handle_log_level,
                                           bypass_connection_checks=bypass_connection_checks,
-                                          bypass_version_checks=bypass_version_checks)
+                                          bypass_version_checks=bypass_version_checks,
+                                          user_label=user_label)
             else:
                 device = IntersightDevice(parent=self, uuid=uuid, key_id=key_id, private_key_path=private_key_path,
                                           is_hidden=is_hidden, is_system=is_system, system_usage=system_usage,
                                           logger_handle_log_level=logger_handle_log_level,
                                           bypass_connection_checks=bypass_connection_checks,
-                                          bypass_version_checks=bypass_version_checks)
+                                          bypass_version_checks=bypass_version_checks,
+                                          user_label=user_label)
         elif device_type == "ucsc":
             device = UcsCentral(parent=self, uuid=uuid, target=target, user=username, password=password,
                                 is_hidden=is_hidden, is_system=is_system, system_usage=system_usage,
                                 logger_handle_log_level=logger_handle_log_level,
                                 bypass_connection_checks=bypass_connection_checks,
-                                bypass_version_checks=bypass_version_checks)
+                                bypass_version_checks=bypass_version_checks, user_label=user_label)
         elif device_type == "ucsm":
             device = UcsSystem(parent=self, uuid=uuid, target=target, user=username, password=password,
                                is_hidden=is_hidden, is_system=is_system, system_usage=system_usage,
                                logger_handle_log_level=logger_handle_log_level,
                                bypass_connection_checks=bypass_connection_checks,
-                               bypass_version_checks=bypass_version_checks)
+                               bypass_version_checks=bypass_version_checks, user_label=user_label)
         else:
             self.logger(level="error", message="Device type not recognized. Could not add device")
             return False

@@ -20,6 +20,11 @@ var api_backup_endpoint = '/backups';
 var api_notification_endpoint = '/notifications';
 var api_log_endpoint = '/logs/session';
 var api_orgs_endpoint = '/orgs';
+var repo_download_endpoint = 'http://127.0.0.1:5001/repo';
+var api_repo_files_endpoint = '/repo/files';
+var api_repo_upload_endpoint = '/repo/actions/upload';
+var api_repo_url_download_endpoint = '/repo/actions/url/download';
+var api_repo_checksum_endpoint = '/repo/actions/checksum';
 
 var bulk_actions_limit = 500;
 var tasks_displayed_limit = 200;
@@ -109,6 +114,7 @@ function addTaskNotification(){
     document.getElementById("new-task-badge").textContent = notifications;
 
     // Updates the tasks display
+    console.log("Updating tasks display");
     getFromDb(displayTasks, "task");
 }
 
@@ -1078,7 +1084,8 @@ function handleHttpResponse(callback, received_http_response){
                 displayAlert(received_http_response.statusText);
             }
             // We refresh the data on the page since we got an error
-            refreshData();
+            // refreshData();
+            // Todo: handle the error in a more user-friendly way
         }
     }
 }

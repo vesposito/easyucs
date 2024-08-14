@@ -152,6 +152,17 @@ python easyucs_api.py
 
 ## Versioning
 
+### 0.9.8.10
+
+* Add support for a new Software Repository feature in EasyUCS UI, with ability to serve as an HTTP repo for ISO/firmware updates
+* Add support for Chassis Profile Template & Domain Profile Template in Intersight config
+* Add support for vNIC & vHBA Template in Intersight config
+* Add support for new config features in UCS Manager 4.3(4): ERSPAN, Hybrid Slot, BIOS Tokens
+* Add support for Power Groups in UCS Manager config
+* Add support for UCS C245 M8, C225 M8 and X215c M8 in catalog
+* Bump up minimum Intersight Appliance required version to 1.1.0-0
+* Miscellaneous bug fixes and improvements
+
 ### 0.9.8.9
 
 * Add support for subnet-level configuration for IP Pools in Intersight config
@@ -337,6 +348,7 @@ Initial release
 * **Rushab Mohanlal Jain** - *Various enhancements*
 * **Abhinav Sinha** - *Various enhancements*
 * **Jayasree Vulavala** - *Various enhancements*
+* **Ivan Ivanov** - *GUI enhancements*
 
 ## License
 

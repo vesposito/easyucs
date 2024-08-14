@@ -1,0 +1,99 @@
+{
+   "id": "ucs_system_config_power_groups#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS ucs system config power_groups section",
+   "description": "EasyUCS ucs system config power_groups section JSON schema",
+   "type": "object",
+   "properties": {
+      "comment": {
+         "description": "Power Group Comments",
+         "type": "string",
+         "default": ""
+      },
+      "name": {
+         "description": "Power Group Name",
+         "type": "string",
+         "default": "",
+         "pattern": "^[\\-\\.:_a-zA-Z0-9]{1,16}$"
+      },
+      "descr": {
+         "description": "Description of Power Group",
+         "type": "string",
+         "default": "",
+         "pattern": "^[ !#$%&\\(\\)\\*\\+,\\-\\./:;\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{0,256}$"
+      },
+      "input_power": {
+         "description": "Power Group Input Power (Budget)",
+         "type": "string",
+         "default": "unbounded",
+         "pattern": "^unbounded$|^[0-9]$|^[0-9][0-9]$|^[0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^10000000$|^4294967295$"
+      },
+      "members": {
+         "description": "Power Group Members",
+         "type": "array",
+         "items": {
+            "description": "Power Group Member",
+            "type": "object",
+            "properties": {
+               "type": {
+                  "description": "Power Group Member - Type",
+                  "type": "string",
+                  "default": "",
+                  "enum": [
+                     "chassis",
+                     "fabric_interconnect",
+                     "fex",
+                     "rack"
+                  ]
+               },
+               "id": {
+                  "description": "Power Group Member - ID",
+                  "type": "string",
+                  "default": "",
+                  "pattern": "^A$|^B$|^[1-9]$|^[0-9][0-9]$|^[0-1][0-9][0-9]$|^2[0-4][0-9]$|^25[0-5]$"
+               }
+            },
+            "required": [
+               "id",
+               "type"
+            ],
+            "additionalProperties": false,
+            "$comment": "Below is for setting constraints for type fabric_interconnect",
+            "if": {
+               "properties": {
+                  "type": {
+                     "enum": [
+                        "fabric_interconnect"
+                     ]
+                  }
+               },
+               "required": [
+                  "type"
+               ]
+            },
+            "then": {
+               "properties": {
+                  "id": {
+                     "enum": [
+                        "A",
+                        "B"
+                     ]
+                  }
+               }
+            },
+            "else": {
+               "properties": {
+                  "id": {
+                     "pattern": "^[1-9]$|^[0-9][0-9]$|^[0-1][0-9][0-9]$|^2[0-4][0-9]$|^25[0-5]$"
+                  }
+               }
+            }
+         },
+         "minItems": 1
+      }
+   },
+   "required": [
+      "name"
+   ],
+   "additionalProperties": false
+}

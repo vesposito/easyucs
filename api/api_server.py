@@ -2,9 +2,11 @@ import base64
 import copy
 import csv
 import ctypes
+import datetime
 import json
 import os
 import re
+import shutil
 import signal
 import sys
 import tarfile
@@ -18,11 +20,14 @@ from functools import wraps
 
 from flask import Flask, Response, request, send_file, after_this_request
 from flask_cors import CORS
+from urllib.parse import urlparse
 from werkzeug.exceptions import BadRequest
 from werkzeug.utils import secure_filename
+from packaging.version import Version
 
-from common import validate_json, encrypt, decrypt, extract
+from common import (decrypt, encrypt, extract, get_disk_space_usage, guess_image_metadata, validate_json)
 from __init__ import EASYUCS_ROOT, __version__
+from device.device import GenericDevice
 
 app = Flask(__name__)
 cors = CORS(app)
@@ -33,18 +38,23 @@ displayLogsBool = False
 
 timeout_values = {
     "add_device": 360,
+    "calculate_checksums": 300,
     "claim_to_intersight": 600,
-    "clear_config": 600,
+    "clear_config": 3600,
     "clear_intersight_claim_status": 300,
     "clear_sel_logs": 300,
+    "create_vmedia_policy": 300,
+    "download_file": 7200,
     "fetch_backup": 600,
     "fetch_config": 3600,
     "fetch_config_inventory": 7200,
     "fetch_inventory": 3600,
+    "fetch_os_firmware_data": 900,
     "generate_report": 300,
     "push_config": 10800,
     "regenerate_certificate": 300,
     "reset": 300,
+    "sync_to_software_repository": 600,
     "test_connection": 300
 }
 
@@ -52,13 +62,13 @@ timeout_values = {
 def timeout_wrapper(action_func):
     @wraps(action_func)
     def decorated(timeout=900, **kwargs):
-        obj = kwargs.get("device", None)
+        obj = kwargs.get("device", easyucs.repository_manager.repo)
         action_type = kwargs.get("action_type", None)
         object_type = kwargs.get("object_type", None)
         task_uuid = kwargs.get("task_uuid", None)
 
         if obj is None:
-            easyucs.logger(level="error", message="No device provided")
+            easyucs.logger(level="error", message="No device/repo provided")
             sys.exit()
 
         if task_uuid is None:
@@ -83,7 +93,8 @@ def timeout_wrapper(action_func):
 
         easyucs.logger(
             message=f"Waiting up to {str(timeout)} seconds for the {str(action_type)} {str(object_type)} "
-                    f"operation to be performed on the {obj.metadata.device_type_long} device"
+                    f"operation to be performed on the "
+                    f"{obj.metadata.device_type_long + ' device' if isinstance(obj, GenericDevice) else 'repo file'}"
         )
         thread_cancelled = False
         i = 0
@@ -133,16 +144,16 @@ def timeout_wrapper(action_func):
                        message="Released 1 token. " + str(easyucs.task_manager.available_tokens.qsize()) +
                                " token(s) left")
 
-        # We reset the task attribute on the device
+        # We reset the task attribute on the device/repo
         obj.task = None
 
-        # If the device has any queued tasks, then we move the oldest one to the system's (task manager's)
+        # If the device/repo has any queued tasks, then we move the oldest one to the system's (task manager's)
         # task queue.
         if not obj.queued_tasks.empty():
             if not easyucs.task_manager.add_to_pending_tasks(obj.queued_tasks.get()):
                 # Should not happen theoretically
                 easyucs.logger(level="error",
-                               message="Error while scheduling the device's queued task. System's task queue "
+                               message="Error while scheduling the device's/repo's queued task. System's task queue "
                                        "might be full")
 
         sys.exit()
@@ -169,7 +180,7 @@ def fetch_config_inventory(device=None, force=False):
 
 
 def get_object_from_db(object_type=None, uuid=None, device_uuid=None, task_uuid=None, filter=None,
-                       order_by=None, page_number=0, page_size=None):
+                       order_by=None, page_number=0, page_size=None, repo_file_path=None):
     """
     Gets all objects' metadata from the Database
     :param object_type: Type of object to get metadata of (backup/config/device/inventory/report/task/taskstep)
@@ -180,10 +191,11 @@ def get_object_from_db(object_type=None, uuid=None, device_uuid=None, task_uuid=
     :param order_by: Order of returned objects (Tuple with object attribute and order [desc, asc])
     :param page_size: Number of returned objects
     :param page_number: Page number of returned objects
+    :param repo_file_path: Relative Path to the file in repo
     :return: Dictionary with the list of objects' metadata if successful, None otherwise
     """
 
-    if object_type not in ["backup", "config", "device", "inventory", "report", "task", "taskstep"]:
+    if object_type not in ["backup", "config", "device", "inventory", "repofile", "report", "task", "taskstep"]:
         easyucs.logger(level="error", message="Invalid object type provided")
         return None
 
@@ -216,7 +228,7 @@ def get_object_from_db(object_type=None, uuid=None, device_uuid=None, task_uuid=
     object_metadata_list = []
 
     # If we get a single object we put the name to singular, otherwise to plural
-    if uuid:
+    if uuid or repo_file_path:
         dict_name = object_type
     else:
         if object_type == "inventory":
@@ -228,7 +240,7 @@ def get_object_from_db(object_type=None, uuid=None, device_uuid=None, task_uuid=
 
     for object_metadata in easyucs.repository_manager.get_metadata(
             object_type=object_type, uuid=uuid, device_uuid=device_uuid, task_uuid=task_uuid, filter=filter,
-            order_by=order_by, limit=page_size, page=page_number
+            order_by=order_by, limit=page_size, page=page_number, repo_file_path=repo_file_path
     ):
         obj = {}
 
@@ -240,7 +252,7 @@ def get_object_from_db(object_type=None, uuid=None, device_uuid=None, task_uuid=
             obj["timestamp"] = object_metadata.timestamp.isoformat()[:-3] + 'Z'
 
         # If we are not dealing with a task, these attributes are common to all the other objects
-        if object_type not in ["task", "taskstep"]:
+        if object_type not in ["task", "taskstep", "repofile"]:
             for attribute in ["device_version", "easyucs_version", "is_hidden", "is_system", "name", "origin",
                               "system_usage"]:
                 if getattr(object_metadata, attribute) not in [None, ""]:
@@ -257,10 +269,10 @@ def get_object_from_db(object_type=None, uuid=None, device_uuid=None, task_uuid=
                     obj[attribute] = getattr(object_metadata, attribute)
 
         elif object_type == "device":
-            for attribute in ["bypass_connection_checks", "bypass_version_checks", "device_connector_claim_status",
-                              "device_connector_ownership_name", "device_connector_ownership_user", "device_name",
-                              "device_type", "device_type_long", "is_reachable", "key_id", "target",
-                              "timestamp_last_connected", "username"]:
+            for attribute in ["bypass_connection_checks", "bypass_version_checks",
+                              "device_connector_claim_status", "device_connector_ownership_name",
+                              "device_connector_ownership_user", "device_name", "device_type", "device_type_long",
+                              "is_reachable", "key_id", "target", "timestamp_last_connected", "username", "user_label"]:
                 if getattr(object_metadata, attribute) not in [None, ""]:
                     if "timestamp" in attribute:
                         obj[attribute] = getattr(object_metadata, attribute).isoformat()[:-3] + 'Z'
@@ -276,6 +288,14 @@ def get_object_from_db(object_type=None, uuid=None, device_uuid=None, task_uuid=
                 if getattr(object_metadata, attribute) not in [None, ""]:
                     obj[attribute] = getattr(object_metadata, attribute)
 
+        elif object_type == "repofile":
+            for attribute in ["file_path", "md5", "sha1", "sha256", "timestamp"]:
+                if getattr(object_metadata, attribute) not in [None, ""]:
+                    if "timestamp" in attribute:
+                        obj[attribute] = getattr(object_metadata, attribute).isoformat()[:-3] + 'Z'
+                    else:
+                        obj[attribute] = getattr(object_metadata, attribute)
+
         elif object_type == "report":
             for attribute in ["language", "output_format", "page_layout", "report_type", "size"]:
                 if getattr(object_metadata, attribute) not in [None, ""]:
@@ -283,8 +303,8 @@ def get_object_from_db(object_type=None, uuid=None, device_uuid=None, task_uuid=
 
         elif object_type == "task":
             for attribute in ["config_uuid", "description", "device_name", "easyucs_version", "inventory_uuid", "name",
-                              "progress", "report_uuid", "status", "status_message", "target_device_uuid",
-                              "timestamp_start", "timestamp_stop"]:
+                              "progress", "repo_file_path", "repo_file_uuid", "report_uuid", "status", "status_message",
+                              "target_device_uuid", "timestamp_start", "timestamp_stop"]:
                 if getattr(object_metadata, attribute) not in [None, ""]:
                     if "timestamp" in attribute:
                         obj[attribute] = getattr(object_metadata, attribute).isoformat()[:-3] + 'Z'
@@ -308,11 +328,12 @@ def get_object_from_db(object_type=None, uuid=None, device_uuid=None, task_uuid=
         object_metadata_list.append(obj)
 
     # If we take a single object, we do not return a list but the object directly
-    if uuid:
+    if uuid or repo_file_path:
         if len(object_metadata_list) == 1:
             object_dict = {dict_name: object_metadata_list[0]}
         else:
-            easyucs.logger(level="error", message=f"Could not find {object_type} with uuid {str(uuid)}")
+            easyucs.logger(level="error", message=f"Could not find {object_type} with "
+                                                  f"{'uuid ' + str(uuid) if uuid else 'file path ' + repo_file_path}")
             return None
     else:
         object_dict = {dict_name: object_metadata_list}
@@ -383,17 +404,19 @@ def perform_action(device=None, action_type="", object_type="", task_uuid=None, 
     :param action_kwargs: A dictionary of keyword args to pass to the action to be performed
     :return: True if successful, False otherwise
     """
-    if not device:
+    if object_type not in ["repo"] and not device:
         easyucs.logger(level="error", message="No device provided")
         sys.exit()
 
-    if action_type not in ["add_device", "claim_to_intersight", "clear_config", "clear_intersight_claim_status",
-                           "clear_sel_logs", "fetch", "generate", "push", "regenerate_certificate", "reset",
+    if action_type not in ["add_device", "calculate_checksums", "claim_to_intersight", "clear_config",
+                           "clear_intersight_claim_status", "clear_sel_logs", "create_vmedia_policy",
+                           "download_file", "fetch", "fetch_os_firmware_data", "generate", "push",
+                           "regenerate_certificate", "reset", "sync_to_software_repository",
                            "test_connection"]:
         easyucs.logger(level="error", message="Invalid action type provided")
         sys.exit()
 
-    if object_type not in ["backup", "config", "device", "inventory", "report", "config_inventory"]:
+    if object_type not in ["backup", "config", "device", "inventory", "repo", "report", "config_inventory"]:
         easyucs.logger(level="error", message="Invalid object type provided")
         sys.exit()
 
@@ -405,8 +428,9 @@ def perform_action(device=None, action_type="", object_type="", task_uuid=None, 
         action_kwargs = {}
 
     # In case this is a clear, fetch or push operation, we first need to connect to the device
-    if action_type in ["add_device", "clear_config", "clear_intersight_claim_status", "clear_sel_logs", "fetch",
-                       "push", "regenerate_certificate", "reset", "test_connection"]:
+    if action_type in ["add_device", "clear_config", "clear_intersight_claim_status", "clear_sel_logs",
+                       "create_vmedia_policy", "fetch", "fetch_os_firmware_data", "push", "regenerate_certificate",
+                       "reset", "sync_to_software_repository", "test_connection"]:
         if not device.connect(bypass_version_checks=device.metadata.bypass_version_checks):
             easyucs.logger(level="error",
                            message="Failed to connect to " + device.metadata.device_type_long + " device",
@@ -504,12 +528,21 @@ def perform_action(device=None, action_type="", object_type="", task_uuid=None, 
                                str(intersight_device.name))
 
     manager_target = None
+    file_uuid = None
+    file_path = None
     if object_type in ["device"] and action_type in ["claim_to_intersight", "clear_config",
                                                      "clear_intersight_claim_status", "clear_sel_logs",
-                                                     "regenerate_certificate", "reset"]:
+                                                     "fetch_os_firmware_data", "regenerate_certificate", "reset"]:
         # The operation to perform is a direct call to the function at the device level
         action_target = getattr(device, action_type)
 
+    elif object_type in ["device"] and action_type in ["create_vmedia_policy", "sync_to_software_repository"]:
+        # Removing some arguments which are not needed for those actions.
+        if "file_uuid" in action_kwargs:
+            file_uuid = action_kwargs.pop("file_uuid")
+
+        # The operation to perform is a direct call to the function at the device level
+        action_target = getattr(device, action_type)
     elif object_type == "config_inventory":
         action_target = fetch_config_inventory
         if action_kwargs:
@@ -518,7 +551,10 @@ def perform_action(device=None, action_type="", object_type="", task_uuid=None, 
             action_kwargs = {
                 "device": device
             }
-
+    elif object_type in ["repo"] and action_type in ["calculate_checksums"]:
+        action_target = easyucs.repository_manager.repo.calculate_checksums
+    elif object_type in ["repo"] and action_type in ["download_file"]:
+        action_target = easyucs.repository_manager.repo.download_file
     else:
         manager_target = getattr(device, object_type + "_manager", None)
         action_target = getattr(manager_target, action_type + "_" + object_type, None)
@@ -529,7 +565,8 @@ def perform_action(device=None, action_type="", object_type="", task_uuid=None, 
 
     # In case this is a claim, a clear, a fetch or a push operation, we now need to disconnect from the device
     if action_type in ["add_device", "claim_to_intersight", "clear_config", "clear_intersight_claim_status",
-                       "clear_sel_logs", "fetch", "push", "regenerate_certificate", "test_connection"]:
+                       "clear_sel_logs", "fetch", "fetch_os_firmware_data", "push", "regenerate_certificate",
+                       "sync_to_software_repository", "test_connection"]:
         device.disconnect()
 
     if action_type in ["reset"]:
@@ -554,12 +591,43 @@ def perform_action(device=None, action_type="", object_type="", task_uuid=None, 
                            str(intersight_device.name))
         intersight_device.disconnect()
 
+    # In case this is a delete operation, we now need to generate the delete summary report
+    delete_summary = False
+    if action_type in ["clear_config"]:
+        delete_summary = device.report_manager.generate_report(output_formats=["json"],
+                                                               report_type="delete_summary")
     # In case this is a push operation, we now need to generate the push summary report
     push_summary = False
     if action_type in ["push"]:
         config = device.config_manager.find_config_by_uuid(uuid=action_kwargs["uuid"])
         push_summary = device.report_manager.generate_report(config=config, output_formats=["json"],
                                                              report_type="push_summary")
+    if action_type in ["create_vmedia_policy"]:
+        if not response:
+            status_message = easyucs.api_error_message
+            if not status_message:
+                status_message = "Failed to create vMedia Policy. Check logs"
+            easyucs.task_manager.stop_task(uuid=task_uuid, status="failed", status_message=status_message[:255])
+
+    if action_type in ["fetch_os_firmware_data"]:
+        if not response:
+            status_message = easyucs.api_error_message
+            if not status_message:
+                status_message = "Failed to fetch OS and Firmware data objects. Check logs"
+            easyucs.task_manager.stop_task(uuid=task_uuid, status="failed", status_message=status_message[:255])
+
+    if action_type in ["sync_to_software_repository"]:
+        if response:
+            # We add some arguments back to the action kwargs. These arguments are needed to create db object.
+            if file_uuid:
+                action_kwargs["file_uuid"] = file_uuid
+            if file_path:
+                action_kwargs["file_path"] = file_path
+        else:
+            status_message = easyucs.api_error_message
+            if not status_message:
+                status_message = "Failed to create Software repository Link. Check logs"
+            easyucs.task_manager.stop_task(uuid=task_uuid, status="failed", status_message=status_message[:255])
 
     # We save the object(s) when we get successful response from action_target and none of the tasksteps have failed.
     if response and not easyucs.task_manager.is_any_taskstep_failed(uuid=task_uuid):
@@ -587,6 +655,19 @@ def perform_action(device=None, action_type="", object_type="", task_uuid=None, 
                 if obj is not None:
                     easyucs.repository_manager.save_to_repository(object=obj)
 
+        elif action_type in ["clear_config"] and delete_summary:
+            # Determining the number of reports that have been generated
+            number_of_reports = 1
+            if "output_formats" in action_kwargs:
+                number_of_reports = len(list(set(action_kwargs["output_formats"])))
+            if device.report_manager.report_list:
+                for report in [device.report_manager.report_list[-x] for x in range(1, number_of_reports + 1)]:
+                    easyucs.repository_manager.save_to_repository(object=report)
+            # Save metadata associated with the device to the repository
+            # This is done to ensure that updated list of organizations (orgs left after deletion)
+            # are reflected in the device table.
+            easyucs.repository_manager.save_metadata(metadata=device.metadata)
+
         elif action_type in ["push"] and push_summary:
             # Determining the number of reports that have been generated
             number_of_reports = 1
@@ -595,6 +676,18 @@ def perform_action(device=None, action_type="", object_type="", task_uuid=None, 
             if device.report_manager.report_list:
                 for report in [device.report_manager.report_list[-x] for x in range(1, number_of_reports + 1)]:
                     easyucs.repository_manager.save_to_repository(object=report)
+
+        elif action_type in ["fetch_os_firmware_data"]:
+            # We save the OS and Firmware metadata to the repository
+            easyucs.repository_manager.save_os_firmware_data_to_repository(device=device, os_firmware_data=response)
+
+        elif action_type in ["sync_to_software_repository"]:
+            # We save software repository link details to reposynctodevice table
+
+            sync_metadata = easyucs.repository_manager.repo.create_reposynctodevice_metadata(
+                device=device, **action_kwargs
+            )
+            easyucs.repository_manager.save_metadata(sync_metadata)
 
     sys.exit()
 
@@ -813,7 +906,9 @@ def devices():
                         if private_key_path and os.path.exists(private_key_path):
                             os.remove(private_key_path)
                     return response
-
+            user_label = None
+            if "user_label" in payload:
+                user_label = payload["user_label"]
             device_type = None
             if "device_type" in payload:
                 device_type = payload["device_type"]
@@ -838,7 +933,7 @@ def devices():
 
             if easyucs.device_manager.add_device(device_type=device_type, uuid=new_device_uuid, target=target,
                                                  username=username, password=password, key_id=key_id,
-                                                 private_key_path=private_key_path,
+                                                 private_key_path=private_key_path, user_label=user_label,
                                                  bypass_version_checks=bypass_version_checks,
                                                  bypass_connection_checks=bypass_connection_checks):
                 device = easyucs.device_manager.get_latest_device()
@@ -856,9 +951,9 @@ def devices():
                 easyucs.repository_manager.save_to_repository(object=device)
                 device_metadata = {"device_uuid": str(device.uuid),
                                    "timestamp": device.metadata.timestamp.isoformat()[:-3] + 'Z'}
-                for attribute in ["bypass_connection_checks", "bypass_version_checks", "device_name", "device_type",
-                                  "device_type_long", "device_version", "easyucs_version", "is_hidden", "is_system",
-                                  "key_id", "system_usage", "target", "username"]:
+                for attribute in ["bypass_connection_checks", "bypass_version_checks", "device_name",
+                                  "device_type", "device_type_long", "device_version", "easyucs_version", "is_hidden",
+                                  "is_system", "key_id", "system_usage", "target", "username", "user_label"]:
                     if getattr(device.metadata, attribute) not in [None, ""]:
                         device_metadata[attribute] = getattr(device.metadata, attribute)
                 device_dict = {"device": device_metadata}
@@ -1305,7 +1400,7 @@ def device_uuid(device_uuid):
                     response = response_handle(code=400, response="Invalid payload")
                     return response
 
-                updating_fields = ["target", "bypass_connection_checks", "bypass_version_checks"]
+                updating_fields = ["target", "bypass_connection_checks", "bypass_version_checks", "user_label"]
                 if device_metadata_list[0].device_type == "intersight":
                     updating_fields.extend(["key_id"])
                 else:
@@ -1348,9 +1443,9 @@ def device_uuid(device_uuid):
 
                 device_metadata = {"device_uuid": str(device_metadata_list[0].uuid),
                                    "timestamp": device_metadata_list[0].timestamp.isoformat()[:-3] + 'Z'}
-                for attribute in ["bypass_connection_checks", "bypass_version_checks", "device_name", "device_type",
-                                  "device_type_long", "device_version", "easyucs_version", "is_hidden", "is_system",
-                                  "key_id", "system_usage", "target", "username"]:
+                for attribute in ["bypass_connection_checks", "bypass_version_checks", "device_name",
+                                  "device_type", "device_type_long", "device_version", "easyucs_version", "is_hidden",
+                                  "is_system", "key_id", "system_usage", "target", "username", "user_label"]:
                     if getattr(device_metadata_list[0], attribute) not in [None, ""]:
                         device_metadata[attribute] = getattr(device_metadata_list[0], attribute)
                 device_dict = {"device": device_metadata}
@@ -1491,7 +1586,9 @@ def device_uuid_actions_clear_config(device_uuid):
             if device:
 
                 action_kwargs = {
-                    "orgs": payload.get("orgs")
+                    "orgs": payload.get("orgs"),
+                    "delete_settings": payload.get("delete_settings", False),
+                    "force": payload.get("force", False)
                 }
 
                 try:
@@ -1503,6 +1600,11 @@ def device_uuid_actions_clear_config(device_uuid):
                     else:
                         response = response_handle(response="Unsupported device type", code=500)
                         return response
+
+                    # Resetting the delete_summary dictionary. This is done to avoid having legacy data when
+                    # deleting multiple times.
+                    device.delete_summary_manager._init_delete_summary()
+
                     # We schedule the clear config action through the scheduler
                     pending_task = {
                         "task_uuid": task_uuid,
@@ -2127,6 +2229,91 @@ def device_uuid_backup_uuid_actions_download(device_uuid, backup_uuid):
             else:
                 response = response_handle(response="Backup not found with UUID: " + backup_uuid, code=404)
 
+        except Exception as err:
+            response = response_handle(code=500, response=str(err))
+        return response
+
+
+@app.route("/devices/<device_uuid>/cache", methods=['GET'])
+def device_uuid_cache(device_uuid):
+    if request.method == 'GET':
+        try:
+            device = load_object(object_type="device", object_uuid=device_uuid)
+            if device:
+                operating_system = request.args.get("os", True, type=lambda v: v.lower() == 'true')
+                firmware = request.args.get("firmware", True, type=lambda v: v.lower() == 'true')
+
+                if device.metadata.device_type not in ["intersight"]:
+                    response = response_handle(response=f"OS and Firmware cached data not supported for "
+                                                        f"{device.metadata.device_type_long} device",
+                                               code=404)
+                    return response
+
+                if not device.metadata.cache_path:
+                    response = response_handle(response="OS and Firmware cached data not found", code=404)
+                    return response
+
+                os_firmware_data = device.get_os_firmware_data()
+
+                if not os_firmware_data:
+                    response = response_handle(response="Failed to read OS and Firmware cached data from device",
+                                               code=500)
+                    return response
+
+                if not operating_system:
+                    del os_firmware_data["os"]
+                if not firmware:
+                    del os_firmware_data["firmware"]
+
+                response = response_handle(response=os_firmware_data, code=200)
+            else:
+                response = response_handle(response="Device not found with UUID: " + device_uuid, code=404)
+        except Exception as err:
+            response = response_handle(code=500, response=str(err))
+        return response
+
+
+@app.route("/devices/<device_uuid>/cache/actions/fetch_os_firmware_data", methods=['POST'])
+# @cross_origin()
+def device_uuid_cache_actions_fetch_os_firmware_data(device_uuid):
+    if request.method == 'POST':
+        try:
+            device = load_object(object_type="device", object_uuid=device_uuid)
+            if device:
+                if device.task is not None:
+                    response = response_handle(response="Device already has a task running: " + str(device.task.uuid),
+                                               code=500)
+                    return response
+                try:
+                    # We create a new task
+                    if device.metadata.device_type in ["intersight"]:
+                        task_uuid = easyucs.task_manager.add_task(name="FetchOSFirmwareDataIntersight",
+                                                                  device_name=str(device.name),
+                                                                  device_uuid=str(device.uuid))
+                    else:
+                        response = response_handle(response="Unsupported device type", code=500)
+                        return response
+
+                    # We schedule the test connection action through the scheduler
+                    pending_task = {
+                        "task_uuid": task_uuid,
+                        "action_type": "fetch_os_firmware_data",
+                        "object_type": "device",
+                        "timeout": timeout_values["fetch_os_firmware_data"]
+                    }
+                    if not easyucs.task_manager.add_to_pending_tasks(pending_task):
+                        response = response_handle(response="Error while scheduling the task. Task Queue might be Full."
+                                                            " Try again after some time.", code=400)
+                        return response
+
+                except Exception as err:
+                    response = response_handle(response="Error testing the device connection: " + str(err),
+                                               code=500)
+                    return response
+
+                response = response_handle(response={"task": str(task_uuid)}, code=200)
+            else:
+                response = response_handle(response="Device not found with UUID: " + device_uuid, code=404)
         except Exception as err:
             response = response_handle(code=500, response=str(err))
         return response
@@ -3765,10 +3952,10 @@ def easyucs_backup_actions_restore():
             backup_easyucs_version = backup_data["metadata"]["easyucs_version"]
             backup_easyucs_timestamp = backup_data["metadata"]["timestamp"]
 
-            if backup_easyucs_version > __version__:
-                easyucs.logger(level="error",
-                               message=f"Cannot restore from higher EasyUCS version {backup_easyucs_version}")
-                return False
+            if Version(backup_easyucs_version) > Version(__version__):
+                error_message = f"Cannot restore from higher EasyUCS version {backup_easyucs_version}"
+                easyucs.logger(level="error", message=error_message)
+                return response_handle(code=400, response=error_message)
 
             # Deleting the existing data from the DB
             easyucs.repository_manager.clear_db()
@@ -3791,16 +3978,655 @@ def easyucs_backup_actions_restore():
             if not easyucs.repository_manager.restore_key_and_settings_backup():
                 return response_handle(code=400, response="Failed to restore Key and Settings. Check logs.")
 
+            restore_repo = request.args.get("restore_repo", False, type=lambda v: v.lower() == 'true')
+
             # Restore all the data from the DB backup
             easyucs.logger(level="info", message=f"Restoring DB from EasyUCS {backup_easyucs_version}, backed "
                                                  f"up on {backup_easyucs_timestamp}")
-            if not easyucs.repository_manager.restore_db_backup(db_backup_data=backup_data):
+            if not easyucs.repository_manager.restore_db_backup(db_backup_data=backup_data, restore_repo=restore_repo):
                 error_message = easyucs.api_error_message
                 if not error_message:
                     error_message = "Failed to restore DB data. Check logs."
                 return response_handle(code=400, response=error_message)
 
             response = response_handle(code=200)
+        except BadRequest as err:
+            response = response_handle(code=err.code, response=str(err.description))
+        except Exception as err:
+            response = response_handle(code=500, response=str(err))
+        return response
+
+
+@app.route('/repo/actions/create_vmedia_policy', methods=['POST'])
+def repo_actions_create_vmedia():
+    if request.method == 'POST':
+        try:
+            payload = request.json
+            if payload:
+                if not validate_json(json_data=payload, schema_path="api/specs/repo_actions_vmedia_post.json",
+                                     logger=easyucs):
+                    response = response_handle(code=400, response="Invalid payload")
+                    return response
+
+                device_uuid = payload.get("device_uuid", None)
+
+                device = load_object(object_type="device", object_uuid=device_uuid)
+
+                if device:
+                    if device.task is not None:
+                        response = response_handle(
+                            response="Device already has a task running: " + str(device.task.uuid), code=500)
+                        return response
+
+                    action_kwargs = {
+                        "name": payload.get("name"),
+                        "device_name": device.name,
+                        "org_name": payload.get("org_name"),
+                        "enable_virtual_media": payload.get("enable_virtual_media"),
+                        "enable_virtual_encryption": payload.get("enable_virtual_encryption"),
+                        "enable_low_power_usb": payload.get("enable_low_power_usb")
+                    }
+                    if "description" in payload:
+                        action_kwargs["description"] = payload["description"]
+                    if "tags" in payload:
+                        action_kwargs["tags"] = payload["tags"]
+                    if "vmedia_mount" in payload:
+                        action_kwargs["vmedia_mount"] = payload["vmedia_mount"]
+                    
+                    # We create a new task
+                    if device.metadata.device_type in ["intersight"]:
+                        task_uuid = easyucs.task_manager.add_task(name="CreateVmediaPolicyIntersight",
+                                                                  device_name=str(device.name),
+                                                                  device_uuid=str(device.uuid))
+                    else:
+                        response = response_handle(response="Unsupported device type", code=500)
+                        return response
+
+                    # We schedule the test connection action through the scheduler
+                    pending_task = {
+                        "task_uuid": task_uuid,
+                        "action_type": "create_vmedia_policy",
+                        "object_type": "device",
+                        "timeout": timeout_values["create_vmedia_policy"],
+                        "action_kwargs": action_kwargs
+                    }
+                    if not easyucs.task_manager.add_to_pending_tasks(pending_task):
+                        response = response_handle(response="Error while scheduling the task. Task Queue might be Full."
+                                                            " Try again after some time.", code=400)
+                        return response
+
+                    response = response_handle(response={"task": str(task_uuid)}, code=200)
+                else:
+                    response = response_handle(response="Device not found with UUID: " + device_uuid, code=404)
+            
+        except BadRequest as err:
+            response = response_handle(code=err.code, response=str(err.description))
+        except Exception as err:
+            easyucs.logger(level="exception", message="Unexpected error while Creating vMedia Policy")
+            response = response_handle(code=500, response=str(err))
+        return response
+
+
+@app.route('/repo/files/', methods=['GET', 'POST'])
+@app.route('/repo/files/<path:file_path>', methods=['GET', 'POST', 'PUT', 'DELETE'])
+def repo_files(file_path=None):
+    file_hosting_path = absolute_file_path = os.path.abspath(os.path.join(
+        EASYUCS_ROOT, easyucs.repository_manager.REPOSITORY_FOLDER_NAME,
+        easyucs.repository_manager.SOFTWARE_REPOSITORY_FOLDER_NAME))
+
+    if file_path:
+        absolute_file_path = os.path.abspath(os.path.join(file_hosting_path, file_path))
+
+    if os.path.commonpath([file_hosting_path]) != os.path.commonpath([file_hosting_path,
+                                                                      absolute_file_path]):
+        easyucs.logger(level="warning",
+                       message=f"User is trying to access restricted path {absolute_file_path}")
+        return response_handle(code=400, response=f"Please provide a valid file path")
+    
+    if not os.path.exists(absolute_file_path):
+        response = response_handle(f"File {file_path} not found", 404)
+        return response
+
+    if request.method == 'GET':
+        # This API endpoint behaves differently based on the 'file_path' value:
+        # If file_path=None or file_path=Directory: GET list of content and its details inside a directory
+        # If file_path=File: Get the details of the file
+        try:
+            if os.path.isdir(absolute_file_path):
+                total, used, available = get_disk_space_usage(file_hosting_path)
+                summarize = request.args.get("summarize", False, type=lambda v: v.lower() == 'true')
+
+                if not summarize:
+                    recursive = request.args.get("recursive", False, type=lambda v: v.lower() == 'true')
+
+                    def travel_folder(folder_path, result):
+                        file_list = os.listdir(folder_path)
+                        if file_list:
+                            for file_name in file_list:
+                                sub_file_path = os.path.join(folder_path, file_name)
+                                file_info = {
+                                    "name": file_name,
+                                    "timestamp_last_modified": datetime.datetime.fromtimestamp(
+                                        os.path.getmtime(sub_file_path)).isoformat()[:-3] + 'Z',
+                                    "is_directory": os.path.isdir(sub_file_path)
+                                }
+                                if not file_info["is_directory"]:
+                                    file_info = easyucs.repository_manager.repo.get_repofile(
+                                        absolute_file_path=sub_file_path)
+                                else:
+                                    if recursive:
+                                        file_info["sub_files"] = []
+                                        travel_folder(sub_file_path, file_info["sub_files"])
+                                result.append(file_info)
+
+                    result = []
+                    travel_folder(absolute_file_path, result)
+                    result = {
+                        "repofiles": result,
+                        "disk_utilization": {
+                            "total": total,
+                            "used": used,
+                            "available": available
+                        }
+                    }
+                else:
+                    result = {
+                        "repofile": {
+                            "name": os.path.basename(absolute_file_path),
+                            "timestamp_last_modified": datetime.datetime.fromtimestamp(
+                                os.path.getmtime(absolute_file_path)).isoformat()[:-3] + 'Z',
+                            "is_directory": True
+                        },
+                        "disk_utilization": {
+                            "total": total,
+                            "used": used,
+                            "available": available
+                        }
+                    }
+                response = response_handle(result, 200)
+            elif os.path.isfile(absolute_file_path):
+
+                file_info = easyucs.repository_manager.repo.get_repofile(absolute_file_path=absolute_file_path,
+                                                                         synced_data=True)
+                file_info = {
+                    "repofile": file_info
+                }
+
+                response = response_handle(file_info, 200)
+            else:
+                response = response_handle(code=500, response="Path is neither file nor folder")
+        except Exception as err:
+            response = response_handle(code=500, response=str(err))
+        return response
+
+    if request.method == 'POST':
+        # This API endpoint creates folders
+        try:
+            payload = request.json
+            if not validate_json(json_data=payload, schema_path="api/specs/repo_files_post.json",
+                                 logger=easyucs):
+                response = response_handle(code=400, response="Invalid payload")
+                return response
+
+            folder_name = payload.get("folder_name")
+
+            if not os.path.isdir(absolute_file_path):
+                response = response_handle(code=400, response=f"Path {absolute_file_path} is not a directory")
+                return response
+
+            folder_path = os.path.join(absolute_file_path, folder_name)
+
+            if os.path.exists(folder_path):
+                response = response_handle(code=400, response=f"Folder {folder_path} already exists")
+                return response
+
+            os.makedirs(folder_path)
+            response = response_handle(code=200)
+        except BadRequest as err:
+            easyucs.logger(level="error", message=str(err))
+            response = response_handle(code=err.code, response=str(err.description))
+        except Exception as err:
+            easyucs.logger(level="error", message=str(err))
+            response = response_handle(code=500, response=str(err))
+        return response
+
+    if request.method == 'PUT':
+        # This API endpoint moves/renames the file path
+        try:
+            payload = request.json
+            if not validate_json(json_data=payload, schema_path="api/specs/repo_files_put.json",
+                                 logger=easyucs):
+                response = response_handle(code=400, response="Invalid payload")
+                return response
+
+            if not file_path:
+                response = response_handle("Rename failed as no directory path mentioned", code=400)
+                return response
+
+            target_path = payload.get("target_path")
+            absolute_target_path = os.path.join(file_hosting_path, target_path)
+
+            if os.path.commonpath([file_hosting_path]) != os.path.commonpath([file_hosting_path,
+                                                                            absolute_target_path]):
+                easyucs.logger(level="warning",
+                            message=f"User is trying to access restricted path {absolute_target_path}")
+                return response_handle(code=400, response=f"Please provide a valid file path")
+            
+            if os.path.exists(absolute_target_path):
+                response = response_handle(f"File/Folder {absolute_target_path} already exists", code=400)
+                return response
+
+            if not os.path.exists(os.path.dirname(absolute_target_path)):
+                response = response_handle(f"Directory {os.path.dirname(target_path)} does not exists",
+                                           code=400)
+                return response
+
+            shutil.move(absolute_file_path, absolute_target_path)
+            response = response_handle(code=200)
+
+        except BadRequest as err:
+            easyucs.logger(level="error", message=str(err))
+            response = response_handle(code=err.code, response=str(err.description))
+        except Exception as err:
+            easyucs.logger(level="error", message=str(err))
+            response = response_handle(code=500, response=str(err))
+        return response
+
+    if request.method == 'DELETE':
+        # This API endpoint deletes the file path
+        try:
+            if os.path.isfile(absolute_file_path):
+                # If it's a file we delete it directly
+                os.remove(absolute_file_path)
+                response = response_handle(code=200)
+            elif os.path.isdir(absolute_file_path):
+                # If it's a directory then we perform deletion based on whether there is content inside it or not.
+                if not os.listdir(absolute_file_path):
+                    # If directory is empty then we remove the directory
+                    os.rmdir(absolute_file_path)
+                    response = response_handle(code=200)
+                else:
+                    # If directory have some content then we make sure to delete sub files/folders before deleting the
+                    # directory.
+                    # Here topdown=False is used when calling os.walk() to ensure that the files and subdirectories
+                    # within the directory are deleted first before attempting to delete the parent directory.
+                    for root, dirs, files in os.walk(absolute_file_path, topdown=False):
+                        for file in files:
+                            os.remove(os.path.join(root, file))
+                        for directory in dirs:
+                            os.rmdir(os.path.join(root, directory))
+                    os.rmdir(absolute_file_path)
+                    response_message = "Deleted directory " + os.path.basename(absolute_file_path)
+                    response = response_handle(response_message, 200)
+            else:
+                response = response_handle(code=500, response="Path is neither file nor folder")
+        except Exception as err:
+            easyucs.logger(level="error", message=str(err))
+            response = response_handle(code=500, response=str(err))
+        return response
+
+
+@app.route('/repo/actions/checksum/<path:file_path>', methods=['POST'])
+def repo_actions_checksum(file_path=None):
+    file_hosting_path = absolute_file_path = os.path.abspath(os.path.join(
+        EASYUCS_ROOT, easyucs.repository_manager.REPOSITORY_FOLDER_NAME,
+        easyucs.repository_manager.SOFTWARE_REPOSITORY_FOLDER_NAME))
+    if file_path:
+        absolute_file_path = os.path.abspath(os.path.join(file_hosting_path, file_path))
+
+    if os.path.commonpath([file_hosting_path]) != os.path.commonpath([file_hosting_path,
+                                                                      absolute_file_path]):
+        easyucs.logger(level="warning",
+                       message=f"User is trying to access restricted path {absolute_file_path}")
+        return response_handle(code=400, response=f"Please provide a valid file path")
+
+    if not os.path.exists(absolute_file_path):
+        response = response_handle(f"File {file_path} not found", 404)
+        return response
+
+    if request.method == 'POST':
+        try:
+            if not os.path.exists(absolute_file_path):
+                response = response_handle("File not found", 404)
+                return response
+
+            if not os.path.isfile(absolute_file_path):
+                response = response_handle("Not a file", 400)
+                return response
+
+            file_metadata = easyucs.repository_manager.get_metadata(object_type="repofile",
+                                                                    repo_file_path=os.path.relpath(absolute_file_path,
+                                                                                                   start=EASYUCS_ROOT))
+            if len(file_metadata) == 1:
+                file_metadata = file_metadata[0]
+            elif len(file_metadata) < 1:
+                # If the record do not exist then we create one.
+                file_metadata = easyucs.repository_manager.repo.create_repofile_metadata(
+                    file_path=os.path.relpath(absolute_file_path, start=EASYUCS_ROOT))
+                easyucs.repository_manager.save_metadata(metadata=file_metadata)
+            else:
+                response = response_handle(response="More than 1 record found with same name.", code=500)
+                return response
+
+            # We create a new task
+            task_uuid = easyucs.task_manager.add_task(name="CalculateChecksumsRepoFile",
+                                                      repo_file_path=file_metadata.file_path,
+                                                      repo_file_uuid=file_metadata.uuid)
+
+            action_kwargs = {
+                "file_path": absolute_file_path,
+                "algorithms": ["MD5", "SHA1", "SHA256"]
+            }
+
+            # We schedule the calculate checksums action through the scheduler
+            pending_task = {
+                "task_uuid": task_uuid,
+                "action_type": "calculate_checksums",
+                "object_type": "repo",
+                "timeout": timeout_values["calculate_checksums"],
+                "action_kwargs": action_kwargs
+            }
+            if not easyucs.task_manager.add_to_pending_tasks(pending_task):
+                response = response_handle(response="Error while scheduling the task. Task Queue might be Full."
+                                                    " Try again after some time.", code=400)
+                return response
+
+            response = response_handle(response={"task": str(task_uuid)}, code=200)
+
+        except Exception as err:
+            response = response_handle(code=500, response=str(err))
+        return response
+
+
+@app.route('/repo/actions/upload/', methods=['POST'])
+@app.route('/repo/actions/upload/<path:file_path>', methods=['POST'])
+def repo_actions_upload(file_path=None):
+    file_hosting_path = absolute_file_path = os.path.abspath(os.path.join(
+        EASYUCS_ROOT, easyucs.repository_manager.REPOSITORY_FOLDER_NAME,
+        easyucs.repository_manager.SOFTWARE_REPOSITORY_FOLDER_NAME))
+    if file_path:
+        absolute_file_path = os.path.abspath(os.path.join(file_hosting_path, file_path))
+
+    if os.path.commonpath([file_hosting_path]) != os.path.commonpath([file_hosting_path,
+                                                                      absolute_file_path]):
+        easyucs.logger(level="warning",
+                       message=f"User is trying to access restricted path {absolute_file_path}")
+        return response_handle(code=400, response=f"Please provide a valid file path")
+
+    if not os.path.exists(absolute_file_path):
+        response = response_handle(f"File {file_path} not found", 404)
+        return response
+
+    if request.method == 'POST':
+        try:
+            if not os.path.isdir(absolute_file_path):
+                response = response_handle(f"File {file_path} is not a directory", 400)
+                return response
+
+            tmp_path = os.path.abspath(os.path.join(
+                EASYUCS_ROOT, easyucs.repository_manager.REPOSITORY_FOLDER_NAME,
+                easyucs.repository_manager.REPOSITORY_TMP_FOLDER_NAME))
+
+            file = request.files["file"]
+            file_uuid = request.form["uuid"]
+
+            # Generate a unique filename to avoid overwriting using 8 chars of uuid before filename.
+            filename = f"{file_uuid[:8]}_{secure_filename(file.filename)}"
+
+            tmp_file_path = os.path.join(tmp_path, filename)
+            dest_file_path = os.path.join(absolute_file_path, file.filename)
+
+            if os.path.exists(dest_file_path):
+                response = response_handle("File with same name already exists", 400)
+                return response
+
+            use_chunks = request.args.get("use_chunks", True, type=lambda v: v.lower() == 'true')
+
+            if use_chunks:
+                cancel_upload = request.args.get("cancel", False, type=lambda v: v.lower() == 'true')
+
+                # If upload is cancelled we remove the temporary file and return status code 200
+                if cancel_upload:
+                    if os.path.exists(tmp_file_path):
+                        os.remove(tmp_file_path)
+                    response = response_handle("Upload cancelled", 200)
+                    return response
+
+                current_chunk = int(request.form["chunk_index"])
+
+                try:
+                    with open(tmp_file_path, "ab") as f:
+                        f.seek(int(request.form["chunk_byte_offset"]))
+                        f.write(file.stream.read())
+                except OSError:
+                    # In case of error, delete the temporary file
+                    if os.path.exists(tmp_file_path):
+                        os.remove(tmp_file_path)
+                    response = response_handle("Error appending to the existing file", 500)
+                    return response
+
+                total_chunks = int(request.form["total_chunk_count"])
+
+                if current_chunk + 1 == total_chunks:
+                    # This was the last chunk, the file should be complete and the size we expect
+                    if os.path.getsize(tmp_file_path) != int(request.form["total_file_size"]):
+                        # In case of error, delete the temporary file
+                        if os.path.exists(tmp_file_path):
+                            os.remove(tmp_file_path)
+                        response = response_handle("File does not match the original size", 500)
+                        return response
+
+                    # After all the chunks are saved to tmp folder, we move the file to its designated position.
+                    shutil.move(tmp_file_path, dest_file_path)
+            else:
+                file.save(dest_file_path)
+
+            response = response_handle(code=200)
+        except BadRequest as err:
+            response = response_handle(code=err.code, response=str(err.description))
+        except Exception as err:
+            response = response_handle(code=500, response=str(err))
+        return response
+
+
+@app.route('/repo/actions/url/download/', methods=['POST'])
+@app.route('/repo/actions/url/download/<path:file_path>', methods=['POST'])
+def repo_actions_url_download(file_path=None):
+    file_hosting_path = absolute_file_path = os.path.abspath(os.path.join(
+        EASYUCS_ROOT, easyucs.repository_manager.REPOSITORY_FOLDER_NAME,
+        easyucs.repository_manager.SOFTWARE_REPOSITORY_FOLDER_NAME))
+    if file_path:
+        absolute_file_path = os.path.abspath(os.path.join(file_hosting_path, file_path))
+
+    if os.path.commonpath([file_hosting_path]) != os.path.commonpath([file_hosting_path,
+                                                                      absolute_file_path]):
+        easyucs.logger(level="warning",
+                       message=f"User is trying to access restricted path {absolute_file_path}")
+        return response_handle(code=400, response=f"Please provide a valid file path")
+
+    if not os.path.exists(absolute_file_path):
+        response = response_handle(f"File {file_path} not found", 404)
+        return response
+
+    if request.method == 'POST':
+        try:
+            if not os.path.isdir(absolute_file_path):
+                response = response_handle(f"'{file_path}' is not a directory", 400)
+                return response
+
+            payload = request.json
+            # Check if payload valid
+            if payload:
+                if not validate_json(json_data=payload, schema_path="api/specs/repo_actions_url_download_post.json",
+                                     logger=easyucs):
+                    response = response_handle(code=400, response="Invalid payload")
+                    return response
+            else:
+                response = response_handle(code=400, response="Missing payload")
+                return response
+
+            download_url = payload.get("url")
+            # Parse the URL to check if it contains a valid path segment which contains filename.
+            parsed_url = urlparse(download_url)
+            # If the URL does not contain a valid path segment,
+            # return a response indicating the issue.
+            if not parsed_url.path or parsed_url.path == "/":
+                response = response_handle("Invalid URL: The URL does not contain a valid file path.", 400)
+                return response
+            # If 'file_name' is not provided in the payload and the last segment of the URL is empty,
+            # second last segment of the URL is used as the filename.
+            file_name = payload.get("file_name", download_url.split('/')[-1])
+            if not file_name:
+                file_name = download_url.split('/')[-2]
+            verify_ssl = payload.get("verify_ssl", True)
+
+            if os.path.exists(os.path.join(absolute_file_path, file_name)):
+                response = response_handle("File with same name already exists", 400)
+                return response
+
+            # We create a new task
+            task_uuid = easyucs.task_manager.add_task(name="DownloadFileFromUrl")
+
+            action_kwargs = {
+                "url": download_url,
+                "path": absolute_file_path,
+                "file_name": file_name,
+                "verify_ssl": verify_ssl
+            }
+
+            # We schedule the calculate checksums action through the scheduler
+            pending_task = {
+                "task_uuid": task_uuid,
+                "action_type": "download_file",
+                "object_type": "repo",
+                "timeout": timeout_values["download_file"],
+                "action_kwargs": action_kwargs
+            }
+            if not easyucs.task_manager.add_to_pending_tasks(pending_task):
+                response = response_handle(response="Error while scheduling the task. Task Queue might be Full."
+                                                    " Try again after some time.", code=400)
+                return response
+
+            response = response_handle(response={"task": str(task_uuid)}, code=200)
+
+        except BadRequest as err:
+            response = response_handle(code=err.code, response=str(err.description))
+        except Exception as err:
+            response = response_handle(code=500, response=str(err))
+        return response
+
+
+@app.route('/repo/actions/guess', methods=['POST'])
+def repo_actions_guess():
+    if request.method == 'POST':
+        try:
+            payload = request.json
+            if not validate_json(json_data=payload, schema_path="api/specs/repo_guess_post.json",
+                                 logger=easyucs):
+                response = response_handle(code=400, response="Invalid payload")
+                return response
+
+            device_uuid = payload.get("device_uuid", None)
+            image_name = payload.get("image_name", None)
+
+            device = None
+            if device_uuid:
+                device = load_object(object_type="device", object_uuid=device_uuid)
+
+            guessed_data = guess_image_metadata(image_name=image_name, device=device)
+
+            response = response_handle(code=200, response=guessed_data)
+        except BadRequest as err:
+            response = response_handle(code=err.code, response=str(err.description))
+        except Exception as err:
+            response = response_handle(code=500, response=str(err))
+        return response
+
+
+@app.route('/repo/actions/sync_to_software_repository', methods=['POST'])
+def repo_actions_sync_to_software_repository():
+    if request.method == 'POST':
+        try:
+            payload = request.json
+            if payload:
+                if not validate_json(json_data=payload,
+                                     schema_path="api/specs/repo_sync_to_software_repository_post.json",
+                                     logger=easyucs):
+                    response = response_handle(code=400, response="Invalid payload")
+                    return response
+
+            # We create the file download link if its not present in payload
+            file_download_link = payload.get("file_download_link")
+            if "file_download_link" not in payload:
+                file_download_link = easyucs.repository_manager.repo.create_repofile_download_link(
+                    host_url=request.host_url,
+                    file_path=payload.get("file_path")
+                )
+
+            device_uuid = payload.get("device_uuid", None)
+
+            device = load_object(object_type="device", object_uuid=device_uuid)
+
+            if device:
+                if device.task is not None:
+                    response = response_handle(response="Device already has a task running: " + str(device.task.uuid),
+                                               code=500)
+                    return response
+
+                action_kwargs = {
+                    "file_download_link": file_download_link,
+                    "image_type": payload["image_type"],
+                    "name": payload["name"],
+                    "org_name": payload["org_name"],
+                    "version": payload["version"]
+                }
+                if "description" in payload:
+                    action_kwargs["description"] = payload["description"]
+                if "file_path" in payload:
+                    path_prefix = os.path.join(easyucs.repository_manager.REPOSITORY_FOLDER_NAME,
+                                               easyucs.repository_manager.SOFTWARE_REPOSITORY_FOLDER_NAME)
+                    if not payload["file_path"].startswith(path_prefix):
+                        action_kwargs["file_path"] = os.path.join(path_prefix, payload["file_path"])
+                    else:
+                        action_kwargs["file_path"] = payload["file_path"]
+                if "file_uuid" in payload:
+                    action_kwargs["file_uuid"] = payload["file_uuid"]
+                if "firmware_image_type" in payload:
+                    action_kwargs["firmware_image_type"] = payload["firmware_image_type"]
+                if "supported_models" in payload:
+                    action_kwargs["supported_models"] = payload["supported_models"]
+                if "tags" in payload:
+                    action_kwargs["tags"] = payload["tags"]
+                if "vendor" in payload:
+                    action_kwargs["vendor"] = payload["vendor"]
+
+                # We create a new task
+                if device.metadata.device_type in ["intersight"]:
+                    task_uuid = easyucs.task_manager.add_task(name="SyncToIntersightSoftwareRepository",
+                                                              device_name=str(device.name),
+                                                              device_uuid=str(device.uuid),
+                                                              repo_file_uuid=action_kwargs.get("file_uuid"),
+                                                              repo_file_path=action_kwargs.get("file_path"))
+                else:
+                    response = response_handle(response="Unsupported device type", code=500)
+                    return response
+
+                # We schedule the test connection action through the scheduler
+                pending_task = {
+                    "task_uuid": task_uuid,
+                    "action_type": "sync_to_software_repository",
+                    "object_type": "device",
+                    "timeout": timeout_values["sync_to_software_repository"],
+                    "action_kwargs": action_kwargs
+                }
+                if not easyucs.task_manager.add_to_pending_tasks(pending_task):
+                    response = response_handle(response="Error while scheduling the task. Task Queue might be Full."
+                                                        " Try again after some time.", code=400)
+                    return response
+
+                response = response_handle(response={"task": str(task_uuid)}, code=200)
+            else:
+                response = response_handle(response="Device not found with UUID: " + device_uuid, code=404)
         except BadRequest as err:
             response = response_handle(code=err.code, response=str(err.description))
         except Exception as err:

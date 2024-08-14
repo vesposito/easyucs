@@ -90,7 +90,7 @@
             "name": {
                "description": "Name of the M.2 virtual drive.",
                "type": "string",
-               "pattern": "^[A-Za-z0-9_:.-]{1,15}$",
+               "pattern": "^[a-zA-Z0-9\\-_]{1,15}$",
                "default": ""
             }
          },

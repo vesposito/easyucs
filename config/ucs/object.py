@@ -120,6 +120,17 @@ class GenericUcsConfigObject(GenericConfigObject):
                                 #                     (item[item_key] if item[item_key] != "" else "''") + " cleaned")
                                 item[item_key] = None
 
+    def __getitem__(self, item):
+        return getattr(self, item)
+
+    def __setitem__(self, key, value):
+        setattr(self, key, value)
+
+    def get(self, key, default=None):
+        return getattr(self, key, default)
+
+    def __contains__(self, key):
+        return key in self.__dict__
 
 class UcsSystemConfigObject(GenericUcsConfigObject):
     def __init__(self, parent=None, ucs_sdk_object=None):

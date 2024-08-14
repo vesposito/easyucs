@@ -52,6 +52,10 @@ def task(task_uuid):
 def tasks():
     return render_template("html/tasks.html", version=__version__)
 
+@app.route("/repository", methods=['GET'])
+def repository():
+    return render_template("html/repository.html", version=__version__)
+
 @app.errorhandler(404)
 def page_not_found(e):
     return render_template('html/404.html'), 404

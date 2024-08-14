@@ -48,12 +48,13 @@ class GenericUcsDevice(GenericDevice, DeviceConnector):
 
     def __init__(self, parent=None, uuid=None, target="", user="", password="", is_hidden=False, is_system=False,
                  system_usage=None, logger_handle_log_level="info", log_file_path=None, bypass_connection_checks=False,
-                 bypass_version_checks=False):
+                 bypass_version_checks=False, user_label=""):
         GenericDevice.__init__(self, parent=parent, uuid=uuid, target=target, password=password, user=user,
                                is_hidden=is_hidden, is_system=is_system, system_usage=system_usage,
                                logger_handle_log_level=logger_handle_log_level, log_file_path=log_file_path,
                                bypass_connection_checks=bypass_connection_checks,
-                               bypass_version_checks=bypass_version_checks)
+                               bypass_version_checks=bypass_version_checks,
+                               user_label=user_label)
 
         self.handle = None
         self.intersight_status = "unknown"
@@ -100,7 +101,8 @@ class GenericUcsDevice(GenericDevice, DeviceConnector):
                 self._set_device_name_and_version()
                 self.metadata.timestamp_last_connected = datetime.datetime.now()
                 self.metadata.is_reachable = True
-                self._set_device_connector_info()
+                if self.metadata.device_type in ["cimc", "ucsm"]:
+                    self._set_device_connector_info()
 
                 version = "unknown"
                 if self.version:
@@ -284,12 +286,12 @@ class UcsSystem(GenericUcsDevice):
 
     def __init__(self, parent=None, uuid=None, target="", user="", password="", is_hidden=False, is_system=False,
                  system_usage=None, logger_handle_log_level="info", log_file_path=None, bypass_connection_checks=False,
-                 bypass_version_checks=False):
+                 bypass_version_checks=False, user_label=""):
         GenericUcsDevice.__init__(self, parent=parent, uuid=uuid, target=target, password=password, user=user,
                                   is_hidden=is_hidden, is_system=is_system, system_usage=system_usage,
                                   logger_handle_log_level=logger_handle_log_level, log_file_path=log_file_path,
                                   bypass_connection_checks=bypass_connection_checks,
-                                  bypass_version_checks=bypass_version_checks)
+                                  bypass_version_checks=bypass_version_checks, user_label=user_label)
         self.fi_a_model = ""
         self.fi_b_model = ""
         self.handle = UcsHandle(ip=target, username=user, password=password)
@@ -1847,12 +1849,12 @@ class UcsImc(GenericUcsDevice):
 
     def __init__(self, parent=None, uuid=None, target="", user="", password="", is_hidden=False, is_system=False,
                  system_usage=None, logger_handle_log_level="info", log_file_path=None, bypass_connection_checks=False,
-                 bypass_version_checks=False):
+                 bypass_version_checks=False, user_label=""):
         GenericUcsDevice.__init__(self, parent=parent, uuid=uuid, target=target, user=user, password=password,
                                   is_hidden=is_hidden, is_system=is_system, system_usage=system_usage,
                                   logger_handle_log_level=logger_handle_log_level, log_file_path=log_file_path,
                                   bypass_connection_checks=bypass_connection_checks,
-                                  bypass_version_checks=bypass_version_checks)
+                                  bypass_version_checks=bypass_version_checks, user_label=user_label)
         self.handle = ImcHandle(ip=target, username=user, password=password)
         self.platform_type = ""
         self.version_min_required = ImcVersion(self.UCS_IMC_MIN_REQUIRED_VERSION)
@@ -3008,12 +3010,12 @@ class UcsCentral(GenericUcsDevice):
 
     def __init__(self, parent=None, uuid=None, target="", user="", password="", is_hidden=False, is_system=False,
                  system_usage=None, logger_handle_log_level="info", log_file_path=None, bypass_connection_checks=False,
-                 bypass_version_checks=False):
+                 bypass_version_checks=False, user_label=""):
         GenericUcsDevice.__init__(self, parent=parent, uuid=uuid, target=target, password=password, user=user,
                                   is_hidden=is_hidden, is_system=is_system, system_usage=system_usage,
                                   logger_handle_log_level=logger_handle_log_level, log_file_path=log_file_path,
                                   bypass_connection_checks=bypass_connection_checks,
-                                  bypass_version_checks=bypass_version_checks)
+                                  bypass_version_checks=bypass_version_checks, user_label=user_label)
 
         self.handle = UcscHandle(ip=target, username=user, password=password)
         self.handle.set_mode_threading()

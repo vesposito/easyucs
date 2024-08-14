@@ -3,6 +3,7 @@
 
 """ common.py: Easy UCS Deployment Tool """
 import base64
+import copy
 import datetime
 import hashlib
 import ipaddress
@@ -10,6 +11,7 @@ import json
 import jsonschema
 import os
 import re
+import shutil
 import sys
 import time
 import tarfile
@@ -21,6 +23,17 @@ import natsort
 import requests
 
 from __init__ import EASYUCS_ROOT
+
+
+def get_disk_space_usage(repo_path):
+    """ Get disk space usage of a repo directory.
+    :param repo_path: The path of the directory to check.
+    :return: List of total, used, available Disk usage in bytes (int), List of None otherwise.
+    """
+    if repo_path:
+        total, used, available = shutil.disk_usage(repo_path)
+        return total, used, available
+    return [None]*3
 
 
 def get_decoded_pem_certificate(certificate=None):
@@ -153,6 +166,59 @@ def get_timestamp():
     """
     from datetime import datetime
     return (((datetime.now().strftime("%Y-%m-%d %H:%M:%S")).replace(" ", "_")).replace(":", "_")).replace("-", "_")
+
+
+def guess_image_metadata(image_name=None, device=None):
+    """
+    Guess the metadata of the image based on the file name. (Firmware, OS, SCU metadata)
+    :param image_name: Name of the image
+    :param device: Device object for accessing OS and Firmware cache data
+    :return: Guessed data if successful, {} otherwise
+    """
+    guessed_data = {}
+
+    if not image_name:
+        return guessed_data
+
+    if image_name.startswith("ucs-") and "-scu-" in image_name:
+        guessed_data["image_type"] = "scu"
+        pattern = r"ucs.*-scu-(\d+\.\d+)\.(.+)\.iso"
+        matches = re.match(pattern, image_name, re.IGNORECASE)
+        if matches.group():
+            guessed_data["version"] = f"{matches.group(1)}({matches.group(2)})"
+        return guessed_data
+
+    os_names_list = {
+        "SuSE": ["SuSE", "SLE"],
+        "Oracle": ["Oracle", "OVM"],
+        "Citrix": ["Citrix", "XenServer"],
+        "Ubuntu": ["Ubuntu"],
+        "CentOS": ["CentOS"],
+        "Red Hat": ["RHEL", "RHCOS", "CEPH"],
+        "VMware": ["ESXi", "VMware"],
+        "Microsoft": ["Windows", "HyperV"],
+        "Rocky Linux": ["Rocky"]
+    }
+    for vendor, os_names in os_names_list.items():
+        for os_name in os_names:
+            if os_name.lower() in image_name.lower():
+                guessed_data["image_type"] = "os"
+                guessed_data["vendor"] = vendor
+                return guessed_data
+
+    if device:
+        os_firmware_data = device.get_os_firmware_data()
+        if not os_firmware_data:
+            device.logger(level="info", message="OS and Firmware data not found.")
+            return guessed_data
+
+        for firmware in os_firmware_data["firmware"]:
+            if firmware["name"] == image_name:
+                guessed_data = copy.deepcopy(firmware)
+                guessed_data["image_type"] = "firmware"
+                return guessed_data
+
+    return guessed_data
 
 
 def query_yes_no(question, default="no"):

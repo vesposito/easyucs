@@ -16,6 +16,7 @@ from intersight.api.boot_api import BootApi
 from intersight.api.certificatemanagement_api import CertificatemanagementApi
 from intersight.api.chassis_api import ChassisApi
 from intersight.api.deviceconnector_api import DeviceconnectorApi
+from intersight.api.equipment_api import EquipmentApi
 from intersight.api.fabric_api import FabricApi
 from intersight.api.fcpool_api import FcpoolApi
 from intersight.api.firmware_api import FirmwareApi
@@ -113,9 +114,10 @@ class IntersightConfig(GenericConfig):
                                 {BiosApi: ["bios_policy"]},
                                 {BootApi: ["boot_precision_policy"]},
                                 {CertificatemanagementApi: ["certificatemanagement_policy"]},
-                                {ChassisApi: ["chassis_profile"]},
+                                {ChassisApi: ["chassis_profile", "chassis_profile_template"]},
                                 {ComputeApi: ["compute_blade", "compute_rack_unit"]},
                                 {DeviceconnectorApi: ["deviceconnector_policy"]},
+                                {EquipmentApi: ["equipment_chassis"]},
                                 {FabricApi: ["fabric_appliance_pc_role", "fabric_appliance_role",
                                              "fabric_eth_network_control_policy", "fabric_eth_network_group_policy",
                                              "fabric_eth_network_policy", "fabric_fc_network_policy",
@@ -126,8 +128,9 @@ class IntersightConfig(GenericConfig):
                                              "fabric_link_aggregation_policy", "fabric_link_control_policy",
                                              "fabric_multicast_policy", "fabric_port_mode", "fabric_port_policy",
                                              "fabric_san_pin_group", "fabric_server_role",
-                                             "fabric_switch_cluster_profile", "fabric_switch_control_policy",
-                                             "fabric_switch_profile", "fabric_system_qos_policy", "fabric_vlan",
+                                             "fabric_switch_cluster_profile", "fabric_switch_cluster_profile_template",
+                                             "fabric_switch_control_policy", "fabric_switch_profile",
+                                             "fabric_switch_profile_template", "fabric_system_qos_policy", "fabric_vlan",
                                              "fabric_vsan", "fabric_uplink_pc_role", "fabric_uplink_role"]},
                                 {FcpoolApi: ["fcpool_pool", "fcpool_reservation", "fcpool_lease"]},
                                 {FirmwareApi: ["firmware_policy"]},
@@ -154,7 +157,8 @@ class IntersightConfig(GenericConfig):
                                 {SnmpApi: ["snmp_policy"]},
                                 {SolApi: ["sol_policy"]},
                                 {SshApi: ["ssh_policy"]},
-                                {StorageApi: ["storage_storage_policy", "storage_drive_group", "storage_drive_security_policy"]},
+                                {StorageApi: ["storage_storage_policy", "storage_drive_group",
+                                              "storage_drive_security_policy"]},
                                 {SyslogApi: ["syslog_policy"]},
                                 {ThermalApi: ["thermal_policy"]},
                                 {UuidpoolApi: ["uuidpool_pool", "uuidpool_reservation", "uuidpool_uuid_lease"]},
@@ -163,7 +167,8 @@ class IntersightConfig(GenericConfig):
                                            "vnic_eth_qos_policy", "vnic_fc_adapter_policy", "vnic_fc_if",
                                            "vnic_fc_network_policy", "vnic_fc_qos_policy", "vnic_iscsi_adapter_policy",
                                            "vnic_iscsi_boot_policy", "vnic_iscsi_static_target_policy",
-                                           "vnic_lan_connectivity_policy", "vnic_san_connectivity_policy"]}]
+                                           "vnic_lan_connectivity_policy", "vnic_san_connectivity_policy",
+                                           "vnic_vhba_template", "vnic_vnic_template"]}]
         self.logger(level="debug", message="Fetching " + self.device.metadata.device_type_long + " objects for config")
         if self.device.task is not None:
             self.device.task.taskstep_manager.start_taskstep(
@@ -391,11 +396,13 @@ class IntersightConfig(GenericConfig):
                 return None
             if not getattr(found_org, section_name):
                 if debug:
-                    self.logger(level="debug", message="No item in section " + section_name + " of org " + str(org_name))
+                    self.logger(level="debug",
+                                message="No item in section " + section_name + " of org " + str(org_name))
                 return None
             if not isinstance(getattr(found_org, section_name), list):
                 self.logger(level="debug",
-                            message="Section " + section_name + " in org " + str(org_name) + " is not a list of objects")
+                            message="Section " + section_name + " in org " + str(org_name) +
+                                    " is not a list of objects")
                 return None
             for obj in getattr(found_org, section_name):
                 if hasattr(obj, "name"):

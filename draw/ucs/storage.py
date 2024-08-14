@@ -252,7 +252,7 @@ class UcsSystemDrawStorageLocalDisk(GenericUcsDrawEquipment):
             if "DrawRackRear" in self.parent_draw.parent_draw.__class__.__name__:
                 if any(x in self.parent_draw.parent_draw._parent.sku
                        for x in ["UCSC-C240-M5", "HX240C-M5", "HXAF240C-M5", "UCSC-C240-M5SD", "UCSC-C240-M6",
-                                 "UCSC-C245-M6", "UCSC-C240-M7"]):
+                                 "UCSC-C245-M6", "UCSC-C240-M7", "UCSC-C245-M8"]):
                     for disk in self.parent_draw.parent_draw.json_file["disks_slots_rear"]:
                         if self.id == disk['id']:
                             return disk

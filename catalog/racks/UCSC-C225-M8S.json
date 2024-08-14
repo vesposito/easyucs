@@ -1,0 +1,212 @@
+{
+   "model_short_name": "C225 M8S",
+   "rear_file_name": "UCSC-C225-M8_rear.png",
+   "front_file_name": "UCSC-C225-M8S_front.png",
+   "rear_file_size": [2925,273],
+   "front_file_size": [2862,273],
+   "mlom_slots": [
+      {
+         "id": 1,
+         "coord": [264, 170]
+      }
+   ],
+   "mlom_models": [
+      {
+         "name": "UCSC-MLOM-BLK-M6",
+         "type": "blank",
+         "description": "MLOM Blanking Panel M6"
+      }
+   ],
+   "pcie_riser_slots": [
+      {
+         "id": 1,
+         "coord": [259, 26]
+      },
+      {
+         "id": 2,
+         "coord": [714, 26]
+      },
+      {
+         "id": 3,
+         "coord": [1222, 26]
+      }
+   ],
+   "pcie_riser_models": [
+      {
+         "name": "UCSC-FBRS-C220M8",
+         "type": "#blank",
+         "riser_ids": [1],
+         "description": "Blanking Panel"
+      },
+      {
+         "name": "UCSC-RIS2A_2B-225M8",
+         "#name": "UCSC-FBRS2-C220M8",
+         "type": "blank",
+         "riser_ids": [2],
+         "description": "Blanking Panel"
+      },
+      {
+         "name": "UCSC-RIS3A-225M8",
+         "#name": "UCSC-FBRS-C220M8",
+         "type": "blank",
+         "riser_ids": [3],
+         "description": "Blanking Panel"
+      }
+   ],
+   "pcie_models": [
+      {
+         "name": "UCSC-PCIF-01F",
+         "type": "blank",
+         "width": "full",
+         "description": "PCIe Full Height blanking panel for UCS C-Series Server"
+      },
+      {
+         "name": "UCSC-PCIF-01H",
+         "type": "blank",
+         "width": "half",
+         "description": "PCIe Low Profile blanking panel for UCS C-Series Server"
+      }
+   ],
+   "psus_slots_rear": [
+      {
+         "id": 1,
+         "coord": [1818,12]
+      },
+      {
+         "id": 2,
+         "coord": [2282,12]
+      }
+   ],
+   "psus_models": [
+      {
+         "name": "UCSC-PSU-BLKP1U",
+         "type": "blank",
+         "description": "Power Supply Blanking Panel for C220 M4 servers"
+      },
+      {
+         "name": "UCSC-PSU1-770W",
+         "description": "Cisco UCS 770W AC Power Supply for Rack Server"
+      },
+      {
+         "name": "UCSC-PSUV2-1050DC",
+         "description": "Cisco UCS 1050W -48V DC Power Supply for Rack Server"
+      }
+   ],
+   "disks_slots": [
+      {
+         "id": 1,
+         "format": "sff_m5",
+         "orientation": "horizontal",
+         "coord": [208, 51],
+         "size": [437,97]
+      },
+      {
+         "id": 2,
+         "format": "sff_m5",
+         "orientation": "horizontal",
+         "coord": [678, 51],
+         "size": [437,97]
+      },
+      {
+         "id": 3,
+         "format": "sff_m5",
+         "orientation": "horizontal",
+         "coord": [1148, 51],
+         "size": [437,97]
+      },
+      {
+         "id": 4,
+         "format": "sff_m5",
+         "orientation": "horizontal",
+         "coord": [1618, 51],
+         "size": [437,97]
+      },
+      {
+         "id": 5,
+         "format": "sff_m5",
+         "orientation": "horizontal",
+         "coord": [2086, 51],
+         "size": [437,97]
+      },
+      {
+         "id": 6,
+         "format": "sff_m5",
+         "orientation": "horizontal",
+         "coord": [208, 151],
+         "size": [437,97]
+      },
+      {
+         "id": 7,
+         "format": "sff_m5",
+         "orientation": "horizontal",
+         "coord": [678, 151],
+         "size": [437,97]
+      },
+      {
+         "id": 8,
+         "format": "sff_m5",
+         "orientation": "horizontal",
+         "coord": [1148, 151],
+         "size": [437,97]
+      },
+      {
+         "id": 9,
+         "format": "sff_m5",
+         "orientation": "horizontal",
+         "coord": [1618, 151],
+         "size": [437,97]
+      },
+      {
+         "id": 10,
+         "format": "sff_m5",
+         "orientation": "horizontal",
+         "coord": [2086, 151],
+         "size": [437,97]
+      }
+   ],
+   "disks_models": [
+      {
+         "name": "UCSC-BBLKD-S2",
+         "type": "blank",
+         "format": "sff_m5",
+         "description": "C-Series M5 SFF drive blanking panel"
+      }
+   ],
+   "imm_compatible": true,
+   "imm_min_required_version": "4.3(4b)",
+   "spec_sheet_url": "https://www.cisco.com/c/dam/en/us/products/collateral/servers-unified-computing/ucs-c-series-rack-servers/ucs-c225-m8-sff-rack-server.pdf",
+   "data_sheet_url": "https://www.cisco.com/c/en/us/products/collateral/servers-unified-computing/ucs-c-series-rack-servers/ucs-c225-m8-rack-server-ds.html",
+   "specs": {
+      "form_factor": "1RU",
+      "cpu": {
+         "sockets": 2,
+         "family_name": {
+            "genoa": "AMD EPYC 4th Gen Processors"
+         }
+      },
+      "memory": {
+         "dimm_type": "DDR5",
+         "dimm_slots": 32,
+         "max_speed": 4800,
+         "max_capacity": 4194304,
+         "dcpmm_support": false
+      },
+      "dimensions": {
+         "centimeters": {
+            "height": 4.3,
+            "width": 42.9,
+            "depth": 76.2
+         },
+         "inches": {
+            "height": 1.7,
+            "width": 16.9,
+            "depth": 30
+         },
+         "rack_units": 1
+      },
+      "weight": {
+         "lb": 51.9,
+         "kg": 23.54
+      }
+   }
+}

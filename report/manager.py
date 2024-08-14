@@ -8,7 +8,7 @@ import os
 
 from __init__ import __version__
 from report.push_summary.report import PushSummaryReport
-
+from report.delete_summary.report import DeleteSummaryReport
 from reportlab.lib.pagesizes import A4, LETTER
 from reportlab.lib.units import mm
 from reportlab.platypus import Table, TableStyle, Paragraph
@@ -20,6 +20,7 @@ class GenericReportManager:
     def __init__(self, parent=None):
         self.report_class_name = None
         self.push_summary_report_class_name = PushSummaryReport
+        self.delete_summary_report_class_name = DeleteSummaryReport
         self.report_list = []
         self.parent = parent
 
@@ -208,18 +209,19 @@ class GenericReportManager:
         :param page_layout: page layout of the report (e.g. a4/letter)
         :param directory: directory where the pictures are located for integrating into the report
         :param size: the "size" of the report (e.g. full/short)
-        :param report_type: the type of report (e.g. classic/push_summary)
+        :param report_type: the type of report (e.g. classic/delete_summary/push_summary)
         :return: True if successful, False otherwise
         """
-        if inventory is None and report_type not in ["push_summary"]:
-            self.logger(level="debug", message="No inventory UUID specified in generate report request. Using latest.")
+        if inventory is None and report_type not in ["push_summary", "delete_summary"]:
+            self.logger(level="debug",
+                        message="No inventory UUID specified in generate report request. Using latest.")
             inventory = self.parent.inventory_manager.get_latest_inventory()
 
             if inventory is None:
                 self.logger(level="error", message="No inventory found. Unable to generate report.")
                 return False
 
-        if config is None:
+        if config is None and report_type not in ["delete_summary"]:
             config = self.parent.config_manager.get_latest_config()
             self.logger(level="debug", message="No config UUID specified in generate report request. Using latest.")
 
@@ -238,13 +240,18 @@ class GenericReportManager:
         # We make sure there are no duplicates in the list of output formats
         output_formats = list(set(output_formats))
 
-        if report_type in ["push_summary"]:
+        # Added condition to handle delete_summary report separately since it does not require config or inventory.
+        if report_type in ["delete_summary"]:
+            message_str = f"Generating {' & '.join(output_formats)} delete summary report(s) for device " \
+                          f"{self.parent.target}"
+        elif report_type in ["push_summary"]:
             message_str = f"Generating {' & '.join(output_formats)} {report_type} report(s) for device " \
                           f"{self.parent.target} using config UUID {str(config.uuid)}"
         else:
             message_str = f"Generating {' & '.join(output_formats)} {report_type} report(s) for device " \
                           f"{self.parent.target} using config UUID {str(config.uuid)} and inventory UUID " \
                           f"{str(inventory.uuid)}"
+
         if self.parent.task is not None:
             self.parent.task.taskstep_manager.start_taskstep(
                 name="GenerateReportDevice",
@@ -270,6 +277,27 @@ class GenericReportManager:
                     message_str = "Unable to generate classic report for this device type!"
                     if self.parent.task is not None:
                         self.parent.task.taskstep_manager.stop_taskstep(name="GenerateReportDevice", status="failed",
+                                                                        status_message=message_str)
+                    self.logger(level="error", message=message_str)
+                    return False
+
+            elif report_type == "delete_summary":
+                if self.delete_summary_report_class_name:
+                    report = self.delete_summary_report_class_name(parent=self, device=self.parent,
+                                                                   language=language,
+                                                                   output_format=output_format,
+                                                                   page_layout=page_layout, directory=directory,
+                                                                   size=size)
+                    report.metadata.easyucs_version = __version__
+                    report.metadata.report_type = report_type
+                    self.logger(message=f"Finished generating {output_format} delete summary report with UUID "
+                                        f"{str(report.uuid)} ")
+                    self.report_list.append(report)
+                else:
+                    message_str = "Unable to generate delete summary report."
+                    if self.parent.task is not None:
+                        self.parent.task.taskstep_manager.stop_taskstep(name="GenerateReportDevice",
+                                                                        status="failed",
                                                                         status_message=message_str)
                     self.logger(level="error", message=message_str)
                     return False

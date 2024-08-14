@@ -1,4 +1,14 @@
 {
+   "CalculateChecksumsRepoFile": {
+      "description": "Calculate Checksums of a Repo file",
+      "steps": [
+         {
+            "name": "CalculateChecksums",
+            "order": 1,
+            "weight": 1
+         }
+      ]
+   },
    "ClaimToIntersightUcsImc": {
       "description": "Claim UCS IMC to Intersight",
       "device_type": "cimc",
@@ -109,14 +119,19 @@
             "weight": 1
          },
          {
-            "name": "ClearConfigIntersightDevice",
+            "name": "ValidateIntersightLicense",
             "order": 2,
+            "weight": 1
+         },
+         {
+            "name": "ClearConfigIntersightDevice",
+            "order": 3,
             "weight": 2
          },
          {
             "name": "DisconnectIntersightDevice",
             "optional": true,
-            "order": 3,
+            "order": 4,
             "weight": 1
          }
       ]
@@ -205,6 +220,37 @@
             "name": "DisconnectUcsSystemDevice",
             "optional": true,
             "order": 3,
+            "weight": 1
+         }
+      ]
+   },
+   "CreateVmediaPolicyIntersight": {
+      "description": "Create vMedia Policy in Intersight",
+      "steps": [
+         {
+            "name": "ConnectIntersightDevice",
+            "order": 1,
+            "weight": 1
+         },
+         {
+            "name": "PushVmediaPolicyIntersight",
+            "order": 2,
+            "weight": 1
+         },
+         {
+            "name": "DisconnectIntersightDevice",
+            "optional": true,
+            "order": 3,
+            "weight": 1
+         }
+      ]
+   },
+   "DownloadFileFromUrl": {
+      "description": "Downloads file from a URL",
+      "steps": [
+         {
+            "name": "DownloadFile",
+            "order": 1,
             "weight": 1
          }
       ]
@@ -603,6 +649,28 @@
          }
       ]
    },
+   "FetchOSFirmwareDataIntersight": {
+      "description": "Fetch OS and Firmware metadata from Intersight",
+      "device_type": "intersight",
+      "steps": [
+         {
+            "name": "ConnectIntersightDevice",
+            "order": 1,
+            "weight": 1
+         },
+         {
+            "name": "FetchOSFirmwareDataObjectsIntersight",
+            "order": 2,
+            "weight": 4
+         },
+         {
+            "name": "DisconnectIntersightDevice",
+            "optional": true,
+            "order": 3,
+            "weight": 1
+         }
+      ]
+   },
    "GenerateReportUcsImc": {
       "description": "Generate report for UCS IMC",
       "device_type": "cimc",
@@ -977,6 +1045,27 @@
             "name": "DisconnectUcsSystemDevice",
             "optional": true,
             "order": 5,
+            "weight": 1
+         }
+      ]
+   },
+   "SyncToIntersightSoftwareRepository": {
+      "description": "Create Software Repository link in Intersight",
+      "steps": [
+         {
+            "name": "ConnectIntersightDevice",
+            "order": 1,
+            "weight": 1
+         },
+         {
+            "name": "PushSoftwareRepositoryLinksIntersight",
+            "order": 2,
+            "weight": 1
+         },
+         {
+            "name": "DisconnectIntersightDevice",
+            "optional": true,
+            "order": 3,
             "weight": 1
          }
       ]

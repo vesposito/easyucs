@@ -1,0 +1,223 @@
+{% extends "/html/base.html" %} {% block css %}
+<!-- DataTables -->
+<link rel="stylesheet" href="/static/plugins/datatables-bs4/css/dataTables.bootstrap4.min.css" />
+<link rel="stylesheet" href="/static/plugins/datatables-responsive/css/responsive.bootstrap4.min.css" />
+<link rel="stylesheet" href="/static/plugins/datatables-buttons/css/buttons.bootstrap4.min.css" />
+<link rel="stylesheet" href="/static/plugins/dropzone/min/dropzone.min.css" />
+{% endblock %} {% block title %}Repository{% endblock %} {% block head %}
+{% endblock %} {% block modals %}
+<div class="modal" tabindex="-1" id="newFolderModal" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">New Folder</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <form id="newFolderForm" action="javascript:;" onsubmit="newFolder(this)">
+        <div class="modal-body">
+          <div class="form-group" id="newFolderFormError">
+            <label for="newFolderName">Folder Name:</label>
+            <input type="text" class="form-control" id="newFolderName" name="newFolderName" placeholder="Enter folder name" required>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-primary">Create</button>
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+<div class="modal" tabindex="-1" id="renameFileModal" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Rename file</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <form id="renameFileForm" action="javascript:renameFile()">
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="renameFileNewName">New file name</label>
+            <input type="text" class="form-control" readonly hidden id="renameFileOldName" name="renameFileOldName" required>
+            <input type="text" class="form-control" id="renameFileNewName" pattern="[^\/]+" title="filename cannot contain /" name="renameFileNewName" placeholder="Enter new file name" required>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-primary">Rename</button>
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        </div>
+      </form> 
+    </div>
+  </div>
+</div>
+<div class="modal" tabindex="-1" id="uploadFileModal" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Upload a file</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+      <form action="#" class="dropzone" id="fileUpload"></form>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="modal" tabindex="-1" id="moveFileModal" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Move a file</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <form id="moveFileForm" action="javascript:moveFile()">
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="moveFileName">File name</label>
+            <input type="text" class="form-control" readonly required id="moveFileName" name="moveFileName">
+          </div>
+          <div class="form-group">
+            <label for="moveFileTarget">New file path</label>
+            <input type="text" class="form-control" readonly required id="moveFileTarget" name="moveFileTarget" placeholder="Enter new file paths" >
+          </div>
+          <div class="form-group">
+            <label>Select a folder</label>
+            <div class="list-group" id="folderSelectList"><!-- This will contain a list of folders --></div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-primary">Move</button>
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        </div>
+      </form> 
+    </div>
+  </div>
+</div>
+<div class="modal" tabindex="-1" id="urlDownloadModal" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Download from URL</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <form id="urlDownloadForm" action="javascript:;" onsubmit="urlDownload(this)">
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="urlDownloadURL">URL</label>
+            <input type="url" class="form-control" required id="urlDownloadURL" name="urlDownloadURL" onchange="prefillUrlDownloadName(this.value)" placeholder="Enter URL of the file to upload" >
+          </div>
+          <div class="form-group">
+            <label for="urlDownloadName">Target file name</label>
+            <input type="text" class="form-control" required id="urlDownloadName" name="urlDownloadName" pattern="[^\/]+" title="filename cannot contain /">
+          </div>
+          <!-- Checkbox to verify SSL or not -->
+          <div class="form-check">
+            <input type="checkbox" class="form-check-input" id="urlDownloadVerifySSL" name="urlDownloadVerifySSL">
+            <label class="form-check" for="urlDownloadVerifySSL">Verify SSL</label>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-primary">Download</button>
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        </div>
+      </form> 
+    </div>
+  </div>
+</div>
+<div class="modal" tabindex="-1" id="checksumsModal" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Checksums for file <span id="checksumsModalName"></span></h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+        <div id="checksumsModalBody" class="modal-body">
+          No checksums computed yet.
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-primary" onclick="computeChecksums($('#checksumsModalName').text())">Compute checksums</button>
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        </div>
+      </form> 
+    </div>
+  </div>
+</div>
+{% endblock %} {% block content %}
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb" id="repoPathBreadcrumbs">
+    <li class="breadcrumb-item"><a href="#">Home</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Library</li>
+  </ol>
+</nav>
+
+<section class="content">
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-md-12">
+        <div class="card">
+          <div class="card-body" id="repoExplorer">
+            <div class="d-flex my-2 justify-content-between">
+              <div>
+                <button type="button"class="btn btn-primary" data-toggle="modal" data-target="#newFolderModal">
+                  <i class="fa-solid fa-folder-plus"></i>
+                  New Folder
+                </button>
+                <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#uploadFileModal">
+                  <i class="fa-solid fa-file-arrow-up"></i>
+                  Upload a file
+                </button>
+                <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#urlDownloadModal">
+                  <i class="fa-solid fa-cloud-arrow-up"></i>
+                  Download from URL
+                </button>
+              </div>
+              <div>
+                Disk Usage:
+                <div class="progress">
+                  <div id="repoDiskUsageBar" class="progress-bar" role="progressbar" style="width: 25%" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"></div>
+                </div>
+                <span id="repoDiskUsage">Loading...</span>
+              </div>
+            </div>
+            <table id="repositoryFilesTable" class="table table-bordered table-striped table-hover">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Size</th>
+                  <th>Modified</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %} {% block javascript%}
+<script src="/static/plugins/moment/moment.min.js"></script>
+<script src="/static/plugins/datatables/jquery.dataTables.min.js"></script>
+<script src="/static/plugins/datatables-bs4/js/dataTables.bootstrap4.min.js"></script>
+<script src="/static/plugins/datatables-responsive/js/dataTables.responsive.min.js"></script>
+<script src="/static/plugins/datatables-responsive/js/responsive.bootstrap4.min.js"></script>
+<script src="/static/plugins/datatables-datetime-moment/datetime-moment.js"></script>
+<!-- Dropzone -->
+<script src="/static/plugins/dropzone/min/dropzone.min.js"></script>
+<!-- Page-specific JS -->
+<script src="/static/js/repository.js" crossorigin="anonymous"></script>
+{% endblock %}

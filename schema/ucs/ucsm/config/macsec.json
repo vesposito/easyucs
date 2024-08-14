@@ -1,0 +1,22 @@
+{
+   "id": "ucs_system_config_macsec#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS ucs system config macsec section",
+   "description": "EasyUCS ucs system config macsec section JSON schema",
+   "type": "object",
+   "properties": {
+      "admin_state": {
+         "description": "Admin state of MACsec",
+         "type": "string",
+         "default": "disabled",
+         "enum": [
+            "disabled",
+            "enabled"
+         ]
+      }
+  },
+   "additionalProperties": false,
+   "required": [
+      "admin_state"
+   ]
+}

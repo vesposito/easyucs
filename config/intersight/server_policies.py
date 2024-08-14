@@ -2,9 +2,7 @@
 # !/usr/bin/env python
 
 """ server_policies.py: Easy UCS Deployment Tool """
-import copy
-import re
-from common import convert_to_range, format_descr, generate_self_signed_cert, get_decoded_pem_certificate, \
+from common import generate_self_signed_cert, get_decoded_pem_certificate, \
     get_encoded_pem_certificate, read_json_file
 from config.intersight.object import IntersightConfigObject
 from config.intersight.pools import IntersightIpPool, IntersightIqnPool, \
@@ -2867,6 +2865,7 @@ class IntersightIscsiBootPolicy(IntersightConfigObject):
 
 
 class IntersightLanConnectivityPolicy(IntersightConfigObject):
+    from config.intersight.network_policies import IntersightVnicTemplate
     _CONFIG_NAME = "LAN Connectivity Policy"
     _CONFIG_SECTION_NAME = "lan_connectivity_policies"
     _INTERSIGHT_SDK_OBJECT_NAME = "vnic.LanConnectivityPolicy"
@@ -2886,7 +2885,8 @@ class IntersightLanConnectivityPolicy(IntersightConfigObject):
                 },
                 "vmq_settings": {
                     "vmmq_adapter_policy": IntersightEthernetAdapterPolicy
-                }
+                },
+                "vnic_template": IntersightVnicTemplate
             }
         ]
     }
@@ -2980,12 +2980,25 @@ class IntersightLanConnectivityPolicy(IntersightConfigObject):
         if "vnic_eth_if" in self._config.sdk_objects:
             vnics = []
             for vnic_eth_if in self._config.sdk_objects["vnic_eth_if"]:
+                overriden_list = []
                 if vnic_eth_if.lan_connectivity_policy:
                     if vnic_eth_if.lan_connectivity_policy.moid == self._moid:
                         vnic = {
                             "name": vnic_eth_if.name,
                             "pci_order": vnic_eth_if.order
                         }
+
+                        if self.target_platform in ["FI-Attached"]:
+                            # If the vNIC is created from a vNIC template, fetch the source vNIC template
+                            if vnic_eth_if.src_template:
+                                src_vnic_template = self._get_policy_name(policy=vnic_eth_if.src_template)
+                                if src_vnic_template:
+                                    vnic["vnic_template"] = src_vnic_template
+                                # If the vNIC is created from a template and overrides are allowed in a template,
+                                # Fetch the overridden list
+                                if vnic_eth_if.overridden_list:
+                                    overriden_list = vnic_eth_if.overridden_list
+
                         if vnic_eth_if.placement:
                             vnic["automatic_slot_id_assignment"] = vnic_eth_if.placement.auto_slot_id
                             if not vnic_eth_if.placement.auto_slot_id:
@@ -2995,48 +3008,70 @@ class IntersightLanConnectivityPolicy(IntersightConfigObject):
                                 vnic["pci_link_assignment_mode"] = vnic_eth_if.placement.pci_link_assignment_mode
                                 if vnic_eth_if.placement.pci_link_assignment_mode in ["Custom"]:
                                     vnic["pci_link"] = vnic_eth_if.placement.pci_link
+
                             if self.target_platform in ["FI-Attached"]:
-                                vnic["switch_id"] = vnic_eth_if.placement.switch_id
-                                if vnic["switch_id"] in ["None"]:
-                                    vnic["switch_id"] = None
+
+                                # Add 'switch_id' to the vnic dictionary if vNIC template is absent or 'switch_id' is an
+                                # overridden field
+                                if not vnic.get("vnic_template") or "Placement.SwitchId" in overriden_list:
+                                    vnic["switch_id"] = vnic_eth_if.placement.switch_id
+                                    # Handle 'None' as a string in 'switch_id'
+                                    if vnic["switch_id"] in ["None"]:
+                                        vnic["switch_id"] = None
+
                             elif self.target_platform in ["Standalone"]:
                                 vnic["uplink_port"] = vnic_eth_if.placement.uplink
-                        if vnic_eth_if.cdn:
-                            vnic["cdn_source"] = vnic_eth_if.cdn.source
-                            if vnic_eth_if.cdn.source in ["user"]:
+
+                        # Add CDN to the vNIC dictionary if vNIC template is absent
+                        if not vnic.get("vnic_template"):
+                            if vnic_eth_if.cdn:
+                                vnic["cdn_source"] = vnic_eth_if.cdn.source
                                 vnic["cdn_value"] = vnic_eth_if.cdn.value
+
                         if self.target_platform in ["FI-Attached"]:
-                            vnic["pin_group_name"] = vnic_eth_if.pin_group_name if vnic_eth_if.pin_group_name else None
-                            vnic["enable_failover"] = vnic_eth_if.failover_enabled
-                            vnic["mac_address_allocation_type"] = vnic_eth_if.mac_address_type.lower()
-                            # We only fetch the MAC Address Pool or Static MAC for FI-Attached servers
-                            if vnic_eth_if.mac_address_type in ["POOL"]:
-                                if vnic_eth_if.mac_pool:
-                                    mac_pool = self._get_policy_name(policy=vnic_eth_if.mac_pool)
-                                    if mac_pool:
-                                        vnic["mac_address_pool"] = mac_pool
-                            elif vnic_eth_if.mac_address_type in ["STATIC"]:
-                                vnic["mac_address_static"] = vnic_eth_if.static_mac_address
+                            # Add the following attributes to the vNIC dictionary if vNIC Template is absent or
+                            # attribute is an overridden field
+                            if not vnic.get("vnic_template") or "PinGroupName" in overriden_list:
+                                vnic["pin_group_name"] = vnic_eth_if.pin_group_name if vnic_eth_if.pin_group_name \
+                                    else None
+                            if not vnic.get("vnic_template"):
+                                vnic["enable_failover"] = vnic_eth_if.failover_enabled
+                            if not vnic.get("vnic_template") or "MacPool" in overriden_list:
+                                vnic["mac_address_allocation_type"] = vnic_eth_if.mac_address_type.lower()
+                                # We only fetch the MAC Address Pool or Static MAC for FI-Attached servers
+                                if vnic_eth_if.mac_address_type in ["POOL"]:
+                                    if vnic_eth_if.mac_pool:
+                                        mac_pool = self._get_policy_name(policy=vnic_eth_if.mac_pool)
+                                        if mac_pool:
+                                            vnic["mac_address_pool"] = mac_pool
+                                elif vnic_eth_if.mac_address_type in ["STATIC"]:
+                                    vnic["mac_address_static"] = vnic_eth_if.static_mac_address
                             # We only fetch Ethernet Network Group Policy, Ethernet Network Control Policy &
                             # iSCSI Boot Policy for FI-Attached servers
-                            if vnic_eth_if.fabric_eth_network_group_policy:
-                                if len(vnic_eth_if.fabric_eth_network_group_policy) == 1:
-                                    fabric_eth_network_group_policy = self._get_policy_name(
-                                        policy=vnic_eth_if.fabric_eth_network_group_policy[0])
-                                    if fabric_eth_network_group_policy:
-                                        vnic["ethernet_network_group_policy"] = fabric_eth_network_group_policy
-                                else:
-                                    self.logger(level="error", message="Multiple Ethernet Network Group Policies " +
-                                                                       "assigned to vNIC " + vnic_eth_if.name)
-                            if vnic_eth_if.fabric_eth_network_control_policy:
-                                fabric_eth_network_control_policy = \
-                                    self._get_policy_name(policy=vnic_eth_if.fabric_eth_network_control_policy)
-                                if fabric_eth_network_control_policy:
-                                    vnic["ethernet_network_control_policy"] = fabric_eth_network_control_policy
-                            if vnic_eth_if.iscsi_boot_policy:
-                                iscsi_boot_policy = self._get_policy_name(policy=vnic_eth_if.iscsi_boot_policy)
-                                if iscsi_boot_policy:
-                                    vnic["iscsi_boot_policy"] = iscsi_boot_policy
+                            if not vnic.get("vnic_template"):
+                                # If vNIC Template is attached then Ethernet Network Group Policy and Ethernet
+                                # Network Control Policy are set at the Template level and cannot be overriden.
+                                # If vNIC Template is not attached, then these fields are set at the vNIC level.
+                                if vnic_eth_if.fabric_eth_network_group_policy:
+                                    if len(vnic_eth_if.fabric_eth_network_group_policy) == 1:
+                                        fabric_eth_network_group_policy = self._get_policy_name(
+                                            policy=vnic_eth_if.fabric_eth_network_group_policy[0])
+                                        if fabric_eth_network_group_policy:
+                                            vnic["ethernet_network_group_policy"] = fabric_eth_network_group_policy
+                                    else:
+                                        self.logger(level="error", message="Multiple Ethernet Network Group Policies " +
+                                                                           "assigned to vNIC " + vnic_eth_if.name)
+                                if vnic_eth_if.fabric_eth_network_control_policy:
+                                    fabric_eth_network_control_policy = \
+                                        self._get_policy_name(policy=vnic_eth_if.fabric_eth_network_control_policy)
+                                    if fabric_eth_network_control_policy:
+                                        vnic["ethernet_network_control_policy"] = fabric_eth_network_control_policy
+                            if not vnic.get("vnic_template") or "IscsiBootPolicy" in overriden_list:
+                                if vnic_eth_if.iscsi_boot_policy:
+                                    iscsi_boot_policy = self._get_policy_name(policy=vnic_eth_if.iscsi_boot_policy)
+                                    if iscsi_boot_policy:
+                                        vnic["iscsi_boot_policy"] = iscsi_boot_policy
+
                         elif self.target_platform in ["Standalone"]:
                             # We only fetch Ethernet Network Policy for Standalone servers
                             if vnic_eth_if.eth_network_policy:
@@ -3044,62 +3079,71 @@ class IntersightLanConnectivityPolicy(IntersightConfigObject):
                                     self._get_policy_name(policy=vnic_eth_if.eth_network_policy)
                                 if eth_network_policy:
                                     vnic["ethernet_network_policy"] = eth_network_policy
-                        if vnic_eth_if.eth_qos_policy:
-                            eth_qos_policy = self._get_policy_name(policy=vnic_eth_if.eth_qos_policy)
-                            if eth_qos_policy:
-                                vnic["ethernet_qos_policy"] = eth_qos_policy
-                        if vnic_eth_if.eth_adapter_policy:
-                            eth_adapter_policy = self._get_policy_name(policy=vnic_eth_if.eth_adapter_policy)
-                            if eth_adapter_policy:
-                                vnic["ethernet_adapter_policy"] = eth_adapter_policy
-                        if vnic_eth_if.usnic_settings:
-                            if vnic_eth_if.usnic_settings.count > 0:
-                                vnic["usnic_settings"] = {
-                                    "number_of_usnics": vnic_eth_if.usnic_settings.count
-                                }
-                                if self.target_platform in ["Standalone"]:
-                                    vnic["usnic_settings"]["class_of_service"] = vnic_eth_if.usnic_settings.cos
-                                if vnic_eth_if.usnic_settings.usnic_adapter_policy:
-                                    # usNIC Settings is not a reference object, rather it's a complex type in the
-                                    # intersight backend. Which means there is no Moid or Name attributes in
-                                    # usNIC Settings. So to fetch usNIC Adapter Policy we iterate over the fetched
-                                    # Eth Adapter Policy SDK objects and find the relevant object.
-                                    for vnic_eth_adapter_policy in self._config.sdk_objects["vnic_eth_adapter_policy"]:
-                                        if vnic_eth_if.usnic_settings.usnic_adapter_policy == \
-                                                vnic_eth_adapter_policy.moid:
-                                            vnic["usnic_settings"]["usnic_adapter_policy"] = self._get_policy_name(
-                                                policy=vnic_eth_adapter_policy)
-                                            break
-                        if vnic_eth_if.vmq_settings:
-                            if vnic_eth_if.vmq_settings.enabled:
-                                vnic["vmq_settings"] = {
-                                    "enable_virtual_machine_multi_queue": vnic_eth_if.vmq_settings.multi_queue_support
-                                }
-                                if not vnic_eth_if.vmq_settings.multi_queue_support:
-                                    vnic["vmq_settings"]["number_of_interrupts"] = \
-                                        vnic_eth_if.vmq_settings.num_interrupts
-                                    vnic["vmq_settings"]["number_of_virtual_machine_queues"] = \
-                                        vnic_eth_if.vmq_settings.num_vmqs
-                                else:
-                                    vnic["vmq_settings"]["number_of_sub_vnics"] = vnic_eth_if.vmq_settings.num_sub_vnics
-                                    # VMQ Settings is not a reference object, rather it's a complex type in the
-                                    # intersight backend. Which means there is no Moid or Name attributes in
-                                    # VMQ Settings. So to fetch VMQ Adapter Policy we iterate over the fetched
-                                    # Eth Adapter Policy SDK objects and find the relevant object.
-                                    for vmmq_adapter_policy in self._config.sdk_objects["vnic_eth_adapter_policy"]:
-                                        if vnic_eth_if.vmq_settings.vmmq_adapter_policy == vmmq_adapter_policy.moid:
-                                            vnic["vmq_settings"]["vmmq_adapter_policy"] = self._get_policy_name(
-                                                policy=vmmq_adapter_policy)
-                                            break
-                        if vnic_eth_if.sriov_settings:
-                            if vnic_eth_if.sriov_settings.enabled:
-                                vnic["sriov_settings"] = {
-                                    "number_of_vfs": vnic_eth_if.sriov_settings.vf_count,
-                                    "receive_queue_count_per_vf": vnic_eth_if.sriov_settings.rx_count_per_vf,
-                                    "transmit_queue_count_per_vf": vnic_eth_if.sriov_settings.tx_count_per_vf,
-                                    "completion_queue_count_per_vf": vnic_eth_if.sriov_settings.comp_count_per_vf,
-                                    "interrupt_count_per_vf": vnic_eth_if.sriov_settings.int_count_per_vf
-                                }
+
+                        if not vnic.get("vnic_template"):
+                            # If vNIC Template is attached then Ethernet Qos Policy, usnic_settings, vmq_settings,
+                            # sriov_settings are set at the Template level and cannot be overriden.
+                            # If vNIC Template is not attached, then these fields are set at the vNIC level.
+                            if vnic_eth_if.eth_qos_policy:
+                                eth_qos_policy = self._get_policy_name(policy=vnic_eth_if.eth_qos_policy)
+                                if eth_qos_policy:
+                                    vnic["ethernet_qos_policy"] = eth_qos_policy
+                            if vnic_eth_if.usnic_settings:
+                                if vnic_eth_if.usnic_settings.count > 0:
+                                    vnic["usnic_settings"] = {
+                                        "number_of_usnics": vnic_eth_if.usnic_settings.count
+                                    }
+                                    if self.target_platform in ["Standalone"]:
+                                        vnic["usnic_settings"]["class_of_service"] = vnic_eth_if.usnic_settings.cos
+                                    if vnic_eth_if.usnic_settings.usnic_adapter_policy:
+                                        # usNIC Settings is not a reference object, rather it's a complex type in the
+                                        # intersight backend. Which means there is no Moid or Name attributes in
+                                        # usNIC Settings. So to fetch usNIC Adapter Policy we iterate over the fetched
+                                        # Eth Adapter Policy SDK objects and find the relevant object.
+                                        for vnic_eth_adapter_policy in self._config.sdk_objects["vnic_eth_adapter_policy"]:
+                                            if vnic_eth_if.usnic_settings.usnic_adapter_policy == \
+                                                    vnic_eth_adapter_policy.moid:
+                                                vnic["usnic_settings"]["usnic_adapter_policy"] = self._get_policy_name(
+                                                    policy=vnic_eth_adapter_policy)
+                                                break
+                            if vnic_eth_if.vmq_settings:
+                                if vnic_eth_if.vmq_settings.enabled:
+                                    vnic["vmq_settings"] = {
+                                        "enable_virtual_machine_multi_queue": vnic_eth_if.vmq_settings.multi_queue_support
+                                    }
+                                    if not vnic_eth_if.vmq_settings.multi_queue_support:
+                                        vnic["vmq_settings"]["number_of_interrupts"] = \
+                                            vnic_eth_if.vmq_settings.num_interrupts
+                                        vnic["vmq_settings"]["number_of_virtual_machine_queues"] = \
+                                            vnic_eth_if.vmq_settings.num_vmqs
+                                    else:
+                                        vnic["vmq_settings"]["number_of_sub_vnics"] = vnic_eth_if.vmq_settings.num_sub_vnics
+                                        # VMQ Settings is not a reference object, rather it's a complex type in the
+                                        # intersight backend. Which means there is no Moid or Name attributes in
+                                        # VMQ Settings. So to fetch VMQ Adapter Policy we iterate over the fetched
+                                        # Eth Adapter Policy SDK objects and find the relevant object.
+                                        for vmmq_adapter_policy in self._config.sdk_objects["vnic_eth_adapter_policy"]:
+                                            if vnic_eth_if.vmq_settings.vmmq_adapter_policy == vmmq_adapter_policy.moid:
+                                                vnic["vmq_settings"]["vmmq_adapter_policy"] = self._get_policy_name(
+                                                    policy=vmmq_adapter_policy)
+                                                break
+                            if vnic_eth_if.sriov_settings:
+                                if vnic_eth_if.sriov_settings.enabled:
+                                    vnic["sriov_settings"] = {
+                                        "number_of_vfs": vnic_eth_if.sriov_settings.vf_count,
+                                        "receive_queue_count_per_vf": vnic_eth_if.sriov_settings.rx_count_per_vf,
+                                        "transmit_queue_count_per_vf": vnic_eth_if.sriov_settings.tx_count_per_vf,
+                                        "completion_queue_count_per_vf": vnic_eth_if.sriov_settings.comp_count_per_vf,
+                                        "interrupt_count_per_vf": vnic_eth_if.sriov_settings.int_count_per_vf
+                                    }
+                        # Add the Ethernet Adapter Policy to the vNIC dictionary if vNIC Template is absent or
+                        # attribute is an overridden field
+                        if not vnic.get("vnic_template") or "EthAdapterPolicy" in overriden_list:
+                            if vnic_eth_if.eth_adapter_policy:
+                                eth_adapter_policy = self._get_policy_name(policy=vnic_eth_if.eth_adapter_policy)
+                                if eth_adapter_policy:
+                                    vnic["ethernet_adapter_policy"] = eth_adapter_policy
+
                         vnics.append(vnic)
 
             return vnics
@@ -3109,6 +3153,7 @@ class IntersightLanConnectivityPolicy(IntersightConfigObject):
     @IntersightConfigObject.update_taskstep_description()
     def push_object(self):
         from intersight.model.vnic_lan_connectivity_policy import VnicLanConnectivityPolicy
+        from intersight.model.vnic_vnic_template import VnicVnicTemplate
 
         self.logger(message=f"Pushing {self._CONFIG_NAME} configuration: {self.name}")
 
@@ -3163,8 +3208,284 @@ class IntersightLanConnectivityPolicy(IntersightConfigObject):
         # We now create the vnic.EthIf objects for each vNIC
         if self.vnics is not None:
             from intersight.model.vnic_eth_if import VnicEthIf
+            from intersight.model.motemplate_action_entry import MotemplateActionEntry
 
             for vnic in self.vnics:
+                # We first need to check if vNIC with the same name already exists
+                vnic_ethif = self.get_live_object(
+                    object_name=vnic.get("name"),
+                    object_type="vnic.EthIf",
+                    return_reference=False,
+                    log=False,
+                    query_filter=f"Name eq '{vnic['name']}' and LanConnectivityPolicy/Moid eq '{lcp.moid}'"
+                )
+
+                if not getattr(self._config, "update_existing_intersight_objects", False) and vnic_ethif:
+                    message = f"Object type vnic.EthIf with name={vnic.get('name')} " \
+                              f"already exists"
+                    self.logger(level="info", message=message)
+                    self._config.push_summary_manager.add_object_status(
+                        obj=self, obj_detail=vnic['name'], obj_type="vnic.EthIf", status="skipped",
+                        message=message)
+                    continue
+
+                # In case this vNIC is derived from vNIC template, we use the 'derive' mechanism to create it
+                if vnic.get("vnic_template"):
+                    if not vnic_ethif:
+                        from intersight.model.bulk_mo_cloner import BulkMoCloner
+
+                        # The vNIC is newly derived from a vNIC template and is not a pre-existing entity.
+                        # Therefore, we need to Attach the source template from which the vNIC is derived and target
+                        # fields that can be set at the vNIC level, including overridden fields to the BulkMoCloner.
+                        kwargs_mo_cloner = {
+                            "sources": [],
+                            "targets": []
+                        }
+                        # We need to identify the Moid of the source vNIC Template
+                        vnic_template = self.get_live_object(object_name=vnic["vnic_template"],
+                                                             object_type="vnic.VnicTemplate")
+
+                        if vnic_template:
+                            template_moid = vnic_template.moid
+                            source_template = {
+                                "moid": template_moid,
+                                "object_type": "vnic.VnicTemplate"
+                            }
+                            kwargs_mo_cloner["sources"].append(VnicVnicTemplate(**source_template))
+                        else:
+                            err_message = "Unable to locate source vNIC Template " + \
+                                          vnic['vnic_template'] + " to derive vNIC Template " + vnic['name']
+                            self.logger(level="error", message=err_message)
+                            self._config.push_summary_manager.add_object_status(obj=self, obj_detail=vnic['name'],
+                                                                                obj_type="vnic.VnicTemplate",
+                                                                                status="failed", message=err_message)
+                            continue
+
+                        # We now need to specify the attribute of the target vNIC
+                        target_vnic = {
+                            "object_type": "vnic.EthIf",
+                            "class_id": "vnic.EthIf",
+                            "lan_connectivity_policy": lcp
+                        }
+                        if vnic.get("name") is not None:
+                            target_vnic["name"] = vnic["name"]
+                        if vnic.get("mac_address_allocation_type") is not None:
+                            target_vnic["mac_address_type"] = vnic["mac_address_allocation_type"].upper()
+                        if vnic.get("pci_order") is not None:
+                            target_vnic["order"] = vnic["pci_order"]
+                        if vnic.get("pin_group_name"):
+                            target_vnic["pin_group_name"] = vnic["pin_group_name"]
+
+                        # It is essential to manage overridden values effectively.
+                        # This includes handling overridden attributes such as MAC pool, placement settings,
+                        # pin group name, eth adapter policy, and iscsi boot policy.
+                        if vnic.get("mac_address_allocation_type") in ["pool"]:
+                            if vnic.get("mac_address_pool"):
+                                # We need to identify the MAC Pool object reference
+                                mac_pool = self.get_live_object(
+                                    object_name=vnic["mac_address_pool"],
+                                    object_type="macpool.Pool"
+                                )
+                                if mac_pool:
+                                    target_vnic["mac_pool"] = mac_pool
+                                else:
+                                    self._config.push_summary_manager.add_object_status(
+                                        obj=self, obj_detail=f"Attaching MAC Pool '{vnic['mac_address_pool']}' to vNIC - "
+                                                             f"{str(vnic['name'])}",
+                                        obj_type="vnic.EthIf", status="failed",
+                                        message=f"Failed to find MAC Pool '{vnic['mac_address_pool']}'"
+                                    )
+                        elif vnic.get("mac_address_allocation_type") in ["static"]:
+                            if vnic.get("mac_address_static"):
+                                target_vnic["static_mac_address"] = vnic["mac_address_static"]
+
+                        # Handling the placement settings of the vNIC
+                        from intersight.model.vnic_placement_settings import VnicPlacementSettings
+                        vnic_placement_settings = {
+                            "object_type": "vnic.PlacementSettings",
+                            "class_id": "vnic.PlacementSettings"
+                        }
+
+                        if vnic.get("switch_id") is not None:
+                            vnic_placement_settings["switch_id"] = vnic["switch_id"]
+                        if vnic.get("automatic_slot_id_assignment", False):
+                            vnic_placement_settings["auto_slot_id"] = True
+                        elif vnic.get("slot_id") is not None:  # We have a Slot ID value
+                            vnic_placement_settings["auto_slot_id"] = False
+                            vnic_placement_settings["id"] = vnic["slot_id"]
+                        else:  # We don't have any slot ID value - we set Auto Slot ID to enabled
+                            vnic_placement_settings["auto_slot_id"] = True
+
+                        if vnic.get("automatic_pci_link_assignment", False):
+                            vnic_placement_settings["auto_pci_link"] = True
+                        # We have a PCI Link value - We set assignment mode to Custom
+                        elif vnic.get("pci_link") is not None:
+                            vnic_placement_settings["auto_pci_link"] = False
+                            vnic_placement_settings["pci_link_assignment_mode"] = "Custom"
+                            vnic_placement_settings["pci_link"] = vnic["pci_link"]
+                        elif vnic.get("pci_link_assignment_mode") in ["Load-Balanced"]:
+                            # Assignment mode set to Load-Balanced
+                            vnic_placement_settings["auto_pci_link"] = False
+                            vnic_placement_settings["pci_link_assignment_mode"] = "Load-Balanced"
+                        else:  # We don't have any PCI Link value - we set Auto PCI Link to enabled
+                            vnic_placement_settings["auto_pci_link"] = True
+
+                        if vnic.get("uplink_port") is not None:
+                            vnic_placement_settings["uplink"] = vnic["uplink_port"]
+                        target_vnic["placement"] = VnicPlacementSettings(**vnic_placement_settings)
+
+                        if vnic.get("ethernet_adapter_policy"):
+                            # We need to identify the Ethernet Adapter Policy object reference
+                            eth_adapter_policy = self.get_live_object(
+                                object_name=vnic["ethernet_adapter_policy"],
+                                object_type="vnic.EthAdapterPolicy"
+                            )
+                            if eth_adapter_policy:
+                                target_vnic["eth_adapter_policy"] = eth_adapter_policy
+                            else:
+                                self._config.push_summary_manager.add_object_status(
+                                    obj=self,
+                                    obj_detail=f"Attaching Eth Adapter Policy '{vnic['ethernet_adapter_policy']}' "
+                                               f"to - vNIC - {str(vnic['name'])}",
+                                    obj_type="vnic.EthIf", status="failed",
+                                    message=f"Failed to find Eth Adapter Policy '{vnic['ethernet_adapter_policy']}'"
+                                )
+                        if vnic.get("iscsi_boot_policy"):
+                            # We need to identify the iSCSI Boot Policy object reference
+                            iscsi_boot_policy = self.get_live_object(
+                                object_name=vnic["iscsi_boot_policy"],
+                                object_type="vnic.IscsiBootPolicy"
+                            )
+                            if iscsi_boot_policy:
+                                target_vnic["iscsi_boot_policy"] = iscsi_boot_policy
+                            else:
+                                self._config.push_summary_manager.add_object_status(
+                                    obj=self, obj_detail=f"Attaching iSCSI Boot Policy '{vnic['iscsi_boot_policy']}' "
+                                                         f"to vNIC - {str(vnic['name'])}",
+                                    obj_type="vnic.EthIf", status="failed",
+                                    message=f"Failed to find iSCSI Boot Policy '{vnic['iscsi_boot_policy']}'"
+                                )
+
+                        kwargs_mo_cloner["targets"].append(VnicEthIf(**target_vnic))
+
+                        mo_cloner = BulkMoCloner(**kwargs_mo_cloner)
+
+                        self.commit(object_type="bulk.MoCloner", payload=mo_cloner,
+                                    detail=self.name + " - vNIC " + str(vnic["name"]))
+                        continue
+                    else:
+                        # We found a vNIC with the same name,
+                        # we need to check if it is bound to the same vNIC Template or a different vNIC Template
+                        # If vNIC is derived from different vNIC Template we will detach it from its Template and
+                        # reattach it to the desired Template.
+                        if vnic_ethif.src_template:
+                            src_template = self._device.query(
+                                object_type="vnic.VnicTemplate",
+                                filter="Moid eq '" + vnic_ethif.src_template.moid + "'"
+                            )
+                            if len(src_template) == 1:
+                                if src_template[0].name == vnic.get("vnic_template"):
+                                    # This vNIC is already derived from the same vNIC Template
+                                    info_message = "vNIC " + vnic.get("name") + " exists and is already derived " + \
+                                                   "from same vNIC Template " + vnic.get("vnic_template")
+                                    self.logger(level="info", message=info_message)
+                                    self._config.push_summary_manager.add_object_status(
+                                        obj=self, obj_detail=vnic.get("name"), obj_type="vnic.EthIf",
+                                        status="skipped", message=info_message)
+                                    continue
+                                else:
+                                    # vNIC is derived from another vNIC Template
+                                    # We will detach it from its Template and reattach it to the desired Template
+                                    self.logger(
+                                        level="info",
+                                        message="vNIC " + vnic.get("name") +
+                                                " exists and is derived from different vNIC Template " +
+                                                src_template[0].name
+                                    )
+                                    self.logger(
+                                        level="info",
+                                        message="Detaching vNIC " + vnic.get("name") +
+                                                " from vNIC Template " + src_template[0].name
+                                    )
+                                    kwargs = {
+                                        "object_type": "vnic.EthIf",
+                                        "class_id": "vnic.EthIf",
+                                        "name": vnic.get("name"),
+                                        "lan_connectivity_policy": lcp,
+                                        "src_template": None
+                                    }
+                                    vnic_ethif_payload = VnicEthIf(**kwargs)
+
+                                    if not self.commit(object_type="vnic.EthIf",
+                                                       payload=vnic_ethif_payload,
+                                                       detail="Detaching from template " + src_template[0].name,
+                                                       key_attributes=["name", "lan_connectivity_policy"]):
+                                        continue
+
+                                    self.logger(
+                                        level="info",
+                                        message="Attaching vNIC " + vnic.get("name") +
+                                                " to vNIC Template " + vnic.get("vnic_template")
+                                    )
+                                    # We need to identify the Moid of the vNIC Template
+                                    vnic_template = self.get_live_object(
+                                        object_name=vnic.get("vnic_template"),
+                                        object_type="vnic.VnicTemplate"
+                                    )
+
+                                    # Attach action needs to be specified in the TemplateActions
+                                    # To attach vNIC to a template
+                                    kwargs_template_actions = {
+                                        "object_type": "motemplate.ActionEntry",
+                                        "class_id": "motemplate.ActionEntry",
+                                        "type": "Attach"
+                                    }
+                                    kwargs["template_actions"] = [MotemplateActionEntry(**kwargs_template_actions)]
+                                    kwargs["src_template"] = vnic_template
+                                    vnic_ethif_payload = VnicEthIf(**kwargs)
+
+                                    self.commit(object_type="vnic.EthIf",
+                                                payload=vnic_ethif_payload,
+                                                detail="Attaching to template " + vnic.get("vnic_template"),
+                                                key_attributes=["name", "lan_connectivity_policy"])
+                                    continue
+                            else:
+                                err_message = "Could not find vNIC Template " + vnic.get("vnic_template")
+                                self.logger(level="error", message=err_message)
+                                self._config.push_summary_manager.add_object_status(
+                                    obj=self, obj_detail=vnic['name'], obj_type="vnic.EthIf",
+                                    status="failed",
+                                    message=err_message)
+                                continue
+                        else:
+                            # vNIC is not currently bound to a template. So we just need to bind it
+                            # We need to identify the Moid of the Attached vNIC Template
+                            vnic_template = self.get_live_object(
+                                object_name=vnic.get("vnic_template"),
+                                object_type="vnic.VnicTemplate"
+                            )
+                            # Attach action needs to be specified in the TemplateActions to attach vNIC to a template.
+                            kwargs_template_actions = {
+                                "object_type": "motemplate.ActionEntry",
+                                "class_id": "motemplate.ActionEntry",
+                                "type": "Attach"
+                            }
+
+                            kwargs = {
+                                "object_type": "vnic.EthIf",
+                                "class_id": "vnic.EthIf",
+                                "name": vnic.get("name"),
+                                "lan_connectivity_policy": lcp,
+                                "template_actions": [MotemplateActionEntry(**kwargs_template_actions)],
+                                "src_template": vnic_template
+                            }
+                            vnic_ethif_payload = VnicEthIf(**kwargs)
+
+                            self.commit(object_type="vnic.EthIf", payload=vnic_ethif_payload,
+                                        detail="Attaching to template " + vnic.get("vnic_template"))
+                            continue
+
+                # We now need to specify the attributes of the target vNIC if it is not created from a template
                 kwargs = {
                     "object_type": "vnic.EthIf",
                     "class_id": "vnic.EthIf",
@@ -3939,8 +4260,8 @@ class IntersightLocalUserPolicy(IntersightConfigObject):
                 iam_end_point_user_role = IamEndPointUserRole(**end_point_user_role_kwargs)
 
                 self.commit(object_type="iam.EndPointUserRole", payload=iam_end_point_user_role,
-                            detail="User '" + local_user.get("username", "") + "' with role '" +
-                                   local_user.get("role", "") + "'")
+                            detail="User '" + str(local_user.get("username", "")) + "' with role '" +
+                                   str(local_user.get("role", "")) + "'")
 
         return True
 
@@ -4331,6 +4652,7 @@ class IntersightPowerPolicy(IntersightConfigObject):
 
 
 class IntersightSanConnectivityPolicy(IntersightConfigObject):
+    from config.intersight.network_policies import IntersightVhbaTemplate
     _CONFIG_NAME = "SAN Connectivity Policy"
     _CONFIG_SECTION_NAME = "san_connectivity_policies"
     _INTERSIGHT_SDK_OBJECT_NAME = "vnic.SanConnectivityPolicy"
@@ -4341,6 +4663,7 @@ class IntersightSanConnectivityPolicy(IntersightConfigObject):
                 "fibre_channel_qos_policy": IntersightFibreChannelQosPolicy,
                 "fibre_channel_network_policy": IntersightFibreChannelNetworkPolicy,
                 "fc_zone_policies": [IntersightFcZonePolicy],
+                "vhba_template": IntersightVhbaTemplate,
                 "wwpn_pool": IntersightWwpnPool
             }
         ],
@@ -4412,14 +4735,28 @@ class IntersightSanConnectivityPolicy(IntersightConfigObject):
         if "vnic_fc_if" in self._config.sdk_objects:
             vhbas = []
             for vnic_fc_if in self._config.sdk_objects["vnic_fc_if"]:
+                overriden_list = []
                 if vnic_fc_if.san_connectivity_policy:
                     if vnic_fc_if.san_connectivity_policy.moid == self._moid:
                         vhba = {
                             "name": vnic_fc_if.name,
-                            "pci_order": vnic_fc_if.order,
-                            "persistent_lun_bindings": vnic_fc_if.persistent_bindings,
-                            "vhba_type": vnic_fc_if.type
+                            "pci_order": vnic_fc_if.order
                         }
+                        if self.target_platform in ["FI-Attached"]:
+                            # If the vHBA is created from a vHBA template, fetch the source vHBA template
+                            if vnic_fc_if.src_template:
+                                src_vhba_template = self._get_policy_name(policy=vnic_fc_if.src_template)
+                                if src_vhba_template:
+                                    vhba["vhba_template"] = src_vhba_template
+                                # If the vHBA is created from a template and overrides are allowed in a vHBA template
+                                # Fetch the overridden list
+                                if vnic_fc_if.overridden_list:
+                                    overriden_list = vnic_fc_if.overridden_list
+
+                        # If the vHBA is created from a vHBA template
+                        # Add switch_id, pingroupname, wwpn_pool, fibre_channel_network_policy,
+                        # fibre_channel_adapter_policy and fc_zone_policies to the vHBA dictionary
+                        # if the vHBA template is absent or if these attributes are overridden fields.
                         if vnic_fc_if.placement:
                             vhba["automatic_slot_id_assignment"] = vnic_fc_if.placement.auto_slot_id
                             if not vnic_fc_if.placement.auto_slot_id:
@@ -4430,41 +4767,55 @@ class IntersightSanConnectivityPolicy(IntersightConfigObject):
                                 if vnic_fc_if.placement.pci_link_assignment_mode in ["Custom"]:
                                     vhba["pci_link"] = vnic_fc_if.placement.pci_link
                             if self.target_platform in ["FI-Attached"]:
-                                vhba["switch_id"] = vnic_fc_if.placement.switch_id
-                                if vhba["switch_id"] in ["None"]:
-                                    vhba["switch_id"] = None
+                                if not vhba.get("vhba_template") or "Placement.SwitchId" in overriden_list:
+                                    vhba["switch_id"] = vnic_fc_if.placement.switch_id
+                                    if vhba["switch_id"] in ["None"]:
+                                        vhba["switch_id"] = None
                             elif self.target_platform in ["Standalone"]:
                                 vhba["uplink_port"] = vnic_fc_if.placement.uplink
                         if self.target_platform in ["FI-Attached"]:
-                            vhba["pin_group_name"] = vnic_fc_if.pin_group_name if vnic_fc_if.pin_group_name else None
-                            vhba["wwpn_allocation_type"] = vnic_fc_if.wwpn_address_type.lower()
-                            # We only fetch the WWPN Address Pool or Static WWPN for FI-Attached servers
-                            if vnic_fc_if.wwpn_address_type in ["POOL"]:
-                                if vnic_fc_if.wwpn_pool:
-                                    wwpn_pool = self._get_policy_name(policy=vnic_fc_if.wwpn_pool)
-                                    if wwpn_pool:
-                                        vhba["wwpn_pool"] = wwpn_pool
-                            elif vnic_fc_if.wwpn_address_type in ["STATIC"]:
-                                vhba["wwpn_static"] = vnic_fc_if.static_wwpn_address
-                        if vnic_fc_if.fc_network_policy:
-                            fc_network_policy = self._get_policy_name(policy=vnic_fc_if.fc_network_policy)
-                            if fc_network_policy:
-                                vhba["fibre_channel_network_policy"] = fc_network_policy
-                        if vnic_fc_if.fc_qos_policy:
-                            fc_qos_policy = self._get_policy_name(policy=vnic_fc_if.fc_qos_policy)
-                            if fc_qos_policy:
-                                vhba["fibre_channel_qos_policy"] = fc_qos_policy
-                        if vnic_fc_if.fc_adapter_policy:
-                            fc_adapter_policy = self._get_policy_name(policy=vnic_fc_if.fc_adapter_policy)
-                            if fc_adapter_policy:
-                                vhba["fibre_channel_adapter_policy"] = fc_adapter_policy
-                        if vnic_fc_if.fc_zone_policies:
-                            fc_zone_policy_list = []
-                            for fc_zone_policy_ref in vnic_fc_if.fc_zone_policies:
-                                fc_zone_policy = self._get_policy_name(policy=fc_zone_policy_ref)
-                                if fc_zone_policy:
-                                    fc_zone_policy_list.append(fc_zone_policy)
-                            vhba["fc_zone_policies"] = fc_zone_policy_list
+                            if not vhba.get("vhba_template") or "PinGroupName" in overriden_list:
+                                vhba["pin_group_name"] = vnic_fc_if.pin_group_name if vnic_fc_if.pin_group_name else None
+                            if not vhba.get("vhba_template") or "WwpnPool" in overriden_list:
+                                vhba["wwpn_allocation_type"] = vnic_fc_if.wwpn_address_type.lower()
+                                # We only fetch the WWPN Address Pool or Static WWPN for FI-Attached servers
+                                if vnic_fc_if.wwpn_address_type in ["POOL"]:
+                                    if vnic_fc_if.wwpn_pool:
+                                        wwpn_pool = self._get_policy_name(policy=vnic_fc_if.wwpn_pool)
+                                        if wwpn_pool:
+                                            vhba["wwpn_pool"] = wwpn_pool
+                                elif vnic_fc_if.wwpn_address_type in ["STATIC"]:
+                                    vhba["wwpn_static"] = vnic_fc_if.static_wwpn_address
+                        if not vhba.get("vhba_template") or "FcNetworkPolicy" in overriden_list:
+                            if vnic_fc_if.fc_network_policy:
+                                fc_network_policy = self._get_policy_name(policy=vnic_fc_if.fc_network_policy)
+                                if fc_network_policy:
+                                    vhba["fibre_channel_network_policy"] = fc_network_policy
+
+                        if not vhba.get("vhba_template"):
+                            # If vHBA Template is attached then persistent_lun_bindings, vhba_type and
+                            # fibre_channel_qos_policy are set at the Template level and cannot be overriden.
+                            # If vHBA Template is not attached, then these fields are set at the vHBA level
+                            # Add these fields to the vHBA dictionary
+                            vhba["persistent_lun_bindings"] = vnic_fc_if.persistent_bindings
+                            vhba["vhba_type"] = vnic_fc_if.type
+                            if vnic_fc_if.fc_qos_policy:
+                                fc_qos_policy = self._get_policy_name(policy=vnic_fc_if.fc_qos_policy)
+                                if fc_qos_policy:
+                                    vhba["fibre_channel_qos_policy"] = fc_qos_policy
+                        if not vhba.get("vhba_template") or "FcAdapterPolicy" in overriden_list:
+                            if vnic_fc_if.fc_adapter_policy:
+                                fc_adapter_policy = self._get_policy_name(policy=vnic_fc_if.fc_adapter_policy)
+                                if fc_adapter_policy:
+                                    vhba["fibre_channel_adapter_policy"] = fc_adapter_policy
+                        if not vhba.get("vhba_template") or "FcZonePolicies" in overriden_list:
+                            if vnic_fc_if.fc_zone_policies:
+                                fc_zone_policy_list = []
+                                for fc_zone_policy_ref in vnic_fc_if.fc_zone_policies:
+                                    fc_zone_policy = self._get_policy_name(policy=fc_zone_policy_ref)
+                                    if fc_zone_policy:
+                                        fc_zone_policy_list.append(fc_zone_policy)
+                                vhba["fc_zone_policies"] = fc_zone_policy_list
 
                         vhbas.append(vhba)
 
@@ -4475,6 +4826,7 @@ class IntersightSanConnectivityPolicy(IntersightConfigObject):
     @IntersightConfigObject.update_taskstep_description()
     def push_object(self):
         from intersight.model.vnic_san_connectivity_policy import VnicSanConnectivityPolicy
+        from intersight.model.vnic_vhba_template import VnicVhbaTemplate
 
         self.logger(message=f"Pushing {self._CONFIG_NAME} configuration: {self.name}")
 
@@ -4542,8 +4894,311 @@ class IntersightSanConnectivityPolicy(IntersightConfigObject):
         # We now create the vnic.FcIf objects for each vHBA
         if self.vhbas is not None:
             from intersight.model.vnic_fc_if import VnicFcIf
+            from intersight.model.motemplate_action_entry import MotemplateActionEntry
 
             for vhba in self.vhbas:
+
+                # We first need to check if a vHBA with the same name already exists
+                vhba_fc_if = self.get_live_object(
+                    object_name=vhba.get("name"),
+                    object_type="vnic.FcIf",
+                    return_reference=False,
+                    log=False,
+                    query_filter=f"Name eq '{vhba['name']}' and SanConnectivityPolicy/Moid eq '{scp.moid}'"
+                )
+
+                if not getattr(self._config, "update_existing_intersight_objects", False) and vhba_fc_if:
+                    message = f"Object type vnic.FcIf with name={vhba.get('name')} " \
+                              f"already exists"
+                    self.logger(level="info", message=message)
+                    self._config.push_summary_manager.add_object_status(
+                        obj=self, obj_detail=vhba['name'], obj_type="vnic.FcIf", status="skipped",
+                        message=message)
+                    continue
+                # In case this vHBA derived from vHBA template, we use the 'derive' mechanism to create it
+                if vhba.get("vhba_template"):
+                    if not vhba_fc_if:
+                        from intersight.model.bulk_mo_cloner import BulkMoCloner
+
+                        # This vHBA is newly derived from a vHBA template and is not a pre-existing entity.
+                        # Therefore, we need to Attach the source template from which the vHBA is derived and target
+                        # fields that can be set at the vHBA level, including overridden fields to the BulkMoCloner.
+                        kwargs_mo_cloner = {
+                            "sources": [],
+                            "targets": []
+                        }
+                        # We need to identify the Moid of the source vHBA Template
+                        vhba_template = self.get_live_object(object_name=vhba["vhba_template"],
+                                                             object_type="vnic.VhbaTemplate")
+                        if vhba_template:
+                            template_moid = vhba_template.moid
+                            source_template = {
+                                "moid": template_moid,
+                                "object_type": "vnic.VhbaTemplate"
+                            }
+                            kwargs_mo_cloner["sources"].append(VnicVhbaTemplate(**source_template))
+                        else:
+                            err_message = "Unable to locate source vHBA Template " + \
+                                          vhba['vhba_template'] + " to derive vHBA Template " + vhba['name']
+                            self.logger(level="error", message=err_message)
+                            self._config.push_summary_manager.add_object_status(obj=self, obj_detail=vhba['name'],
+                                                                                obj_type="vnic.VhbaTemplate",
+                                                                                status="failed", message=err_message)
+                            continue
+                        # We now need to specify the attribute of the target vHBA
+                        target_vhba = {
+                            "object_type": "vnic.FcIf",
+                            "class_id": "vnic.FcIf",
+                            "san_connectivity_policy": scp
+                        }
+                        if vhba.get("name") is not None:
+                            target_vhba["name"] = vhba["name"]
+                        if vhba.get("pci_order") is not None:
+                            target_vhba["order"] = vhba["pci_order"]
+
+                        # It is essential to manage overridden values effectively.
+                        # This includes handling overridden attributes such as wwpnpool, placement settings,
+                        # pingroupname, fc_zone_policies, fibre_channel_adapter_policy and fibre_channel_network_policy.
+                        if vhba.get("pin_group_name") is not None:
+                            target_vhba["pin_group_name"] = vhba["pin_group_name"]
+                        # Handling the WWPN Address settings of the vHBA
+                        if vhba.get("wwpn_allocation_type") is not None:
+                            target_vhba["wwpn_address_type"] = vhba["wwpn_allocation_type"].upper()
+                        if vhba.get("wwpn_allocation_type") in ["pool"]:
+                            if vhba.get("wwpn_pool") is not None:
+                                # We need to identify the WWPN Pool object reference
+                                # Since WWPN & WWNN share the same object type, we need to specify a query filter
+                                if "/" in vhba["wwpn_pool"]:
+                                    wwpn_pool_name = vhba["wwpn_pool"].split("/")[1]
+                                    wwpn_pool_org_ref = self.get_org_relationship(
+                                        org_name=vhba["wwpn_pool"].split("/")[0])
+                                    wwpn_pool = None
+                                    if wwpn_pool_org_ref:
+                                        wwpn_pool = self.get_live_object(
+                                            object_name=wwpn_pool_name,
+                                            object_type="fcpool.Pool",
+                                            query_filter="Name eq '" + wwpn_pool_name + "' and Organization/Moid eq '" +
+                                                         wwpn_pool_org_ref.moid + "' and PoolPurpose eq 'WWPN'"
+                                        )
+                                else:
+                                    wwpn_pool = self.get_live_object(
+                                        object_name=vhba["wwpn_pool"],
+                                        object_type="fcpool.Pool",
+                                        query_filter="Name eq '" + vhba["wwpn_pool"] + "' and Organization/Moid eq '" +
+                                                     self.get_parent_org_relationship().moid + "' and PoolPurpose eq 'WWPN'"
+                                    )
+                                if wwpn_pool:
+                                    target_vhba["wwpn_pool"] = wwpn_pool
+                                else:
+                                    self._config.push_summary_manager.add_object_status(
+                                        obj=self, obj_detail=f"Attaching WWPN Pool '{vhba['wwpn_pool']}' to vHBA - "
+                                                             f"{str(vhba['name'])}",
+                                        obj_type="vnic.FcIf", status="failed",
+                                        message=f"Failed to find WWPN Pool '{vhba['wwpn_pool']}'"
+                                    )
+                        elif vhba.get("wwpn_allocation_type") in ["static"]:
+                            if vhba.get("wwpn_static") is not None:
+                                target_vhba["static_wwpn_address"] = vhba["wwpn_static"]
+                        # Handling the placement settings of the vHBA
+                        from intersight.model.vnic_placement_settings import VnicPlacementSettings
+                        kwargs_placement = {
+                            "object_type": "vnic.PlacementSettings",
+                            "class_id": "vnic.PlacementSettings"
+                        }
+                        if vhba.get("switch_id") is not None:
+                            kwargs_placement["switch_id"] = vhba["switch_id"]
+                        if vhba.get("automatic_slot_id_assignment", False):
+                            kwargs_placement["auto_slot_id"] = True
+                        elif vhba.get("slot_id") is not None:  # We have a Slot ID value
+                            kwargs_placement["auto_slot_id"] = False
+                            kwargs_placement["id"] = vhba["slot_id"]
+                        else:  # We don't have any slot ID value - we set Auto Slot ID to enabled
+                            kwargs_placement["auto_slot_id"] = True
+                        if vhba.get("automatic_pci_link_assignment", False):
+                            kwargs_placement["auto_pci_link"] = True
+                        # We have a PCI Link value - We set assignment mode to Custom
+                        elif vhba.get("pci_link") is not None:
+                            kwargs_placement["auto_pci_link"] = False
+                            kwargs_placement["pci_link_assignment_mode"] = "Custom"
+                            kwargs_placement["pci_link"] = vhba["pci_link"]
+                        # Assignment mode set to Load-Balanced
+                        elif vhba.get("pci_link_assignment_mode") in ["Load-Balanced"]:
+                            kwargs_placement["auto_pci_link"] = False
+                            kwargs_placement["pci_link_assignment_mode"] = "Load-Balanced"
+                        else:  # We don't have any PCI Link value - we set Auto PCI Link to enabled
+                            kwargs_placement["auto_pci_link"] = True
+                        if vhba.get("uplink_port") is not None:
+                            kwargs_placement["uplink"] = vhba["uplink_port"]
+                        target_vhba["placement"] = VnicPlacementSettings(**kwargs_placement)
+
+                        # Handling the policies attachments of the vHBA
+                        if vhba.get("fc_zone_policies") is not None:
+                            # We need to identify the FC Zone Policy object reference
+                            fc_zone_policy_list = []
+                            for fc_zone_policy in vhba["fc_zone_policies"]:
+                                live_fc_zone_policy = self.get_live_object(
+                                    object_name=fc_zone_policy,
+                                    object_type="fabric.FcZonePolicy"
+                                )
+                                if live_fc_zone_policy:
+                                    fc_zone_policy_list.append(live_fc_zone_policy)
+                                else:
+                                    self._config.push_summary_manager.add_object_status(
+                                        obj=self, obj_detail=f"Attaching FC Zone Policy '{fc_zone_policy}' to vHBA - "
+                                                             f"{str(vhba['name'])}",
+                                        obj_type="vnic.FcIf", status="failed",
+                                        message=f"Failed to find FC Zone Policy '{fc_zone_policy}'"
+                                    )
+                            target_vhba["fc_zone_policies"] = fc_zone_policy_list
+                        if vhba.get("fibre_channel_adapter_policy") is not None:
+                            # We need to identify the Fibre Channel Adapter Policy object reference
+                            fc_adapter_policy = self.get_live_object(
+                                object_name=vhba["fibre_channel_adapter_policy"],
+                                object_type="vnic.FcAdapterPolicy"
+                            )
+                            if fc_adapter_policy:
+                                target_vhba["fc_adapter_policy"] = fc_adapter_policy
+                            else:
+                                self._config.push_summary_manager.add_object_status(
+                                    obj=self,
+                                    obj_detail=f"Attaching FC Adapter Policy '{vhba['fibre_channel_adapter_policy']}'"
+                                               f" to vHBA - {str(vhba['name'])}",
+                                    obj_type="vnic.FcIf", status="failed",
+                                    message=f"Failed to find FC Adapter Policy '{vhba['fibre_channel_adapter_policy']}'"
+                                )
+                        if vhba.get("fibre_channel_network_policy") is not None:
+                            # We need to identify the Fibre Channel Network Policy object reference
+                            fc_nw_policy = self.get_live_object(
+                                object_name=vhba["fibre_channel_network_policy"],
+                                object_type="vnic.FcNetworkPolicy"
+                            )
+                            if fc_nw_policy:
+                                target_vhba["fc_network_policy"] = fc_nw_policy
+                            else:
+                                self._config.push_summary_manager.add_object_status(
+                                    obj=self,
+                                    obj_detail=f"Attaching FC Network Policy '{vhba['fibre_channel_network_policy']}'"
+                                               f" to vHBA - {str(vhba['name'])}",
+                                    obj_type="vnic.FcIf", status="failed",
+                                    message=f"Failed to find FC Network Policy '{vhba['fibre_channel_network_policy']}'"
+                                )
+
+                        kwargs_mo_cloner["targets"].append(VnicFcIf(**target_vhba))
+
+                        mo_cloner = BulkMoCloner(**kwargs_mo_cloner)
+
+                        self.commit(object_type="bulk.MoCloner", payload=mo_cloner,
+                                    detail=self.name + " - vHBA " + str(vhba["name"]))
+                        continue
+                    else:
+                        # We found a vhba with the same name,
+                        # we need to check if it is bound to a same vHBA Template or different vHBA Template
+                        # If vHBA is derived from another vHBA Template we will detach it from its Template and
+                        # reattach it to the desired Template
+                        if vhba_fc_if.src_template:
+                            src_template = self._device.query(
+                                object_type="vnic.VhbaTemplate",
+                                filter="Moid eq '" + vhba_fc_if.src_template.moid + "'"
+                            )
+                            if len(src_template) == 1:
+                                if src_template[0].name == vhba.get("vhba_template"):
+                                    # This vHBA is already derived from the same vHBA Template
+                                    info_message = "vHBA " + vhba.get("name") + " exists and is already derived " + \
+                                                   "from same vHBA Template " + vhba.get("vhba_template")
+                                    self.logger(level="info", message=info_message)
+                                    self._config.push_summary_manager.add_object_status(
+                                        obj=self, obj_detail=vhba.get("name"), obj_type="vnic.FcIf",
+                                        status="skipped", message=info_message)
+                                    continue
+                                else:
+                                    # vHBA is derived from another vHBA Template
+                                    # We will detach it from its Template and reattach it to the desired Template
+                                    self.logger(
+                                        level="info",
+                                        message="vHBA " + vhba.get("name") +
+                                                " exists and is derived from different vHBA Template " +
+                                                src_template[0].name
+                                    )
+                                    self.logger(
+                                        level="info",
+                                        message="Detaching vHBA " + vhba.get("name") +
+                                                " from vHBA Template " + src_template[0].name
+                                    )
+                                    kwargs = {
+                                        "object_type": "vnic.FcIf",
+                                        "class_id": "vnic.FcIf",
+                                        "name": vhba.get("name"),
+                                        "san_connectivity_policy": scp,
+                                        "src_template": None
+                                    }
+                                    vnic_fcif_payload = VnicFcIf(**kwargs)
+
+                                    if not self.commit(object_type="vnic.FcIf",
+                                                       payload=vnic_fcif_payload,
+                                                       detail="Detaching from vHBA template " + src_template[0].name,
+                                                       key_attributes=["name", "san_connectivity_policy"]):
+                                        continue
+                                    self.logger(
+                                        level="info",
+                                        message="Attaching vHBA " + vhba.get("name") +
+                                                " to vHBA Template " + vhba.get("vhba_template")
+                                    )
+                                    # We need to identify the Moid of the vHBA Template
+                                    vhba_template = self.get_live_object(
+                                        object_name=vhba.get("vhba_template"),
+                                        object_type="vnic.VhbaTemplate"
+                                    )
+                                    # Attach action needs to be specified in the TemplateActions
+                                    # To attach vHBA to a template
+                                    kwargs_template_actions = {
+                                        "object_type": "motemplate.ActionEntry",
+                                        "class_id": "motemplate.ActionEntry",
+                                        "type": "Attach"
+                                    }
+                                    kwargs["template_actions"] = [MotemplateActionEntry(**kwargs_template_actions)]
+                                    kwargs["src_template"] = vhba_template
+                                    vnic_fcif_payload = VnicFcIf(**kwargs)
+
+                                    self.commit(object_type="vnic.FcIf",
+                                                payload=vnic_fcif_payload,
+                                                detail="Attaching to template " + vhba.get("vhba_template"),
+                                                key_attributes=["name", "san_connectivity_policy"])
+                                    continue
+                            else:
+                                err_message = "Could not find vHBA Template " + vhba.get("vhba_template")
+                                self.logger(level="error", message=err_message)
+                                self._config.push_summary_manager.add_object_status(
+                                    obj=self, obj_detail=vhba['name'], obj_type="vnic.FcIf",
+                                    status="failed",
+                                    message=err_message)
+                                continue
+                        else:
+                            # vHBA is not currently bound to a template. So we just need to bind it
+                            # We need to identify the Moid of the Attached vHBA Template
+                            vhba_template = self.get_live_object(
+                                object_name=vhba.get("vhba_template"),
+                                object_type="vnic.VhbaTemplate"
+                            )
+                            # Attach action needs to be specified in the TemplateActions to attach vHBA to a template.
+                            kwargs_template_actions = {
+                                "object_type": "motemplate.ActionEntry",
+                                "class_id": "motemplate.ActionEntry",
+                                "type": "Attach"
+                            }
+                            kwargs = {
+                                "object_type": "vnic.FcIf",
+                                "class_id": "vnic.FcIf",
+                                "name": vhba.get("name"),
+                                "san_connectivity_policy": scp,
+                                "template_actions": [MotemplateActionEntry(**kwargs_template_actions)],
+                                "src_template": vhba_template
+                            }
+                            vnic_fcif_payload = VnicFcIf(**kwargs)
+                            self.commit(object_type="vnic.FcIf", payload=vnic_fcif_payload,
+                                        detail="Attaching to template " + vhba.get("vhba_template"))
+                            continue
+
+                # We now need to specify the attributes of the target vHBA if it is not created from a template
                 kwargs = {
                     "object_type": "vnic.FcIf",
                     "class_id": "vnic.FcIf",
@@ -5512,8 +6167,10 @@ class IntersightStoragePolicy(IntersightConfigObject):
             kwargs["global_hot_spares"] = self.global_hot_spares
 
         if self.hybrid_slot_configuration:
-            kwargs["direct_attached_nvme_slots"] = self.hybrid_slot_configuration.get("direct_attached_nvme_slots")
-            kwargs["raid_attached_nvme_slots"] = self.hybrid_slot_configuration.get("raid_attached_nvme_slots")
+            if self.hybrid_slot_configuration.get("direct_attached_nvme_slots"):
+                kwargs["direct_attached_nvme_slots"] = self.hybrid_slot_configuration.get("direct_attached_nvme_slots")
+            if self.hybrid_slot_configuration.get("raid_attached_nvme_slots"):
+                kwargs["raid_attached_nvme_slots"] = self.hybrid_slot_configuration.get("raid_attached_nvme_slots")
 
         if self.m2_configuration is not None and self.m2_configuration.get("enable"):
             from intersight.model.storage_m2_virtual_drive_config import StorageM2VirtualDriveConfig

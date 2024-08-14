@@ -1,0 +1,148 @@
+{
+   "id": "intersight_config_orgs_ucs_domain_profile_templates#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS intersight config orgs ucs_domain_profile_templates section",
+   "description": "EasyUCS intersight config orgs ucs_domain_profile_templates section JSON schema",
+   "type": "object",
+   "properties": {
+      "comment": {
+         "description": "UCS Domain Profile Template Comments",
+         "type": "string",
+         "default": ""
+      },
+      "descr": {
+         "description": "UCS Domain Profile Template Description",
+         "type": "string",
+         "default": "",
+         "pattern": "^$|^[a-zA-Z0-9]+[\\x00-\\xFF]*$",
+         "maxLength": 1024
+      },
+      "name": {
+         "description": "UCS Domain Profile Template Name",
+         "type": "string",
+         "default": "",
+         "pattern": "^[a-zA-Z0-9_.-]{1,64}$"
+      },
+      "user_label": {
+         "description": "UCS Domain Profile Template User Label",
+         "type": "string",
+         "default": "",
+         "pattern": "^[a-zA-Z0-9!#$%&*+,\\(\\)\\[\\]\\{\\}|\\/\\.\\?@_:;~-]{1,64}$"
+      },
+      "tags": {
+         "description": "UCS Domain Profile Template Tags",
+         "type": "array",
+         "items": {
+            "description": "UCS Domain Profile Template Tag",
+            "type": "object",
+            "properties": {
+               "key": {
+                  "description": "UCS Domain Profile Template Tag Key",
+                  "type": "string",
+                  "default": "",
+                  "minLength": 1,
+                  "maxLength": 128
+               },
+               "value": {
+                  "description": "UCS Domain Profile Template Tag Value",
+                  "type": "string",
+                  "default": "",
+                  "minLength": 0,
+                  "maxLength": 256
+               }
+            },
+            "additionalProperties": false,
+            "required": [
+               "key",
+               "value"
+            ]
+         },
+         "minItems": 1
+      },
+      "network_connectivity_policy": {
+         "description": "UCS Domain Profile Template Network Connectivity Policy",
+         "type": "string",
+         "default": ""
+      },
+      "ntp_policy": {
+         "description": "UCS Domain Profile Template NTP Policy",
+         "type": "string",
+         "default": ""
+      },
+      "port_policies": {
+         "description": "UCS Domain Profile Template Port Policies",
+         "type": "object",
+         "properties": {
+            "fabric_a": {
+               "description": "UCS Domain Profile Template Port Policy for Fabric Interconnect A",
+               "type": "string",
+               "default": ""
+            },
+            "fabric_b": {
+               "description": "UCS Domain Profile Template Port Policy for Fabric Interconnect B",
+               "type": "string",
+               "default": ""
+            }
+         },
+         "additionalProperties": false
+      },
+      "snmp_policy": {
+         "description": "UCS Domain Profile Template SNMP Policy",
+         "type": "string",
+         "default": ""
+      },
+      "switch_control_policy": {
+         "description": "UCS Domain Profile Template Switch Control Policy",
+         "type": "string",
+         "default": ""
+      },
+      "syslog_policy": {
+         "description": "UCS Domain Profile Template Syslog Policy",
+         "type": "string",
+         "default": ""
+      },
+      "system_qos_policy": {
+         "description": "UCS Domain Profile Template System QoS Policy",
+         "type": "string",
+         "default": ""
+      },
+      "vlan_policies": {
+         "description": "UCS Domain Profile Template VLAN Policies",
+         "type": "object",
+         "properties": {
+            "fabric_a": {
+               "description": "UCS Domain Profile Template VLAN Policy for Fabric Interconnect A",
+               "type": "string",
+               "default": ""
+            },
+            "fabric_b": {
+               "description": "UCS Domain Profile Template VLAN Policy for Fabric Interconnect B",
+               "type": "string",
+               "default": ""
+            }
+         },
+         "additionalProperties": false
+      },
+      "vsan_policies": {
+         "description": "UCS Domain Profile Template VSAN Policies",
+         "type": "object",
+         "properties": {
+            "fabric_a": {
+               "description": "UCS Domain Profile Template VSAN Policy for Fabric Interconnect A",
+               "type": "string",
+               "default": ""
+            },
+            "fabric_b": {
+               "description": "UCS Domain Profile Template VSAN Policy for Fabric Interconnect B",
+               "type": "string",
+               "default": ""
+            }
+         },
+         "additionalProperties": false
+      }
+   },
+   "additionalProperties": false,
+   "required": [
+      "name"
+   ]
+}

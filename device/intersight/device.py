@@ -52,12 +52,17 @@ from intersight.api.uuidpool_api import UuidpoolApi
 from intersight.api.vmedia_api import VmediaApi
 from intersight.api.vnic_api import VnicApi
 
+from intersight.model.mo_mo_ref import MoMoRef
+from intersight.model.organization_organization import OrganizationOrganization
+from intersight.model.resource_group import ResourceGroup
 from intersight.api_client import ApiClient
 from intersight.configuration import Configuration
 from intersight.exceptions import ApiValueError, ApiTypeError, ApiException, OpenApiException
 from intersight import __version__ as intersight_sdk_version
 
+from __init__ import EASYUCS_ROOT
 from config.intersight.manager import IntersightConfigManager
+from device.delete_summary_manager import DeleteSummaryManager
 from inventory.intersight.manager import IntersightInventoryManager
 from report.intersight.manager import IntersightReportManager
 from device.device import GenericDevice
@@ -67,12 +72,12 @@ urllib3.disable_warnings()
 
 
 class IntersightDevice(GenericDevice):
-    INTERSIGHT_APPLIANCE_MIN_REQUIRED_VERSION = "1.0.9-675"
+    INTERSIGHT_APPLIANCE_MIN_REQUIRED_VERSION = "1.1.0-0"
 
     def __init__(self, parent=None, uuid=None, target="www.intersight.com", key_id="", private_key_path="",
                  is_hidden=False, is_system=False, system_usage=None, proxy=None, proxy_user=None, proxy_password=None,
                  logger_handle_log_level="info", log_file_path=None, bypass_connection_checks=False,
-                 bypass_version_checks=False):
+                 bypass_version_checks=False, user_label=""):
 
         self.key_id = key_id
         self.private_key_path = private_key_path
@@ -81,7 +86,7 @@ class IntersightDevice(GenericDevice):
                                is_hidden=is_hidden, is_system=is_system, system_usage=system_usage,
                                logger_handle_log_level=logger_handle_log_level, log_file_path=log_file_path,
                                bypass_connection_checks=bypass_connection_checks,
-                               bypass_version_checks=bypass_version_checks)
+                               bypass_version_checks=bypass_version_checks, user_label=user_label)
 
         self.handle = None
         self.is_appliance = False
@@ -170,8 +175,9 @@ class IntersightDevice(GenericDevice):
         self.config_manager = IntersightConfigManager(parent=self)
         self.inventory_manager = IntersightInventoryManager(parent=self)
         self.report_manager = IntersightReportManager(parent=self)
+        self.delete_summary_manager = DeleteSummaryManager(parent=self)
 
-    def clear_config(self, orgs=None):
+    def clear_config(self, orgs=None, delete_settings=False, bypass_version_checks=False, force=False):
         """
         Clears configuration by deleting objects from the Intersight device
         (optionally limited to the list of orgs provided).
@@ -180,32 +186,89 @@ class IntersightDevice(GenericDevice):
         specified in the `objects_to_remove_in_order` list, retrieves a list of objects for each class,
         and attempts to delete them.
         Args:
-            orgs (list): Optional list of organization names to restrict the clear operation to.
+            orgs (list): Optional list of organization names to restrict the clear operation to. If not set, we
+            delete everything.
+            bypass_version_checks(boolean): Whether the minimum version checks should be bypassed when connecting
+            delete_settings (boolean): If enabled, then we also delete all the settings associated with the
+            Intersight account. This cannot be True if 'orgs' is specified.
+            force (boolean): Force the clear process to proceed even if license validation fails.
 
         Returns:
             bool: True if the cleaning process was successful.
         """
-        is_cleared = True
-        max_objects_per_fetch_call = 100
+
+        if orgs and delete_settings:
+            self.logger(level="error", message="Deleting settings in case of a partial delete is prohibited.")
+            return False
+
+        if force:
+            self.task.taskstep_manager.skip_taskstep(name="ValidateIntersightLicense",
+                                                     status_message="Skipped license validation since forced")
+            self.logger(level="warning", message="Skipping license validation due to force clear.")
+        elif not self.validate_intersight_license():
+            return False
+
+        def is_profile_unassigned(api_class_object, sdk_object_name, object_moid, retries=30):
+            """
+            Function to poll for unassignment completion.
+
+            This function repeatedly checks the status of a specified object (e.g., server profile,
+            chassis profile, or fabric switch cluster profile) to determine if it has been unassigned.
+            If the object becomes unassigned within the allowed retries, the
+            function returns True; otherwise, it returns False.
+
+            Returns:
+                bool: True if the profile is unassigned, False otherwise.
+            """
+            profile_unassigned = False
+            retry_count = 0
+            assigned_value = None
+
+            while retry_count < retries:
+                profile = getattr(api_class_object, f"get_{sdk_object_name}_by_moid")(moid=object_moid)
+                if sdk_object_name == "server_profile":
+                    assigned_value = profile.get('assigned_server')
+                elif sdk_object_name == "chassis_profile":
+                    assigned_value = profile.get('assigned_chassis')
+                elif sdk_object_name == "fabric_switch_cluster_profile":
+                    assigned_value = profile.get('deployed_switches')
+
+                # Check the unassignment status
+                if not assigned_value or assigned_value == "None":
+                    self.logger(level="debug",
+                                message=f"Profile of type '{profile.object_type}' and name '{profile.name}' is "
+                                        f"unassigned (MOID: {profile.moid})")
+                    profile_unassigned = True
+                    break
+                else:
+                    self.logger(level="debug",
+                                message=f"{profile.object_type} {profile.name} is still associated. Retrying...")
+
+                # Sleep if unassignment is not complete
+                time.sleep(10)
+
+                retry_count += 1
+
+            return profile_unassigned
+
         # Define a list of objects to remove, including associated classes.
         # It is essential to maintain the below order to ensure the correct sequence of deletion.
         objects_to_remove_in_order = [
             {ServerApi: ["server_profile", "server_profile_template"]},
-            {ChassisApi: ["chassis_profile"]},
+            {ChassisApi: ["chassis_profile", "chassis_profile_template"]},
             {VnicApi: [
-                "vnic_lan_connectivity_policy", "vnic_san_connectivity_policy",
-                "vnic_eth_qos_policy", "vnic_eth_network_policy",
-                "vnic_fc_qos_policy", "vnic_fc_network_policy",
-                "vnic_iscsi_adapter_policy", "vnic_iscsi_static_target_policy",
-                "vnic_iscsi_boot_policy", "vnic_eth_adapter_policy", "vnic_fc_adapter_policy"
+                "vnic_lan_connectivity_policy", "vnic_san_connectivity_policy", "vnic_vnic_template",
+                "vnic_vhba_template", "vnic_eth_qos_policy", "vnic_eth_network_policy", "vnic_fc_qos_policy",
+                "vnic_fc_network_policy", "vnic_iscsi_boot_policy", "vnic_iscsi_adapter_policy",
+                "vnic_iscsi_static_target_policy", "vnic_eth_adapter_policy", "vnic_fc_adapter_policy"
             ]},
-            {FabricApi: ["fabric_switch_profile", "fabric_switch_cluster_profile", "fabric_switch_profile",
-                         "fabric_flow_control_policy",
-                         "fabric_link_aggregation_policy", "fabric_link_control_policy", "fabric_switch_control_policy",
-                         "fabric_system_qos_policy", "fabric_port_policy", "fabric_eth_network_policy",
-                         "fabric_vlan", "fabric_fc_network_policy", "fabric_vsan", "fabric_multicast_policy",
-                         "fabric_eth_network_group_policy", "fabric_eth_network_control_policy",
-                         "fabric_fc_zone_policy"]},
+            {FabricApi: ["fabric_switch_cluster_profile",
+                         "fabric_switch_cluster_profile_template",
+                         "fabric_port_policy", "fabric_flow_control_policy", "fabric_link_aggregation_policy",
+                         "fabric_link_control_policy", "fabric_switch_control_policy", "fabric_system_qos_policy",
+                         "fabric_eth_network_policy",  "fabric_fc_network_policy",
+                         "fabric_multicast_policy", "fabric_eth_network_group_policy",
+                         "fabric_eth_network_control_policy", "fabric_fc_zone_policy"]},
             {NtpApi: ["ntp_policy"]},
             {SnmpApi: ["snmp_policy"]},
             {SyslogApi: ["syslog_policy"]},
@@ -229,56 +292,153 @@ class IntersightDevice(GenericDevice):
             {DeviceconnectorApi: ["deviceconnector_policy"]},
             {AdapterApi: ["adapter_config_policy"]},
             {IppoolApi: ["ippool_reservation", "ippool_pool"]},
-            {MacpoolApi: ["macpool_reservation", "macpool_lease", "macpool_pool"]},
+            {MacpoolApi: ["macpool_reservation", "macpool_pool"]},
             {FcpoolApi: ["fcpool_reservation", "fcpool_pool"]},
-            {IqnpoolApi: ["iqnpool_reservation", "iqnpool_pool"]},
+            {IqnpoolApi: ["iqnpool_reservation",  "iqnpool_pool"]},
             {UuidpoolApi: ["uuidpool_reservation", "uuidpool_pool"]},
-            {ResourcepoolApi: ["resourcepool_pool"]},
+            {ResourcepoolApi: ["resourcepool_membership_reservation", "resourcepool_pool"]},
             {IamApi: [
                 "iam_end_point_user_policy", "iam_end_point_user_role",
                 "iam_end_point_user", "iam_permission", "iam_ldap_policy", "iam_sharing_rule"
             ]},
-            {OrganizationApi: ["organization_organization"]},
-            {ResourceApi: ["resource_group"]}
+            {OrganizationApi: ["organization_organization"]}
         ]
 
-        count_value = 0
+        settings_sdk_objects = ["iam_end_point_user_policy", "iam_end_point_user_role", "iam_end_point_user",
+                                "iam_permission"]
+
+        # A set containing moid of all the organizations to be deleted
+        orgs_to_be_deleted = set()
+        if orgs:
+            message_str = f"Deleting selected organization of Intersight device '{self.name}'"
+            self.logger(level="info", message=f"{message_str}: {str(orgs)}")
+            for org_name in orgs:
+                org_objects = self.query(api_class=OrganizationApi, sdk_object_type="organization_organization",
+                                         filter=f"Name eq '{org_name}'")
+                if org_objects:
+                    orgs_to_be_deleted.add(org_objects[0].moid)
+                else:
+                    self.logger(level="warning",
+                                message=f"Organization '{org_name}' not found in Intersight account '{self.name}'. "
+                                        f"Continuing without deleting it.")
+
+            if not orgs_to_be_deleted:
+                info_message = f"None of the organization selected exists in Intersight account {self.name}"
+                self.logger(level="warning", message=f"{info_message}: {str(orgs)}")
+                if self.task is not None:
+                    self.task.taskstep_manager.stop_taskstep(name="ClearConfigIntersightDevice", status="successful",
+                                                             status_message=message_str)
+                return True
+        else:
+            # We delete the resource groups only when we are deleting all the Intersight configuration.
+            objects_to_remove_in_order.append({ResourceApi: ["resource_group"]})
+
+            # Added to handle cases of orphaned objects that need to be deleted.
+            # By adding these sdk_objects to specific positions in the objects_to_remove_in_order list,
+            # we ensure the sequential order of deletion is maintained
+            # when we are deleting all the Intersight configuration (i.e., when no orgs are provided).
+
+            possible_orphaned_obj = {
+                FabricApi: [
+                    ("fabric_switch_profile", 1),
+                    ("fabric_switch_profile_template", 3),
+                    ("fabric_vlan", 11),
+                    ("fabric_vsan", 13)
+                ],
+                IppoolApi: [("ippool_ip_lease", 1)],
+                MacpoolApi: [("macpool_lease", 1)],
+                FcpoolApi: [("fcpool_lease", 1)],
+                IqnpoolApi: [("iqnpool_lease", 1)],
+                UuidpoolApi: [("uuidpool_uuid_lease", 1)],
+                ResourcepoolApi: [("resourcepool_lease", 1)]
+            }
+            # Update each entry in the objects_to_remove_in_order list at the position specified
+            for obj in objects_to_remove_in_order:
+                for api_type, elements in possible_orphaned_obj.items():
+                    if api_type in obj:
+                        for element, index in elements:
+                            obj[api_type].insert(index, element)
+
+            message_str = f"Deleting all configuration from Intersight device '{self.name}'"
+            self.logger(level="info", message=message_str)
 
         if self.task is not None:
-            if orgs:
-                message_str = f"Clearing config in orgs {str(orgs)} of Intersight device '{self.name}'"
-            else:
-                message_str = f"Clearing config in all orgs of Intersight device '{self.name}'"
             self.task.taskstep_manager.start_taskstep(name="ClearConfigIntersightDevice", description=message_str)
 
+        # Defining some fields which will be needed for fetching the objects form Intersight.
+
+        # We only delete Resource groups that are used for multi-tenancy by assigning to organizations i.e. of
+        # type "rbac"
+        query_filters = {
+            "resource_group": "Type eq rbac"
+        }
+
+        last_organization = None
+        error_encountered = False
         for api_class_dict in objects_to_remove_in_order:
             for api_class, sdk_objects_list in api_class_dict.items():
                 api = api_class(api_client=self.handle)
 
                 for sdk_object in sdk_objects_list:
-                    try:
-                        # Retrieve the count and objects for the current object class
-                        count_response = getattr(api, f"get_{sdk_object}_list")(count=True, expand='Organization')
-                        if count_response:
-                            count_value = count_response["count"]
-                        if count_value <= max_objects_per_fetch_call:
-                            results = getattr(api, f"get_{sdk_object}_list")(expand='Organization').results
-                        else:
-                            self.logger(level="debug",
-                                        message=f"{count_value} objects of class {sdk_object} to be fetched using "
-                                                f"pagination")
-                            results = []
-                            start_value = 0
-                            while start_value < count_value:
-                                results += getattr(api, f"get_{sdk_object}_list")(
-                                    skip=start_value, top=max_objects_per_fetch_call, expand='Organization').results
-                                start_value += max_objects_per_fetch_call
+                    # If "delete_settings" is not set, then skip the deletion of settings objects
+                    if not delete_settings and sdk_object in settings_sdk_objects:
+                        continue
 
-                        # Unassigning Server/Chassis/Domain profiles, if assigned before proceeding with object deletion
-                        for profile in results:
-                            if not orgs or (hasattr(profile, 'organization') and profile.organization and
-                                            hasattr(profile.organization, 'name') and
-                                            profile.organization.name in orgs):
+                    # Retrieve the objects for the current object class
+                    results = self.query(api_class=api_class, sdk_object_type=sdk_object,
+                                         filter=query_filters.get(sdk_object, ""))
+                    filtered_results = []
+                    for result in results:
+                        # Intersight provides pre-built workflows, tasks and policies to end users through global
+                        # catalogs. Objects that are made available through global catalogs are said to have a
+                        # 'shared' ownership. We do not delete such objects.
+                        if hasattr(result, "shared_scope") and result.shared_scope == "shared":
+                            continue
+                        # We skip some System defined objects which exists on appliance. These objects does not
+                        # belong to any organization and cannot be deleted. So we skip deleting them.
+                        # In Appliance version 1.1.0-0, we have 'ntp.Policy' and 'networkconfig.Policy' policy named
+                        # 'APPLIANCE-DEFAULT' which are system defined.
+                        if hasattr(result, "tags"):
+                            result_is_system_defined = False
+                            for tag in result.tags:
+                                if tag and tag.get('key') == "cisco.meta.appliance.default":
+                                    result_is_system_defined = True
+                                    self.logger(level="debug",
+                                                message=f"Skipping {result.object_type} with name "
+                                                        f"{getattr(result, 'name', '')} as its System defined")
+                                    self.delete_summary_manager.add_obj_status(
+                                        obj=result,
+                                        status="skipped",
+                                        message="Appliance system defined Objects"
+                                    )
+                                    break
+                            if result_is_system_defined:
+                                continue
+
+                        # If we need to restrict the deletion to a list of organizations, then we need to handle
+                        # some these specific objects as they do not contain direct reference to organization object.
+                        if orgs_to_be_deleted:
+                            if sdk_object == "iam_sharing_rule":
+                                if result.shared_with_resource.moid in orgs_to_be_deleted:
+                                    filtered_results.append(result)
+                            elif sdk_object == "organization_organization":
+                                if result.moid in orgs_to_be_deleted:
+                                    filtered_results.append(result)
+                            else:
+                                if result.organization.moid in orgs_to_be_deleted:
+                                    filtered_results.append(result)
+                        else:
+                            # If we do not restrict the deletion to a list of organizations, then we need add all
+                            # the objects to the filtered list.
+                            filtered_results.append(result)
+
+                    # Loop through all profile objects and unassign them if they are assigned. This is necessary
+                    # before deleting any profile object. We unassign all profiles first because the unassignment
+                    # process can take several minutes. During deletion, we wait for the unassignment to complete
+                    # before proceeding with the deletion.
+                    if sdk_object in ["server_profile", "chassis_profile", "fabric_switch_cluster_profile"]:
+                        for profile in filtered_results:
+                            try:
                                 # Unassigning Server Profiles
                                 if sdk_object == "server_profile" and profile.get('assigned_server') is not None:
                                     self.logger(level="debug",
@@ -294,170 +454,199 @@ class IntersightDevice(GenericDevice):
                                     getattr(api, f"patch_{sdk_object}")(moid=profile.moid,
                                                                         chassis_profile={"action": "Unassign"})
                                 # Unassigning Domain profiles
-                                elif sdk_object == "fabric_switch_cluster_profile" and profile.get(
-                                        'deployed_switches') != "None":
+                                # If the SDK object is a fabric_switch_cluster_profile
+                                # iterate through associated two switch profiles, unassigning each one in turn.
+                                elif sdk_object == "fabric_switch_cluster_profile" and \
+                                        profile.get('deployed_switches') is not None:
                                     self.logger(level="debug",
-                                                message=f"Unassigning {profile.object_type}: {profile.name} " +
+                                                message=f"Unassigning {profile.object_type}: {profile.name} "
                                                         f"(MOID: {profile.moid})")
-                                    getattr(api, f"patch_{sdk_object}")(moid=profile.moid,
-                                                                        fabric_switch_cluster_profile={
-                                                                            "action": "Unassign"})
-
-                        # Looping through the results and deleting the relevant ones
-                        for obj in results:
-                            if not orgs or (hasattr(obj, 'organization') and obj.organization and
-                                            hasattr(obj.organization, 'name') and obj.organization.name in orgs):
-                                assigned_value = None
-                                if sdk_object in ["server_profile", "chassis_profile", "fabric_switch_cluster_profile"]:
-
-                                    # Poll to check for unassignment completion
-                                    unassignment_complete = False
-                                    max_retries = 30
-                                    retry_count = 0
-
-                                    while not unassignment_complete and retry_count < max_retries:
-
-                                        profile = getattr(api, f"get_{sdk_object}_by_moid")(moid=obj.moid)
-                                        if sdk_object == "server_profile":
-                                            assigned_value = profile.get('assigned_server')
-
-                                        elif sdk_object == "chassis_profile":
-                                            assigned_value = profile.get('assigned_chassis')
-
-                                        elif sdk_object == "fabric_switch_cluster_profile":
-                                            assigned_value = profile.get('deployed_switches')
-
-                                        # Check the unassignment status
-                                        if assigned_value is None or assigned_value == "None":
-                                            unassignment_complete = True
-                                            self.logger(level="debug",
-                                                        message=f"Unassignment Completed: {obj.object_type}: " +
-                                                                f"{obj.name} (MOID: {obj.moid})")
-                                        else:
-                                            self.logger(
-                                                level="debug",
-                                                message=f"{obj.object_type} {obj.name} is still associated. Retrying..."
-                                            )
-
-                                        # Sleep only if unassignment is not complete
-                                        if not unassignment_complete:
-                                            time.sleep(10)
-
-                                        retry_count += 1
-
-                                    # Check if the unassignment was successful before proceeding with deletion
-                                    if unassignment_complete:
-                                        # Delete the object
-                                        self.logger(
-                                            level="info",
-                                            message=f"Deleting {obj.object_type} {obj.name} with MOID {obj.moid}"
-                                        )
-                                        getattr(api, f"delete_{sdk_object}")(moid=obj.moid)
-                                    else:
-                                        self.logger(
-                                            level="warning",
-                                            message=f"Max retries reached. Unable to unassign {obj.object_type}: " +
-                                                    f"{obj.name} (MOID: {obj.moid})."
-                                        )
-
-                                elif sdk_object == "iam_permission":
-                                    # Logic to delete IAM permissions
-                                    excluded_policy_names = [
-                                        "Workload Optimizer Advisor", "Workload Optimizer Automator",
-                                        "Workload Optimizer Deployer",
-                                        "Device Administrator", "Server Administrator", "User Access Administrator",
-                                        "Device Technician",
-                                        "Workload Optimizer Observer", "Account Administrator", "Read-Only",
-                                        "HyperFlex Cluster Administrator", "Workload Optimizer Administrator"
-                                    ]
-                                    if obj.name not in excluded_policy_names:
-                                        self.logger(
-                                            level="info",
-                                            message=f"Deleting {obj.object_type} {obj.name} with MOID {obj.moid}"
-                                        )
-                                        getattr(api, f"delete_{sdk_object}")(moid=obj.moid)
-
-                                elif sdk_object == "organization_organization":
-                                    # Logic to delete orgs
-                                    excluded_policy_names = ["default"]
-                                    if obj.name not in excluded_policy_names:
-                                        self.logger(
-                                            level="info",
-                                            message=f"Deleting {obj.object_type} {obj.name} with MOID {obj.moid}"
-                                        )
-                                        getattr(api, f"delete_{sdk_object}")(moid=obj.moid)
-
-                                elif sdk_object == "resource_group":
-                                    # Logic to delete resource groups
-                                    excluded_policy_names = ["default", "default-rg", "License-Standard",
-                                                             "License-Essential", "License-Advantage",
-                                                             "License-Premier"]
-                                    if obj.name not in excluded_policy_names:
-                                        self.logger(
-                                            level="info",
-                                            message=f"Deleting {obj.object_type} {obj.name} with MOID {obj.moid}"
-                                        )
-                                        getattr(api, f"delete_{sdk_object}")(moid=obj.moid)
-
-                                else:
-                                    # If the obj is "Shared". It will be skipped from deletion.
-                                    if obj.get('shared_scope') == 'shared':
-                                        self.logger(
-                                            level="debug",
-                                            message=f"Skipped as Shared {obj.object_type} {obj.name} (MOID: {obj.moid})"
-                                        )
-                                        continue
-                                    else:
-                                        self.logger(level="info",
-                                                    message=f"Deleting {obj.object_type} with MOID {obj.moid}")
-                                        getattr(api, f"delete_{sdk_object}")(moid=obj.moid)
-
-                            else:
-                                # Skip if Organisation is not present
-                                self.logger(level="debug",
-                                            message=f"Skipping {obj.object_type} (MOID: {obj.moid})")
-                    except (ApiValueError, ApiTypeError, ApiException) as err:
-                        is_cleared = False
-                        if getattr(err, "body", None):
-                            try:
-                                err_body = json.loads(err.body)
-                                if err_body.get("code") == "InvalidUrl":
-                                    self.logger(level="warning",
-                                                message="Skipped deleting unsupported objects of class " + sdk_object)
-                            except json.decoder.JSONDecodeError:
-                                self.logger(level="debug", message="Failed to load error message body in JSON format")
+                                    # Extract switch profiles and their MOIDs
+                                    switch_profiles = getattr(profile, "switch_profiles", [])
+                                    for switch_profile_ref in switch_profiles:
+                                        self.logger(level="debug",
+                                                    message=f"Unassigning {switch_profile_ref.object_type}: "
+                                                            f"(MOID: {switch_profile_ref.moid})")
+                                        # Unassign the switch profile
+                                        getattr(api, f"patch_fabric_switch_profile")(moid=switch_profile_ref.moid,
+                                                                                     fabric_switch_profile={
+                                                                                         "action": "Unassign"})
+                            except (ApiValueError, ApiTypeError, ApiException) as err:
+                                error_encountered = True
+                                self.logger(level="error",
+                                            message="Failed to delete objects of class " + sdk_object + ": " +
+                                                    str(err))
+                                self.delete_summary_manager.add_obj_status(obj=profile, status="failed", message=str(err))
+                            except AttributeError as attr_err:
+                                error_encountered = True
+                                self.logger(level="error",
+                                            message="Failed to delete objects of class " + sdk_object + ": " +
+                                                    str(attr_err))
+                                self.delete_summary_manager.add_obj_status(obj=profile, status="failed", message=str(attr_err))
+                            except urllib3.exceptions.MaxRetryError as err:
+                                error_encountered = True
                                 self.logger(level="error",
                                             message="Failed to delete objects of class " + sdk_object + ": " + str(err))
-                        else:
+                                self.delete_summary_manager.add_obj_status(obj=profile, status="failed", message=str(err))
+
+                    for obj in filtered_results:
+                        try:
+                            if sdk_object in ["server_profile", "chassis_profile", "fabric_switch_cluster_profile"]:
+                                # Function call for Polling
+                                if not is_profile_unassigned(api_class_object=api, sdk_object_name=sdk_object,
+                                                             object_moid=obj.moid):
+                                    self.logger(
+                                        level="error",
+                                        message=f"Unable to unassign profile of type '{obj.object_type}' and name " +
+                                                f"'{obj.name}' (MOID: {obj.moid})."
+                                    )
+                                    continue
+                            elif sdk_object == "iam_permission":
+                                # We skip the deletion of system defined objects
+                                skip_object = False
+                                for tag in obj.tags:
+                                    if tag and tag.get("key") == "cisco.meta.creatorType" and \
+                                            tag.get("value") == "SystemDefined":
+                                        skip_object = True
+                                        self.delete_summary_manager.add_obj_status(obj=obj, status="skipped",
+                                                                                   message="System defined Objects")
+                                        break
+                                if skip_object:
+                                    continue
+                            elif sdk_object == "organization_organization":
+                                # If the organization to be deleted is the last organization in the Intersight
+                                # account, then we don't delete that organization. Rather, we rename that organization
+                                # name to "default". This is done to deliver a factory reset environment to the user.
+                                org_objects = self.query(api_class=OrganizationApi,
+                                                         sdk_object_type="organization_organization")
+                                if len(org_objects) == 1:
+                                    # "obj" is the last organization which is being deleted
+                                    last_organization = obj
+                                    if org_objects[0].name != "default":
+                                        self.logger(level="info", message=f"Renaming the last organization "
+                                                                          f"'{org_objects[0].name}' to 'default'")
+                                        last_organization = api.patch_organization_organization(
+                                            moid=org_objects[0].moid,
+                                            organization_organization={"name": "default"}
+                                        )
+                                    continue
+                            elif sdk_object == "resource_group":
+                                # If the resource group to be deleted belongs to the last organization in the
+                                # Intersight account, then we don't delete that resource group. Rather, we rename
+                                # that resource group to "default". This is done to deliver a factory reset
+                                # environment to the user.
+                                if any([org_moref.moid == last_organization.moid for org_moref in obj.organizations]):
+                                    # "obj" is the resource group belonging to the last organization 'default'
+                                    if obj.name != "default":
+                                        self.logger(level="info",
+                                                    message=f"Renaming the resource group '{obj.name}' attached to "
+                                                            f"'default' organization to 'default'")
+                                        api.patch_resource_group(moid=obj.moid, resource_group={"name": "default"})
+                                    continue
+
+                            if getattr(obj, "name", None):
+                                self.logger(level="info", message=f"Deleting {obj.object_type} with name {obj.name} "
+                                                                  f"(MOID {obj.moid})")
+                            else:
+                                self.logger(level="info",
+                                            message=f"Deleting {obj.object_type} with MOID {obj.moid}")
+
+                            # Deleting the object
+                            getattr(api, f"delete_{sdk_object}")(moid=obj.moid)
+                            self.delete_summary_manager.add_obj_status(obj=obj, status="success")
+                        except (ApiValueError, ApiTypeError, ApiException) as err:
+                            if getattr(err, "body", None):
+                                try:
+                                    err_body = json.loads(err.body)
+                                    if err_body.get("code") == "InvalidUrl":
+                                        self.logger(level="warning",
+                                                    message="Skipped deleting unsupported objects of class " +
+                                                            sdk_object)
+                                        self.delete_summary_manager.add_obj_status(obj=obj, status="skipped",
+                                                                                   message=err_body.get("message", str(err)))
+                                    else:
+                                        error_encountered = True
+                                        self.logger(level="error", message="Failed to delete objects of class " +
+                                                                           sdk_object + ": " + str(err))
+                                        self.delete_summary_manager.add_obj_status(obj=obj, status="failed",
+                                                                                   message=err_body.get("message", str(err)))
+                                except json.decoder.JSONDecodeError:
+                                    error_encountered = True
+                                    self.logger(level="debug",
+                                                message="Failed to load error message body in JSON format")
+                                    self.logger(level="error",
+                                                message="Failed to delete objects of class " + sdk_object + ": " +
+                                                        str(err))
+                                    self.delete_summary_manager.add_obj_status(obj=obj, status="failed", message=str(err))
+                            else:
+                                error_encountered = True
+                                self.logger(level="error",
+                                            message="Failed to delete objects of class " + sdk_object + ": " +
+                                                    str(err))
+                                self.delete_summary_manager.add_obj_status(obj=obj, status="failed", message=str(err))
+                        except AttributeError as attr_err:
+                            error_encountered = True
+                            self.logger(level="error",
+                                        message="Failed to delete objects of class " + sdk_object + ": " +
+                                                str(attr_err))
+                            self.delete_summary_manager.add_obj_status(obj=obj, status="failed", message=str(attr_err))
+                        except urllib3.exceptions.MaxRetryError as err:
+                            error_encountered = True
                             self.logger(level="error",
                                         message="Failed to delete objects of class " + sdk_object + ": " + str(err))
-                    except AttributeError as attr_err:
-                        is_cleared = False
-                        self.logger(level="error",
-                                    message="Failed to delete objects of class " + sdk_object + ": " + str(attr_err))
-                    except urllib3.exceptions.MaxRetryError as err:
-                        is_cleared = False
-                        self.logger(level="error",
-                                    message="Failed to delete objects of class " + sdk_object + ": " + str(err))
+                            self.delete_summary_manager.add_obj_status(obj=obj, status="failed", message=str(err))
+
+        if last_organization and not last_organization.resource_groups:
+            # If the last organization does not have a resource group attached, then we
+            # create one and attach it.
+            try:
+                # Check if a resource group with the name 'default' already exists
+                existing_resource_groups = ResourceApi(api_client=self.handle).get_resource_group_list()
+                default_group = next((group for group in existing_resource_groups.results if group.name == "default"),
+                                     None)
+                if default_group:
+                    self.logger(level="debug", message=f"Resource group 'default' already exists.")
+                    response = default_group  # Use the existing resource group
+                else:
+                    self.logger(level="info", message=f"Creating a resource group with name 'default'")
+                    response = ResourceApi(api_client=self.handle).create_resource_group(
+                        resource_group=ResourceGroup(name="default"))
+                if response:
+                    OrganizationApi(api_client=self.handle).patch_organization_organization(
+                        moid=last_organization.moid,
+                        organization_organization=OrganizationOrganization(
+                            resource_groups=[MoMoRef(moid=response.moid, class_id='mo.MoRef',
+                                                     object_type=response.object_type)]
+                        )
+                    )
+            except Exception as e:
+                self.logger(level="error", message=f"An error occurred while making sure the last "
+                                                   f"organization have a resource group: {str(e)}")
+
+        # Check if any errors were encountered
+        if not error_encountered:
+            if orgs:
+                message_str = f"Successfully cleared config of selected orgs in Intersight device '{self.name}'"
+                self.logger(level="error", message=f"{message_str}: {str(orgs)}")
+            else:
+                message_str = f"Successfully cleared config of the Intersight device '{self.name}'"
+                self.logger(level="error", message=message_str)
+        else:
+            if orgs:
+                message_str = f"Cleaning of selected organizations in Intersight device '{self.name}' is " \
+                              f"successful with errors. Check logs for details."
+            else:
+                message_str = f"Cleaning of Intersight device '{self.name}' is successful with errors. " \
+                              f"Check logs for details."
+            self.logger(level="error", message=message_str)
+
+        # Update the cache with the latest organizations
+        self.metadata.cached_orgs = self.get_orgs()
 
         if self.task is not None:
-            if is_cleared:
-                if orgs:
-                    message_str = f"Successfully cleared config in orgs {str(orgs)} of Intersight device '{self.name}'"
-                else:
-                    message_str = f"Successfully cleared config in all orgs of Intersight device '{self.name}'"
-                self.task.taskstep_manager.stop_taskstep(
-                    name="ClearConfigIntersightDevice", status="successful", status_message=message_str)
-            else:
-                if orgs:
-                    message_str = (f"Error while clearing config in orgs {str(orgs)} of Intersight device " +
-                                   f"'{self.name}'. Check logs.")
-                else:
-                    message_str = (f"Error while clearing config in all orgs of Intersight device '{self.name}'. " +
-                                   f"Check logs.")
-                self.task.taskstep_manager.stop_taskstep(
-                    name="ClearConfigIntersightDevice", status="failed", status_message=message_str)
-        return is_cleared
+            self.task.taskstep_manager.stop_taskstep(name="ClearConfigIntersightDevice", status="successful",
+                                                     status_message=message_str)
+        return True
 
     def connect(self, bypass_version_checks=False):
         """
@@ -487,15 +676,29 @@ class IntersightDevice(GenericDevice):
             valid_version = True
             if self.version and self.is_appliance:
                 try:
-                    if "1.0.9-" in self.version:
-                        build = self.version.split("-")[1]
+                    pattern = r"(\d+)\.(\d+)\.(\d+)-(\d+)(\.rc\.(\d+))?"
+                    matches = re.match(pattern, self.version)
+                    if matches.group():
+                        major = matches.group(1)
+                        minor = matches.group(2)
+                        mr = matches.group(3)
+                        patch = matches.group(4)
+                        rc = matches.group(6)
 
-                        if "1.0.9-" in self.version_min_required:
-                            build_min = self.version_min_required.split("-")[1]
+                        matches = re.match(pattern, self.version_min_required)
+                        if matches.group():
+                            major_min = matches.group(1)
+                            minor_min = matches.group(2)
+                            mr_min = matches.group(3)
+                            patch_min = matches.group(4)
+                            rc_min = matches.group(6)
 
-                            if build and build_min:
-                                if int(build) < int(build_min):
-                                    valid_version = False
+                            for (ver, ver_min) in [(major, major_min), (minor, minor_min), (mr, mr_min),
+                                                   (patch, patch_min), (rc, rc_min)]:
+                                if ver and ver_min:
+                                    if int(ver) < int(ver_min):
+                                        valid_version = False
+                                        break
 
                 except Exception as err:
                     self.logger(level="debug", message="Could not perform minimum version check: " + str(err))
@@ -536,6 +739,142 @@ class IntersightDevice(GenericDevice):
                                str(self.name))
         return False
 
+    def create_vmedia_policy(self, description=None, device_name=None, enable_low_power_usb=None,
+                             enable_virtual_encryption=None, enable_virtual_media=None, name=None, org_name=None,
+                             tags=None, vmedia_mount=None):
+        """
+        Creates vMedia Policy in Intersight.
+        :param description: Description of the vMedia Policy.
+        :param device_name: Name of the Intersight device.
+        :param enable_low_power_usb: Enable/Disable low power USB of the vMedia Policy.
+        :param enable_virtual_encryption: Enable/Disable virtual encryption of the vMedia Policy.
+        :param enable_virtual_media: Enable/Disable the virtual media.
+        :param name: Name of the vMedia Policy.
+        :param org_name: Organization name in which the vMedia Policy is created.
+        :param tags: Tags of the vMedia Policy.
+        :param vmedia_mount: Virtual media mount of the vMedia Policy.
+        :return: True if successful, False otherwise.
+        """
+
+        if not name:
+            self.logger(level="error", message="No Name specified to create vMedia Policy")
+            return False
+        if not device_name:
+            self.logger(level="error", message="No Intersight device specified")
+            return False
+
+        if self.task is not None:
+            self.task.taskstep_manager.start_taskstep(
+                name="PushVmediaPolicyIntersight",
+                description=f"creating vMedia policy '{name}' in Intersight device '{device_name}'"
+            )
+        try:
+            # Fetching the organization object from Intersight
+            object_list = self.query(object_type="organization.Organization", filter=f"Name eq '{org_name}'")
+            if len(object_list) != 1:
+                err_message = f"Organization '{org_name}' not found"
+                self.logger(level="error", message=err_message)
+                if self.task is not None:
+                    self.task.taskstep_manager.stop_taskstep(
+                        name="PushVmediaPolicyIntersight", status="failed", status_message=err_message)
+                return False
+            org_obj = object_list[0]
+
+            from intersight.model.mo_tag import MoTag
+            from intersight.model.mo_mo_ref import MoMoRef
+            mo_mo_ref = MoMoRef(moid=org_obj.moid, class_id='mo.MoRef', object_type=org_obj.object_type)
+
+            from intersight.model.vmedia_policy import VmediaPolicy
+            from intersight.api.vmedia_api import VmediaApi
+            kwargs = {
+                "object_type": "vmedia.Policy",
+                "class_id": "vmedia.Policy",
+                "organization": mo_mo_ref,
+                "name": name,
+                "enabled": enable_virtual_media
+            }
+
+            if tags is not None:
+                kwargs["tags"] = [MoTag(**tag) for tag in tags]
+            if description is not None:
+                kwargs["description"] = description
+            if enable_virtual_encryption is not None:
+                kwargs["encryption"] = enable_virtual_encryption
+            if enable_low_power_usb is not None:
+                kwargs["low_power_usb"] = enable_low_power_usb
+            if vmedia_mount is not None:
+                from intersight.model.vmedia_mapping import VmediaMapping
+                kwargs["mappings"] = []
+                kwargs_vmedia_mount = {
+                    "object_type": "vmedia.Mapping",
+                    "class_id": "vmedia.Mapping",
+                    "device_type": "cdd",
+                    "mount_protocol": "https"
+                }
+                if vmedia_mount["name"] is not None:
+                    kwargs_vmedia_mount["volume_name"] = vmedia_mount["name"]
+                if vmedia_mount["file_location"] is not None:
+                    kwargs_vmedia_mount["file_location"] = vmedia_mount["file_location"]
+
+                kwargs["mappings"].append(VmediaMapping(**kwargs_vmedia_mount))
+
+            vmedia_policy_object = VmediaPolicy(**kwargs)
+            vmedia_api = VmediaApi(api_client=self.handle)
+            result = vmedia_api.create_vmedia_policy(vmedia_policy_object)
+            if result:
+                self.logger(level="info",
+                            message=f"Successfully created vMedia policy '{name}' in Intersight device '{device_name}'")
+
+                if self.task is not None:
+                    self.task.taskstep_manager.stop_taskstep(
+                        name="PushVmediaPolicyIntersight", status="successful",
+                        status_message=f"Successfully created vMedia policy '{name}' in Intersight device " +
+                                       f"'{device_name}'"
+                    )
+
+                return True
+            else:
+                self.logger(level="error",
+                            message=f"Failed to create vMedia policy '{name}' in Intersight device '{device_name}'")
+
+        except (ApiValueError, ApiTypeError, ApiException) as err:
+            error_message = str(err)
+            if "Reason: Bad Gateway" in error_message:
+                error_message = "Bad Gateway"
+            else:
+                # We try to simplify the error message displayed
+                if hasattr(err, "body"):
+                    try:
+                        err_json = json.loads(err.body)
+                        if "message" in err_json:
+                            error_message = str(err_json["message"])
+                    except json.decoder.JSONDecodeError as err_json_decode:
+                        self.logger(level="error", message=f"JSON Decode error while creating vMedia Policy '{name}': "
+                                                           f"{str(err_json_decode)}")
+            self.logger(
+                level="error",
+                message=f"Failed to create vMedia policy '{name}' in Intersight device '{device_name}': {error_message}"
+            )
+        except AttributeError as err:
+            self.logger(
+                level="error",
+                message=f"Failed to create vMedia policy '{name}' in Intersight device '{device_name}': {str(err)}"
+            )
+        except urllib3.exceptions.MaxRetryError as err:
+            self.logger(
+                level="error",
+                message=f"Failed to create vMedia policy '{name}' in Intersight device '{device_name}': {str(err)}"
+            )
+
+        if self.task is not None:
+            self.task.taskstep_manager.stop_taskstep(
+                name="PushVmediaPolicyIntersight", status="failed",
+                status_message=f"Error while creating vMedia policy '{name}' in Intersight device '{device_name}'. " +
+                               f"Check logs."
+            )
+
+        return False
+
     def disconnect(self):
         """
         Intersight OpenAPI does not require a disconnection mechanism
@@ -548,9 +887,12 @@ class IntersightDevice(GenericDevice):
                 status_message="Disconnecting from " + self.metadata.device_type_long + " device " + str(self.name))
         return True
 
-    def query(self, object_type="", filter="", expand="", retry=True):
+    def query(self, api_class=None, sdk_object_type="", object_type="", filter="", expand="", retry=True):
         """
-        Queries Intersight for one or multiple object(s) specified by its(their) type and a filter
+        Queries Intersight for one or multiple object(s) specified by its(their) type and a filter. Make sure to
+        provide either 'object_type' OR both 'api_class' and 'sdk_object_type'.
+        :param api_class: The Intersight SDK class of the object that is to be queried (e.g. "ServerApi")
+        :param sdk_object_type: The object name which will be used to call the API (e.g. "server_profile")
         :param object_type: The object type of the object that is to be queried (e.g. "ntp.Policy")
         :param filter: A filter string to reduce the results to only specific objects
         :param expand: An expand string consisting of a list of attributes that should be expanded in the results
@@ -558,24 +900,27 @@ class IntersightDevice(GenericDevice):
         :return: An empty list if no result, a list of Intersight SDK objects if found
         """
 
-        if not object_type:
-            self.logger(level="error", message="An object_type must be provided for the query")
+        if not object_type and not (api_class and sdk_object_type):
+            self.logger(level="error",
+                        message="An 'object_type' or 'api_class and sdk_object_type' must be provided for the query")
             return []
 
         timeout = self.timeout
         if not retry:
             timeout = self.timeout * 2
 
-        # We first need to decompose the object type to use the appropriate API
-        api_prefix = object_type.split(".")[0]
+        if object_type:
+            # We first need to decompose the object type to use the appropriate API
+            api_prefix = object_type.split(".")[0]
 
-        # We dynamically import the intersight module that we need for talking to the API
-        api_module = importlib.import_module('intersight.api.' + api_prefix + '_api')
-        api_class = getattr(api_module, api_prefix.title() + 'Api')
+            # We dynamically import the intersight module that we need for talking to the API
+            api_module = importlib.import_module('intersight.api.' + api_prefix + '_api')
+            api_class = getattr(api_module, api_prefix.title() + 'Api')
+
+            # We also decompose the object type to get the name of the API call we need to make
+            sdk_object_type = re.sub(r'(?<!^)(?=[A-Z])', '_', object_type.replace(".", "")).lower()
+
         api_instance = api_class(self.handle)
-
-        # We also decompose the object type to get the name of the API call we need to make
-        sdk_object_type = re.sub(r'(?<!^)(?=[A-Z])', '_', object_type.replace(".", "")).lower()
 
         try:
             MAX_OBJECTS_PER_FETCH_CALL = 100
@@ -635,7 +980,8 @@ class IntersightDevice(GenericDevice):
                         message="Failed to fetch objects of class " + sdk_object_type + ": " + str(err))
         if retry:
             self.logger(level="info", message="Retrying to fetch objects of class " + sdk_object_type)
-            return self.query(object_type=object_type, filter=filter, retry=False)
+            return self.query(api_class=api_class, sdk_object_type=sdk_object_type, object_type=object_type,
+                              expand=expand, filter=filter, retry=False)
 
         return []
 
@@ -724,6 +1070,346 @@ class IntersightDevice(GenericDevice):
             self.name = account.results[0].name
             self.metadata.device_name = self.name
 
+    def get_os_firmware_data(self):
+        """
+        Function to get the OS and Firmware data from the device
+        :return: Returns dictionary containing OS and Firmware data, None otherwise
+        """
+        if not self.metadata.cache_path:
+            self.logger(level="error", message="OS and Firmware cached data not found")
+            return None
+
+        os_firmware_data = common.read_json_file(
+            file_path=os.path.join(self.metadata.cache_path,
+                                   RepositoryManager.REPOSITORY_DEVICES_OS_FIRMWARE_FILE_NAME),
+            logger=self)
+
+        if not os_firmware_data:
+            self.logger(level="error", message="OS and Firmware cached data not found")
+            return None
+        return os_firmware_data
+
+    def fetch_os_firmware_data(self):
+        """
+        Function to get the OS and Firmware metadata
+        :return: A dictionary containing OS and Firmware data, None otherwise
+        """
+        if self.task is not None:
+            self.task.taskstep_manager.start_taskstep(name="FetchOSFirmwareDataObjectsIntersight",
+                                                      description="Fetching OS and Firmware Objects")
+
+        result = {
+            "os": {},
+            "firmware": []
+        }
+        operating_system_vendors = self.query(object_type="hcl.OperatingSystemVendor")
+        operating_systems = self.query(object_type="hcl.OperatingSystem")
+        operating_system_distributions = self.query(object_type="os.Distribution")
+        firmware_distributables = self.query(object_type="firmware.Distributable", filter="Origin eq System")
+
+        if not all([True if obj else False for obj in [operating_system_vendors, operating_systems,
+                                                       operating_system_distributions, firmware_distributables]]):
+            if self.task is not None:
+                self.task.taskstep_manager.stop_taskstep(
+                    name="FetchOSFirmwareDataObjectsIntersight", status="failed",
+                    status_message="Error while fetching OS and Firmware Objects from Intersight")
+            return None
+
+        if not hasattr(operating_system_distributions[0], "vendor") or not hasattr(operating_system_distributions[0],
+                                                                                   "label"):
+            use_hcl_os = True
+        else:
+            use_hcl_os = False
+
+        for os_vendor in operating_system_vendors:
+            result["os"][os_vendor.name] = []
+            if not use_hcl_os:
+                for os_distribution in operating_system_distributions:
+                    if os_distribution.vendor.moid == os_vendor.moid:
+                        result["os"][os_vendor.name].append(os_distribution.label)
+            else:
+                for hcl_os in operating_systems:
+                    if hcl_os.vendor.moid == os_vendor.moid:
+                        result["os"][os_vendor.name].append(hcl_os.version)
+            result["os"][os_vendor.name].sort()
+
+        for firmware_distributable in firmware_distributables:
+            result["firmware"].append({
+                "firmware_image_type": firmware_distributable.image_type,
+                "name": firmware_distributable.name,
+                "supported_models": firmware_distributable.supported_models,
+                "version": firmware_distributable.version
+            })
+
+        if self.task is not None:
+            self.task.taskstep_manager.stop_taskstep(
+                name="FetchOSFirmwareDataObjectsIntersight", status="successful",
+                status_message="Successfully fetched OS and Firmware objects from Intersight")
+
+        return result
+
+    def sync_to_software_repository(self, description=None, file_download_link=None, file_path=None, image_type=None,
+                                    firmware_image_type=None, name=None, org_name=None, supported_models=None,
+                                    tags=None, vendor=None, version=None):
+        """
+        Creates Software Repository Link in Intersight device
+        :param description: Description of the Software Repository Link
+        :param file_download_link: HTTP(S) Link to download the file
+        :param file_path: File path of the Software Repository
+        :param image_type: Type of the Software Repository Link os/firmware/scu
+        :param firmware_image_type: Image type for firmware links
+        :param name: Name of the Software Repository Link
+        :param org_name: Organization name where link is saved
+        :param supported_models: Models supported
+        :param tags: Tags of the Software Repository Link
+        :param vendor: Vendor of the OS
+        :param version: Version of image
+        :return: True if successful, False otherwise
+        """
+        if image_type not in ["firmware", "os", "scu", "os_configuration"]:
+            self.logger(level="error", message="Invalid file type: " + image_type)
+            return False
+
+        common_mandatory_fields = ["org_name", "name", "version"]
+        image_type_mandatory_fields = {
+            "firmware": common_mandatory_fields + ["file_download_link", "firmware_image_type", "supported_models"],
+            "os": common_mandatory_fields + ["file_download_link", "vendor"],
+            "scu": common_mandatory_fields + ["file_download_link", "supported_models"],
+            "os_configuration": common_mandatory_fields + ["vendor", "file_path"]
+        }
+        for field in image_type_mandatory_fields[image_type]:
+            if not eval(field):
+                self.logger(level="error", message=f"Missing field '{field}' for {image_type} link")
+                return False
+
+        if self.task is not None:
+            self.task.taskstep_manager.start_taskstep(name="PushSoftwareRepositoryLinksIntersight",
+                                                      description=f"Syncing file '{file_download_link}' to intersight "
+                                                                  f"repo")
+
+        try:
+            # Fetching the organization object from Intersight
+            object_list = self.query(object_type="organization.Organization", filter=f"Name eq '{org_name}'")
+            if len(object_list) != 1:
+                err_message = f"Organization '{org_name}' not found"
+                self.logger(level="error", message=err_message)
+                if self.task is not None:
+                    self.task.taskstep_manager.stop_taskstep(
+                        name="PushSoftwareRepositoryLinksIntersight", status="failed", status_message=err_message)
+                return False
+            org_obj = object_list[0]
+
+            # Fetching the software repository catalog object for the organization from Intersight
+            object_list = self.query(object_type="softwarerepository.Catalog",
+                                     filter=f"Organization.Moid eq '{org_obj.moid}'")
+            if len(object_list) != 1:
+                err_message = f"Could not find catalog object for the organization: '{org_name}'"
+                self.logger(level="error", message=err_message)
+                if self.task is not None:
+                    self.task.taskstep_manager.stop_taskstep(
+                        name="PushSoftwareRepositoryLinksIntersight", status="failed", status_message=err_message)
+                return False
+            catalog_obj = object_list[0]
+
+            from intersight.model.mo_mo_ref import MoMoRef
+            from intersight.model.mo_tag import MoTag
+
+            # Creating a reference object of the software repository catalog object
+            catalog_ref = MoMoRef(moid=catalog_obj.moid, class_id='mo.MoRef', object_type="softwarerepository.Catalog")
+
+            result = None
+            if image_type == "os":
+                from intersight.api.softwarerepository_api import SoftwarerepositoryApi
+                from intersight.model.softwarerepository_operating_system_file import \
+                    SoftwarerepositoryOperatingSystemFile
+                from intersight.model.softwarerepository_http_server import SoftwarerepositoryHttpServer
+
+                source_model = SoftwarerepositoryHttpServer(location_link=file_download_link)
+
+                kwargs = {
+                    "name": name,
+                    "version": version,
+                    "catalog": catalog_ref,
+                    "source": source_model,
+                    "vendor": vendor
+                }
+                if tags:
+                    kwargs["tags"] = [MoTag(**tag) for tag in tags]
+                if description:
+                    kwargs["description"] = description
+
+                operating_system_file_object = SoftwarerepositoryOperatingSystemFile(**kwargs)
+
+                software_repository_api = SoftwarerepositoryApi(api_client=self.handle)
+                result = software_repository_api.create_softwarerepository_operating_system_file(
+                    operating_system_file_object)
+
+            elif image_type == "firmware":
+                from intersight.api.firmware_api import FirmwareApi
+                from intersight.model.firmware_distributable import FirmwareDistributable
+                from intersight.model.softwarerepository_http_server import SoftwarerepositoryHttpServer
+
+                source_model = SoftwarerepositoryHttpServer(location_link=file_download_link)
+
+                kwargs = {
+                    "name": name,
+                    "version": version,
+                    "catalog": catalog_ref,
+                    "supported_models": supported_models,
+                    "source": source_model,
+                    "image_type": firmware_image_type,
+                    "import_action": "None",
+                    "origin": "User"
+                }
+                if tags:
+                    kwargs["tags"] = [MoTag(**tag) for tag in tags]
+                if description:
+                    kwargs["description"] = description
+
+                firmware_file_object = FirmwareDistributable(**kwargs)
+
+                firmware_api = FirmwareApi(api_client=self.handle)
+                result = firmware_api.create_firmware_distributable(firmware_file_object)
+
+            elif image_type == "scu":
+                from intersight.api.firmware_api import FirmwareApi
+                from intersight.model.firmware_server_configuration_utility_distributable \
+                    import FirmwareServerConfigurationUtilityDistributable
+                from intersight.model.softwarerepository_http_server import SoftwarerepositoryHttpServer
+
+                source_model = SoftwarerepositoryHttpServer(location_link=file_download_link)
+                kwargs = {
+                    "name": name,
+                    "version": version,
+                    "catalog": catalog_ref,
+                    "supported_models": supported_models,
+                    "source": source_model
+                }
+                if tags:
+                    kwargs["tags"] = [MoTag(**tag) for tag in tags]
+                if description:
+                    kwargs["description"] = description
+
+                scu_file_object = FirmwareServerConfigurationUtilityDistributable(**kwargs)
+
+                firmware_api = FirmwareApi(api_client=self.handle)
+                result = firmware_api.create_firmware_server_configuration_utility_distributable(scu_file_object)
+
+            elif image_type == "os_configuration":
+                if file_download_link.rsplit('/', 1)[-1].endswith((".iso", ".bin")):
+                    err_message = (f"Failed to create software repository {image_type} link: " +
+                                   f"Provided configuration file is invalid")
+                    self.logger(level="error", message=err_message)
+                    if self.task is not None:
+                        self.task.taskstep_manager.stop_taskstep(
+                            name="PushSoftwareRepositoryLinksIntersight", status="failed", status_message=err_message)
+                        return False
+                # setting the maximum allowed OS configuration file size to 10 MB
+                elif os.path.getsize(file_path) > 10 * (10 ** 6):
+                    err_message = (f"Failed to create software repository {image_type} link: " +
+                                   f"File size exceeds the maximum allowed size (10 MB).")
+                    self.logger(level="error", message=err_message)
+                    if self.task is not None:
+                        self.task.taskstep_manager.stop_taskstep(
+                            name="PushSoftwareRepositoryLinksIntersight", status="failed", status_message=err_message)
+                        return False
+                from intersight.api.os_api import OsApi
+                from intersight.model.os_configuration_file import \
+                    OsConfigurationFile
+
+                operating_systems = self.query(object_type="hcl.OperatingSystem", filter=f"Version eq '{version}'")
+
+                # Fetching the os catalog object for the organization from Intersight
+                catalog_objects = self.query(object_type="os.Catalog",
+                                             filter=f"Organization.Moid eq '{org_obj.moid}'")
+                if len(object_list) != 1:
+                    err_message = f"Could not find os catalog object for the organization: '{org_name}'"
+                    self.logger(level="error", message=err_message)
+                    if self.task is not None:
+                        self.task.taskstep_manager.stop_taskstep(
+                            name="PushSoftwareRepositoryLinksIntersight", status="failed", status_message=err_message)
+                    return False
+
+                catalog_obj = catalog_objects[0]
+                from intersight.model.mo_mo_ref import MoMoRef
+
+                # Creating a reference object of the os catalog
+                catalog_ref = MoMoRef(moid=catalog_obj.moid, class_id='mo.MoRef', object_type="os.Catalog")
+
+                # Creating a reference object of the hcl operating system
+                operating_system_ref = MoMoRef(moid=operating_systems[0].moid, class_id='mo.MoRef',
+                                               object_type="hcl.OperatingSystem")
+
+                kwargs = {
+                    "name": secure_filename(name),
+                    "catalog": catalog_ref,
+                    "distributions": [operating_system_ref]
+                }
+                absolute_path = os.path.abspath(os.path.join(EASYUCS_ROOT, file_path))
+                if os.path.exists(absolute_path):
+                    with open(absolute_path, 'r') as file:
+                        file_contents = file.read()
+                    if file_contents:
+                        kwargs["file_content"] = file_contents
+                if tags:
+                    kwargs["tags"] = [MoTag(**tag) for tag in tags]
+                if description:
+                    kwargs["description"] = description
+
+                os_configuration_file_obj = OsConfigurationFile(**kwargs)
+
+                os_configuration_file_api = OsApi(api_client=self.handle)
+                result = os_configuration_file_api.create_os_configuration_file(
+                    os_configuration_file_obj)
+
+            if result:
+                self.logger(level="info",
+                            message=f"Successfully created software repository {image_type} link.")
+
+                if self.task is not None:
+                    self.task.taskstep_manager.stop_taskstep(
+                        name="PushSoftwareRepositoryLinksIntersight", status="successful",
+                        status_message=f"Successfully created software repository {image_type} link in intersight")
+
+                return True
+            else:
+                self.logger(level="error",
+                            message=f"Failed to create software repository {image_type} link.")
+
+        except (ApiValueError, ApiTypeError, ApiException) as err:
+            error_message = str(err)
+            if "Reason: Bad Gateway" in error_message:
+                error_message = "Bad Gateway"
+            else:
+                # We try to simplify the error message displayed
+                if hasattr(err, "body"):
+                    try:
+                        err_json = json.loads(err.body)
+                        if "message" in err_json:
+                            error_message = str(err_json["message"])
+                    except json.decoder.JSONDecodeError as err_json_decode:
+                        self.logger(level="error", message=f"JSON Decode error while creating software repository "
+                                                           f"{image_type} link: {str(err_json_decode)}")
+            self.logger(level="error",
+                        message=f"Failed to create software repository {image_type} link: {error_message}")
+        except AttributeError as err:
+            self.logger(level="error",
+                        message=f"Failed to create software repository {image_type} link: {str(err)}")
+        except urllib3.exceptions.MaxRetryError as err:
+            self.logger(level="error",
+                        message=f"Failed to create software repository {image_type} link: {str(err)}")
+        except UnicodeDecodeError:
+            self.logger(level="error",
+                        message=f"Failed to create software repository {image_type} link: " +
+                                f"Provided configuration file is invalid")
+
+        if self.task is not None:
+            self.task.taskstep_manager.stop_taskstep(
+                name="PushSoftwareRepositoryLinksIntersight", status="failed",
+                status_message="Error while while syncing to software repository. Check logs.")
+
+        return False
+
     def validate_intersight_license(self):
         """
         Validates if the intersight account has essential license
@@ -731,7 +1417,7 @@ class IntersightDevice(GenericDevice):
         """
         if self.task is not None:
             self.task.taskstep_manager.start_taskstep(
-                name="ValidateIntersightLicense", description="Validating if Intersight has Essential license")
+                name="ValidateIntersightLicense", description="Validating if Intersight has Essentials license")
 
         try:
             license_api = LicenseApi(api_client=self.handle)
@@ -743,19 +1429,19 @@ class IntersightDevice(GenericDevice):
             if self.task is not None:
                 self.task.taskstep_manager.stop_taskstep(
                     name="ValidateIntersightLicense", status="failed",
-                    status_message="Intersight should have 'Essential' or 'Advantage' license to perform"
-                                   "fetch/push operation. To bypass this check enable the 'Force' option and try again")
+                    status_message="Intersight should have 'Essentials' or 'Advantage' license to perform"
+                                   "fetch/push operation. To bypass this check enable the 'Force' option and try again"
+                )
             return False
 
         license_states = []
         for license_details in license_info_list.get("results", []):
             if license_details.get("license_state") in ["Compliance", "TrialPeriod", "OutOfCompliance"]:
-                self.logger(level="info",
-                            message="Successfully validated the license of intersight.")
+                self.logger(level="info", message="Successfully validated the Intersight license")
                 if self.task is not None:
                     self.task.taskstep_manager.stop_taskstep(
                         name="ValidateIntersightLicense", status="successful",
-                        status_message="Successfully validated the license of intersight")
+                        status_message="Successfully validated the Intersight license")
                 return True
             license_states.append(license_details.get("license_state"))
 
@@ -764,7 +1450,7 @@ class IntersightDevice(GenericDevice):
         if self.task is not None:
             self.task.taskstep_manager.stop_taskstep(
                 name="ValidateIntersightLicense", status="failed",
-                status_message=f"Your Intersight license is in '{', '.join(license_states)}' state, which might prevent "
-                               f"some operations to complete properly. To bypass this check enable the 'Force' option "
+                status_message=f"Your Intersight license is in '{', '.join(license_states)}' state, which might prevent"
+                               f" some operations to complete properly. To bypass this check enable the 'Force' option "
                                f"and try again.")
         return False

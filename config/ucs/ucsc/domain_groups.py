@@ -21,6 +21,9 @@ from ucscsdk.mometa.comm.CommTelnet import CommTelnet
 from ucscsdk.mometa.comm.CommWebSvcLimits import CommWebSvcLimits
 from ucscsdk.mometa.compute.ComputeChassisDiscPolicy import ComputeChassisDiscPolicy
 from ucscsdk.mometa.compute.ComputeGroupMembership import ComputeGroupMembership
+from ucscsdk.mometa.compute.ComputeModularChassisFanPolicy import ComputeModularChassisFanPolicy
+from ucscsdk.mometa.compute.ComputePowerExtendedPolicy import ComputePowerExtendedPolicy
+from ucscsdk.mometa.compute.ComputePowerSavePolicy import ComputePowerSavePolicy
 from ucscsdk.mometa.compute.ComputePsuPolicy import ComputePsuPolicy
 from ucscsdk.mometa.compute.ComputeServerDiscPolicy import ComputeServerDiscPolicy
 from ucscsdk.mometa.compute.ComputeServerMgmtPolicy import ComputeServerMgmtPolicy
@@ -41,6 +44,29 @@ from ucscsdk.mometa.top.TopInfoSyncPolicy import TopInfoSyncPolicy
 class UcsCentralDomainGroup(UcsCentralConfigObject):
     _CONFIG_NAME = "Domain Group"
     _CONFIG_SECTION_NAME = "domain_groups"
+    _CONFIG_SECTION_ATTRIBUTES_MAP = {
+        "appliance_network_control_policies": "Appliance Network Control Policies",
+        "appliance_vlans": "Appliance VLANs",
+        "domain_groups": "Domain Groups",
+        "equipment_policies": "Equipment Policies",
+        "flow_control_policies": "Flow Control Policies",
+        "hardware_change_discovery_policies": "Hardware Change Discovery Policies",
+        "inband_policies": "Inband Policies",
+        "kmip_certification_policies": "KMIP Certification Policies",
+        "lacp_policies": "LACP Policies",
+        "link_profiles": "Link Profiles",
+        "locales": "Locales",
+        "multicast_policies": "Multicast Policies",
+        "port_auto_discovery_policies": "Port Auto-Discovery Policies",
+        "remote_access": "Remote Access",
+        "roles": "Roles",
+        "storage_vsans": "Storage VSANs",
+        "syslog": "Syslog",
+        "udld_link_policies": "UDLD Link Policies",
+        "vlan_groups": "VLAN Groups",
+        "vlans": "VLANs",
+        "vsans": "VSANs"
+    }
     _UCS_SDK_OBJECT_NAME = "orgDomainGroup"
 
     def __init__(self, parent=None, json_content=None, org_domain_group=None):
@@ -282,6 +308,9 @@ class UcsCentralDomainGroupEquipmentPolicies(UcsCentralConfigObject):
         self.power_redundancy_policy = None
         self.power_allocation_method = None
         self.power_profiling_policy = None
+        self.power_save_policy = None
+        self.power_extended_policy = None
+        self.x9508_chassis_fan_control_policy = None
         self.rack_server_discovery_policy = []
 
         if self._config.load_from == "live":
@@ -347,6 +376,45 @@ class UcsCentralDomainGroupEquipmentPolicies(UcsCentralConfigObject):
                 if len(compute_psu_policy_list) == 1:
                     compute_psu_policy = compute_psu_policy_list[0]
                     self.power_redundancy_policy = compute_psu_policy.redundancy
+
+            if "computePowerSavePolicy" in self._config.sdk_objects:
+                compute_power_save_policy_list = \
+                    [compute_power_save_policy for compute_power_save_policy in
+                     self._config.sdk_objects["computePowerSavePolicy"]
+                     if self._parent._dn + "/power-save-policy" in compute_power_save_policy.dn]
+                if len(compute_power_save_policy_list) == 1:
+                    compute_power_save_policy = compute_power_save_policy_list[0]
+                    self.power_save_policy = compute_power_save_policy.mode
+
+            if "computePowerExtendedPolicy" in self._config.sdk_objects:
+                compute_power_extended_policy_list = \
+                    [compute_power_extended_policy for compute_power_extended_policy in
+                     self._config.sdk_objects["computePowerExtendedPolicy"]
+                     if self._parent._dn + "/power-extended-policy" in compute_power_extended_policy.dn]
+                if len(compute_power_extended_policy_list) == 1:
+                    compute_power_extended_policy = compute_power_extended_policy_list[0]
+                    self.power_extended_policy = compute_power_extended_policy.extended_mode
+
+            if "computeModularChassisFanPolicy" in self._config.sdk_objects:
+                compute_modular_chassis_fan_policy_list = \
+                    [compute_modular_chassis_fan_policy for compute_modular_chassis_fan_policy in
+                     self._config.sdk_objects["computeModularChassisFanPolicy"]
+                     if self._parent._dn + "/modular-chassis-fan-policy" in compute_modular_chassis_fan_policy.dn]
+                if len(compute_modular_chassis_fan_policy_list) == 1:
+                    compute_modular_chassis_fan_policy = compute_modular_chassis_fan_policy_list[0]
+                    self.x9508_chassis_fan_control_policy = compute_modular_chassis_fan_policy.speed
+                    if self.x9508_chassis_fan_control_policy == "Acoustic":
+                        self.x9508_chassis_fan_control_policy = "acoustic"
+                    elif self.x9508_chassis_fan_control_policy == "Balanced":
+                        self.x9508_chassis_fan_control_policy = "balanced"
+                    elif self.x9508_chassis_fan_control_policy == "High Power":
+                        self.x9508_chassis_fan_control_policy = "high-power"
+                    elif self.x9508_chassis_fan_control_policy == "Low Power":
+                        self.x9508_chassis_fan_control_policy = "low-power"
+                    elif self.x9508_chassis_fan_control_policy == "Max Power":
+                        self.x9508_chassis_fan_control_policy = "max-power"
+                    elif self.x9508_chassis_fan_control_policy == "Performance":
+                        self.x9508_chassis_fan_control_policy = "performance"
 
             if "powerMgmtPolicy" in self._config.sdk_objects:
                 power_mgmt_policy_list = \
@@ -511,6 +579,43 @@ class UcsCentralDomainGroupEquipmentPolicies(UcsCentralConfigObject):
             if commit:
                 if self.commit("Power Profiling Policy") != True:
                     return False
+
+        if self.power_save_policy:
+            mo_compute_power_save_policy = ComputePowerSavePolicy(parent_mo_or_dn=parent_mo,
+                                                                  mode=self.power_save_policy)
+            self._handle.add_mo(mo_compute_power_save_policy, modify_present=True)
+            if commit:
+                if self.commit("Power Save Policy") != True:
+                    return False
+
+        if self.power_extended_policy:
+            mo_compute_power_extended_policy = ComputePowerExtendedPolicy(parent_mo_or_dn=parent_mo,
+                                                                          extended_mode=self.power_extended_policy)
+            self._handle.add_mo(mo_compute_power_extended_policy, modify_present=True)
+            if commit:
+                if self.commit("Power Extended Policy") != True:
+                    return False
+
+        if self.x9508_chassis_fan_control_policy:
+            if self.x9508_chassis_fan_control_policy == "acoustic":
+                speed = "Acoustic"
+            elif self.x9508_chassis_fan_control_policy == "balanced":
+                speed = "Balanced"
+            elif self.x9508_chassis_fan_control_policy == "high-power":
+                speed = "High Power"
+            elif self.x9508_chassis_fan_control_policy == "low-power":
+                speed = "Low Power"
+            elif self.x9508_chassis_fan_control_policy == "max-power":
+                speed = "Max Power"
+            elif self.x9508_chassis_fan_control_policy == "performance":
+                speed = "Performance"
+            mo_compute_modular_chassis_fan_policy = ComputeModularChassisFanPolicy(parent_mo_or_dn=parent_mo,
+                                                                                   speed=speed)
+            self._handle.add_mo(mo_compute_modular_chassis_fan_policy, modify_present=True)
+            if commit:
+                if self.commit("UCS X9508 Chassis Fan Control Policy") != True:
+                    return False
+
 
         if self.rack_server_discovery_policy:
             action = None
