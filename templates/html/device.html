@@ -73,6 +73,10 @@
       <div class="modal-body">
         <form id = "editDeviceForm">
           <div class="form-group">
+            <label for="edit_user_label" class="col-form-label">User Label:</label>
+            <input type="text" name="user_label" class="form-control" id="edit_user_label" placeholder="Custom label to help identify this device"/>
+          </div>
+          <div class="form-group">
             <label for="edit_target" class="col-form-label">Target:</label>
             <input type="text" name="target" class="form-control" id="edit_target" placeholder="10.60.11.12">
           </div>
@@ -236,18 +240,17 @@
 </div>
 {% endblock %}
 
-
+{% block breadcrumbs %}
+<ol class="breadcrumb mb-0 p-0">
+      <li class="breadcrumb-item"><a href="/">Home</a></li>
+      <li class="breadcrumb-item active">Device</li>
+    </ol>
+{% endblock %}
 {% block content %}
 <div class="content-header">
   <div class="container-fluid">
     <div class="row">
       <div id="deviceCardContainer" class="col-sm-10 col-md-8">
-      </div>
-      <div class="col-sm-2 col-md-4">
-        <ol class="breadcrumb float-sm-right">
-          <li class="breadcrumb-item"><a href="/">Home</a></li>
-          <li class="breadcrumb-item active">Device</li>
-        </ol>
       </div>
     </div>
   </div>
@@ -269,12 +272,12 @@
           <a class="dropdown-item" onclick="fetchLiveObjectFromDevice('backup')"><span class="mr-2" style="width: 20px; display: inline-block"><i class="fa-solid fa-floppy-disk"></i></span>Fetch Backup</a>
           <div class="dropdown-divider"></div>
           <a class="dropdown-item dropdown-toggle" onclick="togglePushConfigModal(event)"><span class="mr-2" style="width: 20px; display: inline-block"><i class="fa-solid fa-file-arrow-up"></i></span>Push Config</a>
-          <div class="dropdown-divider"></div>
-          <a class="dropdown-item dropdown-toggle" onclick="toggleGenerateReportModal(event)"><span class="mr-2" style="width: 20px; display: inline-block"><i class="fa-solid fa-book"></i></span>Generate Report</a>
+          <div id="report-separator" class="dropdown-divider"></div>
+          <a id="action-generate-report" class="dropdown-item dropdown-toggle" onclick="toggleGenerateReportModal(event)"><span class="mr-2" style="width: 20px; display: inline-block"><i class="fa-solid fa-book"></i></span>Generate Report</a>
           <div id="actions-separator" class="dropdown-divider" style="display: none"></div>
           <a id="action-clear-config" class="dropdown-item dropdown-toggle" style="display: none" onclick="toggleClearConfigModal(event)"><span class="mr-2" style="width: 20px; display: inline-block"><i class="fa-solid fa-eraser"></i></span>Clear Config</a>
           <a id="action-claim-to-intersight" class="dropdown-item dropdown-toggle" style="display: none" onclick="toggleClaimToIntersightModal(event)"><span class="mr-2" style="width: 20px; display: inline-block"><i class="fa-solid fa-cloud-arrow-up"></i></span>Claim to Intersight</a>
-          <a id="action-clear-intersight-claim-status" class="dropdown-item" style="display: none" onclick="clearIntersightClaimStatus()"><span class="mr-2" style="width: 20px; display: inline-block"><i class="fa-solid fa-plug-circle-xmark"></i></span>Clear Intersight Claim Status</a>
+          <a id="action-clear-intersight-claim-status" class="dropdown-item" style="display: none" onclick="ResetDeviceConnector()"><span class="mr-2" style="width: 20px; display: inline-block"><i class="fa-solid fa-plug-circle-xmark"></i></span>Reset Device Connector</a>
           <a id="action-clear-sel-logs" class="dropdown-item" style="display: none" onclick="clearSelLogs()"><span class="mr-2" style="width: 20px; display: inline-block"><i class="fa-solid fa-broom"></i></span>Clear SEL Logs</a>
           <a id="action-regenerate-certificate" class="dropdown-item" style="display: none" onclick="regenerateCertificate()"><span class="mr-2" style="width: 20px; display: inline-block"><i class="fa-solid fa-key"></i></span>Regenerate Certificate</a>
         </div>
@@ -289,6 +292,7 @@
             <a class="nav-item nav-link" id="nav-inventory-tab" data-toggle="tab" href="#nav-inventory" role="tab" aria-controls="nav-inventory" aria-selected="false">Inventories</a>
             <a class="nav-item nav-link" id="nav-report-tab" data-toggle="tab" href="#nav-report" role="tab" aria-controls="nav-report" aria-selected="false">Reports</a>
             <a class="nav-item nav-link" id="nav-backup-tab" data-toggle="tab" href="#nav-backup" role="tab" aria-controls="nav-backup" aria-selected="false">Backups</a>
+            <a class="nav-item nav-link" id="nav-tasks-tab" data-toggle="tab" href="#nav-tasks" role="tab" aria-controls="nav-tasks" aria-selected="false">Tasks</a>
           </div>
         </nav>
         <div class="tab-content" id="nav-tabContent">
@@ -425,6 +429,26 @@
                     </tbody>
                   </table>
                 </form>
+              </div>
+            </div>
+          </div>
+          <div class="tab-pane fade" id="nav-tasks" role="tabpanel" aria-labelledby="nav-tasks-tab">
+            <div class="card">
+              <div class="card-body">
+                <table id="tasksTable" class="table table-bordered table-striped table-hover">
+                  <thead>
+                  <tr>
+                    <th><input type="checkbox" id="tasksTable_selectAll" name="select_all" value="1" onclick=""></th>
+                    <th>Status</th>
+                    <th>Name</th>
+                    <th>Created</th>
+                    <th>Status description</th>
+                    <th>Started</th>
+                  </tr>
+                  </thead>
+                  <tbody>
+                  </tbody>
+                </table>
               </div>
             </div>
           </div>

@@ -313,6 +313,20 @@ a.repoFolderRow {
   color: inherit;
 }
 
+div.dataTables_wrapper div.dataTables_filter {
+  text-align: left !important;
+}
+
+div.dataTables_wrapper div.dataTables_length {
+  text-align: right !important;
+}
+.phantomDevice {
+  filter: opacity(50%) saturate(50%);
+}
+nav .breadcrumb {
+  background-color: transparent;
+}
+
 @media (min-width: 1800px){
 .col-xxl-2 {
     -webkit-flex: 0 0 16.666667%;
@@ -349,3 +363,4 @@ a.repoFolderRow {
   max-width: 50%;
 }
 }
+

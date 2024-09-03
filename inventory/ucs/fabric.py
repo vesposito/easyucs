@@ -228,8 +228,8 @@ class UcsSystemFi(UcsFi, UcsSystemInventoryObject):
         self.short_name = None
         self.vlan_port_count = None
 
-        # UCS Mini Fabric Interconnect is a bit different - The CapProvider object needs to be changed
-        if self.model == "UCS-FI-M-6324":
+        # UCS Mini/X-Direct Fabric Interconnect is a bit different - The CapProvider object needs to be changed
+        if self.model in ["UCS-FI-M-6324", "UCSX-S9108-100G"]:
             self._UCS_SDK_CATALOG_OBJECT_NAME = "equipmentSwitchIOCardCapProvider"
 
         UcsSystemInventoryObject.__init__(self, parent=parent, ucs_sdk_object=network_element)
@@ -251,7 +251,7 @@ class UcsSystemFi(UcsFi, UcsSystemInventoryObject):
 
     def _generate_draw(self):
         self._draw_rear = UcsSystemDrawFiRear(parent=self)
-        if self.model != "UCS-FI-M-6324":
+        if self.model not in ["UCS-FI-M-6324", "UCSX-S9108-100G"]:
             self._draw_front = UcsSystemDrawFiFront(parent=self)
 
     def _get_expansion_modules(self):

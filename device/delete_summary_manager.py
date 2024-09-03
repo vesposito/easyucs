@@ -84,6 +84,8 @@ class DeleteSummaryManager:
                     "status": status,
                     "object_type": "organization.Organization",
                 }
+                if message:  # message field to be added in case organization deletion fails.
+                    org_info["message"] = message
                 self.delete_summary["deleted_objects"].setdefault("organization.Organization", []).append(org_info)
             org_info.setdefault(object_type, []).append(deletion_info)
         else:
@@ -99,6 +101,8 @@ class DeleteSummaryManager:
                 else:
                     # Update the existing organization info status
                     org_info["status"] = status
+                    if message:
+                        org_info["message"] = message
         return True
 
     def export_delete_summary_dict(self):

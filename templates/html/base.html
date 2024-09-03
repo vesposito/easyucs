@@ -36,13 +36,10 @@
       <li class="nav-item">
         <a class="nav-link" data-widget="pushmenu" href="#" role="button"><i class="fas fa-bars"></i></a>
       </li>
-      <li class="nav-item d-none d-sm-inline-block">
-        <a href="/" class="nav-link">Home</a>
-      </li>
-      <li class="nav-item d-none d-sm-inline-block">
-        <a href="/contact" class="nav-link">Contact</a>
-      </li>
     </ul>
+    {% block breadcrumbs %}
+    {% endblock %}
+    
 
     <!-- Right navbar links -->
     <ul class="navbar-nav ml-auto">
@@ -72,9 +69,15 @@
 
       <!-- Tasks Dropdown Menu -->
       <li class="nav-item dropdown">
-        <a class="nav-link" data-toggle="dropdown" href="#" onclick="cleanTaskNotification();">
-          <i class="far fa-bell"></i>
-          <span id="new-task-badge" class="badge badge-warning navbar-badge"></span>
+        <!-- <a class="nav-link" data-toggle="dropdown" href="#" onclick="cleanTaskNotification();"> -->
+        <a class="nav-link" data-toggle="dropdown" href="#">
+          <i class="fa-solid fa-list-check"></i>
+          <!-- <span id="new-task-badge" class="badge badge-warning navbar-badge"></span> -->
+          <span id="task-count-badge" class="badge badge-warning navbar-badge"></span>
+          <span id="tasks-complete-badge" class="badge badge-success navbar-badge">
+            <!-- checkmark -->
+            <i class="fas fa-check"></i>
+          </span>
         </a>
         <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right" style = "overflow: hidden">
           <span id = "taskDropdownTitle" class="dropdown-item dropdown-header">Last Tasks</span>
@@ -94,6 +97,7 @@
           <a id = "taskDropdownFooter" href="/tasks" class="dropdown-item dropdown-footer">See All Tasks</a>
         </div>
       </li>
+      <!-- Fullscreen button -->
       <li class="nav-item">
         <a class="nav-link" data-widget="fullscreen" href="#" role="button">
           <i class="fas fa-expand-arrows-alt"></i>
@@ -138,10 +142,9 @@
       -->
 
       <!-- Sidebar Menu -->
-      <nav class="mt-2">
-        <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
-          
-          <li class="nav-item">
+      <nav class="h-100">
+        <ul class="nav nav-pills nav-sidebar flex-column h-100" data-widget="treeview" role="menu" data-accordion="false">
+          <li class="nav-item mt-2">
             <a id="navLinkDevices" href="/" class="nav-link">
               <i class="nav-icon fa-solid fa-server"></i>
               <p>
@@ -160,6 +163,7 @@
             <ul id = "ConfigCatalogMenuContainer" class="nav nav-treeview">
             </ul>
           </li>
+
           <li id="navItemRepository" class="nav-item">
             <a id="navLinkRepository" href="/repository" class="nav-link">
               <i class="nav-icon fa-solid fa-folder-closed"></i>
@@ -213,11 +217,11 @@
             <button type = "button" class="btn btn-primary" id="log_debug" onclick="toggleLogLevel(this)">Debug</button>
           </div>
           <span class="py-2">
-                <span class = "pr-2"> Auto scrolling: </span> 
-                <div class="btn-group" id="toggle_event_editing">
-                  <button id = "btn_autoscroll_on" type="button" class="btn btn-primary locked_active" onclick = "toggleLogAutoscroll(true)">ON</button>
-                  <button id = "btn_autoscroll_off" type="button" class="btn btn-default unlocked_inactive" onclick = "toggleLogAutoscroll(false)">OFF</button>
-                </div>
+            <span class = "pr-2"> Auto scrolling: </span>
+            <div class="btn-group" id="toggle_event_editing">
+              <button id = "btn_autoscroll_on" type="button" class="btn btn-primary locked_active" onclick = "toggleLogAutoscroll(true)">ON</button>
+              <button id = "btn_autoscroll_off" type="button" class="btn btn-default unlocked_inactive" onclick = "toggleLogAutoscroll(false)">OFF</button>
+            </div>
           </span>
         </div>
       </div>

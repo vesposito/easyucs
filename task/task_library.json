@@ -136,50 +136,6 @@
          }
       ]
    },
-   "ClearIntersightClaimStatusUcsImc": {
-      "description": "Clear UCS IMC Intersight Claim Status",
-      "device_type": "cimc",
-      "steps": [
-         {
-            "name": "ConnectUcsImcDevice",
-            "order": 1,
-            "weight": 1
-         },
-         {
-            "name": "ClearIntersightClaimStatus",
-            "order": 2,
-            "weight": 1
-         },
-         {
-            "name": "DisconnectUcsImcDevice",
-            "optional": true,
-            "order": 3,
-            "weight": 1
-         }
-      ]
-   },
-   "ClearIntersightClaimStatusUcsSystem": {
-      "description": "Clear UCS System Intersight Claim Status",
-      "device_type": "ucsm",
-      "steps": [
-         {
-            "name": "ConnectUcsSystemDevice",
-            "order": 1,
-            "weight": 1
-         },
-         {
-            "name": "ClearIntersightClaimStatus",
-            "order": 2,
-            "weight": 1
-         },
-         {
-            "name": "DisconnectUcsSystemDevice",
-            "optional": true,
-            "order": 3,
-            "weight": 1
-         }
-      ]
-   },
    "ClearSelLogsUcsImc": {
       "description": "Clear UCS IMC SEL Logs",
       "device_type": "cimc",
@@ -804,7 +760,7 @@
             "weight": 1
          },
          {
-            "name": "ClearIntersightClaimStatus",
+            "name": "ResetDeviceConnector",
             "optional": true,
             "order": 2,
             "weight": 1
@@ -987,6 +943,50 @@
          }
       ]
    },
+   "ResetDeviceConnectorUcsImc": {
+      "description": "Reset UCS IMC Device Connector",
+      "device_type": "cimc",
+      "steps": [
+         {
+            "name": "ConnectUcsImcDevice",
+            "order": 1,
+            "weight": 1
+         },
+         {
+            "name": "ResetDeviceConnector",
+            "order": 2,
+            "weight": 1
+         },
+         {
+            "name": "DisconnectUcsImcDevice",
+            "optional": true,
+            "order": 3,
+            "weight": 1
+         }
+      ]
+   },
+   "ResetDeviceConnectorUcsSystem": {
+      "description": "Reset UCS System Device Connector",
+      "device_type": "ucsm",
+      "steps": [
+         {
+            "name": "ConnectUcsSystemDevice",
+            "order": 1,
+            "weight": 1
+         },
+         {
+            "name": "ResetDeviceConnector",
+            "order": 2,
+            "weight": 1
+         },
+         {
+            "name": "DisconnectUcsSystemDevice",
+            "optional": true,
+            "order": 3,
+            "weight": 1
+         }
+      ]
+   },
    "ResetDeviceUcsImc": {
       "description": "Reset UCS IMC device",
       "device_type": "ucsm",
@@ -997,7 +997,7 @@
             "weight": 1
          },
          {
-            "name": "ClearIntersightClaimStatus",
+            "name": "ResetDeviceConnector",
             "optional": true,
             "order": 2,
             "weight": 1
@@ -1025,7 +1025,7 @@
             "weight": 1
          },
          {
-            "name": "ClearIntersightClaimStatus",
+            "name": "ResetDeviceConnector",
             "optional": true,
             "order": 2,
             "weight": 1

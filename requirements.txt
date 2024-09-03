@@ -4,7 +4,7 @@ imcsdk>=0.9.13
 jsonschema>=3.2.0
 python-docx>=1.0.1
 requests>=2.23.0
-ucsmsdk>=0.9.18
+ucsmsdk>=0.9.19
 ucscsdk>=0.9.0.7
 matplotlib>=3.2.1
 natsort>=7.1.1
@@ -17,7 +17,7 @@ Flask>=2.0.0
 Flask-Cors>=3.0.10
 cryptography>=42.0.4
 urllib3>=1.25.9
-intersight==1.0.11.17057
+intersight>=1.0.11.17956
 SQLAlchemy>=2.0.23
 werkzeug>=1.0.1
 numpy>=1.19.4

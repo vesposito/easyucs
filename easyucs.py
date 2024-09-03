@@ -386,10 +386,14 @@ def init_process(device, args, config_string):
         device.set_task_progression(10)
         device.clear_user_sessions()
 
-    elif args.scope == "device" and args.action == "clear_intersight_claim_status":
-        # Clears Intersight Claim Status of Device
+    elif args.scope == "device" and args.action == "reset_device_connector":
+        # Reset Device Connector of Device
         device.set_task_progression(10)
-        device.clear_intersight_claim_status()
+        if not device.connect(bypass_version_checks=bypass_version_checks):
+            device.logger(level="error", message="Failed to connect to device")
+            exit()
+        device.reset_device_connector()
+        device.disconnect()
 
     elif args.scope == "device" and args.action == "get_device_connector_status":
         # Get Intersight info of Device
@@ -500,18 +504,18 @@ def main():
       python easyucs.py device clear_user_sessions -t ucsc -i 192.168.0.3 -u admin -p password
             clear all user sessions of UCS Central'''
 
-    example_device_clear_intersight_claim_status_text = '''Examples:
-          python easyucs.py device clear_intersight_claim_status -t ucsm -i 192.168.0.1 -u admin -p password
-                clear intersight claim status of UCS System
-          python easyucs.py device clear_intersight_claim_status -t cimc -i 192.168.0.2 -u admin -p password
-                clear intersight claim status of IMC System
+    example_device_reset_device_connector_text = '''Examples:
+          python easyucs.py device reset_device_connector -t ucsm -i 192.168.0.1 -u admin -p password
+                reset Device Connector of UCS System
+          python easyucs.py device reset_device_connector -t cimc -i 192.168.0.2 -u admin -p password
+                Reset Device Connector of IMC System
           '''
 
     example_device_get_device_connector_status_text = '''Examples:
               python easyucs.py device get_device_connector_status -t ucsm -i 192.168.0.1 -u admin -p password
-                    clear intersight claim status of UCS System
+                    Reset Device Connector of UCS System
               python easyucs.py device get_device_connector_status -t cimc -i 192.168.0.2 -u admin -p password
-                    clear intersight claim status of IMC System
+                    Reset Device Connector of IMC System
               '''
 
     # Introduction message
@@ -739,34 +743,34 @@ def main():
     parser_device_clear_user_sessions.add_argument('-y', '--yes', dest='yes', action='store_true',
                                                    help='Answer yes to all questions')
 
-    # Create the parsers for the "clear_intersight_claim_status" action of device
-    parser_device_clear_intersight_claim_status = \
-        subparsers_device.add_parser('clear_intersight_claim_status',
-                                     help='Clears Intersight claim status of a device',
-                                     epilog=example_device_clear_intersight_claim_status_text,
+    # Create the parsers for the "reset_device_connector" action of device
+    parser_device_reset_device_connector = \
+        subparsers_device.add_parser('reset_device_connector',
+                                     help='Resets Device Connector of a device',
+                                     epilog=example_device_reset_device_connector_text,
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser_device_clear_intersight_claim_status.add_argument('-i', '--ip', dest='ip', action='store',
+    parser_device_reset_device_connector.add_argument('-i', '--ip', dest='ip', action='store',
                                                              help='Device IP address/Hostname', required=True)
-    parser_device_clear_intersight_claim_status.add_argument('-u', '--username', dest='username', action='store',
+    parser_device_reset_device_connector.add_argument('-u', '--username', dest='username', action='store',
                                                              help='Device Account Username', required=True)
-    parser_device_clear_intersight_claim_status.add_argument('-p', '--password', dest='password', action='store',
+    parser_device_reset_device_connector.add_argument('-p', '--password', dest='password', action='store',
                                                              help='Device Account Password', required=True)
-    parser_device_clear_intersight_claim_status.add_argument('-t', '--device_type', dest='device_type', action='store',
+    parser_device_reset_device_connector.add_argument('-t', '--device_type', dest='device_type', action='store',
                                                              choices=['ucsm', 'cimc', 'ucsc'], required=True,
                                                              help='Device type')
 
-    parser_device_clear_intersight_claim_status.add_argument('-v', '--verbose', dest='log', action='store_true',
+    parser_device_reset_device_connector.add_argument('-v', '--verbose', dest='log', action='store_true',
                                                              help='Print debug log')
-    parser_device_clear_intersight_claim_status.add_argument('-l', '--logfile', dest='logfile', action='store',
+    parser_device_reset_device_connector.add_argument('-l', '--logfile', dest='logfile', action='store',
                                                              help='Print log in a file')
 
-    parser_device_clear_intersight_claim_status.add_argument('-y', '--yes', dest='yes', action='store_true',
+    parser_device_reset_device_connector.add_argument('-y', '--yes', dest='yes', action='store_true',
                                                              help='Answer yes to all questions')
 
     # Create the parsers for the "get_device_connector_status" action of device
     parser_device_get_device_connector_status = \
         subparsers_device.add_parser('get_device_connector_status',
-                                     help='Clears Intersight claim status of a device',
+                                     help='Gets Intersight claim status of a device',
                                      epilog=example_device_get_device_connector_status_text,
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
     parser_device_get_device_connector_status.add_argument('-i', '--ip', dest='ip', action='store',

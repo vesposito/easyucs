@@ -97,7 +97,11 @@ function afterDOMloaded() {
     order: [[0, "asc"]],
     columnDefs: [
       { targets: '_all', visible: true },
+      { targets: 3, searchable: false }
     ],
+    dom:  "<'row'<'col-sm-12 text-start'f>>" +
+                "<'row'<'col-sm-12'tr>>" +
+                "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
   });
   // Shows "Repository" menu element as selected
   document.getElementById("navLinkRepository").className += " active";
@@ -113,7 +117,7 @@ window.onload = function () {
 };
 
 function updateBreadCrumbs() {
-  let output = '<li class="breadcrumb-item"><a href="javascript: setPath(`/`)">Root</a></li>';
+  let output = '<li class="breadcrumb-item"><a href="javascript: setPath(`/`)">Repository root</a></li>';
   const folders = current_path.split('/').filter(e => e !== '');
   folders.forEach((folder, index) => {
     const current_folder = folders.slice(0, index+1).join('/')
@@ -433,7 +437,7 @@ function copyInputValue(input) {
 function computeChecksums(filename) {
   let target_api_endpoint = api_base_url + api_repo_checksum_endpoint;
   target_api_endpoint += encodeURIComponent(current_path + filename);
-  httpRequestAsync("POST", target_api_endpoint, (e) => trackTask(JSON.parse(e).task, "Computing checksums for " + escapeHtml(filename)));
+  httpRequestAsync("POST", target_api_endpoint, (e) => trackTask(JSON.parse(e).task, "Computing checksums for " + filename));
   $("#checksumsModal").modal("toggle");
 }
 

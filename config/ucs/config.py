@@ -1017,7 +1017,7 @@ class UcsSystemConfig(GenericUcsConfig):
                 if not self.device.task.taskstep_manager.is_taskstep_optional(name="FetchConfigUcsSystemSdkObjects"):
                     return False
 
-        # We sort all sdk objects by their DN in human readable format
+        # We sort all sdk objects by their DN in human-readable format
         for key, value in self.sdk_objects.items():
             value.sort(key=lambda obj: [int(t) if t.isdigit() else t.lower() for t in re.split('(\d+)', obj.dn)])
 

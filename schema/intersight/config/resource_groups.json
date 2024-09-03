@@ -46,12 +46,25 @@
                      "description": "Resource Group Member Device Name",
                      "type": "string",
                      "default": ""
+                  },
+                  "serial_number": {
+                     "description": "Resource Group Member Device Serial Number",
+                     "type": "string",
+                     "default": ""
+                  },
+                  "type": {
+                     "description": "Resource Group Member Device Type",
+                     "type": "string",
+                     "enum": [
+                        "Blade",
+                        "Rack"
+                     ]
                   }
                },
                "additionalProperties": false,
                "required": [
                   "name"
-               ]
+               ] 
             }
          ],
          "minItems": 1

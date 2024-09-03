@@ -192,7 +192,7 @@ class DeviceConnector:
                                    f" is already claimed to account {self.metadata.device_connector_ownership_name}.")
             return False
 
-        # Checking and clearing Intersight claim status if necessary
+        # Checking and resetting Device Connector if necessary
         if not intersight_device.is_appliance:
             # Determine the expected Cloud DNS value based on the target
             if "qa.starshipcloud.com" in intersight_device.target:
@@ -211,8 +211,8 @@ class DeviceConnector:
             current_cloud_dns = self._device_connector_info.get("Intersight URL")
             # Compare current Cloud DNS with the expected Cloud DNS
             if current_cloud_dns not in expected_cloud_dns:
-                # Call clear_intersight_claim_status if Cloud DNS values are different
-                self.clear_intersight_claim_status(intersight_device.target)
+                # Call reset_device_connector if Cloud DNS values are different
+                self.reset_device_connector(intersight_device.target)
 
         # Setting the device connector access mode (only for CIMC and UCSM devices)
         if self.metadata.device_type in ["cimc", "ucsm"] and access_mode:
@@ -377,9 +377,9 @@ class DeviceConnector:
 
         return True
 
-    def clear_intersight_claim_status(self, intersight_target="svc.intersight.com"):
+    def reset_device_connector(self, intersight_target="svc.intersight.com"):
         """
-        Clears Intersight Claim Status
+        Resets Device Connector
         :return: True if successful, False otherwise
         """
         if self.metadata.device_type not in ["cimc", "imm", "ucsm"]:
@@ -392,9 +392,9 @@ class DeviceConnector:
         if not self.is_connected():
             return False
 
-        message_str = "Clearing Intersight Claim Status of " + self.metadata.device_type_long + " device " + self.name
+        message_str = "Resetting Device Connector of " + self.metadata.device_type_long + " device " + self.name
         if self.task is not None:
-            self.task.taskstep_manager.start_taskstep(name="ClearIntersightClaimStatus", description=message_str)
+            self.task.taskstep_manager.start_taskstep(name="ResetDeviceConnector", description=message_str)
 
         self.logger(message=message_str)
 
@@ -422,10 +422,10 @@ class DeviceConnector:
                         self._set_device_connector_info()
                         if self.task is not None:
                             self.task.taskstep_manager.stop_taskstep(
-                                name="ClearIntersightClaimStatus", status="successful",
-                                status_message=f"Successfully cleared {self.metadata.device_type_long} device " +
-                                               f"{self.name} Intersight Claim Status")
-                        self.logger(message="Intersight Claim Status cleared on " + self.metadata.device_type_long +
+                                name="ResetDeviceConnector", status="successful",
+                                status_message=f"Successfully reset {self.metadata.device_type_long} device " +
+                                               f"{self.name} Device Connector")
+                        self.logger(message="Device Connector reset on " + self.metadata.device_type_long +
                                             " " + self.name)
 
                     # We reset all Device Connector metadata info
@@ -441,16 +441,16 @@ class DeviceConnector:
                 else:
                     if self.task is not None:
                         self.task.taskstep_manager.stop_taskstep(
-                            name="ClearIntersightClaimStatus", status="failed",
+                            name="ResetDeviceConnector", status="failed",
                             status_message=f"Error while clearing {self.metadata.device_type_long} {self.name}" +
                                            f" Intersight Claim Status: {str(response.status_code)}")
-                    self.logger(level="error", message="Error while clearing Intersight Claim Status: " +
+                    self.logger(level="error", message="Error while resetting Device Connector: " +
                                                        str(response.status_code))
                     return False
             except Exception as err:
                 if self.task is not None:
                     self.task.taskstep_manager.stop_taskstep(
-                        name="ClearIntersightClaimStatus", status="failed",
+                        name="ResetDeviceConnector", status="failed",
                         status_message=f"Error while clearing {self.metadata.device_type_long} {self.name}" +
                                        f" Intersight Claim Status: Couldn't request the device connector information" +
                                        f" from the API")
@@ -459,7 +459,7 @@ class DeviceConnector:
         else:
             if self.task is not None:
                 self.task.taskstep_manager.stop_taskstep(
-                    name="ClearIntersightClaimStatus", status="failed",
+                    name="ResetDeviceConnector", status="failed",
                     status_message=f"Error while clearing {self.metadata.device_type_long} {self.name}" +
                                    f" Intersight Claim Status: No login cookie")
             self.logger(level="error",

@@ -5907,7 +5907,7 @@ class IntersightStoragePolicy(IntersightConfigObject):
                     self.m2_configuration = {
                         "enable": self._object.m2_virtual_drive.enable,
                         "controller_slot": self._object.m2_virtual_drive.controller_slot,
-                        "name": self._object.m2_virtual_drive.name
+                        "name": self._object.m2_virtual_drive.name if self._object.m2_virtual_drive.name else None
                     }
 
             if hasattr(self._object, "drive_group"):

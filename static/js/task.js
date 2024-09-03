@@ -8,6 +8,7 @@ NOTE: task.html represents the detailed view for a single task, containing the d
 
 // Global variables
 var loaded_task = null;
+var loaded_device = null;
 var task_uuid = null;
 
 // Gets executed when DOM has loaded
@@ -29,25 +30,41 @@ window.setInterval(function() {
     }
 }, 5000);
 
-/**
- * Displays a task in the UI
- * @param  {JSON} data - The data returned by getting the task from the API
- */
-function displayTask(data){
+function loadTaskData(data) {
     if(!data){
         console.error('No data to display!')
         return
     }
-
     data = JSON.parse(data)
-
     if(!data["task"]){
         console.error("Impossible to display task no data provided");
         return
     }
+    loaded_task = data["task"]; 
+    getFromDb(loadDeviceData, "device", null, loaded_task.device_uuid);
+}
 
-    loaded_task = data["task"];
+function loadDeviceData(data) {
+    if(!data){
+        console.error('No data to display!')
+        return
+    }
+    data = JSON.parse(data)
+    if(!data["device"]){
+        console.error("Impossible to display task no data provided");
+        return
+    }
+    loaded_device = data["device"]; 
+    displayTask();
+    displayDevice();
+}
 
+
+/**
+ * Displays a task in the UI
+ */
+function displayTask(){
+   
     document.getElementById('TaskCardContainer').innerHTML = ``
     document.getElementById('taskDisplayContainer').innerHTML = ``
 
@@ -100,11 +117,10 @@ function displayTask(data){
         ${cancel_task}
         </div>
     </div>
-    `
-  
+    `;
+
     // Takes the steps from the task
     steps = loaded_task.steps
-
 
     if(loaded_task.status != "in_progress"){
         document.getElementById('taskDisplayContainer').innerHTML = `
@@ -113,7 +129,6 @@ function displayTask(data){
         </div>
         `
     }
-
     // For each step, populates the task display container with the step's UI elements
     steps.map(step => {
         var step_status = "";
@@ -161,11 +176,6 @@ function displayTask(data){
         </div>
         `;
     });
-    
-
-
-    
-
     // Populates the task display container with the task UI elements
     document.getElementById('taskDisplayContainer').innerHTML +=
     `
@@ -176,16 +186,58 @@ function displayTask(data){
     `
 }
 
-/**
- * Gets a task from the API
- */
-function getTask(){
-    getFromDb(displayTask, "task", null, task_uuid);
+function displayDevice(){
+    let avatar_src = "";
+    // Changes the style of the card based on the type of device
+    if(loaded_device.device_type == "intersight"){
+        username_element = `
+        <div class = "col-md-auto">
+        Key ID: 
+        </div>
+        <div class = "col text-right text-truncate" data-toggle="tooltip" data-placement="right" title="${loaded_device.key_id}">
+        ${loaded_device.key_id}
+        </div>
+        `;
+        avatar_src = "/static/img/intersight_logo.png";
+        color = "bg-info";
+    } else if (loaded_device.device_type == "ucsm"){
+        avatar_src = "/static/img/ucsm_logo.png";
+        color = "bg-primary";
+    } else if (loaded_device.device_type == "cimc"){
+        avatar_src = "/static/img/cimc_logo.png";
+        color = "bg-warning";
+    } else if (loaded_device.device_type == "ucsc"){
+        avatar_src = "/static/img/ucsc_logo.png";
+        color = "bg-dark";
+    }
+
+    document.getElementById('DeviceCardContainer').innerHTML = `
+    <div class="card ${color}">
+        <a href="/devices/${loaded_device.uuid}">
+            <div class="row">
+                    <div class="card-body row" data-toggle="tooltip" data-placement="top" title="Device linked to this task">
+                        <div class="col-3">
+                            <img class="img-circle elevation-2 img-fluid" src='${avatar_src}' alt="Device Type">
+                        </div>
+                        <div class="col-9">
+                            <h4 class="font-weight-light">
+                                ${loaded_device.device_name}
+                            </h4>
+                            <h5>
+                                ${loaded_device.device_type_long}
+                            </h5>
+                            <p title="User Label" class="m-0 badge-light badge">${loaded_device.user_label ? loaded_device.user_label : ""}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </a>
+    </div>`;
 }
 
 /**
  * Refreshes dynamic data on the page
  */
 function refreshData(){
-    getTask();
+    getFromDb(loadTaskData, "task", null, task_uuid);
 }

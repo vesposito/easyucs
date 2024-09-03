@@ -87,19 +87,19 @@ function claimToIntersight(){
 }
 
 /**
- * Clears the Intersight Claim Status of the device
+ * Resets the Device Connector of the device
  */
-function clearIntersightClaimStatus(){
+function ResetDeviceConnector(){
   // The function gets executed only if the user confirms the warning
   Swal.fire({
-    title: "Clearing Intersight Claim Status is an irreversible action. Do you wish to proceed?",
+    title: "Resetting Device Connector is an irreversible action. Do you wish to proceed?",
     showDenyButton: true,
     confirmButtonText: `Yes`,
     denyButtonText: `No`,
   }).then((result) => {
       if (result.isConfirmed) {
-        const target_api_endpoint = api_base_url + api_device_endpoint + "/" + current_device_uuid + "/actions/clear_intersight_claim_status";
-        const action_type_message = "Clear Intersight Claim Status";
+        const target_api_endpoint = api_base_url + api_device_endpoint + "/" + current_device_uuid + "/actions/reset_device_connector";
+        const action_type_message = "Reset Device Connector";
         httpRequestAsync("POST", target_api_endpoint, alertActionStarted.bind(null, action_type_message));
       }
   });
@@ -322,7 +322,7 @@ function displayDevice(data){
     device_version = current_device.device_version;
   }
   var username_element = `
-  <div class = "col">
+  <div class = "col-md-auto">
     Username: 
   </div>
   <div class = "col text-right text-truncate" data-toggle="tooltip" data-placement="right" title="${current_device.username}">
@@ -333,7 +333,7 @@ function displayDevice(data){
   // Changes the style of the card based on the type of device
   if(current_device.device_type == "intersight"){
     username_element = `
-    <div class = "col">
+    <div class = "col-md-auto">
       Key ID: 
     </div>
     <div class = "col text-right text-truncate" data-toggle="tooltip" data-placement="right" title="${current_device.key_id}">
@@ -343,18 +343,20 @@ function displayDevice(data){
     avatar_src = "/static/img/intersight_logo.png";
     color = "bg-info";
     enableClearConfig();
+    $("#action-generate-report").hide();
+    $("#report-separator").hide();
   } else if (current_device.device_type == "ucsm"){
     avatar_src = "/static/img/ucsm_logo.png";
     color = "bg-primary";
     enableClaimToIntersight();
-    enableClearIntersightClaimStatus();
+    enableResetDeviceConnector();
     enableClearSelLogs();
     enableRegenerateCertificate();
   } else if (current_device.device_type == "cimc"){
     avatar_src = "/static/img/cimc_logo.png";
     color = "bg-warning";
     enableClaimToIntersight();
-    enableClearIntersightClaimStatus();
+    enableResetDeviceConnector();
     enableClearSelLogs();
     enableRegenerateCertificate();
   } else if (current_device.device_type == "ucsc"){
@@ -405,6 +407,7 @@ function displayDevice(data){
                 <h5 class="widget-user-desc text-truncate" data-toggle="tooltip" data-placement="top" title="${current_device.device_type_long}">
                 ${current_device.device_type_long}
                 </h5>
+                <p title="User Label" class="m-0 badge-light badge">${current_device.user_label ? current_device.user_label : ""}</p>
               </div>
               <div class = "d-flex flex-row p-2">
                 <div type = "button" class="mr-4 ${color} click-item" onclick="toggleEditDeviceModal(event)">
@@ -426,7 +429,7 @@ function displayDevice(data){
                 </li>
                 <li class="nav-item mw-100">
                   <div class="row p-2">
-                    <div class = "col">
+                    <div class = "col-md-auto">
                       Version: 
                     </div>
                     <div class = "col text-right text-truncate"data-toggle="tooltip" data-placement="right" title="${device_version}">
@@ -436,7 +439,7 @@ function displayDevice(data){
                 </li>
                 <li class="nav-item mw-100">
                   <div class="row p-2">
-                    <div class = "col">
+                    <div class = "col-md-auto">
                     Target: 
                     </div>
                     <div class = "col text-right text-truncate" data-toggle="tooltip" data-placement="right" title="${current_device.target}">
@@ -720,9 +723,9 @@ function enableClearConfig(){
 }
 
 /**
- * Shows the action "Clear Intersight Claim Status" in the Actions button
+ * Shows the action "Reset Device Connector" in the Actions button
  */
-function enableClearIntersightClaimStatus(){
+function enableResetDeviceConnector(){
   $("#actions-separator").show();
   $("#action-clear-intersight-claim-status").show();
 }
@@ -1160,7 +1163,8 @@ function toggleEditDeviceModal(event){
   // Populates the fields of the modal
   document.getElementById('edit_device_label').innerText = "Editing device: " + current_device.device_name;
   document.getElementById('edit_target').value = current_device.target;
-
+  document.getElementById('edit_user_label').value = current_device.user_label;
+  
   // Shows the relevant form elements based on the device type
   if(current_device.device_type == "intersight"){
     document.getElementById('intersight-device-edit-form').classList.remove('d-none');

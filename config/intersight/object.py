@@ -184,7 +184,11 @@ class IntersightConfigObject(GenericConfigObject):
                     self.logger(level="info",
                                 message=f"Updating existing object of type {object_type} with {message_str} using "
                                         f"the values from config.")
-                    result = getattr(api_instance, "update_" + sdk_object_type)(existing_object_moid, payload)
+                    if sdk_object_type == "iam_account":
+                        # Handling "iam_account" with PATCH due to a backend issue preventing use of POST call
+                        result = getattr(api_instance, "patch_" + sdk_object_type)(existing_object_moid, payload)
+                    else:
+                        result = getattr(api_instance, "update_" + sdk_object_type)(existing_object_moid, payload)
                     self._config.push_summary_manager.add_object_status(
                         obj=self, obj_detail=detail, obj_type=object_type, status="success")
                 else:

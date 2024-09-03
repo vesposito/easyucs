@@ -74,14 +74,15 @@ class UcsSystemFiReportSection(UcsReportSection):
                 _(" expansion modules and ") + str(len(fi.power_supplies)) + _(" power supplies.")
         self.content_list.append(GenericReportText(order_id=self.report.get_current_order_id(), parent=self,
                                                    string=descr))
-        if fi.model in ["UCS-FI-M-6324"]:
-            # UCS Mini FI only has a rear picture
+        if fi.model in ["UCS-FI-M-6324", "UCSX-S9108-100G"]:
+            # UCS Mini/X-Direct FI only has a rear picture
             path_rear = self.report.img_path + "fi_" + fi.id + "_rear_clear.png"
             if os.path.exists(path_rear):
-                # rotate and create an horizontal picture of the FI from UCS Mini
-                image = Image.open(path_rear).rotate(90, expand=True)
-                path_rear = self.report.img_path + "fi_" + fi.id + "_rear_clear_horizontal.png"
-                image.save(path_rear)
+                if fi.model in ["UCS-FI-M-6324"]:
+                    # rotate and create a horizontal picture of the FI from UCS Mini
+                    image = Image.open(path_rear).rotate(90, expand=True)
+                    path_rear = self.report.img_path + "fi_" + fi.id + "_rear_clear_horizontal.png"
+                    image.save(path_rear)
             self.content_list.append(
                 GenericReportImage(order_id=self.report.get_current_order_id(), parent=self, path=path_rear,
                                    centered=True, spacing_after=2))

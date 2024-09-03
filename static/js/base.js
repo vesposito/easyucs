@@ -41,6 +41,30 @@ var selected_objects = {
 // Task related
 var displayed_tasks = [];
 var notifications = 0;
+var deviceTasksTable = null;
+
+var devices_tasks_counts = {};
+function getDeviceTasksCount(device_uuid) {
+    if (!(device_uuid in devices_tasks_counts)){
+        devices_tasks_counts[device_uuid] = 0;
+    }
+    return devices_tasks_counts[device_uuid];
+}
+
+function resetAllDeviceTasksCounts() {
+    devices_tasks_counts = {};
+    $(".device-tasks-counter-badge").text("0");
+    $(".device-tasks-counter").hide();
+}
+
+function incrementDeviceTasksCount(device_uuid) {
+    let new_value = getDeviceTasksCount(device_uuid) + 1;
+    devices_tasks_counts[device_uuid] = new_value;
+    let counter = $(".device-tasks-counter." + device_uuid);
+    let badge = counter.find(".device-tasks-counter-badge");
+    badge.text(new_value);
+    counter.show();
+}
 
 // Logs related
 var display_logs_bool = false;
@@ -53,7 +77,7 @@ var log_level = "debug";
 $(document).ready(function() {
     $("body").tooltip({ selector: '[data-toggle=tooltip]' });
 
-    getFromDb(displayNotifications,"notification");
+    // getFromDb(displayNotifications,"notification");
     getFromDb(processSavedSessionLogs, "log");
     getDevicesTypesInfo(function (device_types){
         saveDevicesTypesInfo(device_types);
@@ -114,7 +138,6 @@ function addTaskNotification(){
     document.getElementById("new-task-badge").textContent = notifications;
 
     // Updates the tasks display
-    console.log("Updating tasks display");
     getFromDb(displayTasks, "task");
 }
 
@@ -124,7 +147,8 @@ function addTaskNotification(){
  */
 function alertActionStarted(action_type_message){
   displayAlert("Action started", action_type_message, "success");
-  addTaskNotification();
+  getTasksFromDb();
+//   addTaskNotification();
 }
 
 /**
@@ -133,7 +157,8 @@ function alertActionStarted(action_type_message){
  */
 function alertObjectFetched(object_type){
   displayAlert("Fetching task started", "Fetching "+ object_type, "success");
-  addTaskNotification();
+//   addTaskNotification();
+  getTasksFromDb();
 }
 
 /**
@@ -142,7 +167,8 @@ function alertObjectFetched(object_type){
  */
 function alertObjectPushed(object_type){
   displayAlert("Pushing task started", "Pushing " + object_type + " file to device", "success");
-  addTaskNotification();
+  getTasksFromDb();
+//   addTaskNotification();
 }
 
 
@@ -258,6 +284,9 @@ function createDataTable(tableId, order_column, date_column){
     }
 
     var dataTable = $(tableId).DataTable({
+        "dom":  "<'row'<'col-sm-12 text-start col-md-6'f><'col-sm-12 text-end col-md-6'l>>" +
+                "<'row'<'col-sm-12'tr>>" +
+                "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
         "responsive": true, "lengthChange": true, "autoWidth": false,
         "paging": true,
         "orderClasses": false,
@@ -511,6 +540,65 @@ function displayNotifications(data){
     document.getElementById("new-task-badge").textContent = notifications;
 }
 
+
+function tableFromTasks(task_list, taskTable, device_column = true) {
+    // For each task, we create the specific row in the DataTable
+    task_list.map( task => {
+        var text_color = "text-dark";
+        var status_title = "In progress";
+        var status_message = ``;
+        var on_click = `window.location='/task/${task.uuid}';`;
+        var text_color = "text-dark";
+        var status_title = "In progress";
+        var status_message = ``;
+        var on_click = `window.location='/task/${task.uuid}';`;
+
+
+        if ( task.status == "pending" ) {
+            var task_timestamp = "To be started";
+        } else {
+            var task_timestamp = moment(task.timestamp_start);
+        }
+
+
+        if(task.status == "in_progress"){
+            status_title = "In progress";
+            status_message = `
+            <div class="progress">
+                <div class="progress-bar bg-success" role="progressbar" style="width: ${task.progress}%" aria-valuenow="${task.progress}" aria-valuemin="0" aria-valuemax="100"></div>
+            </div>
+            `;
+        } else {
+            status_message = task.status_message;
+            if (task.status == "successful"){
+                text_color = "text-success";
+                status_title = "Successful";
+            } else if (task.status == "pending"){
+                text_color = "text-info";
+                status_title = "Pending";
+                status_message = "Task in queue";
+                on_click = "";
+            } else {
+                text_color = "text-danger";
+                status_title = "Failed";
+            }
+        }
+        device_column_content = device_column ? `<td><a href="/devices/${task.device_uuid}">${task.device_name}</a></td>` : "";
+        taskTable.row.add($(`
+        <tr style="cursor: pointer;">
+            <td>${task.uuid}</td>
+            <td class="${text_color}" onclick="${on_click}">${status_title}</td>
+            <td onclick="${on_click}">${task.description}</td>
+            <td onclick="${on_click}">${task.timestamp}</td>
+            <td onclick="${on_click}">${status_message}</td>
+            <td onclick="${on_click}">${task_timestamp}</td>
+            ${device_column_content}
+        </tr>`)).draw();
+        });
+        // Hides the checkbox column
+        taskTable.column(0).visible(false);
+}
+
 /**
  * Displays the tasks in the UI
  * @param  {JSON} data - The data returned when getting the tasks from the API
@@ -553,17 +641,28 @@ function displayTasks(data){
     var in_progress_tasks = [];
     var finished_tasks = [];
     var pending_tasks = [];
-
+    resetAllDeviceTasksCounts();
     // Stores the tasks finished and in progress in two different arrays
     loaded_tasks.map( task => {
         if(task.status == "in_progress"){
+            incrementDeviceTasksCount(task.device_uuid);
             in_progress_tasks.push(task);
         } else if (task.status == "pending"){
+            incrementDeviceTasksCount(task.device_uuid);
             pending_tasks.push(task);
         } else {
             finished_tasks.push(task);
         }
     });
+    // Display in progress and pending tasks count in the navbar tasks badge
+    let tasksCount = in_progress_tasks.length + pending_tasks.length;
+    if (tasksCount > 0){
+        $("#tasks-complete-badge").hide();
+        $("#task-count-badge").text(tasksCount);
+    } else {
+        $("#tasks-complete-badge").show();
+        $("#task-count-badge").text("");
+    }
 
     // Puts the tasks in progress first in the list of tasks
     loaded_tasks = [];
@@ -580,8 +679,16 @@ function displayTasks(data){
         $("#tasksPendingContainer").removeClass("d-flex");
         $("#tasksPendingContainer").addClass("d-none");
     }
-
-    // Only displays the first 10 tasks
+    // Display device specific tasks if we are on the device page
+    if (typeof current_device_uuid !== 'undefined') {
+        let device_specific_tasks = loaded_tasks.filter(task => task.device_uuid == current_device_uuid);
+        if (deviceTasksTable == null) {
+            deviceTasksTable = createDataTable("#tasksTable", 3, 3);
+        }
+        deviceTasksTable.clear().draw();
+        tableFromTasks(device_specific_tasks, deviceTasksTable, device_column = false);
+    }
+    // Only displays the first 10 tasks in the navbar tasks dropbdown
     if(allTasksNumber > 10){
         loaded_tasks = loaded_tasks.slice(0, 10)
     }
@@ -654,7 +761,7 @@ function displayTasks(data){
             </div>
         </div>
         `
-    })
+    });
 }
 
 /**
@@ -1054,10 +1161,11 @@ function handleCheckboxClick(tableId, cb){
 
 /**
  * Handles the HTTP response returned by a query
- * @param  {Function} callback - Optional: The function to execute while the call has returned
+ * @param  {Function} success_callback - Optional: The function to execute while the call has returned successfully
  * @param  {DOMString} received_http_response - The HTTP response returned by the query
+ * @param  {Function} error_callback - Optional: The function to execute while the call has returned an error
  */
-function handleHttpResponse(callback, received_http_response){
+function handleHttpResponse(success_callback, received_http_response, error_callback=null){
     supported_error_status_codes = [400, 404, 500];
 
     if(!received_http_response){
@@ -1071,8 +1179,8 @@ function handleHttpResponse(callback, received_http_response){
         if(received_http_response.status == 200){
 
             // Executes the callback function if specified
-            if(callback){
-                callback(received_http_response.responseText);
+            if(success_callback){
+                success_callback(received_http_response.responseText);
             }
         } else {
             // If the returned code is supported by EasyUCS, we return the associated error message
@@ -1082,6 +1190,9 @@ function handleHttpResponse(callback, received_http_response){
             // Otherwise, we only return the error status
             } else {
                 displayAlert(received_http_response.statusText);
+            }
+            if (error_callback){
+                error_callback(received_http_response.responseText);
             }
             // We refresh the data on the page since we got an error
             // refreshData();
@@ -1094,11 +1205,12 @@ function handleHttpResponse(callback, received_http_response){
  * Handles the HTTP response returned by a query
  * @param  {String} request_type - The request type to be performed {GET/PUT/POST/DELETE}
  * @param  {String} theUrl - URL on which to execute the request
- * @param  {Function} callback - Optional: The function to execute while the call has returned
+ * @param  {Function} success_callback - Optional: The function to execute while the call has returned successfully
  * @param  {FormData|JSON} payload - Optional: The payload to pass to the request
  * @param  {Object} url_params - Optional: A dictionary where keys are the parameter names and values are their values
+ * @param  {Function} error_callback - Optional: The function to execute while the call has returned an error
  */
-function httpRequestAsync(request_type = null, theUrl = null, callback = null, payload = null, url_params = null){
+function httpRequestAsync(request_type = null, theUrl = null, success_callback = null, payload = null, url_params = null, error_callback = null){
     var allowed_request_types = ["GET", "PUT", "POST", "DELETE"]
 
     if(!request_type){
@@ -1122,7 +1234,7 @@ function httpRequestAsync(request_type = null, theUrl = null, callback = null, p
 
     // Gets executed when a response to the request has been received
     xmlHttp.onreadystatechange = function() {
-        handleHttpResponse(callback, xmlHttp);
+        handleHttpResponse(success_callback, xmlHttp, error_callback);
     }
 
     if(url_params && Object.keys(url_params).length > 0){
@@ -1311,7 +1423,7 @@ function pushToDb(callback = null, object_type = null, device_uuid = null, paylo
 
     // Builds the API Endpoint and the file type based on the object type
     if(object_type == "device"){
-        httpRequestAsync("POST", target_api_endpoint, callback, payload);
+        httpRequestAsync("POST", target_api_endpoint, callback, payload, null, callback);
         return
     }else if(object_type == "config"){
         target_api_endpoint+= "/" + device_uuid + api_config_endpoint;

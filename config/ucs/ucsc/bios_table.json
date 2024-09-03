@@ -1,4 +1,29 @@
 {
+   "4_link_xgmi_max_speed": {
+      "available_in_legacy_mode": false,
+      "feature_group": "Processor",
+      "legacy_values": [
+         "20gbps",
+         "25gbps",
+         "32gbps",
+         "auto",
+         "platform-default"
+      ],
+      "maximum": null,
+      "minimum": null,
+      "param_name": "4-link xGMI max speed",
+      "step": null,
+      "target_name": "CbsDfCmn4LinkMaxXgmiSpeed",
+      "type": "enum",
+      "unit": null,
+      "values": [
+         "20Gbps",
+         "25Gbps",
+         "32Gbps",
+         "Auto",
+         "Platform Default"
+      ]
+   },
    "acpi10_support": {
       "available_in_legacy_mode": true,
       "feature_group": "ACPI10 Support",
@@ -494,13 +519,13 @@
          "auto",
          "platform-default"
       ],
-      "maximum": null,
-      "minimum": null,
+      "maximum": "2",
+      "minimum": "0",
       "param_name": "APBDIS",
-      "step": null,
+      "step": "1",
       "target_name": "CbsCmnApbdis",
       "type": "enum",
-      "unit": null,
+      "unit": "P State",
       "values": [
          "0",
          "1",
@@ -589,6 +614,29 @@
       "type": "enum",
       "unit": null,
       "values": [
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ]
+   },
+   "avx512": {
+      "available_in_legacy_mode": false,
+      "feature_group": "Processor",
+      "legacy_values": [
+         "auto",
+         "disabled",
+         "enabled",
+         "platform-default"
+      ],
+      "maximum": null,
+      "minimum": null,
+      "param_name": "AVX512",
+      "step": null,
+      "target_name": "CbsCmnCpuAvx512",
+      "type": "enum",
+      "unit": null,
+      "values": [
+         "Auto",
          "Disabled",
          "Enabled",
          "Platform Default"
@@ -757,6 +805,7 @@
       "available_in_legacy_mode": false,
       "feature_group": "C1 Auto Demotion",
       "legacy_values": [
+         "auto",
          "disabled",
          "enabled",
          "platform-default"
@@ -769,6 +818,7 @@
       "type": "enum",
       "unit": null,
       "values": [
+         "Auto",
          "Disabled",
          "Enabled",
          "Platform Default"
@@ -778,6 +828,7 @@
       "available_in_legacy_mode": false,
       "feature_group": "C1 Auto UnDemotion",
       "legacy_values": [
+         "auto",
          "disabled",
          "enabled",
          "platform-default"
@@ -790,6 +841,53 @@
       "type": "enum",
       "unit": null,
       "values": [
+         "Auto",
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ]
+   },
+   "cbs_df_cmn_mem_intlv_control": {
+      "available_in_legacy_mode": false,
+      "feature_group": "Memory Interleaving",
+      "legacy_values": [
+         "auto",
+         "disabled",
+         "enabled",
+         "platform-default"
+      ],
+      "maximum": null,
+      "minimum": null,
+      "param_name": "Memory Interleaving",
+      "step": null,
+      "target_name": "CbsDfCmnMemIntlvControl",
+      "type": "enum",
+      "unit": null,
+      "values": [
+         "Auto",
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ]
+   },
+   "cbs_df_cmn_mem_intlv_sp5": {
+      "available_in_legacy_mode": false,
+      "feature_group": "Memory Interleaving",
+      "legacy_values": [
+         "auto",
+         "disabled",
+         "enabled",
+         "platform-default"
+      ],
+      "maximum": null,
+      "minimum": null,
+      "param_name": "Memory Interleaving",
+      "step": null,
+      "target_name": "CbsDfCmnMemIntlvSP5",
+      "type": "enum",
+      "unit": null,
+      "values": [
+         "Auto",
          "Disabled",
          "Enabled",
          "Platform Default"
@@ -799,10 +897,12 @@
       "available_in_legacy_mode": false,
       "feature_group": "Processor",
       "legacy_values": [
+         "10-ccds",
          "2-ccds",
          "3-ccds",
          "4-ccds",
          "6-ccds",
+         "8-ccds",
          "auto",
          "platform-default"
       ],
@@ -814,10 +914,12 @@
       "type": "enum",
       "unit": null,
       "values": [
+         "10-CCDs",
          "2-CCDs",
          "3-CCDs",
          "4-CCDs",
          "6-CCDs",
+         "8-CCDs",
          "Auto",
          "Platform Default"
       ]
@@ -1197,6 +1299,29 @@
          "Platform Default"
       ]
    },
+   "core_watchdog_timer_enable": {
+      "available_in_legacy_mode": false,
+      "feature_group": "Processor",
+      "legacy_values": [
+         "auto",
+         "disabled",
+         "enabled",
+         "platform-default"
+      ],
+      "maximum": null,
+      "minimum": null,
+      "param_name": "Core Watchdog Timer Enable",
+      "step": null,
+      "target_name": "CbsDbgCpuGenCpuWdt",
+      "type": "enum",
+      "unit": null,
+      "values": [
+         "Auto",
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ]
+   },
    "cppc": {
       "available_in_legacy_mode": false,
       "feature_group": "Processor",
@@ -1239,6 +1364,39 @@
       "param_name": "CPU Downcore control",
       "step": null,
       "target_name": "CbsCpuCoreCtrl",
+      "type": "enum",
+      "unit": null,
+      "values": [
+         "Auto",
+         "FIVE-(5-+-0)",
+         "FOUR-(4-+-0)",
+         "ONE-(1-+-0)",
+         "SEVEN-(7-+-0)",
+         "SIX-(6-+-0)",
+         "THREE-(3-+-0)",
+         "TWO-(2-+-0)",
+         "Platform Default"
+      ]
+   },
+   "cpu_downcore_control_f19_m10h_1fh": {
+      "available_in_legacy_mode": false,
+      "feature_group": "Processor",
+      "legacy_values": [
+         "auto",
+         "five-(5-+-0)",
+         "four-(4-+-0)",
+         "one-(1-+-0)",
+         "seven-(7-+-0)",
+         "six-(6-+-0)",
+         "three-(3-+-0)",
+         "two-(2-+-0)",
+         "platform-default"
+      ],
+      "maximum": null,
+      "minimum": null,
+      "param_name": "CPU Downcore control F19 M10h-1Fh",
+      "step": null,
+      "target_name": "CbsCpuDownCoreCtrlGenoa",
       "type": "enum",
       "unit": null,
       "values": [
@@ -1566,6 +1724,29 @@
          "Platform Default"
       ]
    },
+   "dfx_osb_configuration": {
+      "available_in_legacy_mode": false,
+      "feature_group": "DFX OSB Configuration",
+      "legacy_values": [
+         "auto",
+         "disabled",
+         "enabled",
+         "platform-default"
+      ],
+      "maximum": null,
+      "minimum": null,
+      "param_name": "DFX OSB Configuration",
+      "step": null,
+      "target_name": "DfxOsbEn",
+      "type": "enum",
+      "unit": null,
+      "values": [
+         "Auto",
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ]
+   },
    "direct_cache_access": {
       "available_in_legacy_mode": true,
       "feature_group": "Direct Cache Access",
@@ -1580,6 +1761,29 @@
       "param_name": "Direct Cache Access",
       "step": null,
       "target_name": "DirectCacheAccess",
+      "type": "enum",
+      "unit": null,
+      "values": [
+         "Auto",
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ]
+   },
+   "dlwm_support": {
+      "available_in_legacy_mode": false,
+      "feature_group": "Processor",
+      "legacy_values": [
+         "auto",
+         "disabled",
+         "enabled",
+         "platform-default"
+      ],
+      "maximum": null,
+      "minimum": null,
+      "param_name": "DLWM Support",
+      "step": null,
+      "target_name": "CbsCmnGnbSMUDlwmSupport",
       "type": "enum",
       "unit": null,
       "values": [
@@ -1693,6 +1897,43 @@
          "Platform Default"
       ]
    },
+   "dram_scrub_time": {
+      "available_in_legacy_mode": false,
+      "feature_group": "DRAM Scrub Time",
+      "legacy_values": [
+         "1-hour",
+         "12-hours",
+         "16-hours",
+         "24-hours",
+         "4-hours",
+         "48-hours",
+         "6-hours",
+         "8-hours",
+         "auto",
+         "disabled",
+         "platform-default"
+      ],
+      "maximum": null,
+      "minimum": null,
+      "param_name": "DRAM Scrub Time",
+      "step": null,
+      "target_name": "CbsDfCmnDramScrubTime",
+      "type": "enum",
+      "unit": null,
+      "values": [
+         "1-hour",
+         "12-hours",
+         "16-hours",
+         "24-hours",
+         "4-hours",
+         "48-hours",
+         "6-hours",
+         "8-hours",
+         "Auto",
+         "Disabled",
+         "Platform Default"
+      ]
+   },
    "dram_sw_thermal_throttling": {
       "available_in_legacy_mode": false,
       "feature_group": "Processor",
@@ -1728,6 +1969,29 @@
       "param_name": "eADR Support",
       "step": null,
       "target_name": "EadrSupport",
+      "type": "enum",
+      "unit": null,
+      "values": [
+         "Auto",
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ]
+   },
+   "edc_control_throttle": {
+      "available_in_legacy_mode": false,
+      "feature_group": "Processor",
+      "legacy_values": [
+         "auto",
+         "disabled",
+         "enabled",
+         "platform-default"
+      ],
+      "maximum": null,
+      "minimum": null,
+      "param_name": "EDC Control Throttle",
+      "step": null,
+      "target_name": "CbsCmnEdcControlThrottle",
       "type": "enum",
       "unit": null,
       "values": [
@@ -2006,6 +2270,25 @@
          "P1",
          "P2",
          "P3",
+         "Platform Default"
+      ]
+   },
+   "fixed_soc_pstate_sp5_f19h": {
+      "available_in_legacy_mode": false,
+      "feature_group": "Processor",
+      "legacy_values": [
+         "integer",
+         "platform-default"
+      ],
+      "maximum": "2",
+      "minimum": "0",
+      "param_name": "Fixed SOC Pstate SP5 F19h",
+      "step": "1",
+      "target_name": "CbsCmnApbdisDfPstateRs",
+      "type": "integer",
+      "unit": "P State",
+      "values": [
+         "Integer",
          "Platform Default"
       ]
    },
@@ -3680,6 +3963,27 @@
          "Platform Default"
       ]
    },
+   "ioat_configuration": {
+      "available_in_legacy_mode": false,
+      "feature_group": "Processor",
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "platform-default"
+      ],
+      "maximum": null,
+      "minimum": null,
+      "param_name": "IOAT Configuration",
+      "step": null,
+      "target_name": "IOATConfigCpm",
+      "type": "enum",
+      "unit": null,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ]
+   },
    "ioemezz1_linkspeed": {
       "available_in_legacy_mode": false,
       "feature_group": "PCI Slot Link Speed",
@@ -4206,6 +4510,31 @@
          "Platform Default"
       ]
    },
+   "local_apic_mode": {
+      "available_in_legacy_mode": false,
+      "feature_group": "Processor",
+      "legacy_values": [
+         "auto",
+         "compatibility",
+         "x2apic",
+         "xapic",
+         "platform-default"
+      ],
+      "maximum": null,
+      "minimum": null,
+      "param_name": "Local APIC Mode",
+      "step": null,
+      "target_name": "CbsDbgCpuLApicMode",
+      "type": "enum",
+      "unit": null,
+      "values": [
+         "Auto",
+         "Compatibility",
+         "X2APIC",
+         "XAPIC",
+         "Platform Default"
+      ]
+   },
    "local_x2_apic": {
       "available_in_legacy_mode": true,
       "feature_group": "Local X2 Apic",
@@ -4379,6 +4708,88 @@
       "values": [
          "Disabled",
          "Enabled",
+         "Platform Default"
+      ]
+   },
+   "memory_clock_speed_7xx2": {
+      "available_in_legacy_mode": false,
+      "feature_group": "Processor",
+      "legacy_values": [
+         "1067mhz",
+         "1200mhz",
+         "1333mhz",
+         "1467mhz",
+         "1600mhz",
+         "667mhz",
+         "800mhz",
+         "933mhz",
+         "auto",
+         "platform-default"
+      ],
+      "maximum": null,
+      "minimum": null,
+      "param_name": "Memory Clock Speed 7xx2",
+      "step": null,
+      "target_name": "CbsCmnMemSpeedDdr47xx2",
+      "type": "enum",
+      "unit": null,
+      "values": [
+         "1067MHz",
+         "1200MHz",
+         "1333MHz",
+         "1467MHz",
+         "1600MHz",
+         "667MHz",
+         "800MHz",
+         "933MHz",
+         "Auto",
+         "Platform Default"
+      ]
+   },
+   "memory_clock_speed_7xx3": {
+      "available_in_legacy_mode": false,
+      "feature_group": "Processor",
+      "legacy_values": [
+         "1067mhz",
+         "1200mhz",
+         "1333mhz",
+         "1467mhz",
+         "1600mhz",
+         "1633mhz",
+         "1667mhz",
+         "1700mhz",
+         "1733mhz",
+         "1767mhz",
+         "1800mhz",
+         "400mhz",
+         "800mhz",
+         "933mhz",
+         "auto",
+         "platform-default"
+      ],
+      "maximum": null,
+      "minimum": null,
+      "param_name": "Memory Clock Speed 7xx3",
+      "step": null,
+      "target_name": "CbsCmnMemSpeedDdr47xx3",
+      "type": "enum",
+      "unit": null,
+      "values": [
+         "1067MHz",
+         "1200MHz",
+         "1333MHz",
+         "1467MHz",
+         "1600MHz",
+         "1633MHz",
+         "1667MHz",
+         "1700MHz",
+         "1733MHz",
+         "1767MHz",
+         "1800MHz",
+         "400MHz",
+         "800MHz",
+         "933MHz",
+         "Auto",
          "Platform Default"
       ]
    },
@@ -4569,6 +4980,70 @@
          "GEN2",
          "GEN3",
          "GEN4",
+         "Platform Default"
+      ]
+   },
+   "mmio_high_base": {
+      "available_in_legacy_mode": false,
+      "feature_group": "MMIO High Base",
+      "legacy_values": [
+         "16t",
+         "1t",
+         "24t",
+         "2t",
+         "32t",
+         "40t",
+         "4t",
+         "512g",
+         "56t",
+         "platform-default"
+      ],
+      "maximum": null,
+      "minimum": null,
+      "param_name": "MMIO High Base",
+      "step": null,
+      "target_name": "MmiohBase",
+      "type": "enum",
+      "unit": null,
+      "values": [
+         "16T",
+         "1T",
+         "24T",
+         "2T",
+         "32T",
+         "40T",
+         "4T",
+         "512G",
+         "56T",
+         "Platform Default"
+      ]
+   },
+   "mmio_high_granularity_size": {
+      "available_in_legacy_mode": false,
+      "feature_group": "MMIO High Granularity Size",
+      "legacy_values": [
+         "1024g",
+         "16g",
+         "1g",
+         "256g",
+         "4g",
+         "64g",
+         "platform-default"
+      ],
+      "maximum": null,
+      "minimum": null,
+      "param_name": "MMIO High Granularity Size",
+      "step": null,
+      "target_name": "MmiohSize",
+      "type": "enum",
+      "unit": null,
+      "values": [
+         "1024G",
+         "16G",
+         "1G",
+         "256G",
+         "4G",
+         "64G",
          "Platform Default"
       ]
    },
@@ -7230,6 +7705,29 @@
          "Platform Default"
       ]
    },
+   "pcie_ten_bit_tag_support": {
+      "available_in_legacy_mode": false,
+      "feature_group": "Processor",
+      "legacy_values": [
+         "auto",
+         "disabled",
+         "enabled",
+         "platform-default"
+      ],
+      "maximum": null,
+      "minimum": null,
+      "param_name": "PCIe Ten Bit Tag Support",
+      "step": null,
+      "target_name": "CbsGnbDbgPcieTbtSupport",
+      "type": "enum",
+      "unit": null,
+      "values": [
+         "Auto",
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ]
+   },
    "pciromclp": {
       "available_in_legacy_mode": true,
       "feature_group": "PCI ROM CLP",
@@ -7314,6 +7812,29 @@
          "Platform Default"
       ]
    },
+   "power_down_enable": {
+      "available_in_legacy_mode": false,
+      "feature_group": "Processor",
+      "legacy_values": [
+         "auto",
+         "disabled",
+         "enabled",
+         "platform-default"
+      ],
+      "maximum": null,
+      "minimum": null,
+      "param_name": "Power Down Enable",
+      "step": null,
+      "target_name": "CbsCmnMemCtrllerPwrDnEnDdr",
+      "type": "enum",
+      "unit": null,
+      "values": [
+         "Auto",
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ]
+   },
    "power_on_password": {
       "available_in_legacy_mode": false,
       "feature_group": "PCI Slot LINK Speed",
@@ -7332,6 +7853,31 @@
       "values": [
          "Disabled",
          "Enabled",
+         "Platform Default"
+      ]
+   },
+   "power_profile_selection_f19h": {
+      "available_in_legacy_mode": false,
+      "feature_group": "Processor",
+      "legacy_values": [
+         "balanced-memory-performance-mode",
+         "efficiency-mode",
+         "high-performance-mode",
+         "maximum-io-performance-mode",
+         "platform-default"
+      ],
+      "maximum": null,
+      "minimum": null,
+      "param_name": "Power Profile Selection F19h",
+      "step": null,
+      "target_name": "CbsCmnEfficiencyModeEnRs",
+      "type": "enum",
+      "unit": null,
+      "values": [
+         "Balanced-Memory-Performance-Mode",
+         "Efficiency-Mode",
+         "High-Performance-Mode",
+         "Maximum-IO-Performance-Mode",
          "Platform Default"
       ]
    },
@@ -7360,20 +7906,66 @@
          "Platform Default"
       ]
    },
+   "preferred_io_7xx2": {
+      "available_in_legacy_mode": false,
+      "feature_group": "Processor",
+      "legacy_values": [
+         "auto",
+         "manual",
+         "platform-default"
+      ],
+      "maximum": null,
+      "minimum": null,
+      "param_name": "Preferred IO 7xx2",
+      "step": null,
+      "target_name": "CbsCmnPreferredIO7xx2",
+      "type": "enum",
+      "unit": null,
+      "values": [
+         "Auto",
+         "Manual",
+         "Platform Default"
+      ]
+   },
+   "preferred_io_7xx3": {
+      "available_in_legacy_mode": false,
+      "feature_group": "Processor",
+      "legacy_values": [
+         "auto",
+         "bus",
+         "platform-default"
+      ],
+      "maximum": null,
+      "minimum": null,
+      "param_name": "Preferred IO 7xx3",
+      "step": null,
+      "target_name": "CbsCmnPreferredIO7xx3",
+      "type": "enum",
+      "unit": null,
+      "values": [
+         "Auto",
+         "Bus",
+         "Platform Default"
+      ]
+   },
    "prmrr_size": {
       "available_in_legacy_mode": false,
       "feature_group": "PRMRR Size Configuration",
       "legacy_values": [
          "128g",
+         "128m",
          "16g",
          "1g",
          "256g",
+         "256m",
          "2g",
          "32g",
          "4g",
          "512g",
+         "512m",
          "64g",
          "8g",
+         "auto",
          "invalid-config.",
          "platform-default"
       ],
@@ -7386,15 +7978,19 @@
       "unit": null,
       "values": [
          "128G",
+         "128M",
          "16G",
          "1G",
          "256G",
+         "256M",
          "2G",
          "32G",
          "4G",
          "512G",
+         "512M",
          "64G",
          "8G",
+         "Auto",
          "Invalid-Config.",
          "Platform Default"
       ]
@@ -7816,6 +8412,27 @@
          "Platform Default"
       ]
    },
+   "re_size_bar_support": {
+      "available_in_legacy_mode": false,
+      "feature_group": "Resizable Bar Support",
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "platform-default"
+      ],
+      "maximum": null,
+      "minimum": null,
+      "param_name": "Re-Size BAR Support",
+      "step": null,
+      "target_name": "ResizeBarSupport",
+      "type": "enum",
+      "unit": null,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ]
+   },
    "rear_nvme1_link_speed": {
       "available_in_legacy_mode": false,
       "feature_group": "PCI Slot LINK Speed",
@@ -7981,6 +8598,27 @@
          "Last-State",
          "Reset",
          "Stay-Off",
+         "Platform Default"
+      ]
+   },
+   "runtime_post_package_repair": {
+      "available_in_legacy_mode": false,
+      "feature_group": "PostPackageRepair",
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "platform-default"
+      ],
+      "maximum": null,
+      "minimum": null,
+      "param_name": "Runtime Post Package Repair",
+      "step": null,
+      "target_name": "RuntimePostPackageRepair",
+      "type": "enum",
+      "unit": null,
+      "values": [
+         "Disabled",
+         "Enabled",
          "Platform Default"
       ]
    },
@@ -8326,6 +8964,27 @@
          "Platform Default"
       ]
    },
+   "serial_mux": {
+      "available_in_legacy_mode": false,
+      "feature_group": "Serial Mux",
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "platform-default"
+      ],
+      "maximum": null,
+      "minimum": null,
+      "param_name": "Serial Mux",
+      "step": null,
+      "target_name": "SerialMux",
+      "type": "enum",
+      "unit": null,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ]
+   },
    "serial_port_a_enable": {
       "available_in_legacy_mode": true,
       "feature_group": "Serial port A enable",
@@ -8370,10 +9029,30 @@
          "Platform Default"
       ]
    },
+   "sev_es_asid_space_limit": {
+      "available_in_legacy_mode": false,
+      "feature_group": "Processor",
+      "legacy_values": [
+         "integer",
+         "platform-default"
+      ],
+      "maximum": "1007",
+      "minimum": "1",
+      "param_name": "SEV-ES ASID Space Limit",
+      "step": "1",
+      "target_name": "CbsCmnCpuSevAsidSpaceLimit",
+      "type": "integer",
+      "unit": "ASIDs",
+      "values": [
+         "Integer",
+         "Platform Default"
+      ]
+   },
    "sev_snp_support": {
       "available_in_legacy_mode": false,
       "feature_group": "Processor",
       "legacy_values": [
+         "auto",
          "disabled",
          "enabled",
          "platform-default"
@@ -8386,6 +9065,7 @@
       "type": "enum",
       "unit": null,
       "values": [
+         "Auto",
          "Disabled",
          "Enabled",
          "Platform Default"
@@ -8606,6 +9286,27 @@
       "param_name": "SHA 256 PCR Bank",
       "step": null,
       "target_name": "SHA256PCRBank",
+      "type": "enum",
+      "unit": null,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ]
+   },
+   "sha_384_pcr_bank": {
+      "available_in_legacy_mode": false,
+      "feature_group": "Trusted Platform Module",
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "platform-default"
+      ],
+      "maximum": null,
+      "minimum": null,
+      "param_name": "SHA 384 PCR Bank",
+      "step": null,
+      "target_name": "SHA384PCRBank",
       "type": "enum",
       "unit": null,
       "values": [
@@ -9430,6 +10131,27 @@
          "Platform Default"
       ]
    },
+   "tdx_secure_arbitration_mode": {
+      "available_in_legacy_mode": false,
+      "feature_group": "Trust Domain Extension",
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "platform-default"
+      ],
+      "maximum": null,
+      "minimum": null,
+      "param_name": "TDX Secure Arbitration Mode (SEAM) Loader",
+      "step": null,
+      "target_name": "EnableTdxSeamldr",
+      "type": "enum",
+      "unit": null,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ]
+   },
    "terminal_type": {
       "available_in_legacy_mode": true,
       "feature_group": "Console redirection",
@@ -9489,6 +10211,27 @@
       "param_name": "TPM Minimal Physical Presence",
       "step": null,
       "target_name": "TpmPpiRequired",
+      "type": "enum",
+      "unit": null,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ]
+   },
+   "trust_domain_extension": {
+      "available_in_legacy_mode": false,
+      "feature_group": "Trust Domain Extension",
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "platform-default"
+      ],
+      "maximum": null,
+      "minimum": null,
+      "param_name": "Trust Domain Extension (TDX)",
+      "step": null,
+      "target_name": "EnableTdx",
       "type": "enum",
       "unit": null,
       "values": [
@@ -9589,6 +10332,7 @@
       "legacy_values": [
          "disable(all2all)",
          "hemisphere(2-clusters)",
+         "quadrant(4-clusters)",
          "platform-default"
       ],
       "maximum": null,
@@ -9601,6 +10345,7 @@
       "values": [
          "Disable(All2All)",
          "Hemisphere(2-clusters)",
+         "Quadrant(4-clusters)",
          "Platform Default"
       ]
    },
@@ -9659,6 +10404,7 @@
          "12.8gt-s",
          "14.4gt-s",
          "16.0gt-s",
+         "20.0gt-s",
          "9.6gt-s",
          "auto",
          "use-per-link-setting",
@@ -9677,6 +10423,7 @@
          "12.8GT-s",
          "14.4GT-s",
          "16.0GT-s",
+         "20.0GT-s",
          "9.6GT-s",
          "Auto",
          "Use-Per-Link-Setting",
@@ -10041,6 +10788,56 @@
       "values": [
          "Disabled",
          "Enabled",
+         "Platform Default"
+      ]
+   },
+   "xgmi_force_link_width": {
+      "available_in_legacy_mode": false,
+      "feature_group": "Processor",
+      "legacy_values": [
+         "0",
+         "1",
+         "2",
+         "auto",
+         "platform-default"
+      ],
+      "maximum": null,
+      "minimum": null,
+      "param_name": "xGMI Force Link Width",
+      "step": null,
+      "target_name": "CbsCmnxGmiForceLinkWidthRs",
+      "type": "enum",
+      "unit": null,
+      "values": [
+         "0",
+         "1",
+         "2",
+         "Auto",
+         "Platform Default"
+      ]
+   },
+   "xgmi_link_configuration": {
+      "available_in_legacy_mode": false,
+      "feature_group": "Processor",
+      "legacy_values": [
+         "2-xgmi-links",
+         "3-xgmi-links",
+         "4-xgmi-links",
+         "auto",
+         "platform-default"
+      ],
+      "maximum": null,
+      "minimum": null,
+      "param_name": "xGMI Link Configuration",
+      "step": null,
+      "target_name": "CbsDfDbgXgmiLinkCfg",
+      "type": "enum",
+      "unit": null,
+      "values": [
+         "2-xGMI-Links",
+         "3-xGMI-Links",
+         "4-xGMI-Links",
+         "Auto",
          "Platform Default"
       ]
    },

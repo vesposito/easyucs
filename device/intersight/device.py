@@ -72,7 +72,7 @@ urllib3.disable_warnings()
 
 
 class IntersightDevice(GenericDevice):
-    INTERSIGHT_APPLIANCE_MIN_REQUIRED_VERSION = "1.1.0-0"
+    INTERSIGHT_APPLIANCE_MIN_REQUIRED_VERSION = "1.1.0-1"
 
     def __init__(self, parent=None, uuid=None, target="www.intersight.com", key_id="", private_key_path="",
                  is_hidden=False, is_system=False, system_usage=None, proxy=None, proxy_user=None, proxy_password=None,
@@ -297,15 +297,12 @@ class IntersightDevice(GenericDevice):
             {IqnpoolApi: ["iqnpool_reservation",  "iqnpool_pool"]},
             {UuidpoolApi: ["uuidpool_reservation", "uuidpool_pool"]},
             {ResourcepoolApi: ["resourcepool_membership_reservation", "resourcepool_pool"]},
-            {IamApi: [
-                "iam_end_point_user_policy", "iam_end_point_user_role",
-                "iam_end_point_user", "iam_permission", "iam_ldap_policy", "iam_sharing_rule"
-            ]},
+            {IamApi: ["iam_user_group", "iam_user", "iam_end_point_user_policy", "iam_end_point_user",
+                      "iam_permission", "iam_ldap_policy", "iam_sharing_rule"]},
             {OrganizationApi: ["organization_organization"]}
         ]
 
-        settings_sdk_objects = ["iam_end_point_user_policy", "iam_end_point_user_role", "iam_end_point_user",
-                                "iam_permission"]
+        settings_sdk_objects = ["iam_user_group", "iam_user",  "iam_permission"]
 
         # A set containing moid of all the organizations to be deleted
         orgs_to_be_deleted = set()
@@ -394,7 +391,7 @@ class IntersightDevice(GenericDevice):
                         # 'shared' ownership. We do not delete such objects.
                         if hasattr(result, "shared_scope") and result.shared_scope == "shared":
                             continue
-                        # We skip some System defined objects which exists on appliance. These objects does not
+                        # We skip some System defined objects which exists on appliance. These objects do not
                         # belong to any organization and cannot be deleted. So we skip deleting them.
                         # In Appliance version 1.1.0-0, we have 'ntp.Policy' and 'networkconfig.Policy' policy named
                         # 'APPLIANCE-DEFAULT' which are system defined.
@@ -501,6 +498,9 @@ class IntersightDevice(GenericDevice):
                                                 f"'{obj.name}' (MOID: {obj.moid})."
                                     )
                                     continue
+                            # Skip deletion of the iam_user if name is "admin".
+                            elif sdk_object == "iam_user" and getattr(obj, "name", "") == "admin":
+                                continue
                             elif sdk_object == "iam_permission":
                                 # We skip the deletion of system defined objects
                                 skip_object = False
@@ -708,11 +708,18 @@ class IntersightDevice(GenericDevice):
                     from api.api_server import easyucs
                     if easyucs:
                         self.metadata.is_reachable = False
-                        self.logger(level="error", message="EasyUCS supports version " +
-                                                           self.version_min_required + " and above.Your version"
-                                                           + version + " is not supported.")
+                        self.logger(
+                            level="error",
+                            message="EasyUCS supports version " + self.version_min_required +
+                                    " and above. Your version " + version + " is not supported."
+                        )
                         return False
                     else:
+                        self.logger(
+                            level="warning",
+                            message="EasyUCS supports version " + self.version_min_required +
+                                    " and above. Your version " + version + " is not supported."
+                        )
                         if not common.query_yes_no("Are you sure you want to continue with an unsupported version?"):
                             # User declined continue with unsupported version query
                             self.disconnect()

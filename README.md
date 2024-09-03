@@ -76,6 +76,15 @@ python -m pip install -r requirements.txt
 EasyUCS can be used with command line interface or via a Web GUI.
 
 
+### Using the Web Graphical User Interface (GUI) / the API
+
+The Web GUI is hosted by your machine, in order to launch it you need to use the file **[easyucs_api.py](./easyucs_api.py)**.
+
+```
+python easyucs_api.py
+```
+
+
 ### Using the Command-Line Interface (CLI)
 
 Push config file config_ucsm.json to UCS system
@@ -128,17 +137,9 @@ Clear SEL Logs of all discovered servers of UCS system
 python easyucs.py device clear_sel_logs -t ucsm -i 192.168.0.1 -u admin -p password
 ```
 
-Clear Intersight Device Connector claim status for UCS system
+Reset Device Connector for UCS system
 ```
-python easyucs.py device clear_intersight_claim_status -t ucsm -i 192.168.0.1 -u admin -p password
-```
-
-#### Using the Web Graphical User Interface (GUI) / the API
-
-The Web GUI is hosted by your machine, in order to launch it you need to use the file **[easyucs_api.py](./easyucs_api.py)**.
-
-```
-python easyucs_api.py
+python easyucs.py device reset_device_connector -t ucsm -i 192.168.0.1 -u admin -p password
 ```
 
 
@@ -151,6 +152,14 @@ python easyucs_api.py
 
 
 ## Versioning
+
+### 0.9.8.11
+* Add support for UCS X-Direct in UCSM config/inventory/report
+* Add support for assigning user label to devices
+* Add GUI support for Intersight SaaS/Appliance and SaaS regions
+* Renamed clear_intersight_claim_status action to reset_device_connector
+* Bump up minimum Intersight Appliance required version to 1.1.0-1
+* Miscellaneous bug fixes and improvements
 
 ### 0.9.8.10
 
@@ -246,7 +255,7 @@ This also means that there are a few **breaking changes** in the JSON format for
 
 * Add support for Intersight Device Connector in inventory & config for UCSM & IMC
 * Add Device Connector section in UCSM & IMC report
-* Add support for clearing Intersight Claim Status for UCSM & IMC Device Connector
+* Add support for resetting UCSM & IMC Device Connector
 * Miscellaneous bug fixes
 
 ### 0.9.7
@@ -330,13 +339,13 @@ Initial release
 
 ## Authors
 
-* **Marc Abu El Ghait** - *Initial work* - [github account link](https://github.com/mabuelgh)
-* **Franck Bonneau** - *Initial work* - [github account link](https://github.com/Franck-Bonneau)
-* **Vincent Esposito** - *Initial work* - [github account link](https://github.com/vesposito)
+* **Marc Abu El Ghait** - *Initial work* - [GitHub account link](https://github.com/mabuelgh)
+* **Franck Bonneau** - *Initial work* - [GitHub account link](https://github.com/Franck-Bonneau)
+* **Vincent Esposito** - *Initial work* - [GitHub account link](https://github.com/vesposito)
 
 ## Contributors
-* **Shashank Pandey** - *Repository, DB, API, Intersight, ...* - [github account link](https://github.com/Shashank-Pandey-ML)
-* **Valentin Pereira** - *Redesigned GUI* - [github account link](https://github.com/Valisback)
+* **Shashank Pandey** - *Repository, DB, API, Intersight, ...* - [GitHub account link](https://github.com/Shashank-Pandey-ML)
+* **Valentin Pereira** - *Redesigned GUI* - [GitHub account link](https://github.com/Valisback)
 * **Mohamed Ismayil** - *Intersight support*
 * **Syeda Mehar Naseer** - *UCS Central/Manager & Intersight support*
 * **Anjana Devi Chilukuri** - *UCS Central/Manager & Intersight support*

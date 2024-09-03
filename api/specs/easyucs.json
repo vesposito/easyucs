@@ -1,7 +1,7 @@
 {
   "openapi": "3.0.3",
   "info": {
-    "version": "0.9.8.10",
+    "version": "0.9.8.11",
     "title": "EasyUCS API",
     "description": "Description of EasyUCS API"
   },
@@ -78,11 +78,6 @@
           "cvd"
         ],
         "example": "cvd"
-      },
-      "clear_intersight_claim_status": {
-        "type": "boolean",
-        "description": "Clear Intersight claim status if claimed",
-        "example": true
       },
       "clear_sel_logs": {
         "type": "boolean",
@@ -532,6 +527,11 @@
         "description": "UUID of the report",
         "example": "783670e4-c03c-40a8-89cf-2eb9eacc2c6a"
       },
+      "reset_device_connector": {
+        "type": "boolean",
+        "description": "Reset Device Connector",
+        "example": true
+      },
       "restore_repo": {
         "type": "boolean",
         "description": "Whether to restore repofiles and reposynctodevice tables",
@@ -812,7 +812,6 @@
           "description": "Action",
           "example": "reset",
           "enum": [
-            "clear_intersight_claim_status",
             "clear_sel_logs",
             "clear_user_sessions",
             "decommission_all_rack_servers",
@@ -820,6 +819,7 @@
             "erase_all_flexflash",
             "regenerate_certificate",
             "reset",
+            "reset_device_connector",
             "set_all_drives_status"
           ]
         }
@@ -1324,9 +1324,6 @@
           "password": {
             "$ref": "#/components/schemas/password"
           },
-          "clear_intersight_claim_status": {
-            "$ref": "#/components/schemas/clear_intersight_claim_status"
-          },
           "clear_sel_logs": {
             "$ref": "#/components/schemas/clear_sel_logs"
           },
@@ -1338,6 +1335,9 @@
           },
           "erase_virtual_drives": {
             "$ref": "#/components/schemas/erase_virtual_drives"
+          },
+          "reset_device_connector": {
+            "$ref": "#/components/schemas/reset_device_connector"
           },
           "unregister_from_central": {
             "$ref": "#/components/schemas/unregister_from_central"
@@ -1370,7 +1370,7 @@
         },
         "additionalProperties": false
       },
-      "devices_actions_clear_intersight_claim_status_post": {
+      "devices_actions_delete_post": {
         "type": "object",
         "required": [
           "device_uuids"
@@ -1385,7 +1385,7 @@
         },
         "additionalProperties": false
       },
-      "devices_actions_delete_post": {
+      "devices_actions_reset_device_connector_post": {
         "type": "object",
         "required": [
           "device_uuids"
@@ -2204,7 +2204,7 @@
       "restore_repo": {
         "name": "restore_repo",
         "in": "query",
-        "description": "Whether to resore repofiles and reposynctodevice tables",
+        "description": "Whether to restore repofiles and reposynctodevice tables",
         "schema": {
           "$ref": "#/components/schemas/restore_repo"
         }
@@ -2705,19 +2705,49 @@
         }
       }
     },
-    "/devices/actions/clear_intersight_claim_status": {
+    "/devices/actions/delete": {
       "post": {
         "tags": [
           "devices"
         ],
-        "summary": "Clears the Intersight Claim Status of a list of devices",
-        "description": "Clears the Intersight Claim Status of a list of devices in EasyUCS.",
+        "summary": "Deletes a list of devices",
+        "description": "Deletes a list of devices in EasyUCS.",
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/devices_actions_clear_intersight_claim_status_post"
+                "$ref": "#/components/schemas/devices_actions_delete_post"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Devices successfully deleted"
+          },
+          "400": {
+            "$ref": "#/components/responses/400ClientError"
+          },
+          "500": {
+            "$ref": "#/components/responses/500ServerError"
+          }
+        }
+      }
+    },
+    "/devices/actions/reset_device_connector": {
+      "post": {
+        "tags": [
+          "devices"
+        ],
+        "summary": "Resets the Device Connector of a list of devices",
+        "description": "Resets the Device Connector of a list of devices in EasyUCS.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/devices_actions_reset_device_connector_post"
               }
             }
           }
@@ -2741,36 +2771,6 @@
                 }
               }
             }
-          },
-          "400": {
-            "$ref": "#/components/responses/400ClientError"
-          },
-          "500": {
-            "$ref": "#/components/responses/500ServerError"
-          }
-        }
-      }
-    },
-    "/devices/actions/delete": {
-      "post": {
-        "tags": [
-          "devices"
-        ],
-        "summary": "Deletes a list of devices",
-        "description": "Deletes a list of devices in EasyUCS.",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/devices_actions_delete_post"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Devices successfully deleted"
           },
           "400": {
             "$ref": "#/components/responses/400ClientError"
@@ -2977,47 +2977,6 @@
             }
           }
         },
-        "responses": {
-          "200": {
-            "description": "The corresponding task to follow progress",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "task": {
-                      "$ref": "#/components/schemas/task_uuid"
-                    }
-                  },
-                  "additionalProperties": false
-                }
-              }
-            }
-          },
-          "400": {
-            "$ref": "#/components/responses/400ClientError"
-          },
-          "404": {
-            "$ref": "#/components/responses/404NotFound"
-          },
-          "500": {
-            "$ref": "#/components/responses/500ServerError"
-          }
-        }
-      }
-    },
-    "/devices/{device_uuid}/actions/clear_intersight_claim_status": {
-      "post": {
-        "tags": [
-          "devices"
-        ],
-        "summary": "Clears Intersight Claim Status of given UCS device",
-        "description": "Clears Intersight Claim Status of given UCS device",
-        "parameters": [
-          {
-            "$ref": "#/components/parameters/device_uuid"
-          }
-        ],
         "responses": {
           "200": {
             "description": "The corresponding task to follow progress",
@@ -3255,6 +3214,47 @@
             }
           }
         },
+        "responses": {
+          "200": {
+            "description": "The corresponding task to follow progress",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "task": {
+                      "$ref": "#/components/schemas/task_uuid"
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400ClientError"
+          },
+          "404": {
+            "$ref": "#/components/responses/404NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/500ServerError"
+          }
+        }
+      }
+    },
+    "/devices/{device_uuid}/actions/reset_device_connector": {
+      "post": {
+        "tags": [
+          "devices"
+        ],
+        "summary": "Resets Device Connector of given UCS device",
+        "description": "Resets Device Connector of given UCS device",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/device_uuid"
+          }
+        ],
         "responses": {
           "200": {
             "description": "The corresponding task to follow progress",

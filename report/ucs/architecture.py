@@ -26,12 +26,12 @@ class UcsSystemInfraCablingReportSection(UcsReportSection):
             title = _("Internal Infrastructure cabling")
         UcsReportSection.__init__(self, order_id=order_id, parent=parent, title=title)
         if self.report.inventory.chassis:
-            if self.report.inventory.fabric_interconnects[0].model not in ["UCS-FI-M-6324"]:
+            if self.report.inventory.fabric_interconnects[0].model not in ["UCS-FI-M-6324", "UCSX-S9108-100G"]:
                 self.content_list.append(
                     UcsSystemInfraCablingAllChassisReportSection(order_id=self.report.get_current_order_id(),
                                                                  parent=self))
             else:
-                # Checking if we have a second chassis in UCS Mini, otherwise infra section is not needed
+                # Checking if we have a second chassis in UCS Mini/X-Direct, otherwise infra section is not needed
                 if len(self.report.inventory.chassis) > 1:
                     self.content_list.append(
                         UcsSystemInfraCablingAllChassisReportSection(order_id=self.report.get_current_order_id(),
@@ -52,8 +52,9 @@ class UcsSystemInfraCablingAllChassisReportSection(UcsReportSection):
             title = _("Chassis Internal Infrastructure cabling")
         UcsReportSection.__init__(self, order_id=order_id, parent=parent, title=title)
         for chassis in self.report.inventory.chassis:
-            if chassis.id == "1" and self.report.inventory.fabric_interconnects[0].model in ["UCS-FI-M-6324"]:
-                # We do not create a section for chassis 1 in UCS Mini
+            if (chassis.id == "1" and self.report.inventory.fabric_interconnects[0].model in
+                    ["UCS-FI-M-6324", "UCSX-S9108-100G"]):
+                # We do not create a section for chassis 1 in UCS Mini/X-Direct
                 continue
             chassis_name = chassis.id
             if chassis.user_label:

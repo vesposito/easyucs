@@ -3,18 +3,20 @@
 {% block css %}
 {% endblock %}
 
+{% block breadcrumbs %}
+<ol class="breadcrumb p-0 mb-0">
+  <li class="breadcrumb-item"><a href="/">Home</a></li>
+  <li class="breadcrumb-item"><a href="/tasks">Tasks</a></li>
+  <li class="breadcrumb-item active">Task</li>
+</ol>
+{% endblock %}
+
 {% block content %}
 <div class="content-header">
   <div class="container-fluid">
     <div class="row">
-      <div id="TaskCardContainer" class="col-sm-10 col-md-8">
-      </div>
-      <div class="col-sm-2 col-md-4">
-        <ol class="breadcrumb float-sm-right">
-          <li class="breadcrumb-item"><a href="/">Home</a></li>
-          <li class="breadcrumb-item active">Task</li>
-        </ol>
-      </div><!-- /.col -->
+      <div id="TaskCardContainer" class="col-sm-10 col-md-8"></div>
+      <div id="DeviceCardContainer" class="col-md-4 col-sm-4"></div>
     </div>
   </div>
 </div>

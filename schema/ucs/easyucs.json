@@ -174,8 +174,8 @@
                      "unconfigured-good"
                   ]
                },
-               "clear_intersight_claim_status": {
-                  "description": "Clear Intersight Claim Status of UCS device",
+               "reset_device_connector": {
+                  "description": "Reset Device Connector of UCS device",
                   "type": "string",
                   "default": "no",
                   "enum": [

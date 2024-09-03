@@ -77,6 +77,113 @@ window.addEventListener('scroll', () => {
 });
 
 /**
+ * Returns an HTML card for a device
+ * @param  {device} device - The details of the device
+ * @returns {String} innerHTML - The HTML content of the card
+ */
+function createDeviceCard(device, phantom=false){
+  var device_version = "unknown"
+  if(device.device_version != undefined){
+    device_version = device.device_version;
+  }
+  var username_element = `
+  <div class = "col-md-auto">
+    Username: 
+  </div>
+  <div class = "col text-right text-truncate">
+    ${device.username}
+  </div> 
+  `
+  // Creates different UI elements and styles based on the device type
+  if(device.device_type == "intersight"){
+    username_element = `
+    <div class = "col">
+      Key ID: 
+    </div>
+    <div class = "col text-right text-truncate">
+      ${device.key_id}
+    </div>
+    `
+    avatar_src = "/static/img/intersight_logo.png";
+    color = "bg-info"
+  } else if (device.device_type == "ucsm"){
+    avatar_src = "/static/img/ucsm_logo.png";
+    color = "bg-primary"
+  } else if (device.device_type == "cimc"){
+    avatar_src = "/static/img/cimc_logo.png";
+    color = "bg-warning"
+  } else if (device.device_type == "ucsc"){
+    avatar_src = "/static/img/ucsc_logo.png";
+    color = "bg-dark"
+  }
+  let onclick = "null";
+  if (!phantom) {  
+    onclick = `window.location='/devices/${device.device_uuid}';`
+  }
+  let device_tasks_count = getDeviceTasksCount(device.device_uuid);
+  innerHTML = `
+    <div class="${phantom && 'phantomDevice'} col-sm-6 col-md-4 col-xl-3 col-xxl-2">
+        <div class="card card-widget widget-user-2" style="cursor: pointer;" 
+        onclick=${onclick}>
+          <div class="widget-user-header ${color}">
+            <div class="widget-user-image">
+              <img class="img-circle elevation-2" src=${avatar_src} alt="Device Type">
+            </div>
+              <p class="text-warning float-right device-tasks-counter ${device.device_uuid}" 
+              style="${device_tasks_count > 0 ? "" : "display: none;"}" title="Ongoing tasks" data-toggle="tooltip">
+                <i class="fa-solid fa-clock-rotate-left"></i>
+                <span class="device-tasks-counter-badge">${device_tasks_count}</span>
+              </p>
+            <h3 class="widget-user-username text-truncate">${phantom ? "Adding device..." : device.device_name }</h3>
+            <h5 class="widget-user-desc text-truncate">${phantom ? device.device_type : device.device_type_long}</h5>
+          </div>
+          <p title="User Label" class="m-0 badge-light badge ${device.user_label ? "text-dark" : "text-light"}">${device.user_label ? device.user_label : "."}</p>
+          <div class="card-body">
+            <ul class="nav flex-column">
+              <li class="nav-item mw-100">
+                <div class="row py-2">
+                  ${username_element}
+                </div>
+              </li>
+              <li class="nav-item mw-100">
+                <div class="row py-2">
+                  <div class = "col-md-auto">
+                    Version: 
+                  </div>
+                  <div class = "col text-right text-truncate">
+                  ${device_version}
+                  </div>
+                </div>
+              </li>
+              <li class="nav-item mw-100">
+                <div class="row py-2">
+                  <div class = "col-md-auto">
+                  Target: 
+                  </div>
+                  <div class = "col flex text-right text-truncate">
+                    ${device.target}
+                  </div>
+                </div>
+              </li>
+            </ul>
+          </div>
+          <div class="card-footer">
+            <div class="row">
+              <div class="col-md-6">
+                <button type="button" class="btn btn-block btn-outline-secondary" onclick="toggleEditDeviceModal(event, '${device.device_uuid}')">Edit</button>
+              </div>
+              <div class="col-md-6">
+                <button type="button" class="btn btn-block btn-outline-danger" onclick="deleteDevice(event, '${device.device_uuid}')">Delete</button>
+              </div>
+            </div>
+          </div>
+        </div>
+    </div>
+    `
+    return innerHTML;
+}
+
+/**
  * Adds a Grid of cards to an HTML element for a list of devices
  * @param  {String} element_id - The ID of the DOM element in which to add the grid
  * @param  {Array} devices - The list of devices
@@ -102,100 +209,56 @@ function addDevicesGridView(element_id, devices, start_index, stop_index){
 
   // Creates a card for each device of the devices list within the start_index and stop_index
   devices.slice(start_index, stop_index).map( device => {
-    var device_version = "unknown"
-    if(device.device_version != undefined){
-      device_version = device.device_version;
-    }
-    var username_element = `
-    <div class = "col">
-      Username: 
-    </div>
-    <div class = "col text-right text-truncate">
-      ${device.username}
-    </div> 
-    `
-
-    // Creates different UI elements and styles based on the device type
-    if(device.device_type == "intersight"){
-      username_element = `
-      <div class = "col">
-        Key ID: 
-      </div>
-      <div class = "col text-right text-truncate">
-        ${device.key_id}
-      </div>
-      `
-        avatar_src = "/static/img/intersight_logo.png";
-        color = "bg-info"
-      } else if (device.device_type == "ucsm"){
-        avatar_src = "/static/img/ucsm_logo.png";
-        color = "bg-primary"
-      } else if (device.device_type == "cimc"){
-        avatar_src = "/static/img/cimc_logo.png";
-        color = "bg-warning"
-      } else if (device.device_type == "ucsc"){
-        avatar_src = "/static/img/ucsc_logo.png";
-        color = "bg-dark"
-      }
-
-      // Adds the card to the DOM element
-      document.getElementById(element_id).innerHTML += 
-      `
-      <div class="col-sm-6 col-md-4 col-xl-3 col-xxl-2">
-          <div class="card card-widget widget-user-2" style="cursor: pointer;" onclick="window.location='/devices/${device.device_uuid}';">
-            <div class="widget-user-header ${color}">
-              <div class="widget-user-image">
-                <img class="img-circle elevation-2" src=${avatar_src} alt="Device Type">
-              </div>
-              <h3 class="widget-user-username text-truncate">${device.device_name}</h3>
-              <h5 class="widget-user-desc text-truncate">${device.device_type_long}</h5>
-            </div>
-            <div class="card-body">
-              <ul class="nav flex-column">
-                <li class="nav-item mw-100">
-                  <div class="row p-2">
-                    ${username_element}
-                  </div>
-                </li>
-                <li class="nav-item mw-100">
-                  <div class="row p-2">
-                    <div class = "col">
-                      Version: 
-                    </div>
-                    <div class = "col text-right text-truncate">
-                    ${device_version}
-                    </div>
-                  </div>
-                </li>
-                <li class="nav-item mw-100">
-                  <div class="row p-2">
-                    <div class = "col">
-                    Target: 
-                    </div>
-                    <div class = "col text-right text-truncate">
-                      ${device.target}
-                    </div>
-                  </div>
-                </li>
-              </ul>
-            </div>
-            <div class="card-footer">
-              <div class="row">
-                <div class="col-md-6">
-                  <button type="button" class="btn btn-block btn-outline-secondary" onclick="toggleEditDeviceModal(event, '${device.device_uuid}')">Edit</button>
-                </div>
-                <div class="col-md-6">
-                  <button type="button" class="btn btn-block btn-outline-danger" onclick="deleteDevice(event, '${device.device_uuid}')">Delete</button>
-                </div>
-              </div>
-            </div>
-          </div>
-      </div>
-      `
+    // Adds the card to the DOM element
+    document.getElementById(element_id).innerHTML += createDeviceCard(device);
   });
 
   // Removes the loader
   removeScrollLoader();
+}
+
+function createRowForDevice(device, phantom=false){
+  let device_version = "unknown";
+  let claimed = "N/A";
+  let on_click = phantom ? 'null' : `window.location='/devices/${device.device_uuid}';`
+  if(device.device_version != undefined){
+    device_version = device.device_version;
+  }
+
+  if(device.device_connector_claim_status){
+    if(device.device_connector_claim_status == "claimed"){
+      if(device.intersight_device_uuid){
+        claimed_target = `<a href="/devices/${device.intersight_device_uuid}">${device.device_connector_ownership_name}</a>`
+      } else {
+        claimed_target = `${device.device_connector_ownership_name}`
+      }
+      claimed = `Claimed to Intersight (${claimed_target})`;
+    } else {
+      claimed = "Not claimed";
+    }
+  }
+
+  let date_timestamp = new Date(device.timestamp);
+  date_timestamp = Date.parse(date_timestamp)/1000;
+
+  let device_data = JSON.stringify({
+    "device_name": device.device_name,
+    "device_uuid": device.uuid,
+    "device_type": device.device_type
+  })
+
+  return `
+  <tr class="${phantom ? 'phantomRow table-warning' : ''}" style="cursor: pointer;">
+    <td class = "text-middle">${device_data}</td>
+    <td class = "text-middle" onclick="${on_click}">${phantom ? device.device_type : device.device_type_long}</td>
+    <td class = "text-middle" onclick="${on_click}">${device.device_name}</td>
+    <td class = "text-middle" onclick="${on_click}">${device.user_label ? device.user_label : ""}</td>
+    <td class = "text-middle" data-order="${date_timestamp}"  onclick="${on_click}">${device.timestamp}</td>
+    <td class = "text-middle" onclick="${on_click}">${claimed}</td>
+    <td class = "text-middle" onclick="${on_click}">${device.username}</td>
+    <td class = "text-middle" onclick="${on_click}">${device_version}</td>
+    <td class = "text-middle" onclick="${on_click}">${device.target}</td>
+  </tr>`
 }
 
 /**
@@ -217,7 +280,7 @@ function addDevicesTableView(element_id, devices){
                 <button type="button" class="btn btn-success dropdown-toggle mb-3" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Actions</button>
                 <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
                   <a id="claimToIntersightAction" class="dropdown-item" type="submit" onclick="toggleClaimToIntersightMultipleDevicesModal(event)"><span class="mr-2" style="width: 20px; display: inline-block"><i class="fa-solid fa-cloud-arrow-up"></i></span>Claim Device(s) to Intersight</a>
-                  <a id="clearIntersightClaimStatusAction" class="dropdown-item" type="submit" onclick="clearIntersightClaimStatusMultipleDevices()"><span class="mr-2" style="width: 20px; display: inline-block"><i class="fa-solid fa-plug-circle-xmark"></i></span>Clear Device(s) Intersight Claim Status</a>
+                  <a id="ResetDeviceConnectorAction" class="dropdown-item" type="submit" onclick="ResetDeviceConnectorMultipleDevices()"><span class="mr-2" style="width: 20px; display: inline-block"><i class="fa-solid fa-plug-circle-xmark"></i></span>Reset Device(s) Intersight Device Connector</a>
                   <div class="dropdown-divider"></div>
                     <a class="dropdown-item" type="submit" onclick="deleteMultipleDevices()"><span class="mr-2" style="width:20px; display: inline-block"><i class="fa-solid fa-trash"></i></span>Delete Device(s)</a>
                   </div>
@@ -229,6 +292,7 @@ function addDevicesTableView(element_id, devices){
                     <th><input type="checkbox" id="deviceTable_selectAll" name="select_all" value="1" onclick = "handleSelectAll('device', this);"></th>
                     <th>Device type</th>
                     <th>Device name</th>
+                    <th>User label</th>
                     <th>Creation date</th>
                     <th>Intersight claim status</th>
                     <th>Username</th>
@@ -248,55 +312,16 @@ function addDevicesTableView(element_id, devices){
   `
 
   // Initializes the DataTable that will contain the devices
-  deviceTable = createDataTable("#deviceTable", 3, 3);
+  deviceTable = createDataTable("#deviceTable", 3, 4);
 
   // Clean table before new entries
   deviceTable.clear().draw();
 
   // For each device, we create the specific row in the DataTable
   devices.map( device => {
-    var device_version = "unknown";
-    var claimed = "N/A";
-    var on_click = `window.location='/devices/${device.device_uuid}';`
-    if(device.device_version != undefined){
-      device_version = device.device_version;
-    }
-
-    if(device.device_connector_claim_status){
-      if(device.device_connector_claim_status == "claimed"){
-        if(device.intersight_device_uuid){
-          claimed_target = `<a href="/devices/${device.intersight_device_uuid}">${device.device_connector_ownership_name}</a>`
-        } else {
-          claimed_target = `${device.device_connector_ownership_name}`
-        }
-        claimed = `Claimed to Intersight (${claimed_target})`;
-      } else {
-        claimed = "Not claimed";
-      }
-    }
-
-    var date_timestamp = new Date(device.timestamp);
-    date_timestamp = Date.parse(date_timestamp)/1000;
-
-    var device_data = JSON.stringify({
-      "device_name": device.device_name,
-      "device_uuid": device.uuid,
-      "device_type": device.device_type
-    })
-
-    deviceTable.row.add($(`
-    <tr style="cursor: pointer;">
-      <td class = "text-middle">${device_data}</td>
-      <td class = "text-middle" onclick="${on_click}">${device.device_type_long}</td>
-      <td class = "text-middle" onclick="${on_click}">${device.device_name}</td>
-      <td class = "text-middle" data-order="${date_timestamp}"  onclick="${on_click}">${device.timestamp}</td>
-      <td class = "text-middle" onclick="${on_click}">${claimed}</td>
-      <td class = "text-middle" onclick="${on_click}">${device.username}</td>
-      <td class = "text-middle" onclick="${on_click}">${device_version}</td>
-      <td class = "text-middle" onclick="${on_click}">${device.target}</td>
-    </tr>`)).draw();
+    deviceTable.row.add($(createRowForDevice(device)));
   });
-
+  deviceTable.draw();
   // Removes the loader
   removeScrollLoader();
 }
@@ -369,34 +394,74 @@ function completeDeviceForm(device_type){
     console.error("Impossible to complete form: no device_type provided");
     return;
   }
-
+  // Show the target input
+  document.getElementById('target-input-container').classList.remove("d-none");  
+  const targetElement = document.getElementById('target')
+  targetElement.readOnly = false;
+  targetElement.value = "";
   // Changes which elements are displayed based on the device type
+
   if(device_type == "intersight"){
+    // Disable UCS specific sections
     document.getElementById('ucs-device-form').classList.add("d-none");
-    document.getElementById('intersight-device-form').classList.remove("d-none");
     document.getElementById('username').disabled = true;
     document.getElementById('password').disabled = true;
+    // Show Intersight-specific sections
     document.getElementById('key_id').disabled = false;
     document.getElementById('private_key').disabled = false;
-    document.getElementById('bypass-connection-check-form').classList.remove("d-none");
+    document.getElementById('intersight-device-form').classList.remove("d-none");
+    document.getElementById('intersight-type-choice').classList.remove("d-none");
+    updateIntersightTargetSelector("saas");
+    document.getElementById('deployment_type_saas').checked = true;
   } else {
+    // Show UCS specific sections
     document.getElementById('ucs-device-form').classList.remove("d-none");
+    document.getElementById('username').disabled = false;
+    document.getElementById('password').disabled = false; 
+    // Disable Intersight-specific sections
     document.getElementById('intersight-device-form').classList.add("d-none");
+    document.getElementById('intersight-type-choice').classList.add("d-none");
+    document.getElementById('intersight-region-choice').classList.add("d-none");
     document.getElementById('key_id').disabled = true;
     document.getElementById('private_key').disabled = true;
-    document.getElementById('username').disabled = false;
-    document.getElementById('password').disabled = false;
-    document.getElementById('bypass-connection-check-form').classList.remove("d-none");
   }
+  document.getElementById('bypass-connection-check-form').classList.remove("d-none");
+}
 
-  // Displays the elements on the page
+/**
+ * Shows the region selector or hides it based on the deployment type chosen
+ * @param {String} deploymentType // The type of deployment chosen, can be "saas" or "virtual"
+ */
+function updateIntersightTargetSelector(deploymentType) {
+  const targetElement = document.getElementById("target");
   document.getElementById('target-input-container').classList.remove("d-none");
+  if (deploymentType == "saas") {
+    targetElement.readOnly = true;
+    document.getElementById('intersight-region-choice').classList.remove("d-none");
+    const defaultRegionChoice = document.getElementById("intersight_region_us");
+    targetElement.value = defaultRegionChoice.value;
+    defaultRegionChoice.checked = true;
+  } else if (deploymentType == "virtual") {
+    targetElement.readOnly = false;
+    targetElement.value = "";
+    document.getElementById('intersight-region-choice').classList.add("d-none");
+  }
+}
+
+function updateIntersightTarget(regionUrl) {
+  const targetElement = document.getElementById("target");
+  targetElement.value = regionUrl;
 }
 
 /**
  * Creates a new device - Called when "Create" is pressed from the "Add device" modal
  */
 function createDevice(){
+  // Disable helper inputs which shouldn't be sent to the API
+  document.getElementById('intersight_region_eu').disabled = true;
+  document.getElementById('intersight_region_us').disabled = true;
+  document.getElementById('deployment_type_saas').disabled = true;
+  document.getElementById('deployment_type_virtual').disabled = true;
   // Collects the content of the form and transforms it into an object
   form_content = $('#createDeviceForm').serializeArray();
   form_json = objectifyForm(form_content);
@@ -406,14 +471,27 @@ function createDevice(){
   } else if(form_json.bypass_connection_checks && form_json.bypass_connection_checks == "off"){
     form_json.bypass_connection_checks = false;
   }
-
-  addScrollLoader(device_view_container_id, full = false);
-
+  if (device_view == "table"){
+    let phantomRow = createRowForDevice(form_json, phantom=true);
+    deviceTable.row.add($(phantomRow)).draw();
+  } else if (device_view == "grid"){
+    // Creates a phantom card to display the device before it is added to the db
+    let phantomCard = createDeviceCard(form_json, phantom=true);
+    document.getElementById(device_view_container_id).innerHTML += phantomCard;
+  }
   // Pushed the new device to the db
   pushToDb(getDevices, "device", null, form_json);
-
   // Closes the modal
   $('#newDeviceModal').modal('toggle');
+  // Resets the form
+  document.getElementById("createDeviceForm").reset();
+  // Hide the device details form
+  document.getElementById('target-input-container').classList.add("d-none");
+  document.getElementById('ucs-device-form').classList.add("d-none");
+  document.getElementById('intersight-device-form').classList.add("d-none");
+  document.getElementById('intersight-type-choice').classList.add("d-none");
+  document.getElementById('intersight-region-choice').classList.add("d-none");
+  document.getElementById('bypass-connection-check-form').classList.add("d-none");
 }
 
 /**
@@ -475,9 +553,9 @@ function deleteMultipleDevices(){
 
 
 /**
- * Clears the Intersight Claim Status of a list of selected devices - devices are selected through the checkboxes
+ * Resets the Device Connector of a list of selected devices - devices are selected through the checkboxes
  */
-function clearIntersightClaimStatusMultipleDevices(){
+function ResetDeviceConnectorMultipleDevices(){
 
   if(selected_objects["device"].length > bulk_actions_limit){
     raiseBulkActionLimitAlert(selected_objects["device"].length);
@@ -496,7 +574,7 @@ function clearIntersightClaimStatusMultipleDevices(){
 
   // The function gets executed only if the user confirms the warning
   Swal.fire({
-    title: "Do you really want to clear the Intersight Claim Status of the following device objects?",
+    title: "Do you really want to reset the Device Connector of the following device objects?",
     text: object_name_list,
     showDenyButton: true,
     confirmButtonText: `Yes`,
@@ -505,8 +583,8 @@ function clearIntersightClaimStatusMultipleDevices(){
     if (result.isConfirmed) {
       form_json["device_uuids"] = object_uuid_list
 
-      const target_api_endpoint = api_base_url + api_device_endpoint + "/actions/clear_intersight_claim_status";
-      const action_type_message = "Clearing Intersight Claim Status of device(s)";
+      const target_api_endpoint = api_base_url + api_device_endpoint + "/actions/reset_device_connector";
+      const action_type_message = "Resetting the Device Connector of device(s)";
       httpRequestAsync("POST", target_api_endpoint, alertActionStarted.bind(null,action_type_message), form_json);
     }
   });
@@ -523,6 +601,12 @@ function displayDevices(data, devices){
     NOTE: this function can either be used after getting the devices from the API
     or with the already-loaded list of devices in the UI
   */
+
+  // delete all phantom device cards and rows
+  $(".phantomDevice").remove();
+  if (deviceTable != undefined) {
+    deviceTable.row($('.phantomRow')).remove().draw();
+  }
 
   if(!data && !devices){
     console.error('No data to display!')
@@ -692,10 +776,10 @@ function toggleObjectActionsButton(selected_objects){
     $("#claimToIntersightAction").addClass('d-none');
   }
 
-  if(allowed_actions.includes("clear_intersight_claim_status")){
-    $("#clearIntersightClaimStatusAction").removeClass('d-none');
+  if(allowed_actions.includes("reset_device_connector")){
+    $("#ResetDeviceConnectorAction").removeClass('d-none');
   } else {
-    $("#clearIntersightClaimStatusAction").addClass('d-none');
+    $("#ResetDeviceConnectorAction").addClass('d-none');
   }
 }
 
@@ -748,6 +832,7 @@ function toggleEditDeviceModal(event, device_uuid){
 
   document.getElementById('edit_device_label').innerText = "Editing device: " + device.device_name;
   document.getElementById('edit_target').value = device.target;
+  document.getElementById('edit_user_label').value = device.user_label;
 
   // Displays the form elements according to the device type
   if(device.device_type == "intersight"){
@@ -787,6 +872,11 @@ function toggleEditDeviceModal(event, device_uuid){
  */
 function toggleNewDeviceModal(){
   $('#newDeviceModal').modal('toggle');
+  // Show all the form elements
+  document.getElementById('intersight_region_eu').disabled = false;
+  document.getElementById('intersight_region_us').disabled = false;
+  document.getElementById('deployment_type_saas').disabled = false;
+  document.getElementById('deployment_type_virtual').disabled = false;
 }
 
 /**

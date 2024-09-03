@@ -78,13 +78,13 @@ class UcsSystemConfigPlot:
                 root = random.choice(list(G.nodes))
 
         def _hierarchy_pos(G, root, width=1., vert_gap=0.2, vert_loc=0, xcenter=0.5, pos=None, parent=None):
-            '''
+            """
             see hierarchy_pos docstring for most arguments
 
             pos: a dict saying where all nodes go if they have been assigned
             parent: parent of this branch. - only affects it if non-directed
 
-            '''
+            """
 
             if pos is None:
                 pos = {root: (xcenter, vert_loc)}
@@ -211,7 +211,7 @@ class UcsSystemServiceProfileConfigPlot(UcsSystemConfigPlot):
             # pos = self.hierarchy_pos(G, root=self.node_service_profile)
 
             # Setting options for each edge and node (a node is characterized only by a name (label))
-            for node in ["node_" + i for i in sp_options_dict]:  # the list includes all of the policies supported
+            for node in ["node_" + i for i in sp_options_dict]:  # the list includes all the policies supported
                 node_label_name = getattr(self, node)
                 if getattr(self, node) is None:
                     continue
@@ -248,7 +248,7 @@ class UcsSystemServiceProfileConfigPlot(UcsSystemConfigPlot):
                     labels_dict[node_label_name] = (node_label_name.split("\n")[1], node_options)
                 else:
                     # Create a dict of label key associate with an alias to remove
-                    # To fit into the square of the SP, it need to be split each 9 character
+                    # To fit into the square of the SP, it needs to be split each 9 character
                     n = 9
                     line = node_label_name.split("\n")[1]
                     line = "\n".join([line[i:i + n] for i in range(0, len(line), n)])

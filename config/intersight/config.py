@@ -10,10 +10,10 @@ from intersight.api.aaa_api import AaaApi
 from intersight.api.access_api import AccessApi
 from intersight.api.adapter_api import AdapterApi
 from intersight.api.asset_api import AssetApi
-from intersight.api.compute_api import ComputeApi
 from intersight.api.bios_api import BiosApi
 from intersight.api.boot_api import BootApi
 from intersight.api.certificatemanagement_api import CertificatemanagementApi
+from intersight.api.compute_api import ComputeApi
 from intersight.api.chassis_api import ChassisApi
 from intersight.api.deviceconnector_api import DeviceconnectorApi
 from intersight.api.equipment_api import EquipmentApi

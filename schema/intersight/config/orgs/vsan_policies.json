@@ -93,7 +93,7 @@
                   ]
                },
                "zoning": {
-                  "description": "VSAN Policy - FC Zoning Admin State",
+                  "description": "(DEPRECATED) VSAN Policy - FC Zoning Admin State",
                   "type": "string",
                   "default": "Disabled",
                   "enum": [

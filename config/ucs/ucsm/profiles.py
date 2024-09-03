@@ -492,12 +492,12 @@ class UcsSystemServiceProfile(UcsSystemConfigObject):
                         if self._parent._dn:
                             if self._parent._dn + "/ls-" + self.name + "/" in ls_binding.dn:
                                 server = {}
-                                if "chassis" in ls_binding.dn and "blade" in ls_binding.dn:
-                                    server.update({"chassis_id": ls_binding.dn.split("/")[1].split("-")[1]})
-                                    server.update({"blade": ls_binding.dn.split("/")[2].split("-")[1]})
+                                if "chassis" in ls_binding.pn_dn and "blade" in ls_binding.pn_dn:
+                                    server.update({"chassis_id": ls_binding.pn_dn.split("/")[1].split("-")[1]})
+                                    server.update({"blade": ls_binding.pn_dn.split("/")[2].split("-")[1]})
                                     self.servers.append(server)
-                                elif "rack_id" in ls_binding.dn:
-                                    server.update({"rack_id": ls_binding.dn.split("/")[1].split("-")[2]})
+                                elif "rack-unit" in ls_binding.pn_dn:
+                                    server.update({"rack_id": ls_binding.pn_dn.split("/")[1].split("-")[2]})
                                     self.servers.append(server)
 
                 if "lsPower" in self._parent._config.sdk_objects:

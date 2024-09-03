@@ -1067,7 +1067,7 @@ class IntersightFabricPortPolicy(IntersightConfigObject):
         # We start with SAN Unified Ports so that SAN Uplink Ports and SAN Port-Channels configuration work properly
         # We only do this for FI models that do not use FC Breakout - otherwise Unified Ports are configured as part
         # of Breakout config
-        if self.san_unified_ports and self.device_model not in ["UCS-FI-6536"]:
+        if self.san_unified_ports and self.device_model not in ["UCS-FI-6536", "UCSX-S9108-100G"]:
             # We now need to push the fabric.PortMode object for Unified Port configuration
             from intersight.model.fabric_port_mode import FabricPortMode
 
@@ -2657,7 +2657,7 @@ class IntersightFabricVsanPolicy(IntersightConfigObject):
             # We use this to make sure all options of a VSAN are set to None if they are not present
             if self.vsans:
                 for vsan in self.vsans:
-                    for attribute in ["fcoe_vlan_id", "id", "name", "scope", "zoning"]:
+                    for attribute in ["fcoe_vlan_id", "id", "name", "scope"]:
                         if attribute not in vsan:
                             vsan[attribute] = None
 
@@ -2669,8 +2669,7 @@ class IntersightFabricVsanPolicy(IntersightConfigObject):
                 if hasattr(fabric_vsan, "fc_network_policy"):
                     if fabric_vsan.fc_network_policy.moid == self._moid:
                         vsans.append({"name": fabric_vsan.name, "id": fabric_vsan.vsan_id,
-                                      "fcoe_vlan_id": fabric_vsan.fcoe_vlan, "scope": fabric_vsan.vsan_scope,
-                                      "zoning": fabric_vsan.default_zoning})
+                                      "fcoe_vlan_id": fabric_vsan.fcoe_vlan, "scope": fabric_vsan.vsan_scope})
 
             return vsans
 
@@ -2722,8 +2721,6 @@ class IntersightFabricVsanPolicy(IntersightConfigObject):
                     kwargs["fcoe_vlan"] = vsan["fcoe_vlan_id"]
                 if vsan["scope"] is not None:
                     kwargs["vsan_scope"] = vsan["scope"]
-                if vsan["zoning"] is not None:
-                    kwargs["default_zoning"] = vsan["zoning"]
 
                 fabric_vsan = FabricVsan(**kwargs)
 

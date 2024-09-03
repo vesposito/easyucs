@@ -86,6 +86,7 @@ class UcsSystemTransceiver(UcsTransceiver, UcsSystemInventoryObject):
             "qsfp4sfp10gcu1m": {"sku": "QSFP-4SFP10G-CU1M", "length": "1m"},
             "qsfp4sfp10gcu2m": {"sku": "QSFP-4SFP10G-CU2M", "length": "2m"},
             "qsfp4sfp10gcu3m": {"sku": "QSFP-4SFP10G-CU3M", "length": "3m"},
+            "qsfp4sfp10gcu4m": {"sku": "QSFP-4SFP10G-CU4M", "length": "4m"},
             "qsfp4sfp10gcu5m": {"sku": "QSFP-4SFP10G-CU5M", "length": "5m"},
             "qsfp4x10gac7m": {"sku": "QSFP-4X10G-AC7M", "length": "7m"},
             "qsfp4x10gac10m": {"sku": "QSFP-4X10G-AC10M", "length": "10m"},

@@ -389,7 +389,7 @@ class GenericDrawRackRear(GenericUcsDrawObject):
                                 self.paste_layer(img, coord_offset)
 
         if "pcie_riser_slots" in self.json_file:
-            # Fill blank for PCIe Riser slot (we put the default ones when None could been detected)
+            # Fill blank for PCIe Riser slot (we put the default ones when None could be detected)
             if len(self._parent_pcie_risers)-1 < len(self.json_file["pcie_riser_slots"]):
                 used_slot = []
                 potential_slot = []

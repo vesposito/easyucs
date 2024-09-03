@@ -627,24 +627,14 @@
             "platform-default"
          ]
       },
-      "cbs_cmn_mem_dram_refresh_rate": {
-         "description": "BIOS Policy - cbs_cmn_mem_dram_refresh_rate",
-         "type": "string",
-         "default": "platform-default",
-         "enum": [
-            "3.9 usec",
-            "7.8 usec",
-            "platform-default"
-         ]
-      },
       "cbs_cmn_mem_map_bank_interleave_ddr4": {
          "description": "BIOS Policy - cbs_cmn_mem_map_bank_interleave_ddr4",
          "type": "string",
          "default": "platform-default",
          "enum": [
             "Auto",
+            "Enabled",
             "disabled",
-            "enabled",
             "platform-default"
          ]
       },
@@ -817,29 +807,6 @@
       },
       "cbs_dbg_cpu_lapic_mode": {
          "description": "BIOS Policy - cbs_dbg_cpu_lapic_mode",
-         "type": "string",
-         "default": "platform-default",
-         "enum": [
-            "Auto",
-            "Compatibility",
-            "X2APIC",
-            "XAPIC",
-            "platform-default"
-         ]
-      },
-      "cbs_dbg_cpu_lapic_mode7xx2": {
-         "description": "BIOS Policy - cbs_dbg_cpu_lapic_mode7xx2",
-         "type": "string",
-         "default": "platform-default",
-         "enum": [
-            "Auto",
-            "X2APIC",
-            "XAPIC",
-            "platform-default"
-         ]
-      },
-      "cbs_dbg_cpu_lapic_mode7xx3": {
-         "description": "BIOS Policy - cbs_dbg_cpu_lapic_mode7xx3",
          "type": "string",
          "default": "platform-default",
          "enum": [

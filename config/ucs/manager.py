@@ -455,7 +455,18 @@ class UcsSystemConfigManager(GenericUcsConfigManager):
 
         if "fabricBreakout" in config.sdk_objects:
             for fabric_breakout in config.sdk_objects["fabricBreakout"]:
-                config.breakout_ports.append(UcsSystemBreakoutPort(parent=config, fabric_breakout=fabric_breakout))
+                # We need to skip config of internal backplane breakout ports of X-Direct FI, which are automatically
+                # present if server has a 25G VIC adapter.
+                fabric = fabric_breakout.dn.split("/")[2]
+                if ((config.device.fi_a_model == "UCSX-S9108-100G" and fabric == "A" and
+                     int(fabric_breakout.port_id) > 8) or
+                        (config.device.fi_b_model == "UCSX-S9108-100G") and fabric =="B" and
+                        int(fabric_breakout.port_id) > 8):
+                    self.logger(level="debug",
+                                message="Ignoring internal backplane breakout port " + str(fabric) + "/" +
+                                        fabric_breakout.slot_id + "/" + fabric_breakout.port_id)
+                else:
+                    config.breakout_ports.append(UcsSystemBreakoutPort(parent=config, fabric_breakout=fabric_breakout))
 
                 # EASYUCS-1076: It can happen that UCSM shows a port being both configured as Breakout and Server port.
                 # We remove the server port config in this case
@@ -821,7 +832,7 @@ class UcsSystemConfigManager(GenericUcsConfigManager):
             else:
                 if self.parent.task is not None:
                     self.parent.task.taskstep_manager.skip_taskstep(
-                        name="ClearIntersightClaimStatus", status_message="Skipping device reset")
+                        name="ResetDeviceConnector", status_message="Skipping device reset")
                     self.parent.task.taskstep_manager.skip_taskstep(
                         name="DecommissionAllRackServers", status_message="Skipping device reset")
                     self.parent.task.taskstep_manager.skip_taskstep(
@@ -1747,9 +1758,9 @@ class UcsImcConfigManager(GenericUcsConfigManager):
                 is_pushed = config.local_users_properties[0].push_object() and is_pushed
             for local_user in config.local_users:
                 is_pushed = local_user.push_object() and is_pushed
-            if "clear_intersight_claim_status" in config.options.keys():
-                if config.options["clear_intersight_claim_status"] == "yes":
-                    self.parent.clear_intersight_claim_status()
+            if "reset_device_connector" in config.options.keys():
+                if config.options["reset_device_connector"] == "yes":
+                    self.parent.reset_device_connector()
                     self.parent.connect()
             if config.device_connector:
                 is_pushed = config.device_connector[0].push_object() and is_pushed

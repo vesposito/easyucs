@@ -56,7 +56,7 @@ class UcsSystemFiPortsReportSection(UcsReportSection):
             # UCS Mini FI only has a rear picture
             path_rear = self.report.img_path + "fi_" + fi.id + "_rear.png"
             if os.path.exists(path_rear):
-                # rotate and create an horizontal picture of the FI from UCS Mini
+                # rotate and create a horizontal picture of the FI from UCS Mini
                 image = Image.open(path_rear).rotate(90, expand=True)
                 path_rear = self.report.img_path + "fi_" + fi.id + "_rear_horizontal.png"
                 image.save(path_rear)

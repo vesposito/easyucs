@@ -117,11 +117,18 @@ class GenericUcsDevice(GenericDevice, DeviceConnector):
                         from api.api_server import easyucs
                         if easyucs:
                             self.metadata.is_reachable = False
-                            self.logger(level="error", message="EasyUCS supports version " +
-                                                               self.version_min_required.version + " and above. Your " +
-                                                               "version " + self.version.version + " is not supported.")
+                            self.logger(
+                                level="error",
+                                message="EasyUCS supports version " + self.version_min_required.version +
+                                        " and above. Your version " + self.version.version + " is not supported."
+                            )
                             return False
                         else:
+                            self.logger(
+                                level="warning",
+                                message="EasyUCS supports version " + self.version_min_required.version +
+                                        " and above. Your version " + self.version.version + " is not supported."
+                            )
                             if not common.query_yes_no(
                                     "Are you sure you want to continue with an unsupported version?"):
                                 # User declined continue with unsupported version query
@@ -706,13 +713,13 @@ class UcsSystem(GenericUcsDevice):
         self.set_task_progression(35)
         return True
 
-    def reset(self, bypass_version_checks=False, clear_intersight_claim_status=False, clear_sel_logs=False,
+    def reset(self, bypass_version_checks=False, reset_device_connector=False, clear_sel_logs=False,
               decommission_rack_servers=False, erase_flexflash=False, erase_virtual_drives=False,
               unregister_from_central=True):
         """
         Erases all configuration from the UCS System
         :param bypass_version_checks: Whether the minimum version checks should be bypassed when connecting
-        :param clear_intersight_claim_status: Whether Intersight claim status should be cleared if claimed
+        :param reset_device_connector: Whether the Device Connector should be reset if claimed
         :param clear_sel_logs: Whether SEL Logs should be cleared before reset
         :param decommission_rack_servers: Whether rack servers should be decommissioned before reset
         :param erase_flexflash: Whether FlexFlash should be formatted before reset
@@ -727,16 +734,16 @@ class UcsSystem(GenericUcsDevice):
             self.logger(level="error", message="Unable to connect to UCS System")
             return False
 
-        if clear_intersight_claim_status and self.metadata.device_connector_claim_status == "claimed":
+        if reset_device_connector and self.metadata.device_connector_claim_status == "claimed":
             # If the UCSM device is claimed to Intersight, unclaim the device
-            if not self.clear_intersight_claim_status():
+            if not self.reset_device_connector():
                 self.logger(level="error", message=f"Error while un-claiming the {self.metadata.device_type_long} "
                                                    f"device {self.name} from Intersight")
                 return False
         else:
             if self.task is not None:
                 self.task.taskstep_manager.skip_taskstep(
-                    name="ClearIntersightClaimStatus",
+                    name="ResetDeviceConnector",
                     status_message=f"Skipping the unclaim of {self.metadata.device_type_long} device {self.name} since "
                                    f"it is not claimed to Intersight"
                 )
@@ -2006,7 +2013,7 @@ class UcsImc(GenericUcsDevice):
             return False
 
     def reset(self, erase_virtual_drives=False, erase_flexflash=False, clear_sel_logs=False, set_drives_status=None,
-              bypass_version_checks=False, clear_intersight_claim_status=False):
+              bypass_version_checks=False, reset_device_connector=False):
         """
         Erases all configuration from the UCS IMC
         :param erase_virtual_drives: Whether existing virtual drives should be erased from server before reset
@@ -2014,7 +2021,7 @@ class UcsImc(GenericUcsDevice):
         :param clear_sel_logs: Whether SEL Log should be cleared before reset
         :param set_drives_status: The status to which the drives should be set before reset
         :param bypass_version_checks: Whether the minimum version checks should be bypassed when connecting
-        :param clear_intersight_claim_status: Whether Intersight claim status should be cleared if claimed
+        :param reset_device_connector: Whether the Device Connector should be reset if claimed
         :return: True if reset is successful, False otherwise
         """
 
@@ -2024,16 +2031,16 @@ class UcsImc(GenericUcsDevice):
             self.logger(level="error", message="Unable to connect to UCS IMC")
             return False
 
-        if clear_intersight_claim_status and self.metadata.device_connector_claim_status == "claimed":
+        if reset_device_connector and self.metadata.device_connector_claim_status == "claimed":
             # If the UCS IMC device is claimed to Intersight unclaim the device
-            if not self.clear_intersight_claim_status():
+            if not self.reset_device_connector():
                 self.logger(level="error", message=f"Error while un-claiming the {self.metadata.device_type_long} "
                                                    f"device {self.name} from Intersight")
                 return False
         else:
             if self.task is not None:
                 self.task.taskstep_manager.skip_taskstep(
-                    name="ClearIntersightClaimStatus",
+                    name="ResetDeviceConnector",
                     status_message=f"Skipping the unclaim of {self.metadata.device_type_long} device {self.name} since "
                                    f"it is not claimed to Intersight"
                 )

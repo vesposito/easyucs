@@ -4,7 +4,7 @@ EasyUCS can perform maintenance actions on a live device, like:
 * Regenerate expired self-signed certificate on a UCS system
 * Clear SEL Logs of a UCS IMC / of all discovered servers on a UCS system
 * Clear all user sessions of a UCS IMC / UCS system / UCS central
-* Clear Intersight Device Connector claim status of a UCS IMC / UCS system
+* Reset Device Connector of a UCS IMC / UCS system
 
 
 ## Device actions
@@ -32,13 +32,13 @@ Scope:
 The second argument is the type of action:
 ```
 Action:
-  {regenerate_certificate,clear_sel_logs,clear_user_sessions,clear_intersight_claim_status}
+  {regenerate_certificate,clear_sel_logs,clear_user_sessions,reset_device_connector}
                         Device actions
 
     regenerate_certificate          Regenerate self-signed certificate of an UCS system
     clear_sel_logs                  Clears all SEL logs of an UCS device
     clear_user_sessions             Clears all user sessions of an UCS device
-    clear_intersight_claim_status   Clears Intersight Device Connector claim status of an UCS device
+    reset_device_connector          Resets Intersight Device Connector of an UCS device
 ```
 
 #### Arguments for a device action

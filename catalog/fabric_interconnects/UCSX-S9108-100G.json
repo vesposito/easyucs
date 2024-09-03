@@ -1,0 +1,81 @@
+{
+  "model_short_name": "S9108-100G",
+  "rear_file_name": "UCSX-S9108-100G.png",
+  "front_file_name": "",
+  "rear_file_size": [2283,267],
+  "front_file_size": [],
+  "expansion_modules_slots": [],
+  "expansion_modules_models": [],
+  "rear_ports": {
+    "1": {
+      "port_coord": [428, 61],
+      "port_type": "qsfp28",
+      "port_size": [111, 52]
+    },
+    "2": {
+      "port_coord": [428, 163],
+      "port_type": "qsfp28",
+      "port_size": [111, 52]
+    },
+    "3": {
+      "port_coord": [582, 61],
+      "port_type": "qsfp28",
+      "port_size": [111, 52]
+    },
+    "4": {
+      "port_coord": [582, 163],
+      "port_type": "qsfp28",
+      "port_size": [111, 52]
+    },
+    "5": {
+      "port_coord": [1583, 61],
+      "port_type": "qsfp28",
+      "port_size": [111, 52]
+    },
+    "6": {
+      "port_coord": [1583, 163],
+      "port_type": "qsfp28",
+      "port_size": [111, 52]
+    },
+    "7": {
+      "port_coord": [1737, 61],
+      "port_type": "qsfp28",
+      "port_size": [111, 52]
+    },
+    "8": {
+      "port_coord": [1737, 163],
+      "port_type": "qsfp28",
+      "port_size": [111, 52]
+    }
+  },
+  "imm_compatible": true,
+  "imm_min_required_version": "4.3(4b)",
+  "spec_sheet_url": "https://www.cisco.com/c/dam/en/us/products/collateral/servers-unified-computing/ucs-x-series-modular-system/ucs-fabric-interconnect-9108-100g.pdf",
+  "data_sheet_url": "https://www.cisco.com/c/en/us/products/collateral/servers-unified-computing/ucs-x-series-modular-system/ucs-x-series-direct-ds.html",
+  "specs": {
+    "descr": "The Cisco UCS X-Direct 9108 100G Fabric Interconnect is a 100 Gigabit Ethernet, FCoE, and Fibre Channel switch offering up to 1.6 Tbps throughput and up to 8 ports. The switch has 6 fixed ports that can support 1/10/25/40/100-Gbps Ethernet and 2 fixed unified ports that can support 1/10/25/40/100-Gbps Ethernet or 8/16/32-Gbps Fibre Channel via Breakout. All Ethernet ports are capable of supporting FCoE.",
+    "form_factor": "Intelligent Fabric Module",
+    "throughput": {
+      "gbps": 1600,
+      "mpps": 0
+    },
+    "latency": "<1 µs",
+    "dimensions": {
+      "centimeters": {
+        "height": 4.2,
+        "width": 37.9,
+        "depth": 29.9
+      },
+      "inches": {
+        "height": 1.67,
+        "width": 14.93,
+        "depth": 11.76
+      },
+      "rack_units": 0
+    },
+    "weight": {
+      "lb": 8.42,
+      "kg": 3.82
+    }
+  }
+}

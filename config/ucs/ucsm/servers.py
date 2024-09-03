@@ -3316,7 +3316,11 @@ class UcsSystemVmediaPolicy(UcsSystemConfigObject):
 
         if self._config.load_from == "live":
             if cimcvmedia_mount_config_policy is not None:
-                self.name = cimcvmedia_mount_config_policy.name
+                # EASYUCS-1423: If this is a Specific vMedia Policy, its name will be "remote-image-mapping-policy".
+                # We don't fetch the Specific vMedia Policy name, as it's an internal name which is not compliant
+                # with the naming pattern for vMedia Policies.
+                if cimcvmedia_mount_config_policy.name != "remote-image-mapping-policy":
+                    self.name = cimcvmedia_mount_config_policy.name
                 self.descr = cimcvmedia_mount_config_policy.descr
                 self.retry_on_mount_fail = cimcvmedia_mount_config_policy.retry_on_mount_fail
 

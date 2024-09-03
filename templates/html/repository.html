@@ -26,8 +26,8 @@
           <button type="submit" class="btn btn-primary">Create</button>
           <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
         </div>
-      </div>
-    </form>
+      </form>
+    </div>
   </div>
 </div>
 <div class="modal" tabindex="-1" id="renameFileModal" role="dialog">
@@ -144,66 +144,68 @@
           <span aria-hidden="true">&times;</span>
         </button>
       </div>
-        <div id="checksumsModalBody" class="modal-body">
-          No checksums computed yet.
-        </div>
-        <div class="modal-footer">
-          <button type="submit" class="btn btn-primary" onclick="computeChecksums($('#checksumsModalName').text())">Compute checksums</button>
-          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-        </div>
-      </form> 
+      <div id="checksumsModalBody" class="modal-body">
+        No checksums computed yet.
+      </div>
+      <div class="modal-footer">
+        <button type="submit" class="btn btn-primary" onclick="computeChecksums($('#checksumsModalName').text())">Compute checksums</button>
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+      </div>
     </div>
   </div>
 </div>
-{% endblock %} {% block content %}
-<nav aria-label="breadcrumb">
-  <ol class="breadcrumb" id="repoPathBreadcrumbs">
-    <li class="breadcrumb-item"><a href="#">Home</a></li>
-    <li class="breadcrumb-item active" aria-current="page">Library</li>
-  </ol>
-</nav>
+{% endblock %} 
 
-<section class="content">
+{% block breadcrumbs %}
+<ol class="breadcrumb mb-0 p-0" id="repoPathBreadcrumbs">
+  <li class="breadcrumb-item"><a href="#">Home</a></li>
+  <li class="breadcrumb-item active" aria-current="page">Repository</li>
+</ol>
+{% endblock %}
+{% block content %}
+<div class="content-header">
   <div class="container-fluid">
     <div class="row">
-      <div class="col-md-12">
-        <div class="card">
-          <div class="card-body" id="repoExplorer">
-            <div class="d-flex my-2 justify-content-between">
-              <div>
-                <button type="button"class="btn btn-primary" data-toggle="modal" data-target="#newFolderModal">
-                  <i class="fa-solid fa-folder-plus"></i>
-                  New Folder
-                </button>
-                <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#uploadFileModal">
-                  <i class="fa-solid fa-file-arrow-up"></i>
-                  Upload a file
-                </button>
-                <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#urlDownloadModal">
-                  <i class="fa-solid fa-cloud-arrow-up"></i>
-                  Download from URL
-                </button>
-              </div>
-              <div>
-                Disk Usage:
-                <div class="progress">
-                  <div id="repoDiskUsageBar" class="progress-bar" role="progressbar" style="width: 25%" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"></div>
-                </div>
-                <span id="repoDiskUsage">Loading...</span>
-              </div>
-            </div>
-            <table id="repositoryFilesTable" class="table table-bordered table-striped table-hover">
-              <thead>
-                <tr>
-                  <th>Name</th>
-                  <th>Size</th>
-                  <th>Modified</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody></tbody>
-            </table>
-          </div>
+      <div class="col">
+        <button type="button"class="btn btn-primary" data-toggle="modal" data-target="#newFolderModal">
+          <i class="fa-solid fa-folder-plus"></i>
+          New Folder
+        </button>
+        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#uploadFileModal">
+          <i class="fa-solid fa-file-arrow-up"></i>
+          Upload a file
+        </button>
+        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#urlDownloadModal">
+          <i class="fa-solid fa-cloud-arrow-up"></i>
+          Download from URL
+        </button>
+      </div>
+      <div class="col-md-auto">
+        Disk Usage:
+        <div class="progress">
+          <div id="repoDiskUsageBar" class="progress-bar" role="progressbar" style="width: 25%" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"></div>
+        </div>
+        <span id="repoDiskUsage">Loading...</span>
+      </div>
+    </div>
+  </div>
+</div>
+<section class="content">
+  <div class="row">
+    <div class="col-md-12">
+      <div class="card">
+        <div class="card-body" id="repoExplorer">
+          <table id="repositoryFilesTable" class="table table-bordered table-striped table-hover">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Size</th>
+                <th>Modified</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
         </div>
       </div>
     </div>

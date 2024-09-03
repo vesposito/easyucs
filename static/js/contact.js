@@ -9,6 +9,7 @@ All functions present here are solely used on the contact.html page
  */
 
 function afterDOMloaded(){
+    document.getElementById("navLinkContact").className += " active";
 
 }
 

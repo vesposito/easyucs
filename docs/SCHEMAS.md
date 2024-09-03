@@ -3,9 +3,9 @@
 EasyUCS can generate infrastructure & equipment schemas from a live device.
 
 The following schemas are generated:
-* Front & rear view of chassis including I/O modules and blades
-* Front & rear view of rack servers including adapters
-* Front & rear view of fabric interconnects & fabric extenders
+* Front & rear views of chassis including I/O modules and blades
+* Front & rear views of rack servers including adapters
+* Front & rear views of fabric interconnects & fabric extenders
 * Infrastructure view of each chassis & rack server with its physical connectivity to the fabric interconnects
 * Infrastructure view of LAN neighbors connected to the fabric interconnects
 * Infrastructure view of SAN neighbors connected to the fabric interconnects

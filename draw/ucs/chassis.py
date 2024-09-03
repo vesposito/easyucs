@@ -163,7 +163,7 @@ class UcsSystemDrawChassisRear(GenericUcsDrawEquipment):
             self.xfm_list = self.get_xfm_list()
 
         if self._parent.fabric_interconnects:
-            # We have Fabric Interconnects in the chassis (UCS Mini)
+            # We have Fabric Interconnects in the chassis (UCS Mini/X-Direct)
             self.fi_list = self.get_fi_list()
             self.fill_blanks()
             self._file_name = self._device_target + "_chassis_" + self._parent.id + "_rear"
@@ -240,7 +240,7 @@ class UcsSystemDrawChassisRear(GenericUcsDrawEquipment):
                     used_slot_ids.append(1)
                 elif slot.id == 'B':  # for FI B in IOM Slot 2
                     used_slot_ids.append(2)
-                else:  # for normal use of a chassis ( != UCS Mini)
+                else:  # for normal use of a chassis ( != UCS Mini/X-Direct)
                     used_slot_ids.append(int(slot.id))
 
             for slot in slots_list:
@@ -1431,7 +1431,7 @@ class UcsImcDrawChassisRear(GenericUcsDrawEquipment):
                     used_slot_ids.append(1)
                 elif slot.id == 'B':  # for FI B in IOM Slot 2
                     used_slot_ids.append(2)
-                else:  # for normal use of a chassis ( != UCS Mini)
+                else:  # for normal use of a chassis ( != UCS Mini/X-Direct)
                     used_slot_ids.append(int(slot.id))
 
             for slot in slots_list:

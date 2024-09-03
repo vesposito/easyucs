@@ -978,8 +978,8 @@
             "port_id_end": {
                "description": "Port Policy - SAN Unified Ports - Port ID End of Range",
                "type": "integer",
-               "default": 4,
-               "minimum": 4,
+               "default": 1,
+               "minimum": 1,
                "maximum": 36
             }
          },

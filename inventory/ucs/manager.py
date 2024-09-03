@@ -97,12 +97,16 @@ class UcsSystemInventoryManager(GenericUcsInventoryManager):
         fi_rear_draw_list = [fi for fi in fi_rear_draw_list if fi.picture_size]
 
         rotated_fi_draw_list = []
+        is_embedded_fi = False
         for fi in fi_rear_draw_list:
             if fi._parent.sku == "UCS-FI-M-6324":
+                is_embedded_fi = True
                 # As we drop the picture before, we need to recreate it and drop it again
                 fi._get_picture()
                 rotated_fi_draw_list.append(fi.rotate_object(fi))
                 fi.picture = None
+            elif fi._parent.sku == "UCSX-S9108-100G":
+                is_embedded_fi = True
 
         fex_rear_draw_list = []
         for fex in inventory.fabric_extenders:
@@ -169,8 +173,8 @@ class UcsSystemInventoryManager(GenericUcsInventoryManager):
 
         # Draw infra of equipments
         for chassis_draw in chassis_rear_draw_list:
-            # if draw_rotated_fi_list exists then the chassis 1 is a UCS Mini chassis
-            if not (rotated_fi_draw_list and chassis_draw._parent.id == '1'):
+            # if FI is embedded then the chassis 1 is a UCS Mini/X-Direct chassis, so no need to draw infra
+            if not (is_embedded_fi and chassis_draw._parent.id == '1'):
                 if fi_rear_draw_list:
                     infra = UcsSystemDrawInfraChassis(chassis=chassis_draw,
                                                       fi_list=fi_rear_draw_list,

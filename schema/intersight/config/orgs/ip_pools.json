@@ -334,7 +334,7 @@
          ]
       },
       "reservations": {
-         "description": "Blocks of IPv4 Addresses in IP Pool",
+         "description": "Reservations of IP Addresses in IP Pool",
          "type": "array",
          "items": {
             "type": "object",
@@ -342,12 +342,12 @@
                {
                   "properties": {
                      "identity": {
-                        "description": "Identity of IP address being reserved",
+                        "description": "Identity of IPv4 address being reserved",
                         "type": "string",
                         "pattern": "^$|^([1-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\\.([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\\.([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\\.([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])$"
                      },
                      "ip_type": {
-                        "description": "Identity of IP address being reserved",
+                        "description": "IP Type of IPv4 address being reserved",
                         "type": "string",
                         "enum": [
                            "IPv4"
@@ -364,12 +364,12 @@
                {
                   "properties": {
                      "identity": {
-                        "description": "Identity of IP address being reserved",
+                        "description": "Identity of IPv6 address being reserved",
                         "type": "string",
                         "pattern": "^$|^(([0-9A-Fa-f]{1,4}:([0-9A-Fa-f]{1,4}:([0-9A-Fa-f]{1,4}:([0-9A-Fa-f]{1,4}:([0-9A-Fa-f]{1,4}:[0-9A-Fa-f]{0,4}|:[0-9A-Fa-f]{1,4})?|(:[0-9A-Fa-f]{1,4}){0,2})|(:[0-9A-Fa-f]{1,4}){0,3})|(:[0-9A-Fa-f]{1,4}){0,4})|:(:[0-9A-Fa-f]{1,4}){0,5})((:[0-9A-Fa-f]{1,4}){2}|:(25[0-5]|(2[0-4]|1[0-9]|[1-9])?[0-9])(\\.(25[0-5]|(2[0-4]|1[0-9]|[1-9])?[0-9])){3})|(([0-9A-Fa-f]{1,4}:){1,6}|:):[0-9A-Fa-f]{0,4}|([0-9A-Fa-f]{1,4}:){7}:)$"
                      },
                      "ip_type": {
-                        "description": "Identity of IP address being reserved",
+                        "description": "Identity of IPv6 address being reserved",
                         "type": "string",
                         "enum": [
                            "IPv6"

@@ -102,14 +102,18 @@ class IntersightAccountDetails(IntersightConfigObject):
         self.per_user_limit = None
 
         if self._config.load_from == "live":
+            if self._device.is_appliance:
+                # Account Name is not definable in Appliance (always "admin"), so we ignore it
+                self.account_name = None
             self.audit_log_retention_period = self._get_audit_log_retention_period()
             self._get_iam_resource_limits_info()
             self._get_iam_session_limits_info()
 
         elif self._config.load_from == "file":
             for attribute in ["api_keys_maximum_expiration_time", "api_keys_without_expiry",
-                              "audit_log_retention_period", "oauth_applications_maximum_expiration_time",
-                              "oauth_applications_without_expiry"]:
+                              "audit_log_retention_period", "default_idle_timeout", "default_session_timeout",
+                              "oauth_applications_maximum_expiration_time", "oauth_applications_without_expiry",
+                              "per_user_limit"]:
                 setattr(self, attribute, None)
                 if attribute in self._object:
                     setattr(self, attribute, self.get_attribute(attribute_name=attribute))
@@ -171,37 +175,35 @@ class IntersightAccountDetails(IntersightConfigObject):
     def push_object(self):
         self.logger(message=f"Pushing {self._CONFIG_NAME} configuration")
 
-        # # We first need to fetch the existing iam.Account object
-        # iam_account_list = self._device.query(object_type=self._INTERSIGHT_SDK_OBJECT_NAME)
-        # from intersight.api.iam_api import IamApi
-        #
-        # if len(iam_account_list) != 1:
-        #     self.logger(level="error", message="Could not push " + self._CONFIG_NAME + " (Account). " +
-        #                                        "Could not find existing iam.Account object")
-        #     return False
-        #
-        # iam_account = iam_account_list[0]
-        # something_to_commit = False
-        # if self.account_name:
-        #     iam_account.name = self.account_name
-        #     something_to_commit = True
-        # if self.tags:
-        #     iam_account.tags = self.create_tags()
-        #     something_to_commit = True
-        #
-        # if something_to_commit:
-        #     if self.account_name:
-        #         detail = self.account_name + " - Account"
-        #     else:
-        #         detail = "Account"
-        #     if not self.commit(object_type=self._INTERSIGHT_SDK_OBJECT_NAME, payload=iam_account,
-        #                        key_attributes=["moid"], detail=detail, modify_present=True):
-        #         return False
+        # We first need to fetch the existing iam.Account object
+        iam_account_list = self._device.query(object_type=self._INTERSIGHT_SDK_OBJECT_NAME)
 
+        if len(iam_account_list) != 1:
+            self.logger(level="error", message="Could not push " + self._CONFIG_NAME + " (Account). " +
+                                               "Could not find existing iam.Account object")
+            return False
+
+        iam_account = iam_account_list[0]
+        something_to_commit = False
         if self.account_name:
-            self.logger(level="warning", message="Setting account name is not yet supported")
+            if not self._device.is_appliance:
+                iam_account.name = self.account_name
+                something_to_commit = True
+            else:
+                self.logger(level="info",
+                            message="Ignoring Account Name as it is not definable in Intersight Appliance")
         if self.tags:
-            self.logger(level="warning", message="Setting account tags is not yet supported")
+            iam_account.tags = self.create_tags()
+            something_to_commit = True
+
+        if something_to_commit:
+            if self.account_name:
+                detail = self.account_name + " - Account"
+            else:
+                detail = "Account"
+            if not self.commit(object_type=self._INTERSIGHT_SDK_OBJECT_NAME, payload=iam_account,
+                               key_attributes=["moid"], detail=detail, modify_present=True):
+                return False
 
         # We then need to fetch the existing iam.SessionLimits object
         iam_session_limits_list = self._device.query(object_type="iam.SessionLimits")
@@ -235,12 +237,18 @@ class IntersightAccountDetails(IntersightConfigObject):
         # We then need to fetch the existing aaa.RetentionPolicy object
         aaa_retention_policy_list = self._device.query(object_type="aaa.RetentionPolicy")
 
-        if len(aaa_retention_policy_list) != 1:
+        aaa_retention_policy = None
+        if len(aaa_retention_policy_list) > 1:
             self.logger(level="error", message="Could not push " + self._CONFIG_NAME + " (Audit Log Retention). " +
-                                               "Could not find existing aaa.RetentionPolicy object")
+                                               "Could not find unique existing aaa.RetentionPolicy object")
             return False
+        elif len(aaa_retention_policy_list) == 1:
+            aaa_retention_policy = aaa_retention_policy_list[0]
+        elif len(aaa_retention_policy_list) == 0:
+            self.logger(level="debug", message="No existing Log Retention Policy. Creating a new one.")
+            from intersight.model.aaa_retention_policy import AaaRetentionPolicy
+            aaa_retention_policy = AaaRetentionPolicy(name="AuditLogPolicy")
 
-        aaa_retention_policy = aaa_retention_policy_list[0]
         something_to_commit = False
         if self.audit_log_retention_period:
             aaa_retention_policy.retention_period = self.audit_log_retention_period
@@ -968,7 +976,36 @@ class IntersightResourceGroup(IntersightConfigObject):
                             else:
                                 device_name = asset_device_registration_list[0].device_hostname[0]
                                 device_list.append({"moid": device_moid, "name": device_name})
-                        return device_list
+
+                    elif selector_object_type == "compute.Blade":
+                        # We use a regex to get the serial number of the individual servers
+                        regex_device_moid = r"([A-Z0-9]{11})"
+                        res_devices = re.findall(regex_device_moid, combined_selector)
+
+                        for serial_number in res_devices:
+                            if "compute_blade" in self._config.sdk_objects:
+                                for compute_blade in self._config.sdk_objects["compute_blade"]:
+                                    if serial_number == compute_blade.serial:
+                                        device_name = compute_blade.name
+                                        device_list.append({"serial_number": compute_blade.serial,
+                                                            "name": device_name, "type": "Blade"})
+                                        break
+
+                    elif selector_object_type == "compute.RackUnit":
+                        # We use a regex to get the serial number of the individual servers
+                        regex_device_moid = r"([A-Z0-9]{11})"
+                        res_devices = re.findall(regex_device_moid, combined_selector)
+
+                        for serial_number in res_devices:
+                            if "compute_rack_unit" in self._config.sdk_objects:
+                                for compute_rack_unit in self._config.sdk_objects["compute_rack_unit"]:
+                                    if serial_number == compute_rack_unit.serial:
+                                        device_name = compute_rack_unit.name
+                                        device_list.append({"serial_number": compute_rack_unit.serial,
+                                                            "name": device_name,
+                                                            "type": "Rack"})
+                                        break
+                return device_list
 
         return None
 
@@ -980,9 +1017,17 @@ class IntersightResourceGroup(IntersightConfigObject):
 
         # Determining if we have a custom membership with a list of devices
         moid_list = []
+        blade_server_list = []
+        rack_server_list = []
+        resource_selector_list = []
         if self.memberships == "custom" and self.devices:
             for device in self.devices:
-                if "moid" in device:
+                if "serial_number" in device:
+                    if device.get("type") == "Blade": 
+                        blade_server_list.append(device["serial_number"])
+                    elif device.get("type") == "Rack":
+                        rack_server_list.append(device["serial_number"])
+                elif "moid" in device:
                     moid_list.append(device["moid"])
                 elif "name" in device:
                     # We need to retrieve the device MOID for setting membership
@@ -1004,20 +1049,41 @@ class IntersightResourceGroup(IntersightConfigObject):
                     else:
                         self.logger(level="warning", message="Could not find device '" + device["name"] +
                                                              "' to assign membership to Resource Group " + self.name)
+                        
+                else:
+                    self.logger(level="error", message="Could not find any device" +
+                                                        " to assign membership to Resource Group " + self.name)
 
         from intersight.model.resource_selector import ResourceSelector
 
-        selector = "/api/v1/asset/DeviceRegistrations"
-        if self.memberships == "custom" and moid_list:
-            selector += "?$filter=Moid in ('"
-            selector += "','".join(moid_list)
-            selector += "')"
+        def create_resource_selector_object(endpoint, items, key='Serial', management_mode=None):
+            # Creates a resource selector object based on the entire domain or individual servers
+            # that are part of a resource group 
+            selector = f"{endpoint}?$filter={key} in ('" + "','".join(items) + "')"
+            if management_mode:
+                selector += f" and ManagementMode eq '{management_mode}'"
+            return ResourceSelector(
+                object_type="resource.Selector",
+                class_id="resource.Selector",
+                selector=selector
+            )
 
-        resource_selector = ResourceSelector(
-            object_type="resource.Selector",
-            class_id="resource.Selector",
-            selector=selector
-        )
+        if moid_list or blade_server_list or rack_server_list:
+            if self.memberships == "custom":
+                info_message = f"The target must be claimed first to include the entire domain or individual servers" + \
+                            f" in the resource group '{self.name}'; otherwise, an empty resource group is created with 'custom' membership."
+                self.logger(level="info", message=info_message)
+                if moid_list:
+                    resource_selector_list.append(create_resource_selector_object("/api/v1/asset/DeviceRegistrations",
+                                                  moid_list, key='Moid'))
+
+                if blade_server_list:
+                    resource_selector_list.append(create_resource_selector_object("/api/v1/compute/Blades",
+                                                  blade_server_list, management_mode='Intersight'))
+
+                if rack_server_list:
+                    resource_selector_list.append(create_resource_selector_object("/api/v1/compute/RackUnits",
+                                                  rack_server_list, management_mode='Intersight'))
 
         kwargs = {
             "object_type": "resource.Group",
@@ -1029,8 +1095,8 @@ class IntersightResourceGroup(IntersightConfigObject):
             kwargs["qualifier"] = "Allow-All"
         else:
             kwargs["qualifier"] = "Allow-Selectors"
-            if moid_list:
-                kwargs["selectors"] = [resource_selector]
+            if moid_list or blade_server_list or rack_server_list:
+                kwargs["selectors"] = resource_selector_list
             else:
                 # EASYUCS-893: If there is no device Moid found for the selector, we push an empty list instead
                 kwargs["selectors"] = []
