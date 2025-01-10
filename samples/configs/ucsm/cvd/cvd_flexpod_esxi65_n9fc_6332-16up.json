@@ -1,416 +1,416 @@
 {
-   "easyucs":{
-      "metadata":[
+   "easyucs": {
+      "metadata": [
          {
             "file_type": "config",
             "device_type": "ucsm",
-            "category":"cvd",
-            "subcategory":"FlexPod",
-            "name":"FlexPod Datacenter with VMware vSphere 6.5, NetApp AFF A-Series and Fibre Channel (6332-16UP)",
-            "url":"https://www.cisco.com/c/en/us/td/docs/unified_computing/ucs/UCS_CVDs/flexpod_esxi65_n9fc.html",
-            "easyucs_version":"0.9.8.2",
-            "revision": "1.2"
+            "category": "cvd",
+            "subcategory": "FlexPod",
+            "name": "FlexPod Datacenter with VMware vSphere 6.5, NetApp AFF A-Series and Fibre Channel (6332-16UP)",
+            "url": "https://www.cisco.com/c/en/us/td/docs/unified_computing/ucs/UCS_CVDs/flexpod_esxi65_n9fc.html",
+            "easyucs_version": "1.0.0",
+            "revision": "1.3"
          }
       ]
    },
-   "config":{
-      "system":[
+   "config": {
+      "system": [
          {
-            "name":"bb04-6332",
-            "virtual_ip":"192.168.156.12",
-            "domain_name":"vikings.cisco.com"
+            "name": "bb04-6332",
+            "virtual_ip": "192.168.156.12",
+            "domain_name": "vikings.cisco.com"
          }
       ],
-      "switching_mode":[
+      "switching_mode": [
          {
-            "ethernet_mode":"end-host",
-            "fc_mode":"end-host"
+            "ethernet_mode": "end-host",
+            "fc_mode": "end-host"
          }
       ],
-      "management_interfaces":[
+      "management_interfaces": [
          {
-            "fabric":"A",
-            "ip":"192.168.156.10",
-            "netmask":"255.255.255.0",
-            "gateway":"192.168.156.1"
+            "fabric": "A",
+            "ip": "192.168.156.10",
+            "netmask": "255.255.255.0",
+            "gateway": "192.168.156.1"
          },
          {
-            "fabric":"B",
-            "ip":"192.168.156.11",
-            "netmask":"255.255.255.0",
-            "gateway":"192.168.156.1"
+            "fabric": "B",
+            "ip": "192.168.156.11",
+            "netmask": "255.255.255.0",
+            "gateway": "192.168.156.1"
          }
       ],
-      "dns":[
+      "dns": [
          "10.1.156.9"
       ],
-      "local_users":[
+      "local_users": [
          {
-            "id":"admin",
-            "password":"Fl3xP0d"
+            "id": "admin",
+            "password": "Fl3xP0d"
          }
       ],
-      "local_users_properties":[
+      "local_users_properties": [
          {
-            "password_strength_check":"yes"
+            "password_strength_check": "yes"
          }
       ],
-      "call_home":[
+      "call_home": [
          {
-            "mute_at_start":"no"
+            "mute_at_start": "no"
          }
       ],
-      "san_unified_ports":[
+      "san_unified_ports": [
          {
-            "fabric":"A",
-            "slot_id":"1",
-            "port_id_start":"1",
-            "port_id_end":"6"
+            "fabric": "A",
+            "slot_id": "1",
+            "port_id_start": "1",
+            "port_id_end": "6"
          },
          {
-            "fabric":"B",
-            "slot_id":"1",
-            "port_id_start":"1",
-            "port_id_end":"6"
+            "fabric": "B",
+            "slot_id": "1",
+            "port_id_start": "1",
+            "port_id_end": "6"
          }
       ],
-      "timezone_mgmt":[
+      "timezone_mgmt": [
          {
-            "zone":"America/New_York (Eastern Time)",
-            "ntp":[
+            "zone": "America/New_York (Eastern Time)",
+            "ntp": [
                "10.1.156.4",
                "10.1.156.5"
             ]
          }
       ],
-      "backup_export_policy":[
+      "backup_export_policy": [
          {
-            "full_state":[
+            "full_state": [
                {
-                  "hostname":"10.1.156.150",
-                  "protocol":"scp",
-                  "user":"root",
-                  "password":"Fl3xP0d",
-                  "remote_file":"/var/www/html/bears/configs/ucs/6332.full",
-                  "admin_state":"enable",
-                  "schedule":"bi_weekly",
-                  "descr":"Database Backup Policy"
+                  "hostname": "10.1.156.150",
+                  "protocol": "scp",
+                  "user": "root",
+                  "password": "Fl3xP0d",
+                  "remote_file": "/var/www/html/bears/configs/ucs/6332.full",
+                  "admin_state": "enable",
+                  "schedule": "bi_weekly",
+                  "descr": "Database Backup Policy"
                }
             ],
-            "all_configuration":[
+            "all_configuration": [
                {
-                  "hostname":"10.1.156.150",
-                  "protocol":"scp",
-                  "user":"root",
-                  "password":"Fl3xP0d",
-                  "remote_file":"/var/www/html/bears/configs/ucs/6332.full",
-                  "admin_state":"enable",
-                  "schedule":"daily",
-                  "descr":"Configuration Export Policy"
+                  "hostname": "10.1.156.150",
+                  "protocol": "scp",
+                  "user": "root",
+                  "password": "Fl3xP0d",
+                  "remote_file": "/var/www/html/bears/configs/ucs/6332.full",
+                  "admin_state": "enable",
+                  "schedule": "daily",
+                  "descr": "Configuration Export Policy"
                }
             ],
-            "reminder":[
+            "reminder": [
                {
-                  "admin_state":"disable"
+                  "admin_state": "disable"
                }
             ]
          }
       ],
-      "global_policies":[
+      "global_policies": [
          {
-            "chassis_discovery_policy":[
+            "chassis_discovery_policy": [
                {
-                  "action_link":"2",
-                  "link_grouping_preference":"port-channel"
+                  "action_link": "2",
+                  "link_grouping_preference": "port-channel"
                }
             ]
          }
       ],
-      "server_ports":[
+      "server_ports": [
          {
-            "fabric":"a",
-            "slot_id":"1",
-            "port_id":"17"
+            "fabric": "a",
+            "slot_id": "1",
+            "port_id": "17"
          },
          {
-            "fabric":"a",
-            "slot_id":"1",
-            "port_id":"18"
+            "fabric": "a",
+            "slot_id": "1",
+            "port_id": "18"
          },
          {
-            "fabric":"a",
-            "slot_id":"1",
-            "port_id":"19"
+            "fabric": "a",
+            "slot_id": "1",
+            "port_id": "19"
          },
          {
-            "fabric":"b",
-            "slot_id":"1",
-            "port_id":"17"
+            "fabric": "b",
+            "slot_id": "1",
+            "port_id": "17"
          },
          {
-            "fabric":"b",
-            "slot_id":"1",
-            "port_id":"18"
+            "fabric": "b",
+            "slot_id": "1",
+            "port_id": "18"
          },
          {
-            "fabric":"b",
-            "slot_id":"1",
-            "port_id":"19"
+            "fabric": "b",
+            "slot_id": "1",
+            "port_id": "19"
          }
       ],
-      "lan_port_channels":[
+      "lan_port_channels": [
          {
-            "fabric":"A",
-            "pc_id":"125",
-            "name":"vPC-125-Nexus",
-            "interfaces":[
+            "fabric": "A",
+            "pc_id": "125",
+            "name": "vPC-125-Nexus",
+            "interfaces": [
                {
-                  "port_id":"27",
-                  "slot_id":"1"
+                  "port_id": "27",
+                  "slot_id": "1"
                },
                {
-                  "port_id":"28",
-                  "slot_id":"1"
+                  "port_id": "28",
+                  "slot_id": "1"
                }
             ]
          },
          {
-            "fabric":"B",
-            "pc_id":"126",
-            "name":"vPC-126-Nexus",
-            "interfaces":[
+            "fabric": "B",
+            "pc_id": "126",
+            "name": "vPC-126-Nexus",
+            "interfaces": [
                {
-                  "port_id":"27",
-                  "slot_id":"1"
+                  "port_id": "27",
+                  "slot_id": "1"
                },
                {
-                  "port_id":"28",
-                  "slot_id":"1"
+                  "port_id": "28",
+                  "slot_id": "1"
                }
             ]
          }
       ],
-      "san_port_channels":[
+      "san_port_channels": [
          {
-            "fabric":"A",
-            "pc_id":"101",
-            "name":"SPO-101",
-            "vsan":"VSAN-A",
-            "interfaces":[
+            "fabric": "A",
+            "pc_id": "101",
+            "name": "SPO-101",
+            "vsan": "VSAN-A",
+            "interfaces": [
                {
-                  "slot_id":"1",
-                  "port_id":"1"
+                  "slot_id": "1",
+                  "port_id": "1"
                },
                {
-                  "slot_id":"1",
-                  "port_id":"2"
+                  "slot_id": "1",
+                  "port_id": "2"
                }
             ]
          },
          {
-            "fabric":"B",
-            "pc_id":"102",
-            "name":"SPO-102",
-            "vsan":"VSAN-B",
-            "interfaces":[
+            "fabric": "B",
+            "pc_id": "102",
+            "name": "SPO-102",
+            "vsan": "VSAN-B",
+            "interfaces": [
                {
-                  "slot_id":"1",
-                  "port_id":"1"
+                  "slot_id": "1",
+                  "port_id": "1"
                },
                {
-                  "slot_id":"1",
-                  "port_id":"2"
+                  "slot_id": "1",
+                  "port_id": "2"
                }
             ]
          }
       ],
-      "qos_system_class":[
+      "qos_system_class": [
          {
-            "priority":"best-effort",
-            "mtu":"9216"
+            "priority": "best-effort",
+            "mtu": "9216"
          }
       ],
-      "vlans":[
+      "vlans": [
          {
-            "name":"Native-VLAN",
-            "id":"2"
+            "name": "Native-VLAN",
+            "id": "2"
          },
          {
-            "name":"IB-MGMT",
-            "id":"113"
+            "name": "IB-MGMT",
+            "id": "113"
          },
          {
-            "name":"Infra-NFS",
-            "id":"3050"
+            "name": "Infra-NFS",
+            "id": "3050"
          },
          {
-            "name":"vMotion",
-            "id":"3000"
+            "name": "vMotion",
+            "id": "3000"
          },
          {
-            "name":"VM-Traffic",
-            "id":"900"
+            "name": "VM-Traffic",
+            "id": "900"
          }
       ],
-      "vsans":[
+      "vsans": [
          {
-            "name":"VSAN-A",
-            "id":"101",
-            "fcoe_vlan_id":"101",
-            "fabric":"A"
+            "name": "VSAN-A",
+            "id": "101",
+            "fcoe_vlan_id": "101",
+            "fabric": "A"
          },
          {
-            "name":"VSAN-B",
-            "id":"102",
-            "fcoe_vlan_id":"102",
-            "fabric":"B"
+            "name": "VSAN-B",
+            "id": "102",
+            "fcoe_vlan_id": "102",
+            "fabric": "B"
          }
       ],
-      "orgs":[
+      "orgs": [
          {
-            "name":"root",
-            "ip_pools":[
+            "name": "root",
+            "ip_pools": [
                {
-                  "name":"ext-mgmt",
-                  "order":"sequential",
-                  "ip_blocks":[
+                  "name": "ext-mgmt",
+                  "order": "sequential",
+                  "ip_blocks": [
                      {
-                        "from":"192.168.156.101",
-                        "to":"192.168.156.112",
-                        "gateway":"192.168.156.1",
-                        "primary_dns":"0.0.0.0",
-                        "secondary_dns":"0.0.0.0",
-                        "netmask":"255.255.255.0"
+                        "from": "192.168.156.101",
+                        "to": "192.168.156.112",
+                        "gateway": "192.168.156.1",
+                        "primary_dns": "0.0.0.0",
+                        "secondary_dns": "0.0.0.0",
+                        "netmask": "255.255.255.0"
                      }
                   ]
                }
             ],
-            "wwnn_pools":[
+            "wwnn_pools": [
                {
-                  "name":"WWNN-Pool",
-                  "order":"sequential",
-                  "wwnn_blocks":[
+                  "name": "WWNN-Pool",
+                  "order": "sequential",
+                  "wwnn_blocks": [
                      {
-                        "from":"20:00:00:25:B5:32:00:00",
-                        "to":"20:00:00:25:B5:32:00:0F"
+                        "from": "20:00:00:25:B5:32:00:00",
+                        "to": "20:00:00:25:B5:32:00:0F"
                      }
                   ]
                }
             ],
-            "wwpn_pools":[
+            "wwpn_pools": [
                {
-                  "name":"WWPN-Pool-A",
-                  "order":"sequential",
-                  "wwpn_blocks":[
+                  "name": "WWPN-Pool-A",
+                  "order": "sequential",
+                  "wwpn_blocks": [
                      {
-                        "from":"20:00:00:25:B5:32:0A:00",
-                        "to":"20:00:00:25:B5:32:0A:0F"
+                        "from": "20:00:00:25:B5:32:0A:00",
+                        "to": "20:00:00:25:B5:32:0A:0F"
                      }
                   ]
                },
                {
-                  "name":"WWPN-Pool-B",
-                  "order":"sequential",
-                  "wwpn_blocks":[
+                  "name": "WWPN-Pool-B",
+                  "order": "sequential",
+                  "wwpn_blocks": [
                      {
-                        "from":"20:00:00:25:B5:32:0B:00",
-                        "to":"20:00:00:25:B5:32:0B:0F"
+                        "from": "20:00:00:25:B5:32:0B:00",
+                        "to": "20:00:00:25:B5:32:0B:0F"
                      }
                   ]
                }
             ],
-            "vhba_templates":[
+            "vhba_templates": [
                {
-                  "name":"vHBA-Template-A",
-                  "redundancy_type":"no-redundancy",
-                  "vsan":"VSAN-A",
-                  "template_type":"initial-template",
-                  "wwpn_pool":"WWPN-Pool-A",
-                  "fabric":"A"
+                  "name": "vHBA-Template-A",
+                  "redundancy_type": "no-redundancy",
+                  "vsan": "VSAN-A",
+                  "template_type": "initial-template",
+                  "wwpn_pool": "WWPN-Pool-A",
+                  "fabric": "A"
                },
                {
-                  "name":"vHBA-Template-B",
-                  "redundancy_type":"no-redundancy",
-                  "vsan":"VSAN-B",
-                  "template_type":"initial-template",
-                  "wwpn_pool":"WWPN-Pool-B",
-                  "fabric":"B"
+                  "name": "vHBA-Template-B",
+                  "redundancy_type": "no-redundancy",
+                  "vsan": "VSAN-B",
+                  "template_type": "initial-template",
+                  "wwpn_pool": "WWPN-Pool-B",
+                  "fabric": "B"
                }
             ],
-            "san_connectivity_policies":[
+            "san_connectivity_policies": [
                {
-                  "name":"FC-Boot",
-                  "wwnn_pool":"WWNN-Pool",
-                  "vhbas":[
+                  "name": "FC-Boot",
+                  "wwnn_pool": "WWNN-Pool",
+                  "vhbas": [
                      {
-                        "name":"Fabric-A",
-                        "adapter_policy":"VMWare",
-                        "vhba_template":"vHBA-Template-A"
+                        "name": "Fabric-A",
+                        "adapter_policy": "VMWare",
+                        "vhba_template": "vHBA-Template-A"
                      },
                      {
-                        "name":"Fabric-B",
-                        "adapter_policy":"VMWare",
-                        "vhba_template":"vHBA-Template-B"
+                        "name": "Fabric-B",
+                        "adapter_policy": "VMWare",
+                        "vhba_template": "vHBA-Template-B"
                      }
                   ]
                }
             ],
-            "mac_pools":[
+            "mac_pools": [
                {
-                  "name":"MAC-Pool-A",
-                  "order":"sequential",
-                  "mac_blocks":[
+                  "name": "MAC-Pool-A",
+                  "order": "sequential",
+                  "mac_blocks": [
                      {
-                        "from":"00:25:B5:32:0A:00",
-                        "to":"00:25:B5:32:0A:3F"
+                        "from": "00:25:B5:32:0A:00",
+                        "to": "00:25:B5:32:0A:3F"
                      }
                   ]
                },
                {
-                  "name":"MAC-Pool-B",
-                  "order":"sequential",
-                  "mac_blocks":[
+                  "name": "MAC-Pool-B",
+                  "order": "sequential",
+                  "mac_blocks": [
                      {
-                        "from":"00:25:B5:32:0B:00",
-                        "to":"00:25:B5:32:0B:3F"
+                        "from": "00:25:B5:32:0B:00",
+                        "to": "00:25:B5:32:0B:3F"
                      }
                   ]
                }
             ],
-            "uuid_pools":[
+            "uuid_pools": [
                {
-                  "name":"UUID-Pool",
-                  "order":"sequential",
-                  "prefix":"derived",
-                  "uuid_blocks":[
+                  "name": "UUID-Pool",
+                  "order": "sequential",
+                  "prefix": "derived",
+                  "uuid_blocks": [
                      {
-                        "from":"0000-000000000001",
-                        "to":"0000-000000000020"
+                        "from": "0000-000000000001",
+                        "to": "0000-000000000020"
                      }
                   ]
                }
             ],
-            "server_pools":[
+            "server_pools": [
                {
                   "name": "Infra-Pool",
-                  "descr":"",
-                  "servers":[
+                  "descr": "",
+                  "servers": [
                      {
                         "chassis_id": "1",
                         "slot_id": "1"
                      },
                      {
-                        "chassis_id":"1",
-                        "slot_id":"2"
+                        "chassis_id": "1",
+                        "slot_id": "2"
                      }
                   ]
                }
             ],
-            "host_firmware_packages":[
+            "host_firmware_packages": [
                {
-                  "name":"default",
-                  "blade_package":"3.1(2f)B",
-                  "rack_package":"3.1(2f)C",
+                  "name": "default",
+                  "blade_package": "3.1(2f)B",
+                  "rack_package": "3.1(2f)C",
                   "excluded_components": [
                      "local-disk"
                   ]
@@ -418,23 +418,23 @@
             ],
             "local_disk_config_policies": [
                {
-                  "name":"SAN-Boot",
-                  "mode":"no-local-storage"
+                  "name": "SAN-Boot",
+                  "mode": "no-local-storage"
                }
             ],
-            "network_control_policies":[
+            "network_control_policies": [
                {
-                  "name":"Enable-CDP-LLDP",
+                  "name": "Enable-CDP-LLDP",
                   "cdp_admin_state": "enabled",
-                  "lldp_receive":"enabled",
-                  "lldp_transmit":"enabled"
+                  "lldp_receive": "enabled",
+                  "lldp_transmit": "enabled"
                }
             ],
-            "power_control_policies":[
+            "power_control_policies": [
                {
-                  "name":"No-Power-Cap",
-                  "fan_speed_policy":"any",
-                  "power_capping":"no-cap"
+                  "name": "No-Power-Cap",
+                  "fan_speed_policy": "any",
+                  "power_capping": "no-cap"
                }
             ],
             "server_pool_policy_qualifications": [
@@ -442,7 +442,7 @@
                   "name": "UCS-Broadwell",
                   "qualifications": [
                      {
-                        "type":"cpu-cores",
+                        "type": "cpu-cores",
                         "processor_architecture": "Xeon",
                         "processor_pid": "UCS-CPU-E52660E"
                      }
@@ -451,137 +451,137 @@
             ],
             "bios_policies": [
                {
-                  "name":"VM-Host",
-                  "reboot_on_bios_settings_change":"no",
-                  "quiet_boot":"disabled",
-                  "cdn_control":"enabled",
-                  "processor_c_state":"disabled",
-                  "processor_c1e":"disabled",
-                  "processor_c3_report":"disabled",
-                  "processor_c7_report":"disabled",
-                  "energy_performance":"performance",
-                  "frequency_floor_override":"enabled",
-                  "dram_clock_throttling":"performance",
-                  "lv_ddr_mode":"performance-mode"
+                  "name": "VM-Host",
+                  "reboot_on_bios_settings_change": "no",
+                  "quiet_boot": "disabled",
+                  "cdn_control": "enabled",
+                  "processor_c_state": "disabled",
+                  "processor_c1e": "disabled",
+                  "processor_c3_report": "disabled",
+                  "processor_c7_report": "disabled",
+                  "energy_performance": "performance",
+                  "frequency_floor_override": "enabled",
+                  "dram_clock_throttling": "performance",
+                  "lv_ddr_mode": "performance-mode"
                }
             ],
             "maintenance_policies": [
                {
-                  "name":"default",
-                  "reboot_policy":"user-ack",
+                  "name": "default",
+                  "reboot_policy": "user-ack",
                   "on_next_boot": "on"
                }
             ],
-            "vnic_templates":[
+            "vnic_templates": [
                {
-                  "name":"Infra-A",
-                  "fabric":"A-B",
-                  "redundancy_type":"primary",
-                  "peer_redundancy_template":"",
-                  "target":[
+                  "name": "Infra-A",
+                  "fabric": "A-B",
+                  "redundancy_type": "primary",
+                  "peer_redundancy_template": "",
+                  "target": [
                      "adaptor"
                   ],
-                  "template_type":"updating-template",
-                  "vlans":[
+                  "template_type": "updating-template",
+                  "vlans": [
                      "IB-MGMT",
                      "Infra-NFS",
                      "vMotion",
                      "VM-Traffic"
                   ],
-                  "vlan_native":"Native-VLAN",
-                  "cdn_source":"vnic-name",
-                  "mtu":"9000",
-                  "mac_address_pool":"MAC-Pool-A",
-                  "network_control_policy":"Enable-CDP-LLDP"
+                  "vlan_native": "Native-VLAN",
+                  "cdn_source": "vnic-name",
+                  "mtu": "9000",
+                  "mac_address_pool": "MAC-Pool-A",
+                  "network_control_policy": "Enable-CDP-LLDP"
                },
                {
-                  "name":"Infra-B",
-                  "fabric":"B-A",
-                  "redundancy_type":"secondary",
-                  "peer_redundancy_template":"Infra-A",
-                  "mac_address_pool":"MAC-Pool-B"
+                  "name": "Infra-B",
+                  "fabric": "B-A",
+                  "redundancy_type": "secondary",
+                  "peer_redundancy_template": "Infra-A",
+                  "mac_address_pool": "MAC-Pool-B"
                }
             ],
-            "lan_connectivity_policies":[
+            "lan_connectivity_policies": [
                {
-                  "name":"FC-Boot",
-                  "vnics":[
+                  "name": "FC-Boot",
+                  "vnics": [
                      {
-                        "name":"00-Infra-A",
-                        "vnic_template":"Infra-A",
-                        "adapter_policy":"VMWare"
+                        "name": "00-Infra-A",
+                        "vnic_template": "Infra-A",
+                        "adapter_policy": "VMWare"
                      },
                      {
-                        "name":"01-Infra-B",
-                        "vnic_template":"Infra-B",
-                        "adapter_policy":"VMWare"
+                        "name": "01-Infra-B",
+                        "vnic_template": "Infra-B",
+                        "adapter_policy": "VMWare"
                      }
                   ]
                }
             ],
-            "vmedia_policies":[
+            "vmedia_policies": [
                {
-                  "name":"ESXi-6.5a-HTTP",
-                  "descr":"Mounts ISO for ESXi 6.5a",
-                  "retry_on_mount_fail":"yes",
+                  "name": "ESXi-6.5a-HTTP",
+                  "descr": "Mounts ISO for ESXi 6.5a",
+                  "retry_on_mount_fail": "yes",
                   "vmedia_mounts": [
                      {
-                        "name":"ESXi-6.5a-HTTP",
-                        "descr":"Mounts ISO for ESXi 6.5a",
-                        "device_type":"cdd",
-                        "protocol":"http",
-                        "hostname":"10.1.156.150",
+                        "name": "ESXi-6.5a-HTTP",
+                        "descr": "Mounts ISO for ESXi 6.5a",
+                        "device_type": "cdd",
+                        "protocol": "http",
+                        "hostname": "10.1.156.150",
                         "image_name_variable": "none",
-                        "remote_file":"VMware-VMvisor-Installer-201701001-4887370.x86_64.iso",
-                        "remote_path":"/bears/vSphere%206.5a/",
-                        "username":"",
-                        "password":""
+                        "remote_file": "VMware-VMvisor-Installer-201701001-4887370.x86_64.iso",
+                        "remote_path": "/bears/vSphere%206.5a/",
+                        "username": "",
+                        "password": ""
                      }
                   ]
                }
             ],
             "boot_policies": [
                {
-                  "name":"Boot-Fabric-A",
+                  "name": "Boot-Fabric-A",
                   "reboot_on_boot_order_change": "no",
                   "boot_order": [
                      {
                         "device_type": "remote_cd-dvd",
-                        "order":"1"
+                        "order": "1"
                      },
                      {
                         "device_type": "san",
-                        "order":"2",
+                        "order": "2",
                         "vhbas": [
                            {
-                              "type":"primary",
-                              "name":"Fabric-A",
+                              "type": "primary",
+                              "name": "Fabric-A",
                               "targets": [
                                  {
-                                    "lun":"0",
-                                    "type":"primary",
-                                    "wwpn":"20:01:00:a0:98:a9:fe:d2"
+                                    "lun": "0",
+                                    "type": "primary",
+                                    "wwpn": "20:01:00:a0:98:a9:fe:d2"
                                  },
                                  {
-                                    "lun":"0",
-                                    "type":"secondary",
-                                    "wwpn":"20:01:00:a0:98:a9:fe:d3"
+                                    "lun": "0",
+                                    "type": "secondary",
+                                    "wwpn": "20:01:00:a0:98:a9:fe:d3"
                                  }
                               ]
                            },
                            {
-                              "type":"secondary",
-                              "name":"Fabric-B",
-                              "targets":[
+                              "type": "secondary",
+                              "name": "Fabric-B",
+                              "targets": [
                                  {
-                                    "lun":"0",
-                                    "type":"primary",
-                                    "wwpn":"20:01:00:a0:98:a9:fe:e2"
+                                    "lun": "0",
+                                    "type": "primary",
+                                    "wwpn": "20:01:00:a0:98:a9:fe:e2"
                                  },
                                  {
-                                    "lun":"0",
-                                    "type":"secondary",
-                                    "wwpn":"20:01:00:a0:98:a9:fe:e3"
+                                    "lun": "0",
+                                    "type": "secondary",
+                                    "wwpn": "20:01:00:a0:98:a9:fe:e3"
                                  }
                               ]
                            }
@@ -589,49 +589,49 @@
                      },
                      {
                         "device_type": "cimc_mounted_cd-dvd",
-                        "order":"3"
+                        "order": "3"
                      }
                   ]
                }
             ],
-            "service_profiles":[
+            "service_profiles": [
                {
-                  "name":"VM-Host-Infra-FC-A",
-                  "type":"updating-template",
-                  "uuid_pool":"UUID-Pool",
-                  "local_disk_configuration_policy":"SAN-Boot",
-                  "lan_connectivity_policy":"FC-Boot",
-                  "san_connectivity_policy":"FC-Boot",
-                  "boot_policy":"Boot-Fabric-A",
-                  "maintenance_policy":"default",
-                  "server_pool":"Infra-Pool",
-                  "server_pool_qualification":"UCS-Broadwell",
-                  "host_firmware_package":"default",
-                  "bios_policy":"VM-Host",
-                  "power_control_policy":"No-Power-Cap"
+                  "name": "VM-Host-Infra-FC-A",
+                  "type": "updating-template",
+                  "uuid_pool": "UUID-Pool",
+                  "local_disk_configuration_policy": "SAN-Boot",
+                  "lan_connectivity_policy": "FC-Boot",
+                  "san_connectivity_policy": "FC-Boot",
+                  "boot_policy": "Boot-Fabric-A",
+                  "maintenance_policy": "default",
+                  "server_pool": "Infra-Pool",
+                  "server_pool_qualification": "UCS-Broadwell",
+                  "host_firmware_package": "default",
+                  "bios_policy": "VM-Host",
+                  "power_control_policy": "No-Power-Cap"
                },
                {
-                  "name":"VM-Host-Infra-FC-A-vM",
-                  "type":"updating-template",
-                  "uuid_pool":"UUID-Pool",
-                  "local_disk_configuration_policy":"SAN-Boot",
-                  "lan_connectivity_policy":"FC-Boot",
-                  "san_connectivity_policy":"FC-Boot",
-                  "boot_policy":"Boot-Fabric-A",
-                  "maintenance_policy":"default",
-                  "server_pool":"Infra-Pool",
-                  "server_pool_qualification":"UCS-Broadwell",
-                  "host_firmware_package":"default",
-                  "bios_policy":"VM-Host",
-                  "power_control_policy":"No-Power-Cap",
-                  "vmedia_policy":"ESXi-6.5a-HTTP"
+                  "name": "VM-Host-Infra-FC-A-vM",
+                  "type": "updating-template",
+                  "uuid_pool": "UUID-Pool",
+                  "local_disk_configuration_policy": "SAN-Boot",
+                  "lan_connectivity_policy": "FC-Boot",
+                  "san_connectivity_policy": "FC-Boot",
+                  "boot_policy": "Boot-Fabric-A",
+                  "maintenance_policy": "default",
+                  "server_pool": "Infra-Pool",
+                  "server_pool_qualification": "UCS-Broadwell",
+                  "host_firmware_package": "default",
+                  "bios_policy": "VM-Host",
+                  "power_control_policy": "No-Power-Cap",
+                  "vmedia_policy": "ESXi-6.5a-HTTP"
                },
                {
-                  "name":"VM-Host-Infra-0",
-                  "type":"instance",
-                  "service_profile_template":"VM-Host-Infra-FC-A-vM",
-                  "suffix_start_number":"1",
-                  "number_of_instances":"2"
+                  "name": "VM-Host-Infra-0",
+                  "type": "instance",
+                  "service_profile_template": "VM-Host-Infra-FC-A-vM",
+                  "suffix_start_number": "1",
+                  "number_of_instances": "2"
                }
             ]
          }

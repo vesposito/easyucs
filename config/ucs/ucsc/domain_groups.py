@@ -443,19 +443,21 @@ class UcsCentralDomainGroupEquipmentPolicies(UcsCentralConfigObject):
                 if not self.get_attributes_from_json(json_content=json_content):
                     self.logger(level="error",
                                 message="Unable to get attributes from JSON content for " + self._CONFIG_NAME)
-
-                for element in self.chassis_discovery_policy:
-                    for value in ["action_link", "link_grouping_preference", "multicast_hardware_hash",
-                                  "backplane_speed_preference"]:
-                        if value not in element:
-                            element[value] = None
-
-                for element in self.rack_server_discovery_policy:
-                    for value in ["action", "scrub_policy"]:
-                        if value not in element:
-                            element[value] = None
-
         self.clean_object()
+
+    def clean_object(self):
+        UcsCentralConfigObject.clean_object(self)
+
+        for element in self.chassis_discovery_policy:
+            for value in ["action_link", "link_grouping_preference", "multicast_hardware_hash",
+                          "backplane_speed_preference"]:
+                if value not in element:
+                    element[value] = None
+
+        for element in self.rack_server_discovery_policy:
+            for value in ["action", "scrub_policy"]:
+                if value not in element:
+                    element[value] = None
 
     def push_object(self, commit=True):
         if commit:
@@ -702,23 +704,25 @@ class UcsCentralDomainGroupRemoteAccess(UcsCentralConfigObject):
                 if not self.get_attributes_from_json(json_content=json_content):
                     self.logger(level="error",
                                 message="Unable to get attributes from JSON content for " + self._CONFIG_NAME)
-
-                for element in self.http:
-                    for value in ["state", "https_redirect"]:
-                        if value not in element:
-                            element[value] = None
-
-                for element in self.web_sessions:
-                    for value in ["maximum_sessions", "maximum_sessions_per_user"]:
-                        if value not in element:
-                            element[value] = None
-
-                for element in self.shell_sessions:
-                    for value in ["maximum_sessions", "maximum_sessions_per_user"]:
-                        if value not in element:
-                            element[value] = None
-
         self.clean_object()
+
+    def clean_object(self):
+        UcsCentralConfigObject.clean_object(self)
+
+        for element in self.http:
+            for value in ["state", "https_redirect"]:
+                if value not in element:
+                    element[value] = None
+
+        for element in self.web_sessions:
+            for value in ["maximum_sessions", "maximum_sessions_per_user"]:
+                if value not in element:
+                    element[value] = None
+
+        for element in self.shell_sessions:
+            for value in ["maximum_sessions", "maximum_sessions_per_user"]:
+                if value not in element:
+                    element[value] = None
 
     def push_object(self, commit=True):
         if commit:

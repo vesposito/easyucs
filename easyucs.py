@@ -130,52 +130,14 @@ def init_process(device, args, config_string):
             if args.setup:
                 device.logger(level="debug", message="Performing initial setup with IP " + str(args.setup[0]))
                 if device.__class__.__name__ == "UcsImc":
-                    if not device.initial_setup(imc_ip=args.setup[0], config=config,
+                    if not device.initial_setup(imc_ip=args.setup[0], config=config, target_admin_password="password",
                                                 bypass_version_checks=bypass_version_checks):
                         device.logger(level="error", message="Error while performing initial setup on UCS IMC")
                         exit()
 
-                    # We now need to get the new IP address and admin password from the configuration
-                    imc_target_ip_address = ""
-                    if config.admin_networking[0].management_ipv4_address:
-                        imc_target_ip_address = config.admin_networking[0].management_ipv4_address
-                    else:
-                        device.logger(level="error",
-                                      message="Could not find Management IP address of UCS IMC in the config")
-                        exit()
-
-                    if not config.local_users:
-                        device.logger(level="error", message="Could not find local_users in the config")
-                        exit()
-
-                    # Going through all users to find admin
-                    target_admin_password = ""
-                    for user in config.local_users:
-                        if user.username:
-                            if user.username == "admin":
-                                if user.password:
-                                    target_admin_password = user.password
-                                else:
-                                    # Admin password is a mandatory input - Exiting
-                                    device.logger(level="error",
-                                                  message="Could not find password for user id admin in the config")
-                                    exit()
-
-                    # We went through all users - Making sure we got the information we needed
-                    if not target_admin_password:
-                        device.logger(level="error", message="Could not find user id admin in the config")
-                        exit()
-
-                    # We need to refresh the device handle so that it has the right attributes
-                    device.handle = ImcHandle(ip=imc_target_ip_address, username="admin",
-                                              password=target_admin_password)
-
-                    # Changing handle to the new one
-                    config.refresh_config_handle()
-
                     device.logger(level="debug",
-                                  message="Waiting for the IMC to come back with the IP " + imc_target_ip_address)
-                    if not device.wait_for_reboot_after_reset(timeout=60, imc_ip=imc_target_ip_address):
+                                  message="Waiting for the IMC to come back with the IP " + device.target)
+                    if not device.wait_for_reboot_after_reset(timeout=60, imc_ip=device.target):
                         exit()
 
                 elif device.__class__.__name__ == "UcsSystem":
@@ -186,89 +148,6 @@ def init_process(device, args, config_string):
                     if not device.initial_setup(fi_ip_list=args.setup, config=config):
                         device.logger(level="error", message="Error while performing initial setup on UCS System")
                         exit()
-
-                    # We now need to wait to be able to configure the device using the configuration
-                    if device.sys_mode == "cluster":
-                        device.logger(message="Waiting up to 300 seconds for cluster election to complete")
-                        time.sleep(80)
-                        if config.system:
-                            if config.system[0].virtual_ip:
-                                device.target = config.system[0].virtual_ip
-                            elif config.system[0].virtual_ipv6:
-                                device.target = config.system[0].virtual_ipv6
-                        if not device.target:
-                            device.logger(level="error",
-                                          message="Could not determine target IP of the device in the config")
-                            exit()
-
-                    elif device.sys_mode == "stand-alone":
-                        device.logger(message="Waiting up to 240 seconds for initial configuration to complete")
-                        time.sleep(20)
-
-                        # TODO Handle Ipv6
-                        if config.management_interfaces:
-                            for management_interface in config.management_interfaces:
-                                if management_interface.fabric.upper() == 'A':
-                                    if management_interface.ip:
-                                        device.target = management_interface.ip
-
-                        if not device.target:
-                            device.logger(level="error",
-                                          message="Could not determine target IP of the device in the config")
-                            exit()
-
-                    if not config.local_users:
-                        # Could not find local_users in config - Admin password is a mandatory parameter - Exiting
-                        device.logger(level="error", message="Could not find local_users in the config")
-                        exit()
-
-                    # Going through all users to find admin
-                    for user in config.local_users:
-                        if user.id:
-                            if user.id == "admin":
-                                device.username = "admin"
-                                if user.password:
-                                    device.password = user.password
-                                else:
-                                    # Admin password is a mandatory input
-                                    device.logger(level="error",
-                                                  message="Could not find password for user id admin in the config")
-                                    exit()
-
-                    # We need to refresh the device handle so that it has the right attributes
-                    device.handle = UcsHandle(ip=device.target, username=device.username,
-                                              password=device.password)
-
-                    # We also need to refresh the config handle
-                    config.refresh_config_handle()
-
-                    if not common.check_web_page(device=device, url="https://" + device.target,
-                                                 str_match="Cisco", timeout=220):
-                        device.logger(level="error", message="Impossible to reconnect to UCS system")
-                        exit()
-
-                    # Reconnecting and waiting for HA cluster to be ready (if in cluster mode)
-                    if not device.connect(bypass_version_checks=bypass_version_checks, retries=3):
-                        device.logger(level="error", message="Impossible to reconnect to UCS system")
-                        exit()
-
-                    # Bypass version checks for the rest of the procedure as potential warnings have already been made
-                    bypass_version_checks = True
-
-                    if device.sys_mode == "cluster":
-                        device.logger(message="Waiting up to 300 seconds for UCS HA cluster to be ready...")
-                        if not device.wait_for_ha_cluster_ready(timeout=300):
-                            device.logger(
-                                level="error",
-                                message="Timeout exceeded while waiting for UCS HA cluster to be in ready state")
-                            exit()
-                    elif device.sys_mode == "stand-alone":
-                        device.logger(message="Waiting up to 300 seconds for UCS stand-alone FI to be ready...")
-                        if not device.wait_for_standalone_fi_ready(timeout=300):
-                            device.logger(
-                                level="error",
-                                message="Timeout exceeded while waiting for UCS stand-alone FI to be ready")
-                            exit()
 
             if config_string:
                 device.config_manager.push_config(bypass_version_checks=bypass_version_checks)

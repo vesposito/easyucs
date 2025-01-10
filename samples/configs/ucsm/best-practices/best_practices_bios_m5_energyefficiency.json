@@ -1,25 +1,25 @@
 {
-   "easyucs":{
-      "metadata":[
+   "easyucs": {
+      "metadata": [
          {
             "file_type": "config",
             "device_type": "ucsm",
-            "category":"best-practices",
-            "subcategory":"BIOS",
-            "name":"UCS Manager BIOS Policy for Energy Efficiency on Cisco UCS M5 Servers",
-            "url":"https://www.cisco.com/c/en/us/products/collateral/servers-unified-computing/ucs-b-series-blade-servers/white-paper-c11-744678.html",
-            "easyucs_version":"0.9.0",
-            "revision": "1.1"
+            "category": "best-practices",
+            "subcategory": "BIOS",
+            "name": "UCS Manager BIOS Policy for Energy Efficiency on Cisco UCS M5 Servers",
+            "url": "https://www.cisco.com/c/en/us/products/collateral/servers-unified-computing/ucs-b-series-blade-servers/white-paper-c11-744678.html",
+            "easyucs_version": "1.0.0",
+            "revision": "1.2"
          }
       ]
    },
-   "config":{
-      "orgs":[
+   "config": {
+      "orgs": [
          {
-            "name":"root",
+            "name": "root",
             "bios_policies": [
                {
-                  "name":"Energy-M5",
+                  "name": "Energy-M5",
                   "descr": "BIOS Policy for Energy Efficiency on Cisco UCS M5 Servers",
                   "enhanced_intel_speedstep_tech": "platform-default",
                   "intel_hyperthreading_tech": "platform-default",
@@ -32,17 +32,17 @@
                   "intel_turbo_boost_tech": "disabled",
                   "p_state_coordination": "platform-default",
                   "energy_performance": "platform-default",
-                  "processor_c_state":"platform-default",
-                  "processor_c1e":"platform-default",
-				  "processor_c3_report":"disabled",
-				  "processor_c6_report":"platform-default",
-				  "processor_c7_report":"disabled",
-                  "package_c_state_limit":"c6-retention",
+                  "processor_c_state": "platform-default",
+                  "processor_c1e": "platform-default",
+				  "processor_c3_report": "disabled",
+				  "processor_c6_report": "platform-default",
+				  "processor_c7_report": "disabled",
+                  "package_c_state_limit": "c6-retention",
                   "energy_performance_tuning": "platform-default",
-                  "cpu_hardware_power_management":"platform-default",
+                  "cpu_hardware_power_management": "platform-default",
                   "workload_configuration": "platform-default",
                   "autonomous_core_c_state": "enabled",
-                  "numa_optimized":"platform-default",
+                  "numa_optimized": "platform-default",
                   "imc_inteleave": "platform-default",
                   "xpt_prefetch": "platform-default",
                   "upi_prefetch": "platform-default",

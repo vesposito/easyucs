@@ -3,7 +3,7 @@
 
 """ chassis.py: Easy UCS Deployment Tool """
 
-from common import read_json_file
+from inventory.generic.blade import GenericBlade
 from inventory.ucs.adaptor import UcsSystemAdaptor, UcsSystemAdaptorPortExpander
 from inventory.ucs.cpu import UcsSystemCpu
 from inventory.ucs.gpu import UcsSystemGpu
@@ -15,10 +15,11 @@ from inventory.ucs.storage import UcsSystemStorageController, UcsSystemStorageCo
 from inventory.ucs.tpm import UcsSystemTpm
 
 
-class UcsBlade(GenericUcsInventoryObject):
+class UcsBlade(GenericBlade, GenericUcsInventoryObject):
     _UCS_SDK_OBJECT_NAME = "computeBlade"
 
     def __init__(self, parent=None, compute_blade=None):
+        GenericBlade.__init__(self, parent=parent)
         GenericUcsInventoryObject.__init__(self, parent=parent, ucs_sdk_object=compute_blade)
 
         self.model = self.get_attribute(ucs_sdk_object=compute_blade, attribute_name="model")
@@ -48,45 +49,11 @@ class UcsBlade(GenericUcsInventoryObject):
     def _get_gpus(self):
         return []
 
-    def _get_imm_compatibility(self):
-        """
-        Returns blade server IMM Compatibility status from EasyUCS catalog files
-        """
-        if self.sku is not None:
-            # We use the catalog file to get the blade IMM Compatibility status
-            if self.sku_scaled:
-                blade_catalog = read_json_file(file_path="catalog/blades/" + self.sku_scaled + ".json", logger=self)
-            else:
-                blade_catalog = read_json_file(file_path="catalog/blades/" + self.sku + ".json", logger=self)
-
-            if blade_catalog:
-                if "imm_compatible" in blade_catalog:
-                    return blade_catalog["imm_compatible"]
-
-        return None
-
     def _get_memory_arrays(self):
         return []
 
     def _get_mgmt_interfaces(self):
         return []
-
-    def _get_model_short_name(self):
-        """
-        Returns blade server short name from EasyUCS catalog files
-        """
-        if self.sku is not None:
-            # We use the catalog file to get the blade short name
-            if self.sku_scaled:
-                blade_catalog = read_json_file(file_path="catalog/blades/" + self.sku_scaled + ".json", logger=self)
-            else:
-                blade_catalog = read_json_file(file_path="catalog/blades/" + self.sku + ".json", logger=self)
-
-            if blade_catalog:
-                if "model_short_name" in blade_catalog:
-                    return blade_catalog["model_short_name"]
-
-        return None
 
     def _get_nvme_drives(self):
         return []
@@ -122,18 +89,8 @@ class UcsSystemBlade(UcsBlade, UcsSystemInventoryObject):
         UcsSystemInventoryObject.__init__(self, parent=parent, ucs_sdk_object=compute_blade)
 
         # Adding a human-readable attribute for memory capacity
-        self.memory_total_marketing = None
-        if self.memory_total:
-            if self.memory_total / 1024 < 1024:
-                memory_total_gb = str(self.memory_total / 1024)
-                memory_total_gb = memory_total_gb.rstrip('0').rstrip('.') if '.' in memory_total_gb else memory_total_gb
-                self.memory_total_marketing = memory_total_gb + " GB"
-            else:
-                memory_total_tb = str(self.memory_total / 1048576)
-                memory_total_tb = memory_total_tb.rstrip('0').rstrip('.') if '.' in memory_total_tb else memory_total_tb
-                self.memory_total_marketing = memory_total_tb + " TB"
+        self._get_memory_total_marketing()
 
-        self.imm_compatible = None
         self.locator_led_status = None
         self.os_arch = None
         self.os_kernel_version = None
@@ -148,8 +105,6 @@ class UcsSystemBlade(UcsBlade, UcsSystemInventoryObject):
         self.service_profile_template = None
         self.service_profile_template_org = None
         self.service_profile_template_name = None
-        self.short_name = None
-        self.sku_scaled = None
         if self._inventory.load_from == "live":
             # Handle specific case of SKU for B260 M4 / B460 M4
             if self.scaled_mode is not None:

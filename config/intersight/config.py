@@ -28,6 +28,7 @@ from intersight.api.kvm_api import KvmApi
 from intersight.api.macpool_api import MacpoolApi
 from intersight.api.memory_api import MemoryApi
 from intersight.api.networkconfig_api import NetworkconfigApi
+from intersight.api.network_api import NetworkApi
 from intersight.api.ntp_api import NtpApi
 from intersight.api.organization_api import OrganizationApi
 from intersight.api.power_api import PowerApi
@@ -54,6 +55,7 @@ from common import read_json_file
 class IntersightConfig(GenericConfig):
     _CONFIG_SECTION_ATTRIBUTES_MAP = {
         "account_details": "Account Details",
+        "equipment": "Equipment",
         "orgs": "Organizations",
         "resource_groups": "Resource Groups",
         "roles": "Roles",
@@ -72,6 +74,7 @@ class IntersightConfig(GenericConfig):
         self.sdk_objects = {}
 
         self.account_details = []
+        self.equipment = []
         self.orgs = []
         self.resource_groups = []
         self.roles = []
@@ -85,24 +88,6 @@ class IntersightConfig(GenericConfig):
         bios_table = read_json_file(file_path="config/intersight/bios_table.json", logger=self)
         if bios_table:
             self.bios_table = bios_table
-
-    @property
-    def fabric_org_name(self):
-        """
-        Function to get the value of attribute '_fabric_org_name'. It should hold the name of the organization
-        which holds the converted fabric policies.
-        """
-        if not hasattr(self, "_fabric_org_name"):
-            self._fabric_org_name = None
-        return self._fabric_org_name
-
-    @fabric_org_name.setter
-    def fabric_org_name(self, value):
-        """
-        Function to set the attribute _fabric_org_name
-        :param value: The value to be set for _fabric_org_name
-        """
-        self._fabric_org_name = value
 
     def _fetch_sdk_objects(self, force=False):
         MAX_OBJECTS_PER_FETCH_CALL = 100
@@ -127,7 +112,9 @@ class IntersightConfig(GenericConfig):
                                              "fabric_flow_control_policy", "fabric_lan_pin_group",
                                              "fabric_link_aggregation_policy", "fabric_link_control_policy",
                                              "fabric_multicast_policy", "fabric_port_mode", "fabric_port_policy",
-                                             "fabric_san_pin_group", "fabric_server_role",
+                                             "fabric_san_pin_group", "fabric_server_role", "fabric_span_session",
+                                             "fabric_span_dest_eth_port", "fabric_span_source_vlan", "fabric_span_source_vnic_eth_if",
+                                             "fabric_span_source_eth_port", "fabric_span_source_eth_port_channel",
                                              "fabric_switch_cluster_profile", "fabric_switch_cluster_profile_template",
                                              "fabric_switch_control_policy", "fabric_switch_profile",
                                              "fabric_switch_profile_template", "fabric_system_qos_policy", "fabric_vlan",
@@ -146,6 +133,7 @@ class IntersightConfig(GenericConfig):
                                 {MacpoolApi: ["macpool_pool", "macpool_reservation"]},
                                 {MemoryApi: ["memory_persistent_memory_policy"]},
                                 {NetworkconfigApi: ["networkconfig_policy"]},
+                                {NetworkApi: ["network_element"]},
                                 {NtpApi: ["ntp_policy"]},
                                 {OrganizationApi: ["organization_organization"]},
                                 {PowerApi: ["power_policy"]},

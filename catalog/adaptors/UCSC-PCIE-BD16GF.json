@@ -1,33 +1,34 @@
 {
-  "model_short_name": "Emulex LPe31002-M6 2x16G",
-  "rear_file_name": "UCSC-PCIE-BD16GF.png",
-  "rear_file_name_half": "UCSC-PCIE-BD16GF_half.png",
-  "rear_file_size": [593,75],
-  "rear_file_size_half": [389,75],
-  "rear_ports": {
-    "x/2": {
-      "port_coord": [279, 10],
-      "port_type": "sfp+",
-      "port_size": [82, 55]
-    },
-    "x/1": {
-      "port_coord": [385, 10],
-      "port_type": "sfp+",
-      "port_size": [82, 55]
-    }
-  },
-  "rear_ports_half": {
-    "x/2": {
-      "port_coord": [77, 10],
-      "port_type": "sfp+",
-      "port_size": [82, 55]
-    },
-    "x/1": {
-      "port_coord": [183, 10],
-      "port_type": "sfp+",
-      "port_size": [82, 55]
-    }
-  },
-  "imm_compatible": false,
-  "data_sheet_url": "https://www.cisco.com/c/dam/en/us/products/collateral/servers-unified-computing/ucs-c-series-rack-servers/emulex-lpe.pdf"
+   "model_short_name": "Emulex LPe31002-M6 2x16G",
+   "rear_file_name": "UCSC-PCIE-BD16GF.png",
+   "rear_file_name_half": "UCSC-PCIE-BD16GF_half.png",
+   "rear_file_size": [593,75],
+   "rear_file_size_half": [389,75],
+   "rear_ports": {
+      "x/2": {
+         "port_coord": [279, 10],
+         "port_type": "sfp+",
+         "port_size": [82, 55]
+      },
+      "x/1": {
+         "port_coord": [385, 10],
+         "port_type": "sfp+",
+         "port_size": [82, 55]
+      }
+   },
+   "rear_ports_half": {
+      "x/2": {
+         "port_coord": [77, 10],
+         "port_type": "sfp+",
+         "port_size": [82, 55]
+      },
+      "x/1": {
+         "port_coord": [183, 10],
+         "port_type": "sfp+",
+         "port_size": [82, 55]
+      }
+   },
+   "imm_compatible": false,
+   "data_sheet_url": "https://www.cisco.com/c/dam/en/us/products/collateral/servers-unified-computing/ucs-c-series-rack-servers/emulex-lpe.pdf",
+   "adaptor_type": "hba"
 }

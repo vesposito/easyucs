@@ -682,9 +682,11 @@
          "enum": [
             "Auto",
             "Disabled",
+            "Enabled",
             "Platform Default",
             "auto",
             "disabled",
+            "enabled",
             "platform-default"
          ]
       },
@@ -1139,6 +1141,21 @@
             "platform-default"
          ]
       },
+      "df_pstate_frequency_optimizer": {
+         "description": "BIOS Policy - Processor - DF PState Frequency Optimizer",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "Auto",
+            "Disabled",
+            "Enabled",
+            "Platform Default",
+            "auto",
+            "disabled",
+            "enabled",
+            "platform-default"
+         ]
+      },
       "dfx_osb_configuration": {
          "description": "BIOS Policy - DFX OSB Configuration - DFX OSB Configuration",
          "type": "string",
@@ -1218,6 +1235,31 @@
             "three--3---0-",
             "two--1---1-",
             "two--2---0-"
+         ]
+      },
+      "downcore_control_f19_ma0h_afh": {
+         "description": "BIOS Policy - Processor - Downcore control F19 MA0h-AFh",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "Auto",
+            "EIGHT--4---4-",
+            "FOUR--2---2-",
+            "FOURTEEN--7---7-",
+            "Platform Default",
+            "SIX--3---3-",
+            "TEN--5---5-",
+            "TWELVE--6---6-",
+            "TWO--1---1-",
+            "auto",
+            "eight--4---4-",
+            "four--2---2-",
+            "fourteen--7---7-",
+            "platform-default",
+            "six--3---3-",
+            "ten--5---5-",
+            "twelve--6---6-",
+            "two--1---1-"
          ]
       },
       "dram_clock_throttling": {
@@ -1493,7 +1535,7 @@
          ]
       },
       "fixed_soc_pstate_sp5_f19h": {
-         "description": "BIOS Policy - Processor - Fixed SOC Pstate SP5 F19h",
+         "description": "BIOS Policy - Processor - Fixed SOC P-State SP5 F19h",
          "type": "string",
          "default": "platform-default",
          "pattern": "platform-default|^[0-2]$"
@@ -3983,9 +4025,11 @@
          "default": "platform-default",
          "enum": [
             "Disabled",
+            "Enable-at-End-of-POST",
             "Enabled",
             "Platform Default",
             "disabled",
+            "enable-at-end-of-post",
             "enabled",
             "platform-default"
          ]
@@ -6511,9 +6555,11 @@
          "type": "string",
          "default": "platform-default",
          "enum": [
+            "Auto",
             "Disabled",
             "Enabled",
             "Platform Default",
+            "auto",
             "disabled",
             "enabled",
             "platform-default"
@@ -6525,9 +6571,13 @@
          "default": "platform-default",
          "enum": [
             "Auto",
+            "Disabled",
+            "Enabled",
             "Off",
             "Platform Default",
             "auto",
+            "disabled",
+            "enabled",
             "off",
             "platform-default"
          ]
@@ -6592,6 +6642,19 @@
          "type": "string",
          "default": "platform-default",
          "pattern": "platform-default|^[0-9A-Fa-f]{0,16}$"
+      },
+      "sriov": {
+         "description": "BIOS Policy - Sriov Config - Sriov",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "Disabled",
+            "Enabled",
+            "Platform Default",
+            "disabled",
+            "enabled",
+            "platform-default"
+         ]
       },
       "streaming_stores_control": {
          "description": "BIOS Policy - Processor - Streaming Stores Control",

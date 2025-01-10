@@ -2,15 +2,14 @@
 # !/usr/bin/env python
 
 """ adaptor.py: Easy UCS Deployment Tool """
-from __init__ import __author__, __copyright__,  __version__, __status__
 
+from PIL import Image
 
 from draw.object import GenericUcsDrawEquipment
-from PIL import Image, ImageDraw, ImageFont
-from draw.ucs.port import UcsSystemDrawPort
+from draw.ucs.port import UcsPortDraw
 
 
-class UcsSystemDrawAdaptor(GenericUcsDrawEquipment):
+class UcsAdaptorDraw(GenericUcsDrawEquipment):
     def __init__(self, parent=None, parent_draw=None):
         self.picture = None
         self.parent_draw = parent_draw
@@ -40,18 +39,19 @@ class UcsSystemDrawAdaptor(GenericUcsDrawEquipment):
         self.picture = None
 
     def _get_picture(self):
-        if "SIOC" in self._parent.pci_slot:
-            self.width = self.parent_draw.json_file["pcie_slots"][0]["width"]
-            if "orientation" in self.parent_draw.json_file["pcie_slots"][0]:
-                self.orientation = self.parent_draw.json_file["pcie_slots"][0]["orientation"]
-        elif self._parent.pci_slot not in ["MLOM", "OCP"]:  # not MLOM or OCP
-            if self.parent_draw.json_file.get("pcie_slots"):
-                for slot in self.parent_draw.json_file["pcie_slots"]:
-                    if slot["id"] == int(self._parent.pci_slot):
-                        if "width" in slot:
-                            self.width = slot['width']
-                        if "orientation" in slot:
-                            self.orientation = slot['orientation']
+        if self._parent.pci_slot:
+            if "SIOC" in self._parent.pci_slot:
+                self.width = self.parent_draw.json_file["pcie_slots"][0]["width"]
+                if "orientation" in self.parent_draw.json_file["pcie_slots"][0]:
+                    self.orientation = self.parent_draw.json_file["pcie_slots"][0]["orientation"]
+            elif self._parent.pci_slot not in ["MLOM", "OCP"]:  # not MLOM or OCP
+                if self.parent_draw.json_file.get("pcie_slots"):
+                    for slot in self.parent_draw.json_file["pcie_slots"]:
+                        if slot["id"] == int(self._parent.pci_slot):
+                            if "width" in slot:
+                                self.width = slot['width']
+                            if "orientation" in slot:
+                                self.orientation = slot['orientation']
 
         if self.json_file:
             if self.width == "half":
@@ -81,17 +81,18 @@ class UcsSystemDrawAdaptor(GenericUcsDrawEquipment):
 
     def _get_picture_offset(self):
         coord = None
-        if self._parent.pci_slot == "MLOM":  # for MLOM Slot
-            coord = self.parent_draw.json_file["mlom_slots"][0]["coord"]
-        elif self._parent.pci_slot == "OCP":  # for OCP Slot
-            coord = self.parent_draw.json_file["ocp_slots"][0]["coord"]
-        elif "SIOC" in self._parent.pci_slot:  # for PCIe slot in UCS-S3260-PCISIOC
-            coord = self.parent_draw.json_file["pcie_slots"][0]["coord"]
-        else:  # for PCIe Slot
-            if self.parent_draw.json_file.get("pcie_slots"):
-                for slot in self.parent_draw.json_file["pcie_slots"]:
-                    if slot["id"] == int(self._parent.pci_slot):
-                        coord = slot["coord"]
+        if self._parent.pci_slot:
+            if self._parent.pci_slot == "MLOM":  # for MLOM Slot
+                coord = self.parent_draw.json_file["mlom_slots"][0]["coord"]
+            elif self._parent.pci_slot == "OCP":  # for OCP Slot
+                coord = self.parent_draw.json_file["ocp_slots"][0]["coord"]
+            elif "SIOC" in self._parent.pci_slot:  # for PCIe slot in UCS-S3260-PCISIOC
+                coord = self.parent_draw.json_file["pcie_slots"][0]["coord"]
+            else:  # for PCIe Slot
+                if self.parent_draw.json_file.get("pcie_slots"):
+                    for slot in self.parent_draw.json_file["pcie_slots"]:
+                        if slot["id"] == int(self._parent.pci_slot):
+                            coord = slot["coord"]
         if coord:
             return self.parent_draw.picture_offset[0] + coord[0], self.parent_draw.picture_offset[1] + coord[1]
         return False
@@ -139,9 +140,9 @@ class UcsSystemDrawAdaptor(GenericUcsDrawEquipment):
                 peer = port.peer
 
             self.ports.append(
-                UcsSystemDrawPort(id=port_id, color=port_color, size=(port_size_x, port_size_y),
-                                  coord=(self.picture_offset[0] + coord_x, self.picture_offset[1] + coord_y),
-                                  parent_draw=self, port=port, peer=peer))
+                UcsPortDraw(id=port_id, color=port_color, size=(port_size_x, port_size_y),
+                            coord=(self.picture_offset[0] + coord_x, self.picture_offset[1] + coord_y),
+                            parent_draw=self, port=port, peer=peer))
 
             self.draw_rectangle(draw=self.parent_draw.draw,
                                 coordinates=((self.picture_offset[0] + coord_x, self.picture_offset[1] + coord_y),

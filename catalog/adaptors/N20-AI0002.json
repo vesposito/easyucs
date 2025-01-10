@@ -1,5 +1,6 @@
 {
-  "model_short_name": "82598KR-CI",
-  "imm_compatible": false,
-  "data_sheet_url": "https://www.cisco.com/c/en/us/products/collateral/servers-unified-computing/ucs-5100-series-blade-server-chassis/data_sheet_c78-526547.pdf"
+   "model_short_name": "82598KR-CI",
+   "imm_compatible": false,
+   "data_sheet_url": "https://www.cisco.com/c/en/us/products/collateral/servers-unified-computing/ucs-5100-series-blade-server-chassis/data_sheet_c78-526547.pdf",
+   "adaptor_type": "nic"
 }

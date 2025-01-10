@@ -9,8 +9,9 @@ It can :
     - UCS IMC (Integrated Management Controller) for standalone servers
     - UCS Central
     - Intersight (SaaS or Appliance)
-* perform the initial setup of an "out of the box" UCS device (UCSM or CIMC)
-* reset the configuration of an UCS device before configuring it
+    - IMM Domain (Fabric Interconnects running in Intersight mode)
+* perform the initial setup of an "out of the box" UCS device (UCSM, IMM or CIMC)
+* reset the configuration of a UCS device before configuring it
 * [fetch a configuration](docs/CONFIG.md) and export it in JSON format
 * [fetch an inventory](docs/INVENTORY.md) and export it in JSON format
 * [perform maintenance actions](docs/ACTIONS.md) on a UCS device (regenerate self-signed certificate, clear user sessions, clear SEL logs)
@@ -29,7 +30,7 @@ Minimum versions of UCS devices :
 * UCS Manager: ***3.2(1d)*** or above
 * UCS IMC: ***3.0(1c)*** or above
 * UCS Central: ***2.0(1a)*** or above
-* Intersight SaaS ***(no prerequisite)*** & Appliance: ***1.1.0-1*** or above
+* Intersight SaaS ***(no prerequisite)*** & Appliance: ***1.1.1-0*** or above
 
 This tool requires ***Python 3.8+*** to work. *Python 2.x* is not supported.
 
@@ -152,6 +153,15 @@ python easyucs.py device reset_device_connector -t ucsm -i 192.168.0.1 -u admin 
 
 
 ## Versioning
+
+### 1.0.0
+* Add support for Intersight device inventory fetch
+* Add initial support for Intersight report (inventory & config)
+* Add support for IMM Domain device
+* Add support for IMM Domain fetch/push config
+* Add support for initial setup of IMM Domain device
+* Bump up minimum Intersight Appliance required version to 1.1.1-0
+* Miscellaneous bug fixes and improvements
 
 ### 0.9.8.11
 * Add support for UCS X-Direct in UCSM config/inventory/report
@@ -358,6 +368,10 @@ Initial release
 * **Abhinav Sinha** - *Various enhancements*
 * **Jayasree Vulavala** - *Various enhancements*
 * **Ivan Ivanov** - *GUI enhancements*
+* **Jyoti Chahal** - *QA & Testing*
+* **Alpana Kumari** - *QA & Testing*
+* **Alekya Gudise** - *QA & Testing*
+* **Varshitha GN** - *QA & Testing*
 
 ## License
 

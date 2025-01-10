@@ -1,53 +1,54 @@
 {
-  "model_short_name": "Broadcom 5709 4x1G",
-  "rear_file_name": "N2XX-ABPCI03.png",
-  "rear_file_name_half": "N2XX-ABPCI03_half.png",
-  "rear_file_size": [593,75],
-  "rear_file_size_half": [389,75],
-  "rear_ports": {
-	"x/4": {
-      "port_coord": [235, 9],
-      "port_type": "rj45",
-      "port_size": [67, 39]
-    },
-	"x/3": {
-      "port_coord": [307, 9],
-      "port_type": "rj45",
-      "port_size": [67, 39]
-    },
-    "x/2": {
-      "port_coord": [379, 9],
-      "port_type": "rj45",
-      "port_size": [67, 39]
-    },
-    "x/1": {
-      "port_coord": [451, 9],
-      "port_type": "rj45",
-      "port_size": [67, 39]
-    }
-  },
-  "rear_ports_half": {
-	"x/4": {
-      "port_coord": [56, 9],
-      "port_type": "rj45",
-      "port_size": [67, 39]
-    },
-	"x/3": {
-      "port_coord": [128, 9],
-      "port_type": "rj45",
-      "port_size": [67, 39]
-    },
-    "x/2": {
-      "port_coord": [200, 9],
-      "port_type": "rj45",
-      "port_size": [67, 39]
-    },
-    "x/1": {
-      "port_coord": [272, 9],
-      "port_type": "rj45",
-      "port_size": [67, 39]
-    }
-  },
-  "imm_compatible": false,
-  "data_sheet_url": "https://www.cisco.com/c/dam/global/zh_cn/products/collateral/servers-unified-computing/ucs-c-series-rack-servers/ucs_c_02.pdf"
+   "model_short_name": "Broadcom 5709 4x1G",
+   "rear_file_name": "N2XX-ABPCI03.png",
+   "rear_file_name_half": "N2XX-ABPCI03_half.png",
+   "rear_file_size": [593,75],
+   "rear_file_size_half": [389,75],
+   "rear_ports": {
+      "x/4": {
+         "port_coord": [235, 9],
+         "port_type": "rj45",
+         "port_size": [67, 39]
+      },
+      "x/3": {
+         "port_coord": [307, 9],
+         "port_type": "rj45",
+         "port_size": [67, 39]
+      },
+      "x/2": {
+         "port_coord": [379, 9],
+         "port_type": "rj45",
+         "port_size": [67, 39]
+      },
+      "x/1": {
+         "port_coord": [451, 9],
+         "port_type": "rj45",
+         "port_size": [67, 39]
+      }
+   },
+   "rear_ports_half": {
+      "x/4": {
+         "port_coord": [56, 9],
+         "port_type": "rj45",
+         "port_size": [67, 39]
+      },
+      "x/3": {
+         "port_coord": [128, 9],
+         "port_type": "rj45",
+         "port_size": [67, 39]
+      },
+      "x/2": {
+         "port_coord": [200, 9],
+         "port_type": "rj45",
+         "port_size": [67, 39]
+      },
+      "x/1": {
+         "port_coord": [272, 9],
+         "port_type": "rj45",
+         "port_size": [67, 39]
+      }
+   },
+   "imm_compatible": false,
+   "data_sheet_url": "https://www.cisco.com/c/dam/global/zh_cn/products/collateral/servers-unified-computing/ucs-c-series-rack-servers/ucs_c_02.pdf",
+   "adaptor_type": "nic"
 }

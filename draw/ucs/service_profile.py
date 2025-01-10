@@ -2,15 +2,14 @@
 # !/usr/bin/env python
 
 """ service_profile.py: Easy UCS Deployment Tool """
-from __init__ import __author__, __copyright__,  __version__, __status__
 
 import math
 
 from PIL import Image, ImageDraw, ImageFont
 
 from draw.object import UcsSystemDrawInfraEquipment
-from draw.ucs.chassis import UcsSystemDrawChassisRear, UcsSystemDrawChassisFront
-from draw.ucs.rack import UcsSystemDrawRackRear, UcsSystemDrawRackFront, UcsSystemDrawRackEnclosureRear
+from draw.ucs.chassis import UcsChassisDrawRear, UcsChassisDrawFront
+from draw.ucs.rack import UcsRackDrawRear, UcsRackDrawFront, UcsSystemDrawRackEnclosureRear
 
 
 class UcsSystemDrawInfraServiceProfile(UcsSystemDrawInfraEquipment):
@@ -259,9 +258,9 @@ class UcsSystemDrawInfraServiceProfile(UcsSystemDrawInfraEquipment):
         new_list = []
         for chassis in self.chassis_list:
             if 'Rear' in chassis.__class__.__name__:
-                new_chassis = UcsSystemDrawChassisRear(parent=chassis._parent)
+                new_chassis = UcsChassisDrawRear(parent=chassis._parent)
             else:
-                new_chassis = UcsSystemDrawChassisFront(parent=chassis._parent)
+                new_chassis = UcsChassisDrawFront(parent=chassis._parent)
             new_list.append(new_chassis)
             # Sort the chassis by id
         self.chassis_list = sorted(new_list, key=lambda x: int(x._parent.id))
@@ -270,9 +269,9 @@ class UcsSystemDrawInfraServiceProfile(UcsSystemDrawInfraEquipment):
         new_list = []
         for rack in self.rack_list:
             if 'Rear' in rack.__class__.__name__:
-                new_rack = UcsSystemDrawRackRear(parent=rack._parent)
+                new_rack = UcsRackDrawRear(parent=rack._parent)
             else:
-                new_rack = UcsSystemDrawRackFront(parent=rack._parent)
+                new_rack = UcsRackDrawFront(parent=rack._parent)
             new_list.append(new_rack)
         # Sort the racks by id
         self.rack_list = sorted(new_list, key=lambda x: int(x._parent.id))

@@ -5,7 +5,7 @@
 from __init__ import __author__, __copyright__,  __version__, __status__
 
 
-from config.ucs.object import GenericUcsConfigObject, UcsImcConfigObject, UcsSystemConfigObject
+from config.ucs.object import UcsImcConfigObject, UcsSystemConfigObject
 
 from ucsmsdk.mometa.cpmaint.CpmaintMaintPolicy import CpmaintMaintPolicy
 from ucsmsdk.mometa.equipment.EquipmentBinding import EquipmentBinding
@@ -245,14 +245,17 @@ class UcsSystemDiskZoningPolicy(UcsSystemConfigObject):
                     self.logger(level="error",
                                 message="Unable to get attributes from JSON content for " + self._CONFIG_NAME)
 
-                # We need to set all values that are not present in the config file to None
-                for element in self.disks_zoned:
-                    for value in ["server", "controller", "slot_range", "ownership", "disk_slot_range_start",
-                                  "disk_slot_range_stop", "drive_path"]:
-                        if value not in element:
-                            element[value] = None
-
         self.clean_object()
+
+    def clean_object(self):
+        UcsSystemConfigObject.clean_object(self)
+
+        # We need to set all values that are not present in the config file to None
+        for element in self.disks_zoned:
+            for value in ["server", "controller", "slot_range", "ownership", "disk_slot_range_start",
+                          "disk_slot_range_stop", "drive_path"]:
+                if value not in element:
+                    element[value] = None
 
     def push_object(self, commit=True):
         if commit:

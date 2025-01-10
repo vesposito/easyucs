@@ -7,8 +7,8 @@
             "category": "samples",
             "subcategory": "Domain Groups",
             "name": "UCS Central Domain Group/VLAN/VSAN-related sections configuration sample",
-            "easyucs_version": "0.9.0",
-            "revision": "1.1"
+            "easyucs_version": "1.0.0",
+            "revision": "1.2"
          }
       ]
    },

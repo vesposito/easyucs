@@ -103,14 +103,15 @@ class DeviceMetadata(GenericMetadata):
     TABLE_RECORD = DeviceRecord
     OBJECT_TYPE = "device"
 
-    def __init__(self, backups_path=None, bypass_connection_checks=False, bypass_version_checks=False, cached_orgs=None,
-                 cache_path=None, db_record=None, device_connector_claim_status=None, device_name=None,
+    def __init__(self, backups_path=None, bypass_connection_checks=False, bypass_version_checks=False,
+                 db_record=None, device_connector_claim_status=None, device_name=None,
                  device_connector_ownership_name=None, device_connector_ownership_user=None, device_type="generic",
                  device_type_long="Generic", device_uuid=None, device_version=None, easyucs_version=None,
                  file_path=None, file_type="device", hash=None, intersight_device_uuid=None, images_path=None,
                  is_custom=False, is_hidden=False, is_reachable=False, is_system=False, key_id=None, name=None,
-                 origin=None, parent=None, password=None, private_key_path=None, system_usage=None, tags=[],
-                 target=None, timestamp=None, timestamp_last_connected=None, username=None, user_label=None, uuid=None):
+                 origin=None, parent=None, parent_device_uuid=None, password=None, private_key_path=None, 
+                 sub_device_uuids=None, system_usage=None, tags=[], target=None, timestamp=None, 
+                 timestamp_last_connected=None, username=None, use_proxy=False, user_label=None, uuid=None):
         GenericMetadata.__init__(self, db_record=db_record, device_name=device_name, device_uuid=device_uuid,
                                  device_version=device_version, easyucs_version=easyucs_version, file_path=file_path,
                                  file_type=file_type, hash=hash, is_hidden=is_hidden, is_system=is_system, name=name,
@@ -119,8 +120,6 @@ class DeviceMetadata(GenericMetadata):
         self.backups_path = backups_path
         self.bypass_connection_checks = bypass_connection_checks
         self.bypass_version_checks = bypass_version_checks
-        self.cached_orgs = cached_orgs
-        self.cache_path = cache_path
         self.device_connector_claim_status = device_connector_claim_status
         self.device_connector_ownership_name = device_connector_ownership_name
         self.device_connector_ownership_user = device_connector_ownership_user
@@ -131,11 +130,14 @@ class DeviceMetadata(GenericMetadata):
         self.is_custom = is_custom
         self.is_reachable = is_reachable
         self.key_id = key_id
+        self.parent_device_uuid = parent_device_uuid
         self.password = password
         self.private_key_path = private_key_path
+        self.sub_device_uuids = sub_device_uuids
         self.target = target
         self.timestamp_last_connected = timestamp_last_connected
         self.username = username
+        self.use_proxy = use_proxy
         self.user_label = user_label
 
         if self.parent:

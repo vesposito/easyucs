@@ -3,7 +3,6 @@
 
 """ manager.py: Easy UCS Deployment Tool """
 
-import certifi
 import contextlib
 import copy
 import datetime
@@ -11,30 +10,31 @@ import inspect
 import json
 import os
 import shutil
-import sqlalchemy.exc
 import threading
 import uuid as python_uuid
-
-from cryptography.fernet import Fernet
 from sqlite3 import IntegrityError
+
+import sqlalchemy.exc
+from cryptography.fernet import Fernet
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session
 from sqlalchemy.orm import sessionmaker
-from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
+from watchdog.observers import Observer
 
 from __init__ import EASYUCS_ROOT, __version__
 from backup.backup import GenericBackup
-from common import password_generator, read_json_file, validate_json
+from common import read_json_file, validate_json
 from config.config import GenericConfig
+from cache.cache import GenericCache
 from device.device import GenericDevice
 from inventory.inventory import GenericInventory
 from report.report import GenericReport
-from repository.db import models
 from repository import metadata
-from repository.repo import Repo
+from repository.db import models
 from repository.metadata import GenericMetadata, BackupMetadata, ConfigMetadata, DeviceMetadata, InventoryMetadata, \
     ReportMetadata, GenericTaskMetadata, TaskMetadata, TaskStepMetadata, RepoFileMetadata, RepoSyncToDeviceMetadata
+from repository.repo import Repo
 
 
 def hasattr_table_record(cls):
@@ -66,6 +66,7 @@ class RepositoryManager:
     REPOSITORY_TMP_FOLDER_NAME: str = "tmp"
     SAMPLES_FOLDER_NAME: str = "samples"
     SETTINGS_FILE_NAME: str = "settings.json"
+    PROXY_SETTINGS_FILE_NAME: str = "proxy_settings.json"
     SOFTWARE_REPOSITORY_FOLDER_NAME: str = "repo"
     TABLE_TO_METADATA_MAPPING = {}  # It's a mapping from table name to its "(Metadata, DB record)"
     for table in inspect.getmembers(metadata, hasattr_table_record):
@@ -86,6 +87,7 @@ class RepositoryManager:
         self._init_key()
         self._init_db()
         self._init_settings()
+        self._init_proxy_settings()
         self._init_config_catalog()
         self._init_repo()
 
@@ -138,6 +140,13 @@ class RepositoryManager:
             for object_metadata in object_metadata_list:
                 if not self._delete_metadata(metadata=object_metadata):
                     result = False
+
+        # We now delete all the sub-devices of this device
+        if metadata.sub_device_uuids:
+            for sub_device_uuid in metadata.sub_device_uuids:
+                sub_device_metadata_list = self.get_metadata(object_type="device", uuid=sub_device_uuid)
+                for sub_device_metadata in sub_device_metadata_list:
+                    self.delete_from_repository(metadata=sub_device_metadata)
 
         return result
 
@@ -390,6 +399,60 @@ class RepositoryManager:
                 json.dump(file_contents, settings_file, indent=3)
         return True
 
+    def _init_proxy_settings(self, file_update=False):
+        """
+        Initializes Proxy Settings
+        :param file_update: Update the proxy settings file with the initialized proxy settings
+        :return: True if proxy settings init is successful, False otherwise
+        """
+        file_contents = read_json_file(file_path=self.PROXY_SETTINGS_FILE_NAME)
+        # Validating settings.json
+        if not validate_json(json_data=file_contents, schema_path="schema/proxy_settings/proxy_settings.json",
+                             logger=self):
+            self.logger(level="error", message="proxy_settings.json file is not valid")
+            raise ValueError("Failed to validate proxy_settings.json file")
+
+        # There are 3 scenarios:
+        # 1. If password fields are not present and encrypted password fields are present. In this case we just decrypt
+        # the encrypted password fields.
+        # 2. If password fields are not present and encrypted password fields are also not present. In this case we
+        # set encrypted password as empty.
+        # 3. If password fields are present, then we add the encrypted password fields to the settings.
+        for content in ['proxy_password']:
+            if not file_contents.get(content) and file_contents.get(
+                    'encrypted_' + content):
+                # If password fields are not present and encrypted password fields are present
+                try:
+                    file_contents[content] = self.cipher_suite.decrypt(bytes(
+                        file_contents['encrypted_' + content], 'utf-8')).decode('utf-8')
+                except Exception as err:
+                    self.logger(level="error", message=f"Could not decrypt the password: {str(err)}")
+                    file_contents['encrypted_' + content] = ""
+                    file_update = True
+
+            elif not file_contents.get(content) and not file_contents.\
+                    get('encrypted_'+content):
+                # If password fields are not present and encrypted password fields are also not present
+                self.logger(level="info",
+                            message="No password provided. Setting the password fields with empty string")
+                file_contents['encrypted_' + content] = ""
+                file_update = True
+
+            else:
+                # If password fields are present
+                file_contents['encrypted_' + content] = self.cipher_suite.encrypt(bytes(
+                    file_contents[content], encoding='utf8')).decode('utf-8')
+                file_update = True
+
+        if file_update:
+            with (open(os.path.abspath(os.path.join(EASYUCS_ROOT, self.PROXY_SETTINGS_FILE_NAME)), "w") as
+                  proxy_settings_file):
+                for content in ['proxy_password']:
+                    if content in file_contents:
+                        del file_contents[content]
+                json.dump(file_contents, proxy_settings_file, indent=3)
+        return True
+
     def _init_config_catalog(self):
         """
         Initializes the config catalog
@@ -403,7 +466,7 @@ class RepositoryManager:
         # Determining the types of devices that have samples
         self.logger(message="Initializing config catalog...")
         device_list = self.get_metadata(object_type="device")
-        for device_folder_name in ["cimc", "intersight", "ucsc", "ucsm"]:
+        for device_folder_name in ["cimc", "imm_domain", "intersight", "ucsc", "ucsm"]:
             # We first need to check if we already have a system device of usage "catalog" for this device type
             already_present = False
             for device_metadata in device_list:
@@ -651,7 +714,7 @@ class RepositoryManager:
             self.logger(level="error", message="No object given for save file operation!")
             return False
 
-        if not any(isinstance(object, x) for x in [GenericConfig, GenericInventory, GenericReport]):
+        if not any(isinstance(object, x) for x in [GenericCache, GenericConfig, GenericInventory, GenericReport]):
             self.logger(level="error", message="Object type not supported!")
             return False
 
@@ -664,6 +727,8 @@ class RepositoryManager:
             directory = "inventories"
         elif isinstance(object, GenericReport):
             directory = "reports"
+        elif isinstance(object, GenericCache):
+            directory = "cache"
 
         directory_full_path = os.path.abspath(
             os.path.join(EASYUCS_ROOT, self.REPOSITORY_FOLDER_NAME, self.REPOSITORY_FILES_FOLDER_NAME,
@@ -677,7 +742,12 @@ class RepositoryManager:
             os.makedirs(directory_full_path)
 
         filename = ""
-        if isinstance(object, GenericConfig):
+        if isinstance(object, GenericCache):
+            filename = "cache.json"
+            if not object.device.cache_manager.export_cache(
+                    export_format="json", directory=directory_full_path, filename=filename):
+                return False
+        elif isinstance(object, GenericConfig):
             filename = "config-" + str(object.uuid) + ".json"
             if not object.device.config_manager.export_config(uuid=object.uuid, export_format="json",
                                                               directory=directory_full_path, filename=filename):
@@ -758,7 +828,10 @@ class RepositoryManager:
         for field in record:
             if record[field]:
                 if "uuid" in field:
-                    record[field] = python_uuid.UUID(record[field])
+                    if "uuids" in field and isinstance(record[field], list):
+                        record[field] = [python_uuid.UUID(item) for item in record[field]]
+                    else:
+                        record[field] = python_uuid.UUID(record[field])
                 elif "timestamp" in field:
                     record[field] = datetime.datetime.fromisoformat(record[field])
                 elif "cached_orgs" in field:
@@ -778,6 +851,13 @@ class RepositoryManager:
                         fields_to_be_added["is_custom"] = True
         if fields_to_be_added:
             record.update(fields_to_be_added)
+
+        # Remove the fields which were removed in latest version.
+        fields_to_remove = ["cached_orgs", "cache_path"]
+        for field in fields_to_remove:
+            if field in record:
+                del record[field]
+
         return True
 
     def create_backups_folder(self, device=None):
@@ -811,31 +891,6 @@ class RepositoryManager:
         if not self.save_metadata(metadata=device.metadata):
             self.logger(level="error", message="Unable to save backups folder path to device metadata")
             return False
-
-        return True
-    
-    def create_cache_folder(self, device=None):
-        """
-        Create the cache folder in the repository if it does not exist already
-        :param device: Device for which to create the cache folder
-        """
-        if device is None:
-            self.logger(level="error", message="No device given for create cache folder operation!")
-            return False
-        else:
-            if not isinstance(device, GenericDevice):
-                self.logger(level="error", message="Not a valid device provided!")
-                return False
-            device_uuid = str(device.uuid)
-
-        directory_full_path = os.path.abspath(
-            os.path.join(EASYUCS_ROOT, self.REPOSITORY_FOLDER_NAME, self.REPOSITORY_FILES_FOLDER_NAME,
-                         self.REPOSITORY_DEVICES_FOLDER_NAME, device_uuid, self.REPOSITORY_DEVICES_CACHE_FOLDER_NAME))
-
-        # Creating folder in case it does not exist yet
-        if not os.path.exists(directory_full_path):
-            self.logger(level="debug", message="Creating folder: " + directory_full_path)
-            os.makedirs(directory_full_path)
 
         return True
 
@@ -1256,6 +1311,8 @@ class RepositoryManager:
                         if "uuid" in attribute:
                             if getattr(db_record, attribute) is None:
                                 setattr(metadata, attribute, None)
+                            elif "uuids" in attribute and isinstance(getattr(db_record, attribute), list):
+                                setattr(metadata, attribute, getattr(db_record, attribute))
                             else:
                                 setattr(metadata, attribute, python_uuid.UUID(getattr(db_record, attribute)))
                         elif attribute in ["password"]:
@@ -1330,41 +1387,6 @@ class RepositoryManager:
             return True
 
         return False
-
-    def save_os_firmware_data_to_repository(self, device=None, os_firmware_data=None):
-        """
-        Saves OS and Firmware metadata to the device cache in the repository
-        :param device: Device to which this OS and Firmware data belongs
-        :param os_firmware_data: OS and Firmware data which needs to be saved
-        :return: True if successful, False otherwise
-        """
-        if not device:
-            self.logger(level="error",
-                        message="Device must be given to save OS and Firmware metadata to repository!")
-            return False
-
-        if not os_firmware_data:
-            self.logger(level="error",
-                        message="Metadata must be given to save OS and Firmware metadata to repository!")
-            return False
-
-        # Creating folder in case it does not exist yet
-        if self.create_cache_folder(device=device):
-            os_firmware_path = os.path.abspath(os.path.join(
-                EASYUCS_ROOT, self.REPOSITORY_FOLDER_NAME, self.REPOSITORY_FILES_FOLDER_NAME,
-                self.REPOSITORY_DEVICES_FOLDER_NAME, str(device.metadata.uuid),
-                self.REPOSITORY_DEVICES_CACHE_FOLDER_NAME,
-                self.REPOSITORY_DEVICES_OS_FIRMWARE_FILE_NAME))
-        else:
-            os_firmware_path = os.path.abspath(os.path.join(EASYUCS_ROOT, "."))
-
-        with open(os_firmware_path, "w") as file:
-            json.dump(os_firmware_data, file, indent=3)
-
-        device.metadata.cache_path = os.path.dirname(os_firmware_path)
-        self.save_metadata(device.metadata)
-
-        return True
 
     def save_key_to_repository(self, private_key=None, device_uuid=None):
         """
@@ -1449,6 +1471,8 @@ class RepositoryManager:
                     if "uuid" in attribute:
                         if getattr(metadata, attribute) is None:
                             setattr(metadata.db_record, attribute, None)
+                        elif "uuids" in attribute and isinstance(getattr(metadata, attribute), list):
+                            setattr(metadata.db_record, attribute, [str(item) for item in getattr(metadata, attribute)])
                         else:
                             setattr(metadata.db_record, attribute, str(getattr(metadata, attribute)))
                     elif attribute in ["password"]:
@@ -1501,6 +1525,12 @@ class RepositoryManager:
 
             # We now save the file path to the object's metadata
             object.metadata.file_path = file_path
+
+        # We also save the sub devices to the repository
+        if getattr(object, "sub_devices", None):
+            for sub_device in object.sub_devices:
+                if not self.save_to_repository(object=sub_device):
+                    return False
 
         if not self.save_metadata(metadata=object.metadata):
             return False

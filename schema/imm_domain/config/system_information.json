@@ -1,0 +1,54 @@
+{
+   "id": "imm_domain_config_system_information#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS IMM Domain Config system_information section",
+   "description": "EasyUCS IMM Domain Config system_information section JSON schema",
+   "type": "object",
+   "properties": {
+      "name": {
+         "description": "IMM Domain system name",
+         "type": "string",
+         "default": ""
+      },
+      "fabric_interconnects": {
+         "properties": {
+            "fabric": {
+               "description": "IMM Domain Fabric A or B",
+               "type": "string",
+               "default": "",
+               "enum": [
+                  "A",
+                  "B",
+                  ""
+               ]
+            },
+            "gateway": {
+               "description": "IMM Domain Fabric Gateway",
+               "type": "string",
+               "default": ""
+            },
+            "ip": {
+               "description": "IMM Domain Fabric IPv4",
+               "type": "string",
+               "default": ""
+            },
+            "ipv6": {
+               "description": "IMM Domain Fabric IPv6",
+               "type": "string",
+               "default": ""
+            },
+            "netmask": {
+               "description": "IMM Domain Fabric Netmask",
+               "type": "string",
+               "default": ""
+            },
+            "operational_state": {
+               "description": "IMM Domain Fabric State (TODO: Find the exact values to make it enum)",
+               "type": "string",
+               "default": ""
+            }
+         }
+      }
+   },
+   "additionalProperties": false
+}

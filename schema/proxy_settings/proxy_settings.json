@@ -1,0 +1,43 @@
+{
+   "id": "easyucs_proxy_settings#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS proxy settings schema",
+   "description": "EasyUCS proxy settings JSON schema",
+   "type": "object",
+   "properties": {
+     "proxy_url": {
+       "type": "string",
+       "description": "Proxy URL",
+       "example": "proxy.company.com"
+     },
+     "proxy_port": {
+       "type": "integer",
+       "description": "Port of the proxy",
+       "example": 5421
+     },
+     "proxy_authentication": {
+       "type": "boolean",
+       "description": "Flag stating whether authentication is enabled in proxy",
+       "example": true
+     },
+     "proxy_username": {
+       "type": "string",
+       "description": "Username for proxy if authentication enabled",
+       "example": "admin"
+     },
+     "proxy_password": {
+       "type": "string",
+       "description": "Password for proxy if authentication enabled",
+       "example": "password"
+     },
+     "encrypted_proxy_password": {
+       "type": "string",
+       "description": "Encrypted proxy_password"
+     }
+   },
+  "additionalProperties": false,
+   "required": [
+     "proxy_url",
+     "proxy_port"
+   ]
+}

@@ -45,8 +45,10 @@ class GenericReportSection(GenericReportElement):
                             fontName='Helvetica-Oblique', leading=10)
         h6 = ParagraphStyle(name='Heading6', fontSize=7, textColor='#6a88c1', leftIndent=70,
                             fontName='Helvetica-Oblique', leading=10)
+        h7 = ParagraphStyle(name='Heading7', fontSize=7, textColor='#6a88c1', leftIndent=80,
+                            fontName='Helvetica-Oblique', leading=10)
         heading = {
-            1: "<seq id='h1'/>.<seqreset id='h2'/><seqreset id='h3'/><seqreset id='h4'/><seqreset id='h5'/><seqreset id='h6'/> {}",
+            1: "<seq id='h1'/>.<seqreset id='h2'/><seqreset id='h3'/><seqreset id='h4'/><seqreset id='h5'/><seqreset id='h6'/><seqreset id='h7'/> {}",
             2: "<seq id='h1' inc='no'/>.<seq id='h2'/><seqreset id='h3'/> {}",
             3: "<seq id='h1' inc='no'/>.<seq id='h2' inc='no'/>.<seq id='h3'/><seqreset id='h4'/> {}",
             4: "<seq id='h1' inc='no'/>.<seq id='h2' inc='no'/>.<seq id='h3' inc='no'/>.<seq id='h4'/>"
@@ -54,7 +56,9 @@ class GenericReportSection(GenericReportElement):
             5: "<seq id='h1' inc='no'/>.<seq id='h2' inc='no'/>.<seq id='h3' inc='no'/>.<seq id='h4' inc='no'/>."
                "<seq id='h5'/><seqreset id='h6'/> {}",
             6: "<seq id='h1' inc='no'/>.<seq id='h2' inc='no'/>.<seq id='h3' inc='no'/>.<seq id='h4' inc='no'/>."
-               "<seq id='h5' inc='no'/>.<seq id='h6'/> {}"
+               "<seq id='h5' inc='no'/>.<seq id='h6'/><seqreset id='h7'/> {}",
+            7: "<seq id='h1' inc='no'/>.<seq id='h2' inc='no'/>.<seq id='h3' inc='no'/>.<seq id='h4' inc='no'/>."
+               "<seq id='h5' inc='no'/>.<seq id='h6' inc='no'/>.<seq id='h7'/> {}",
         }
         if self.indent == 1:
             self.report.pdf_element_list.append(PageBreak())
@@ -69,6 +73,8 @@ class GenericReportSection(GenericReportElement):
             self.create_pdf_heading(heading[5].format(self.title), h5)
         if self.indent == 6:
             self.create_pdf_heading(heading[6].format(self.title), h6)
+        if self.indent == 7:
+            self.create_pdf_heading(heading[7].format(self.title), h7)
 
     def __find_indent(self):
         indent = 1

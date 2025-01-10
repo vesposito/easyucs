@@ -105,13 +105,16 @@ class UcsSystemDiskGroupPolicy(UcsSystemConfigObject):
                     self.logger(level="error",
                                 message="Unable to get attributes from JSON content for " + self._CONFIG_NAME)
 
-                # We need to set all values that are not present in the config file to None
-                for element in self.manual_disk_group_configuration:
-                    for value in ["slot_number", "role", "span_id"]:
-                        if value not in element:
-                            element[value] = None
-
         self.clean_object()
+
+    def clean_object(self):
+        UcsSystemConfigObject.clean_object(self)
+
+        # We need to set all values that are not present in the config file to None
+        for element in self.manual_disk_group_configuration:
+            for value in ["slot_number", "role", "span_id"]:
+                if value not in element:
+                    element[value] = None
 
     def push_object(self, commit=True):
         if commit:
@@ -307,42 +310,45 @@ class UcsSystemStorageProfile(UcsSystemConfigObject):
                     self.logger(level="error",
                                 message="Unable to get attributes from JSON content for " + self._CONFIG_NAME)
 
-                # We need to set all values that are not present in the config file to None
-                for element in self.security_policy:
-                    for value in ["primary_ip_address", "secondary_ip_address", "port",
-                                  "kmip_server_public_certificate", "username", "password", "deployed_key", "type",
-                                  "key"]:
-                        if value not in element:
-                            element[value] = None
-                for element in self.local_luns:
-                    element["_object_type"] = "local_luns"
-                    for value in ["name", "size", "fractional_size", "auto_deploy", "expand_to_available",
-                                  "disk_group_policy", "operational_state"]:
-                        if value not in element:
-                            element[value] = None
-                    if element["operational_state"]:
-                        for policy in ["disk_group_policy"]:
-                            if policy not in element["operational_state"]:
-                                element["operational_state"][policy] = None
-                            else:
-                                for value in ["name", "org"]:
-                                    if value not in element["operational_state"][policy]:
-                                        element["operational_state"][policy][value] = None
-                for element in self.controller_definitions:
-                    for value in ["name", "protected_configuration", "raid_level"]:
-                        if value not in element:
-                            element[value] = None
-                for element in self.lun_sets:
-                    for value in ["name", "disk_slot_range", "raid_level", "strip_size", "access_policy", "read_policy",
-                                  "write_cache_policy", "io_policy", "drive_cache", "security"]:
-                        if value not in element:
-                            element[value] = None
-                for element in self.hybrid_slot_configuration:
-                    for value in ["direct_attached_slots", "raid_attached_slots"]:
-                        if value not in element:
-                            element[value] = None
-
         self.clean_object()
+
+    def clean_object(self):
+        UcsSystemConfigObject.clean_object(self)
+
+        # We need to set all values that are not present in the config file to None
+        for element in self.security_policy:
+            for value in ["primary_ip_address", "secondary_ip_address", "port",
+                          "kmip_server_public_certificate", "username", "password", "deployed_key", "type",
+                          "key"]:
+                if value not in element:
+                    element[value] = None
+        for element in self.local_luns:
+            element["_object_type"] = "local_luns"
+            for value in ["name", "size", "fractional_size", "auto_deploy", "expand_to_available",
+                          "disk_group_policy", "operational_state"]:
+                if value not in element:
+                    element[value] = None
+            if element["operational_state"]:
+                for policy in ["disk_group_policy"]:
+                    if policy not in element["operational_state"]:
+                        element["operational_state"][policy] = None
+                    elif element["operational_state"][policy]:
+                        for value in ["name", "org"]:
+                            if value not in element["operational_state"][policy]:
+                                element["operational_state"][policy][value] = None
+        for element in self.controller_definitions:
+            for value in ["name", "protected_configuration", "raid_level"]:
+                if value not in element:
+                    element[value] = None
+        for element in self.lun_sets:
+            for value in ["name", "disk_slot_range", "raid_level", "strip_size", "access_policy", "read_policy",
+                          "write_cache_policy", "io_policy", "drive_cache", "security"]:
+                if value not in element:
+                    element[value] = None
+        for element in self.hybrid_slot_configuration:
+            for value in ["direct_attached_slots", "raid_attached_slots"]:
+                if value not in element:
+                    element[value] = None
 
     def push_object(self, commit=True):
         detail = str(self.name)

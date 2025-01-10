@@ -3,9 +3,9 @@
 
 """ chassis.py: Easy UCS Deployment Tool """
 
-from common import read_json_file
-from draw.ucs.chassis import UcsSystemDrawChassisFront, UcsSystemDrawChassisRear, UcsImcDrawChassisFront, \
+from draw.ucs.chassis import UcsChassisDrawFront, UcsChassisDrawRear, UcsImcDrawChassisFront, \
     UcsImcDrawChassisRear
+from inventory.generic.chassis import GenericChassis, GenericIom, GenericXfm
 from inventory.ucs.blade import UcsSystemBlade
 from inventory.ucs.fabric import UcsSystemFi
 from inventory.ucs.object import GenericUcsInventoryObject, UcsImcInventoryObject, UcsSystemInventoryObject
@@ -17,10 +17,11 @@ from inventory.ucs.storage import UcsImcStorageEnclosure, UcsSystemStorageEnclos
     UcsImcSiocStorageNvmeDrive
 
 
-class UcsChassis(GenericUcsInventoryObject):
+class UcsChassis(GenericChassis, GenericUcsInventoryObject):
     _UCS_SDK_OBJECT_NAME = "equipmentChassis"
 
     def __init__(self, parent=None, equipment_chassis=None):
+        GenericChassis.__init__(self, parent=parent)
         GenericUcsInventoryObject.__init__(self, parent=parent, ucs_sdk_object=equipment_chassis)
 
         self.model = self.get_attribute(ucs_sdk_object=equipment_chassis, attribute_name="model")
@@ -30,35 +31,6 @@ class UcsChassis(GenericUcsInventoryObject):
 
         self.power_supplies = self._get_power_supplies()
         self.system_io_controllers = self._get_system_io_controllers()
-
-    def _generate_draw(self):
-        pass
-
-    def _get_imm_compatibility(self):
-        """
-        Returns Chassis IMM Compatibility status from EasyUCS catalog files
-        """
-        if self.sku is not None:
-            # We use the catalog file to get the chassis IMM Compatibility status
-            chassis_catalog = read_json_file(file_path="catalog/chassis/" + self.sku + ".json", logger=self)
-            if chassis_catalog:
-                if "imm_compatible" in chassis_catalog:
-                    return chassis_catalog["imm_compatible"]
-
-        return None
-
-    def _get_model_short_name(self):
-        """
-        Returns Chassis short name from EasyUCS catalog files
-        """
-        if self.sku is not None:
-            # We use the catalog file to get the chassis short name
-            chassis_catalog = read_json_file(file_path="catalog/chassis/" + self.sku + ".json", logger=self)
-            if chassis_catalog:
-                if "model_short_name" in chassis_catalog:
-                    return chassis_catalog["model_short_name"]
-
-        return None
 
     def _get_power_supplies(self):
         return []
@@ -70,10 +42,11 @@ class UcsChassis(GenericUcsInventoryObject):
         return []
 
 
-class UcsIom(GenericUcsInventoryObject):
+class UcsIom(GenericIom, GenericUcsInventoryObject):
     _UCS_SDK_OBJECT_NAME = "equipmentIOCard"
 
     def __init__(self, parent=None, equipment_io_card=None):
+        GenericIom.__init__(self, parent=parent)
         GenericUcsInventoryObject.__init__(self, parent=parent, ucs_sdk_object=equipment_io_card)
 
         self.chassis_id = self.get_attribute(ucs_sdk_object=equipment_io_card, attribute_name="chassis_id")
@@ -84,32 +57,6 @@ class UcsIom(GenericUcsInventoryObject):
         self.vendor = self.get_attribute(ucs_sdk_object=equipment_io_card, attribute_name="vendor")
 
         self.ports = self._get_ports()
-
-    def _get_imm_compatibility(self):
-        """
-        Returns IO Module IMM Compatibility status from EasyUCS catalog files
-        """
-        if self.sku is not None:
-            # We use the catalog file to get the IO Module IMM Compatibility status
-            iom_catalog = read_json_file(file_path="catalog/io_modules/" + self.sku + ".json", logger=self)
-            if iom_catalog:
-                if "imm_compatible" in iom_catalog:
-                    return iom_catalog["imm_compatible"]
-
-        return None
-
-    def _get_model_short_name(self):
-        """
-        Returns IO Module short name from EasyUCS catalog files
-        """
-        if self.sku is not None:
-            # We use the catalog file to get the IO Module short name
-            iom_catalog = read_json_file(file_path="catalog/io_modules/" + self.sku + ".json", logger=self)
-            if iom_catalog:
-                if "model_short_name" in iom_catalog:
-                    return iom_catalog["model_short_name"]
-
-        return None
 
     def _get_ports(self):
         return []
@@ -145,6 +92,10 @@ class UcsSystemChassis(UcsChassis, UcsSystemInventoryObject):
         if self.sku in ["UCSBX-9508"]:
             self.sku = "UCSX-9508"
 
+        # Manually fixing UCS C3X60 chassis SKU
+        if self.sku == "UCSC-C3X60-BASE":
+            self.sku = "UCSC-C3X60"
+
         self.blades = self._get_blades()
         self.fabric_interconnects = self._get_fabric_interconnects()
         self.io_modules = self._get_io_modules()
@@ -157,7 +108,6 @@ class UcsSystemChassis(UcsChassis, UcsSystemInventoryObject):
         self.slots_free_full = self._calculate_chassis_slots_free_full()
         self.imm_compatible = None
         self.locator_led_status = None
-        self.short_name = None
 
         if self._inventory.load_from == "live":
             self.locator_led_status = self._determine_locator_led_status()
@@ -170,80 +120,6 @@ class UcsSystemChassis(UcsChassis, UcsSystemInventoryObject):
                     setattr(self, attribute, self.get_attribute(ucs_sdk_object=equipment_chassis,
                                                                 attribute_name=attribute))
 
-    def _calculate_chassis_slots_free_full(self):
-        if self.slots_max is None:
-            return None
-
-        slots_used = []
-        for blade in self.blades:
-            if not hasattr(blade, "slot_id"):
-                return None
-            slots_used.append(int(blade.slot_id))
-
-            # We handle the specific case of a B460 M4 for which we also use the 2 slots above the master blade
-            if hasattr(blade, "scaled_mode"):
-                if blade.scaled_mode == "scaled":
-                    slots_used.extend([int(blade.slot_id) - 1, int(blade.slot_id) - 2])
-
-        slots_free_full = [slot_even for slot_even in range(1, self.slots_max + 1, 2) if slot_even not in slots_used
-                           and slot_even + 1 not in slots_used]
-        return len(slots_free_full)
-
-    def _calculate_chassis_slots_free_half(self):
-        if self.slots_max is None or self.slots_populated is None:
-            return None
-        return self.slots_max - self.slots_populated
-
-    def _calculate_chassis_slots_populated(self):
-        if not hasattr(self, "sku"):
-            return None
-        if self.sku is None:
-            return None
-
-        # We use the catalog file to get the blades widths
-        chassis_catalog = read_json_file(file_path="catalog/chassis/" + self.sku + ".json", logger=self)
-        if not chassis_catalog:
-            self.logger(level="warning", message="Could not calculate populated slots")
-            return None
-
-        if "blades_models" not in chassis_catalog:
-            self.logger(level="warning",
-                        message="Chassis catalog file " + self.sku +
-                                ".json has no section \"blades_models\". Could not calculate populated slots.")
-            return None
-
-        slots_populated = 0
-        for blade in self.blades:
-            if not hasattr(blade, "sku"):
-                return None
-            for blade_model in chassis_catalog["blades_models"]:
-                if "name" not in blade_model or "width" not in blade_model:
-                    self.logger(level="warning",
-                                message="Chassis catalog file " + self.sku + ".json section \"blades_models\"" +
-                                        " is incomplete. Could not calculate populated slots.")
-                    return None
-                if blade_model["name"] == blade.sku:
-                    # We handle the specific case of a B460 M4
-                    if hasattr(blade, "scaled_mode"):
-                        if blade.scaled_mode == "scaled":
-                            slots_populated += 4
-                            continue
-                    if blade_model["width"] == "half":
-                        slots_populated += 1
-                    elif blade_model["width"] == "full":
-                        slots_populated += 2
-                    else:
-                        self.logger(level="warning",
-                                    message="Chassis catalog file " + self.sku + ".json section \"blades_models\"" +
-                                            " is incorrect. Could not calculate populated slots.")
-                        return None
-        return slots_populated
-
-    def _generate_draw(self):
-        self._draw_front = UcsSystemDrawChassisFront(parent=self)
-        self._draw_rear = UcsSystemDrawChassisRear(parent=self)
-        self._draw_infra = None
-
     def _get_blades(self):
         if self._inventory.load_from == "live":
             return self._inventory.get_inventory_objects_under_dn(dn=self.dn, object_class=UcsSystemBlade, parent=self)
@@ -251,24 +127,6 @@ class UcsSystemChassis(UcsChassis, UcsSystemInventoryObject):
             return [UcsSystemBlade(self, blade) for blade in self._ucs_sdk_object["blades"]]
         else:
             return []
-
-    def _get_chassis_slots_max(self):
-        if not hasattr(self, "sku"):
-            return None
-        if self.sku is None:
-            return None
-
-        # We use the catalog file to get the number of slots in the chassis
-        chassis_catalog = read_json_file(file_path="catalog/chassis/" + self.sku + ".json", logger=self)
-        if not chassis_catalog:
-            self.logger(level="warning", message="Could not determine max slots")
-            return None
-
-        if "blades_slots" in chassis_catalog:
-            return len(chassis_catalog["blades_slots"])
-        elif "blades_slots_rear" in chassis_catalog:
-            return len(chassis_catalog["blades_slots_rear"])
-        return None
 
     def _get_fabric_interconnects(self):
         if self._inventory.load_from == "live":
@@ -360,7 +218,6 @@ class UcsImcChassis(UcsChassis, UcsImcInventoryObject):
             self.sku = "UCSS-S3260"
 
         self.locator_led_status = None
-        self.short_name = None
 
         self.server_nodes = self._get_server_nodes()
         self.storage_enclosures = self._get_storage_enclosures()
@@ -379,86 +236,9 @@ class UcsImcChassis(UcsChassis, UcsImcInventoryObject):
                     setattr(self, attribute, self.get_attribute(ucs_sdk_object=equipment_chassis,
                                                                 attribute_name=attribute))
 
-    def _calculate_chassis_slots_free_full(self):
-        if self.slots_max is None:
-            return None
-
-        slots_used = []
-        for server_node in self.server_nodes:
-            if not hasattr(server_node, "id"):
-                return None
-            slots_used.append(int(server_node.id))
-
-        slots_free_full = [slot_even for slot_even in range(1, self.slots_max + 1, 2) if slot_even not in slots_used
-                           and slot_even + 1 not in slots_used]
-        return len(slots_free_full)
-
-    def _calculate_chassis_slots_free_half(self):
-        if self.slots_max is None or self.slots_populated is None:
-            return None
-        return self.slots_max - self.slots_populated
-
-    def _calculate_chassis_slots_populated(self):
-        if not hasattr(self, "sku"):
-            return None
-        if self.sku is None:
-            return None
-
-        # We use the catalog file to get the blades widths
-        chassis_catalog = read_json_file(file_path="catalog/chassis/" + self.sku + ".json", logger=self)
-        if not chassis_catalog:
-            self.logger(level="warning", message="Could not calculate populated slots")
-            return None
-
-        if "blades_models" not in chassis_catalog:
-            self.logger(level="warning",
-                        message="Chassis catalog file " + self.sku +
-                                ".json has no section \"blades_models\". Could not calculate populated slots.")
-            return None
-
-        slots_populated = 0
-        for server_node in self.server_nodes:
-            if not hasattr(server_node, "sku"):
-                return None
-            for blade_model in chassis_catalog["blades_models"]:
-                if "name" not in blade_model or "width" not in blade_model:
-                    self.logger(level="warning",
-                                message="Chassis catalog file " + self.sku + ".json section \"blades_models\"" +
-                                        " is incomplete. Could not calculate populated slots.")
-                    return None
-                if blade_model["name"] == server_node.sku:
-                    if blade_model["width"] == "half":
-                        slots_populated += 1
-                    elif blade_model["width"] == "full":
-                        slots_populated += 2
-                    else:
-                        self.logger(level="warning",
-                                    message="Chassis catalog file " + self.sku + ".json section \"blades_models\"" +
-                                            " is incorrect. Could not calculate populated slots.")
-                        return None
-        return slots_populated
-
     def _generate_draw(self):
         self._draw_front = UcsImcDrawChassisFront(parent=self)
         self._draw_rear = UcsImcDrawChassisRear(parent=self)
-
-    def _get_chassis_slots_max(self):
-        if not hasattr(self, "sku"):
-            return None
-        if self.sku is None:
-            return None
-
-        # We use the catalog file to get the number of slots in the chassis
-        chassis_catalog = read_json_file(file_path="catalog/chassis/" + self.sku + ".json", logger=self)
-        if not chassis_catalog:
-            self.logger(level="warning", message="Could not determine max slots")
-            return None
-
-        if "blades_slots" in chassis_catalog:
-            return len(chassis_catalog["blades_slots"])
-        elif "blades_slots_rear" in chassis_catalog:
-            return len(chassis_catalog["blades_slots_rear"])
-        return None
 
     def _get_power_supplies(self):
         if self._inventory.load_from == "live":
@@ -583,9 +363,6 @@ class UcsSystemIom(UcsIom, UcsSystemInventoryObject):
         UcsIom.__init__(self, parent=parent, equipment_io_card=equipment_io_card)
         UcsSystemInventoryObject.__init__(self, parent=parent, ucs_sdk_object=equipment_io_card)
 
-        self.imm_compatible = None
-        self.short_name = None
-
         if self._inventory.load_from == "live":
             self.short_name = self._get_model_short_name()
             self.imm_compatible = self._get_imm_compatibility()
@@ -607,10 +384,11 @@ class UcsSystemIom(UcsIom, UcsSystemInventoryObject):
             return []
 
 
-class UcsSystemXfm(UcsSystemInventoryObject):
+class UcsSystemXfm(GenericXfm, UcsSystemInventoryObject):
     _UCS_SDK_OBJECT_NAME = "equipmentCrossFabricModule"
 
     def __init__(self, parent=None, equipment_cross_fabric_module=None):
+        GenericXfm.__init__(self, parent=parent)
         UcsSystemInventoryObject.__init__(self, parent=parent, ucs_sdk_object=equipment_cross_fabric_module)
 
         self.chassis_id = self.get_attribute(ucs_sdk_object=equipment_cross_fabric_module, attribute_name="chassis_id")
@@ -624,9 +402,6 @@ class UcsSystemXfm(UcsSystemInventoryObject):
         if not self.sku and self.model:
             self.sku = self.model
 
-        self.imm_compatible = None
-        self.short_name = None
-
         if self._inventory.load_from == "live":
             self.short_name = self._get_model_short_name()
             self.imm_compatible = self._get_imm_compatibility()
@@ -637,32 +412,6 @@ class UcsSystemXfm(UcsSystemInventoryObject):
                 if attribute in equipment_cross_fabric_module:
                     setattr(self, attribute, self.get_attribute(ucs_sdk_object=equipment_cross_fabric_module,
                                                                 attribute_name=attribute))
-
-    def _get_imm_compatibility(self):
-        """
-        Returns X-Fabric Module IMM Compatibility status from EasyUCS catalog files
-        """
-        if self.sku is not None:
-            # We use the catalog file to get the X-Fabric Module IMM Compatibility status
-            xfm_catalog = read_json_file(file_path="catalog/x_fabric_modules/" + self.sku + ".json", logger=self)
-            if xfm_catalog:
-                if "imm_compatible" in xfm_catalog:
-                    return xfm_catalog["imm_compatible"]
-
-        return None
-
-    def _get_model_short_name(self):
-        """
-        Returns X-Fabric Module short name from EasyUCS catalog files
-        """
-        if self.sku is not None:
-            # We use the catalog file to get the X-Fabric Module short name
-            xfm_catalog = read_json_file(file_path="catalog/x_fabric_modules/" + self.sku + ".json", logger=self)
-            if xfm_catalog:
-                if "model_short_name" in xfm_catalog:
-                    return xfm_catalog["model_short_name"]
-
-        return None
 
 
 class UcsSystemSioc(UcsSioc, UcsSystemInventoryObject):

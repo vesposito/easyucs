@@ -1,25 +1,25 @@
 {
-   "easyucs":{
-      "metadata":[
+   "easyucs": {
+      "metadata": [
          {
             "file_type": "config",
             "device_type": "ucsm",
-            "category":"best-practices",
-            "subcategory":"BIOS",
-            "name":"UCS Manager BIOS Policy for I/O Intensive on Cisco UCS M6 Servers",
-            "url":"https://www.cisco.com/c/en/us/products/collateral/servers-unified-computing/ucs-b-series-blade-servers/performance-tuning-guide-ucs-m6-servers.html",
-            "easyucs_version":"0.9.8",
-            "revision": "1.1"
+            "category": "best-practices",
+            "subcategory": "BIOS",
+            "name": "UCS Manager BIOS Policy for I/O Intensive on Cisco UCS M6 Servers",
+            "url": "https://www.cisco.com/c/en/us/products/collateral/servers-unified-computing/ucs-b-series-blade-servers/performance-tuning-guide-ucs-m6-servers.html",
+            "easyucs_version": "1.0.0",
+            "revision": "1.2"
          }
       ]
    },
-   "config":{
-      "orgs":[
+   "config": {
+      "orgs": [
          {
-            "name":"root",
+            "name": "root",
             "bios_policies": [
                {
-                  "name":"IOIntensive-M6",
+                  "name": "IOIntensive-M6",
                   "descr": "BIOS Policy for I/O Intensive on Cisco UCS M6 Servers",
                   "intel_hyperthreading_tech": "platform-default",
                   "intel_virtualization_technology": "platform-default",

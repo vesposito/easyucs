@@ -1,409 +1,409 @@
 {
-   "easyucs":{
-      "metadata":[
+   "easyucs": {
+      "metadata": [
          {
             "file_type": "config",
             "device_type": "ucsm",
-            "category":"cvd",
-            "subcategory":"VersaStack",
-            "name":"VersaStack for Data Center with All-Flash Storage and VMware vSphere 6.0",
-            "url":"https://www.cisco.com/c/en/us/td/docs/unified_computing/ucs/UCS_CVDs/Versastack_vmw6_flash.html",
-            "easyucs_version":"0.9.8.2",
-            "revision": "1.2"
+            "category": "cvd",
+            "subcategory": "VersaStack",
+            "name": "VersaStack for Data Center with All-Flash Storage and VMware vSphere 6.0",
+            "url": "https://www.cisco.com/c/en/us/td/docs/unified_computing/ucs/UCS_CVDs/Versastack_vmw6_flash.html",
+            "easyucs_version": "1.0.0",
+            "revision": "1.3"
          }
       ]
    },
-   "config":{
-      "system":[
+   "config": {
+      "system": [
          {
-            "name":"versastack-6248",
-            "virtual_ip":"192.168.156.12",
-            "domain_name":"vikings.cisco.com"
+            "name": "versastack-6248",
+            "virtual_ip": "192.168.156.12",
+            "domain_name": "vikings.cisco.com"
          }
       ],
-      "switching_mode":[
+      "switching_mode": [
          {
-            "ethernet_mode":"end-host",
-            "fc_mode":"end-host"
+            "ethernet_mode": "end-host",
+            "fc_mode": "end-host"
          }
       ],
-      "management_interfaces":[
+      "management_interfaces": [
          {
-            "fabric":"A",
-            "ip":"192.168.156.10",
-            "netmask":"255.255.255.0",
-            "gateway":"192.168.156.1"
+            "fabric": "A",
+            "ip": "192.168.156.10",
+            "netmask": "255.255.255.0",
+            "gateway": "192.168.156.1"
          },
          {
-            "fabric":"B",
-            "ip":"192.168.156.11",
-            "netmask":"255.255.255.0",
-            "gateway":"192.168.156.1"
+            "fabric": "B",
+            "ip": "192.168.156.11",
+            "netmask": "255.255.255.0",
+            "gateway": "192.168.156.1"
          }
       ],
-      "dns":[
+      "dns": [
          "10.1.156.9"
       ],
-      "local_users":[
+      "local_users": [
          {
-            "id":"admin",
-            "password":"V3rs4St4ck"
+            "id": "admin",
+            "password": "V3rs4St4ck"
          }
       ],
-      "local_users_properties":[
+      "local_users_properties": [
          {
-            "password_strength_check":"yes"
+            "password_strength_check": "yes"
          }
       ],
-      "call_home":[
+      "call_home": [
          {
-            "mute_at_start":"no"
+            "mute_at_start": "no"
          }
       ],
-      "global_policies":[
+      "global_policies": [
          {
-            "chassis_discovery_policy":[
+            "chassis_discovery_policy": [
                {
-                  "action_link":"2",
-                  "link_grouping_preference":"port-channel"
+                  "action_link": "2",
+                  "link_grouping_preference": "port-channel"
                }
             ]
          }
       ],
-      "timezone_mgmt":[
+      "timezone_mgmt": [
          {
-            "zone":"America/New_York (Eastern Time)",
-            "ntp":[
+            "zone": "America/New_York (Eastern Time)",
+            "ntp": [
                "10.1.156.4",
                "10.1.156.5"
             ]
          }
       ],
-      "server_ports":[
+      "server_ports": [
          {
-            "fabric":"a",
-            "slot_id":"1",
-            "port_id":"1"
+            "fabric": "a",
+            "slot_id": "1",
+            "port_id": "1"
          },
          {
-            "fabric":"a",
-            "slot_id":"1",
-            "port_id":"2"
+            "fabric": "a",
+            "slot_id": "1",
+            "port_id": "2"
          },
          {
-            "fabric":"a",
-            "slot_id":"1",
-            "port_id":"3"
+            "fabric": "a",
+            "slot_id": "1",
+            "port_id": "3"
          },
          {
-            "fabric":"a",
-            "slot_id":"1",
-            "port_id":"4"
+            "fabric": "a",
+            "slot_id": "1",
+            "port_id": "4"
          },
          {
-            "fabric":"a",
-            "slot_id":"1",
-            "port_id":"5"
+            "fabric": "a",
+            "slot_id": "1",
+            "port_id": "5"
          },
          {
-            "fabric":"a",
-            "slot_id":"1",
-            "port_id":"6"
+            "fabric": "a",
+            "slot_id": "1",
+            "port_id": "6"
          },
          {
-            "fabric":"b",
-            "slot_id":"1",
-            "port_id":"1"
+            "fabric": "b",
+            "slot_id": "1",
+            "port_id": "1"
          },
          {
-            "fabric":"b",
-            "slot_id":"1",
-            "port_id":"2"
+            "fabric": "b",
+            "slot_id": "1",
+            "port_id": "2"
          },
          {
-            "fabric":"b",
-            "slot_id":"1",
-            "port_id":"3"
+            "fabric": "b",
+            "slot_id": "1",
+            "port_id": "3"
          },
          {
-            "fabric":"b",
-            "slot_id":"1",
-            "port_id":"4"
+            "fabric": "b",
+            "slot_id": "1",
+            "port_id": "4"
          },
          {
-            "fabric":"b",
-            "slot_id":"1",
-            "port_id":"5"
+            "fabric": "b",
+            "slot_id": "1",
+            "port_id": "5"
          },
          {
-            "fabric":"b",
-            "slot_id":"1",
-            "port_id":"6"
+            "fabric": "b",
+            "slot_id": "1",
+            "port_id": "6"
          }
       ],
-      "lan_uplink_ports":[
+      "lan_uplink_ports": [
          {
-            "fabric":"A",
-            "slot_id":"1",
-            "port_id":"25"
+            "fabric": "A",
+            "slot_id": "1",
+            "port_id": "25"
          },
          {
-            "fabric":"A",
-            "slot_id":"1",
-            "port_id":"26"
+            "fabric": "A",
+            "slot_id": "1",
+            "port_id": "26"
          },
          {
-            "fabric":"B",
-            "slot_id":"1",
-            "port_id":"25"
+            "fabric": "B",
+            "slot_id": "1",
+            "port_id": "25"
          },
          {
-            "fabric":"b",
-            "slot_id":"1",
-            "port_id":"26"
+            "fabric": "b",
+            "slot_id": "1",
+            "port_id": "26"
          }
       ],
-      "san_unified_ports":[
+      "san_unified_ports": [
          {
-            "fabric":"A",
-            "slot_id":"1",
-            "port_id_start":"29",
-            "port_id_end":"32"
+            "fabric": "A",
+            "slot_id": "1",
+            "port_id_start": "29",
+            "port_id_end": "32"
          },
          {
-            "fabric":"B",
-            "slot_id":"1",
-            "port_id_start":"29",
-            "port_id_end":"32"
+            "fabric": "B",
+            "slot_id": "1",
+            "port_id_start": "29",
+            "port_id_end": "32"
          }
       ],
-      "vsans":[
+      "vsans": [
          {
-            "name":"VSAN_A",
-            "id":"101",
-            "fcoe_vlan_id":"101",
-            "fabric":"A"
+            "name": "VSAN_A",
+            "id": "101",
+            "fcoe_vlan_id": "101",
+            "fabric": "A"
          },
          {
-            "name":"VSAN_B",
-            "id":"102",
-            "fcoe_vlan_id":"102",
-            "fabric":"B"
+            "name": "VSAN_B",
+            "id": "102",
+            "fcoe_vlan_id": "102",
+            "fabric": "B"
          }
       ],
-      "san_port_channels":[
+      "san_port_channels": [
          {
-            "fabric":"A",
-            "pc_id":"1",
-            "name":"Po1",
-            "vsan":"VSAN_A",
-            "interfaces":[
+            "fabric": "A",
+            "pc_id": "1",
+            "name": "Po1",
+            "vsan": "VSAN_A",
+            "interfaces": [
                {
-                  "slot_id":"1",
-                  "port_id":"29"
+                  "slot_id": "1",
+                  "port_id": "29"
                },
                {
-                  "slot_id":"1",
-                  "port_id":"30"
+                  "slot_id": "1",
+                  "port_id": "30"
                },
                {
-                  "slot_id":"1",
-                  "port_id":"31"
+                  "slot_id": "1",
+                  "port_id": "31"
                },
                {
-                  "slot_id":"1",
-                  "port_id":"32"
+                  "slot_id": "1",
+                  "port_id": "32"
                }
             ]
          },
          {
-            "fabric":"B",
-            "pc_id":"2",
-            "name":"Po2",
-            "vsan":"VSAN_B",
-            "interfaces":[
+            "fabric": "B",
+            "pc_id": "2",
+            "name": "Po2",
+            "vsan": "VSAN_B",
+            "interfaces": [
                {
-                  "slot_id":"1",
-                  "port_id":"29"
+                  "slot_id": "1",
+                  "port_id": "29"
                },
                {
-                  "slot_id":"1",
-                  "port_id":"30"
+                  "slot_id": "1",
+                  "port_id": "30"
                },
                {
-                  "slot_id":"1",
-                  "port_id":"31"
+                  "slot_id": "1",
+                  "port_id": "31"
                },
                {
-                  "slot_id":"1",
-                  "port_id":"32"
+                  "slot_id": "1",
+                  "port_id": "32"
                }
             ]
          }
       ],
-      "lan_port_channels":[
+      "lan_port_channels": [
          {
-            "fabric":"A",
-            "pc_id":"13",
-            "name":"vPC-13-Nexus",
-            "interfaces":[
+            "fabric": "A",
+            "pc_id": "13",
+            "name": "vPC-13-Nexus",
+            "interfaces": [
                {
-                  "port_id":"25",
-                  "slot_id":"1"
+                  "port_id": "25",
+                  "slot_id": "1"
                },
                {
-                  "port_id":"26",
-                  "slot_id":"1"
+                  "port_id": "26",
+                  "slot_id": "1"
                }
             ]
          },
          {
-            "fabric":"B",
-            "pc_id":"14",
-            "name":"vPC-14-Nexus",
-            "interfaces":[
+            "fabric": "B",
+            "pc_id": "14",
+            "name": "vPC-14-Nexus",
+            "interfaces": [
                {
-                  "port_id":"25",
-                  "slot_id":"1"
+                  "port_id": "25",
+                  "slot_id": "1"
                },
                {
-                  "port_id":"26",
-                  "slot_id":"1"
+                  "port_id": "26",
+                  "slot_id": "1"
                }
             ]
          }
       ],
-      "vlans":[
+      "vlans": [
          {
-            "name":"IB-MGMT-VLAN",
-            "id":"11"
+            "name": "IB-MGMT-VLAN",
+            "id": "11"
          },
          {
-            "name":"NFS-VLAN",
-            "id":"3172"
+            "name": "NFS-VLAN",
+            "id": "3172"
          },
          {
-            "name":"vMotion-VLAN",
-            "id":"3173"
+            "name": "vMotion-VLAN",
+            "id": "3173"
          },
          {
-            "name":"VM-Traffic-VLAN",
-            "id":"3174"
+            "name": "VM-Traffic-VLAN",
+            "id": "3174"
          },
          {
-            "name":"Native-VLAN",
-            "id":"2"
+            "name": "Native-VLAN",
+            "id": "2"
          }
       ],
-      "qos_system_class":[
+      "qos_system_class": [
          {
-            "priority":"best-effort",
-            "mtu":"9216"
+            "priority": "best-effort",
+            "mtu": "9216"
          }
       ],
-      "orgs":[
+      "orgs": [
          {
-            "name":"root",
-            "ip_pools":[
+            "name": "root",
+            "ip_pools": [
                {
-                  "name":"ext-mgmt",
-                  "order":"default",
-                  "ip_blocks":[
+                  "name": "ext-mgmt",
+                  "order": "default",
+                  "ip_blocks": [
                      {
-                        "from":"192.168.156.101",
-                        "to":"192.168.156.112",
-                        "gateway":"192.168.156.1",
-                        "primary_dns":"0.0.0.0",
-                        "secondary_dns":"0.0.0.0",
-                        "netmask":"255.255.255.0"
+                        "from": "192.168.156.101",
+                        "to": "192.168.156.112",
+                        "gateway": "192.168.156.1",
+                        "primary_dns": "0.0.0.0",
+                        "secondary_dns": "0.0.0.0",
+                        "netmask": "255.255.255.0"
                      }
                   ]
                }
             ],
-            "mac_pools":[
+            "mac_pools": [
                {
-                  "name":"MAC_Pool_A",
-                  "order":"default",
-                  "mac_blocks":[
+                  "name": "MAC_Pool_A",
+                  "order": "default",
+                  "mac_blocks": [
                      {
-                        "from":"00:25:B5:07:0A:00",
-                        "to":"00:25:B5:07:0A:3F"
+                        "from": "00:25:B5:07:0A:00",
+                        "to": "00:25:B5:07:0A:3F"
                      }
                   ]
                },
                {
-                  "name":"MAC_Pool_B",
-                  "order":"default",
-                  "mac_blocks":[
+                  "name": "MAC_Pool_B",
+                  "order": "default",
+                  "mac_blocks": [
                      {
-                        "from":"00:25:B5:07:0B:00",
-                        "to":"00:25:B5:07:0B:3F"
+                        "from": "00:25:B5:07:0B:00",
+                        "to": "00:25:B5:07:0B:3F"
                      }
                   ]
                }
             ],
-            "uuid_pools":[
+            "uuid_pools": [
                {
-                  "name":"UUID_Pool",
-                  "prefix":"derived",
-                  "order":"default",
-                  "uuid_blocks":[
+                  "name": "UUID_Pool",
+                  "prefix": "derived",
+                  "order": "default",
+                  "uuid_blocks": [
                      {
-                        "from":"0000-000000000001",
-                        "to":"0000-000000000040"
+                        "from": "0000-000000000001",
+                        "to": "0000-000000000040"
                      }
                   ]
                }
             ],
-            "server_pools":[
+            "server_pools": [
                {
                   "name": "Infra_Pool",
-                  "descr":"",
-                  "servers":[
+                  "descr": "",
+                  "servers": [
                      {
-                        "chassis_id":"1",
+                        "chassis_id": "1",
                         "slot_id": "1"
                      },
                      {
-                        "chassis_id":"1",
-                        "slot_id":"2"
+                        "chassis_id": "1",
+                        "slot_id": "2"
                      }
                   ]
                }
             ],
-            "host_firmware_packages":[
+            "host_firmware_packages": [
                {
-                  "name":"VM-Host-Infra",
-                  "blade_package":"3.1(1e)B",
-                  "rack_package":"3.1(1e)C"
+                  "name": "VM-Host-Infra",
+                  "blade_package": "3.1(1e)B",
+                  "rack_package": "3.1(1e)C"
                }
             ],
             "local_disk_config_policies": [
                {
-                  "name":"SAN-Boot",
-                  "mode":"no-local-storage"
+                  "name": "SAN-Boot",
+                  "mode": "no-local-storage"
                }
             ],
-            "network_control_policies":[
+            "network_control_policies": [
                {
-                  "name":"Enable_CDP",
+                  "name": "Enable_CDP",
                   "cdp_admin_state": "enabled"
                }
             ],
-            "power_control_policies":[
+            "power_control_policies": [
                {
-                  "name":"No-Power-Cap",
-                  "fan_speed_policy":"any",
-                  "power_capping":"no-cap"
+                  "name": "No-Power-Cap",
+                  "fan_speed_policy": "any",
+                  "power_capping": "no-cap"
                }
             ],
             "server_pool_policy_qualifications": [
                {
                   "name": "UCSB-B200-M4",
-                  "descr":"UCSB-B200-M4",
+                  "descr": "UCSB-B200-M4",
                   "qualifications": [
                      {
-                        "type":"server_pid",
+                        "type": "server_pid",
                         "server_pid": "UCSB-B200-M4"
                      }
                   ]
@@ -411,27 +411,27 @@
             ],
             "bios_policies": [
                {
-                  "name":"VM-Host-Infra",
-                  "reboot_on_bios_settings_change":"no",
-                  "quiet_boot":"disabled",
-                  "intel_turbo_boost_tech":"enabled",
-                  "enhanced_intel_speedstep_tech":"enabled",
-                  "intel_hyperthreading_tech":"enabled",
-                  "core_multi_processing":"all",
-                  "execute_disable_bit":"enabled",
-                  "intel_virtualization_technology":"enabled",
-                  "direct_cache_access":"enabled",
-                  "cpu_performance":"enterprise",
+                  "name": "VM-Host-Infra",
+                  "reboot_on_bios_settings_change": "no",
+                  "quiet_boot": "disabled",
+                  "intel_turbo_boost_tech": "enabled",
+                  "enhanced_intel_speedstep_tech": "enabled",
+                  "intel_hyperthreading_tech": "enabled",
+                  "core_multi_processing": "all",
+                  "execute_disable_bit": "enabled",
+                  "intel_virtualization_technology": "enabled",
+                  "direct_cache_access": "enabled",
+                  "cpu_performance": "enterprise",
                   "intel_vt_for_directed_io": "enabled",
-                  "memory_ras_configuration":"maximum-performance",
-                  "numa_optimized":"enabled",
-                  "lv_ddr_mode":"performance-mode"
+                  "memory_ras_configuration": "maximum-performance",
+                  "numa_optimized": "enabled",
+                  "lv_ddr_mode": "performance-mode"
                }
             ],
-            "vnic_vhba_placement_policies":[
+            "vnic_vhba_placement_policies": [
                {
-                  "name":"VM-Host-Infra",
-                  "virtual_slot_mapping_scheme":"round-robin",
+                  "name": "VM-Host-Infra",
+                  "virtual_slot_mapping_scheme": "round-robin",
                   "virtual_host_interfaces": [
                      {
                         "virtual_slot": "1",
@@ -442,137 +442,137 @@
             ],
             "maintenance_policies": [
                {
-                  "name":"default",
-                  "reboot_policy":"user-ack"
+                  "name": "default",
+                  "reboot_policy": "user-ack"
                }
             ],
-            "vnic_templates":[
+            "vnic_templates": [
                {
-                  "name":"vNIC_Template_A",
-                  "fabric":"A-B",
-                  "target":[
+                  "name": "vNIC_Template_A",
+                  "fabric": "A-B",
+                  "target": [
                      "adaptor"
                   ],
-                  "template_type":"updating-template",
-                  "vlans":[
+                  "template_type": "updating-template",
+                  "vlans": [
                      "IB-MGMT-VLAN",
                      "NFS-VLAN",
                      "VM-Traffic-VLAN",
                      "vMotion-VLAN"
                   ],
-                  "vlan_native":"Native-VLAN",
-                  "mtu":"9000",
-                  "mac_address_pool":"MAC_Pool_A",
-                  "network_control_policy":"Enable_CDP"
+                  "vlan_native": "Native-VLAN",
+                  "mtu": "9000",
+                  "mac_address_pool": "MAC_Pool_A",
+                  "network_control_policy": "Enable_CDP"
                },
                {
-                  "name":"vNIC_Template_B",
-                  "fabric":"B-A",
-                  "template_type":"updating-template",
-                  "vlans":[
+                  "name": "vNIC_Template_B",
+                  "fabric": "B-A",
+                  "template_type": "updating-template",
+                  "vlans": [
                      "IB-MGMT-VLAN",
                      "NFS-VLAN",
                      "VM-Traffic-VLAN",
                      "vMotion-VLAN"
                   ],
-                  "vlan_native":"Native-VLAN",
-                  "mtu":"9000",
-                  "mac_address_pool":"MAC_Pool_B",
-                  "network_control_policy":"Enable_CDP"
+                  "vlan_native": "Native-VLAN",
+                  "mtu": "9000",
+                  "mac_address_pool": "MAC_Pool_B",
+                  "network_control_policy": "Enable_CDP"
                }
             ],
-            "wwnn_pools":[
+            "wwnn_pools": [
                {
-                  "name":"WWNN_Pool",
-                  "order":"default",
-                  "wwnn_blocks":[
+                  "name": "WWNN_Pool",
+                  "order": "default",
+                  "wwnn_blocks": [
                      {
-                        "from":"20:00:00:25:B5:00:00:00",
-                        "to":"20:00:00:25:B5:00:00:3F"
+                        "from": "20:00:00:25:B5:00:00:00",
+                        "to": "20:00:00:25:B5:00:00:3F"
                      }
                   ]
                }
             ],
-            "wwpn_pools":[
+            "wwpn_pools": [
                {
-                  "name":"WWPN_Pool_A",
-                  "order":"default",
-                  "wwpn_blocks":[
+                  "name": "WWPN_Pool_A",
+                  "order": "default",
+                  "wwpn_blocks": [
                      {
-                        "from":"20:00:00:25:B5:01:0A:00",
-                        "to":"20:00:00:25:B5:01:0A:3F"
+                        "from": "20:00:00:25:B5:01:0A:00",
+                        "to": "20:00:00:25:B5:01:0A:3F"
                      }
                   ]
                },
                {
-                  "name":"WWPN_Pool_B",
-                  "order":"default",
-                  "wwpn_blocks":[
+                  "name": "WWPN_Pool_B",
+                  "order": "default",
+                  "wwpn_blocks": [
                      {
-                        "from":"20:00:00:25:B5:01:0B:00",
-                        "to":"20:00:00:25:B5:01:0B:3F"
+                        "from": "20:00:00:25:B5:01:0B:00",
+                        "to": "20:00:00:25:B5:01:0B:3F"
                      }
                   ]
                }
             ],
-            "vhba_templates":[
+            "vhba_templates": [
                {
-                  "name":"vHBA_Template_A",
-                  "vsan":"VSAN_A",
-                  "template_type":"initial-template",
-                  "wwpn_pool":"WWPN_Pool_A",
-                  "fabric":"A"
+                  "name": "vHBA_Template_A",
+                  "vsan": "VSAN_A",
+                  "template_type": "initial-template",
+                  "wwpn_pool": "WWPN_Pool_A",
+                  "fabric": "A"
                },
                {
-                  "name":"vHBA_Template_B",
-                  "vsan":"VSAN_B",
-                  "template_type":"initial-template",
-                  "wwpn_pool":"WWPN_Pool_B",
-                  "fabric":"B"
+                  "name": "vHBA_Template_B",
+                  "vsan": "VSAN_B",
+                  "template_type": "initial-template",
+                  "wwpn_pool": "WWPN_Pool_B",
+                  "fabric": "B"
                }
             ],
-            "boot_policies":[
+            "boot_policies": [
                {
-                  "name":"Boot-Fabric-A",
+                  "name": "Boot-Fabric-A",
                   "reboot_on_boot_order_change": "no",
                   "boot_order": [
                      {
                         "device_type": "cd-dvd",
-                        "order":"1"
+                        "order": "1"
                      },
                      {
                         "device_type": "san",
-                        "order":"2",
-                        "vhbas":[
+                        "order": "2",
+                        "vhbas": [
                            {
-                              "type":"primary",
-                              "name":"Fabric-A",
-                              "targets":[
+                              "type": "primary",
+                              "name": "Fabric-A",
+                              "targets": [
                                  {
-                                    "lun":"0",
-                                    "type":"primary",
-                                    "wwpn":"50:05:07:68:0c:21:22:71"
+                                    "lun": "0",
+                                    "type": "primary",
+                                    "wwpn": "50:05:07:68:0c:21:22:71"
                                  },
                                  {
-                                    "lun":"0",
-                                    "type":"secondary",
-                                    "wwpn":"50:05:07:68:0c:51:22:71"
+                                    "lun": "0",
+                                    "type": "secondary",
+                                    "wwpn": "50:05:07:68:0c:51:22:71"
                                  }
                               ]
                            },
                            {
-                              "type":"secondary",
-                              "name":"Fabric-B",
-                              "targets":[
+                              "type": "secondary",
+                              "name": "Fabric-B",
+                              "targets": [
                                  {
-                                    "lun":"0",
-                                    "type":"primary",
-                                    "wwpn":"50:05:07:68:0c:22:22:67"
+                                    "lun": "0",
+                                    "type": "primary",
+                                    "wwpn": "50:05:07:68:0c:22:22:67"
                                  },
                                  {
-                                    "lun":"0",
-                                    "type":"secondary",
-                                    "wwpn":"50:05:07:68:0c:52:22:67"
+                                    "lun": "0",
+                                    "type": "secondary",
+                                    "wwpn": "50:05:07:68:0c:52:22:67"
                                  }
                               ]
                            }
@@ -581,46 +581,46 @@
                   ]
                },
                {
-                  "name":"Boot-Fabric-B",
+                  "name": "Boot-Fabric-B",
                   "reboot_on_boot_order_change": "no",
                   "boot_order": [
                      {
                         "device_type": "cd-dvd",
-                        "order":"1"
+                        "order": "1"
                      },
                      {
                         "device_type": "san",
-                        "order":"2",
-                        "vhbas":[
+                        "order": "2",
+                        "vhbas": [
                            {
-                              "type":"primary",
-                              "name":"Fabric-B",
-                              "targets":[
+                              "type": "primary",
+                              "name": "Fabric-B",
+                              "targets": [
                                  {
-                                    "lun":"0",
-                                    "type":"primary",
-                                    "wwpn":"50:05:07:68:0c:22:22:67"
+                                    "lun": "0",
+                                    "type": "primary",
+                                    "wwpn": "50:05:07:68:0c:22:22:67"
                                  },
                                  {
-                                    "lun":"0",
-                                    "type":"secondary",
-                                    "wwpn":"50:05:07:68:0c:52:22:67"
+                                    "lun": "0",
+                                    "type": "secondary",
+                                    "wwpn": "50:05:07:68:0c:52:22:67"
                                  }
                               ]
                            },
                            {
-                              "type":"secondary",
-                              "name":"Fabric-A",
-                              "targets":[
+                              "type": "secondary",
+                              "name": "Fabric-A",
+                              "targets": [
                                  {
-                                    "lun":"0",
-                                    "type":"primary",
-                                    "wwpn":"50:05:07:68:0c:21:22:71"
+                                    "lun": "0",
+                                    "type": "primary",
+                                    "wwpn": "50:05:07:68:0c:21:22:71"
                                  },
                                  {
-                                    "lun":"0",
-                                    "type":"secondary",
-                                    "wwpn":"50:05:07:68:0c:51:22:71"
+                                    "lun": "0",
+                                    "type": "secondary",
+                                    "wwpn": "50:05:07:68:0c:51:22:71"
                                  }
                               ]
                            }
@@ -629,142 +629,142 @@
                   ]
                }
             ],
-            "service_profiles":[
+            "service_profiles": [
                {
-                  "name":"VM-Host-Infra-Fabric-A",
-                  "type":"updating-template",
-                  "uuid_pool":"UUID_Pool",
-                  "local_disk_configuration_policy":"SAN-Boot",
-                  "vnics":[
+                  "name": "VM-Host-Infra-Fabric-A",
+                  "type": "updating-template",
+                  "uuid_pool": "UUID_Pool",
+                  "local_disk_configuration_policy": "SAN-Boot",
+                  "vnics": [
                      {
-                        "name":"vNIC-A",
-                        "vnic_template":"vNIC_Template_A",
-                        "adapter_policy":"VMWare"
+                        "name": "vNIC-A",
+                        "vnic_template": "vNIC_Template_A",
+                        "adapter_policy": "VMWare"
                      },
                      {
-                        "name":"vNIC-B",
-                        "vnic_template":"vNIC_Template_B",
-                        "adapter_policy":"VMWare"
+                        "name": "vNIC-B",
+                        "vnic_template": "vNIC_Template_B",
+                        "adapter_policy": "VMWare"
                      }
                   ],
-                  "wwnn_pool":"WWNN_Pool",
-                  "vhbas":[
+                  "wwnn_pool": "WWNN_Pool",
+                  "vhbas": [
                      {
-                        "name":"Fabric-A",
-                        "vhba_template":"vHBA_Template_A",
-                        "adapter_policy":"VMWare"
+                        "name": "Fabric-A",
+                        "vhba_template": "vHBA_Template_A",
+                        "adapter_policy": "VMWare"
                      },
                      {
-                        "name":"Fabric-B",
-                        "vhba_template":"vHBA_Template_B",
-                        "adapter_policy":"VMWare"
+                        "name": "Fabric-B",
+                        "vhba_template": "vHBA_Template_B",
+                        "adapter_policy": "VMWare"
                      }
                   ],
-                  "placement_policy":"VM-Host-Infra",
-                  "placement":[
+                  "placement_policy": "VM-Host-Infra",
+                  "placement": [
                      {
-                        "vcon":"1",
-                        "order":"1",
-                        "vhba":"Fabric-A"
+                        "vcon": "1",
+                        "order": "1",
+                        "vhba": "Fabric-A"
                      },
                      {
-                        "vcon":"1",
-                        "order":"2",
-                        "vhba":"Fabric-B"
+                        "vcon": "1",
+                        "order": "2",
+                        "vhba": "Fabric-B"
                      },
                      {
-                        "vcon":"1",
-                        "order":"3",
-                        "vnic":"vNIC-A"
+                        "vcon": "1",
+                        "order": "3",
+                        "vnic": "vNIC-A"
                      },
                      {
-                        "vcon":"1",
-                        "order":"4",
-                        "vnic":"vNIC-B"
+                        "vcon": "1",
+                        "order": "4",
+                        "vnic": "vNIC-B"
                      }
                   ],
-                  "boot_policy":"Boot-Fabric-A",
-                  "maintenance_policy":"default",
-                  "server_pool":"Infra_Pool",
-                  "server_pool_qualification":"UCSB-B200-M4",
-                  "host_firmware_package":"VM-Host-Infra",
-                  "bios_policy":"VM-Host-Infra",
-                  "power_control_policy":"No-Power-Cap"
+                  "boot_policy": "Boot-Fabric-A",
+                  "maintenance_policy": "default",
+                  "server_pool": "Infra_Pool",
+                  "server_pool_qualification": "UCSB-B200-M4",
+                  "host_firmware_package": "VM-Host-Infra",
+                  "bios_policy": "VM-Host-Infra",
+                  "power_control_policy": "No-Power-Cap"
                },
                {
-                  "name":"VM-Host-Infra-Fabric-B",
-                  "type":"updating-template",
-                  "uuid_pool":"UUID_Pool",
-                  "local_disk_configuration_policy":"SAN-Boot",
-                  "vnics":[
+                  "name": "VM-Host-Infra-Fabric-B",
+                  "type": "updating-template",
+                  "uuid_pool": "UUID_Pool",
+                  "local_disk_configuration_policy": "SAN-Boot",
+                  "vnics": [
                      {
-                        "name":"vNIC-A",
-                        "vnic_template":"vNIC_Template_A",
-                        "adapter_policy":"VMWare"
+                        "name": "vNIC-A",
+                        "vnic_template": "vNIC_Template_A",
+                        "adapter_policy": "VMWare"
                      },
                      {
-                        "name":"vNIC-B",
-                        "vnic_template":"vNIC_Template_B",
-                        "adapter_policy":"VMWare"
+                        "name": "vNIC-B",
+                        "vnic_template": "vNIC_Template_B",
+                        "adapter_policy": "VMWare"
                      }
                   ],
-                  "wwnn_pool":"WWNN_Pool",
-                  "vhbas":[
+                  "wwnn_pool": "WWNN_Pool",
+                  "vhbas": [
                      {
-                        "name":"Fabric-A",
-                        "vhba_template":"vHBA_Template_A",
-                        "adapter_policy":"VMWare"
+                        "name": "Fabric-A",
+                        "vhba_template": "vHBA_Template_A",
+                        "adapter_policy": "VMWare"
                      },
                      {
-                        "name":"Fabric-B",
-                        "vhba_template":"vHBA_Template_B",
-                        "adapter_policy":"VMWare"
+                        "name": "Fabric-B",
+                        "vhba_template": "vHBA_Template_B",
+                        "adapter_policy": "VMWare"
                      }
                   ],
-                  "placement_policy":"VM-Host-Infra",
-                  "placement":[
+                  "placement_policy": "VM-Host-Infra",
+                  "placement": [
                      {
-                        "vcon":"1",
-                        "order":"1",
-                        "vhba":"Fabric-B"
+                        "vcon": "1",
+                        "order": "1",
+                        "vhba": "Fabric-B"
                      },
                      {
-                        "vcon":"1",
-                        "order":"2",
-                        "vhba":"Fabric-A"
+                        "vcon": "1",
+                        "order": "2",
+                        "vhba": "Fabric-A"
                      },
                      {
-                        "vcon":"1",
-                        "order":"3",
-                        "vnic":"vNIC-A"
+                        "vcon": "1",
+                        "order": "3",
+                        "vnic": "vNIC-A"
                      },
                      {
-                        "vcon":"1",
-                        "order":"4",
-                        "vnic":"vNIC-B"
+                        "vcon": "1",
+                        "order": "4",
+                        "vnic": "vNIC-B"
                      }
                   ],
-                  "boot_policy":"Boot-Fabric-B",
-                  "maintenance_policy":"default",
-                  "server_pool":"Infra_Pool",
-                  "server_pool_qualification":"UCSB-B200-M4",
-                  "host_firmware_package":"VM-Host-Infra",
-                  "bios_policy":"VM-Host-Infra",
-                  "power_control_policy":"No-Power-Cap"
+                  "boot_policy": "Boot-Fabric-B",
+                  "maintenance_policy": "default",
+                  "server_pool": "Infra_Pool",
+                  "server_pool_qualification": "UCSB-B200-M4",
+                  "host_firmware_package": "VM-Host-Infra",
+                  "bios_policy": "VM-Host-Infra",
+                  "power_control_policy": "No-Power-Cap"
                },
                {
-                  "name":"VM-Host-Infra-0",
-                  "type":"instance",
-                  "service_profile_template":"VM-Host-Infra-Fabric-A",
-                  "suffix_start_number":"1",
-                  "number_of_instances":"2"
+                  "name": "VM-Host-Infra-0",
+                  "type": "instance",
+                  "service_profile_template": "VM-Host-Infra-Fabric-A",
+                  "suffix_start_number": "1",
+                  "number_of_instances": "2"
                },
                {
-                  "name":"VM-Host-Infra-0",
-                  "type":"instance",
-                  "service_profile_template":"VM-Host-Infra-Fabric-B",
-                  "suffix_start_number":"3",
-                  "number_of_instances":"2"
+                  "name": "VM-Host-Infra-0",
+                  "type": "instance",
+                  "service_profile_template": "VM-Host-Infra-Fabric-B",
+                  "suffix_start_number": "3",
+                  "number_of_instances": "2"
                }
             ]
          }

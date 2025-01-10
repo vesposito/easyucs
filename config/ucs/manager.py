@@ -26,7 +26,7 @@ from config.ucs.cimc.imc import (
     UcsImcStorageFlexFlashController, UcsImcTimezoneMgmt, UcsImcVirtualMedia, UcsImcVKvmProperties
 )
 from config.ucs.config import UcsImcConfig, UcsSystemConfig, UcsCentralConfig
-from config.ucs.device_connector import UcsDeviceConnector
+from config.device_connector import DeviceConnector
 from config.ucs.ucsc.domain_groups import UcsCentralDomainGroup
 from config.ucs.ucsc.orgs import UcsCentralOrg
 from config.ucs.ucsc.system import (
@@ -228,7 +228,7 @@ class UcsSystemConfigManager(GenericUcsConfigManager):
 
         config.switching_mode.append(UcsSystemSwitchingMode(parent=config))
         config.communication_services.append(UcsSystemCommunicationServices(parent=config))
-        device_connector = UcsDeviceConnector(parent=config)
+        device_connector = DeviceConnector(parent=config)
         if device_connector.intersight_url:
             config.device_connector.append(device_connector)
         if "faultPolicy" in config.sdk_objects:
@@ -666,165 +666,11 @@ class UcsSystemConfigManager(GenericUcsConfigManager):
                 # Performing initial setup
                 message_str = "Performing initial setup using the following IP address(es): (" + \
                               ", ".join(fi_ip_list) + ")"
-                if self.parent.task is not None:
-                    self.parent.task.taskstep_manager.start_taskstep(
-                        name="InitialSetupUcsSystem", description=message_str)
                 self.logger(message=message_str)
                 if not self.parent.initial_setup(fi_ip_list=fi_ip_list, config=config):
                     message_str = "Error while performing initial setup"
-                    if self.parent.task is not None:
-                        self.parent.task.taskstep_manager.stop_taskstep(
-                            name="InitialSetupUcsSystem", status="failed", status_message=message_str)
                     self.logger(level="error", message=message_str)
                     return False
-                if self.parent.task is not None:
-                    self.parent.task.taskstep_manager.stop_taskstep(
-                        name="InitialSetupUcsSystem", status="successful",
-                        status_message="Successfully performed initial setup using the following IP address(es): (" +
-                                       ", ".join(fi_ip_list) + ")"
-                    )
-
-                # Wait loop for FI cluster election to complete
-                if self.parent.sys_mode == "cluster":
-                    message_str = "Waiting up to 300 seconds for cluster election to complete"
-                    if self.parent.task is not None:
-                        self.parent.task.taskstep_manager.start_taskstep(
-                            name="WaitForClusterElectionUcsSystem", description=message_str)
-                    self.logger(message=message_str)
-                    time.sleep(80)
-
-                    if config.system:
-                        if config.system[0].virtual_ip:
-                            self.parent.target = config.system[0].virtual_ip
-                        elif config.system[0].virtual_ipv6:
-                            self.parent.target = config.system[0].virtual_ipv6
-                    if not self.parent.target:
-                        message_str = "Could not determine target IP of the device in the config"
-                        if self.parent.task is not None:
-                            self.parent.task.taskstep_manager.stop_taskstep(
-                                name="WaitForClusterElectionUcsSystem", status="failed", status_message=message_str)
-                        self.logger(level="error", message=message_str)
-                        return False
-
-                elif self.parent.sys_mode == "stand-alone":
-                    message_str = "Waiting up to 240 seconds for initial configuration to complete"
-                    if self.parent.task is not None:
-                        self.parent.task.taskstep_manager.start_taskstep(
-                            name="WaitForClusterElectionUcsSystem", description=message_str)
-                    self.logger(message=message_str)
-                    time.sleep(20)
-
-                    # TODO Handle Ipv6
-                    if config.management_interfaces:
-                        for management_interface in config.management_interfaces:
-                            if management_interface.fabric.upper() == 'A':
-                                if management_interface.ip:
-                                    self.parent.target = management_interface.ip
-
-                    if not self.parent.target:
-                        message_str = "Could not determine target IP of the device in the config"
-                        if self.parent.task is not None:
-                            self.parent.task.taskstep_manager.stop_taskstep(
-                                name="WaitForClusterElectionUcsSystem", status="failed", status_message=message_str)
-                        self.logger(level="error", message=message_str)
-                        return False
-
-                if not config.local_users:
-                    # Could not find local_users in config - Admin password is a mandatory parameter - Exiting
-                    message_str = "Could not find users in config"
-                    if self.parent.task is not None:
-                        self.parent.task.taskstep_manager.stop_taskstep(
-                            name="WaitForClusterElectionUcsSystem", status="failed", status_message=message_str)
-                    self.logger(level="error", message=message_str)
-                    return False
-
-                # Going through all users to find admin
-                for user in config.local_users:
-                    if user.id:
-                        if user.id == "admin":
-                            self.parent.username = "admin"
-                            if user.password:
-                                self.parent.password = user.password
-                            else:
-                                # Admin password is a mandatory input
-                                message_str = "Could not find password for user id admin in config."
-                                if self.parent.task is not None:
-                                    self.parent.task.taskstep_manager.stop_taskstep(
-                                        name="WaitForClusterElectionUcsSystem", status="failed",
-                                        status_message=message_str)
-                                self.logger(level="warning", message=message_str)
-                                return False
-
-                # We need to refresh the UCS device handle so that it has the right attributes
-                self.parent.handle = UcsHandle(ip=self.parent.target, username=self.parent.username,
-                                               password=self.parent.password)
-                # We also need to refresh the config handle
-                config.refresh_config_handle()
-
-                if not common.check_web_page(device=self.parent, url="https://" + self.parent.target, str_match="Cisco",
-                                             timeout=220):
-                    message_str = "Impossible to reconnect to UCS system"
-                    if self.parent.task is not None:
-                        self.parent.task.taskstep_manager.stop_taskstep(
-                            name="WaitForClusterElectionUcsSystem", status="failed", status_message=message_str)
-                    self.logger(level="error", message=message_str)
-                    return False
-                self.parent.set_task_progression(40)
-
-                # Reconnecting and waiting for HA cluster to be ready (if in cluster mode)
-                # or FI to be ready (if in stand-alone mode)
-                if not self.parent.connect(bypass_version_checks=True, retries=3):
-                    message_str = "Impossible to reconnect to UCS system"
-                    if self.parent.task is not None:
-                        self.parent.task.taskstep_manager.stop_taskstep(
-                            name="WaitForClusterElectionUcsSystem", status="failed", status_message=message_str)
-                    self.logger(level="error", message=message_str)
-                    return False
-                if self.parent.sys_mode == "cluster":
-                    if self.parent.task is not None:
-                        self.parent.task.taskstep_manager.stop_taskstep(
-                            name="WaitForClusterElectionUcsSystem", status="successful",
-                            status_message="Cluster election successfully completed and device reconnected")
-
-                    message_str = "Waiting up to 300 seconds for UCS HA cluster to be ready..."
-                    if self.parent.task is not None:
-                        self.parent.task.taskstep_manager.start_taskstep(
-                            name="WaitForClusterHaReadyUcsSystem", description=message_str)
-                    self.logger(message=message_str)
-                    if not self.parent.wait_for_ha_cluster_ready(timeout=300):
-                        message_str = "Timeout exceeded while waiting for UCS HA cluster to be in ready state"
-                        if self.parent.task is not None:
-                            self.parent.task.taskstep_manager.stop_taskstep(
-                                name="WaitForClusterHaReadyUcsSystem", status="failed", status_message=message_str)
-                        self.logger(level="error", message=message_str)
-                        return False
-                    if self.parent.task is not None:
-                        self.parent.task.taskstep_manager.stop_taskstep(
-                            name="WaitForClusterHaReadyUcsSystem", status="successful",
-                            status_message="UCS HA Cluster in ready state")
-                elif self.parent.sys_mode == "stand-alone":
-                    if self.parent.task is not None:
-                        self.parent.task.taskstep_manager.stop_taskstep(
-                            name="WaitForClusterElectionUcsSystem", status="successful",
-                            status_message="Initial configuration successfully completed and device reconnected")
-
-                    message_str = "Waiting up to 300 seconds for UCS stand-alone FI to be ready..."
-                    if self.parent.task is not None:
-                        self.parent.task.taskstep_manager.start_taskstep(
-                            name="WaitForClusterHaReadyUcsSystem", description=message_str)
-                    self.logger(message=message_str)
-                    if not self.parent.wait_for_standalone_fi_ready(timeout=300):
-                        message_str = "Timeout exceeded while waiting for UCS stand-alone FI to be ready"
-                        if self.parent.task is not None:
-                            self.parent.task.taskstep_manager.stop_taskstep(
-                                name="WaitForClusterHaReadyUcsSystem", status="failed", status_message=message_str)
-                        self.logger(level="error", message=message_str)
-                        return False
-                    if self.parent.task is not None:
-                        self.parent.task.taskstep_manager.stop_taskstep(
-                            name="WaitForClusterHaReadyUcsSystem", status="successful",
-                            status_message="UCS stand-alone FI in ready state")
-                self.parent.set_task_progression(45)
 
                 # We bypass version checks for the rest of the procedure as potential warning has already been made
                 bypass_version_checks = True
@@ -842,9 +688,9 @@ class UcsSystemConfigManager(GenericUcsConfigManager):
                     self.parent.task.taskstep_manager.skip_taskstep(
                         name="InitialSetupUcsSystem", status_message="Skipping device reset")
                     self.parent.task.taskstep_manager.skip_taskstep(
-                        name="WaitForClusterElectionUcsSystem", status_message="Skipping device reset")
+                        name="WaitForInitialConfigurationProcess", status_message="Skipping device reset")
                     self.parent.task.taskstep_manager.skip_taskstep(
-                        name="WaitForClusterHaReadyUcsSystem", status_message="Skipping device reset")
+                        name="WaitForUcsManagerReady", status_message="Skipping device reset")
 
             # Pushing configuration to the device
             # We first make sure we are connected to the device
@@ -1366,7 +1212,7 @@ class UcsSystemConfigManager(GenericUcsConfigManager):
                 UcsSystemCommunicationServices(parent=config, json_content=config_json["communication_services"][0]))
         if "device_connector" in config_json:
             config.device_connector.append(
-                UcsDeviceConnector(parent=config, json_content=config_json["device_connector"][0]))
+                DeviceConnector(parent=config, json_content=config_json["device_connector"][0]))
         if "global_fault_policy" in config_json:
             config.global_fault_policy.append(
                 UcsSystemFaultPolicy(parent=config, json_content=config_json["global_fault_policy"][0]))
@@ -1542,7 +1388,7 @@ class UcsImcConfigManager(GenericUcsConfigManager):
         for adapter_card in config.sdk_objects.get("adaptorUnit", []):
             config.adapter_cards.append(UcsImcAdapterCard(parent=config, adaptor_unit=adapter_card))
         config.communications_services.append(UcsImcCommunicationsServices(parent=config))
-        device_connector = UcsDeviceConnector(parent=config)
+        device_connector = DeviceConnector(parent=config)
         if device_connector.intersight_url:
             config.device_connector.append(device_connector)
         config.chassis_inventory.append(UcsImcChassisInventory(parent=config))
@@ -1667,7 +1513,7 @@ class UcsImcConfigManager(GenericUcsConfigManager):
 
                 # Performing initial setup
                 self.logger(message="Performing initial setup using the following IP address: " + str(imc_ip))
-                if not self.parent.initial_setup(imc_ip=imc_ip, config=config):
+                if not self.parent.initial_setup(imc_ip=imc_ip, config=config, target_admin_password="password"):
                     self.logger(level="error", message="Error while performing initial setup")
                     return False
 
@@ -1889,7 +1735,7 @@ class UcsImcConfigManager(GenericUcsConfigManager):
 
         if "device_connector" in config_json:
             config.device_connector.append(
-                UcsDeviceConnector(parent=config, json_content=config_json["device_connector"][0]))
+                DeviceConnector(parent=config, json_content=config_json["device_connector"][0]))
 
         if "chassis_inventory" in config_json:
             config.chassis_inventory.append(

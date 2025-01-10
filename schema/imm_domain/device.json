@@ -1,0 +1,27 @@
+{
+   "id": "imm_domain_device#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS IMM domain device section",
+   "description": "EasyUCS imm domain device section JSON schema",
+   "type": "object",
+   "properties": {
+      "target": {
+         "description": "The IMM Domain Device IP or hostname targeted",
+         "type": "string"
+      },
+      "username": {
+         "description": "Username to use for the IMM Domain Device",
+         "type": "string"
+      },
+      "password": {
+         "description": "Password of the user to use for the IMM Domain Device",
+         "type": "string"
+      }
+   },
+   "required": [
+      "target",
+      "username",
+      "password"
+   ],
+   "additionalProperties": false
+}

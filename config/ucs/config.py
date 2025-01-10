@@ -1127,7 +1127,7 @@ class UcsImcConfig(GenericUcsConfig):
                                 'biosVfProcessorC3Report', 'biosVfProcessorC6Report', 'biosVfPwrPerfTuning',
                                 'biosVfQPIConfig', 'biosVfQpiSnoopMode', 'biosVfResumeOnACPowerLoss',
                                 'biosVfSataModeSelect', 'biosVfSelectMemoryRASConfiguration', 'biosVfSrIov',
-                                'biosVfTPMSupport', 'biosVfUSBEmulation', 'biosVfUSBPortsConfig',
+                                'biosVfTpmSupport', 'biosVfUSBEmulation', 'biosVfUSBPortsConfig',
                                 'biosVfUsbXhciSupport', 'biosVfVgaPriority', 'biosVfWorkLoadConfig', 'commHttp',
                                 'commHttps', 'commIpmiLan', 'commKvm', 'commMailAlert', 'commRedfish',
                                 'commSavedVMediaMap', 'commSnmp', 'commSnmpTrap', 'commSnmpUser', 'commSsh',

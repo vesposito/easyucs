@@ -8,8 +8,8 @@
             "subcategory": "BIOS",
             "name": "Intersight BIOS Policy for Java Application Server on Cisco UCS M5 Servers",
             "url": "https://www.cisco.com/c/en/us/products/collateral/servers-unified-computing/ucs-b-series-blade-servers/white-paper-c11-744678.html",
-            "easyucs_version": "0.9.8.4",
-            "revision": "1.0"
+            "easyucs_version": "1.0.0",
+            "revision": "1.1"
          }
       ]
    },

@@ -2,13 +2,13 @@
 # !/usr/bin/env python
 
 """ neighbor.py: Easy UCS Deployment Tool """
-from __init__ import __author__, __copyright__,  __version__, __status__
 
+import copy
 
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image, ImageFont
+
 from draw.object import GenericUcsDrawObject
 from draw.wire import UcsSystemDrawWire
-import copy
 
 
 class UcsSystemDrawNeighbor:

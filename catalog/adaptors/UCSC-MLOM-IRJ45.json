@@ -1,29 +1,30 @@
 {
-  "model_short_name": "Intel I350 4x1G",
-  "rear_file_name": "UCSC-MLOM-IRJ45.png",
-  "rear_file_size": [523,94],
-  "rear_ports": {
-    "x/1": {
-      "port_coord": [37, 30],
-      "port_type": "rj45",
-      "port_size": [67, 39]
-    },
-    "x/2": {
-      "port_coord": [164, 30],
-      "port_type": "rj45",
-      "port_size": [67, 39]
-    },
-    "x/3": {
-      "port_coord": [290, 30],
-      "port_type": "rj45",
-      "port_size": [67, 39]
-    },
-    "x/4": {
-      "port_coord": [417, 30],
-      "port_type": "rj45",
-      "port_size": [67, 39]
-    }
-  },
-  "imm_compatible": false,
-  "data_sheet_url": "https://www.cisco.com/c/dam/en/us/products/collateral/interfaces-modules/ucs-virtual-interface-card-1225/intel_i350_server_adapter_brief.pdf"
+   "model_short_name": "Intel I350 4x1G",
+   "rear_file_name": "UCSC-MLOM-IRJ45.png",
+   "rear_file_size": [523,94],
+   "rear_ports": {
+      "x/1": {
+         "port_coord": [37, 30],
+         "port_type": "rj45",
+         "port_size": [67, 39]
+      },
+      "x/2": {
+         "port_coord": [164, 30],
+         "port_type": "rj45",
+         "port_size": [67, 39]
+      },
+      "x/3": {
+         "port_coord": [290, 30],
+         "port_type": "rj45",
+         "port_size": [67, 39]
+      },
+      "x/4": {
+         "port_coord": [417, 30],
+         "port_type": "rj45",
+         "port_size": [67, 39]
+      }
+   },
+   "imm_compatible": false,
+   "data_sheet_url": "https://www.cisco.com/c/dam/en/us/products/collateral/interfaces-modules/ucs-virtual-interface-card-1225/intel_i350_server_adapter_brief.pdf",
+   "adaptor_type": "nic"
 }

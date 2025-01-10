@@ -2,17 +2,16 @@
 # !/usr/bin/env python
 
 """ blade.py: Easy UCS Deployment Tool """
-from __init__ import __author__, __copyright__,  __version__, __status__
 
-
-from draw.object import GenericUcsDrawEquipment
-from draw.ucs.storage import UcsSystemDrawStorageController, UcsSystemDrawStorageLocalDisk
-
-from PIL import Image, ImageDraw, ImageFont
 import json
 
+from PIL import Image
 
-class GenericUcsDrawBlade(GenericUcsDrawEquipment):
+from draw.object import GenericUcsDrawEquipment
+from draw.ucs.storage import UcsStorageControllerDraw, UcsStorageLocalDiskDraw
+
+
+class UcsBladeDrawFront(GenericUcsDrawEquipment):
     def __init__(self, parent=None, parent_draw=None):
         self.parent_draw = parent_draw
         GenericUcsDrawEquipment.__init__(self, parent=parent, orientation="front")
@@ -78,9 +77,9 @@ class GenericUcsDrawBlade(GenericUcsDrawEquipment):
         if (self._parent.sku != "UCSC-C3X60-SVRNB") and (self._parent.sku != "UCSC-C3K-M4SRB"):
             for storage_controller in self._parent.storage_controllers:
                 # We skip M.2 controllers on blades
-                if storage_controller.type not in ["SAS", "NVME"]:
+                if storage_controller.type not in ["Hba", "HBA", "Raid", "RAID", "SAS", "Nvme", "NVME"]:
                     continue
-                storage_controller_list.append(UcsSystemDrawStorageController(storage_controller, self))
+                storage_controller_list.append(UcsStorageControllerDraw(storage_controller, self))
                 # storage_controller_list = remove_not_completed_in_list(storage_controller_list)
         return storage_controller_list
 
@@ -90,7 +89,7 @@ class GenericUcsDrawBlade(GenericUcsDrawEquipment):
             # Prevent potential disk with ID 0 to be used in Draw (happens sometimes with B200 M2)
             if disk.id != "0" and disk.slot_type in ["sff-nvme", "sff-7mm-m6-nvme"]:
                 if disk.id in [str(i["id"]) for i in self.json_file["disks_slots"]]:
-                    disk_list.append(UcsSystemDrawStorageLocalDisk(parent=disk, parent_draw=self))
+                    disk_list.append(UcsStorageLocalDiskDraw(parent=disk, parent_draw=self))
                     self.disk_slots_used.append(int(disk.id))
         return disk_list
 

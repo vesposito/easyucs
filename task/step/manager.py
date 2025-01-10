@@ -102,7 +102,6 @@ class TaskStepManager:
             # No step is currently in status "in_progress". There are multiple possibilities:
             # - The steps can all be in status None --> Task is not yet started
             # - The steps can all be in status "successful"/"skipped" --> Task is completed
-            # - One step can be in status "failed" --> Task is failed
             # - Some steps can be ended, and other steps in status None --> Task is started but not actively running
             if all(step.metadata.status is None for step in self.taskstep_list):
                 self.logger(level="debug", message="Task with UUID " + str(self.parent.uuid) + " has not yet started")
@@ -110,10 +109,6 @@ class TaskStepManager:
             elif all(step.metadata.status in ["successful", "skipped"] for step in self.taskstep_list):
                 self.logger(level="debug",
                             message="Task with UUID " + str(self.parent.uuid) + " is terminated with success")
-                return None
-            elif any(step.metadata.status == "failed" for step in self.taskstep_list):
-                self.logger(level="debug",
-                            message="Task with UUID " + str(self.parent.uuid) + " is terminated with failure")
                 return None
             else:
                 x = 0
@@ -153,7 +148,6 @@ class TaskStepManager:
             # No step is currently in status "in_progress". There are multiple possibilities:
             # - The steps can all be in status None --> Task is not yet started
             # - The steps can all be in status "successful"/"skipped" --> Task is completed
-            # - One step can be in status "failed" --> Task is failed
             # - Some steps can be ended, and other steps in status None --> Task is started but not actively running
             if all(step.metadata.status is None for step in self.taskstep_list):
                 return self.taskstep_list[0]
@@ -161,16 +155,13 @@ class TaskStepManager:
                 self.logger(level="debug",
                             message="Task with UUID " + str(self.parent.uuid) + " is terminated with success")
                 return None
-            elif any(step.metadata.status == "failed" for step in self.taskstep_list):
-                self.logger(level="debug",
-                            message="Task with UUID " + str(self.parent.uuid) + " is terminated with failure")
-                return None
             else:
                 x = 0
                 while x < len(self.taskstep_list):
                     if self.taskstep_list[x].metadata.status is None:
                         return self.taskstep_list[x]
                     x += 1
+            return None
         else:
             if active_step == self.taskstep_list[-1]:
                 self.logger(level="debug", message="Currently running task step is the last step.")
@@ -324,7 +315,7 @@ class TaskStepManager:
 
         current_step = self.get_current_taskstep()
         if current_step is None:
-            # If none of the task steps have started and we are trying to set the status of the first task step
+            # If none of the task steps have started, and we are trying to set the status of the first task step,
             # then we set current_step to the first task step
             next_taskstep = self.get_next_taskstep()
             if next_taskstep and next_taskstep.name == name:

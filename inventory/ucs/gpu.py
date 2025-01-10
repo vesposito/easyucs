@@ -2,12 +2,13 @@
 # !/usr/bin/env python
 
 """ adaptor.py: Easy UCS Deployment Tool """
-
+from inventory.generic.gpu import GenericGpu
 from inventory.ucs.object import GenericUcsInventoryObject, UcsImcInventoryObject, UcsSystemInventoryObject
 
 
-class UcsGpu(GenericUcsInventoryObject):
+class UcsGpu(GenericGpu, GenericUcsInventoryObject):
     def __init__(self, parent=None, graphics_card=None):
+        GenericGpu.__init__(self, parent=parent)
         GenericUcsInventoryObject.__init__(self, parent=parent, ucs_sdk_object=graphics_card)
 
         self.id = self.get_attribute(ucs_sdk_object=graphics_card, attribute_name="id")
@@ -29,17 +30,7 @@ class UcsSystemGpu(UcsGpu, UcsSystemInventoryObject):
 
         UcsSystemInventoryObject.__init__(self, parent=parent, ucs_sdk_object=graphics_card)
 
-        # Small fix for when GPU SKU is not present in UCS catalog
-        if hasattr(self, "sku"):
-            if not self.sku:
-                if any(x in self.model for x in ["UCSB-", "UCSC-"]):
-                    self.sku = self.model
-                if self.model == "Nvidia GRID K1 P2401-502":
-                    self.sku = "UCSC-GPU-VGXK1"
-                if self.model == "Nvidia GRID K2 P2055-552":
-                    self.sku = "UCSC-GPU-VGXK2"
-                if self.model == "Nvidia M60":
-                    self.sku = "UCSC-GPU-M60"
+        self._determine_sku()
 
 
 class UcsImcGpu(UcsGpu, UcsImcInventoryObject):

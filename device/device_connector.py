@@ -84,7 +84,7 @@ class DeviceConnector:
         :param proxy_password: Password for proxy
         :return: True if details added successfully, False otherwise
         """
-        if self.metadata.device_type not in ["cimc", "imm", "ucsm"]:
+        if self.metadata.device_type not in ["cimc", "imm_domain", "ucsm"]:
             self.logger(level="error", message="Unsupported device type: " + self.metadata.device_type_long)
             return False
 
@@ -96,7 +96,8 @@ class DeviceConnector:
             auth_header = {'ucsmcookie': f"ucsm-cookie={login_cookie}"}
         else:
             login_cookie = self._session_id
-            auth_header = {'Cookie': f"sessionId={login_cookie}"}
+            auth_header = {'Cookie': f"sessionId={login_cookie}",
+                           'X-Csrf-Token': self._csrf_token}
 
         if self.task is not None:
             self.task.taskstep_manager.start_taskstep(
@@ -161,7 +162,7 @@ class DeviceConnector:
         from intersight.api.appliance_api import ApplianceApi
         from intersight.exceptions import ApiValueError, ApiTypeError, ApiException
 
-        if self.metadata.device_type not in ["cimc", "imm", "ucsm"]:
+        if self.metadata.device_type not in ["cimc", "imm_domain", "ucsm"]:
             self.logger(level="error", message="Unsupported device type: " + self.metadata.device_type_long)
             return False
 
@@ -191,6 +192,10 @@ class DeviceConnector:
                     status_message=f"{self.metadata.device_type_long} device {self.name}" +
                                    f" is already claimed to account {self.metadata.device_connector_ownership_name}.")
             return False
+
+        self.logger(level="info",
+                    message=f"Performing claiming of {self.metadata.device_type_long} device {self.name} to "
+                            f"{intersight_device.metadata.device_type_long} {intersight_device.target}.")
 
         # Checking and resetting Device Connector if necessary
         if not intersight_device.is_appliance:
@@ -241,7 +246,8 @@ class DeviceConnector:
             self.task.taskstep_manager.start_taskstep(name="ClaimDeviceToIntersight",
                                                       description="Claiming UCS device to Intersight")
 
-        if self._device_connector_info.get("Connection State") in ["DNS Not Configured", "Http Proxy Connect Error",
+        if self._device_connector_info.get("Connection State") in ["DNS Misconfigured", "DNS Not Configured",
+                                                                   "Http Proxy Connect Error",
                                                                    "Intersight Network Error"]:
             err_message = f"Error while claiming {self.metadata.device_type_long} {self.name} to " \
                           f"{intersight_device.metadata.device_type_long} {intersight_device.target}. " \
@@ -258,7 +264,7 @@ class DeviceConnector:
                 platform_type = "IMC"
             elif self.metadata.device_type == "ucsm":
                 platform_type = "UCSFI"
-            elif self.metadata.device_type == "imm":
+            elif self.metadata.device_type == "imm_domain":
                 platform_type = "UCSFIISM"
 
             try:
@@ -270,43 +276,37 @@ class DeviceConnector:
                     "PlatformType": platform_type
                 }
                 appliance_api.create_appliance_device_claim(ApplianceDeviceClaim(**kwargs))
-                self.logger(level="info",
-                            message=f"Claiming of {self.metadata.device_type_long} {self.name}" +
-                                    f" started on {intersight_device.metadata.device_type_long}" +
-                                    f" {intersight_device.target}")
+
+                message_str = (f"Successfully claimed {self.metadata.device_type_long} device {self.name} to "
+                               f"{intersight_device.metadata.device_type_long} {intersight_device.name}.")
+                self.logger(level="info", message=message_str)
                 if self.task is not None:
                     self.task.taskstep_manager.stop_taskstep(
                         name="ClaimDeviceToIntersight", status="successful",
-                        status_message=f"Claiming of {self.metadata.device_type_long} {self.name}" +
-                                       f" started on {intersight_device.metadata.device_type_long}" +
-                                       f" {intersight_device.target}")
+                        status_message=message_str[:255])
+
             except (ApiValueError, ApiTypeError, ApiException) as err:
-                self.logger(level="error",
-                            message=f"Error while claiming {self.metadata.device_type_long} {self.name}" +
-                                    f" to {intersight_device.metadata.device_type_long}" +
-                                    f" {intersight_device.target}: {str(err)}")
+
+                message_str = (f"Error while claiming {self.metadata.device_type_long} {self.name} to "
+                               f"{intersight_device.metadata.device_type_long} to "
+                               f"{intersight_device.target}: {str(err)}")
+                self.logger(level="error", message=message_str)
                 if self.task is not None:
                     self.task.taskstep_manager.stop_taskstep(
                         name="ClaimDeviceToIntersight", status="failed",
-                        status_message=f"Error while claiming {self.metadata.device_type_long} {self.name}" +
-                                       f" to {intersight_device.metadata.device_type_long}" +
-                                       f" {intersight_device.target}")
+                        status_message=message_str[:255])
                 return False
         else:
             # We are in SaaS condition
             if "Claim Code" not in self._device_connector_info:
-                self.logger(level="error",
-                            message=f"Error while claiming {self.metadata.device_type_long} {self.name}" +
-                                    f" to {intersight_device.metadata.device_type_long} {intersight_device.name}:" +
-                                    f" 'Claim Code' not found, please check proxy settings or try"
-                                    f" again after some time")
+                message_str = (f"Error while claiming {self.metadata.device_type_long} {self.name} "
+                               f"to {intersight_device.metadata.device_type_long} {intersight_device.name}: "
+                               f"'Claim Code' not found, please check proxy settings or try again after some time.")
+                self.logger(level="error", message=message_str)
                 if self.task is not None:
                     self.task.taskstep_manager.stop_taskstep(
                         name="ClaimDeviceToIntersight", status="failed",
-                        status_message=f"Error while claiming {self.metadata.device_type_long} {self.name}" +
-                                       f" to {intersight_device.metadata.device_type_long}" +
-                                       f" {intersight_device.target}: 'Claim Code' not found, please check proxy "
-                                       f"settings or try again after some time")
+                        status_message=message_str[:255])
                 return False
 
             try:
@@ -317,50 +317,41 @@ class DeviceConnector:
 
                 asset_api = AssetApi(api_client=intersight_device.handle)
                 asset_api.create_asset_device_claim(AssetDeviceClaim(**kwargs))
-                self.logger(level="info",
-                            message=f"{self.metadata.device_type_long} device {self.name} claimed to " +
-                                    f"{intersight_device.metadata.device_type_long} {intersight_device.name}")
+
+                message_str = (f"Successfully claimed {self.metadata.device_type_long} device {self.name} to "
+                               f"{intersight_device.metadata.device_type_long} {intersight_device.name}.")
+                self.logger(level="info", message=message_str)
                 if self.task is not None:
                     self.task.taskstep_manager.stop_taskstep(
                         name="ClaimDeviceToIntersight", status="successful",
-                        status_message=f"Successfully claimed {self.metadata.device_type_long} device " +
-                                       f"{self.name} to {intersight_device.metadata.device_type_long} " +
-                                       f"{intersight_device.name}")
+                        status_message=message_str[:255])
+
             except (ApiValueError, ApiTypeError, ApiException) as err:
-                self.logger(level="error",
-                            message=f"Error while claiming {self.metadata.device_type_long} {self.name}" +
-                                    f" to {intersight_device.metadata.device_type_long} {intersight_device.name}:" +
-                                    f" {str(err)}")
+                message_str = (f"Error while claiming {self.metadata.device_type_long} {self.name} to "
+                               f"{intersight_device.metadata.device_type_long} to "
+                               f"{intersight_device.target}: {str(err)}")
+                self.logger(level="error", message=message_str)
                 if self.task is not None:
                     self.task.taskstep_manager.stop_taskstep(
                         name="ClaimDeviceToIntersight", status="failed",
-                        status_message=f"Error while claiming {self.metadata.device_type_long} {self.name}" +
-                                       f" to {intersight_device.metadata.device_type_long}" +
-                                       f" {intersight_device.name}")
+                        status_message=message_str[:255])
                 return False
+
             except Exception as err:
-                self.logger(level="error",
-                            message=f"Error while claiming {self.metadata.device_type_long} {self.name}" +
-                                    f" to {intersight_device.metadata.device_type_long} {intersight_device.name}:" +
-                                    f" {str(err)}")
+                message_str = (f"Error while claiming {self.metadata.device_type_long} {self.name} to "
+                               f"{intersight_device.metadata.device_type_long} {intersight_device.name}: {str(err)}")
                 if self.task is not None:
                     self.task.taskstep_manager.stop_taskstep(
                         name="ClaimDeviceToIntersight", status="failed",
-                        status_message=f"Error while claiming {self.metadata.device_type_long} {self.name}" +
-                                       f" to {intersight_device.metadata.device_type_long}" +
-                                       f" {intersight_device.name}")
+                        status_message=message_str[:255])
                 return False
 
         if self.task is not None:
             self.logger(message="Refreshing Intersight Device Connector info")
             self.task.taskstep_manager.start_taskstep(name="RefreshIntersightClaimStatus",
                                                       description="Refreshing Intersight Device Connector info")
-            # We force an update of the Device Connector info and check periodically for 3 mins
-            count = 18
-            while self.metadata.device_connector_claim_status == "unclaimed" and count:
-                time.sleep(10)
-                self._set_device_connector_info()
-                count -= 1
+            # We force an update of the Device Connector info
+            self._set_device_connector_info(wait_for_connection_status=True, wait_for_claiming=True)
             if self.metadata.device_connector_claim_status == "claimed":
                 self.task.taskstep_manager.stop_taskstep(
                     name="RefreshIntersightClaimStatus", status="successful",
@@ -374,6 +365,7 @@ class DeviceConnector:
                     name="RefreshIntersightClaimStatus", status="failed",
                     status_message="Failed refreshing Intersight Device Connector Info"
                 )
+                return False
 
         return True
 
@@ -382,7 +374,7 @@ class DeviceConnector:
         Resets Device Connector
         :return: True if successful, False otherwise
         """
-        if self.metadata.device_type not in ["cimc", "imm", "ucsm"]:
+        if self.metadata.device_type not in ["cimc", "imm_domain", "ucsm"]:
             self.logger(level="error", message="Unsupported device type: " + self.metadata.device_type_long)
             return False
 
@@ -405,7 +397,8 @@ class DeviceConnector:
             auth_header = {'ucsmcookie': f"ucsm-cookie={login_cookie}"}
         else:
             login_cookie = self._session_id
-            auth_header = {'Cookie': f"sessionId={login_cookie}"}
+            auth_header = {'Cookie': f"sessionId={login_cookie}",
+                           'X-Csrf-Token': self._csrf_token}
 
         if login_cookie:
             try:
@@ -416,10 +409,12 @@ class DeviceConnector:
                 else:
                     cloud_dns = "svc.intersight.com"
                 data = json.dumps({"CloudDns": cloud_dns, "ForceResetIdentity": True, "ResetIdentity": True})
-                response = requests.put(uri, verify=False, headers=auth_header, data=data)
+
+                # Setting a 2-minute timeout while fetching target device connector info
+                response = requests.put(uri, verify=False, headers=auth_header, data=data, timeout=120)
                 if response.status_code == 200:
                     if response.json():
-                        self._set_device_connector_info()
+                        self._set_device_connector_info(wait_for_connection_status=True)
                         if self.task is not None:
                             self.task.taskstep_manager.stop_taskstep(
                                 name="ResetDeviceConnector", status="successful",
@@ -466,15 +461,16 @@ class DeviceConnector:
                         message="No login cookie, no request can be made to find device connector information")
         return False
 
-    def _set_device_connector_info(self, wait_for_connection_status=False):
+    def _set_device_connector_info(self, wait_for_connection_status=False, wait_for_claiming=False):
         """
         Performs all requests to the device connector to get the necessary information and populate the metadata
         with the most significant info + a dictionary containing all info
         :param wait_for_connection_status: Flag if set to True, before fetching the info wait until connection is
         established or failed
+        :param wait_for_claiming: Flag if set to True, before fetching the info wait for device to be claimed
         :return: True if info collected correctly, False otherwise
         """
-        if self.metadata.device_type not in ["cimc", "imm", "ucsm"]:
+        if self.metadata.device_type not in ["cimc", "imm_domain", "ucsm"]:
             self.logger(level="error", message="Unsupported device type: " + self.metadata.device_type_long)
             return False
 
@@ -499,7 +495,8 @@ class DeviceConnector:
             auth_header = {'ucsmcookie': f"ucsm-cookie={login_cookie}"}
         else:
             login_cookie = self._session_id
-            auth_header = {'Cookie': f"sessionId={login_cookie}"}
+            auth_header = {'Cookie': f"sessionId={login_cookie}",
+                           'X-Csrf-Token': self._csrf_token}
 
         if login_cookie:
             # Wait until the connection is established or there is network error
@@ -513,8 +510,8 @@ class DeviceConnector:
                             resp = response.json()
                             if len(resp) > 0:
                                 resp = resp[0]
-                                if resp.get("ConnectionState") in ["Connected", "DNS Not Configured",
-                                                                   "Http Proxy Connect Error",
+                                if resp.get("ConnectionState") in ["Connected", "DNS Misconfigured",
+                                                                   "DNS Not Configured", "Http Proxy Connect Error",
                                                                    "Intersight Network Error"]:
                                     self.logger(level="info", message=f"Connection state of device connector is: "
                                                                       f"{resp.get('ConnectionState')}")
@@ -526,6 +523,35 @@ class DeviceConnector:
                     except Exception as err:
                         self.logger(level="error", message="Error while checking the device connector connection state:"
                                                            + str(err))
+                        break
+                    time.sleep(10)
+                    count += 1
+
+            # We add this to handle an intermittent issue where the claim to intersight taskstep was done
+            # successfully but refresh device connector status info failed because the device connector claim state
+            # was still "Unclaimed". (Jira: EASYUCS-1543)
+            if wait_for_claiming:
+                uri = base_uri + "/connector/Systems"
+                count = 0
+                while count < 12:
+                    try:
+                        self.logger(level="debug", message="Waiting for device status to be claimed")
+                        response = requests.get(uri, verify=False, headers=auth_header)
+                        if response.status_code == 200:
+                            resp = response.json()
+                            if len(resp) > 0:
+                                resp = resp[0]
+                                if resp.get("AccountOwnershipState") in ["Claimed"]:
+                                    self.logger(level="info", message=f"Device is claimed")
+                                    break
+                        else:
+                            self.logger(level="error",
+                                        message="Error while checking the device connector claim state:")
+                            break
+                    except Exception as err:
+                        self.logger(level="error",
+                                    message="Error while checking the device connector claim state:"
+                                            + str(err))
                         break
                     time.sleep(10)
                     count += 1
@@ -614,7 +640,10 @@ class DeviceConnector:
         if device_connector_info.get("Intersight URL"):
             if device_connector_info["Intersight URL"] in ["svc.ucs-connect.com", "svc.intersight.com",
                                                            "svc-static1.intersight.com", "svc-static1.ucs-connect.com"]:
-                intersight_url = "www.intersight.com"
+                intersight_url = "us-east-1.intersight.com"
+            elif device_connector_info["Intersight URL"] in ["svc.eu-central-1.intersight.com",
+                                                             "svc-static1.eu-central-1.intersight.com"]:
+                intersight_url = "eu-central-1.intersight.com"
             else:
                 # This is an Intersight Appliance. We need to remove the prefix "dc-" to the URL
                 if device_connector_info["Intersight URL"].startswith("dc-"):
@@ -632,14 +661,17 @@ class DeviceConnector:
                                     self.metadata.intersight_device_uuid = device_metadata.uuid
                                     self.logger(
                                         level="info",
-                                        message="This device is claimed to Intersight device with UUID: " +
-                                                str(device_metadata.uuid)
+                                        message=f"This device is claimed to Intersight device "
+                                                f"'{device_metadata.device_name}' with UUID: "
+                                                f"{str(device_metadata.uuid)}"
                                     )
                                     break
 
                     if not found_intersight_device:
-                        self.logger(level="debug", message="Could not find the Intersight device to which this " +
-                                                           self.metadata.device_type_long + " device is claimed")
+                        self.logger(level="debug",
+                                    message=f"Could not find the Intersight device "
+                                            f"'{device_connector_info.get('Claimed Account')}' to which this "
+                                            f"{self.metadata.device_type_long} device is claimed")
 
             if not found_intersight_device:
                 self.metadata.intersight_device_uuid = None

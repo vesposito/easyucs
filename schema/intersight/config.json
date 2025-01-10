@@ -16,6 +16,17 @@
          "minItems": 1,
          "maxItems": 1
       },
+      "equipment": {
+         "description": "EasyUCS config/equipment section",
+         "type": "array",
+         "items": {
+            "description": "EasyUCS config/equipment element",
+            "type": "object",
+            "$ref": "config/equipment.json"
+         },
+         "minItems": 1,
+         "maxItems": 1
+      },
       "orgs": {
          "description": "EasyUCS config/orgs section",
          "type": "array",

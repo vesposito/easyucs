@@ -7,8 +7,8 @@
             "category": "samples",
             "subcategory": "Server Pools",
             "name": "UCS Manager server pools-related sections configuration sample",
-            "easyucs_version": "0.9.8.4",
-            "revision": "1.2"
+            "easyucs_version": "1.0.0",
+            "revision": "1.3"
          }
       ]
    },

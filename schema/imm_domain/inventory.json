@@ -1,0 +1,10 @@
+{
+   "id": "imm_inventory#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS imm inventory section",
+   "description": "EasyUCS imm inventory section JSON schema",
+   "type": "object",
+   "properties": {},
+   "additionalProperties": true,
+   "minProperties": 1
+}

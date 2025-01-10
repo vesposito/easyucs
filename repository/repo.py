@@ -14,7 +14,7 @@ from sqlite3 import IntegrityError
 
 from repository.metadata import RepoFileMetadata, RepoSyncToDeviceMetadata
 from repository.db.models import RepoFileRecord, RepoSyncToDeviceRecord
-from common import calculate_checksum
+from common import calculate_checksum, get_proxy_url
 from __init__ import EASYUCS_ROOT
 
 
@@ -160,13 +160,14 @@ class Repo:
 
         return repo_sync_to_device_metadata
 
-    def download_file(self, url=None, path=None, file_name=None, verify_ssl=True):
+    def download_file(self, url=None, path=None, file_name=None, verify_ssl=True, use_proxy=False):
         """
         Function to download a file to the download path
         :param url: URL to download the file
         :param path: Download path of the file
         :param file_name: Download file name
         :param verify_ssl: If True, we verify the server's TLS certificate otherwise we don't
+        :param use_proxy: If True, the request will be routed through proxy otherwise it won't
         :return: True if successful, False otherwise
         """
         if not url:
@@ -193,7 +194,12 @@ class Repo:
             dest_file_path = os.path.join(path, file_name)
 
             # Calling the download url
-            res = requests.get(url, stream=True, verify=verify_ssl)
+            if use_proxy:
+                proxy_url, _, _ = get_proxy_url(include_authentication=True, logger=self.parent)
+                res = requests.get(url, stream=True, verify=verify_ssl, proxies={"http": proxy_url, "https": proxy_url})
+            else:
+                res = requests.get(url, stream=True, verify=verify_ssl)
+
             # Checking the HTTP response status code
             if res.status_code != 200:
                 err_msg = (f"Failed to download the file '{file_name}', "

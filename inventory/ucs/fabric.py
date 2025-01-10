@@ -3,18 +3,19 @@
 
 """ fabric.py: Easy UCS Deployment Tool """
 
-from common import read_json_file
-from draw.ucs.fabric import UcsSystemDrawFexFront, UcsSystemDrawFexRear, UcsSystemDrawFiRear, UcsSystemDrawFiFront, \
+from draw.ucs.fabric import UcsFexDrawFront, UcsFexDrawRear, UcsFiDrawRear, UcsFiDrawFront, \
     UcsSystemDrawGem
+from inventory.generic.fabric import GenericFex, GenericFi
 from inventory.ucs.object import GenericUcsInventoryObject, UcsSystemInventoryObject
 from inventory.ucs.port import UcsSystemFexFabricPort, UcsSystemFexHostPort, UcsSystemFiEthPort, UcsSystemFiFcPort
 from inventory.ucs.psu import UcsSystemPsu
 
 
-class UcsFex(GenericUcsInventoryObject):
+class UcsFex(GenericFex, GenericUcsInventoryObject):
     _UCS_SDK_OBJECT_NAME = "equipmentFex"
 
     def __init__(self, parent=None, equipment_fex=None):
+        GenericFex.__init__(self, parent=parent)
         GenericUcsInventoryObject.__init__(self, parent=parent, ucs_sdk_object=equipment_fex)
 
         self.id = self.get_attribute(ucs_sdk_object=equipment_fex, attribute_name="id")
@@ -28,49 +29,21 @@ class UcsFex(GenericUcsInventoryObject):
         self.host_ports = self._get_host_ports()
         self.power_supplies = self._get_power_supplies()
 
-    def _generate_draw(self):
-        pass
-
     def _get_fabric_ports(self):
         return []
 
     def _get_host_ports(self):
         return []
 
-    def _get_imm_compatibility(self):
-        """
-        Returns Fabric Extender IMM Compatibility status from EasyUCS catalog files
-        """
-        if self.sku is not None:
-            # We use the catalog file to get the FEX IMM Compatibility status
-            fex_catalog = read_json_file(file_path="catalog/fabric_extenders/" + self.sku + ".json", logger=self)
-            if fex_catalog:
-                if "imm_compatible" in fex_catalog:
-                    return fex_catalog["imm_compatible"]
-
-        return None
-
-    def _get_model_short_name(self):
-        """
-        Returns Fabric Extender short name from EasyUCS catalog files
-        """
-        if self.sku is not None:
-            # We use the catalog file to get the FEX short name
-            fex_catalog = read_json_file(file_path="catalog/fabric_extenders/" + self.sku + ".json", logger=self)
-            if fex_catalog:
-                if "model_short_name" in fex_catalog:
-                    return fex_catalog["model_short_name"]
-
-        return None
-
     def _get_power_supplies(self):
         return []
 
 
-class UcsFi(GenericUcsInventoryObject):
+class UcsFi(GenericFi, GenericUcsInventoryObject):
     _UCS_SDK_OBJECT_NAME = "networkElement"
 
     def __init__(self, parent=None, network_element=None):
+        GenericFi.__init__(self, parent=parent)
         GenericUcsInventoryObject.__init__(self, parent=parent, ucs_sdk_object=network_element)
 
         self.id = self.get_attribute(ucs_sdk_object=network_element, attribute_name="id")
@@ -83,37 +56,8 @@ class UcsFi(GenericUcsInventoryObject):
         self.ports = self._get_ports()
         self.power_supplies = self._get_power_supplies()
 
-    def _generate_draw(self):
-        pass
-
     def _get_expansion_modules(self):
         return []
-
-    def _get_imm_compatibility(self):
-        """
-        Returns Fabric Interconnect IMM Compatibility status from EasyUCS catalog files
-        """
-        if self.sku is not None:
-            # We use the catalog file to get the FI IMM Compatibility status
-            fi_catalog = read_json_file(file_path="catalog/fabric_interconnects/" + self.sku + ".json", logger=self)
-            if fi_catalog:
-                if "imm_compatible" in fi_catalog:
-                    return fi_catalog["imm_compatible"]
-
-        return None
-
-    def _get_model_short_name(self):
-        """
-        Returns Fabric Interconnect short name from EasyUCS catalog files
-        """
-        if self.sku is not None:
-            # We use the catalog file to get the FI short name
-            fi_catalog = read_json_file(file_path="catalog/fabric_interconnects/" + self.sku + ".json", logger=self)
-            if fi_catalog:
-                if "model_short_name" in fi_catalog:
-                    return fi_catalog["model_short_name"]
-
-        return None
 
     def _get_ports(self):
         return []
@@ -173,10 +117,6 @@ class UcsSystemFex(UcsFex, UcsSystemInventoryObject):
                 if attribute in equipment_fex:
                     setattr(self, attribute, self.get_attribute(ucs_sdk_object=equipment_fex,
                                                                 attribute_name=attribute))
-
-    def _generate_draw(self):
-        self._draw_rear = UcsSystemDrawFexRear(parent=self)
-        self._draw_front = UcsSystemDrawFexFront(parent=self)
 
     def _get_fabric_ports(self):
         if self._inventory.load_from == "live":
@@ -248,11 +188,6 @@ class UcsSystemFi(UcsFi, UcsSystemInventoryObject):
                 if attribute in network_element:
                     setattr(self, attribute, self.get_attribute(ucs_sdk_object=network_element,
                                                                 attribute_name=attribute))
-
-    def _generate_draw(self):
-        self._draw_rear = UcsSystemDrawFiRear(parent=self)
-        if self.model not in ["UCS-FI-M-6324", "UCSX-S9108-100G"]:
-            self._draw_front = UcsSystemDrawFiFront(parent=self)
 
     def _get_expansion_modules(self):
         if self._inventory.load_from == "live":

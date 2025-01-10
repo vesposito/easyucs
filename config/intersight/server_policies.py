@@ -3791,34 +3791,38 @@ class IntersightLdapPolicy(IntersightConfigObject):
                     base_properties = {}
                     if hasattr(self._object, "base_properties"):
                         ldap_base_properties = getattr(self._object, "base_properties")
-                        if hasattr(ldap_base_properties, "base_dn"):
+                        if hasattr(ldap_base_properties, "base_dn") and getattr(ldap_base_properties, "base_dn"):
                             base_properties["base_dn"] = getattr(ldap_base_properties, "base_dn")
-                        if hasattr(ldap_base_properties, "domain"):
+                        if hasattr(ldap_base_properties, "domain") and getattr(ldap_base_properties, "domain"):
                             base_properties["domain"] = getattr(ldap_base_properties, "domain")
-                        if hasattr(ldap_base_properties, "timeout"):
+                        if hasattr(ldap_base_properties, "timeout") and getattr(ldap_base_properties, "timeout"):
                             base_properties["timeout"] = getattr(ldap_base_properties, "timeout")
                         if hasattr(ldap_base_properties, "enable_encryption"):
                             base_properties["enable_encryption"] = getattr(ldap_base_properties, "enable_encryption")
-                        if hasattr(ldap_base_properties, "bind_method"):
+                        if hasattr(ldap_base_properties, "bind_method") and \
+                                getattr(ldap_base_properties, "bind_method"):
                             base_properties["bind_method"] = getattr(ldap_base_properties, "bind_method")
                             if getattr(ldap_base_properties, "bind_method") == "ConfiguredCredentials":
-                                if hasattr(ldap_base_properties, "bind_dn"):
+                                if hasattr(ldap_base_properties, "bind_dn") and \
+                                        getattr(ldap_base_properties, "bind_dn"):
                                     base_properties["bind_dn"] = getattr(ldap_base_properties, "bind_dn")
                                 if hasattr(ldap_base_properties, "is_password_set"):
                                     if getattr(ldap_base_properties, "is_password_set") is True:
                                         self.logger(level="warning",
                                                     message="Password of " + self._CONFIG_NAME + " '" + self.name +
                                                             "' - Bind DN can't be exported")
-                        if hasattr(ldap_base_properties, "filter"):
+                        if hasattr(ldap_base_properties, "filter") and getattr(ldap_base_properties, "filter"):
                             base_properties["filter"] = getattr(ldap_base_properties, "filter")
-                        if hasattr(ldap_base_properties, "group_attribute"):
+                        if hasattr(ldap_base_properties, "group_attribute") and \
+                                getattr(ldap_base_properties, "group_attribute"):
                             base_properties["group_attribute"] = getattr(ldap_base_properties, "group_attribute")
-                        if hasattr(ldap_base_properties, "attribute"):
+                        if hasattr(ldap_base_properties, "attribute") and getattr(ldap_base_properties, "attribute"):
                             base_properties["attribute"] = getattr(ldap_base_properties, "attribute")
                         if hasattr(ldap_base_properties, "enable_group_authorization"):
                             base_properties["enable_group_authorization"] = getattr(ldap_base_properties,
                                                                                     "enable_group_authorization")
-                        if hasattr(ldap_base_properties, "nested_group_search_depth"):
+                        if hasattr(ldap_base_properties, "nested_group_search_depth") and \
+                                getattr(ldap_base_properties, "nested_group_search_depth"):
                             base_properties["nested_group_search_depth"] = getattr(ldap_base_properties,
                                                                                    "nested_group_search_depth")
                     self.base_properties = base_properties
@@ -3829,8 +3833,8 @@ class IntersightLdapPolicy(IntersightConfigObject):
                             if hasattr(self._object, "dns_parameters"):
                                 ldap_dns_parameters = getattr(self._object, "dns_parameters")
                                 if hasattr(ldap_dns_parameters, "source"):
-                                    if getattr(ldap_dns_parameters, "source") == "ConfiguredExtracted":
-                                        dns_parameters["source"] = "ConfiguredExtracted"
+                                    if getattr(ldap_dns_parameters, "source") in ["Configured", "ConfiguredExtracted"]:
+                                        dns_parameters["source"] = getattr(ldap_dns_parameters, "source")
                                         if hasattr(ldap_dns_parameters, "search_domain"):
                                             dns_parameters["search_domain"] = getattr(ldap_dns_parameters,
                                                                                       "search_domain")
@@ -3844,7 +3848,8 @@ class IntersightLdapPolicy(IntersightConfigObject):
                             if hasattr(self._object, "providers"):
                                 self.providers = self._get_ldap_providers()
 
-                    if hasattr(self._object, "user_search_precedence"):
+                    if hasattr(self._object, "user_search_precedence") and \
+                            getattr(self._object, "user_search_precedence"):
                         self.user_search_precedence = getattr(self._object, "user_search_precedence")
                     if hasattr(self._object, "groups"):
                         self.groups = self._get_ldap_groups()
@@ -3970,8 +3975,8 @@ class IntersightLdapPolicy(IntersightConfigObject):
                         "class_id": "iam.LdapDnsParameters"
                     }
                     if ldap_dns_parameters["source"] is not None:
-                        if ldap_dns_parameters["source"] == "ConfiguredExtracted":
-                            dns_parameters_kwargs["source"] = "ConfiguredExtracted"
+                        if ldap_dns_parameters["source"] in ["ConfiguredExtracted", "Configured"]:
+                            dns_parameters_kwargs["source"] = ldap_dns_parameters["source"]
                             if ldap_dns_parameters["search_domain"] is not None:
                                 dns_parameters_kwargs["search_domain"] = ldap_dns_parameters["search_domain"]
                             if ldap_dns_parameters["search_forest"] is not None:
@@ -5662,21 +5667,24 @@ class IntersightSnmpPolicy(IntersightConfigObject):
                 if attribute in self._object:
                     setattr(self, attribute, self.get_attribute(attribute_name=attribute))
 
-            # We use this to make sure all options of a Trap Destination are set to None if they are not present
-            if self.trap_destinations:
-                for trap_destination in self.trap_destinations:
-                    for attribute in ["community", "destination_address", "enabled", "port", "trap_type", "user",
-                                      "version"]:
-                        if attribute not in trap_destination:
-                            trap_destination[attribute] = None
+            self.clean_object()
 
-            # We use this to make sure all options of a User are set to None if they are not present
-            if self.users:
-                for user in self.users:
-                    for attribute in ["auth_password", "auth_type", "name", "privacy_password", "privacy_type",
-                                      "security_level"]:
-                        if attribute not in user:
-                            user[attribute] = None
+    def clean_object(self):
+        # We use this to make sure all options of a Trap Destination are set to None if they are not present
+        if self.trap_destinations:
+            for trap_destination in self.trap_destinations:
+                for attribute in ["community", "destination_address", "enabled", "port", "trap_type", "user",
+                                  "version"]:
+                    if attribute not in trap_destination:
+                        trap_destination[attribute] = None
+
+        # We use this to make sure all options of a User are set to None if they are not present
+        if self.users:
+            for user in self.users:
+                for attribute in ["auth_password", "auth_type", "name", "privacy_password", "privacy_type",
+                                  "security_level"]:
+                    if attribute not in user:
+                        user[attribute] = None
 
     def _get_trap_destinations(self):
         if hasattr(self._object, "snmp_traps"):

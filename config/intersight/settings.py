@@ -1091,6 +1091,8 @@ class IntersightResourceGroup(IntersightConfigObject):
         }
         if self.name is not None:
             kwargs["name"] = self.name
+        if self.tags is not None:
+            kwargs["tags"] = self.create_tags()
         if self.memberships == "all":
             kwargs["qualifier"] = "Allow-All"
         else:

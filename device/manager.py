@@ -6,8 +6,10 @@
 import json
 import os
 
+import common
 import export
-from __init__ import __version__
+from __init__ import __version__, EASYUCS_ROOT
+from device.imm_domain.device import ImmDomainDevice, ImmDomainFiDevice
 from device.intersight.device import IntersightDevice
 from device.ucs.device import UcsSystem, UcsImc, UcsCentral
 from repository.metadata import DeviceMetadata
@@ -42,9 +44,9 @@ class DeviceManager:
             return None
 
     def add_device(self, metadata=None, device_type=None, uuid=None, target=None, username=None, password=None,
-                   key_id=None, private_key_path=None, is_hidden=False, is_system=False, system_usage=None,
-                   logger_handle_log_level=None, bypass_connection_checks=False,
-                   bypass_version_checks=False, user_label=None):
+                   key_id=None, private_key_path=None, sub_device_uuids=None, standalone=False, parent_device_uuid=None,
+                   is_hidden=False, is_system=False, system_usage=None, logger_handle_log_level=None, 
+                   bypass_connection_checks=False, bypass_version_checks=False, use_proxy=False, user_label=None):
         """
         Adds a device to the list of devices
         :param metadata: The metadata object of to the device to be added (if no device details provided)
@@ -55,9 +57,14 @@ class DeviceManager:
         :param password: The password of the device
         :param key_id: The key ID of the device (for Intersight devices)
         :param private_key_path: The private key path of the device (for Intersight devices)
+        :param sub_device_uuids: The uuid's of the sub devices (for IMM domain devices)
+        :param standalone: Indicates if the IMM domain device is standalone. Currently, this parameter is not relevant,
+        as the IMM domain cannot be built using a single FI. However, it is included for potential future changes.
+        :param parent_device_uuid: The UUID of the parent device
         :param is_hidden: Whether the device should be set to hidden
         :param is_system: Whether the device is a system device
         :param system_usage: If device is a system device, indicates the usage for this system device (e.g. "catalog")
+        :param use_proxy: Whether the device should use the proxy
         :param logger_handle_log_level: The log level of the device to be added (e.g. "info", "debug", ...)
         :param bypass_connection_checks: Whether the device needs to bypass the connection check or not
         :param bypass_version_checks: Whether the device needs to bypass the version check or not
@@ -72,9 +79,14 @@ class DeviceManager:
             password = metadata.password
             key_id = metadata.key_id
             private_key_path = metadata.private_key_path
+            sub_device_uuids = metadata.sub_device_uuids
+            if sub_device_uuids and len(sub_device_uuids) > 1:
+                standalone = False
+            parent_device_uuid = metadata.parent_device_uuid
             is_hidden = metadata.is_hidden
             is_system = metadata.is_system
             system_usage = metadata.system_usage
+            use_proxy = metadata.use_proxy
             bypass_connection_checks = metadata.bypass_connection_checks
             bypass_version_checks = metadata.bypass_version_checks
             user_label = metadata.user_label
@@ -83,7 +95,7 @@ class DeviceManager:
             self.logger(level="error", message="Missing device_type in device add request!")
             return False
 
-        if device_type not in ["cimc", "intersight", "ucsc", "ucsm"]:
+        if device_type not in ["cimc", "imm_domain", "intersight", "ucsc", "ucsm"]:
             self.logger(level="error", message="Device type not recognized. Could not add device")
             return False
 
@@ -100,23 +112,85 @@ class DeviceManager:
         if logger_handle_log_level is None:
             logger_handle_log_level = self.parent.logger_handle_log_level
 
+        proxy = None
+        proxy_username = None
+        proxy_password = None
+        if use_proxy:
+            proxy, proxy_username, proxy_password = common.get_proxy_url(logger=self)
+            if not proxy:
+                self.logger(level="error", message="Failed to get proxy URL in proxy_settings.json! Proceeding to add "
+                                                   "device without using proxy")
+
+        certificate_path = os.path.join(EASYUCS_ROOT, "data", "keys", "ca_certs", "ca_cert.pem")
+        ca_cert_file = None
+        if os.path.exists(certificate_path):
+            ca_cert_file = certificate_path
+
         if device_type == "cimc":
             device = UcsImc(parent=self, uuid=uuid, target=target, user=username, password=password,
                             is_hidden=is_hidden, is_system=is_system, system_usage=system_usage,
                             logger_handle_log_level=logger_handle_log_level,
                             bypass_connection_checks=bypass_connection_checks,
                             bypass_version_checks=bypass_version_checks, user_label=user_label)
+        elif device_type == "imm_domain":
+            device = ImmDomainDevice(parent=self, uuid=uuid, target=target, username=username, password=password,
+                                     sub_device_uuids=sub_device_uuids, standalone=standalone, is_hidden=is_hidden,
+                                     is_system=is_system, system_usage=system_usage,
+                                     logger_handle_log_level=logger_handle_log_level, user_label=user_label)
+            if sub_device_uuids:
+                sub_devices = []
+                # Add references to the sub devices in parent device and vice versa.
+                # NOTE: We are not doing this to add sub devices to memory (device_list), we had to add them to memory
+                # because we want to create relationship between parent and sub devices. Eg: In this case we want
+                # ImmDomain device to have 'sub_devices', 'fi_a' and 'fi_b' containing its sub devices.
+                # NOTE: When a ImmDomain device is created for the first time, these relationships are created
+                # in the __init__ of the ImmDomain device. So, in this case those sub devices won't be added
+                # to the device_list.
+                for sub_device_uuid in sub_device_uuids:
+                    if not self.find_device_by_uuid(uuid=sub_device_uuid):
+                        sub_device_metadata = self.parent.repository_manager.get_metadata(object_type="device",
+                                                                                          uuid=sub_device_uuid)
+                        if sub_device_metadata:
+                            self.add_device(device_type="imm_domain_fi", metadata=sub_device_metadata[0])
+
+                    sub_device = self.find_device_by_uuid(uuid=sub_device_uuid)
+                    if isinstance(sub_device, ImmDomainFiDevice):
+                        sub_devices.append(sub_device)
+                    elif not sub_device:
+                        self.logger(level="error",
+                                    message=f"Sub device UUID {sub_device_uuid} of IMM Domain device with UUID "
+                                            f"{device.metadata.uuid} is not an IMM Domain FI device.")
+                        return False
+                    else:
+                        self.logger(level="error",
+                                    message=f"Sub device UUID of IMM Domain device with UUID {device.metadata.uuid} "
+                                            f"is not an IMM Domain FI device.")
+                        return False
+                device.sub_devices = sub_devices
+                device.fi_a = sub_devices[0]
+                device.fi_a.parent_device = device
+                if len(sub_devices) > 1:
+                    device.fi_b = sub_devices[1]
+                    device.fi_b.parent_device = device
+        elif device_type == "imm_domain_fi":
+            device = ImmDomainFiDevice(parent=self, uuid=uuid, username=username, password=password,
+                                       parent_device_uuid=parent_device_uuid, is_hidden=is_hidden, is_system=is_system,
+                                       system_usage=system_usage, logger_handle_log_level=logger_handle_log_level,
+                                       user_label=user_label)
         elif device_type == "intersight":
             if target:
                 device = IntersightDevice(parent=self, uuid=uuid, target=target, key_id=key_id,
                                           private_key_path=private_key_path, is_hidden=is_hidden, is_system=is_system,
-                                          system_usage=system_usage, logger_handle_log_level=logger_handle_log_level,
+                                          system_usage=system_usage, proxy=proxy, proxy_user=proxy_username,
+                                          proxy_password=proxy_password,
+                                          logger_handle_log_level=logger_handle_log_level,
                                           bypass_connection_checks=bypass_connection_checks,
                                           bypass_version_checks=bypass_version_checks,
                                           user_label=user_label)
             else:
                 device = IntersightDevice(parent=self, uuid=uuid, key_id=key_id, private_key_path=private_key_path,
                                           is_hidden=is_hidden, is_system=is_system, system_usage=system_usage,
+                                          proxy=proxy, proxy_user=proxy_username, proxy_password=proxy_password,
                                           logger_handle_log_level=logger_handle_log_level,
                                           bypass_connection_checks=bypass_connection_checks,
                                           bypass_version_checks=bypass_version_checks,
@@ -141,6 +215,7 @@ class DeviceManager:
             # We use the provided metadata as the newly added device metadata.
             device.metadata = metadata
         else:
+            device.metadata.use_proxy = use_proxy
             device.metadata.easyucs_version = __version__
             device.load_from = "add"
         self.logger(level="debug", message="Adding device of type '" + device_type + "' with UUID " + str(device.uuid) +
@@ -435,6 +510,12 @@ class DeviceManager:
             return False
         else:
             device_to_remove = device
+
+        # If device has sub-devices, they should be removed as well
+        if device_to_remove.sub_devices:
+            for sub_device in device_to_remove.sub_devices:
+                if sub_device in self.device_list:
+                    self.device_list.remove(sub_device)
 
         # Remove the device from the list of devices
         self.device_list.remove(device_to_remove)

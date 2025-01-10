@@ -1,33 +1,34 @@
 {
-  "model_short_name": "QLogic QLE8152 2x10G",
-  "rear_file_name": "N2XX-AQPCI01.png",
-  "rear_file_name_half": "N2XX-AQPCI01_half.png",
-  "rear_file_size": [593,75],
-  "rear_file_size_half": [389,75],
-  "rear_ports": {
-    "x/2": {
-      "port_coord": [268, 15],
-      "port_type": "sfp+",
-      "port_size": [82, 55]
-    },
-    "x/1": {
-      "port_coord": [365, 15],
-      "port_type": "sfp+",
-      "port_size": [82, 55]
-    }
-  },
-  "rear_ports_half": {
-    "x/2": {
-      "port_coord": [108, 15],
-      "port_type": "sfp+",
-      "port_size": [82, 55]
-    },
-    "x/1": {
-      "port_coord": [205, 15],
-      "port_type": "sfp+",
-      "port_size": [82, 55]
-    }
-  },
-  "imm_compatible": false,
-  "data_sheet_url": "https://www.cisco.com/c/dam/en/us/products/collateral/servers-unified-computing/ucs-c-series-rack-servers/QLE8152_dual-port_10Gbps_FCoE_Rack.pdf"
+   "model_short_name": "QLogic QLE8152 2x10G",
+   "rear_file_name": "N2XX-AQPCI01.png",
+   "rear_file_name_half": "N2XX-AQPCI01_half.png",
+   "rear_file_size": [593,75],
+   "rear_file_size_half": [389,75],
+   "rear_ports": {
+      "x/2": {
+         "port_coord": [268, 15],
+         "port_type": "sfp+",
+         "port_size": [82, 55]
+      },
+      "x/1": {
+         "port_coord": [365, 15],
+         "port_type": "sfp+",
+         "port_size": [82, 55]
+      }
+   },
+   "rear_ports_half": {
+      "x/2": {
+         "port_coord": [108, 15],
+         "port_type": "sfp+",
+         "port_size": [82, 55]
+      },
+      "x/1": {
+         "port_coord": [205, 15],
+         "port_type": "sfp+",
+         "port_size": [82, 55]
+      }
+   },
+   "imm_compatible": false,
+   "data_sheet_url": "https://www.cisco.com/c/dam/en/us/products/collateral/servers-unified-computing/ucs-c-series-rack-servers/QLE8152_dual-port_10Gbps_FCoE_Rack.pdf",
+   "adaptor_type": "cna"
 }

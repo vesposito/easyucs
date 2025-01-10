@@ -106,6 +106,9 @@ function createDeviceCard(device, phantom=false){
     `
     avatar_src = "/static/img/intersight_logo.png";
     color = "bg-info"
+  } else if (device.device_type == "imm_domain"){
+    avatar_src = "/static/img/imm_domain_logo.png";
+    color = "bg-success";
   } else if (device.device_type == "ucsm"){
     avatar_src = "/static/img/ucsm_logo.png";
     color = "bg-primary"
@@ -217,49 +220,6 @@ function addDevicesGridView(element_id, devices, start_index, stop_index){
   removeScrollLoader();
 }
 
-function createRowForDevice(device, phantom=false){
-  let device_version = "unknown";
-  let claimed = "N/A";
-  let on_click = phantom ? 'null' : `window.location='/devices/${device.device_uuid}';`
-  if(device.device_version != undefined){
-    device_version = device.device_version;
-  }
-
-  if(device.device_connector_claim_status){
-    if(device.device_connector_claim_status == "claimed"){
-      if(device.intersight_device_uuid){
-        claimed_target = `<a href="/devices/${device.intersight_device_uuid}">${device.device_connector_ownership_name}</a>`
-      } else {
-        claimed_target = `${device.device_connector_ownership_name}`
-      }
-      claimed = `Claimed to Intersight (${claimed_target})`;
-    } else {
-      claimed = "Not claimed";
-    }
-  }
-
-  let date_timestamp = new Date(device.timestamp);
-  date_timestamp = Date.parse(date_timestamp)/1000;
-
-  let device_data = JSON.stringify({
-    "device_name": device.device_name,
-    "device_uuid": device.uuid,
-    "device_type": device.device_type
-  })
-
-  return `
-  <tr class="${phantom ? 'phantomRow table-warning' : ''}" style="cursor: pointer;">
-    <td class = "text-middle">${device_data}</td>
-    <td class = "text-middle" onclick="${on_click}">${phantom ? device.device_type : device.device_type_long}</td>
-    <td class = "text-middle" onclick="${on_click}">${device.device_name}</td>
-    <td class = "text-middle" onclick="${on_click}">${device.user_label ? device.user_label : ""}</td>
-    <td class = "text-middle" data-order="${date_timestamp}"  onclick="${on_click}">${device.timestamp}</td>
-    <td class = "text-middle" onclick="${on_click}">${claimed}</td>
-    <td class = "text-middle" onclick="${on_click}">${device.username}</td>
-    <td class = "text-middle" onclick="${on_click}">${device_version}</td>
-    <td class = "text-middle" onclick="${on_click}">${device.target}</td>
-  </tr>`
-}
 
 /**
  * Adds a table to an HTML element for a list of devices
@@ -312,7 +272,7 @@ function addDevicesTableView(element_id, devices){
   `
 
   // Initializes the DataTable that will contain the devices
-  deviceTable = createDataTable("#deviceTable", 3, 4);
+  deviceTable = createDataTable("#deviceTable", 4, 4);
 
   // Clean table before new entries
   deviceTable.clear().draw();
@@ -413,6 +373,7 @@ function completeDeviceForm(device_type){
     document.getElementById('intersight-type-choice').classList.remove("d-none");
     updateIntersightTargetSelector("saas");
     document.getElementById('deployment_type_saas').checked = true;
+    document.getElementById('use-proxy-form').classList.remove("d-none");
   } else {
     // Show UCS specific sections
     document.getElementById('ucs-device-form').classList.remove("d-none");
@@ -466,18 +427,23 @@ function createDevice(){
   form_content = $('#createDeviceForm').serializeArray();
   form_json = objectifyForm(form_content);
 
-  if(form_json.bypass_connection_checks && form_json.bypass_connection_checks == "on"){
-    form_json.bypass_connection_checks = true;
-  } else if(form_json.bypass_connection_checks && form_json.bypass_connection_checks == "off"){
-    form_json.bypass_connection_checks = false;
+  if(form_json.bypass_connection_checks) {
+    // Set bypass_connection_checks to true if the checkbox is checked, false otherwise
+    form_json.bypass_connection_checks = form_json.bypass_connection_checks == "on";
+  } 
+  if (form_json.use_proxy) {
+    // Set use_proxy to true if the checkbox is checked, false otherwise
+    form_json.use_proxy = form_json.use_proxy == "on";
   }
   if (device_view == "table"){
     let phantomRow = createRowForDevice(form_json, phantom=true);
     deviceTable.row.add($(phantomRow)).draw();
   } else if (device_view == "grid"){
     // Creates a phantom card to display the device before it is added to the db
-    let phantomCard = createDeviceCard(form_json, phantom=true);
-    document.getElementById(device_view_container_id).innerHTML += phantomCard;
+    let phantomCard = document.createElement("div");
+    const target_container = document.getElementById(device_view_container_id);
+    target_container.insertBefore(phantomCard, target_container.firstChild);
+    phantomCard.outerHTML = createDeviceCard(form_json, phantom=true);
   }
   // Pushed the new device to the db
   pushToDb(getDevices, "device", null, form_json);
@@ -620,6 +586,9 @@ function displayDevices(data, devices){
       console.error('No data to display!')
       return
     }
+
+    // We remove all devices that are flagged as "hidden"
+    data.devices = data.devices.filter(device => !device.is_hidden);
 
     // We refresh the devices displayed only if there were changes in the data
     if(_.isEqual(loaded_device_list, data.devices)){

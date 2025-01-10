@@ -2,16 +2,15 @@
 # !/usr/bin/env python
 
 """ fabric.py: Easy UCS Deployment Tool """
-from __init__ import __author__, __copyright__,  __version__, __status__
 
+from PIL import Image
 
 from draw.object import GenericUcsDrawEquipment
-from draw.ucs.port import UcsSystemDrawPort
-from draw.ucs.psu import GenericUcsDrawPsu
-from PIL import Image, ImageDraw, ImageFont
+from draw.ucs.port import UcsPortDraw
+from draw.ucs.psu import UcsPsuDraw
 
 
-class UcsSystemDrawFiRear(GenericUcsDrawEquipment):
+class UcsFiDrawRear(GenericUcsDrawEquipment):
     def __init__(self, parent=None, parent_draw=None, color_ports=True):
         self.parent_draw = parent_draw
         self.color_ports = color_ports
@@ -37,12 +36,18 @@ class UcsSystemDrawFiRear(GenericUcsDrawEquipment):
 
         self._file_name = None
         if not self.parent_draw:
-            self._file_name = self._device_target + "_fi_" + self._parent.id + "_rear"
-            if not self.color_ports:
-                self._file_name = self._device_target + "_fi_" + self._parent.id + "_rear_clear"
+            if parent.__class__.__name__ in ["IntersightFi"]:
+                self._file_name = self._device_target + "_" + parent._parent.name + "_fi_" + self._parent.id + "_rear"
+                if not self.color_ports:
+                    self._file_name = (self._device_target + "_" + parent._parent.name + "_fi_" + self._parent.id +
+                                       "_rear_clear")
+            else:
+                self._file_name = self._device_target + "_fi_" + self._parent.id + "_rear"
+                if not self.color_ports:
+                    self._file_name = self._device_target + "_fi_" + self._parent.id + "_rear_clear"
 
         if color_ports and not parent_draw:
-            self.clear_version = UcsSystemDrawFiRear(parent=parent, parent_draw=parent_draw, color_ports=False)
+            self.clear_version = UcsFiDrawRear(parent=parent, parent_draw=parent_draw, color_ports=False)
 
         # We drop the picture in order to save on memory
         self.picture = None
@@ -79,15 +84,15 @@ class UcsSystemDrawFiRear(GenericUcsDrawEquipment):
     def draw_ports(self, call_from_infra=None):
         # Draws color-coded rectangles on top of FI base ports
         for port in self._parent.ports:
-            if port.slot_id == "1":
-                if port.role != "unknown":
+            if port.slot_id in ["1", 1]:
+                if port.role not in ["unknown", "Unconfigured"]:
                     port_color = self.COLOR_DEFAULT
                     port_id = port.port_id
                     rectangle_width = self.WIDTH_PORT_RECTANGLE_DEFAULT
 
                     if port.aggr_port_id:  # for breakout ports
                         # We create a copy of the "rear_ports" section of the JSON file to modify it on the fly
-                        port_info = dict(self.json_file["rear_ports"][port.aggr_port_id])
+                        port_info = dict(self.json_file["rear_ports"][str(port.aggr_port_id)])
                         rectangle_width = self.WIDTH_PORT_RECTANGLE_BREAKOUT
                         if self._parent.sku == "UCS-FI-M-6324" and not call_from_infra:
                             # We are drawing ports for UCS Mini in chassis view.
@@ -107,21 +112,22 @@ class UcsSystemDrawFiRear(GenericUcsDrawEquipment):
                                                       port_info['port_coord'][1]
 
                     else:
-                        port_info = self.json_file["rear_ports"][port_id]
+                        port_info = self.json_file["rear_ports"][str(port_id)]
 
-                    if port.role == "network" and port.type == "lan":
+                    if (port.role == "network" and port.type == "lan") or port.role in ["Uplink", "Uplink PC Member"]:
                         port_color = self.COLOR_LAN_UPLINK_PORTS
-                    if port.role == "network" and port.type == "san":
+                    if (port.role == "network" and port.type == "san") or \
+                            port.role in ["FcUplink", "FcUplink PC Member"]:
                         port_color = self.COLOR_SAN_UPLINK_PORTS
-                    if port.role == "storage":
+                    if port.role in ["storage", "FcStorage"]:
                         port_color = self.COLOR_SAN_STORAGE_PORTS
-                    if port.role == "fcoe-uplink":
+                    if port.role in ["fcoe-uplink", "FcoeUplink"]:
                         port_color = self.COLOR_FCOE_UPLINK_PORTS
                     if port.role == "fcoe-storage":
                         port_color = self.COLOR_FCOE_STORAGE_PORTS
-                    if port.role == "nas-storage":
+                    if port.role in ["nas-storage", "Appliance"]:
                         port_color = self.COLOR_APPLIANCE_STORAGE_PORTS
-                    if port.role == "server":
+                    if port.role in ["server", "Server"]:
                         port_color = self.COLOR_SERVER_PORTS
                     if port.role == "fcoe-nas-storage":
                         port_color = self.COLOR_UNIFIED_STORAGE_PORTS
@@ -141,10 +147,10 @@ class UcsSystemDrawFiRear(GenericUcsDrawEquipment):
                     coord_x = port_info['port_coord'][0]
                     coord_y = port_info['port_coord'][1]
 
-                    self.ports.append(UcsSystemDrawPort(id=port_id, color=port_color, size=(port_size_x, port_size_y),
-                                                        coord=(self.picture_offset[0] + coord_x,
+                    self.ports.append(UcsPortDraw(id=port_id, color=port_color, size=(port_size_x, port_size_y),
+                                                  coord=(self.picture_offset[0] + coord_x,
                                                                self.picture_offset[1] + coord_y), parent_draw=self,
-                                                        port=port))
+                                                  port=port))
                     # self.port_list = remove_not_completed_in_list(self.port_list)
 
                     self.draw_rectangle(draw=self.draw,
@@ -186,7 +192,7 @@ class UcsSystemDrawFiRear(GenericUcsDrawEquipment):
                 self.paste_layer(blank_img, coord_offset)
 
 
-class UcsSystemDrawFiFront(GenericUcsDrawEquipment):
+class UcsFiDrawFront(GenericUcsDrawEquipment):
     def __init__(self, parent=None):
         GenericUcsDrawEquipment.__init__(self, parent=parent, orientation="front")
         if not self.picture:
@@ -201,7 +207,10 @@ class UcsSystemDrawFiFront(GenericUcsDrawEquipment):
             self.power_supplies = self.get_power_supplies()
 
         self.fill_blanks()
-        self._file_name = self._device_target + "_fi_" + self._parent.id + "_front"
+        if parent.__class__.__name__ in ["IntersightFi"]:
+            self._file_name = self._device_target + "_" + parent._parent.name + "_fi_" + self._parent.id + "_front"
+        else:
+            self._file_name = self._device_target + "_fi_" + self._parent.id + "_front"
 
         # We drop the picture in order to save on memory
         self.picture = None
@@ -210,7 +219,7 @@ class UcsSystemDrawFiFront(GenericUcsDrawEquipment):
         psu_list = []
         for psu in self._parent.power_supplies:
             if psu.id != '0':
-                psu_list.append(GenericUcsDrawPsu(psu, self))
+                psu_list.append(UcsPsuDraw(psu, self))
         return psu_list
 
     def fill_blanks(self):
@@ -290,19 +299,20 @@ class UcsSystemDrawGem(GenericUcsDrawEquipment):
                     else:
                         port_info = self.json_file["rear_ports"][port_id]
 
-                if port.role == "network" and port.type == "lan":
+                if (port.role == "network" and port.type == "lan") or port.role in ["Uplink", "Uplink PC Member"]:
                     port_color = self.COLOR_LAN_UPLINK_PORTS
-                if port.role == "network" and port.type == "san":
+                if (port.role == "network" and port.type == "san") or \
+                        port.role in ["FcUplink", "FcUplink PC Member"]:
                     port_color = self.COLOR_SAN_UPLINK_PORTS
-                if port.role == "storage":
+                if port.role in ["storage", "FcStorage"]:
                     port_color = self.COLOR_SAN_STORAGE_PORTS
-                if port.role == "fcoe-uplink":
+                if port.role in ["fcoe-uplink", "FcoeUplink"]:
                     port_color = self.COLOR_FCOE_UPLINK_PORTS
                 if port.role == "fcoe-storage":
                     port_color = self.COLOR_FCOE_STORAGE_PORTS
-                if port.role == "nas-storage":
+                if port.role in ["nas-storage", "Appliance"]:
                     port_color = self.COLOR_APPLIANCE_STORAGE_PORTS
-                if port.role == "server":
+                if port.role in ["server", "Server"]:
                     port_color = self.COLOR_SERVER_PORTS
                 if port.role == "fcoe-nas-storage":
                     port_color = self.COLOR_UNIFIED_STORAGE_PORTS
@@ -322,10 +332,10 @@ class UcsSystemDrawGem(GenericUcsDrawEquipment):
                 coord_x = port_info['port_coord'][0]
                 coord_y = port_info['port_coord'][1]
 
-                self.ports.append(UcsSystemDrawPort(id=port_id, color=port_color, size=(port_size_x, port_size_y),
-                                                    coord=(self.picture_offset[0] + coord_x,
+                self.ports.append(UcsPortDraw(id=port_id, color=port_color, size=(port_size_x, port_size_y),
+                                              coord=(self.picture_offset[0] + coord_x,
                                                            self.picture_offset[1] + coord_y), parent_draw=self,
-                                                    port=port))
+                                              port=port))
                 # self.ports = remove_not_completed_in_list(self.port_list)
 
                 self.draw_rectangle(draw=self.parent_draw.draw,
@@ -335,7 +345,7 @@ class UcsSystemDrawGem(GenericUcsDrawEquipment):
                                     width=rectangle_width)
 
 
-class UcsSystemDrawFexRear(GenericUcsDrawEquipment):
+class UcsFexDrawRear(GenericUcsDrawEquipment):
     def __init__(self, parent=None, color_ports=True):
         GenericUcsDrawEquipment.__init__(self, parent=parent)
         self.color_ports = color_ports
@@ -353,12 +363,19 @@ class UcsSystemDrawFexRear(GenericUcsDrawEquipment):
         if color_ports:
             self.draw_ports()
 
-        self._file_name = self._device_target + "_fex_" + self._parent.id + "_rear"
-        if not self.color_ports:
-            self._file_name = self._device_target + "_fex_" + self._parent.id + "_rear_clear"
+        if parent.__class__.__name__ in ["IntersightFex"]:
+            self._file_name = (self._device_target + "_" + parent._parent.name + "_fex_" + str(self._parent.id) +
+                               "_rear")
+            if not self.color_ports:
+                self._file_name = (self._device_target + "_" + parent._parent.name + "_fex_" + str(self._parent.id) +
+                                   "_rear_clear")
+        else:
+            self._file_name = self._device_target + "_fex_" + str(self._parent.id) + "_rear"
+            if not self.color_ports:
+                self._file_name = self._device_target + "_fex_" + str(self._parent.id) + "_rear_clear"
 
         if color_ports:
-            self.clear_version = UcsSystemDrawFexRear(parent=parent, color_ports=False)
+            self.clear_version = UcsFexDrawRear(parent=parent, color_ports=False)
 
         # We drop the picture in order to save on memory
         self.picture = None
@@ -370,7 +387,7 @@ class UcsSystemDrawFexRear(GenericUcsDrawEquipment):
                 port_color = self.COLOR_SERVER_PORTS
             else:
                 port_color = self.COLOR_DEFAULT
-            port_id = port.port_id
+            port_id = str(port.port_id)
             rectangle_width = self.WIDTH_PORT_RECTANGLE_DEFAULT
 
             port_info = self.json_file["rear_ports"][port_id]
@@ -380,10 +397,10 @@ class UcsSystemDrawFexRear(GenericUcsDrawEquipment):
             coord_x = port_info['port_coord'][0]
             coord_y = port_info['port_coord'][1]
 
-            self.host_port_list.append(UcsSystemDrawPort(id=port_id, color=port_color, size=(port_size_x, port_size_y),
-                                                         coord=(self.picture_offset[0] + coord_x,
+            self.host_port_list.append(UcsPortDraw(id=port_id, color=port_color, size=(port_size_x, port_size_y),
+                                                   coord=(self.picture_offset[0] + coord_x,
                                                                 self.picture_offset[1] + coord_y), parent_draw=self,
-                                                         port=port))
+                                                   port=port))
             # self.host_port_list = remove_not_completed_in_list(self.host_port_list)
 
             if "down" not in port.oper_state and "sfp-not-present" not in port.oper_state:
@@ -399,7 +416,7 @@ class UcsSystemDrawFexRear(GenericUcsDrawEquipment):
                 port_color = self.COLOR_LAN_UPLINK_PORTS
             else:
                 port_color = self.COLOR_DEFAULT
-            port_id = port.port_id
+            port_id = str(port.port_id)
             rectangle_width = self.WIDTH_PORT_RECTANGLE_DEFAULT
 
             if ("1/" + port_id) in self.json_file["rear_ports"]:  # Temporary fix for UCS PE's bugs
@@ -412,11 +429,11 @@ class UcsSystemDrawFexRear(GenericUcsDrawEquipment):
             coord_x = port_info['port_coord'][0]
             coord_y = port_info['port_coord'][1]
 
-            self.fabric_port_list.append(UcsSystemDrawPort(id=port_id, color=port_color,
-                                                           size=(port_size_x, port_size_y),
-                                                           coord=(self.picture_offset[0] + coord_x,
+            self.fabric_port_list.append(UcsPortDraw(id=port_id, color=port_color,
+                                                     size=(port_size_x, port_size_y),
+                                                     coord=(self.picture_offset[0] + coord_x,
                                                                   self.picture_offset[1] + coord_y),
-                                                           parent_draw=self, port=port))
+                                                     parent_draw=self, port=port))
             # self.fabric_port_list = remove_not_completed_in_list(self.host_port_list)
 
             self.draw_rectangle(draw=self.draw,
@@ -427,7 +444,7 @@ class UcsSystemDrawFexRear(GenericUcsDrawEquipment):
                                 width=rectangle_width)
 
 
-class UcsSystemDrawFexFront(GenericUcsDrawEquipment):
+class UcsFexDrawFront(GenericUcsDrawEquipment):
     def __init__(self, parent=None):
         GenericUcsDrawEquipment.__init__(self, parent=parent, orientation="front")
         if not self.picture:
@@ -441,7 +458,11 @@ class UcsSystemDrawFexFront(GenericUcsDrawEquipment):
         if "psus_slots" in self.json_file:
             self.power_supplies = self.get_power_supplies()
 
-        self._file_name = self._device_target + "_fex_" + self._parent.id + "_front"
+        if parent.__class__.__name__ in ["IntersightFex"]:
+            self._file_name = (self._device_target + "_" + parent._parent.name + "_fex_" + str(self._parent.id) +
+                               "_front")
+        else:
+            self._file_name = self._device_target + "_fex_" + str(self._parent.id) + "_front"
 
         # We drop the picture in order to save on memory
         self.picture = None
@@ -450,5 +471,5 @@ class UcsSystemDrawFexFront(GenericUcsDrawEquipment):
         psu_list = []
         for psu in self._parent.power_supplies:
             if psu.id != '0':
-                psu_list.append(GenericUcsDrawPsu(psu, self))
+                psu_list.append(UcsPsuDraw(psu, self))
         return psu_list

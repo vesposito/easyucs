@@ -1,0 +1,20 @@
+{
+   "id": "intersight_config_equipment#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS intersight config equipment section",
+   "description": "EasyUCS intersight config equipment section JSON schema",
+   "type": "object",
+   "properties": {
+      "fabric_interconnects": {
+         "description": "EasyUCS config/equipment/fabric_interconnects section",
+         "type": "array",
+         "items": {
+            "description": "EasyUCS config/equipment/fabric_interconnects element",
+            "type": "object",
+            "$ref": "equipment/fabric_interconnects.json"
+         },
+         "minItems": 1      
+      }
+   },
+   "additionalProperties": false
+}

@@ -96,6 +96,16 @@
          "width": "half"
       },
       {
+         "name": "UCSX-215C-M8",
+         "description": "UCS X215c M8 Compute Node",
+         "width": "half"
+      },
+      {
+         "name": "UCSX-410C-M7",
+         "description": "UCS X410c M7 Compute Node",
+         "width": "full"
+      },
+      {
          "name": "UCSX-440P",
          "description": "UCS X440P PCIe Node",
          "width": "half"

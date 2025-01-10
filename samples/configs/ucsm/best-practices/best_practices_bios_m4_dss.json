@@ -1,51 +1,51 @@
 {
-   "easyucs":{
-      "metadata":[
+   "easyucs": {
+      "metadata": [
          {
             "file_type": "config",
             "device_type": "ucsm",
-            "category":"best-practices",
-            "subcategory":"BIOS",
-            "name":"UCS Manager BIOS Policy for Analytics Database Decision-Support System on Cisco UCS M4 Servers",
-            "url":"https://www.cisco.com/c/en/us/solutions/collateral/data-center-virtualization/unified-computing/whitepaper-c11-737931.html",
-            "easyucs_version":"0.9.0",
-            "revision": "1.0"
+            "category": "best-practices",
+            "subcategory": "BIOS",
+            "name": "UCS Manager BIOS Policy for Analytics Database Decision-Support System on Cisco UCS M4 Servers",
+            "url": "https://www.cisco.com/c/en/us/solutions/collateral/data-center-virtualization/unified-computing/whitepaper-c11-737931.html",
+            "easyucs_version": "1.0.0",
+            "revision": "1.1"
          }
       ]
    },
-   "config":{
-      "orgs":[
+   "config": {
+      "orgs": [
          {
-            "name":"root",
+            "name": "root",
             "bios_policies": [
                {
-                  "name":"DSS-M4",
+                  "name": "DSS-M4",
                   "descr": "BIOS Policy for Analytics Database Decision-Support System on Cisco UCS M4 Servers",
-                  "intel_turbo_boost_tech":"enabled",
-				  "enhanced_intel_speedstep_tech":"enabled",
-				  "intel_hyperthreading_tech":"enabled",
-				  "core_multi_processing":"all",
-				  "execute_disable_bit":"disabled",
-				  "intel_virtualization_technology":"platform-default",
+                  "intel_turbo_boost_tech": "enabled",
+				  "enhanced_intel_speedstep_tech": "enabled",
+				  "intel_hyperthreading_tech": "enabled",
+				  "core_multi_processing": "all",
+				  "execute_disable_bit": "disabled",
+				  "intel_virtualization_technology": "platform-default",
 				  "intel_vt_for_directed_io": "platform-default",
-				  "cpu_performance":"hpc",
-				  "direct_cache_access":"enabled",
-				  "power_technology":"custom",
-				  "processor_c_state":"disabled",
-				  "processor_c1e":"disabled",
-				  "processor_c3_report":"disabled",
-				  "processor_c6_report":"disabled",
-				  "processor_c7_report":"disabled",
-				  "energy_performance":"performance",
-				  "frequency_floor_override":"enabled",
-				  "dram_clock_throttling":"performance",
-				  "package_c_state_limit":"platform-default",
-				  "cpu_hardware_power_management":"platform-default",
-				  "memory_ras_configuration":"maximum-performance",
-				  "lv_ddr_mode":"performance-mode",
-				  "dram_refresh_rate":"platform-default",
-				  "qpi_snoop_mode":"home-snoop",
-				  "numa_optimized":"enabled"
+				  "cpu_performance": "hpc",
+				  "direct_cache_access": "enabled",
+				  "power_technology": "custom",
+				  "processor_c_state": "disabled",
+				  "processor_c1e": "disabled",
+				  "processor_c3_report": "disabled",
+				  "processor_c6_report": "disabled",
+				  "processor_c7_report": "disabled",
+				  "energy_performance": "performance",
+				  "frequency_floor_override": "enabled",
+				  "dram_clock_throttling": "performance",
+				  "package_c_state_limit": "platform-default",
+				  "cpu_hardware_power_management": "platform-default",
+				  "memory_ras_configuration": "maximum-performance",
+				  "lv_ddr_mode": "performance-mode",
+				  "dram_refresh_rate": "platform-default",
+				  "qpi_snoop_mode": "home-snoop",
+				  "numa_optimized": "enabled"
                }
             ]
          }

@@ -1,33 +1,34 @@
 {
-  "model_short_name": "Intel X710-T2L 2x10G",
-  "rear_file_name": "UCSC-P-ID10GC.png",
-  "rear_file_name_half": "UCSC-P-ID10GC_half.png",
-  "rear_file_size": [593,75],
-  "rear_file_size_half": [389,75],
-  "rear_ports": {
-    "x/2": {
-      "port_coord": [252, 9],
-      "port_type": "rj45",
-      "port_size": [73, 47]
-    },
-    "x/1": {
-      "port_coord": [379, 9],
-      "port_type": "rj45",
-      "port_size": [73, 47]
-    }
-  },
-  "rear_ports_half": {
-    "x/2": {
-      "port_coord": [91, 9],
-      "port_type": "rj45",
-      "port_size": [73, 47]
-    },
-    "x/1": {
-      "port_coord": [217, 9],
-      "port_type": "rj45",
-      "port_size": [73, 47]
-    }
-  },
-  "imm_compatible": false,
-  "data_sheet_url": "https://www.cisco.com/c/dam/en/us/products/collateral/servers-unified-computing/ucs-c-series-rack-servers/intel-x710-t2l-pcie-ethernet-network-adapter.pdf"
+   "model_short_name": "Intel X710-T2L 2x10G",
+   "rear_file_name": "UCSC-P-ID10GC.png",
+   "rear_file_name_half": "UCSC-P-ID10GC_half.png",
+   "rear_file_size": [593,75],
+   "rear_file_size_half": [389,75],
+   "rear_ports": {
+      "x/2": {
+         "port_coord": [252, 9],
+         "port_type": "rj45",
+         "port_size": [73, 47]
+      },
+      "x/1": {
+         "port_coord": [379, 9],
+         "port_type": "rj45",
+         "port_size": [73, 47]
+      }
+   },
+   "rear_ports_half": {
+      "x/2": {
+         "port_coord": [91, 9],
+         "port_type": "rj45",
+         "port_size": [73, 47]
+      },
+      "x/1": {
+         "port_coord": [217, 9],
+         "port_type": "rj45",
+         "port_size": [73, 47]
+      }
+   },
+   "imm_compatible": false,
+   "data_sheet_url": "https://www.cisco.com/c/dam/en/us/products/collateral/servers-unified-computing/ucs-c-series-rack-servers/intel-x710-t2l-pcie-ethernet-network-adapter.pdf",
+   "adaptor_type": "nic"
 }

@@ -8,8 +8,8 @@
             "subcategory": "BIOS",
             "name": "UCS Manager BIOS Policy for High-Performance Computing on Cisco UCS M7 Servers",
             "url": "https://www.cisco.com/c/en/us/products/collateral/servers-unified-computing/ucs-b-series-blade-servers/ucs-m7-platforms-wp.html",
-            "easyucs_version": "0.9.8.6",
-            "revision": "1.0"
+            "easyucs_version": "1.0.0",
+            "revision": "1.1"
          }
       ]
    },

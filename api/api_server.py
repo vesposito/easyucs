@@ -25,7 +25,8 @@ from werkzeug.exceptions import BadRequest
 from werkzeug.utils import secure_filename
 from packaging.version import Version
 
-from common import (decrypt, encrypt, extract, get_disk_space_usage, guess_image_metadata, validate_json)
+from common import (decrypt, encrypt, extract, get_disk_space_usage, guess_image_metadata, read_json_file,
+                    validate_json)
 from __init__ import EASYUCS_ROOT, __version__
 from device.device import GenericDevice
 
@@ -43,13 +44,16 @@ timeout_values = {
     "clear_config": 3600,
     "clear_sel_logs": 300,
     "create_vmedia_policy": 300,
+    "deploy_domain_profile": 3600,
     "download_file": 7200,
     "fetch_backup": 600,
+    "fetch_cache": 1200,
     "fetch_config": 3600,
     "fetch_config_inventory": 7200,
     "fetch_inventory": 3600,
     "fetch_os_firmware_data": 900,
     "generate_report": 300,
+    "initial_setup": 3000,
     "push_config": 10800,
     "regenerate_certificate": 300,
     "reset": 300,
@@ -269,17 +273,17 @@ def get_object_from_db(object_type=None, uuid=None, device_uuid=None, task_uuid=
                     obj[attribute] = getattr(object_metadata, attribute)
 
         elif object_type == "device":
-            for attribute in ["bypass_connection_checks", "bypass_version_checks",
-                              "device_connector_claim_status", "device_connector_ownership_name",
-                              "device_connector_ownership_user", "device_name", "device_type", "device_type_long",
-                              "is_reachable", "key_id", "target", "timestamp_last_connected", "username", "user_label"]:
+            for attribute in ["bypass_connection_checks", "bypass_version_checks", "device_connector_claim_status",
+                              "device_connector_ownership_name", "device_connector_ownership_user", "device_name",
+                              "device_type", "device_type_long", "is_reachable", "key_id", "sub_device_uuids",
+                              "target", "timestamp_last_connected", "username", "use_proxy", "user_label"]:
                 if getattr(object_metadata, attribute) not in [None, ""]:
                     if "timestamp" in attribute:
                         obj[attribute] = getattr(object_metadata, attribute).isoformat()[:-3] + 'Z'
                     else:
                         obj[attribute] = getattr(object_metadata, attribute)
 
-            for attribute in ["intersight_device_uuid"]:
+            for attribute in ["intersight_device_uuid", "parent_device_uuid"]:
                 if getattr(object_metadata, attribute) not in [None, ""]:
                     obj[attribute] = str(getattr(object_metadata, attribute))
 
@@ -409,13 +413,13 @@ def perform_action(device=None, action_type="", object_type="", task_uuid=None, 
         sys.exit()
 
     if action_type not in ["add_device", "calculate_checksums", "claim_to_intersight", "clear_config",
-                           "clear_sel_logs", "create_vmedia_policy", "download_file", "fetch",
-                           "fetch_os_firmware_data", "generate", "push", "regenerate_certificate", "reset",
-                           "reset_device_connector", "sync_to_software_repository", "test_connection"]:
+                           "clear_sel_logs", "create_vmedia_policy", "deploy_domain_profile", "download_file", "fetch",
+                           "fetch_os_firmware_data", "generate", "initial_setup", "push", "regenerate_certificate",
+                           "reset", "reset_device_connector", "sync_to_software_repository", "test_connection"]:
         easyucs.logger(level="error", message="Invalid action type provided")
         sys.exit()
 
-    if object_type not in ["backup", "config", "device", "inventory", "repo", "report", "config_inventory"]:
+    if object_type not in ["backup", "cache", "config", "device", "inventory", "repo", "report", "config_inventory"]:
         easyucs.logger(level="error", message="Invalid object type provided")
         sys.exit()
 
@@ -427,9 +431,9 @@ def perform_action(device=None, action_type="", object_type="", task_uuid=None, 
         action_kwargs = {}
 
     # In case this is a clear, fetch or push operation, we first need to connect to the device
-    if action_type in ["add_device", "clear_config", "clear_sel_logs", "create_vmedia_policy", "fetch",
-                       "fetch_os_firmware_data", "push", "regenerate_certificate", "reset", "reset_device_connector",
-                       "sync_to_software_repository", "test_connection"]:
+    if action_type in ["add_device", "clear_config", "clear_sel_logs", "create_vmedia_policy", "deploy_domain_profile",
+                       "fetch", "fetch_os_firmware_data", "push", "regenerate_certificate",
+                       "reset", "reset_device_connector", "sync_to_software_repository", "test_connection"]:
         if not device.connect(bypass_version_checks=device.metadata.bypass_version_checks):
             easyucs.logger(level="error",
                            message="Failed to connect to " + device.metadata.device_type_long + " device",
@@ -444,9 +448,9 @@ def perform_action(device=None, action_type="", object_type="", task_uuid=None, 
         # We save device metadata in case they have changed (version, name, is_reachable and timestamp_last_connected)
         if action_type == "add_device":
             if device.metadata.is_reachable:
-                easyucs.repository_manager.save_metadata(metadata=device.metadata)
+                easyucs.repository_manager.save_to_repository(object=device)
         else:
-            easyucs.repository_manager.save_metadata(metadata=device.metadata)
+            easyucs.repository_manager.save_to_repository(object=device)
 
         if not device.metadata.is_reachable:
             sys.exit()
@@ -530,7 +534,8 @@ def perform_action(device=None, action_type="", object_type="", task_uuid=None, 
     file_uuid = None
     file_path = None
     if object_type in ["device"] and action_type in ["claim_to_intersight", "clear_config", "clear_sel_logs",
-                                                     "fetch_os_firmware_data", "regenerate_certificate", "reset",
+                                                     "deploy_domain_profile", "fetch_os_firmware_data",
+                                                     "initial_setup", "regenerate_certificate", "reset",
                                                      "reset_device_connector"]:
         # The operation to perform is a direct call to the function at the device level
         action_target = getattr(device, action_type)
@@ -554,6 +559,10 @@ def perform_action(device=None, action_type="", object_type="", task_uuid=None, 
         action_target = easyucs.repository_manager.repo.calculate_checksums
     elif object_type in ["repo"] and action_type in ["download_file"]:
         action_target = easyucs.repository_manager.repo.download_file
+    elif object_type in ["cache"] and action_type in ["fetch_os_firmware_data"]:
+        action_target = device.cache_manager.cache.fetch_os_firmware_data
+    elif object_type in ["cache"] and action_type in ["fetch"]:
+        action_target = device.cache_manager.fetch_cache
     else:
         manager_target = getattr(device, object_type + "_manager", None)
         action_target = getattr(manager_target, action_type + "_" + object_type, None)
@@ -563,19 +572,28 @@ def perform_action(device=None, action_type="", object_type="", task_uuid=None, 
         response = action_target(**action_kwargs)
 
     # In case this is a claim, a clear, a fetch or a push operation, we now need to disconnect from the device
-    if action_type in ["add_device", "claim_to_intersight", "clear_config", "clear_sel_logs", "fetch",
-                       "fetch_os_firmware_data", "push", "regenerate_certificate", "reset_device_connector",
+    if action_type in ["add_device", "claim_to_intersight", "clear_config", "clear_sel_logs", "deploy_domain_profile",
+                       "fetch", "fetch_os_firmware_data", "push", "regenerate_certificate", "reset_device_connector",
                        "sync_to_software_repository", "test_connection"]:
         device.disconnect()
 
     if action_type in ["reset"]:
         # If erase configuration is successful then we skip the disconnect step otherwise we perform a disconnect.
         if response:
-            device.task.taskstep_manager.skip_taskstep(
-                name="DisconnectUcsSystemDevice",
-                status_message=f"Skipping the disconnect to {device.metadata.device_type_long} device "
-                               f"{device.metadata.device_type_long} since the reset operation was successful"
-            )
+            taskstep_name = ""
+            if device.metadata.device_type == "cimc":
+                taskstep_name = "DisconnectUcsImcDevice"
+            elif device.metadata.device_type == "imm_domain":
+                taskstep_name = "DisconnectUcsImcDevice"
+            elif device.metadata.device_type == "ucsm":
+                taskstep_name = "DisconnectUcsSystemDevice"
+
+            if taskstep_name:
+                device.task.taskstep_manager.skip_taskstep(
+                    name=taskstep_name,
+                    status_message=f"Skipping the disconnect to {device.metadata.device_type_long} device "
+                                   f"{device.metadata.device_type_long} since the reset operation was successful"
+                )
         else:
             device.disconnect()
 
@@ -597,10 +615,18 @@ def perform_action(device=None, action_type="", object_type="", task_uuid=None, 
                                                                report_type="delete_summary")
     # In case this is a push operation, we now need to generate the push summary report
     push_summary = False
-    if action_type in ["push"]:
+    if action_type in ["push"] and device.report_manager:
         config = device.config_manager.find_config_by_uuid(uuid=action_kwargs["uuid"])
         push_summary = device.report_manager.generate_report(config=config, output_formats=["json"],
                                                              report_type="push_summary")
+
+    if action_type in ["deploy_domain_profile"]:
+        if not response:
+            status_message = easyucs.api_error_message
+            if not status_message:
+                status_message = "Failed to Deploy Domain Profile. Check logs for more details.."
+            easyucs.task_manager.stop_task(uuid=task_uuid, status="failed", status_message=status_message[:255])
+
     if action_type in ["create_vmedia_policy"]:
         if not response:
             status_message = easyucs.api_error_message
@@ -649,6 +675,8 @@ def perform_action(device=None, action_type="", object_type="", task_uuid=None, 
                 if device.report_manager.report_list:
                     for report in [device.report_manager.report_list[-x] for x in range(1, number_of_reports + 1)]:
                         easyucs.repository_manager.save_to_repository(object=report)
+            elif object_type in ["cache"]:
+                easyucs.repository_manager._save_file(object=response)
             else:
                 obj = getattr(manager_target, "get_latest_" + object_type)()
                 if obj is not None:
@@ -676,10 +704,15 @@ def perform_action(device=None, action_type="", object_type="", task_uuid=None, 
                 for report in [device.report_manager.report_list[-x] for x in range(1, number_of_reports + 1)]:
                     easyucs.repository_manager.save_to_repository(object=report)
 
-        elif action_type in ["fetch_os_firmware_data"]:
-            # We save the OS and Firmware metadata to the repository
-            easyucs.repository_manager.save_os_firmware_data_to_repository(device=device, os_firmware_data=response)
+        elif action_type in ["initial_setup"]:
+            # Save the device in case its attributes have changed (credentials, version, name, is_reachable,
+            # and timestamp_last_connected). We use save_to_repository instead of save_metadata because
+            # some devices may have sub_devices, which will also be saved when calling save_to_repository().
+            easyucs.repository_manager.save_to_repository(object=device)
 
+        elif action_type in ["fetch_os_firmware_data"]:
+            # We save the OS and Firmware data to the cache
+            device.cache_manager.save_to_cache(cache_key="os_firmware")
         elif action_type in ["sync_to_software_repository"]:
             # We save software repository link details to reposynctodevice table
 
@@ -923,6 +956,9 @@ def devices():
             username = None
             if "username" in payload:
                 username = payload["username"]
+            use_proxy = False
+            if "use_proxy" in payload:
+                use_proxy = payload["use_proxy"]
             bypass_version_checks = False
             if "bypass_version_checks" in payload:
                 bypass_version_checks = payload["bypass_version_checks"]
@@ -930,10 +966,23 @@ def devices():
             if "bypass_connection_checks" in payload:
                 bypass_connection_checks = payload["bypass_connection_checks"]
 
+            if use_proxy:
+                if device_type != "intersight":
+                    response = response_handle(response=f"Use Proxy is only applicable for Intersight devices",
+                                               code=400)
+                    return response
+
+                proxy_details = read_json_file(file_path=os.path.join(EASYUCS_ROOT, "proxy_settings.json"),
+                                               logger=easyucs)
+                if not proxy_details.get("proxy_url", ""):
+                    response = response_handle(response=f"Please set 'Proxy URL' in Proxy Settings and try again",
+                                               code=400)
+                    return response
+
             if easyucs.device_manager.add_device(device_type=device_type, uuid=new_device_uuid, target=target,
                                                  username=username, password=password, key_id=key_id,
-                                                 private_key_path=private_key_path, user_label=user_label,
-                                                 bypass_version_checks=bypass_version_checks,
+                                                 private_key_path=private_key_path, use_proxy=use_proxy,
+                                                 user_label=user_label, bypass_version_checks=bypass_version_checks,
                                                  bypass_connection_checks=bypass_connection_checks):
                 device = easyucs.device_manager.get_latest_device()
 
@@ -973,15 +1022,20 @@ def device_actions():
         try:
             # Ordered by display_name
             actions = {
+                "imm_domain": {
+                    "display_name": "IMM Domain",
+                    "available_actions": ["claim_to_intersight", "reset_device_connector", "test_connection"]
+                },
                 "intersight": {
                     "display_name": "Intersight",
-                    "available_actions": ["test_connection"]
+                    "available_actions": ["clear_config", "test_connection"]
                 },
                 "cimc": {
                     "display_name": "UCS IMC",
                     "available_actions": ["claim_to_intersight", "clear_sel_logs", "clear_user_sessions",
-                                          "erase_all_virtual_drives", "erase_all_flexflash","regenerate_certificate",
-                                          "reset", "reset_device_connector", "set_all_drives_status", "test_connection"]
+                                          "erase_all_virtual_drives", "erase_all_flexflash", "regenerate_certificate",
+                                          "reset", "reset_device_connector", "set_all_drives_status",
+                                          "test_connection"]
                 },
                 "ucsc": {
                     "display_name": "UCS Central",
@@ -1189,6 +1243,11 @@ def devices_actions_claim_to_intersight():
                 for device in device_list:
                     if device.metadata.device_type in ["cimc"]:
                         task_uuid = easyucs.task_manager.add_task(name="ClaimToIntersightUcsImc",
+                                                                  device_name=str(device.name),
+                                                                  device_uuid=str(device.uuid),
+                                                                  target_device_uuid=str(intersight_device.uuid))
+                    elif device.metadata.device_type in ["imm_domain"]:
+                        task_uuid = easyucs.task_manager.add_task(name="ClaimToIntersightImmDomain",
                                                                   device_name=str(device.name),
                                                                   device_uuid=str(device.uuid),
                                                                   target_device_uuid=str(intersight_device.uuid))
@@ -1401,9 +1460,22 @@ def device_uuid(device_uuid):
 
                 updating_fields = ["target", "bypass_connection_checks", "bypass_version_checks", "user_label"]
                 if device_metadata_list[0].device_type == "intersight":
-                    updating_fields.extend(["key_id"])
+                    updating_fields.extend(["key_id", "use_proxy"])
                 else:
                     updating_fields.extend(["username", "password"])
+
+                if payload.get("use_proxy", False):
+                    if device_metadata_list[0].device_type != "intersight":
+                        response = response_handle(response=f"Use Proxy is only applicable for Intersight devices",
+                                                   code=400)
+                        return response
+
+                    proxy_details = read_json_file(file_path=os.path.join(EASYUCS_ROOT, "proxy_settings.json"),
+                                                   logger=easyucs)
+                    if not proxy_details.get("proxy_url", ""):
+                        response = response_handle(response=f"Please set 'Proxy URL' in Proxy Settings and try again",
+                                                   code=400)
+                        return response
 
                 for attribute in updating_fields:
                     if attribute in payload:
@@ -1473,8 +1545,10 @@ def device_uuid_actions(device_uuid):
                     actions = ["claim_to_intersight", "clear_sel_logs", "clear_user_sessions",
                                "erase_all_virtual_drives", "erase_all_flexflash", "regenerate_certificate", "reset",
                                "reset_device_connector", "set_all_drives_status", "test_connection"]
+                elif device_type in ["imm_domain"]:
+                    actions = ["claim_to_intersight", "reset_device_connector", "test_connection"]
                 elif device_type in ["intersight"]:
-                    actions = ["test_connection"]
+                    actions = ["clear_config", "test_connection"]
                 elif device_type in ["ucsc"]:
                     actions = ["clear_user_sessions", "test_connection"]
                 elif device_type in ["ucsm"]:
@@ -1487,6 +1561,67 @@ def device_uuid_actions(device_uuid):
                 response = response_handle(actions_dict, 200)
             else:
                 response = response_handle(response="Device with UUID " + device_uuid + " not found", code=404)
+        except Exception as err:
+            response = response_handle(code=500, response=str(err))
+        return response
+
+
+@app.route("/devices/<device_uuid>/actions/deploy_domain_profile", methods=['POST'])
+# @cross_origin()
+def devices_uuid_actions_deploy_domain_profile(device_uuid):
+    if request.method == 'POST':
+        try:
+            payload = request.json
+            # Check if payload valid
+            if payload:
+                if not validate_json(json_data=payload,
+                                     schema_path="api/specs/device_actions_deploy_domain_profile.json",
+                                     logger=easyucs):
+                    response = response_handle(code=400, response="Invalid payload")
+                    return response
+            device = load_object(object_type="device", object_uuid=device_uuid)
+            if not device:
+                response = response_handle(response="Device not found with UUID: " + device_uuid, code=404)
+                return response
+
+            action_kwargs = {
+                "domain_profile_name": payload.get("domain_profile_name", None),
+                "imm_domain_name": payload.get("imm_domain_name", None),
+                "org_name": payload.get("org_name", None)
+            }
+
+            try:
+                # We create a new task
+                if device.metadata.device_type in ["intersight"]:
+                    task_uuid = easyucs.task_manager.add_task(
+                        name="DeployDomainProfileIntersight", device_name=str(device.name),
+                        device_uuid=str(device.uuid)
+                    )
+                else:
+                    response = response_handle(response="Unsupported device type", code=500)
+                    return response
+
+                # We schedule the  action through the scheduler
+                pending_task = {
+                    "task_uuid": task_uuid,
+                    "action_type": "deploy_domain_profile",
+                    "object_type": "device",
+                    "timeout": timeout_values["deploy_domain_profile"],
+                    "action_kwargs": action_kwargs
+                }
+                if not easyucs.task_manager.add_to_pending_tasks(pending_task):
+                    response = response_handle(response="Error while scheduling the task. Task Queue might be Full."
+                                                        " Try again after some time.", code=400)
+                    return response
+
+            except Exception as err:
+                response = response_handle(response="Error while performing assign and deployment of domain profiles. " +
+                                                    str(err), code=500)
+                return response
+
+            response = response_handle(response={"task": str(task_uuid)}, code=200)
+        except BadRequest as err:
+            response = response_handle(code=err.code, response=str(err.description))
         except Exception as err:
             response = response_handle(code=500, response=str(err))
         return response
@@ -1528,6 +1663,11 @@ def device_uuid_actions_claim_to_intersight(device_uuid):
                     # We create a new task
                     if device.metadata.device_type in ["cimc"]:
                         task_uuid = easyucs.task_manager.add_task(name="ClaimToIntersightUcsImc",
+                                                                  device_name=str(device.name),
+                                                                  device_uuid=str(device.uuid),
+                                                                  target_device_uuid=str(intersight_device.uuid))
+                    elif device.metadata.device_type in ["imm_domain"]:
+                        task_uuid = easyucs.task_manager.add_task(name="ClaimToIntersightImmDomain",
                                                                   device_name=str(device.name),
                                                                   device_uuid=str(device.uuid),
                                                                   target_device_uuid=str(intersight_device.uuid))
@@ -1739,6 +1879,81 @@ def device_uuid_actions_fetch_config_and_inventory(device_uuid):
         return response
 
 
+@app.route("/devices/<device_uuid>/actions/initial_setup", methods=['POST'])
+# @cross_origin()
+def devices_uuid_actions_initial_setup(device_uuid):
+    if request.method == 'POST':
+        try:
+            payload = request.json
+            # Check if payload valid
+            if payload:
+                if not validate_json(json_data=payload, schema_path="api/specs/device_initial_setup_post.json",
+                                     logger=easyucs):
+                    response = response_handle(code=400, response="Invalid payload")
+                    return response
+            else:
+                response = response_handle(code=400, response="Missing payload")
+                return response
+
+            device = load_object(object_type="device", object_uuid=device_uuid)
+            if device:
+                config_uuid = payload.get("config_uuid")
+                config = load_object(object_type="config", object_uuid=config_uuid, device=device)
+                target_admin_password = getattr(getattr(device, "metadata", None), "password", None)
+
+                if not target_admin_password:
+                    response = response_handle(code=400, response="Failed to fetch device password")
+                    return response
+
+                if config:
+                    if device.metadata.device_type == "cimc":
+                        task_uuid = easyucs.task_manager.add_task(name="InitialSetupUcsImc",
+                                                                  device_name=str(device.name),
+                                                                  device_uuid=str(device.uuid))
+                    elif device.metadata.device_type == "imm_domain":
+                        task_uuid = easyucs.task_manager.add_task(name="InitialSetupImmDomain",
+                                                                  device_name=str(device.name),
+                                                                  device_uuid=str(device.uuid))
+                    elif device.metadata.device_type == "ucsm":
+                        task_uuid = easyucs.task_manager.add_task(name="InitialSetupUcsm",
+                                                                  device_name=str(device.name),
+                                                                  device_uuid=str(device.uuid))
+                    else:
+                        response = response_handle(code=400, response=f"Initial setup is not supported for "
+                                                                      f"{device.metadata.device_type_long} device")
+                        return response
+
+                    action_kwargs = {
+                        "config": config,
+                        "target_admin_password": target_admin_password
+                    }
+                    if device.metadata.device_type == "cimc":
+                        action_kwargs["imc_ip"] = payload.get("imc_ip")
+                    else:
+                        action_kwargs["fi_ip_list"] = payload.get("fi_ip_list")
+
+                    pending_task = {
+                        "task_uuid": task_uuid,
+                        "action_type": "initial_setup",
+                        "object_type": "device",
+                        "timeout": timeout_values["initial_setup"],
+                        "action_kwargs": action_kwargs
+                    }
+
+                    if not easyucs.task_manager.add_to_pending_tasks(pending_task):
+                        response = response_handle(code=400, response="Error while scheduling the task. Task Queue might be Full."
+                                                   " Try again after some time.")
+                    else:
+                        response = response_handle(code=200, response={"task": str(task_uuid)})
+                else:
+                    response = response_handle(code=400, response=f"Failed to load config with UUID {config_uuid}")
+            else:
+                response = response_handle(code=404, response=f"Device not found with UUID: {device_uuid}")
+        except Exception as err:
+            response = response_handle(code=500, response=str(err))
+        return response
+
+
 @app.route("/devices/<device_uuid>/actions/regenerate_certificate", methods=['POST'])
 # @cross_origin()
 def device_uuid_actions_regenerate_certificate(device_uuid):
@@ -1819,6 +2034,13 @@ def device_uuid_actions_reset(device_uuid):
                         }
                     elif device.metadata.device_type == "cimc":
                         task_uuid = easyucs.task_manager.add_task(name="ResetDeviceUcsImc",
+                                                                  device_name=str(device.name),
+                                                                  device_uuid=str(device.uuid))
+                        action_kwargs = {
+                            "reset_device_connector": payload.get("reset_device_connector", False)
+                        }
+                    elif device.metadata.device_type == "imm_domain":
+                        task_uuid = easyucs.task_manager.add_task(name="ResetDeviceImmDomain",
                                                                   device_name=str(device.name),
                                                                   device_uuid=str(device.uuid))
                         action_kwargs = {
@@ -1914,6 +2136,10 @@ def device_uuid_actions_test_connection(device_uuid):
                     # We create a new task
                     if device.metadata.device_type in ["cimc"]:
                         task_uuid = easyucs.task_manager.add_task(name="TestConnectionUcsImc",
+                                                                  device_name=str(device.name),
+                                                                  device_uuid=str(device.uuid))
+                    elif device.metadata.device_type in ["imm_domain"]:
+                        task_uuid = easyucs.task_manager.add_task(name="TestConnectionImmDomain",
                                                                   device_name=str(device.name),
                                                                   device_uuid=str(device.uuid))
                     elif device.metadata.device_type in ["intersight"]:
@@ -2239,34 +2465,102 @@ def device_uuid_cache(device_uuid):
         try:
             device = load_object(object_type="device", object_uuid=device_uuid)
             if device:
-                operating_system = request.args.get("os", True, type=lambda v: v.lower() == 'true')
-                firmware = request.args.get("firmware", True, type=lambda v: v.lower() == 'true')
+                operating_system = request.args.get("os", None, type=lambda v: v.lower() == 'true' if v else None)
+                firmware = request.args.get("firmware", None, type=lambda v: v.lower() == 'true' if v else None)
+                orgs = request.args.get("orgs", None, type=lambda v: v.lower() == 'true' if v else None)
+                server_details = request.args.get("server_details", None,
+                                                  type=lambda v: v.lower() == 'true' if v else None)
 
-                if device.metadata.device_type not in ["intersight"]:
-                    response = response_handle(response=f"OS and Firmware cached data not supported for "
-                                                        f"{device.metadata.device_type_long} device",
-                                               code=404)
-                    return response
+                cache_details = read_json_file(
+                    file_path=os.path.join(EASYUCS_ROOT, f"data/files/devices/{device_uuid}/cache/cache.json"),
+                    logger=easyucs)
 
-                if not device.metadata.cache_path:
-                    response = response_handle(response="OS and Firmware cached data not found", code=404)
-                    return response
-
-                os_firmware_data = device.get_os_firmware_data()
-
-                if not os_firmware_data:
-                    response = response_handle(response="Failed to read OS and Firmware cached data from device",
+                if not cache_details:
+                    response = response_handle(response="Failed to read cached data from device",
                                                code=500)
                     return response
 
-                if not operating_system:
-                    del os_firmware_data["os"]
-                if not firmware:
-                    del os_firmware_data["firmware"]
+                fields = {
+                    "os": operating_system,
+                    "firmware": firmware,
+                    "orgs": orgs,
+                    "server_details": server_details
+                }
 
-                response = response_handle(response=os_firmware_data, code=200)
+                for field, value in fields.items():
+                    if value is None:
+                        # Skip if no preference is set; include field in response only if present in the cache.
+                        continue
+                    elif value is True:
+                        # Ensure requested field exists in the cache; return error if missing.
+                        if field in ["os", "firmware"]:
+                            if not cache_details.get("os_firmware", {}).get(field):
+                                response = response_handle(response="OS and Firmware cached data not found", code=404)
+                                return response
+                        else:
+                            if not cache_details.get(field):
+                                response = response_handle(response=f"{field} data not found", code=404)
+                                return response
+                    elif value is False:
+                        # Remove field from the response if explicitly not needed.
+                        if field in ["os", "firmware"]:
+                            if cache_details.get("os_firmware", {}).get(field):
+                                del cache_details["os_firmware"][field]
+                        else:
+                            if cache_details.get(field):
+                                del cache_details[field]
+
+                response = response_handle(response=cache_details, code=200)
             else:
                 response = response_handle(response="Device not found with UUID: " + device_uuid, code=404)
+        except Exception as err:
+            easyucs.logger(level="error", message="Unexpected error while getting the cache!")
+            response = response_handle(code=500, response=str(err))
+        return response
+
+
+@app.route("/devices/<device_uuid>/cache/actions/fetch", methods=['POST'])
+def device_uuid_cache_actions_fetch(device_uuid):
+    if request.method == 'POST':
+        try:
+            device = load_object(object_type="device", object_uuid=device_uuid)
+            if device:
+                try:
+                    # We create a new task
+                    if device.metadata.device_type in ["intersight"]:
+                        task_uuid = easyucs.task_manager.add_task(name="FetchIntersightCache",
+                                                                  device_name=str(device.name),
+                                                                  device_uuid=str(device.uuid))
+                    elif device.metadata.device_type in ["ucsm"]:
+                        task_uuid = easyucs.task_manager.add_task(name="FetchUcsSystemCache",
+                                                                  device_name=str(device.name),
+                                                                  device_uuid=str(device.uuid))
+                    else:
+                        response = response_handle(response="Unsupported device type", code=500)
+                        return response
+
+                    # We schedule the fetch cache action through the scheduler
+                    pending_task = {
+                        "task_uuid": task_uuid,
+                        "action_type": "fetch",
+                        "object_type": "cache",
+                        "timeout": timeout_values["fetch_cache"]
+                    }
+
+                    if not easyucs.task_manager.add_to_pending_tasks(pending_task):
+                        response = response_handle(response="Error while scheduling the task. Task Queue might be Full."
+                                                            " Try again after some time.", code=400)
+                        return response
+
+                except Exception as err:
+                    response = response_handle(response="Error while fetching cache: " + str(err), code=500)
+                    return response
+
+                response = response_handle(response={"task": str(task_uuid)}, code=200)
+            else:
+                response = response_handle(response="Device not found with UUID: " + device_uuid, code=404)
+        except BadRequest as err:
+            response = response_handle(code=err.code, response=str(err.description))
         except Exception as err:
             response = response_handle(code=500, response=str(err))
         return response
@@ -2297,7 +2591,7 @@ def device_uuid_cache_actions_fetch_os_firmware_data(device_uuid):
                     pending_task = {
                         "task_uuid": task_uuid,
                         "action_type": "fetch_os_firmware_data",
-                        "object_type": "device",
+                        "object_type": "cache",
                         "timeout": timeout_values["fetch_os_firmware_data"]
                     }
                     if not easyucs.task_manager.add_to_pending_tasks(pending_task):
@@ -2311,6 +2605,36 @@ def device_uuid_cache_actions_fetch_os_firmware_data(device_uuid):
                     return response
 
                 response = response_handle(response={"task": str(task_uuid)}, code=200)
+            else:
+                response = response_handle(response="Device not found with UUID: " + device_uuid, code=404)
+        except Exception as err:
+            response = response_handle(code=500, response=str(err))
+        return response
+
+
+@app.route("/devices/<device_uuid>/cache/orgs", methods=['GET'])
+def device_uuid_cache_orgs(device_uuid):
+    if request.method == "GET":
+        try:
+            device = load_object(object_type="device", object_uuid=device_uuid)
+            if device:
+                if device.metadata.device_type not in ["intersight"]:
+                    response = response_handle(response="Invalid device type", code=400)
+                    return response
+
+                cached_orgs = device.cache_manager.cache.get_orgs()
+                if cached_orgs:
+                    response = response_handle(response={"orgs": cached_orgs}, code=200)
+                else:
+                    default = {
+                        "description": "There are no cached organizations available. "
+                                       "Showing the 'default' organization.",
+                        "is_shared": False,
+                        "resource_groups": [],
+                        "shared_with_orgs": []
+                    }
+                    easyucs.logger(level="info", message="No cached orgs were found. Showing the default org.")
+                    response = response_handle(response={"orgs": default}, code=200)
             else:
                 response = response_handle(response="Device not found with UUID: " + device_uuid, code=404)
         except Exception as err:
@@ -2427,7 +2751,7 @@ def device_uuid_configs_actions(device_uuid):
                 device_type = device_metadata_list[0].device_type
 
                 actions = None
-                if device_type in ["cimc", "intersight", "ucsc", "ucsm"]:
+                if device_type in ["cimc", "imm_domain", "intersight", "ucsc", "ucsm"]:
                     actions = ["fetch"]
 
                 actions_dict = {"actions": actions}
@@ -2499,6 +2823,10 @@ def device_uuid_configs_actions_fetch(device_uuid):
                     # We create a new task
                     if device.metadata.device_type in ["cimc"]:
                         task_uuid = easyucs.task_manager.add_task(name="FetchConfigUcsImc",
+                                                                  device_name=str(device.name),
+                                                                  device_uuid=str(device.uuid))
+                    elif device.metadata.device_type in ["imm_domain"]:
+                        task_uuid = easyucs.task_manager.add_task(name="FetchConfigImmDomain",
                                                                   device_name=str(device.name),
                                                                   device_uuid=str(device.uuid))
                     elif device.metadata.device_type in ["intersight"]:
@@ -2609,7 +2937,7 @@ def device_uuid_config_uuid_actions(device_uuid, config_uuid):
                 if len(config_metadata_list) == 1:
 
                     actions = None
-                    if device_type in ["cimc", "intersight", "ucsc", "ucsm"]:
+                    if device_type in ["cimc", "imm_domain", "intersight", "ucsc", "ucsm"]:
                         actions = ["download", "push"]
 
                     actions_dict = {"actions": actions}
@@ -2672,6 +3000,7 @@ def device_uuid_config_uuid_actions_push(device_uuid, config_uuid):
                 if "reset" in payload:
                     action_kwargs["reset"] = payload["reset"]
                 action_kwargs["force"] = payload.get("force", False)
+                action_kwargs["push_equipment"] = payload.get("push_equipment", False)
 
             device = load_object(object_type="device", object_uuid=device_uuid)
             if device:
@@ -2869,7 +3198,7 @@ def device_uuid_inventories_actions(device_uuid):
                 device_type = device_metadata_list[0].device_type
 
                 actions = None
-                if device_type in ["cimc", "intersight", "ucsc", "ucsm"]:
+                if device_type in ["cimc", "imm_domain", "intersight", "ucsc", "ucsm"]:
                     actions = ["fetch"]
 
                 actions_dict = {"actions": actions}
@@ -2943,6 +3272,10 @@ def device_uuid_inventories_actions_fetch(device_uuid):
                     # We create a new task
                     if device.metadata.device_type in ["cimc"]:
                         task_uuid = easyucs.task_manager.add_task(name="FetchInventoryUcsImc",
+                                                                  device_name=str(device.name),
+                                                                  device_uuid=str(device.uuid))
+                    elif device.metadata.device_type in ["imm_domain"]:
+                        task_uuid = easyucs.task_manager.add_task(name="FetchInventoryImmDomain",
                                                                   device_name=str(device.name),
                                                                   device_uuid=str(device.uuid))
                     elif device.metadata.device_type in ["intersight"]:
@@ -3055,7 +3388,7 @@ def device_uuid_inventory_uuid_actions(device_uuid, inventory_uuid):
                 if len(inventory_metadata_list) == 1:
 
                     actions = None
-                    if device_type in ["cimc", "intersight", "ucsc", "ucsm"]:
+                    if device_type in ["cimc", "imm_domain", "intersight", "ucsc", "ucsm"]:
                         actions = ["download"]
 
                     actions_dict = {"actions": actions}
@@ -3122,36 +3455,6 @@ def device_uuid_logs(device_uuid):
                 response = response_handle(response="Device with UUID " + device_uuid + " not found", code=404)
                 return response
 
-        except Exception as err:
-            response = response_handle(code=500, response=str(err))
-        return response
-
-
-@app.route("/devices/<device_uuid>/orgs", methods=['GET'])
-def device_uuid_orgs(device_uuid):
-    if request.method == "GET":
-        try:
-            device = load_object(object_type="device", object_uuid=device_uuid)
-            if device:
-                if device.metadata.device_type not in ["intersight"]:
-                    response = response_handle(response="Invalid device type", code=400)
-                    return response
-
-                cached_orgs = device.metadata.cached_orgs
-                if cached_orgs:
-                    response = response_handle(response={"orgs": cached_orgs}, code=200)
-                else:
-                    default = {
-                        "description": "There are no cached organizations available. "
-                                       "Showing the 'default' organization.",
-                        "is_shared": False,
-                        "resource_groups": [],
-                        "shared_with_orgs": []
-                    }
-                    easyucs.logger(level="info", message="No cached orgs were found. Showing the default org.")
-                    response = response_handle(response={"orgs": default}, code=200)
-            else:
-                response = response_handle(response="Device not found with UUID: " + device_uuid, code=404)
         except Exception as err:
             response = response_handle(code=500, response=str(err))
         return response
@@ -3312,6 +3615,11 @@ def device_uuid_reports_actions_generate(device_uuid):
                     elif device.metadata.device_type in ["ucsm"]:
                         task_uuid = easyucs.task_manager.add_task(
                             name="GenerateReportUcsSystem", device_name=str(device.name), device_uuid=str(device.uuid),
+                            config_uuid=str(config.uuid), inventory_uuid=str(inventory.uuid)
+                        )
+                    elif device.metadata.device_type in ["intersight"]:
+                        task_uuid = easyucs.task_manager.add_task(
+                            name="GenerateReportIntersight", device_name=str(device.name), device_uuid=str(device.uuid),
                             config_uuid=str(config.uuid), inventory_uuid=str(inventory.uuid)
                         )
                     else:
@@ -3803,6 +4111,12 @@ def easyucs_backup_actions_download():
                     "file_name": "settings.json"
                 },
                 {
+                    "file_path": os.path.join(EASYUCS_ROOT, 'proxy_settings.json'),
+                    "file_name": "proxy_settings.json"
+                },
+                # The backup file is always added as the last item in the list to ensure it can be deleted at the end,
+                # after the response is streamed.
+                {
                     "file_path": easyucs.repository_manager.create_db_backup(decrypt_passwords=True),
                     "file_name": easyucs.repository_manager.REPOSITORY_DB_BACKUP_NAME
                 }
@@ -3852,10 +4166,10 @@ def easyucs_backup_actions_download():
 
                 # We delete the saved backup file at the end after the response is streamed
                 easyucs.logger(level="debug", message=f"Removing the files: {tar_file_path}, {bin_file_path} and "
-                                                      f"{output_files[3]['file_path']}")
+                                                      f"{output_files[-1]['file_path']}")
                 os.remove(tar_file_path)
                 os.remove(bin_file_path)
-                os.remove(output_files[3]["file_path"])
+                os.remove(output_files[-1]["file_path"])
 
             response = Response(stream_file(), mimetype="application/octet-stream")
             response.headers["Content-Disposition"] = "attachment; filename=%s" % bin_file_name
@@ -3989,6 +4303,84 @@ def easyucs_backup_actions_restore():
                 return response_handle(code=400, response=error_message)
 
             response = response_handle(code=200)
+        except BadRequest as err:
+            response = response_handle(code=err.code, response=str(err.description))
+        except Exception as err:
+            response = response_handle(code=500, response=str(err))
+        return response
+
+
+@app.route("/easyucs/proxy", methods=['GET', 'PUT'])
+def easyucs_proxy():
+    if request.method == "GET":
+        try:
+            proxy_details = read_json_file(file_path=os.path.join(EASYUCS_ROOT, "proxy_settings.json"),
+                                           logger=easyucs)
+            for option in ['proxy_password']:
+                proxy_details[option + '_set'] = True if proxy_details.get('encrypted_' + option) else False
+            for option in ['encrypted_proxy_password']:
+                if option in proxy_details:
+                    del proxy_details[option]
+            response = response_handle(proxy_details, code=200)
+        except Exception as err:
+            easyucs.logger(level="exception", message="Unexpected error while fetching the proxy details!")
+            response = response_handle(code=500, response=str(err))
+        return response
+
+    if request.method == "PUT":
+        try:
+            payload = request.json
+
+            if not validate_json(json_data=payload, schema_path="api/specs/easyucs_proxy_put.json", logger=easyucs):
+                response = response_handle(code=400, response="Invalid payload")
+                return response
+
+            for device in easyucs.device_manager.device_list:
+                if device.task:
+                    response = response_handle(code=400, response="Cannot change the proxy setting when a device task"
+                                                                  " is in progress")
+                    return response
+
+            if not payload.get("proxy_url", ""):
+                for device_metadata in easyucs.repository_manager.get_metadata(object_type="device"):
+                    if device_metadata.use_proxy:
+                        response = response_handle(code=400,
+                                                   response="Cannot unset the proxy settings when some device(s) have"
+                                                            " 'Use Proxy' enabled")
+                        return response
+
+            proxy_details = {
+                "proxy_url": payload.get("proxy_url", ""),
+                "proxy_port": payload.get("proxy_port", None),
+                "proxy_authentication": payload.get("proxy_authentication", False),
+                "proxy_username": payload.get("proxy_username", "")
+            }
+            cipher_suite = easyucs.repository_manager.cipher_suite
+            if payload.get("proxy_password"):
+                encrypted_password = cipher_suite.encrypt(bytes(payload.get("proxy_password"), encoding='utf8')) \
+                    .decode('utf-8')
+                proxy_details['encrypted_proxy_password'] = encrypted_password
+
+            easyucs.logger(level="debug", message="Updating proxy details file 'proxy_settings.json'")
+            with open(os.path.join(EASYUCS_ROOT, "proxy_settings.json"), 'w') as proxy_file:
+                json.dump(proxy_details, proxy_file, indent=4)
+
+            easyucs.logger(level="debug", message="Reloading all the devices in memory to make sure that the " +
+                                                  "proxy is being set")
+            for device_metadata in easyucs.repository_manager.get_metadata(object_type="device"):
+                device = easyucs.device_manager.find_device_by_uuid(uuid=device_metadata.uuid)
+                if device:
+                    easyucs.device_manager.remove_device(uuid=device.uuid)
+                    easyucs.device_manager.add_device(metadata=device_metadata)
+
+            for option in ['proxy_password']:
+                proxy_details[option + '_set'] = True if proxy_details.get('encrypted_' + option) else False
+            for option in ['encrypted_proxy_password']:
+                if option in proxy_details:
+                    del proxy_details[option]
+
+            response = response_handle(proxy_details, code=200)
+
         except BadRequest as err:
             response = response_handle(code=err.code, response=str(err.description))
         except Exception as err:
@@ -4479,6 +4871,15 @@ def repo_actions_url_download(file_path=None):
                 file_name = download_url.split('/')[-2]
             verify_ssl = payload.get("verify_ssl", True)
 
+            use_proxy = payload.get("use_proxy", False)
+            if use_proxy:
+                proxy_details = read_json_file(file_path=os.path.join(EASYUCS_ROOT, "proxy_settings.json"),
+                                               logger=easyucs)
+                if not proxy_details.get("proxy_url", ""):
+                    response = response_handle(response=f"Please set 'Proxy URL' in Proxy Settings and try again",
+                                               code=400)
+                    return response
+
             if os.path.exists(os.path.join(absolute_file_path, file_name)):
                 response = response_handle("File with same name already exists", 400)
                 return response
@@ -4490,7 +4891,8 @@ def repo_actions_url_download(file_path=None):
                 "url": download_url,
                 "path": absolute_file_path,
                 "file_name": file_name,
-                "verify_ssl": verify_ssl
+                "verify_ssl": verify_ssl,
+                "use_proxy": use_proxy
             }
 
             # We schedule the calculate checksums action through the scheduler

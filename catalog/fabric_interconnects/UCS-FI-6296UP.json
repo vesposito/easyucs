@@ -1,5 +1,6 @@
 {
   "model_short_name": "6296UP",
+  "name": "Cisco UCS 6296UP Fabric Interconnect",
   "rear_file_name": "UCS-FI-6296UP_rear.png",
   "front_file_name": "UCS-FI-6296UP_front.png",
   "rear_file_size": [2862,538],

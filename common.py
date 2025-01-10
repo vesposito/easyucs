@@ -18,6 +18,7 @@ import tarfile
 from collections import defaultdict
 from cryptography.fernet import InvalidToken
 from itertools import groupby, count
+from urllib.parse import urlparse
 
 import natsort
 import requests
@@ -58,6 +59,49 @@ def get_encoded_pem_certificate(certificate=None):
         base64_bytes = base64.b64encode(certificate_string)
         base64_string = base64_bytes.decode("ascii")
         return base64_string
+
+
+def get_proxy_url(include_authentication=False, logger=None):
+    """
+    Function to get the proxy URL from the EasyUCS settings
+    :param include_authentication: Include authentication details (username and password) in the proxy URL.
+    :param logger: Logger object to write logs
+    :return: Tuple containing proxy url, proxy username, proxy password
+    """
+    proxy_settings = read_json_file(file_path=os.path.join(EASYUCS_ROOT, "proxy_settings.json"), logger=logger)
+    proxy = proxy_settings.get("proxy_url", None)
+    if not proxy:
+        return None, None, None
+
+    # Ensure the proxy URL has a scheme (http:// or https://) before parsing.
+    # This is necessary for urlparse() to correctly identify components of the URL.
+    # We set the default scheme as 'http://'
+    if not proxy.startswith("http://") and not proxy.startswith("https://"):
+        proxy = "http://{}".format(proxy)
+
+    parsed_url = urlparse(proxy)
+    # Extract the hostname from the parsed proxy URL, excluding the scheme.
+    proxy = parsed_url.netloc
+
+    proxy_username = proxy_settings.get("proxy_username", "")
+    proxy_password = proxy_settings.get("proxy_password", "")
+    if not proxy_password:
+        if proxy_settings.get("encrypted_proxy_password", ""):
+            from api.api_server import easyucs
+            if easyucs:
+                proxy_password = easyucs.repository_manager.cipher_suite.decrypt(bytes(
+                    proxy_settings.get('encrypted_proxy_password'), 'utf-8')).decode('utf-8')
+
+    if proxy_settings["proxy_port"]:
+        proxy = "{}:{}".format(proxy, str(proxy_settings["proxy_port"]))
+
+    if include_authentication and proxy_username and proxy_password:
+        proxy = f"{proxy_username}:{proxy_password}@{proxy}"
+
+    # Get the final proxy url string with the original scheme
+    proxy = f"{parsed_url.scheme}://{proxy}"
+
+    return proxy, proxy_username, proxy_password
 
 
 def calculate_checksum(file_path, algorithm="MD5"):
@@ -207,7 +251,7 @@ def guess_image_metadata(image_name=None, device=None):
                 return guessed_data
 
     if device:
-        os_firmware_data = device.get_os_firmware_data()
+        os_firmware_data = device.cache_manager.cache.get_os_firmware_data()
         if not os_firmware_data:
             device.logger(level="info", message="OS and Firmware data not found.")
             return guessed_data

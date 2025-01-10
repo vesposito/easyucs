@@ -1,23 +1,24 @@
 {
-  "model_short_name": "Emulex LPe32000-M2 1x32G",
-  "rear_file_name": "UCSC-PCIE-BS32GF.png",
-  "rear_file_name_half": "UCSC-PCIE-BS32GF_half.png",
-  "rear_file_size": [593,75],
-  "rear_file_size_half": [389,75],
-  "rear_ports": {
-    "x/1": {
-      "port_coord": [260, 11],
-      "port_type": "sfp+",
-      "port_size": [82, 55]
-    }
-  },
-  "rear_ports_half": {
-    "x/1": {
-      "port_coord": [116, 11],
-      "port_type": "sfp+",
-      "port_size": [82, 55]
-    }
-  },
-  "imm_compatible": false,
-  "data_sheet_url": "https://www.cisco.com/c/dam/en/us/products/collateral/servers-unified-computing/ucs-c-series-rack-servers/emulex-lpe.pdf"
+   "model_short_name": "Emulex LPe32000-M2 1x32G",
+   "rear_file_name": "UCSC-PCIE-BS32GF.png",
+   "rear_file_name_half": "UCSC-PCIE-BS32GF_half.png",
+   "rear_file_size": [593,75],
+   "rear_file_size_half": [389,75],
+   "rear_ports": {
+      "x/1": {
+         "port_coord": [260, 11],
+         "port_type": "sfp+",
+         "port_size": [82, 55]
+      }
+   },
+   "rear_ports_half": {
+      "x/1": {
+         "port_coord": [116, 11],
+         "port_type": "sfp+",
+         "port_size": [82, 55]
+      }
+   },
+   "imm_compatible": false,
+   "data_sheet_url": "https://www.cisco.com/c/dam/en/us/products/collateral/servers-unified-computing/ucs-c-series-rack-servers/emulex-lpe.pdf",
+   "adaptor_type": "hba"
 }

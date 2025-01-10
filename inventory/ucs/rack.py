@@ -3,10 +3,10 @@
 
 """ rack.py: Easy UCS Deployment Tool """
 
-from common import read_json_file
-from draw.ucs.rack import UcsSystemDrawRackFront, UcsSystemDrawRackRear, UcsImcDrawRackFront, UcsImcDrawRackRear, \
+from draw.ucs.rack import UcsRackDrawFront, UcsRackDrawRear, UcsImcDrawRackFront, UcsImcDrawRackRear, \
     UcsSystemDrawRackEnclosureFront, UcsSystemDrawRackEnclosureRear, UcsImcDrawRackEnclosureFront, \
     UcsImcDrawRackEnclosureRear
+from inventory.generic.rack import GenericRack
 from inventory.ucs.adaptor import UcsImcAdaptor, UcsImcHbaAdapter, UcsImcNetworkAdapter, UcsSystemAdaptor
 from inventory.ucs.cpu import UcsImcCpu, UcsSystemCpu
 from inventory.ucs.gpu import UcsImcGpu, UcsSystemGpu
@@ -20,10 +20,11 @@ from inventory.ucs.storage import UcsImcStorageController, UcsImcStorageFlexFlas
 from inventory.ucs.tpm import UcsImcTpm, UcsSystemTpm
 
 
-class UcsRack(GenericUcsInventoryObject):
+class UcsRack(GenericRack, GenericUcsInventoryObject):
     _UCS_SDK_OBJECT_NAME = "computeRackUnit"
 
     def __init__(self, parent=None, compute_rack_unit=None):
+        GenericRack.__init__(self, parent=parent)
         GenericUcsInventoryObject.__init__(self, parent=parent, ucs_sdk_object=compute_rack_unit)
 
         self.id = self.get_attribute(ucs_sdk_object=compute_rack_unit, attribute_name="server_id",
@@ -46,16 +47,7 @@ class UcsRack(GenericUcsInventoryObject):
         self.vendor = self.get_attribute(ucs_sdk_object=compute_rack_unit, attribute_name="vendor")
 
         # Adding a human-readable attribute for memory capacity
-        self.memory_total_marketing = None
-        if self.memory_total:
-            if self.memory_total / 1024 < 1024:
-                memory_total_gb = str(self.memory_total / 1024)
-                memory_total_gb = memory_total_gb.rstrip('0').rstrip('.') if '.' in memory_total_gb else memory_total_gb
-                self.memory_total_marketing = memory_total_gb + " GB"
-            else:
-                memory_total_tb = str(self.memory_total / 1048576)
-                memory_total_tb = memory_total_tb.rstrip('0').rstrip('.') if '.' in memory_total_tb else memory_total_tb
-                self.memory_total_marketing = memory_total_tb + " TB"
+        self._get_memory_total_marketing()
 
         self.adaptors = self._get_adaptors()
         self.cpus = self._get_cpus()
@@ -68,9 +60,6 @@ class UcsRack(GenericUcsInventoryObject):
         self.storage_controllers = self._get_storage_controllers()
         self.storage_flexflash_controllers = self._get_storage_flexflash_controllers()
         self.tpms = self._get_tpms()
-
-    def _generate_draw(self):
-        pass
 
     def _get_adaptors(self):
         return []
@@ -86,38 +75,6 @@ class UcsRack(GenericUcsInventoryObject):
 
     def _get_mgmt_interfaces(self):
         return []
-
-    def _get_imm_compatibility(self):
-        """
-        Returns rack server IMM Compatibility status from EasyUCS catalog files
-        """
-        if self.sku is not None:
-            # We use the catalog file to get the rack IMM Compatibility status
-            if self.sku in ["UCSC-C125"]:
-                rack_catalog = read_json_file(file_path="catalog/server_nodes/" + self.sku + ".json", logger=self)
-            else:
-                rack_catalog = read_json_file(file_path="catalog/racks/" + self.sku + ".json", logger=self)
-            if rack_catalog:
-                if "imm_compatible" in rack_catalog:
-                    return rack_catalog["imm_compatible"]
-
-        return None
-
-    def _get_model_short_name(self):
-        """
-        Returns rack server short name from EasyUCS catalog files
-        """
-        if self.sku is not None:
-            # We use the catalog file to get the rack short name
-            if self.sku in ["UCSC-C125"]:
-                rack_catalog = read_json_file(file_path="catalog/server_nodes/" + self.sku + ".json", logger=self)
-            else:
-                rack_catalog = read_json_file(file_path="catalog/racks/" + self.sku + ".json", logger=self)
-            if rack_catalog:
-                if "model_short_name" in rack_catalog:
-                    return rack_catalog["model_short_name"]
-
-        return None
 
     def _get_nvme_drives(self):
         return []
@@ -425,11 +382,6 @@ class UcsSystemRack(UcsRack, UcsSystemInventoryObject):
                 self.pcie_risers.append({"id": "3", "sku": "UCSC-RIS3B-245M8"})
 
         return False
-
-    def _generate_draw(self):
-        self._draw_front = UcsSystemDrawRackFront(parent=self)
-        self._draw_rear = UcsSystemDrawRackRear(parent=self)
-        self._draw_infra = None
 
     def _get_adaptors(self):
         if self._inventory.load_from == "live":

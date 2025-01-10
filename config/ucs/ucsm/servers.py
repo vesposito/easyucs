@@ -250,17 +250,19 @@ class UcsSystemUuidPool(UcsSystemConfigObject):
                 if not self.get_attributes_from_json(json_content=json_content):
                     self.logger(level="error",
                                 message="Unable to get attributes from JSON content for " + self._CONFIG_NAME)
-
-                for element in self.uuid_blocks:
-                    for value in ["to", "from", "size"]:
-                        if value not in element:
-                            element[value] = None
-
-                for value in ["assigned", "size"]:
-                    if value not in self.operational_state:
-                        self.operational_state[value] = None
-
         self.clean_object()
+
+    def clean_object(self):
+        UcsSystemConfigObject.clean_object(self)
+
+        for element in self.uuid_blocks:
+            for value in ["to", "from", "size"]:
+                if value not in element:
+                    element[value] = None
+
+        for value in ["assigned", "size"]:
+            if value not in self.operational_state:
+                self.operational_state[value] = None
 
     def push_object(self, commit=True):
         if commit:
@@ -393,7 +395,7 @@ class UcsSystemServerPoolPolicy(UcsSystemConfigObject):
         self.name = None
         self.qualification = None
         self.target_pool = None
-        self.operational_state = None
+        self.operational_state = {}
 
         if self._config.load_from == "live":
             if compute_pooling_policy is not None:
@@ -420,17 +422,18 @@ class UcsSystemServerPoolPolicy(UcsSystemConfigObject):
                     self.logger(level="error",
                                 message="Unable to get attributes from JSON content for " + self._CONFIG_NAME)
 
-                for policy in ["target_pool"]:
-                    if not self.operational_state:
-                        self.operational_state = {}
-                    if policy not in self.operational_state:
-                        self.operational_state[policy] = None
-                    else:
-                        for value in ["name", "org"]:
-                            if value not in self.operational_state[policy]:
-                                self.operational_state[policy][value] = None
-
         self.clean_object()
+
+    def clean_object(self):
+        UcsSystemConfigObject.clean_object(self)
+
+        for policy in ["target_pool"]:
+            if policy not in self.operational_state:
+                self.operational_state[policy] = None
+            elif self.operational_state[policy]:
+                for value in ["name", "org"]:
+                    if value not in self.operational_state[policy]:
+                        self.operational_state[policy][value] = None
 
     def push_object(self, commit=True):
         if commit:
@@ -879,23 +882,26 @@ class UcsSystemServerPoolPolicyQualifications(UcsSystemConfigObject):
                     self.logger(level="error",
                                 message="Unable to get attributes from JSON content for " + self._CONFIG_NAME)
 
-                # We need to set all values that are not present in the config file to None
-                for element in self.qualifications:
-                    for value in ["type", "server_pid", "last_rack_id", "first_rack_id", "adapter_qualifications",
-                                  "min_cores", "max_cores", "processor_architecture", "processor_pid", "min_cap",
-                                  "max_cap", "per_disk_cap", "number_of_flexflash_cards", "units", "block_size",
-                                  "number_of_blocks", "diskless", "disk_type", "min_threads", "max_threads",
-                                  "cpu_speed", "cpu_stepping", "first_chassis_id", "last_chassis_id", "clock",
-                                  "latency", "width", "power_group"]:
-                        if value not in element:
-                            element[value] = None
-                    if element["adapter_qualifications"]:
-                        for subelement in element["adapter_qualifications"]:
-                            for value in ["adapter_maximum_capacity", "adapter_pid", "adapter_type"]:
-                                if value not in subelement:
-                                    subelement[value] = None
-
         self.clean_object()
+
+    def clean_object(self):
+        UcsSystemConfigObject.clean_object(self)
+
+        # We need to set all values that are not present in the config file to None
+        for element in self.qualifications:
+            for value in ["type", "server_pid", "last_rack_id", "first_rack_id", "adapter_qualifications",
+                          "min_cores", "max_cores", "processor_architecture", "processor_pid", "min_cap",
+                          "max_cap", "per_disk_cap", "number_of_flexflash_cards", "units", "block_size",
+                          "number_of_blocks", "diskless", "disk_type", "min_threads", "max_threads",
+                          "cpu_speed", "cpu_stepping", "first_chassis_id", "last_chassis_id", "clock",
+                          "latency", "width", "power_group"]:
+                if value not in element:
+                    element[value] = None
+            if element["adapter_qualifications"]:
+                for subelement in element["adapter_qualifications"]:
+                    for value in ["adapter_maximum_capacity", "adapter_pid", "adapter_type"]:
+                        if value not in subelement:
+                            subelement[value] = None
 
     def push_object(self, commit=True):
         if commit:
@@ -1110,19 +1116,21 @@ class UcsSystemHostFirmwarePackage(UcsSystemConfigObject):
                 if not self.get_attributes_from_json(json_content=json_content):
                     self.logger(level="error",
                                 message="Unable to get attributes from JSON content for " + self._CONFIG_NAME)
-
-                # We need to set all values that are not present in the config file to None
-                for element in self.advanced_host_firmware_package:
-                    for value in ["vendor", "model", "type", "version"]:
-                        if value not in element:
-                            element[value] = None
-
         self.clean_object()
 
         # We need an exception to clean_object() to help the JSON Schema to distinguish what schema to check
         if not self.blade_package and not self.rack_package and not self.advanced_host_firmware_package:
             self.blade_package = ""
             self.rack_package = ""
+
+    def clean_object(self):
+        UcsSystemConfigObject.clean_object(self)
+
+        # We need to set all values that are not present in the config file to None
+        for element in self.advanced_host_firmware_package:
+            for value in ["vendor", "model", "type", "version"]:
+                if value not in element:
+                    element[value] = None
 
     def push_object(self, commit=True):
         if commit:
@@ -1261,13 +1269,15 @@ class UcsSystemIpmiAccessProfile(UcsSystemConfigObject):
                     self.logger(level="error",
                                 message="Unable to get attributes from JSON content for " + self._CONFIG_NAME)
 
-                # We need to set all values that are not present in the config file to None
-                for element in self.users:
-                    for value in ["name", "password", "role", "descr"]:
-                        if value not in element:
-                            element[value] = None
-
         self.clean_object()
+
+    def clean_object(self):
+        UcsSystemConfigObject.clean_object(self)
+        # We need to set all values that are not present in the config file to None
+        for element in self.users:
+            for value in ["name", "password", "role", "descr"]:
+                if value not in element:
+                    element[value] = None
 
     def push_object(self, commit=True):
         if commit:
@@ -1519,13 +1529,16 @@ class UcsSystemSpdmCertificatePolicy(UcsSystemConfigObject):
                     self.logger(level="error",
                                 message="Unable to get attributes from JSON content for " + self._CONFIG_NAME)
 
-                # We need to set all values that are not present in the config file to None
-                for element in self.certificates:
-                    for value in ["name", "certificate_type", "certificate"]:
-                        if value not in element:
-                            element[value] = None
-
         self.clean_object()
+
+    def clean_object(self):
+        UcsSystemConfigObject.clean_object(self)
+
+        # We need to set all values that are not present in the config file to None
+        for element in self.certificates:
+            for value in ["name", "certificate_type", "certificate"]:
+                if value not in element:
+                    element[value] = None
 
     def push_object(self, commit=True):
         if commit:
@@ -1875,49 +1888,54 @@ class UcsSystemBootPolicy(UcsSystemConfigObject):
                     self.logger(level="error",
                                 message="Unable to get attributes from JSON content for " + self._CONFIG_NAME)
 
-                # We need to set all values that are not present in the config file to None
-                for element in self.boot_order:
-                    for value in ['device_type', 'embedded_local_disks', 'iscsi_vnics', 'local_luns', 'name', 'order',
-                                  'vhbas', 'vnics', 'local_jbods', 'embedded_local_luns']:
-                        if value not in element:
-                            element[value] = None
-
-                    if element["vhbas"]:
-                        for vhba in element["vhbas"]:
-                            for subvalue in ["name", "targets", "type"]:
-                                if subvalue not in vhba:
-                                    vhba[subvalue] = None
-                            if vhba["targets"]:
-                                for target in vhba["targets"]:
-                                    for subsubvalue in ["lun", "wwpn", "type", "boot_loader_name", "boot_loader_path",
-                                                        "boot_loader_description"]:
-                                        if subsubvalue not in target:
-                                            target[subsubvalue] = None
-                    if element["embedded_local_disks"]:
-                        for disk in element["embedded_local_disks"]:
-                            for subvalue in ["slot_number", "type", "boot_loader_name", "boot_loader_path",
-                                             "boot_loader_description"]:
-                                if subvalue not in disk:
-                                    disk[subvalue] = None
-                    if element["local_luns"]:
-                        for lun in element["local_luns"]:
-                            for subvalue in ["name", "type", "boot_loader_name", "boot_loader_path",
-                                             "boot_loader_description"]:
-                                if subvalue not in lun:
-                                    lun[subvalue] = None
-                    if element["iscsi_vnics"]:
-                        for vnic in element["iscsi_vnics"]:
-                            for subvalue in ["name", "type", "boot_loader_name", "boot_loader_path",
-                                             "boot_loader_description"]:
-                                if subvalue not in vnic:
-                                    vnic[subvalue] = None
-                    if element["vnics"]:
-                        for vnic in element["vnics"]:
-                            for subvalue in ["name", "type", "ip_address_type"]:
-                                if subvalue not in vnic:
-                                    vnic[subvalue] = None
 
         self.clean_object()
+
+
+    def clean_object(self):
+        UcsSystemConfigObject.clean_object(self)
+
+        # We need to set all values that are not present in the config file to None
+        for element in self.boot_order:
+            for value in ['device_type', 'embedded_local_disks', 'iscsi_vnics', 'local_luns', 'name', 'order',
+                          'vhbas', 'vnics', 'local_jbods', 'embedded_local_luns']:
+                if value not in element:
+                    element[value] = None
+
+            if element["vhbas"]:
+                for vhba in element["vhbas"]:
+                    for subvalue in ["name", "targets", "type"]:
+                        if subvalue not in vhba:
+                            vhba[subvalue] = None
+                    if vhba["targets"]:
+                        for target in vhba["targets"]:
+                            for subsubvalue in ["lun", "wwpn", "type", "boot_loader_name", "boot_loader_path",
+                                                "boot_loader_description"]:
+                                if subsubvalue not in target:
+                                    target[subsubvalue] = None
+            if element["embedded_local_disks"]:
+                for disk in element["embedded_local_disks"]:
+                    for subvalue in ["slot_number", "type", "boot_loader_name", "boot_loader_path",
+                                     "boot_loader_description"]:
+                        if subvalue not in disk:
+                            disk[subvalue] = None
+            if element["local_luns"]:
+                for lun in element["local_luns"]:
+                    for subvalue in ["name", "type", "boot_loader_name", "boot_loader_path",
+                                     "boot_loader_description"]:
+                        if subvalue not in lun:
+                            lun[subvalue] = None
+            if element["iscsi_vnics"]:
+                for vnic in element["iscsi_vnics"]:
+                    for subvalue in ["name", "type", "boot_loader_name", "boot_loader_path",
+                                     "boot_loader_description"]:
+                        if subvalue not in vnic:
+                            vnic[subvalue] = None
+            if element["vnics"]:
+                for vnic in element["vnics"]:
+                    for subvalue in ["name", "type", "ip_address_type"]:
+                        if subvalue not in vnic:
+                            vnic[subvalue] = None
 
     def push_object(self, commit=True):
         detail = str(self.name)
@@ -2122,13 +2140,17 @@ class UcsSystemVnicVhbaPlacementPolicy(UcsSystemConfigObject):
                     self.logger(level="error",
                                 message="Unable to get attributes from JSON content for " + self._CONFIG_NAME)
 
-                # We need to set all values that are not present in the config file to None
-                for element in self.virtual_host_interfaces:
-                    for value in ["virtual_slot", "selection_preference", "transport"]:
-                        if value not in element:
-                            element[value] = None
-
         self.clean_object()
+
+
+    def clean_object(self):
+        UcsSystemConfigObject.clean_object(self)
+
+        # We need to set all values that are not present in the config file to None
+        for element in self.virtual_host_interfaces:
+            for value in ["virtual_slot", "selection_preference", "transport"]:
+                if value not in element:
+                    element[value] = None
 
     def push_object(self, commit=True):
         if commit:
@@ -3357,15 +3379,19 @@ class UcsSystemVmediaPolicy(UcsSystemConfigObject):
                     self.logger(level="error",
                                 message="Unable to get attributes from JSON content for " + self._CONFIG_NAME)
 
-                # We need to set all values that are not present in the config file to None
-                for element in self.vmedia_mounts:
-                    for value in ["device_type", "password", "username", "descr", "protocol", "name", "remote_file",
-                                  "remote_path", "hostname", "image_name_variable", "authentication_protocol",
-                                  "remap_on_eject", "writable"]:
-                        if value not in element:
-                            element[value] = None
 
         self.clean_object()
+
+    def clean_object(self):
+        UcsSystemConfigObject.clean_object(self)
+
+        # We need to set all values that are not present in the config file to None
+        for element in self.vmedia_mounts:
+            for value in ["device_type", "password", "username", "descr", "protocol", "name", "remote_file",
+                          "remote_path", "hostname", "image_name_variable", "authentication_protocol",
+                          "remap_on_eject", "writable"]:
+                if value not in element:
+                    element[value] = None
 
     def push_object(self, commit=True):
         detail = str(self.name)
@@ -3636,14 +3662,18 @@ class UcsSystemEthernetAdapterPolicy(UcsSystemConfigObject):
                 if not self.get_attributes_from_json(json_content=json_content):
                     self.logger(level="error",
                                 message="Unable to get attributes from JSON content for " + self._CONFIG_NAME)
-                # We need to set all values that are not present in the config file to None
-                for element in self.roce_properties:
-                    for value in ["version_1", "version_2", "queue_pairs", "memory_regions", "resource_groups",
-                                  "priority"]:
-                        if value not in element:
-                            element[value] = None
 
         self.clean_object()
+
+
+    def clean_object(self):
+        UcsSystemConfigObject.clean_object(self)
+        # We need to set all values that are not present in the config file to None
+        for element in self.roce_properties:
+            for value in ["version_1", "version_2", "queue_pairs", "memory_regions", "resource_groups",
+                          "priority"]:
+                if value not in element:
+                    element[value] = None
 
     def push_object(self, commit=True):
         if commit:
@@ -4099,28 +4129,32 @@ class UcsSystemThresholdPolicy(UcsSystemConfigObject):
                     self.logger(level="error",
                                 message="Unable to get attributes from JSON content for " + self._CONFIG_NAME)
 
-                for element in self.threshold_classes:
-                    for value in ["stat_class", "threshold_definitions", "group"]:
-                        if value not in element:
-                            element[value] = None
-                    if element["threshold_definitions"]:
-                        for subelement in element["threshold_definitions"]:
-                            for subvalue in ["property_type", "normal_value",
-                                             "alarm_triggers_above", "alarm_triggers_below"]:
-                                if subvalue not in subelement:
-                                    subelement[subvalue] = None
-                            if subelement["alarm_triggers_above"]:
-                                for subsubelement in subelement["alarm_triggers_above"]:
-                                    for subsubvalue in ["severity", "up", "down"]:
-                                        if subsubvalue not in subsubelement:
-                                            subsubelement[subsubvalue] = None
-                            if subelement["alarm_triggers_below"]:
-                                for subsubelement in subelement["alarm_triggers_below"]:
-                                    for subsubvalue in ["severity", "up", "down"]:
-                                        if subsubvalue not in subsubelement:
-                                            subsubelement[subsubvalue] = None
 
         self.clean_object()
+
+    def clean_object(self):
+        UcsSystemConfigObject.clean_object(self)
+
+        for element in self.threshold_classes:
+            for value in ["stat_class", "threshold_definitions", "group"]:
+                if value not in element:
+                    element[value] = None
+            if element["threshold_definitions"]:
+                for subelement in element["threshold_definitions"]:
+                    for subvalue in ["property_type", "normal_value",
+                                     "alarm_triggers_above", "alarm_triggers_below"]:
+                        if subvalue not in subelement:
+                            subelement[subvalue] = None
+                    if subelement["alarm_triggers_above"]:
+                        for subsubelement in subelement["alarm_triggers_above"]:
+                            for subsubvalue in ["severity", "up", "down"]:
+                                if subsubvalue not in subsubelement:
+                                    subsubelement[subsubvalue] = None
+                    if subelement["alarm_triggers_below"]:
+                        for subsubelement in subelement["alarm_triggers_below"]:
+                            for subsubvalue in ["severity", "up", "down"]:
+                                if subsubvalue not in subsubelement:
+                                    subsubelement[subsubvalue] = None
 
     def push_object(self, commit=True):
         if commit:
@@ -4228,12 +4262,16 @@ class UcsSystemDiagnosticsPolicy(UcsSystemConfigObject):
                     self.logger(level="error",
                                 message="Unable to get attributes from JSON content for " + self._CONFIG_NAME)
 
-                for element in self.memory_tests:
-                    for value in ["order", "cpu_filter", "loop_count", "memory_chunk_size", "memory_size", "pattern"]:
-                        if value not in element:
-                            element[value] = None
-
         self.clean_object()
+
+
+    def clean_object(self):
+        UcsSystemConfigObject.clean_object(self)
+
+        for element in self.memory_tests:
+            for value in ["order", "cpu_filter", "loop_count", "memory_chunk_size", "memory_size", "pattern"]:
+                if value not in element:
+                    element[value] = None
 
     def push_object(self, commit=True):
         if commit:
@@ -4320,13 +4358,17 @@ class UcsSystemPersistentMemoryPolicy(UcsSystemConfigObject):
                     self.logger(level="error",
                                 message="Unable to get attributes from JSON content for " + self._CONFIG_NAME)
 
-                # We need to set all values that are not present in the config file to None
-                for element in self.namespaces:
-                    for value in ["name", "socket_id", "socket_local_dimm_number", "mode", "capacity"]:
-                        if value not in element:
-                            element[value] = None
 
         self.clean_object()
+
+    def clean_object(self):
+        UcsSystemConfigObject.clean_object(self)
+
+        # We need to set all values that are not present in the config file to None
+        for element in self.namespaces:
+            for value in ["name", "socket_id", "socket_local_dimm_number", "mode", "capacity"]:
+                if value not in element:
+                    element[value] = None
 
     def push_object(self, commit=True):
         if commit:

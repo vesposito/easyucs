@@ -2549,7 +2549,7 @@ class IntersightFabricVlanPolicy(IntersightConfigObject):
             while start < len(requests):
                 start_vlan_id = non_overlapping_vlans[start]["id"]
                 if end - 1 < len(non_overlapping_vlans):
-                    end_vlan_id = non_overlapping_vlans[end-1]["id"]
+                    end_vlan_id = non_overlapping_vlans[end - 1]["id"]
                 else:
                     end_vlan_id = non_overlapping_vlans[-1]["id"]
                 bulk_request_kwargs["requests"] = requests[start:end]

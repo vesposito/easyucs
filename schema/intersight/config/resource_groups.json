@@ -20,6 +20,36 @@
          "type": "string",
          "default": ""
       },
+      "tags": {
+         "description": "Resource Group Tags",
+         "type": "array",
+         "items": {
+            "description": "Resource Group Tag",
+            "type": "object",
+            "properties": {
+               "key": {
+                  "description": "Resource Group Tag Key",
+                  "type": "string",
+                  "default": "",
+                  "minLength": 1,
+                  "maxLength": 128
+               },
+               "value": {
+                  "description": "Resource Group Tag Value",
+                  "type": "string",
+                  "default": "",
+                  "minLength": 0,
+                  "maxLength": 256
+               }
+            },
+            "additionalProperties": false,
+            "required": [
+               "key",
+               "value"
+            ]
+         },
+         "minItems": 1
+      },
       "memberships": {
          "description": "Resource Group Memberships",
          "type": "string",

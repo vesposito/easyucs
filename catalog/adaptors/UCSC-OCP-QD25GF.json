@@ -1,19 +1,20 @@
 {
-  "model_short_name": "QLogic QL41232HOCU 2x25G",
-  "rear_file_name": "UCSC-OCP-QD25GF.png",
-  "rear_file_size": [475,113],
-  "rear_ports": {
-    "x/1": {
-      "port_coord": [266, 31],
-      "port_type": "sfp28",
-      "port_size": [82, 55]
-    },
-    "x/2": {
-      "port_coord": [367, 31],
-      "port_type": "sfp28",
-      "port_size": [82, 55]
-    }
-  },
-  "imm_compatible": false,
-  "data_sheet_url": "https://www.cisco.com/c/dam/en/us/products/collateral/servers-unified-computing/ucs-c-series-rack-servers/qlogic-ql41232hocu-product-brief.pdf"
+   "model_short_name": "QLogic QL41232HOCU 2x25G",
+   "rear_file_name": "UCSC-OCP-QD25GF.png",
+   "rear_file_size": [475,113],
+   "rear_ports": {
+      "x/1": {
+         "port_coord": [266, 31],
+         "port_type": "sfp28",
+         "port_size": [82, 55]
+      },
+      "x/2": {
+         "port_coord": [367, 31],
+         "port_type": "sfp28",
+         "port_size": [82, 55]
+      }
+   },
+   "imm_compatible": false,
+   "data_sheet_url": "https://www.cisco.com/c/dam/en/us/products/collateral/servers-unified-computing/ucs-c-series-rack-servers/qlogic-ql41232hocu-product-brief.pdf",
+   "adaptor_type": "nic"
 }

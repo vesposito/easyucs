@@ -2024,6 +2024,33 @@
    },
    "cbs_cmn_gnb_smu_dffo_rs": {
       "type": "enum",
+      "ucsc_token_map": {
+         "Auto": [],
+         "disabled": [],
+         "enabled": [],
+         "platform-default": [
+            "Platform Default"
+         ]
+      },
+      "ucsm_token_map": {
+         "Auto": [
+            "Auto",
+            "auto"
+         ],
+         "disabled": [
+            "disabled",
+            "Disabled"
+         ],
+         "enabled": [
+            "enabled",
+            "Enabled"
+         ],
+         "platform-default": [
+            "Platform Default",
+            "platform-default"
+         ]
+      },
+      "ucsm_token_name": "df_pstate_frequency_optimizer",
       "values": [
          "platform-default",
          "Auto",
@@ -2237,7 +2264,10 @@
             "Auto",
             "auto"
          ],
-         "Enabled": [],
+         "Enabled": [
+            "Enabled",
+            "enabled"
+         ],
          "disabled": [
             "disabled",
             "Disabled"
@@ -2844,6 +2874,79 @@
    },
    "cbs_cpu_down_core_ctrl_bergamo": {
       "type": "enum",
+      "ucsc_token_map": {
+         "Auto": [],
+         "EIGHT (4 + 4)": [
+            "EIGHT-(4-+-4)",
+            "eight-(4-+-4)"
+         ],
+         "FOUR (2 + 2)": [
+            "FOUR-(2-+-2)",
+            "four-(2-+-2)"
+         ],
+         "FOURTEEN (7 + 7)": [
+            "FOURTEEN-(7-+-7)",
+            "fourteen-(7-+-7)"
+         ],
+         "SIX (3 + 3)": [
+            "SIX-(3-+-3)",
+            "six-(3-+-3)"
+         ],
+         "TEN (5 + 5)": [
+            "TEN-(5-+-5)",
+            "ten-(5-+-5)"
+         ],
+         "TWELVE (6 + 6)": [
+            "TWELVE-(6-+-6)",
+            "twelve-(6-+-6)"
+         ],
+         "TWO (1 + 1)": [
+            "TWO-(1-+-1)",
+            "two-(1-+-1)"
+         ],
+         "platform-default": [
+            "Platform Default"
+         ]
+      },
+      "ucsm_token_map": {
+         "Auto": [
+            "Auto",
+            "auto"
+         ],
+         "EIGHT (4 + 4)": [
+            "EIGHT--4---4-",
+            "eight--4---4-"
+         ],
+         "FOUR (2 + 2)": [
+            "FOUR--2---2-",
+            "four--2---2-"
+         ],
+         "FOURTEEN (7 + 7)": [
+            "FOURTEEN--7---7-",
+            "fourteen--7---7-"
+         ],
+         "SIX (3 + 3)": [
+            "SIX--3---3-",
+            "six--3---3-"
+         ],
+         "TEN (5 + 5)": [
+            "TEN--5---5-",
+            "ten--5---5-"
+         ],
+         "TWELVE (6 + 6)": [
+            "TWELVE--6---6-",
+            "twelve--6---6-"
+         ],
+         "TWO (1 + 1)": [
+            "TWO--1---1-",
+            "two--1---1-"
+         ],
+         "platform-default": [
+            "Platform Default",
+            "platform-default"
+         ]
+      },
+      "ucsm_token_name": "downcore_control_f19_ma0h_afh",
       "values": [
          "platform-default",
          "Auto",
@@ -8638,7 +8741,10 @@
          ]
       },
       "ucsm_token_map": {
-         "Enable at End of POST": [],
+         "Enable at End of POST": [
+            "Enable-at-End-of-POST",
+            "enable-at-end-of-post"
+         ],
          "disabled": [
             "disabled",
             "Disabled"
@@ -18544,6 +18650,28 @@
    },
    "sr_iov": {
       "type": "enum",
+      "ucsc_token_map": {
+         "disabled": [],
+         "enabled": [],
+         "platform-default": [
+            "Platform Default"
+         ]
+      },
+      "ucsm_token_map": {
+         "disabled": [
+            "disabled",
+            "Disabled"
+         ],
+         "enabled": [
+            "enabled",
+            "Enabled"
+         ],
+         "platform-default": [
+            "Platform Default",
+            "platform-default"
+         ]
+      },
+      "ucsm_token_name": "sriov",
       "values": [
          "platform-default",
          "enabled",

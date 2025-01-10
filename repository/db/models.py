@@ -63,8 +63,6 @@ class DeviceRecord(Base):
     __tablename__ = "devices"
 
     backups_path = Column(String(256))
-    cached_orgs = Column(JSON)
-    cache_path = Column(String(256))
     device_connector_claim_status = Column(String(16))
     device_connector_ownership_name = Column(String(256))
     device_connector_ownership_user = Column(String(256))
@@ -93,11 +91,14 @@ class DeviceRecord(Base):
     device_type = Column(String(100))
     device_type_long = Column(String(100))
     key_id = Column(String(100))
+    parent_device_uuid = Column(String(36))
+    sub_device_uuids = Column(JSON)
     password = Column(LargeBinary)
     private_key_path = Column(String(256))
     target = Column(String(100))
     username = Column(String(100))
     user_label = Column(String(256))
+    use_proxy = Column(Boolean())
 
 
 class InventoryRecord(Base):

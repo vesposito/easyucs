@@ -1,7 +1,7 @@
 {
   "openapi": "3.0.3",
   "info": {
-    "version": "0.9.8.11",
+    "version": "1.0.0",
     "title": "EasyUCS API",
     "description": "Description of EasyUCS API"
   },
@@ -186,6 +186,7 @@
           "cimc",
           "ucsm",
           "ucsc",
+          "imm_domain",
           "intersight"
         ],
         "description": "Device type",
@@ -219,6 +220,11 @@
             "$ref": "#/components/schemas/used_disk"
           }
         }
+      },
+      "domain_profile_name": {
+        "type": "string",
+        "description": "UCS Domain Profile name",
+        "example": "EasyUCS-DP"
       },
       "easyucs_version": {
         "type": "string",
@@ -323,6 +329,11 @@
         ],
         "example": "os"
       },
+      "imc_ip": {
+        "type": "string",
+        "description": "IP address of a UCS IMC",
+        "example": "10.1.1.1"
+      },
       "inventory_uuid": {
         "type": "string",
         "description": "UUID of the inventory",
@@ -350,7 +361,7 @@
       },
       "is_system": {
         "type": "boolean",
-        "description": "Whether the object is a system object (non-deleteable)",
+        "description": "Whether the object is a system object (non-deletable)",
         "example": false
       },
       "encryption_key": {
@@ -438,6 +449,16 @@
         "description": "Whether to return OS cached data",
         "example": true
       },
+      "orgs": {
+        "type": "string",
+        "description": "Whether to return orgs cached data",
+        "example": true
+      },
+      "server_details": {
+        "type": "string",
+        "description": "Whether to return server details cached data",
+        "example": true
+      },
       "output_format": {
         "type": "string",
         "description": "Output format of the report",
@@ -474,6 +495,53 @@
         "description": "Private key associated with the device",
         "example": "-----BEGIN EC PRIVATE KEY-----\nMIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgP13mv5gJcy2iuXkk\r0XQxQRFaiPBbXz25aZiHjP4pmHyhRANCAASPHN4M1YmJC+0QBU1KloACJIhqsj48\nVn/WhrcQ1Tv9oMrzYBPgExVGfRhORb6eCiYwY0UpUN36LQ6gmgDHzA1i\n-----END EC PRIVATE KEY-----\n"
       },
+      "push_equipment": {
+        "type": "boolean",
+        "description": "Whether the equipment section of the configuration should be pushed alongside the rest of the configuration",
+        "example": false
+      },
+      "ucs_service_profile_state": {
+        "type": "string",
+        "description": "State of a UCS Service Profile",
+        "enum": [
+          "bios-restore",
+          "clear-tpm",
+          "cmos-reset",
+          "compute-failed",
+          "compute-mismatch",
+          "config",
+          "config-failure",
+          "data-sanitize",
+          "data-sanitize-failed",
+          "decomissioning",
+          "degraded",
+          "diagnostics",
+          "diagnostics-failed",
+          "disabled",
+          "discovery",
+          "discovery-failed",
+          "inaccessible",
+          "indeterminate",
+          "inoperable",
+          "maintenance",
+          "maintenance-failed",
+          "ok",
+          "pending-reassociation",
+          "pending-reboot",
+          "power-off",
+          "power-problem",
+          "removed",
+          "restart",
+          "svnic-not-present",
+          "test",
+          "test-failed",
+          "thermal-problem",
+          "unassociated",
+          "unconfig",
+          "unconfig-failed",
+          "voltage-problem"
+        ]
+      },
       "progress": {
         "type": "integer",
         "description": "Progress of the task",
@@ -503,6 +571,11 @@
         "type": "integer",
         "description": "Port of the proxy",
         "example": 5421
+      },
+      "proxy_url": {
+        "type": "string",
+        "description": "Proxy URL",
+        "example": "proxy.company.com"
       },
       "proxy_username": {
         "type": "string",
@@ -716,6 +789,11 @@
         "type": "string",
         "description": "Whether to upload in chunks or not",
         "example": true
+      },
+      "use_proxy": {
+        "type": "boolean",
+        "description": "Whether to use proxy or not",
+        "example": false
       },
       "used_disk": {
         "type": "string",
@@ -1063,6 +1141,24 @@
           },
           "force": {
             "$ref": "#/components/schemas/force"
+          },
+          "push_equipment": {
+            "$ref": "#/components/schemas/push_equipment"
+          }
+        },
+        "additionalProperties": false
+      },
+      "device_actions_deploy_domain_profile": {
+        "type": "object",
+        "properties": {
+          "org_name": {
+            "$ref": "#/components/schemas/org_name"
+          },
+          "domain_profile_name": {
+            "$ref": "#/components/schemas/domain_profile_name"
+          },
+          "imm_domain_name": {
+            "$ref": "#/components/schemas/device_name"
           }
         },
         "additionalProperties": false
@@ -1157,8 +1253,47 @@
           },
           "username": {
             "$ref": "#/components/schemas/username"
+          },
+          "use_proxy": {
+            "$ref": "#/components/schemas/use_proxy"
           }
         }
+      },
+      "device_initial_setup_post": {
+        "oneOf": [
+          {
+            "type": "object",
+            "required": [
+              "config_uuid",
+              "fi_ip_list"
+            ],
+            "properties": {
+              "config_uuid": {
+                "$ref": "#/components/schemas/source_config_uuid"
+              },
+              "fi_ip_list": {
+                "$ref": "#/components/schemas/fi_ip_list"
+              }
+            },
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "required": [
+              "config_uuid",
+              "imc_ip"
+            ],
+            "properties": {
+              "config_uuid": {
+                "$ref": "#/components/schemas/source_config_uuid"
+              },
+              "imc_ip": {
+                "$ref": "#/components/schemas/imc_ip"
+              }
+            },
+            "additionalProperties": false
+          }
+        ]
       },
       "device_logs_get": {
         "type": "string",
@@ -1177,21 +1312,7 @@
             "$ref": "#/components/schemas/bypass_connection_checks"
           },
           "device_type": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/device_type"
-              },
-              {
-                "example": "ucsm"
-              },
-              {
-                "enum": [
-                  "cimc",
-                  "ucsm",
-                  "ucsc"
-                ]
-              }
-            ]
+            "$ref": "#/components/schemas/device_type"
           },
           "bypass_version_checks": {
             "$ref": "#/components/schemas/bypass_version_checks"
@@ -1255,6 +1376,9 @@
           "target": {
             "$ref": "#/components/schemas/target"
           },
+          "use_proxy": {
+            "$ref": "#/components/schemas/use_proxy"
+          },
           "user_label": {
             "$ref": "#/components/schemas/user_label"
           }
@@ -1308,6 +1432,9 @@
           },
           "target": {
             "$ref": "#/components/schemas/target"
+          },
+          "use_proxy": {
+            "$ref": "#/components/schemas/use_proxy"
           },
           "user_label": {
             "$ref": "#/components/schemas/user_label"
@@ -1486,6 +1613,33 @@
           },
           "encryption_key": {
             "$ref": "#/components/schemas/encryption_key"
+          }
+        }
+      },
+      "easyucs_proxy_put": {
+        "type": "object",
+        "required": [
+          "proxy_url",
+          "proxy_port"
+        ],
+        "properties": {
+          "proxy_url": {
+            "$ref": "#/components/schemas/proxy_url"
+          },
+          "proxy_port": {
+            "$ref": "#/components/schemas/proxy_port"
+          },
+          "proxy_authentication": {
+            "$ref": "#/components/schemas/proxy_authentication"
+          },
+          "proxy_username": {
+            "$ref": "#/components/schemas/proxy_username"
+          },
+          "proxy_password": {
+            "$ref": "#/components/schemas/proxy_password"
+          },
+          "proxy_password_set": {
+            "$ref": "#/components/schemas/default_password_set"
           }
         }
       },
@@ -1726,6 +1880,9 @@
           },
           "verify_ssl": {
             "$ref": "#/components/schemas/verify_ssl"
+          },
+          "use_proxy": {
+            "$ref": "#/components/schemas/use_proxy"
           }
         },
         "required": [
@@ -2175,6 +2332,22 @@
         "description": "Whether to return OS cached data",
         "schema": {
           "$ref": "#/components/schemas/os"
+        }
+      },
+      "orgs": {
+        "name": "orgs",
+        "in": "query",
+        "description": "Whether to return Orgs cached data",
+        "schema": {
+          "$ref": "#/components/schemas/orgs"
+        }
+      },
+      "server_details": {
+        "name": "server_details",
+        "in": "query",
+        "description": "Whether to return server_details cached data",
+        "schema": {
+          "$ref": "#/components/schemas/server_details"
         }
       },
       "page_number": {
@@ -3098,6 +3271,57 @@
         }
       }
     },
+    "/devices/{device_uuid}/actions/deploy_domain_profile": {
+      "post": {
+        "tags": [
+          "devices"
+        ],
+        "summary": "Assign and deploy a domain profile to an IMM Domain.",
+        "description": "Assigns an Intersight domain profile to a specified IMM Domain (pair of Fabric Interconnects) and deploys it.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/device_uuid"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/device_actions_deploy_domain_profile"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The corresponding task to follow progress",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "task": {
+                      "$ref": "#/components/schemas/task_uuid"
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400ClientError"
+          },
+          "404": {
+            "$ref": "#/components/responses/404NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/500ServerError"
+          }
+        }
+      }
+    },
     "/devices/{device_uuid}/actions/fetch_config_and_inventory": {
       "post": {
         "tags": [
@@ -3118,6 +3342,57 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/fetch"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The corresponding task to follow progress",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "task": {
+                      "$ref": "#/components/schemas/task_uuid"
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400ClientError"
+          },
+          "404": {
+            "$ref": "#/components/responses/404NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/500ServerError"
+          }
+        }
+      }
+    },
+    "/devices/{device_uuid}/actions/initial_setup": {
+      "post": {
+        "tags": [
+          "devices"
+        ],
+        "summary": "Initial setup of device",
+        "description": "Initial setup of device",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/device_uuid"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/device_initial_setup_post"
               }
             }
           }
@@ -3692,6 +3967,12 @@
           },
           {
             "$ref": "#/components/parameters/os"
+          },
+          {
+            "$ref": "#/components/parameters/orgs"
+          },
+          {
+            "$ref": "#/components/parameters/server_details"
           }
         ],
         "responses": {
@@ -3702,28 +3983,103 @@
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "os": {
-                      "type": "object"
+                    "os_firmware": {
+                      "type": "object",
+                      "properties": {
+                        "os": {
+                          "type": "object"
+                        },
+                        "firmware": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "image_type": {
+                                "$ref": "#/components/schemas/firmware_image_type"
+                              },
+                              "name": {
+                                "$ref": "#/components/schemas/name"
+                              },
+                              "supported_models": {
+                                "$ref": "#/components/schemas/supported_models"
+                              },
+                              "version": {
+                                "$ref": "#/components/schemas/version"
+                              }
+                            }
+                          }
+                        }
+                      }
                     },
-                    "firmware": {
+                    "server_details": {
                       "type": "array",
                       "items": {
                         "type": "object",
                         "properties": {
-                          "image_type": {
-                            "$ref": "#/components/schemas/firmware_image_type"
+                          "timestamp": {
+                            "type": "string"
                           },
-                          "name": {
-                            "$ref": "#/components/schemas/name"
+                          "serial": {
+                            "type": "string"
                           },
-                          "supported_models": {
-                            "$ref": "#/components/schemas/supported_models"
+                          "model": {
+                            "type": "string"
                           },
-                          "version": {
-                            "$ref": "#/components/schemas/version"
+                          "dn": {
+                            "type": "string"
+                          },
+                          "oper_state": {
+                            "type": "string"
+                          },
+                          "oper_power": {
+                            "type": "string"
                           }
                         }
                       }
+                    },
+                    "orgs": {
+                      "type": "object"
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400ClientError"
+          },
+          "404": {
+            "$ref": "#/components/responses/404NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/500ServerError"
+          }
+        }
+      }
+    },
+    "/devices/{device_uuid}/cache/actions/fetch": {
+      "post": {
+        "tags": [
+          "devices"
+        ],
+        "summary": "Fetch Cache from device",
+        "description": "Fetches Cache from a given device in EasyUCS",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/device_uuid"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The corresponding task to follow progress",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "task": {
+                      "$ref": "#/components/schemas/task_uuid"
                     }
                   },
                   "additionalProperties": false
@@ -3765,6 +4121,47 @@
                   "properties": {
                     "task": {
                       "$ref": "#/components/schemas/task_uuid"
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400ClientError"
+          },
+          "404": {
+            "$ref": "#/components/responses/404NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/500ServerError"
+          }
+        }
+      }
+    },
+    "/devices/{device_uuid}/cache/orgs": {
+      "get": {
+        "tags": [
+          "devices"
+        ],
+        "summary": "Get the list of orgs",
+        "description": "Returns the list of orgs in the device cache",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/device_uuid"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A list of orgs",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "orgs": {
+                      "$ref": "#/components/schemas/cached_orgs"
                     }
                   },
                   "additionalProperties": false
@@ -4710,47 +5107,6 @@
         }
       }
     },
-    "/devices/{device_uuid}/orgs": {
-      "get": {
-        "tags": [
-          "devices"
-        ],
-        "summary": "Get the orgs",
-        "description": "Returns the orgs cached in the device metadata",
-        "parameters": [
-          {
-            "$ref": "#/components/parameters/device_uuid"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "A list of orgs",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "orgs": {
-                      "$ref": "#/components/schemas/cached_orgs"
-                    }
-                  },
-                  "additionalProperties": false
-                }
-              }
-            }
-          },
-          "400": {
-            "$ref": "#/components/responses/400ClientError"
-          },
-          "404": {
-            "$ref": "#/components/responses/404NotFound"
-          },
-          "500": {
-            "$ref": "#/components/responses/500ServerError"
-          }
-        }
-      }
-    },
     "/devices/{device_uuid}/reports": {
       "get": {
         "tags": [
@@ -5168,6 +5524,71 @@
         "responses": {
           "200": {
             "description": "Restoring from backup file completed"
+          },
+          "400": {
+            "$ref": "#/components/responses/400ClientError"
+          },
+          "404": {
+            "$ref": "#/components/responses/404NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/500ServerError"
+          }
+        }
+      }
+    },
+    "/easyucs/proxy": {
+      "get": {
+        "tags": [
+          "easyucs"
+        ],
+        "summary": "Get the proxy settings",
+        "description": "Getting the proxy settings for EasyUCS (used for Intersight SaaS devices and Repo)",
+        "responses": {
+          "200": {
+            "description": "Proxy Settings of EasyUCS",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/easyucs_proxy_put"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400ClientError"
+          },
+          "500": {
+            "$ref": "#/components/responses/500ServerError"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "easyucs"
+        ],
+        "summary": "Modify the proxy settings",
+        "description": "Updates the proxy settings used by EasyUCS to connect to devices",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/easyucs_proxy_put"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Proxy Settings Updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/easyucs_proxy_put"
+                }
+              }
+            }
           },
           "400": {
             "$ref": "#/components/responses/400ClientError"

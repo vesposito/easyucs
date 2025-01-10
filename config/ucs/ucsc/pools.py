@@ -85,23 +85,25 @@ class UcsCentralIpPool(UcsCentralConfigObject):
                     self.logger(level="error",
                                 message="Unable to get attributes from JSON content for " + self._CONFIG_NAME)
 
-                for element in self.ip_blocks:
-                    for value in ["gateway", "primary_dns", "secondary_dns", "netmask", "to", "from", "size",
-                                  "id_range_access_control", "scope"]:
-                        if value not in element:
-                            element[value] = None
-
-                for element in self.ipv6_blocks:
-                    for value in ["gateway", "primary_dns", "secondary_dns", "prefix", "to", "from", "size",
-                                  "id_range_access_control", "scope"]:
-                        if value not in element:
-                            element[value] = None
-
-                for value in ["assigned", "size"]:
-                    if value not in self.operational_state:
-                        self.operational_state[value] = None
-
         self.clean_object()
+
+    def clean_object(self):
+        UcsCentralConfigObject.clean_object(self)
+        for element in self.ip_blocks:
+            for value in ["gateway", "primary_dns", "secondary_dns", "netmask", "to", "from", "size",
+                          "id_range_access_control", "scope"]:
+                if value not in element:
+                    element[value] = None
+
+        for element in self.ipv6_blocks:
+            for value in ["gateway", "primary_dns", "secondary_dns", "prefix", "to", "from", "size",
+                          "id_range_access_control", "scope"]:
+                if value not in element:
+                    element[value] = None
+
+        for value in ["assigned", "size"]:
+            if value not in self.operational_state:
+                self.operational_state[value] = None
 
     def push_object(self, commit=True):
         if commit:
@@ -213,16 +215,19 @@ class UcsCentralIqnPool(UcsCentralConfigObject):
                     self.logger(level="error",
                                 message="Unable to get attributes from JSON content for " + self._CONFIG_NAME)
 
-                for element in self.iqn_blocks:
-                    for value in ["to", "from", "size", "suffix", "id_range_access_control"]:
-                        if value not in element:
-                            element[value] = None
-
-                for value in ["assigned", "size"]:
-                    if value not in self.operational_state:
-                        self.operational_state[value] = None
-
         self.clean_object()
+
+    def clean_object(self):
+        UcsCentralConfigObject.clean_object(self)
+
+        for element in self.iqn_blocks:
+            for value in ["to", "from", "size", "suffix", "id_range_access_control"]:
+                if value not in element:
+                    element[value] = None
+
+        for value in ["assigned", "size"]:
+            if value not in self.operational_state:
+                self.operational_state[value] = None
 
     def push_object(self, commit=True):
         if commit:
@@ -297,16 +302,19 @@ class UcsCentralMacPool(UcsCentralConfigObject):
                     self.logger(level="error",
                                 message="Unable to get attributes from JSON content for " + self._CONFIG_NAME)
 
-                for element in self.mac_blocks:
-                    for value in ["to", "from", "size", "id_range_access_control"]:
-                        if value not in element:
-                            element[value] = None
-
-                for value in ["assigned", "size"]:
-                    if value not in self.operational_state:
-                        self.operational_state[value] = None
-
         self.clean_object()
+
+    def clean_object(self):
+        UcsCentralConfigObject.clean_object(self)
+
+        for element in self.mac_blocks:
+            for value in ["to", "from", "size", "id_range_access_control"]:
+                if value not in element:
+                    element[value] = None
+
+        for value in ["assigned", "size"]:
+            if value not in self.operational_state:
+                self.operational_state[value] = None
 
     def push_object(self, commit=True):
         if commit:
@@ -479,16 +487,19 @@ class UcsCentralUuidPool(UcsCentralConfigObject):
                     self.logger(level="error",
                                 message="Unable to get attributes from JSON content for " + self._CONFIG_NAME)
 
-                for element in self.uuid_blocks:
-                    for value in ["to", "from", "size", "id_range_access_control"]:
-                        if value not in element:
-                            element[value] = None
-
-                for value in ["assigned", "size"]:
-                    if value not in self.operational_state:
-                        self.operational_state[value] = None
-
         self.clean_object()
+
+    def clean_object(self):
+        UcsCentralConfigObject.clean_object(self)
+
+        for element in self.uuid_blocks:
+            for value in ["to", "from", "size", "id_range_access_control"]:
+                if value not in element:
+                    element[value] = None
+
+        for value in ["assigned", "size"]:
+            if value not in self.operational_state:
+                self.operational_state[value] = None
 
     def push_object(self, commit=True):
         if commit:
@@ -578,16 +589,19 @@ class UcsCentralWwnnPool(UcsCentralConfigObject):
                     self.logger(level="error",
                                 message="Unable to get attributes from JSON content for " + self._CONFIG_NAME)
 
-                for element in self.wwnn_blocks:
-                    for value in ["to", "from", "size", "id_range_access_control"]:
-                        if value not in element:
-                            element[value] = None
-
-                for value in ["assigned", "size"]:
-                    if value not in self.operational_state:
-                        self.operational_state[value] = None
-
         self.clean_object()
+
+    def clean_object(self):
+        UcsCentralConfigObject.clean_object(self)
+
+        for element in self.wwnn_blocks:
+            for value in ["to", "from", "size", "id_range_access_control"]:
+                if value not in element:
+                    element[value] = None
+
+        for value in ["assigned", "size"]:
+            if value not in self.operational_state:
+                self.operational_state[value] = None
 
     def push_object(self, commit=True):
         if commit:
@@ -675,16 +689,19 @@ class UcsCentralWwpnPool(UcsCentralConfigObject):
                     self.logger(level="error",
                                 message="Unable to get attributes from JSON content for " + self._CONFIG_NAME)
 
-                for element in self.wwpn_blocks:
-                    for value in ["to", "from", "size", "id_range_access_control"]:
-                        if value not in element:
-                            element[value] = None
-
-                for value in ["assigned", "size"]:
-                    if value not in self.operational_state:
-                        self.operational_state[value] = None
-
         self.clean_object()
+
+    def clean_object(self):
+        UcsCentralConfigObject.clean_object(self)
+
+        for element in self.wwpn_blocks:
+            for value in ["to", "from", "size", "id_range_access_control"]:
+                if value not in element:
+                    element[value] = None
+
+        for value in ["assigned", "size"]:
+            if value not in self.operational_state:
+                self.operational_state[value] = None
 
     def push_object(self, commit=True):
         if commit:
@@ -774,16 +791,19 @@ class UcsCentralWwxnPool(UcsCentralConfigObject):
                     self.logger(level="error",
                                 message="Unable to get attributes from JSON content for " + self._CONFIG_NAME)
 
-                for element in self.wwxn_blocks:
-                    for value in ["to", "from", "size", "id_range_access_control"]:
-                        if value not in element:
-                            element[value] = None
-
-                for value in ["assigned", "size"]:
-                    if value not in self.operational_state:
-                        self.operational_state[value] = None
-
         self.clean_object()
+
+    def clean_object(self):
+        UcsCentralConfigObject.clean_object(self)
+
+        for element in self.wwxn_blocks:
+            for value in ["to", "from", "size", "id_range_access_control"]:
+                if value not in element:
+                    element[value] = None
+
+        for value in ["assigned", "size"]:
+            if value not in self.operational_state:
+                self.operational_state[value] = None
 
     def push_object(self, commit=True):
         if commit:

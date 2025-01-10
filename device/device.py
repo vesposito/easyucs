@@ -7,6 +7,9 @@ import datetime
 import inspect
 import json
 import logging
+import requests
+import time
+import urllib3
 import uuid as python_uuid
 from queue import Queue
 
@@ -20,7 +23,7 @@ from repository.metadata import DeviceMetadata
 class GenericDevice:
     def __init__(self, parent=None, uuid=None, target="", user="", password="", is_hidden=False, is_system=False,
                  system_usage=None, logger_handle_log_level="info", log_file_path=None, bypass_connection_checks=False,
-                 bypass_version_checks=False, user_label=None):
+                 bypass_version_checks=False, sub_device_uuids=None, user_label=None):
         self.bypass_connection_checks = bypass_connection_checks
         self.bypass_version_checks = bypass_version_checks
         self.load_from = None
@@ -31,6 +34,7 @@ class GenericDevice:
         # This queue will only get populated when a device already have a task under execution and some other tasks
         # are queued to be executed. So the queued tasks will be part of this queue.
         self.queued_tasks = Queue(maxsize=10)
+        self.sub_devices = []
         self.target = target
         self.task = None
         self.task_progression = 0
@@ -47,7 +51,8 @@ class GenericDevice:
         # Needs to be created after UUID
         self.metadata = DeviceMetadata(
             parent=self, device_name=target, is_hidden=is_hidden, is_system=is_system, system_usage=system_usage,
-            bypass_connection_checks=bypass_connection_checks, bypass_version_checks=bypass_version_checks, user_label=user_label)
+            bypass_connection_checks=bypass_connection_checks, bypass_version_checks=bypass_version_checks,
+            sub_device_uuids=sub_device_uuids, user_label=user_label)
 
         self.logger_handle_log_level = logger_handle_log_level
         self._log_file_path = log_file_path
@@ -59,6 +64,7 @@ class GenericDevice:
         self._init_logger()
 
         self.backup_manager = None
+        self.cache_manager = None
         self.config_manager = None
         self.inventory_manager = None
         self.report_manager = None
@@ -368,3 +374,165 @@ class GenericDevice:
                 (index >= 0 and index + 1 > len(self._logger_keeper[level])):
             return ""
         return self._logger_keeper[level][index]
+
+    def get_request(self, uri=None):
+        """
+        Does a GET request on the uri
+        """
+
+        # Disable warning at each request
+        urllib3.disable_warnings()
+
+        if not uri:
+            self.logger(level="error",
+                        message="URI and payload data are required for sending a GET request to Device!")
+            return None
+
+        if self.metadata.device_type in ["cimc", "ucsm"]:
+            login_cookie = self.handle.cookie
+            auth_header = {'ucsmcookie': f"ucsm-cookie={login_cookie}"}
+        elif self.metadata.device_type in ["imm_domain"]:
+            login_cookie = self._session_id
+            auth_header = {'Cookie': f"sessionId={login_cookie}",
+                           'X-Csrf-Token': self._csrf_token}
+        else:
+            self.logger(level="error", message="Invalid device type")
+            return None
+
+        if login_cookie:
+            try:
+                response = requests.get(uri, verify=False, headers=auth_header)
+                if response.status_code != 200:
+                    self.logger(level="error",
+                                message=f"Couldn't get the device connector information from the API {uri}, "
+                                        f"response: {response}")
+                    return None
+                elif "InvalidRequest" in response.text:
+                    self.logger(level="error", message=response.json()["message"])
+                    return None
+
+                return response.json()
+            except Exception as err:
+                self.logger(level="error", message="Couldn't request the device connector information " +
+                                                   "from the API for config: " + str(err))
+        else:
+            self.logger(level="error",
+                        message="No login cookie, no request can be made to find device connector information")
+        return None
+
+    def post_request(self, uri=None, payload=None):
+        """
+        Does a POST request on the uri
+        """
+
+        # Disable warning at each request
+        urllib3.disable_warnings()
+
+        if not uri or not payload:
+            self.logger(level="error",
+                        message="URI and payload data are required for sending a POST request to Device!")
+            return None
+
+        if self.metadata.device_type in ["cimc", "ucsm"]:
+            login_cookie = self.handle.cookie
+            auth_header = {'ucsmcookie': f"ucsm-cookie={login_cookie}"}
+        elif self.metadata.device_type in ["imm_domain"]:
+            login_cookie = self._session_id
+            auth_header = {'Cookie': f"sessionId={login_cookie}",
+                           'X-Csrf-Token': self._csrf_token}
+        else:
+            self.logger(level="error", message="Invalid device type")
+            return None
+
+        if login_cookie:
+            try:
+                response = requests.post(uri, verify=False, headers=auth_header, data=payload)
+                if response.status_code != 200:
+                    self.logger(level="error",
+                                message=f"Couldn't post the device connector information to the API {uri}, "
+                                        f"response: {response}")
+                    return None
+                elif "InvalidRequest" in response.text:
+                    self.logger(level="error", message=response.json()["message"])
+                    return None
+
+                return response.json()
+            except Exception as err:
+                self.logger(level="error",
+                            message=f"Couldn't push the device connector information to the API: {err}")
+        else:
+            self.logger(level="error",
+                        message="No login cookie, no request can be made to find device connector information")
+        return None
+
+    def post_request_initial_setup(self, request_url=None, request_payload=None, retries=3, error_message=""):
+        """
+        Performs an HTTP POST (using Requests) of the specified payload to the specified URL, with a retry mechanism
+        :param request_url: ex. "https://10.0.0.1/cgi-bin/initial_setup_new.cgi"
+        :param request_payload:
+        :param retries: Number of retries
+        :param error_message: ex. "send initial configuration to FI B"
+        :return:
+        """
+
+        for i in range(retries):
+            if i:
+                self.logger(level="warning", message="Retrying to do a request to " + error_message)
+            try:
+                req = requests.post(request_url, request_payload, verify=False)
+                return req
+            except (ConnectionRefusedError, ValueError, requests.exceptions.ChunkedEncodingError) as err:
+                self.logger(level="debug",
+                            message="Failed to " + error_message + " : " + str(err))
+            except Exception as err:
+                self.logger(level="debug",
+                            message="Failed to " + error_message + " : " + str(err))
+            time.sleep(5)
+
+        self.logger(level="error", message="Unable to " + error_message + " after " + str(retries) + " attempts")
+        return False
+    
+    def put_request(self, uri=None, payload=None):
+        """
+        Does a PUT request on the uri
+        """
+
+        # Disable warning at each request
+        urllib3.disable_warnings()
+
+        if not uri or not payload:
+            self.logger(level="error",
+                        message="URI and payload data are required for sending a POST request to Device!")
+            return None
+
+        if self.metadata.device_type in ["cimc", "ucsm"]:
+            login_cookie = self.handle.cookie
+            auth_header = {'ucsmcookie': f"ucsm-cookie={login_cookie}"}
+        elif self.metadata.device_type in ["imm_domain"]:
+            login_cookie = self._session_id
+            auth_header = {'Cookie': f"sessionId={login_cookie}",
+                           'X-Csrf-Token': self._csrf_token}
+        else:
+            self.logger(level="error", message="Invalid device type")
+            return None
+
+        if login_cookie:
+            try:
+                response = requests.put(uri, verify=False, headers=auth_header, data=payload)
+                if response.status_code != 200:
+                    self.logger(level="error",
+                                message=f"Couldn't post the device connector information to the API {uri}, "
+                                        f"response: {response}")
+                    return None
+                elif "InvalidRequest" in response.text:
+                    self.logger(level="error", message=response.json()["message"])
+                    return None
+
+                return response.json()
+            except Exception as err:
+                self.logger(level="error",
+                            message=f"Couldn't push the device connector information to the API: {err}")
+        else:
+            self.logger(level="error",
+                        message="No login cookie, no request can be made to find device connector information")
+        return None

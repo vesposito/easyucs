@@ -1,5 +1,6 @@
 {
   "model_short_name": "6140XP",
+  "name": "Cisco UCS 6140XP Fabric Interconnect",
   "rear_file_name": "N10-S6200_rear.png",
   "front_file_name": "N10-S6200_front.png",
   "rear_file_size": [2862,273],

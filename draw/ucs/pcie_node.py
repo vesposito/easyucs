@@ -1,18 +1,14 @@
 # coding: utf-8
 # !/usr/bin/env python
 
-""" blade.py: Easy UCS Deployment Tool """
-from __init__ import __author__, __copyright__,  __version__, __status__
+""" pcie_node.py: Easy UCS Deployment Tool """
 
-
-from draw.object import GenericUcsDrawEquipment
-from draw.ucs.storage import UcsSystemDrawStorageController, UcsSystemDrawStorageLocalDisk
-
-from PIL import Image, ImageDraw, ImageFont
 import json
 
+from draw.object import GenericUcsDrawEquipment
 
-class GenericUcsDrawPcieNode(GenericUcsDrawEquipment):
+
+class UcsPcieNodeDraw(GenericUcsDrawEquipment):
     def __init__(self, parent=None, parent_draw=None):
         self.parent_draw = parent_draw
         GenericUcsDrawEquipment.__init__(self, parent=parent, orientation="front")

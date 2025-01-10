@@ -1,5 +1,6 @@
 {
   "model_short_name": "6454",
+  "name": "Cisco UCS 6454 Fabric Interconnect",
   "rear_file_name": "UCS-FI-6454_rear.png",
   "front_file_name": "UCS-FI-6454_front.png",
   "rear_file_size": [2862,268],

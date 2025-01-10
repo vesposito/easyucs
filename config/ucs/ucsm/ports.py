@@ -99,14 +99,16 @@ class UcsSystemAppliancePort(UcsSystemConfigObject):
                 if not self.get_attributes_from_json(json_content=json_content):
                     self.logger(level="error",
                                 message="Unable to get attributes from JSON content for " + self._CONFIG_NAME)
-
-                # We need to set all values that are not present in the config file to None
-                for element in self.ethernet_target_endpoint:
-                    for value in ["name", "mac_address"]:
-                        if value not in element:
-                            element[value] = None
-
         self.clean_object()
+
+    def clean_object(self):
+        UcsSystemConfigObject.clean_object(self)
+
+        # We need to set all values that are not present in the config file to None
+        for element in self.ethernet_target_endpoint:
+            for value in ["name", "mac_address"]:
+                if value not in element:
+                    element[value] = None
 
     def push_object(self, commit=True):
         port_name = self.fabric + "/" + self.slot_id + '/' + self.port_id
@@ -267,18 +269,20 @@ class UcsSystemAppliancePortChannel(UcsSystemConfigObject):
                     self.logger(level="error",
                                 message="Unable to get attributes from JSON content for " + self._CONFIG_NAME)
 
-                # We need to set all values that are not present in the config file to None
-                for element in self.interfaces:
-                    for value in ["aggr_id", "slot_id", "port_id", "admin_state", "user_label"]:
-                        if value not in element:
-                            element[value] = None
-
-                for element in self.ethernet_target_endpoint:
-                    for value in ["name", "mac_address"]:
-                        if value not in element:
-                            element[value] = None
-
         self.clean_object()
+
+    def clean_object(self):
+        UcsSystemConfigObject.clean_object(self)
+        # We need to set all values that are not present in the config file to None
+        for element in self.interfaces:
+            for value in ["aggr_id", "slot_id", "port_id", "admin_state", "user_label"]:
+                if value not in element:
+                    element[value] = None
+
+        for element in self.ethernet_target_endpoint:
+            for value in ["name", "mac_address"]:
+                if value not in element:
+                    element[value] = None
 
     def push_object(self, commit=True):
         if commit:
@@ -469,6 +473,14 @@ class UcsSystemFcoePortChannel(UcsSystemConfigObject):
                                 message="Unable to get attributes from JSON content for " + self._CONFIG_NAME)
 
         self.clean_object()
+
+    def clean_object(self):
+        UcsSystemConfigObject.clean_object(self)
+        # We need to set all values that are not present in the config file to None
+        for element in self.interfaces:
+            for value in ["aggr_id", "slot_id", "port_id", "admin_state", "link_profile", "user_label"]:
+                if value not in element:
+                    element[value] = None
 
     def push_object(self, commit=True):
         if commit:
@@ -743,12 +755,16 @@ class UcsSystemLanPortChannel(UcsSystemConfigObject):
                     self.logger(level="error",
                                 message="Unable to get attributes from JSON content for " + self._CONFIG_NAME)
 
-                # We need to set all values that are not present in the config file to None
-                for element in self.interfaces:
-                    for value in ["aggr_id", "slot_id", "port_id", "admin_state", "link_profile", "user_label"]:
-                        if value not in element:
-                            element[value] = None
         self.clean_object()
+
+    def clean_object(self):
+        UcsSystemConfigObject.clean_object(self)
+
+        # We need to set all values that are not present in the config file to None
+        for element in self.interfaces:
+            for value in ["aggr_id", "slot_id", "port_id", "admin_state", "link_profile", "user_label"]:
+                if value not in element:
+                    element[value] = None
 
     def push_object(self, commit=True):
         if commit:
@@ -945,12 +961,15 @@ class UcsSystemSanPortChannel(UcsSystemConfigObject):
                 if not self.get_attributes_from_json(json_content=json_content):
                     self.logger(level="error",
                                 message="Unable to get attributes from JSON content for " + self._CONFIG_NAME)
-                for element in self.interfaces:
-                    for value in ["user_label", "link_profile", "admin_state", "aggr_id", "slot_id", "port_id"]:
-                        if value not in element:
-                            element[value] = None
 
         self.clean_object()
+
+    def clean_object(self):
+        UcsSystemConfigObject.clean_object(self)
+        for element in self.interfaces:
+            for value in ["user_label", "link_profile", "admin_state", "aggr_id", "slot_id", "port_id"]:
+                if value not in element:
+                    element[value] = None
 
     def push_object(self, commit=True):
         if commit:
@@ -1759,13 +1778,16 @@ class UcsSystemUnifiedStoragePort(UcsSystemFcoeStoragePort, UcsSystemAppliancePo
                     self.logger(level="error",
                                 message="Unable to get attributes from JSON content for " + self._CONFIG_NAME)
 
-                # We need to set all values that are not present in the config file to None
-                for element in self.ethernet_target_endpoint:
-                    for value in ["name", "mac_address"]:
-                        if value not in element:
-                            element[value] = None
-
         self.clean_object()
+
+    def clean_object(self):
+        UcsSystemConfigObject.clean_object(self)
+
+        # We need to set all values that are not present in the config file to None
+        for element in self.ethernet_target_endpoint:
+            for value in ["name", "mac_address"]:
+                if value not in element:
+                    element[value] = None
 
     def push_object(self, commit=True):
         port_name = self.fabric + "/" + self.slot_id + '/' + self.port_id

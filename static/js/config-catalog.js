@@ -279,21 +279,25 @@ function displaySystemCatalogDevice(data){
         console.error('No device of the type ' + device_type+ ' to display!')
         return
     }
-
+    // Displays the device type in the breadcrumbs
+    $(".current-config-breadcrumb").text(system_catalog_device.device_type_long);
 
     // Changes the style of the card based on the type of device
     if(device_type == "intersight"){
-    avatar_src = "/static/img/intersight_logo.png";
-    color = "bg-info";
+      avatar_src = "/static/img/intersight_logo.png";
+      color = "bg-info";
+    } else if (device_type == "imm_domain"){
+      avatar_src = "/static/img/imm_domain_logo.png";
+      color = "bg-success";
     } else if (device_type == "ucsm"){
-    avatar_src = "/static/img/ucsm_logo.png";
-    color = "bg-primary";
+      avatar_src = "/static/img/ucsm_logo.png";
+      color = "bg-primary";
     } else if (device_type == "cimc"){
-    avatar_src = "/static/img/cimc_logo.png";
-    color = "bg-warning";
+      avatar_src = "/static/img/cimc_logo.png";
+      color = "bg-warning";
     } else if (device_type == "ucsc"){
-    avatar_src = "/static/img/ucsc_logo.png";
-    color = "bg-dark";
+      avatar_src = "/static/img/ucsc_logo.png";
+      color = "bg-dark";
     }
 
      // Creates the card and populates the container with it
@@ -384,7 +388,7 @@ function getCategoryTable(category_type){
 function getTypedDevices(){
 
     // Only selects non-system devices
-    filter = ["device_type", "==", device_type]
+    filter = ["device_type", "==", device_type];
   
     // Gets the devices and displays them in the UI
     getFromDb(displayTypedDevices, "device", device_uuid=null, uuid=null, filter=filter);

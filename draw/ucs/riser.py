@@ -2,15 +2,11 @@
 # !/usr/bin/env python
 
 """ riser.py: Easy UCS Deployment Tool """
-from __init__ import __author__, __copyright__,  __version__, __status__
+
+from PIL import Image
 
 
-from draw.object import GenericUcsDrawEquipment
-from PIL import Image, ImageDraw, ImageFont
-from draw.ucs.port import UcsSystemDrawPort
-
-
-class GenericUcsDrawPcieRiser():
+class GenericUcsDrawPcieRiser:
     def __init__(self, parent=None, parent_draw=None, infra=False):
         self._parent = parent
         self.parent_draw = parent_draw

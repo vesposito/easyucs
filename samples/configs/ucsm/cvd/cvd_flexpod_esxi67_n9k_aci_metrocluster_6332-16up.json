@@ -8,8 +8,8 @@
             "subcategory": "FlexPod",
             "name": "FlexPod Datacenter with Cisco ACI Multi-Pod with NetApp MetroCluster IP and VMware vSphere 6.7 (6332-16UP)",
             "url": "https://www.cisco.com/c/en/us/td/docs/unified_computing/ucs/UCS_CVDs/flexpod_esxi67_n9k_aci_metrocluster.html",
-            "easyucs_version": "0.9.8.2",
-            "revision": "1.3"
+            "easyucs_version": "1.0.0",
+            "revision": "1.4"
          }
       ]
    },

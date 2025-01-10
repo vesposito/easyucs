@@ -10,75 +10,90 @@
          "type": "string",
          "default": ""
       },
+      "configuration_from_intersight_only": {
+         "description": "Device Connector Configuration from Intersight Only",
+         "type": "boolean",
+         "default": false
+      },
+      "dns_configuration": {
+         "description": "Device Connector DNS Configuration",
+         "type": "object",
+         "properties": {
+            "dns_servers": {
+               "description": "Device Connector DNS servers",
+               "type": "array"
+            },
+            "domain_name": {
+               "description": "Device Connector Domain name",
+               "type": "string",
+               "default": ""
+            }
+         },
+         "additionalProperties": false
+      },
+      "enabled": {
+         "description": "Device Connector State",
+         "type": "boolean",
+         "default": true
+      },
       "intersight_url": {
          "description": "Device Connector Intersight URL",
          "type": "string",
          "default": "svc.intersight.com"
       },
-      "proxy_host": {
-         "description": "Device Connector Proxy Host",
-         "type": "string",
-         "default": "0.0.0.0"
+      "ntp_configuration": {
+         "properties": {
+            "ntp_servers": {
+               "description": "Device Connector NTP servers",
+               "type": "array"
+            }
+         },
+         "additionalProperties": false
       },
-      "proxy_port": {
-         "description": "Device Connector Proxy Port",
-         "type": "string",
-         "default": ""
-      },
-      "proxy_state": {
-         "description": "Device Connector Proxy State",
-         "type": "string",
-         "default": "disabled",
-         "enum": [
-            "enabled",
-            "disabled"
-         ]
-      },
-      "proxy_username": {
-         "description": "Device Connector Proxy Username",
-         "type": "string",
-         "default": ""
-      },
-      "proxy_password": {
-         "description": "Device Connector Proxy Password",
-         "type": "string",
-         "default": ""
+      "proxy_configuration": {
+         "properties": {
+            "enable_proxy": {
+               "description": "Device Connector Proxy State",
+               "type": "boolean",
+               "default": false
+            },
+            "enable_proxy_authentication": {
+               "description": "Device Connector Proxy Authentication",
+               "type": "boolean",
+               "default": false
+            },
+            "proxy_host": {
+               "description": "Device Connector Proxy Host",
+               "type": "string",
+               "default": "0.0.0.0"
+            },
+            "proxy_password": {
+               "description": "Device Connector Proxy Password",
+               "type": "string",
+               "default": ""
+            },
+            "proxy_port": {
+               "description": "Device Connector Proxy Port",
+               "type": "integer",
+               "default": 80
+            },
+            "proxy_username": {
+               "description": "Device Connector Proxy Username",
+               "type": "string",
+               "default": ""
+            }
+         },
+         "additionalProperties": false
       },
       "read_only": {
          "description": "Device Connector Read Only",
-         "type": "string",
-         "default": "false",
-         "enum": [
-            "true",
-            "false"
-         ]
-      },
-      "enabled": {
-         "description": "Device Connector State",
-         "type": "string",
-         "default": "true",
-         "enum": [
-            "true",
-            "false"
-         ]
+         "type": "boolean",
+         "default": false
       },
       "tunneled_kvm": {
          "description": "Device Connector Tunneled KVM",
-         "type": "string",
-         "default": "true",
-         "enum": [
-            "true",
-            "false"
-         ]
-      },
-      "configuration_from_intersight_only": {
-         "description": "Device Connector Configuration from Intersight Only",
-         "type": "string",
-         "default": "false",
-         "enum": [
-            "true",
-            "false"
-         ]
+         "type": "boolean",
+         "default": true
       }
    },
    "additionalProperties": false

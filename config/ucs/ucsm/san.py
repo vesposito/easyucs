@@ -207,13 +207,16 @@ class UcsSystemSanPinGroup(UcsSystemConfigObject):
                     self.logger(level="error",
                                 message="Unable to get attributes from JSON content for " + self._CONFIG_NAME)
 
-                # We need to set all values that are not present in the config file to None
-                for element in self.interfaces:
-                    for value in ["aggr_id", "slot_id", "port_id", "fabric", "fcoe", "pc_id"]:
-                        if value not in element:
-                            element[value] = None
-
         self.clean_object()
+
+    def clean_object(self):
+        UcsSystemConfigObject.clean_object(self)
+
+        # We need to set all values that are not present in the config file to None
+        for element in self.interfaces:
+            for value in ["aggr_id", "slot_id", "port_id", "fabric", "fcoe", "pc_id"]:
+                if value not in element:
+                    element[value] = None
 
     def push_object(self, commit=True):
         if commit:
@@ -309,16 +312,19 @@ class UcsSystemWwpnPool(UcsSystemConfigObject):
                     self.logger(level="error",
                                 message="Unable to get attributes from JSON content for " + self._CONFIG_NAME)
 
-                for element in self.wwpn_blocks:
-                    for value in ["to", "from", "size"]:
-                        if value not in element:
-                            element[value] = None
-
-                for value in ["assigned", "size"]:
-                    if value not in self.operational_state:
-                        self.operational_state[value] = None
-
         self.clean_object()
+
+    def clean_object(self):
+        UcsSystemConfigObject.clean_object(self)
+
+        for element in self.wwpn_blocks:
+            for value in ["to", "from", "size"]:
+                if value not in element:
+                    element[value] = None
+
+        for value in ["assigned", "size"]:
+            if value not in self.operational_state:
+                self.operational_state[value] = None
 
     def push_object(self, commit=True):
         if commit:
@@ -402,16 +408,18 @@ class UcsSystemWwnnPool(UcsSystemConfigObject):
                     self.logger(level="error",
                                 message="Unable to get attributes from JSON content for " + self._CONFIG_NAME)
 
-                for element in self.wwnn_blocks:
-                    for value in ["to", "from", "size"]:
-                        if value not in element:
-                            element[value] = None
-
-                for value in ["assigned", "size"]:
-                    if value not in self.operational_state:
-                        self.operational_state[value] = None
-
         self.clean_object()
+
+    def clean_object(self):
+        UcsSystemConfigObject.clean_object(self)
+        for element in self.wwnn_blocks:
+            for value in ["to", "from", "size"]:
+                if value not in element:
+                    element[value] = None
+
+        for value in ["assigned", "size"]:
+            if value not in self.operational_state:
+                self.operational_state[value] = None
 
     def push_object(self, commit=True):
         if commit:
@@ -502,16 +510,19 @@ class UcsSystemWwxnPool(UcsSystemConfigObject):
                     self.logger(level="error",
                                 message="Unable to get attributes from JSON content for " + self._CONFIG_NAME)
 
-                for element in self.wwxn_blocks:
-                    for value in ["to", "from", "size"]:
-                        if value not in element:
-                            element[value] = None
-
-                for value in ["assigned", "size"]:
-                    if value not in self.operational_state:
-                        self.operational_state[value] = None
-
         self.clean_object()
+
+    def clean_object(self):
+        UcsSystemConfigObject.clean_object(self)
+
+        for element in self.wwxn_blocks:
+            for value in ["to", "from", "size"]:
+                if value not in element:
+                    element[value] = None
+
+        for value in ["assigned", "size"]:
+            if value not in self.operational_state:
+                self.operational_state[value] = None
 
     def push_object(self, commit=True):
         if commit:
@@ -701,12 +712,15 @@ class UcsSystemFcZoneProfile(UcsSystemConfigObject):
                     self.logger(level="error",
                                 message="Unable to get attributes from JSON content for " + self._CONFIG_NAME)
 
-                for element in self.fc_user_zones:
-                    for value in ["name", "path", "vsan", "wwpns"]:
-                        if value not in element:
-                            element[value] = None
-
         self.clean_object()
+
+    def clean_object(self):
+        UcsSystemConfigObject.clean_object(self)
+
+        for element in self.fc_user_zones:
+            for value in ["name", "path", "vsan", "wwpns"]:
+                if value not in element:
+                    element[value] = None
 
     def push_object(self, commit=True):
         if commit:
@@ -829,18 +843,21 @@ class UcsSystemSanTrafficMonitoringSession(UcsSystemConfigObject):
                     self.logger(level="error",
                                 message="Unable to get attributes from JSON content for " + self._CONFIG_NAME)
 
-                for element in self.destination:
-                    for value in ["aggr_id", "port_id", "slot_id"]:
-                        if value not in element:
-                            element[value] = None
-
-                for element in self.sources:
-                    for value in ["aggr_id", "direction", "fabric", "org", "pc_id", "port_id", "service_profile",
-                                  "slot_id", "source_type", "storage_vsan", "vhba", "vsan"]:
-                        if value not in element:
-                            element[value] = None
-
         self.clean_object()
+
+    def clean_object(self):
+        UcsSystemConfigObject.clean_object(self)
+
+        for element in self.destination:
+            for value in ["aggr_id", "port_id", "slot_id"]:
+                if value not in element:
+                    element[value] = None
+
+        for element in self.sources:
+            for value in ["aggr_id", "direction", "fabric", "org", "pc_id", "port_id", "service_profile",
+                          "slot_id", "source_type", "storage_vsan", "vhba", "vsan"]:
+                if value not in element:
+                    element[value] = None
 
     def push_object(self, commit=True):
         if commit:
@@ -998,6 +1015,14 @@ class UcsSystemStorageConnectionPolicy(UcsSystemConfigObject):
 
         self.clean_object()
 
+    def clean_object(self):
+        UcsSystemConfigObject.clean_object(self)
+
+        for element in self.fc_target_endpoints:
+            for value in ["wwpn", "descr", "path", "vsan"]:
+                if value not in element:
+                    element[value] = None
+
     def push_object(self, commit=True):
         if commit:
             self.logger(message="Pushing " + self._CONFIG_NAME + " configuration: " + str(self.name))
@@ -1084,21 +1109,23 @@ class UcsSystemIqnPool(UcsSystemConfigObject):
                     self.logger(level="error",
                                 message="Unable to get attributes from JSON content for " + self._CONFIG_NAME)
 
-                for element in self.iqn_blocks:
-                    for value in ["to", "from", "size", "suffix"]:
-                        if value not in element:
-                            element[value] = None
-
-                for value in ["assigned", "size"]:
-                    if value not in self.operational_state:
-                        self.operational_state[value] = None
-
         self.clean_object()
 
         if not self.prefix:
             # We need to add an exception after clean_object() because the
             # IQN Pool can have no prefix even if prefix is required (e.g. default)
             self.prefix = ''
+
+    def clean_object(self):
+        UcsSystemConfigObject.clean_object(self)
+        for element in self.iqn_blocks:
+            for value in ["to", "from", "size", "suffix"]:
+                if value not in element:
+                    element[value] = None
+
+        for value in ["assigned", "size"]:
+            if value not in self.operational_state:
+                self.operational_state[value] = None
 
     def push_object(self, commit=True):
         if commit:
@@ -1161,7 +1188,7 @@ class UcsSystemVhbaTemplate(UcsSystemConfigObject):
         self.vsan = None
         self.wwpn_pool = None
         self.stats_threshold_policy = None
-        self.operational_state = None
+        self.operational_state = {}
 
         if self._config.load_from == "live":
             if vhba_san_conn_templ is not None:
@@ -1176,7 +1203,6 @@ class UcsSystemVhbaTemplate(UcsSystemConfigObject):
                 self.max_data_field_size = vhba_san_conn_templ.max_data_field_size
                 self.wwpn_pool = vhba_san_conn_templ.ident_pool_name
                 self.stats_threshold_policy = vhba_san_conn_templ.stats_policy_name
-                self.operational_state = {}
 
                 if "vnicFcIf" in self._config.sdk_objects and not self.vsan:
                     if self._parent._dn:
@@ -1221,17 +1247,18 @@ class UcsSystemVhbaTemplate(UcsSystemConfigObject):
                     self.logger(level="error",
                                 message="Unable to get attributes from JSON content for " + self._CONFIG_NAME)
 
-                for policy in ["peer_redundancy_template", "qos_policy", "stats_threshold_policy"]:
-                    if not self.operational_state:
-                        self.operational_state = {}
-                    if policy not in self.operational_state:
-                        self.operational_state[policy] = None
-                    else:
-                        for value in ["name", "org"]:
-                            if value not in self.operational_state[policy]:
-                                self.operational_state[policy][value] = None
-
         self.clean_object()
+
+    def clean_object(self):
+        UcsSystemConfigObject.clean_object(self)
+
+        for policy in ["peer_redundancy_template", "qos_policy", "stats_threshold_policy"]:
+            if policy not in self.operational_state:
+                self.operational_state[policy] = None
+            elif self.operational_state[policy]:
+                for value in ["name", "org"]:
+                    if value not in self.operational_state[policy]:
+                        self.operational_state[policy][value] = None
 
     def push_object(self, commit=True):
         if commit:
@@ -1405,32 +1432,35 @@ class UcsSystemSanConnectivityPolicy(UcsSystemConfigObject):
                     self.logger(level="error",
                                 message="Unable to get attributes from JSON content for " + self._CONFIG_NAME)
 
-                for element in self.vhbas:
-                    for value in ["adapter_policy", "vhba_template", "fabric", "name", "order", "wwpn_pool",
-                                  "persistent_binding", "max_data_field_size", "qos_policy", "vsan", "pin_group",
-                                  "stats_threshold_policy", "operational_state"]:
-                        if value not in element:
-                            element[value] = None
-
-                    for policy in ["adapter_policy", "pin_group", "qos_policy", "stats_threshold_policy",
-                                   "vhba_template", "wwpn_pool"]:
-                        if element["operational_state"]:
-                            if policy not in element["operational_state"]:
-                                element["operational_state"][policy] = None
-                            else:
-                                for value in ["name", "org"]:
-                                    if value not in element["operational_state"][policy]:
-                                        element["operational_state"][policy][value] = None
-
-                    # Flagging this as a vHBA
-                    element["_object_type"] = "vhbas"
-
-                for element in self.vhba_initiator_groups:
-                    for value in ["storage_connection_policy", "initiators", "name", "descr"]:
-                        if value not in element:
-                            element[value] = None
-
         self.clean_object()
+
+    def clean_object(self):
+        UcsSystemConfigObject.clean_object(self)
+
+        for element in self.vhbas:
+            for value in ["adapter_policy", "vhba_template", "fabric", "name", "order", "wwpn_pool",
+                          "persistent_binding", "max_data_field_size", "qos_policy", "vsan", "pin_group",
+                          "stats_threshold_policy", "operational_state"]:
+                if value not in element:
+                    element[value] = None
+
+            if element["operational_state"]:
+                for policy in ["adapter_policy", "pin_group", "qos_policy", "stats_threshold_policy",
+                               "vhba_template", "wwpn_pool"]:
+                    if policy not in element["operational_state"]:
+                        element["operational_state"][policy] = None
+                    elif element["operational_state"][policy]:
+                        for value in ["name", "org"]:
+                            if value not in element["operational_state"][policy]:
+                                element["operational_state"][policy][value] = None
+
+            # Flagging this as a vHBA
+            element["_object_type"] = "vhbas"
+
+        for element in self.vhba_initiator_groups:
+            for value in ["storage_connection_policy", "initiators", "name", "descr"]:
+                if value not in element:
+                    element[value] = None
 
     def push_object(self, commit=True):
         if commit:

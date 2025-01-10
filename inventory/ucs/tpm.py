@@ -2,14 +2,15 @@
 # !/usr/bin/env python
 
 """ tpm.py: Easy UCS Deployment Tool """
-
+from inventory.generic.tpm import GenericTpm
 from inventory.ucs.object import GenericUcsInventoryObject, UcsImcInventoryObject, UcsSystemInventoryObject
 
 
-class UcsTpm(GenericUcsInventoryObject):
+class UcsTpm(GenericTpm, GenericUcsInventoryObject):
     _UCS_SDK_OBJECT_NAME = "equipmentTpm"
 
     def __init__(self, parent=None, equipment_tpm=None):
+        GenericTpm.__init__(self, parent=parent)
         GenericUcsInventoryObject.__init__(self, parent=parent, ucs_sdk_object=equipment_tpm)
 
         self.active_status = self.get_attribute(ucs_sdk_object=equipment_tpm, attribute_name="active_status")

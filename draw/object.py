@@ -2,12 +2,12 @@
 # !/usr/bin/env python
 
 """ object.py: Easy UCS Deployment Tool """
-from __init__ import __author__, __copyright__,  __version__, __status__, EASYUCS_ROOT
-
 import json
 import os
 
 from PIL import Image, ImageDraw, ImageFont
+
+from __init__ import EASYUCS_ROOT
 
 
 class GenericDrawObject:
@@ -32,7 +32,7 @@ class GenericDrawObject:
     @staticmethod
     def rotate_object(obj=None, picture=None):
         # Rotate objects
-        if obj.__class__.__name__ == "UcsSystemDrawFiRear":
+        if obj.__class__.__name__ == "UcsFiDrawRear":
             obj.picture = obj.picture.rotate(90, expand=1)
             obj.picture_size = tuple(obj.picture.size)
             obj.json_file['rear_file_size'] = obj.json_file['rear_file_size'][1], obj.json_file['rear_file_size'][0]
@@ -85,30 +85,32 @@ class GenericDrawObject:
             return None
 
     def _find_folder_path(self):
-        if self._parent.__class__.__name__ == "UcsSystemFi" or self._parent.__class__.__name__ == "UcsSystemGem":
+        if self._parent.__class__.__name__ in ["IntersightFi", "UcsSystemFi"] or \
+                self._parent.__class__.__name__ in ["IntersightGem", "UcsSystemGem"]:
             folder_path = "catalog/fabric_interconnects/"
         elif "Adapter" in self._parent.__class__.__name__ or "Adaptor" in self._parent.__class__.__name__:
             folder_path = "catalog/adaptors/"
         elif "Chassis" in self._parent.__class__.__name__:
             folder_path = "catalog/chassis/"
-        elif self._parent.__class__.__name__ in ["UcsSystemBlade", "UcsImcServerNode"]:
+        elif self._parent.__class__.__name__ in ["IntersightComputeBlade", "IntersightServerNode", "UcsSystemBlade",
+                                                 "UcsImcServerNode"]:
             folder_path = "catalog/blades/"
-        elif self._parent.__class__.__name__ == "UcsSystemPcieNode":
+        elif self._parent.__class__.__name__ in ["IntersightPcieNode", "UcsSystemPcieNode"]:
             folder_path = "catalog/pcie_nodes/"
-        elif self._parent.__class__.__name__ == "UcsSystemPsu":
+        elif self._parent.__class__.__name__ in ["IntersightPsu", "UcsSystemPsu"]:
             folder_path = "catalog/power_supplies/"
-        elif self._parent.__class__.__name__ == "UcsSystemStorageLocalDisk":
+        elif self._parent.__class__.__name__ in ["IntersightStorageLocalDisk", "UcsSystemStorageLocalDisk"]:
             folder_path = "catalog/drives/"
         elif "Iom" in self._parent.__class__.__name__ or "Sioc" in self._parent.__class__.__name__:
             folder_path = "catalog/io_modules/"
-        elif self._parent.__class__.__name__ == "UcsSystemXfm":
+        elif self._parent.__class__.__name__ in ["IntersightXfm", "UcsSystemXfm"]:
             folder_path = "catalog/x_fabric_modules/"
         elif "Rack" in self._parent.__class__.__name__:
             if self._parent.model == "UCSC-C125":
                 folder_path = "catalog/server_nodes/"
             else:
                 folder_path = "catalog/racks/"
-        elif self._parent.__class__.__name__ == "UcsSystemFex":
+        elif self._parent.__class__.__name__ in ["IntersightFex", "UcsSystemFex"]:
             folder_path = "catalog/fabric_extenders/"
         elif "Cpu" in self.__class__.__name__:
             folder_path = "catalog/cpu_modules/"
@@ -177,7 +179,7 @@ class GenericDrawObject:
         if not hasattr(self, "_file_name"):
             # If the object has not the _file_name attribute then the object has not been created correctly
             self.logger(level="warning",
-                        message="Couldn't create picture of " + self.__class__.__name__ + " with ID " + self._parent.id)
+                        message="Couldn't create picture of " + self.__class__.__name__ + " with ID " + str(self._parent.id))
             return False
         if not file_name:
             file_name = self._file_name

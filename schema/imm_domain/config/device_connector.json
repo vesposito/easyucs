@@ -1,0 +1,85 @@
+{
+   "id": "imm_domain_config_device_connector#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS imm config device_connector section",
+   "description": "EasyUCS imm config device_connector section JSON schema",
+   "type": "object",
+   "properties": {
+      "comment": {
+         "description": "Device Connector Comments",
+         "type": "string",
+         "default": ""
+      },
+      "dns_configuration": {
+         "description": "Device Connector DNS Configuration",
+         "type": "object",
+         "properties": {
+            "dns_servers": {
+               "description": "Device Connector DNS servers",
+               "type": "array"
+            },
+            "domain_name": {
+               "description": "Device Connector Domain name",
+               "type": "string",
+               "default": ""
+            }
+         },
+         "additionalProperties": false
+      },
+      "enabled": {
+         "description": "Device Connector State",
+         "type": "boolean",
+         "default": true
+      },
+      "intersight_url": {
+         "description": "Device Connector Intersight URL",
+         "type": "string",
+         "default": "svc.intersight.com"
+      },
+      "ntp_configuration": {
+         "properties": {
+            "ntp_servers": {
+               "description": "Device Connector NTP servers",
+               "type": "array"
+            }
+         },
+         "additionalProperties": false
+      },
+      "proxy_configuration": {
+         "properties": {
+            "enable_proxy": {
+               "description": "Device Connector Proxy State",
+               "type": "boolean",
+               "default": false
+            },
+            "enable_proxy_authentication": {
+               "description": "Device Connector Proxy Authentication",
+               "type": "boolean",
+               "default": false
+            },
+            "proxy_host": {
+               "description": "Device Connector Proxy Host",
+               "type": "string",
+               "default": "0.0.0.0"
+            },
+            "proxy_password": {
+               "description": "Device Connector Proxy Password",
+               "type": "string",
+               "default": ""
+            },
+            "proxy_port": {
+               "description": "Device Connector Proxy Port",
+               "type": "integer",
+               "default": 80
+            },
+            "proxy_username": {
+               "description": "Device Connector Proxy Username",
+               "type": "string",
+               "default": ""
+            }
+         },
+         "additionalProperties": false
+      }
+   },
+   "additionalProperties": false
+}

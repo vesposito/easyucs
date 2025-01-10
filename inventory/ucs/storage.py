@@ -6,13 +6,15 @@
 import math
 import re
 
+from inventory.generic.storage import GenericStorageController, GenericStorageLocalDisk
 from inventory.ucs.object import GenericUcsInventoryObject, UcsImcInventoryObject, UcsSystemInventoryObject
 
 
-class UcsStorageController(GenericUcsInventoryObject):
+class UcsStorageController(GenericStorageController, GenericUcsInventoryObject):
     _UCS_SDK_OBJECT_NAME = "storageController"
 
     def __init__(self, parent=None, storage_controller=None):
+        GenericStorageController.__init__(self, parent=parent)
         GenericUcsInventoryObject.__init__(self, parent=parent, ucs_sdk_object=storage_controller)
 
         self.id = self.get_attribute(ucs_sdk_object=storage_controller, attribute_name="id")
@@ -533,10 +535,11 @@ class UcsImcStorageFlexFlashCard(UcsStorageFlexFlashCard, UcsImcInventoryObject)
                                                          attribute_name="capacity_marketing")
 
 
-class UcsStorageLocalDisk(GenericUcsInventoryObject):
+class UcsStorageLocalDisk(GenericStorageLocalDisk, GenericUcsInventoryObject):
     _UCS_SDK_OBJECT_NAME = "storageLocalDisk"
 
     def __init__(self, parent=None, storage_local_disk=None):
+        GenericStorageLocalDisk.__init__(self, parent=parent)
         GenericUcsInventoryObject.__init__(self, parent=parent, ucs_sdk_object=storage_local_disk)
 
         self.id = self.get_attribute(ucs_sdk_object=storage_local_disk, attribute_name="id")
@@ -586,25 +589,16 @@ class UcsSystemStorageLocalDisk(UcsStorageLocalDisk, UcsSystemInventoryObject):
         self.self_encrypting_drive = None
         self.serial = self.get_attribute(ucs_sdk_object=storage_local_disk, attribute_name="serial")
         self.size = self.get_attribute(ucs_sdk_object=storage_local_disk, attribute_name="size", attribute_type="int")
-        self.size_marketing = None
         self.size_raw = self.get_attribute(ucs_sdk_object=storage_local_disk, attribute_name="raw_size",
                                            attribute_secondary_name="size_raw", attribute_type="int")
         self.revision = self.get_attribute(ucs_sdk_object=storage_local_disk, attribute_name="revision")
 
-        if self.link_speed == "1-5-gbps":
-            self.link_speed = float(1.5)
-        elif self.link_speed == "3-gbps":
-            self.link_speed = float(3)
-        elif self.link_speed == "6-gbps":
-            self.link_speed = float(6)
-        elif self.link_speed == "12-gbps":
-            self.link_speed = float(12)
+        self._format_link_speed()
 
         UcsSystemInventoryObject.__init__(self, parent=parent, ucs_sdk_object=storage_local_disk)
 
         if self._inventory.load_from == "live":
             self.locator_led_status = self._determine_locator_led_status()
-            self.size_marketing = None
             self.rotational_speed_marketing = None
             self.life_left_in_percent = None
             self.power_cycle_count = None
@@ -622,58 +616,11 @@ class UcsSystemStorageLocalDisk(UcsStorageLocalDisk, UcsSystemInventoryObject):
                 if self.block_size is not None and self.number_of_blocks is not None:
                     self.size_marketing = int((self.block_size * self.number_of_blocks) / 1000000000)
 
-            # Properly format size_marketing so that it fits the display on disk drives for the pictures
-            if self.size_marketing is not None:
-                if self.size_marketing < 1000:
-                    self.size_marketing = str(int(self.size_marketing)) + "GB"
-                elif self.size_marketing >= 1000:
-                    if (self.size_marketing / 1000).is_integer():
-                        self.size_marketing = str(int(self.size_marketing / 1000)) + "TB"
-                    else:
-                        if str(round(self.size_marketing / 1000, ndigits=1))[-2:] == ".0":
-                            self.size_marketing = str(int(self.size_marketing / 1000)) + "TB"
-                        else:
-                            self.size_marketing = str(round(self.size_marketing / 1000, ndigits=1)) + "TB"
-
-            # Manual adjustment for wrong round up of some drives
-            if self.size_marketing == "147GB":
-                self.size_marketing = "146GB"
-            elif self.size_marketing == "98GB":
-                self.size_marketing = "100GB"
-            elif self.size_marketing == "118GB":
-                self.size_marketing = "120GB"
-            elif self.size_marketing == "238GB":
-                self.size_marketing = "240GB"
-            elif self.size_marketing == "398GB":
-                self.size_marketing = "400GB"
-            elif self.size_marketing == "801GB":
-                self.size_marketing = "800GB"
-            elif self.size_marketing == "958GB":
-                self.size_marketing = "960GB"
-            elif self.size_marketing == "998GB":
-                self.size_marketing = "1TB"
-            elif self.size_marketing == "7.7TB":
-                self.size_marketing = "7.6TB"
+            self._format_size_marketing()
 
             if self.rotational_speed is not None:
                 self.rotational_speed_marketing = self.rotational_speed
-
-                # Properly format rotational_speed_marketing so that it fits the display on disk drives for the pictures
-                if self.rotational_speed_marketing == 15000:
-                    self.rotational_speed_marketing = "15K"
-                elif self.rotational_speed_marketing == 10000:
-                    self.rotational_speed_marketing = "10K"
-                elif self.rotational_speed_marketing == 7200:
-                    self.rotational_speed_marketing = "7.2K"
-                elif self.rotational_speed_marketing == 5400:
-                    self.rotational_speed_marketing = "5.4K"
-                elif self.rotational_speed_marketing == 0:
-                    self.rotational_speed_marketing = None
-                # Handle catalog issues
-                elif self.rotational_speed_marketing in [10, 10025, 10520]:
-                    self.rotational_speed_marketing = "10K"
-                elif self.rotational_speed_marketing in [7202, 72000]:
-                    self.rotational_speed_marketing = "7.2K"
+                self._format_rotational_speed_marketing()
 
             # Manual adjustments for catalog SKU with double values like "UCS-SD100G0KA2-G/UCS-SD100G0KA2-S"
             if self.sku == "UCS-SD100G0KA2-G/UCS-SD100G0KA2-S":
@@ -880,31 +827,11 @@ class UcsImcStorageLocalDisk(UcsStorageLocalDisk, UcsImcInventoryObject):
             if self._pid_catalog is not None:
                 description = self._pid_catalog.description
 
-            self.rotational_speed_marketing = None
-            regex = r"(\d+\.?\dK) RPM"
-            res = re.search(regex, description)
-            if res is not None:
-                self.rotational_speed_marketing = res.group(1)
-
-            self.size_marketing = None
-            regex = r"(\d+\.?\d?) ?[GT]B"
-            res = re.search(regex, description)
-            if res is not None:
-                self.size_marketing = res.group(0).replace(" ", "")
-            else:
+            self._determine_size_and_rpm(description)
+            if not self.size_marketing:
                 if self.block_size is not None and self.number_of_blocks is not None:
                     self.size_marketing = int((self.block_size * self.number_of_blocks) / 1000000000)
-                    # Properly format size_marketing so that it fits the display on disk drives for the pictures
-                    if self.size_marketing < 1000:
-                        self.size_marketing = str(int(self.size_marketing)) + "GB"
-                    elif self.size_marketing >= 1000:
-                        if (self.size_marketing / 1000).is_integer():
-                            self.size_marketing = str(int(self.size_marketing / 1000)) + "TB"
-                        else:
-                            if str(round(self.size_marketing / 1000, ndigits=1))[-2:] == ".0":
-                                self.size_marketing = str(int(self.size_marketing / 1000)) + "TB"
-                            else:
-                                self.size_marketing = str(round(self.size_marketing / 1000, ndigits=1)) + "TB"
+                    self._format_size_marketing()
 
             # Fix for unknown SKU & drive size with SSD drive Micron_P400e-MTFDDAK400MAR
             if self.sku is None:
@@ -912,26 +839,6 @@ class UcsImcStorageLocalDisk(UcsStorageLocalDisk, UcsImcInventoryObject):
                     self.sku = "UCS-SD400G0KA2-G"
                     if self._pid_catalog.description == "UNKNOWN":
                         self.size_marketing = "400G"
-
-            # Manual adjustment for wrong round up of some drives
-            if self.size_marketing == "147GB":
-                self.size_marketing = "146GB"
-            elif self.size_marketing == "98GB":
-                self.size_marketing = "100GB"
-            elif self.size_marketing == "118GB":
-                self.size_marketing = "120GB"
-            elif self.size_marketing == "238GB":
-                self.size_marketing = "240GB"
-            elif self.size_marketing == "398GB":
-                self.size_marketing = "400GB"
-            elif self.size_marketing == "801GB":
-                self.size_marketing = "800GB"
-            elif self.size_marketing == "958GB":
-                self.size_marketing = "960GB"
-            elif self.size_marketing == "998GB":
-                self.size_marketing = "1TB"
-            elif self.size_marketing == "7.7TB":
-                self.size_marketing = "7.6TB"
 
         elif self._inventory.load_from == "file":
             for attribute in ["block_size", "bootable", "life_left_in_percent", "number_of_blocks", "power_cycle_count",

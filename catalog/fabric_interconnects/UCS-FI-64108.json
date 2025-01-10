@@ -1,5 +1,6 @@
 {
   "model_short_name": "64108",
+  "name": "Cisco UCS 64108 Fabric Interconnect",
   "rear_file_name": "UCS-FI-64108_rear.png",
   "front_file_name": "UCS-FI-64108_front.png",
   "rear_file_size": [2860,535],

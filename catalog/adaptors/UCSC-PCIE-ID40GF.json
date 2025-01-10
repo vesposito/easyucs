@@ -1,33 +1,34 @@
 {
-  "model_short_name": "Intel XL710 2x40G",
-  "rear_file_name": "UCSC-PCIE-ID40GF.png",
-  "rear_file_name_half": "UCSC-PCIE-ID40GF_half.png",
-  "rear_file_size": [593,75],
-  "rear_file_size_half": [389,75],
-  "rear_ports": {
-    "x/2": {
-      "port_coord": [228, 17],
-      "port_type": "qsfp+",
-      "port_size": [111, 49]
-    },
-    "x/1": {
-      "port_coord": [378, 17],
-      "port_type": "qsfp+",
-      "port_size": [111, 49]
-    }
-  },
-  "rear_ports_half": {
-    "x/2": {
-      "port_coord": [34, 17],
-      "port_type": "qsfp+",
-      "port_size": [111, 49]
-    },
-    "x/1": {
-      "port_coord": [184, 17],
-      "port_type": "qsfp+",
-      "port_size": [111, 49]
-    }
-  },
-  "imm_compatible": false,
-  "data_sheet_url": "https://www.cisco.com/c/dam/en/us/products/collateral/servers-unified-computing/ucs-c-series-rack-servers/intel-xl710-product-brief.pdf"
+   "model_short_name": "Intel XL710 2x40G",
+   "rear_file_name": "UCSC-PCIE-ID40GF.png",
+   "rear_file_name_half": "UCSC-PCIE-ID40GF_half.png",
+   "rear_file_size": [593,75],
+   "rear_file_size_half": [389,75],
+   "rear_ports": {
+      "x/2": {
+         "port_coord": [228, 17],
+         "port_type": "qsfp+",
+         "port_size": [111, 49]
+      },
+      "x/1": {
+         "port_coord": [378, 17],
+         "port_type": "qsfp+",
+         "port_size": [111, 49]
+      }
+   },
+   "rear_ports_half": {
+      "x/2": {
+         "port_coord": [34, 17],
+         "port_type": "qsfp+",
+         "port_size": [111, 49]
+      },
+      "x/1": {
+         "port_coord": [184, 17],
+         "port_type": "qsfp+",
+         "port_size": [111, 49]
+      }
+   },
+   "imm_compatible": false,
+   "data_sheet_url": "https://www.cisco.com/c/dam/en/us/products/collateral/servers-unified-computing/ucs-c-series-rack-servers/intel-xl710-product-brief.pdf",
+   "adaptor_type": "nic"
 }

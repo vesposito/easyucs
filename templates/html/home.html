@@ -27,6 +27,7 @@
               <option value="cimc">UCS IMC</option>
               <option value="ucsc">UCS Central</option>
               <option value="intersight">Intersight</option>
+              <option value="imm_domain">IMM Domain</option>
             </select>
             <div id="intersight-type-choice" class="mt-2 d-none">
               <div class="form-check form-check-inline">
@@ -42,11 +43,11 @@
           <div id="intersight-region-choice" class="form-inline d-none">
             <label for="intersight_region" class="col-form-label">Region: </label>
             <div class="form-check ml-2 form-check-inline">
-              <input onchange="updateIntersightTarget(this.value)" class="form-check-input" type="radio" name="intersight_region" id="intersight_region_us" value="us-east-1.intersight.com​">
+              <input onchange="updateIntersightTarget(this.value)" class="form-check-input" type="radio" name="intersight_region" id="intersight_region_us" value="us-east-1.intersight.com">
               <label class="form-check-label" for="intersight_region_us">US</label>
             </div>
             <div class="form-check form-check-inline">
-              <input onchange="updateIntersightTarget(this.value)" class="form-check-input" type="radio" name="intersight_region" id="intersight_region_eu" value="eu-central-1.intersight.com​">
+              <input onchange="updateIntersightTarget(this.value)" class="form-check-input" type="radio" name="intersight_region" id="intersight_region_eu" value="eu-central-1.intersight.com">
               <label class="form-check-label" for="intersight_region_eu">EU</label>
             </div>
           </div>
@@ -82,6 +83,12 @@
             <div class="form-check form-check-inline">
               <input class="form-check-input" type="checkbox" name="bypass_connection_checks" id="bypass-connection-check">
               <label class="form-check-label" for="bypass-connection-check">Bypass Connection Check</label>
+            </div>
+          </div>
+          <div id="use-proxy-form" class="d-none form-group">
+            <div class="form-check form-check-inline">
+              <input class="form-check-input" type="checkbox" name="use_proxy" id="use-proxy">
+              <label class="form-check-label" for="use-proxy" title="Check if Intersight can only be reached through the configured proxy">Use HTTP Proxy</label>
             </div>
           </div>
         </form>
@@ -177,7 +184,7 @@
 {% endblock %}
 {% block breadcrumbs %}
 <ol class="breadcrumb mb-0 p-0">
-      <li class="breadcrumb-item active">Home</li>
+      <li class="breadcrumb-item active">Devices</li>
     </ol>
 {% endblock %}
 {% block content %}

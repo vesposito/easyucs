@@ -9,6 +9,50 @@
          }
       ]
    },
+   "ClaimToIntersightImmDomain": {
+      "description": "Claim IMM Domain device to Intersight",
+      "device_type": "imm_domain",
+      "steps": [
+         {
+            "name": "ConnectImmDomainDevice",
+            "order": 1,
+            "weight": 1
+         },
+         {
+            "name": "ConnectIntersightDevice",
+            "order": 2,
+            "weight": 1
+         },
+         {
+            "name": "ConfigureDeviceConnectorProxy",
+            "optional": true,
+            "order": 3,
+            "weight": 1
+         },
+         {
+            "name": "ClaimDeviceToIntersight",
+            "order": 4,
+            "weight": 1
+         },
+         {
+            "name": "RefreshIntersightClaimStatus",
+            "order": 5,
+            "weight": 2
+         },
+         {
+            "name": "DisconnectImmDomainDevice",
+            "optional": true,
+            "order": 6,
+            "weight": 1
+         },
+         {
+            "name": "DisconnectIntersightDevice",
+            "optional": true,
+            "order": 7,
+            "weight": 1
+         }
+      ]
+   },
    "ClaimToIntersightUcsImc": {
       "description": "Claim UCS IMC to Intersight",
       "device_type": "cimc",
@@ -201,6 +245,32 @@
          }
       ]
    },
+   "DeployDomainProfileIntersight": {
+      "description": "Assign and Deploy of Domain Profile",
+      "steps": [
+         {
+            "name": "ConnectIntersightDevice",
+            "order": 1,
+            "weight": 1
+         },
+         {
+            "name": "AssignDomainProfile",
+            "order": 2,
+            "weight": 2
+         },
+         {
+            "name": "DeployDomainProfile",
+            "order": 3,
+            "weight": 2
+         },
+         {
+            "name": "DisconnectIntersightDevice",
+            "optional": true,
+            "order": 4,
+            "weight": 1
+         }
+      ]
+   },
    "DownloadFileFromUrl": {
       "description": "Downloads file from a URL",
       "steps": [
@@ -271,6 +341,28 @@
          },
          {
             "name": "DisconnectUcsSystemDevice",
+            "optional": true,
+            "order": 3,
+            "weight": 1
+         }
+      ]
+   },
+   "FetchConfigImmDomain": {
+      "description": "Fetch config from IMM Domain",
+      "device_type": "imm_domain",
+      "steps": [
+         {
+            "name": "ConnectImmDomainDevice",
+            "order": 1,
+            "weight": 1
+         },
+         {
+            "name": "FetchConfigImmDomainApiObjects",
+            "order": 2,
+            "weight": 4
+         },
+         {
+            "name": "DisconnectImmDomainDevice",
             "optional": true,
             "order": 3,
             "weight": 1
@@ -475,6 +567,53 @@
          }
       ]
    },
+   "FetchIntersightCache": {
+      "description": "Fetch cache from Intersight",
+      "steps": [
+         {
+            "name": "ConnectIntersightDevice",
+            "order": 1,
+            "weight": 1
+         },
+         {
+            "name": "FetchOSFirmwareDataObjectsIntersight",
+            "order": 2,
+            "weight": 1
+         },
+         {
+            "name": "FetchOrgs",
+            "order": 3,
+            "weight": 1
+         },
+         {
+            "name": "DisconnectIntersightDevice",
+            "order": 4,
+            "weight": 1
+         }
+      ]
+   },
+   "FetchInventoryImmDomain": {
+      "description": "Fetch inventory from IMM Domain",
+      "device_type": "imm_domain",
+      "steps": [
+         {
+            "name": "ConnectImmDomainDevice",
+            "order": 1,
+            "weight": 1
+         },
+         {
+            "name": "FetchInventoryImmDomainApiObjects",
+            "order": 2,
+            "weight": 4
+         },
+         {
+            "name": "DisconnectImmDomainDevice",
+            "optional": true,
+            "order": 3,
+            "weight": 1
+         }
+      ]
+   },
    "FetchInventoryIntersight": {
       "description": "Fetch inventory from Intersight",
       "device_type": "intersight",
@@ -627,6 +766,42 @@
          }
       ]
    },
+   "FetchUcsSystemCache": {
+      "description": "Fetch cache from UCS Systen",
+      "steps": [
+         {
+            "name": "ConnectUcsSystemDevice",
+            "order": 1,
+            "weight": 1
+         },
+         {
+            "name": "FetchServerDetails",
+            "order": 2,
+            "weight": 1
+         },
+         {
+            "name": "DisconnectUcsSystemDevice",
+            "order": 3,
+            "weight": 1
+         }
+      ]
+   },
+   "GenerateReportIntersight": {
+      "description": "Generate report for Intersight",
+      "device_type": "intersight",
+      "steps": [
+         {
+            "name": "GenerateReportDrawInventoryIntersight",
+            "order": 1,
+            "weight": 2
+         },
+         {
+            "name": "GenerateReportDevice",
+            "order": 2,
+            "weight": 3
+         }
+      ]
+   },
    "GenerateReportUcsImc": {
       "description": "Generate report for UCS IMC",
       "device_type": "cimc",
@@ -659,6 +834,95 @@
          },
          {
             "name": "GenerateReportDevice",
+            "order": 3,
+            "weight": 3
+         }
+      ]
+   },
+   "InitialSetupImmDomain": {
+      "description": "Performing Initial Setup of both Fabric Interconnects in IMM mode",
+      "device_type": "imm_domain",
+      "steps": [
+         {
+            "name": "ValidateImmDomainConfigAndSetupDetails",
+            "order": 1,
+            "weight": 3
+         },
+         {
+            "name": "SetupFabricA",
+            "order": 2,
+            "weight": 3
+         },
+         {
+            "name": "WaitForFabricAToBeReachable",
+            "order": 3,
+            "weight": 2
+         },
+         {
+            "name": "SetupFabricB",
+            "order": 4,
+            "weight": 3
+         },
+         {
+            "name": "WaitForFabricBToBeReachable",
+            "order": 5,
+            "weight": 2
+         }
+      ]
+   },
+   "InitialSetupUcsm": {
+      "description": "Performing Initial Setup of both Fabric Interconnects in UCSM mode",
+      "device_type": "ucsm",
+      "steps": [
+         {
+            "name": "ValidateUcsmConfigAndSetupDetails",
+            "order": 1,
+            "weight": 3
+         },
+         {
+            "name": "SetupFabricA",
+            "order": 2,
+            "weight": 3
+         },
+         {
+            "name": "WaitForFabricAToBeReachable",
+            "order": 3,
+            "weight": 2
+         },
+         {
+            "name": "SetupFabricB",
+            "optional": true,
+            "order": 4,
+            "weight": 3
+         },
+         {
+            "name": "WaitForInitialConfigurationProcess",
+            "order": 5,
+            "weight": 2
+         },
+         {
+            "name": "WaitForUcsManagerReady",
+            "order": 6,
+            "weight": 2
+         }
+      ]
+   },
+   "InitialSetupUcsImc": {
+      "description": "Performing Initial Setup of the UCS IMC",
+      "device_type": "cimc",
+      "steps": [
+         {
+            "name": "ValidateUcsImcConfigAndSetupDetails",
+            "order": 1,
+            "weight": 3
+         },
+         {
+            "name": "ConnectUcsImcDevice",
+            "order": 2,
+            "weight": 3
+         },
+         {
+            "name": "SetupUcsImc",
             "order": 3,
             "weight": 3
          }
@@ -782,74 +1046,90 @@
             "weight": 5
          },
          {
-            "name": "InitialSetupUcsSystem",
+            "name": "ValidateUcsmConfigAndSetupDetails",
             "order": 6,
             "weight": 2
          },
          {
-            "name": "WaitForClusterElectionUcsSystem",
+            "name": "SetupFabricA",
             "order": 7,
-            "weight": 2
+            "weight": 3
          },
          {
-            "name": "WaitForClusterHaReadyUcsSystem",
+            "name": "WaitForFabricAToBeReachable",
             "order": 8,
             "weight": 2
          },
          {
-            "name": "PushAdminSectionUcsSystem",
+            "name": "SetupFabricB",
+            "optional": true,
             "order": 9,
-            "weight": 1
+            "weight": 3
          },
          {
-            "name": "PushEquipmentSectionUcsSystem",
+            "name": "WaitForInitialConfigurationProcess",
             "order": 10,
-            "weight": 1
+            "weight": 2
          },
          {
-            "name": "PushVlanVsanSectionUcsSystem",
+            "name": "WaitForUcsManagerReady",
             "order": 11,
-            "weight": 1
+            "weight": 2
          },
          {
-            "name": "PushFiPortsSectionUcsSystem",
+            "name": "PushAdminSectionUcsSystem",
             "order": 12,
             "weight": 1
          },
          {
-            "name": "WaitForRebootAfterPushFiPortsUcsSystem",
+            "name": "PushEquipmentSectionUcsSystem",
             "order": 13,
+            "weight": 1
+         },
+         {
+            "name": "PushVlanVsanSectionUcsSystem",
+            "order": 14,
+            "weight": 1
+         },
+         {
+            "name": "PushFiPortsSectionUcsSystem",
+            "order": 15,
+            "weight": 1
+         },
+         {
+            "name": "WaitForRebootAfterPushFiPortsUcsSystem",
+            "order": 16,
             "weight": 5
          },
          {
             "name": "WaitForClusterHaReadyAfterPushFiPortsUcsSystem",
-            "order": 14,
+            "order": 17,
             "weight": 2
          },
          {
             "name": "WaitForFiPortsFsmStateUcsSystem",
-            "order": 15,
+            "order": 18,
             "weight": 2
          },
          {
             "name": "PushFiPortChannelsSectionUcsSystem",
-            "order": 16,
+            "order": 19,
             "weight": 1
          },
          {
             "name": "PushOrgsSectionUcsSystem",
-            "order": 17,
+            "order": 20,
             "weight": 3
          },
          {
             "name": "DisconnectUcsSystemDevice",
             "optional": true,
-            "order": 18,
+            "order": 21,
             "weight": 1
          },
          {
             "name": "GenerateReportDevice",
-            "order": 19,
+            "order": 22,
             "weight": 1
          }
       ]
@@ -987,9 +1267,37 @@
          }
       ]
    },
+   "ResetDeviceImmDomain": {
+      "description": "Reset IMM Domain device",
+      "device_type": "imm_domain",
+      "steps": [
+         {
+            "name": "ConnectImmDomainDevice",
+            "order": 1,
+            "weight": 1
+         },
+         {
+            "name": "ResetDeviceConnector",
+            "optional": true,
+            "order": 2,
+            "weight": 1
+         },
+         {
+            "name": "EraseFiConfigurations",
+            "order": 3,
+            "weight": 3
+         },
+         {
+            "name": "DisconnectImmDomainDevice",
+            "optional": true,
+            "order": 4,
+            "weight": 1
+         }
+      ]
+   },
    "ResetDeviceUcsImc": {
       "description": "Reset UCS IMC device",
-      "device_type": "ucsm",
+      "device_type": "cimc",
       "steps": [
          {
             "name": "ConnectUcsImcDevice",
@@ -1037,14 +1345,26 @@
             "weight": 3
          },
          {
-            "name": "EraseFiConfigurations",
+            "name": "DecommissionAllBladeServers",
+            "optional": true,
             "order": 4,
+            "weight": 3
+         },
+         {
+            "name": "DecommissionAllChassis",
+            "optional": true,
+            "order": 5,
+            "weight": 3
+         },
+         {
+            "name": "EraseFiConfigurations",
+            "order": 6,
             "weight": 3
          },
          {
             "name": "DisconnectUcsSystemDevice",
             "optional": true,
-            "order": 5,
+            "order": 7,
             "weight": 1
          }
       ]
@@ -1066,6 +1386,23 @@
             "name": "DisconnectIntersightDevice",
             "optional": true,
             "order": 3,
+            "weight": 1
+         }
+      ]
+   },
+   "TestConnectionImmDomain": {
+      "description": "Test IMM domain device connection",
+      "device_type": "imm_domain",
+      "steps": [
+         {
+            "name": "ConnectImmDomainDevice",
+            "order": 1,
+            "weight": 1
+         },
+         {
+            "name": "DisconnectImmDomainDevice",
+            "optional": true,
+            "order": 2,
             "weight": 1
          }
       ]

@@ -43,7 +43,7 @@ class UcsCentralVhbaTemplate(UcsCentralConfigObject):
         self.vsan = None
         self.wwpn_pool = None
         self.stats_threshold_policy = None
-        self.operational_state = None
+        self.operational_state = {}
 
         if self._config.load_from == "live":
             if vhba_san_conn_templ is not None:
@@ -74,7 +74,6 @@ class UcsCentralVhbaTemplate(UcsCentralConfigObject):
                                                 f"{str(self.name)}")
 
                 # Fetching the operational state of the referenced policies
-                self.operational_state = {}
                 if vhba_san_conn_templ.oper_peer_redundancy_templ_name:
                     peer_redundancy_template_in_use = {
                         "org": '/'.join(
@@ -114,17 +113,18 @@ class UcsCentralVhbaTemplate(UcsCentralConfigObject):
                     self.logger(level="error",
                                 message="Unable to get attributes from JSON content for " + self._CONFIG_NAME)
 
-                for policy in ["peer_redundancy_template", "qos_policy", "stats_threshold_policy"]:
-                    if not self.operational_state:
-                        self.operational_state = {}
-                    if policy not in self.operational_state:
-                        self.operational_state[policy] = None
-                    else:
-                        for value in ["name", "org"]:
-                            if value not in self.operational_state[policy]:
-                                self.operational_state[policy][value] = None
-
         self.clean_object()
+
+    def clean_object(self):
+        UcsCentralConfigObject.clean_object(self)
+
+        for policy in ["peer_redundancy_template", "qos_policy", "stats_threshold_policy"]:
+            if policy not in self.operational_state:
+                self.operational_state[policy] = None
+            elif self.operational_state[policy]:
+                for value in ["name", "org"]:
+                    if value not in self.operational_state[policy]:
+                        self.operational_state[policy][value] = None
 
     def push_object(self, commit=True):
         if commit:
@@ -198,7 +198,7 @@ class UcsCentralVnicTemplate(UcsCentralConfigObject):
         self.vlans = []
         self.vlan_groups = []
         self.vmq_connection_policy = None
-        self.operational_state = None
+        self.operational_state = {}
 
         if self._config.load_from == "live":
             if vnic_lan_conn_templ is not None:
@@ -217,7 +217,6 @@ class UcsCentralVnicTemplate(UcsCentralConfigObject):
                 self.pin_group = vnic_lan_conn_templ.pin_to_group_name
                 self.stats_threshold_policy = vnic_lan_conn_templ.stats_policy_name
                 self.network_control_policy = vnic_lan_conn_templ.nw_ctrl_policy_name
-                self.operational_state = {}
 
                 # Looking for the connection_policy
                 if ("vnicDynamicConPolicyRef" in self._parent._config.sdk_objects and
@@ -314,19 +313,20 @@ class UcsCentralVnicTemplate(UcsCentralConfigObject):
                     self.logger(level="error",
                                 message="Unable to get attributes from JSON content for " + self._CONFIG_NAME)
 
-                for policy in ["dynamic_vnic_connection_policy", "mac_address_pool", "network_control_policy",
-                               "peer_redundancy_template", "qos_policy", "stats_threshold_policy",
-                               "usnic_connection_policy", "vmq_connection_policy"]:
-                    if not self.operational_state:
-                        self.operational_state = {}
-                    if policy not in self.operational_state:
-                        self.operational_state[policy] = None
-                    else:
-                        for value in ["name", "org"]:
-                            if value not in self.operational_state[policy]:
-                                self.operational_state[policy][value] = None
-
         self.clean_object()
+
+    def clean_object(self):
+        UcsCentralConfigObject.clean_object(self)
+
+        for policy in ["dynamic_vnic_connection_policy", "mac_address_pool", "network_control_policy",
+                       "peer_redundancy_template", "qos_policy", "stats_threshold_policy",
+                       "usnic_connection_policy", "vmq_connection_policy"]:
+            if policy not in self.operational_state:
+                self.operational_state[policy] = None
+            elif self.operational_state[policy]:
+                for value in ["name", "org"]:
+                    if value not in self.operational_state[policy]:
+                        self.operational_state[policy][value] = None
 
     def push_object(self, commit=True):
         if commit:

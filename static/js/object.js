@@ -85,6 +85,9 @@ function displayObject(data){
   if(current_device.device_type == "intersight"){
       avatar_src = "/static/img/intersight_logo.png";
       color = "bg-info";
+  } else if (current_device.device_type == "imm_domain"){
+      avatar_src = "/static/img/imm_domain_logo.png";
+      color = "bg-success";
   } else if (current_device.device_type == "ucsm"){
       avatar_src = "/static/img/ucsm_logo.png";
       color = "bg-primary";
@@ -102,13 +105,15 @@ function displayObject(data){
     }
   }
 
-  
+  if (object.device_name) {
+    $(".current_device_breadcrumb").text(object.device_name);
+  }
 
   // Populates the object's display container with the object's UI elements
   if(!is_catalog){
 
     // Updates the breadcrumb device url with the url of the object's parent device
-    document.getElementById('parent_device_breadcrumb_link').textContent = "Device";
+    document.getElementById('parent_device_breadcrumb_link').textContent = current_device.device_name;
     document.getElementById('parent_device_breadcrumb_link').href = "/devices/" + object.device_uuid;
 
     document.getElementById('objectDisplayContainer').innerHTML =
@@ -286,6 +291,8 @@ function displayObjectJson(data){
   // Changes the object display based on the device type
   if(current_device.device_type == "intersight"){
     color = "bg-info";
+  } else if (current_device.device_type == "imm_domain"){
+    color = "bg-success";
   } else if (current_device.device_type == "ucsm"){
     color = "bg-primary";
   } else if (current_device.device_type == "cimc"){

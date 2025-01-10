@@ -1682,22 +1682,25 @@ class UcsSystemSyslog(UcsSystemConfigObject):
                     self.logger(level="error",
                                 message="Unable to get attributes from JSON content for " + self._CONFIG_NAME)
 
-                for element in self.local_destinations:
-                    for value in ["console", "monitor", "file"]:
-                        if value not in element:
-                            element[value] = None
-
-                for element in self.remote_destinations:
-                    for value in ["server1", "server2", "server3"]:
-                        if value not in element:
-                            element[value] = None
-
-                for element in self.local_sources:
-                    for value in ["faults", "audits", "events"]:
-                        if value not in element:
-                            element[value] = None
-
         self.clean_object()
+
+    def clean_object(self):
+        UcsSystemConfigObject.clean_object(self)
+
+        for element in self.local_destinations:
+            for value in ["console", "monitor", "file"]:
+                if value not in element:
+                    element[value] = None
+
+        for element in self.remote_destinations:
+            for value in ["server1", "server2", "server3"]:
+                if value not in element:
+                    element[value] = None
+
+        for element in self.local_sources:
+            for value in ["faults", "audits", "events"]:
+                if value not in element:
+                    element[value] = None
 
     def push_object(self, commit=True):
         if commit:
@@ -1931,42 +1934,45 @@ class UcsSystemCommunicationServices(UcsSystemConfigObject):
                 if not self.get_attributes_from_json(json_content=json_content):
                     self.logger(level="error",
                                 message="Unable to get attributes from JSON content for " + self._CONFIG_NAME)
-                for element in self.web_session_limits:
-                    for value in ["maximum_sessions_per_user", "maximum_sessions", "maximum_event_interval",
-                                  "policy_owner"]:
-                        if value not in element:
-                            element[value] = None
-                for element in self.shell_session_limits:
-                    for value in ["maximum_sessions_per_user", "maximum_sessions", "policy_owner"]:
-                        if value not in element:
-                            element[value] = None
-                for element in self.http_service:
-                    for value in ["state", "timeout", "redirect_to_https", "port", "policy_owner"]:
-                        if value not in element:
-                            element[value] = None
-                for element in self.https_service:
-                    for value in ["state", "port", "keyring", "cipher_mode", "custom_cipher_suite",
-                                  "allowed_ssl_protocols", "policy_owner"]:
-                        if value not in element:
-                            element[value] = None
-                for element in self.snmp_service:
-                    for value in ["state", "protocol", "community", "contact", "location", "snmp_traps", "snmp_users",
-                                  "policy_owner"]:
-                        if value not in element:
-                            element[value] = None
-                    if element["snmp_traps"]:
-                        for subelement in element["snmp_traps"]:
-                            for subvalue in ["hostname", "community", "port", "version", "notification_type",
-                                             "v3privilege"]:
-                                if subvalue not in subelement:
-                                    subelement[subvalue] = None
-                    if element["snmp_users"]:
-                        for subelement in element["snmp_users"]:
-                            for subvalue in ["name", "descr", "privacy_password", "password", "auth_type", "use_aes"]:
-                                if subvalue not in subelement:
-                                    subelement[subvalue] = None
 
         self.clean_object()
+
+    def clean_object(self):
+        UcsSystemConfigObject.clean_object(self)
+        for element in self.web_session_limits:
+            for value in ["maximum_sessions_per_user", "maximum_sessions", "maximum_event_interval",
+                          "policy_owner"]:
+                if value not in element:
+                    element[value] = None
+        for element in self.shell_session_limits:
+            for value in ["maximum_sessions_per_user", "maximum_sessions", "policy_owner"]:
+                if value not in element:
+                    element[value] = None
+        for element in self.http_service:
+            for value in ["state", "timeout", "redirect_to_https", "port", "policy_owner"]:
+                if value not in element:
+                    element[value] = None
+        for element in self.https_service:
+            for value in ["state", "port", "keyring", "cipher_mode", "custom_cipher_suite",
+                          "allowed_ssl_protocols", "policy_owner"]:
+                if value not in element:
+                    element[value] = None
+        for element in self.snmp_service:
+            for value in ["state", "protocol", "community", "contact", "location", "snmp_traps", "snmp_users",
+                          "policy_owner"]:
+                if value not in element:
+                    element[value] = None
+            if element["snmp_traps"]:
+                for subelement in element["snmp_traps"]:
+                    for subvalue in ["hostname", "community", "port", "version", "notification_type",
+                                     "v3privilege"]:
+                        if subvalue not in subelement:
+                            subelement[subvalue] = None
+            if element["snmp_users"]:
+                for subelement in element["snmp_users"]:
+                    for subvalue in ["name", "descr", "privacy_password", "password", "auth_type", "use_aes"]:
+                        if subvalue not in subelement:
+                            subelement[subvalue] = None
 
     def push_object(self, commit=True):
         if commit:
@@ -2125,22 +2131,26 @@ class UcsSystemBackupExportPolicy(UcsSystemConfigObject):
                 if not self.get_attributes_from_json(json_content=json_content):
                     self.logger(level="error",
                                 message="Unable to get attributes from JSON content for " + self._CONFIG_NAME)
-                for element in self.full_state:
-                    for value in ["hostname", "protocol", "user", "password", "remote_file", "admin_state",
-                                  "schedule", "descr"]:
-                        if value not in element:
-                            element[value] = None
-                for element in self.all_configuration:
-                    for value in ["hostname", "protocol", "user", "password", "remote_file", "admin_state",
-                                  "schedule", "descr"]:
-                        if value not in element:
-                            element[value] = None
-                for element in self.reminder:
-                    for value in ["admin_state", "remind_me_after"]:
-                        if value not in element:
-                            element[value] = None
+
 
         self.clean_object()
+
+    def clean_object(self):
+        UcsSystemConfigObject.clean_object(self)
+        for element in self.full_state:
+            for value in ["hostname", "protocol", "user", "password", "remote_file", "admin_state",
+                          "schedule", "descr"]:
+                if value not in element:
+                    element[value] = None
+        for element in self.all_configuration:
+            for value in ["hostname", "protocol", "user", "password", "remote_file", "admin_state",
+                          "schedule", "descr"]:
+                if value not in element:
+                    element[value] = None
+        for element in self.reminder:
+            for value in ["admin_state", "remind_me_after"]:
+                if value not in element:
+                    element[value] = None
 
     def push_object(self, commit=True):
         if commit:
@@ -2708,16 +2718,19 @@ class UcsSystemRadius(UcsSystemConfigObject):
                 if not self.get_attributes_from_json(json_content=json_content):
                     self.logger(level="error",
                                 message="Unable to get attributes from JSON content for " + self._CONFIG_NAME)
-                for element in self.providers:
-                    for value in ["hostname", "timeout", "port", "key", "order", "retries"]:
-                        if value not in element:
-                            element[value] = None
-                for element in self.provider_groups:
-                    for value in ["name", "included_providers"]:
-                        if value not in element:
-                            element[value] = None
 
         self.clean_object()
+
+    def clean_object(self):
+        UcsSystemConfigObject.clean_object(self)
+        for element in self.providers:
+            for value in ["hostname", "timeout", "port", "key", "order", "retries"]:
+                if value not in element:
+                    element[value] = None
+        for element in self.provider_groups:
+            for value in ["name", "included_providers"]:
+                if value not in element:
+                    element[value] = None
 
     def push_object(self, commit=True):
         if commit:
@@ -2795,16 +2808,19 @@ class UcsSystemTacacs(UcsSystemConfigObject):
                 if not self.get_attributes_from_json(json_content=json_content):
                     self.logger(level="error",
                                 message="Unable to get attributes from JSON content for " + self._CONFIG_NAME)
-                for element in self.providers:
-                    for value in ["hostname", "timeout", "port", "key", "order"]:
-                        if value not in element:
-                            element[value] = None
-                for element in self.provider_groups:
-                    for value in ["name", "included_providers"]:
-                        if value not in element:
-                            element[value] = None
 
         self.clean_object()
+
+    def clean_object(self):
+        UcsSystemConfigObject.clean_object(self)
+        for element in self.providers:
+            for value in ["hostname", "timeout", "port", "key", "order"]:
+                if value not in element:
+                    element[value] = None
+        for element in self.provider_groups:
+            for value in ["name", "included_providers"]:
+                if value not in element:
+                    element[value] = None
 
     def push_object(self, commit=True):
         if commit:
@@ -2921,22 +2937,25 @@ class UcsSystemLdap(UcsSystemConfigObject):
                 if not self.get_attributes_from_json(json_content=json_content):
                     self.logger(level="error",
                                 message="Unable to get attributes from JSON content for " + self._CONFIG_NAME)
-                for element in self.providers:
-                    for value in ["bind_dn", "vendor", "password", "port", "attribute", "timeout", "hostname",
-                                  "base_dn", "ssl", "filter", "order", "group_authorization", "group_recursion",
-                                  "target_attribute", "use_primary_group"]:
-                        if value not in element:
-                            element[value] = None
-                for element in self.provider_groups:
-                    for value in ["name", "included_providers"]:
-                        if value not in element:
-                            element[value] = None
-                for element in self.group_maps:
-                    for value in ["group_dn", "roles", "locales"]:
-                        if value not in element:
-                            element[value] = None
 
         self.clean_object()
+
+    def clean_object(self):
+        UcsSystemConfigObject.clean_object(self)
+        for element in self.providers:
+            for value in ["bind_dn", "vendor", "password", "port", "attribute", "timeout", "hostname",
+                          "base_dn", "ssl", "filter", "order", "group_authorization", "group_recursion",
+                          "target_attribute", "use_primary_group"]:
+                if value not in element:
+                    element[value] = None
+        for element in self.provider_groups:
+            for value in ["name", "included_providers"]:
+                if value not in element:
+                    element[value] = None
+        for element in self.group_maps:
+            for value in ["group_dn", "roles", "locales"]:
+                if value not in element:
+                    element[value] = None
 
     def push_object(self, commit=True):
         if commit:
@@ -3073,31 +3092,34 @@ class UcsSystemAuthentication(UcsSystemConfigObject):
                     self.logger(level="error",
                                 message="Unable to get attributes from JSON content for " + self._CONFIG_NAME)
 
-                for element in self.native_authentication:
-                    if "default_authentication" in element.keys():
-                        for subelement in element["default_authentication"]:
-                            for value in ["realm", "provider_group", "web_session_refresh_period",
-                                          "web_session_timeout", "two_factor_authentication"]:
-                                if value not in subelement:
-                                    subelement[value] = None
-
-                    if "console_authentication" in element.keys():
-                        for subelement in element["console_authentication"]:
-                            for value in ["realm", "provider_group", "two_factor_authentication"]:
-                                if value not in subelement:
-                                    subelement[value] = None
-
-                    for value in ["role_policy_for_remote_users"]:
-                        if value not in element:
-                            element[value] = None
-
-                for element in self.authentication_domains:
-                    for value in ["name", "realm", "web_session_timeout", "web_session_refresh_period",
-                                  "two_factor_authentication", "provider_group"]:
-                        if value not in element:
-                            element[value] = None
-
         self.clean_object()
+
+    def clean_object(self):
+        UcsSystemConfigObject.clean_object(self)
+
+        for element in self.native_authentication:
+            if "default_authentication" in element.keys():
+                for subelement in element["default_authentication"]:
+                    for value in ["realm", "provider_group", "web_session_refresh_period",
+                                  "web_session_timeout", "two_factor_authentication"]:
+                        if value not in subelement:
+                            subelement[value] = None
+
+            if "console_authentication" in element.keys():
+                for subelement in element["console_authentication"]:
+                    for value in ["realm", "provider_group", "two_factor_authentication"]:
+                        if value not in subelement:
+                            subelement[value] = None
+
+            for value in ["role_policy_for_remote_users"]:
+                if value not in element:
+                    element[value] = None
+
+        for element in self.authentication_domains:
+            for value in ["name", "realm", "web_session_timeout", "web_session_refresh_period",
+                          "two_factor_authentication", "provider_group"]:
+                if value not in element:
+                    element[value] = None
 
     def push_object(self, commit=True):
         if commit:
@@ -3268,17 +3290,20 @@ class UcsSystemCallHome(UcsSystemConfigObject):
                 if not self.get_attributes_from_json(json_content=json_content):
                     self.logger(level="error",
                                 message="Unable to get attributes from JSON content for " + self._CONFIG_NAME)
-                for element in self.profiles:
-                    for value in ["profile_name", "profile_level", "profile_format", "profile_max_size",
-                                  "profile_alert_groups", "profile_emails"]:
-                        if value not in element:
-                            element[value] = None
-                for element in self.policies:
-                    for value in ["state", "cause"]:
-                        if value not in element:
-                            element[value] = None
 
         self.clean_object()
+
+    def clean_object(self):
+        UcsSystemConfigObject.clean_object(self)
+        for element in self.profiles:
+            for value in ["profile_name", "profile_level", "profile_format", "profile_max_size",
+                          "profile_alert_groups", "profile_emails"]:
+                if value not in element:
+                    element[value] = None
+        for element in self.policies:
+            for value in ["state", "cause"]:
+                if value not in element:
+                    element[value] = None
 
     def push_object(self, commit=True):
         if commit:

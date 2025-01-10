@@ -477,7 +477,8 @@ class IntersightUcsDomainProfile(IntersightGenericUcsDomainProfile):
         fspa = self.commit(
             object_type="fabric.SwitchProfile",
             payload=fabric_switch_profile_a,
-            detail=self.name + " - Switch Profile FI A"
+            detail=self.name + " - Switch Profile FI A",
+            key_attributes=["name", "switch_cluster_profile"]
         )
         if not fspa:
             return False
@@ -487,7 +488,8 @@ class IntersightUcsDomainProfile(IntersightGenericUcsDomainProfile):
         fspb = self.commit(
             object_type="fabric.SwitchProfile",
             payload=fabric_switch_profile_b,
-            detail=self.name + " - Switch Profile FI B"
+            detail=self.name + " - Switch Profile FI B",
+            key_attributes=["name", "switch_cluster_profile"]
         )
         if not fspb:
             return False

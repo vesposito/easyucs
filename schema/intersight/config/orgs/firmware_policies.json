@@ -60,8 +60,12 @@
             "description": "Firmware Policy Excluded Component",
             "type": "string",
             "enum": [
+               "drives-except-boot-drives",
                "local-disk",
-               "storage-controller"
+               "none",
+               "storage-controller",
+               "storage-sasexpander",
+               "storage-u2"
             ]
          }
       },
@@ -89,15 +93,18 @@
                      "UCSC-C220-M6",
                      "UCSC-C220-M7",
                      "UCSC-C225-M6",
+                     "UCSC-C225-M8",
                      "UCSC-C240-M4",
                      "UCSC-C240-M5",
                      "UCSC-C240-M6",
                      "UCSC-C240-M7",
                      "UCSC-C245-M6",
+                     "UCSC-C245-M8",
                      "UCSC-C460-M4",
                      "UCSC-C480-M5",
                      "UCSX-210C-M6",
                      "UCSX-210C-M7",
+                     "UCSX-215C-M8",
                      "UCSX-410C-M7"
                   ]
                }
@@ -108,8 +115,7 @@
                "server_model"
             ]
          },
-         "minItems": 1,
-         "maxItems": 6
+         "minItems": 1
       },
       "target_platform": {
          "description": "The target platform on which the policy to be applied. Either standalone or FI attached. * `Standalone` - Servers which are operating in standalone mode i.e. not connected to a Fabric Interconnected. * `FI-Attached` - Servers which are connected to a Fabric Interconnect that is managed by Intersight.",

@@ -59,7 +59,9 @@ from intersight.api_client import ApiClient
 from intersight.configuration import Configuration
 from intersight.exceptions import ApiValueError, ApiTypeError, ApiException, OpenApiException
 from intersight import __version__ as intersight_sdk_version
+from intersight.model.fabric_switch_cluster_profile import FabricSwitchClusterProfile
 
+from cache.intersight.manager import IntersightCacheManager
 from __init__ import EASYUCS_ROOT
 from config.intersight.manager import IntersightConfigManager
 from device.delete_summary_manager import DeleteSummaryManager
@@ -72,9 +74,9 @@ urllib3.disable_warnings()
 
 
 class IntersightDevice(GenericDevice):
-    INTERSIGHT_APPLIANCE_MIN_REQUIRED_VERSION = "1.1.0-1"
+    INTERSIGHT_APPLIANCE_MIN_REQUIRED_VERSION = "1.1.1-0"
 
-    def __init__(self, parent=None, uuid=None, target="www.intersight.com", key_id="", private_key_path="",
+    def __init__(self, parent=None, uuid=None, target="us-east-1.intersight.com", key_id="", private_key_path="",
                  is_hidden=False, is_system=False, system_usage=None, proxy=None, proxy_user=None, proxy_password=None,
                  logger_handle_log_level="info", log_file_path=None, bypass_connection_checks=False,
                  bypass_version_checks=False, user_label=""):
@@ -172,6 +174,7 @@ class IntersightDevice(GenericDevice):
 
         self.version_min_required = self.INTERSIGHT_APPLIANCE_MIN_REQUIRED_VERSION
 
+        self.cache_manager = IntersightCacheManager(parent=self)
         self.config_manager = IntersightConfigManager(parent=self)
         self.inventory_manager = IntersightInventoryManager(parent=self)
         self.report_manager = IntersightReportManager(parent=self)
@@ -641,7 +644,8 @@ class IntersightDevice(GenericDevice):
             self.logger(level="error", message=message_str)
 
         # Update the cache with the latest organizations
-        self.metadata.cached_orgs = self.get_orgs()
+        if self.cache_manager.cache.fetch_orgs():
+            self.cache_manager.save_to_cache(cache_key="orgs")
 
         if self.task is not None:
             self.task.taskstep_manager.stop_taskstep(name="ClearConfigIntersightDevice", status="successful",
@@ -662,7 +666,8 @@ class IntersightDevice(GenericDevice):
         self.logger(level="debug", message="Using Intersight SDK version " + str(self.version_sdk))
         try:
             self._set_device_name_and_version()
-            self.metadata.cached_orgs = self.get_orgs()
+            if self.cache_manager.cache.fetch_orgs():
+                self.cache_manager.save_to_cache(cache_key="orgs")
             self.metadata.timestamp_last_connected = datetime.datetime.now()
             self.metadata.is_reachable = True
 
@@ -696,6 +701,13 @@ class IntersightDevice(GenericDevice):
                             for (ver, ver_min) in [(major, major_min), (minor, minor_min), (mr, mr_min),
                                                    (patch, patch_min), (rc, rc_min)]:
                                 if ver and ver_min:
+                                    # Check if the current version component exceeds the minimum required component.
+                                    # If a component is greater than the minimum, the version is valid, and we can
+                                    # stop checking further.
+                                    if int(ver) > int(ver_min):
+                                        break
+                                    # If a component is less than the minimum required, mark the version as invalid
+                                    # and exit the loop.
                                     if int(ver) < int(ver_min):
                                         valid_version = False
                                         break
@@ -894,7 +906,7 @@ class IntersightDevice(GenericDevice):
                 status_message="Disconnecting from " + self.metadata.device_type_long + " device " + str(self.name))
         return True
 
-    def query(self, api_class=None, sdk_object_type="", object_type="", filter="", expand="", retry=True):
+    def query(self, api_class=None, sdk_object_type="", object_type="", filter="", expand="", orderby="", retry=True):
         """
         Queries Intersight for one or multiple object(s) specified by its(their) type and a filter. Make sure to
         provide either 'object_type' OR both 'api_class' and 'sdk_object_type'.
@@ -903,6 +915,7 @@ class IntersightDevice(GenericDevice):
         :param object_type: The object type of the object that is to be queried (e.g. "ntp.Policy")
         :param filter: A filter string to reduce the results to only specific objects
         :param expand: An expand string consisting of a list of attributes that should be expanded in the results
+        :param orderby: Determines what properties are used to sort list.(e.g. "CreateTime desc")
         :param retry: A flag to retry if query API fails
         :return: An empty list if no result, a list of Intersight SDK objects if found
         """
@@ -942,7 +955,7 @@ class IntersightDevice(GenericDevice):
                     results = []
                 elif count_value <= MAX_OBJECTS_PER_FETCH_CALL:
                     results = getattr(api_instance, "get_" + sdk_object_type + "_list")(
-                        filter=filter, expand=expand, _request_timeout=timeout).results
+                        filter=filter, expand=expand, _request_timeout=timeout, orderby=orderby).results
                 else:
                     self.logger(level="debug", message=f"{str(count_value)} objects of class {sdk_object_type} are "
                                                        f"to be fetched using pagination")
@@ -951,7 +964,7 @@ class IntersightDevice(GenericDevice):
                     while start_value < count_value:
                         results += getattr(api_instance, "get_" + sdk_object_type + "_list")(
                             filter=filter, expand=expand, skip=start_value, top=MAX_OBJECTS_PER_FETCH_CALL,
-                            _request_timeout=timeout).results
+                            _request_timeout=timeout, orderby=orderby).results
                         start_value += MAX_OBJECTS_PER_FETCH_CALL
 
                     self.logger(level="debug",
@@ -959,7 +972,7 @@ class IntersightDevice(GenericDevice):
             else:
                 # We query the API
                 results = getattr(api_instance, "get_" + sdk_object_type + "_list")(
-                    filter=filter, expand=expand, _request_timeout=timeout).results
+                    filter=filter, expand=expand, _request_timeout=timeout, orderby=orderby).results
             return results
 
         except (ApiValueError, ApiTypeError, ApiException) as err:
@@ -988,7 +1001,7 @@ class IntersightDevice(GenericDevice):
         if retry:
             self.logger(level="info", message="Retrying to fetch objects of class " + sdk_object_type)
             return self.query(api_class=api_class, sdk_object_type=sdk_object_type, object_type=object_type,
-                              expand=expand, filter=filter, retry=False)
+                              expand=expand, filter=filter, orderby=orderby, retry=False)
 
         return []
 
@@ -1001,8 +1014,12 @@ class IntersightDevice(GenericDevice):
 
         url = "https://" + self.target + "/apidocs/apirefs/"
         try:
-            page = requests.get(url, verify=False, timeout=5)
-            regex_version = r"an-apidocs/(\d+\.\d+\.\d+-\d+)/build"
+            if self.metadata.use_proxy:
+                proxy_url, _, _ = common.get_proxy_url(include_authentication=True, logger=self)
+                page = requests.get(url, verify=False, timeout=5, proxies={"http": proxy_url, "https": proxy_url})
+            else:
+                page = requests.get(url, verify=False, timeout=5)
+            regex_version = r"an-apidocs/(\d+\.\d+\.\d+-\d+)/"
             res = re.search(regex_version, page.text)
             if res is not None:
                 return res.group(1)
@@ -1011,49 +1028,6 @@ class IntersightDevice(GenericDevice):
             self.logger(level="error", message="Unable to determine Intersight API version: " + str(err))
 
         return None
-
-    def get_orgs(self):
-        """
-        Fetches the Intersight Organizations
-        :return: Org list if successful, None otherwise
-        """
-        cached_orgs = {}
-        org_api = OrganizationApi(api_client=self.handle)
-        try:
-            orgs = org_api.get_organization_organization_list(expand="ResourceGroups,SharedWithResources",
-                                                              _request_timeout=self.timeout, orderby="Name")
-
-        except OpenApiException as err:
-            self.logger(level="error", message=f"Unable to get the list of Orgs (with SharedWithResources): {err}")
-            try:
-                orgs = org_api.get_organization_organization_list(expand="ResourceGroups",
-                                                                  _request_timeout=self.timeout, orderby="Name")
-            except OpenApiException as err:
-                self.logger(level="error", message=f"Unable to get the list of Orgs: {err}")
-                return None
-
-        if not orgs.results:
-            self.logger(level="error", message="No org found")
-            return None
-
-        for result in orgs.results:
-            cached_orgs[result.name] = {
-                "description": result.description,
-                "is_shared": False,
-                "resource_groups": [],
-                "shared_with_orgs": []
-            }
-            if result.resource_groups:
-                cached_orgs[result.name]["resource_groups"] = [rg.name for rg in result.resource_groups]
-            if getattr(result, "shared_with_resources", None):
-                cached_orgs[result.name]["shared_with_orgs"] = [
-                    resource.name for resource in getattr(result, "shared_with_resources", [])
-                    if resource.object_type == "organization.Organization"
-                ]
-                if cached_orgs[result.name]["shared_with_orgs"]:
-                    cached_orgs[result.name]["is_shared"] = True
-
-        return cached_orgs
 
     def _set_device_name_and_version(self):
         appliance_api = ApplianceApi(api_client=self.handle)
@@ -1460,4 +1434,310 @@ class IntersightDevice(GenericDevice):
                 status_message=f"Your Intersight license is in '{', '.join(license_states)}' state, which might prevent"
                                f" some operations to complete properly. To bypass this check enable the 'Force' option "
                                f"and try again.")
+        return False
+
+    def monitor_profile_deployment(self, profile):
+        """
+        Monitors the deployment workflows for the given profile.
+
+        :param profile: Fabric switch cluster profile object.
+        :return: str - Final status of the workflows ("COMPLETED", "TIME_OUT", "FAILED") or None on error.
+        """
+
+        # Check if the profile is a domain profile before performing deployment monitoring.
+        if not isinstance(profile, FabricSwitchClusterProfile):
+            self.logger(level="error",
+                        message="Currently, this function supports monitoring the deployment of domain profiles only.")
+            return False
+        try:
+            self.logger(message=f"Started monitoring deployment workflows for profile {profile.name}.")
+
+            # Filter string for querying workflows by switch profile MOIDs
+            moid_list = ', '.join(f"'{profile.switch_profiles[i].moid}'" for i in range(profile.switch_profiles_count))
+            workflow_filter = f"WorkflowCtx.InitiatorCtx.InitiatorMoid in ({moid_list})"
+
+            # Set timeout duration
+            timeout_duration = 3600
+            start_time = time.time()
+
+            while time.time() - start_time < timeout_duration:
+
+                # Brief pause before checking workflow status to reduce load
+                time.sleep(10)
+
+                # Retrieve workflow
+                all_workflows = self.query(object_type="workflow.WorkflowInfo", filter=workflow_filter,
+                                           orderby="CreateTime desc")
+
+                # Fetch the latest workflows matching the number of switch profiles in the deployment.
+                # Each switch_profile of domain profile corresponds to one deployment workflow, so we limit the results
+                # to the count of `switch_profiles_count`.
+                workflow_info = all_workflows[:profile.switch_profiles_count]
+
+                if all(workflow.status == "COMPLETED" for workflow in workflow_info):
+                    return True
+                elif any(workflow.status == "FAILED" for workflow in workflow_info):
+
+                    # Retrieve the 'moid' of the first workflow with status "FAILED" using 'next',
+                    # as all failed workflows are expected to share the same failure reason.
+
+                    failed_workflow_moid = next(
+                        (workflow["moid"] for workflow in workflow_info if workflow["status"] == "FAILED"), None)
+
+                    # Fetch failure reason using "workflow.TaskInfo" object
+                    failure_reasons = [task.failure_reason for task in self.query(
+                        object_type="workflow.TaskInfo", filter=f"WorkflowInfo.Moid eq '{failed_workflow_moid}'") if
+                                       task.failure_reason]
+                    self.logger(level="error", message=f"Deployment failed : {'; '.join(failure_reasons)}")
+
+                    return False
+
+                elif any(workflow.status in ["RUNNING", "WAITING"] for workflow in workflow_info):
+                    self.logger(level="debug", message="Deployment still in progress...")
+
+            # Timeout if workflows do not complete within duration
+            self.logger(level="error", message="Deployment timed out. Check logs for details.")
+            return False
+
+        except OpenApiException as error:
+            self.logger(level="error", message=f"Failed to retrieve workflow information: {error}")
+            return False
+
+    def _perform_domain_profile_deployment(self, imm_domain_name=None, domain_profile=None):
+        """
+        Deploys the domain profile to Fabric Interconnects (FIs) after assignment. Used by deploy_domain_profile().
+
+        :param imm_domain_name: IMM domain device name.
+        :param domain_profile: Fabric switch cluster profile object.
+        :return: bool - True if deployment is successful, False otherwise.
+        """
+        try:
+            fabric_api = FabricApi(api_client=self.handle)
+
+            # Check if the domain profile is already deployed. If yes, skip the DeployDomainProfile task step;
+            # if no, proceed with deploying the domain profile.
+            if domain_profile.deploy_status != 'None':
+                message = (f"UCS Domain Profile {domain_profile.name} is already deployed on Fabric Interconnect "
+                           f"{imm_domain_name}. So skipping deployment.")
+                if self.task:
+                    self.task.taskstep_manager.skip_taskstep(name="DeployDomainProfile", status_message=message)
+                self.logger(level="warning", message=message)
+                return True
+
+            else:
+                self.logger(message=f"Starting deployment of domain profile {domain_profile.name} "
+                                    f"to Fabric Interconnect {imm_domain_name}.")
+                if self.task:
+                    self.task.taskstep_manager.start_taskstep(name="DeployDomainProfile",
+                                                              description=f"Deploy Domain Profile {domain_profile.name}")
+                # Initiate deployment for each switch profile in the profile
+                for i in range(domain_profile.switch_profiles_count):
+                    fabric_api.patch_fabric_switch_profile(
+                        moid=domain_profile.switch_profiles[i].moid,
+                        fabric_switch_profile={"Action": "Deploy"}
+                    )
+
+                # Monitor deployment process and check completion status
+                deployment_status = self.monitor_profile_deployment(domain_profile)
+                if deployment_status:
+                    message = f"Deployment of domain profile {domain_profile.name} completed successfully."
+                    self.logger(level="debug", message=message)
+                    if self.task:
+                        self.task.taskstep_manager.stop_taskstep(
+                            name="DeployDomainProfile", status="successful",
+                            status_message=message)
+                else:
+                    self.logger(level="error", message="Deployment of domain profile Failed. Please check logs.",
+                                set_api_error_message=False)
+                    if self.task:
+                        self.task.taskstep_manager.stop_taskstep(name="DeployDomainProfile", status="failed",
+                                                                 status_message="Deployment of domain profile failed.")
+                    return False
+
+        except OpenApiException as err:
+            self.logger(level="error", message=f"Failed to deploy domain profile: {err}")
+            if self.task:
+                self.task.taskstep_manager.stop_taskstep(name="DeployDomainProfile", status="failed",
+                                                         status_message=str(err)[:255])
+            return False
+
+        return True
+
+    def _assign_domain_profile(self, imm_domain_name=None, domain_profile=None,
+                               network_elements=None):
+        """
+        Assigns a domain profile to Fabric Interconnects (FIs) if it is not already assigned. Used by deploy_domain_profile()
+        Used by deploy_domain_profile()
+
+        :param imm_domain_name: IMM domain device name.
+        :param domain_profile: The fabric switch cluster profile object.
+        :param network_elements: List of network elements associated with the device.
+        :return: bool - True if assignment is successful, False otherwise.
+        """
+        try:
+            self.logger(message=f"Starting the assignment of domain profile {domain_profile.name} "
+                                f"to Fabric Interconnect {imm_domain_name}.")
+
+            fabric_api = FabricApi(api_client=self.handle)
+
+            if self.task:
+                self.task.taskstep_manager.start_taskstep(name="AssignDomainProfile",
+                                                          description="Assign Domain Profile")
+
+            # Check if the domain profile is already assigned.
+            # If assigned, verify it's linked to the intended Fabric Interconnect (FI).
+            # If assigned to the intended FI, skip the task. If not, set the task as failed.
+            # If not assigned, proceed with assignment of domain profile.
+
+            if domain_profile.config_context.config_state == "Not-assigned":
+
+                # Assign domain profile to each Fabric Interconnect
+                for i in range(domain_profile.switch_profiles_count):
+                    fabric_api.patch_fabric_switch_profile(
+                        moid=domain_profile.switch_profiles[i].moid,
+                        fabric_switch_profile={"AssignedSwitch": network_elements[i].moid}
+                    )
+
+                # Mark task step as successful if assignment completed
+                message_str = (f"Successfully assigned domain profile {domain_profile.name} to "
+                               f"Fabric Interconnect {imm_domain_name}.")
+                if self.task:
+                    self.task.taskstep_manager.stop_taskstep(
+                        name="AssignDomainProfile",
+                        status="successful",
+                        status_message=message_str)
+                self.logger(message=message_str)
+                return True
+
+            elif domain_profile.config_context.config_state in ("Assigned", "Associated"):
+
+                # Verify if domain profile is assigned to Intended FI
+                for i in range(domain_profile.switch_profiles_count):
+                    assigned_profile = self.query(object_type="fabric.SwitchProfile",
+                                                  filter=f"Moid eq '{domain_profile.switch_profiles[i].moid}'")
+
+                    # Continue if the profile is assigned to the intended network element FI
+                    if assigned_profile[0].assigned_switch.moid == network_elements[i].moid:
+                        continue
+
+                    # Stop deployment if domain profile is assigned to a different FI
+                    message_str = f"Domain profile is already assigned to a different domain."
+                    if self.task is not None:
+                        self.task.taskstep_manager.stop_taskstep(
+                            name="AssignDomainProfile", status="failed",
+                            status_message=message_str
+                        )
+                    self.logger(level="error", message=message_str)
+                    return False
+
+                # Skip assignment if domain profile is already assigned to intended FI
+                message = (f"UCS Domain Profile {domain_profile.name} is already assigned to Fabric Interconnect "
+                           f"{imm_domain_name}. So skipping assignment.")
+                self.logger(level="warning", message=message)
+                if self.task:
+                    self.task.taskstep_manager.skip_taskstep(name="AssignDomainProfile", status_message=message)
+            else:
+                message_str = (f"Deployment cannot proceed as domain profile '{domain_profile.name}' is in "
+                               f"unknown state: {domain_profile.config_context.config_state}.")
+                self.logger(level="error", message=message_str)
+                if self.task is not None:
+                    self.task.taskstep_manager.stop_taskstep(
+                        name="AssignDomainProfile", status="failed", status_message=message_str[:255]
+                    )
+                return False
+
+        except OpenApiException as err:
+            self.logger(level="error",
+                        message=f"Failed to assign UCS Domain Profile {domain_profile.name} to Fabric Interconnect "
+                                f"{imm_domain_name}.")
+            if self.task is not None:
+                self.task.taskstep_manager.stop_taskstep(
+                    name="AssignDomainProfile", status="failed", status_message=str(err)[:255]
+                )
+            return False
+
+        return True
+
+    def deploy_domain_profile(self, org_name=None, domain_profile_name=None, imm_domain_name=None):
+        """
+        Checks if domain profile is assigned; if not, it assigns and deploys it.
+
+        :param org_name: Name of the organization to which the domain profile belongs.
+        :param domain_profile_name: Name of the domain profile to deploy on the Fabric Interconnect.
+        :param imm_domain_name: IMM domain device name.
+        :return: bool - True if deployment is successful, False otherwise.
+        """
+
+        try:
+            # Retrieve registration details of the devices claimed to Intersight
+            # - Filters for devices with 'Connected' status and a specific hostname
+            device_filter = (f"ConnectionStatus eq Connected and "
+                             f"DeviceHostname in ('{imm_domain_name}')")
+            registered_devices = self.query(object_type="asset.DeviceRegistration", filter=device_filter)
+            if not registered_devices:
+                self.logger(
+                    level="error",
+                    message=f"Deployment cannot proceed: Unable to fetch the target domain '{imm_domain_name}'. "
+                            f"Please verify the domain name and ensure it is correctly registered and connected."
+                )
+                return False
+
+            # Retrieve the Organization Moid using the organization name to identify the correct Switch cluster profile
+            org = self.query(object_type='organization.Organization', filter=f"Name eq '{org_name}'")
+            if not org:
+                self.logger(
+                    level="error",
+                    message=f"Cannot proceed with deployment: The specified organization {org_name} does not exist."
+                )
+                return False
+
+            # Get the domain profile and attached Fabric Interconnect (FI) information
+            # - Filters for the UCS domain profile based on its name and organization
+            switch_cluster_profile_filter = f"Name eq '{domain_profile_name}' and Organization.Moid eq '{org[0].moid}'"
+            switch_cluster_profile = self.query(object_type="fabric.SwitchClusterProfile",
+                                                filter=switch_cluster_profile_filter)
+
+            # Check the status of the switch_cluster_profile, ensuring it is not in "Failed," "Out-of-sync," or
+            # "Pending-changes" states.
+            if not switch_cluster_profile:
+                self.logger(
+                    level="error",
+                    message=f"Cannot proceed with deployment: Domain profile '{domain_profile_name}' not found in "
+                            f"organization '{org_name}'."
+                )
+                return False
+            elif switch_cluster_profile[0].config_context.config_state in ("Failed", "Out-of-sync", "Pending-changes",
+                                                                           "Validating", "Configuring"):
+                self.logger(
+                    level="error",
+                    message=f"Deployment cannot proceed as domain profile '{domain_profile_name}' is in "
+                            f"inconsistent state: {switch_cluster_profile[0].config_context.config_state}."
+                )
+                return False
+
+            # Retrieve the network elements associated with the registered device
+            # - Based on the Moid (unique ID) of the registered device, get FIs network element info
+            network_elements_filter = f"RegisteredDevice.Moid eq '{registered_devices[0].moid}'"
+            network_elements = self.query(object_type="network.Element", filter=network_elements_filter)
+            if not network_elements:
+                self.logger(
+                    level="error",
+                    message=f"Cannot proceed with deployment: Unable to retrieve network elements for the "
+                            f"registered device '{imm_domain_name}'."
+                )
+                return False
+
+            # Deploy the domain profile if the assignment is completed successfully.
+            if self._assign_domain_profile(imm_domain_name, switch_cluster_profile[0], network_elements):
+                if self._perform_domain_profile_deployment(imm_domain_name, switch_cluster_profile[0]):
+                    self.logger(
+                        level="info",
+                        message=f"Successfully completed assignment and deployment of domain profile "
+                                f"{domain_profile_name}.")
+                    return True
+
+        except OpenApiException as error:
+            self.logger(level="error", message=f"Error in assign and deployment process: {error}.")
+            return False
+
         return False

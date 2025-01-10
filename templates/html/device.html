@@ -242,8 +242,9 @@
 
 {% block breadcrumbs %}
 <ol class="breadcrumb mb-0 p-0">
-      <li class="breadcrumb-item"><a href="/">Home</a></li>
-      <li class="breadcrumb-item active">Device</li>
+      <li class="breadcrumb-item"><a href="/">Devices</a></li>
+      <li class="breadcrumb-item parent-device-breadcrumb d-none"><a href="/">Devices</a></li>
+      <li class="breadcrumb-item active current-device-breadcrumb">Device</li>
     </ol>
 {% endblock %}
 {% block content %}
@@ -272,14 +273,15 @@
           <a class="dropdown-item" onclick="fetchLiveObjectFromDevice('backup')"><span class="mr-2" style="width: 20px; display: inline-block"><i class="fa-solid fa-floppy-disk"></i></span>Fetch Backup</a>
           <div class="dropdown-divider"></div>
           <a class="dropdown-item dropdown-toggle" onclick="togglePushConfigModal(event)"><span class="mr-2" style="width: 20px; display: inline-block"><i class="fa-solid fa-file-arrow-up"></i></span>Push Config</a>
-          <div id="report-separator" class="dropdown-divider"></div>
-          <a id="action-generate-report" class="dropdown-item dropdown-toggle" onclick="toggleGenerateReportModal(event)"><span class="mr-2" style="width: 20px; display: inline-block"><i class="fa-solid fa-book"></i></span>Generate Report</a>
-          <div id="actions-separator" class="dropdown-divider" style="display: none"></div>
+          <div class="dropdown-divider"></div>
+          <a class="dropdown-item dropdown-toggle" onclick="toggleGenerateReportModal(event)"><span class="mr-2" style="width: 20px; display: inline-block"><i class="fa-solid fa-book"></i></span>Generate Report</a>
+          <div id="actions-separator" class="dropdown-divider"></div>
           <a id="action-clear-config" class="dropdown-item dropdown-toggle" style="display: none" onclick="toggleClearConfigModal(event)"><span class="mr-2" style="width: 20px; display: inline-block"><i class="fa-solid fa-eraser"></i></span>Clear Config</a>
           <a id="action-claim-to-intersight" class="dropdown-item dropdown-toggle" style="display: none" onclick="toggleClaimToIntersightModal(event)"><span class="mr-2" style="width: 20px; display: inline-block"><i class="fa-solid fa-cloud-arrow-up"></i></span>Claim to Intersight</a>
           <a id="action-clear-intersight-claim-status" class="dropdown-item" style="display: none" onclick="ResetDeviceConnector()"><span class="mr-2" style="width: 20px; display: inline-block"><i class="fa-solid fa-plug-circle-xmark"></i></span>Reset Device Connector</a>
           <a id="action-clear-sel-logs" class="dropdown-item" style="display: none" onclick="clearSelLogs()"><span class="mr-2" style="width: 20px; display: inline-block"><i class="fa-solid fa-broom"></i></span>Clear SEL Logs</a>
           <a id="action-regenerate-certificate" class="dropdown-item" style="display: none" onclick="regenerateCertificate()"><span class="mr-2" style="width: 20px; display: inline-block"><i class="fa-solid fa-key"></i></span>Regenerate Certificate</a>
+          <a id="action-reset-device" class="dropdown-item" style="display: none;" onclick="resetDevice()"><span class="mr-2" style="width: 20px; display: inline-block"><i class="fa-solid fa-arrow-rotate-left"></i></span>Reset device</a>
         </div>
       </div>
     </div>
@@ -293,6 +295,7 @@
             <a class="nav-item nav-link" id="nav-report-tab" data-toggle="tab" href="#nav-report" role="tab" aria-controls="nav-report" aria-selected="false">Reports</a>
             <a class="nav-item nav-link" id="nav-backup-tab" data-toggle="tab" href="#nav-backup" role="tab" aria-controls="nav-backup" aria-selected="false">Backups</a>
             <a class="nav-item nav-link" id="nav-tasks-tab" data-toggle="tab" href="#nav-tasks" role="tab" aria-controls="nav-tasks" aria-selected="false">Tasks</a>
+            <a class="nav-item nav-link d-none" id="nav-subdevices-tab" data-toggle="tab" href="#nav-subdevices" role="tab" aria-controls="nav-subdevices" aria-selected="false">Subdevices</a>
           </div>
         </nav>
         <div class="tab-content" id="nav-tabContent">
@@ -445,6 +448,29 @@
                     <th>Status description</th>
                     <th>Started</th>
                   </tr>
+                  </thead>
+                  <tbody>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+          <div class="tab-pane fade" id="nav-subdevices" role="tabpanel" aria-labelledby="nav-subdevices-tab">
+            <div class="card">
+              <div class="card-body">
+                <table id="subDevicesTable" class="table table-bordered table-striped table-hover">
+                  <thead>
+                    <tr>
+                      <th><input type="checkbox" id="subDevicesTable_selectAll" name="select_all" value="1"></th>
+                      <th>Device type</th>
+                      <th>Device name</th>
+                      <th>User label</th>
+                      <th>Creation date</th>
+                      <th>Intersight claim status</th>
+                      <th>Username</th>
+                      <th>Version</th>
+                      <th>Target</th>
+                    </tr>
                   </thead>
                   <tbody>
                   </tbody>

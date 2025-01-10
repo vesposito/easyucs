@@ -7,8 +7,8 @@
             "category": "samples",
             "subcategory": "Boot",
             "name": "UCS Manager boot_policy section configuration sample",
-            "easyucs_version": "0.9.0",
-            "revision": "1.1"
+            "easyucs_version": "1.0.0",
+            "revision": "1.2"
          }
       ]
    },

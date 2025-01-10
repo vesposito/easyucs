@@ -1,53 +1,54 @@
 {
-  "model_short_name": "Intel X710-T4 4x10G",
-  "rear_file_name": "UCSC-PCIE-IQ10GC.png",
-  "rear_file_name_half": "UCSC-PCIE-IQ10GC_half.png",
-  "rear_file_size": [593,75],
-  "rear_file_size_half": [389,75],
-  "rear_ports": {
-	"x/1": {
-      "port_coord": [232, 8],
-      "port_type": "rj45",
-      "port_size": [73, 50]
-    },
-    "x/2": {
-      "port_coord": [308, 8],
-      "port_type": "rj45",
-      "port_size": [73, 50]
-    },
-    "x/3": {
-      "port_coord": [386, 8],
-      "port_type": "rj45",
-      "port_size": [73, 50]
-    },
-	"x/4": {
-      "port_coord": [462, 8],
-      "port_type": "rj45",
-      "port_size": [73, 50]
-    }
-  },
-  "rear_ports_half": {
-    "x/1": {
-      "port_coord": [45, 8],
-      "port_type": "rj45",
-      "port_size": [73, 50]
-    },
-    "x/2": {
-      "port_coord": [122, 8],
-      "port_type": "rj45",
-      "port_size": [73, 50]
-    },
-    "x/3": {
-      "port_coord": [198, 8],
-      "port_type": "rj45",
-      "port_size": [73, 50]
-    },
-	"x/4": {
-      "port_coord": [276, 8],
-      "port_type": "rj45",
-      "port_size": [73, 50]
-    }
-  },
-  "imm_compatible": false,
-  "data_sheet_url": "https://www.intel.com/content/dam/www/public/us/en/documents/product-briefs/ethernet-x710-t4-brief.pdf"
+   "model_short_name": "Intel X710-T4 4x10G",
+   "rear_file_name": "UCSC-PCIE-IQ10GC.png",
+   "rear_file_name_half": "UCSC-PCIE-IQ10GC_half.png",
+   "rear_file_size": [593,75],
+   "rear_file_size_half": [389,75],
+   "rear_ports": {
+      "x/1": {
+         "port_coord": [232, 8],
+         "port_type": "rj45",
+         "port_size": [73, 50]
+      },
+      "x/2": {
+         "port_coord": [308, 8],
+         "port_type": "rj45",
+         "port_size": [73, 50]
+      },
+      "x/3": {
+         "port_coord": [386, 8],
+         "port_type": "rj45",
+         "port_size": [73, 50]
+      },
+      "x/4": {
+         "port_coord": [462, 8],
+         "port_type": "rj45",
+         "port_size": [73, 50]
+      }
+   },
+   "rear_ports_half": {
+      "x/1": {
+         "port_coord": [45, 8],
+         "port_type": "rj45",
+         "port_size": [73, 50]
+      },
+      "x/2": {
+         "port_coord": [122, 8],
+         "port_type": "rj45",
+         "port_size": [73, 50]
+      },
+      "x/3": {
+         "port_coord": [198, 8],
+         "port_type": "rj45",
+         "port_size": [73, 50]
+      },
+      "x/4": {
+         "port_coord": [276, 8],
+         "port_type": "rj45",
+         "port_size": [73, 50]
+      }
+   },
+   "imm_compatible": false,
+   "data_sheet_url": "https://www.intel.com/content/dam/www/public/us/en/documents/product-briefs/ethernet-x710-t4-brief.pdf",
+   "adaptor_type": "nic"
 }

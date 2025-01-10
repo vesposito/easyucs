@@ -234,8 +234,7 @@
                         },
                        "additionalProperties": false,
                        "required": [
-                          "prefix",
-                          "gateway"
+                          "prefix"
                        ]
                     }
                   },
@@ -286,8 +285,7 @@
                        },
                        "additionalProperties": false,
                        "required": [
-                          "prefix",
-                          "gateway"
+                          "prefix"
                        ]
                     }
                   },
@@ -329,8 +327,7 @@
          },
          "additionalProperties": false,
          "required": [
-            "prefix",
-            "gateway"
+            "prefix"
          ]
       },
       "reservations": {

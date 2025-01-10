@@ -75,23 +75,25 @@ class UcsCentralDomainGroupQualificationPolicy(UcsCentralConfigObject):
                 if not self.get_attributes_from_json(json_content=json_content):
                     self.logger(level="error",
                                 message="Unable to get attributes from JSON content for " + self._CONFIG_NAME)
-
-                for element in self.owner_qualifiers:
-                    for value in ["name", "owner_name"]:
-                        if value not in element:
-                            element[value] = None
-
-                for element in self.site_qualifiers:
-                    for value in ["name", "site_name"]:
-                        if value not in element:
-                            element[value] = None
-
-                for element in self.ip_address_qualifiers:
-                    for value in ["from", "to"]:
-                        if value not in element:
-                            element[value] = None
-
         self.clean_object()
+
+    def clean_object(self):
+        UcsCentralConfigObject.clean_object(self)
+
+        for element in self.owner_qualifiers:
+            for value in ["name", "owner_name"]:
+                if value not in element:
+                    element[value] = None
+
+        for element in self.site_qualifiers:
+            for value in ["name", "site_name"]:
+                if value not in element:
+                    element[value] = None
+
+        for element in self.ip_address_qualifiers:
+            for value in ["from", "to"]:
+                if value not in element:
+                    element[value] = None
 
     def push_object(self, commit=True):
         if commit:

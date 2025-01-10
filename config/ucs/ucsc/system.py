@@ -709,17 +709,20 @@ class UcsCentralSnmp(UcsCentralConfigObject):
                     self.logger(level="error",
                                 message="Unable to get attributes from JSON content for " + self._CONFIG_NAME)
 
-                for element in self.snmp_traps:
-                    for value in ["hostname", "community", "port", "version", "notification_type", "v3privilege"]:
-                        if value not in element:
-                            element[value] = None
-
-                for element in self.snmp_users:
-                    for value in ["name", "descr", "privacy_password", "password", "auth_type", "use_aes"]:
-                        if value not in element:
-                            element[value] = None
-
         self.clean_object()
+
+    def clean_object(self):
+        UcsCentralConfigObject.clean_object(self)
+
+        for element in self.snmp_traps:
+            for value in ["hostname", "community", "port", "version", "notification_type", "v3privilege"]:
+                if value not in element:
+                    element[value] = None
+
+        for element in self.snmp_users:
+            for value in ["name", "descr", "privacy_password", "password", "auth_type", "use_aes"]:
+                if value not in element:
+                    element[value] = None
 
     def push_object(self, commit=True):
         if commit:
@@ -876,22 +879,25 @@ class UcsCentralSyslog(UcsCentralConfigObject):
                     self.logger(level="error",
                                 message="Unable to get attributes from JSON content for " + self._CONFIG_NAME)
 
-                for element in self.local_destinations:
-                    for value in ["console", "monitor", "file"]:
-                        if value not in element:
-                            element[value] = None
-
-                for element in self.remote_destinations:
-                    for value in ["primary_server", "secondary_server", "tertiary_server"]:
-                        if value not in element:
-                            element[value] = None
-
-                for element in self.local_sources:
-                    for value in ["faults", "audits", "events"]:
-                        if value not in element:
-                            element[value] = None
-
         self.clean_object()
+
+    def clean_object(self):
+        UcsCentralConfigObject.clean_object(self)
+
+        for element in self.local_destinations:
+            for value in ["console", "monitor", "file"]:
+                if value not in element:
+                    element[value] = None
+
+        for element in self.remote_destinations:
+            for value in ["primary_server", "secondary_server", "tertiary_server"]:
+                if value not in element:
+                    element[value] = None
+
+        for element in self.local_sources:
+            for value in ["faults", "audits", "events"]:
+                if value not in element:
+                    element[value] = None
 
     def push_object(self, commit=True):
         if commit:

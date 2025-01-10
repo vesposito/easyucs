@@ -2,10 +2,9 @@
 # !/usr/bin/env python
 
 """ port.py: Easy UCS Deployment Tool """
-from __init__ import __author__, __copyright__,  __version__, __status__
 
 
-class UcsSystemDrawPort:
+class UcsPortDraw:
     def __init__(self, id, color, size, coord, parent_draw, port, peer=None):
         self.parent_draw = parent_draw
         self.id = id
@@ -14,6 +13,6 @@ class UcsSystemDrawPort:
         self.size = size
         self.port = port
         self._parent = port
-        self.aggr_id = self.port.aggr_port_id
+        self.aggr_id = self.port.aggr_port_id if hasattr(self.port, "aggr_port_id") else None
         if peer:
             self.peer = peer

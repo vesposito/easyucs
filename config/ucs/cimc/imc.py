@@ -2,17 +2,9 @@
 # !/usr/bin/env python
 
 """ admin.py: Easy UCS Deployment Tool """
-from __init__ import __author__, __copyright__,  __version__, __status__
 
 
-import sys
-import time
-import traceback
-import urllib
-
-from config.ucs.object import GenericUcsConfigObject, UcsImcConfigObject, UcsSystemConfigObject
-
-import common
+from config.ucs.object import UcsImcConfigObject
 
 from imcsdk.mometa.aaa.AaaLdap import AaaLdap
 from imcsdk.mometa.aaa.AaaLdapRoleGroup import AaaLdapRoleGroup
@@ -46,7 +38,6 @@ from imcsdk.mometa.adaptor.AdaptorRssProfile import AdaptorRssProfile
 from imcsdk.mometa.adaptor.AdaptorUnit import AdaptorUnit
 from imcsdk.mometa.advanced.AdvancedPowerProfile import AdvancedPowerProfile
 from imcsdk.mometa.bios.BiosSettings import BiosSettings
-from imcsdk.mometa.bios.BiosUnit import BiosUnit
 from imcsdk.mometa.bios.BiosVfAdjacentCacheLinePrefetch import BiosVfAdjacentCacheLinePrefetch
 from imcsdk.mometa.bios.BiosVfAltitude import BiosVfAltitude
 from imcsdk.mometa.bios.BiosVfAutonumousCstateEnable import BiosVfAutonumousCstateEnable
@@ -99,7 +90,7 @@ from imcsdk.mometa.bios.BiosVfResumeOnACPowerLoss import BiosVfResumeOnACPowerLo
 from imcsdk.mometa.bios.BiosVfSataModeSelect import BiosVfSataModeSelect
 from imcsdk.mometa.bios.BiosVfSelectMemoryRASConfiguration import BiosVfSelectMemoryRASConfiguration
 from imcsdk.mometa.bios.BiosVfSrIov import BiosVfSrIov
-from imcsdk.mometa.bios.BiosVfTPMSupport import BiosVfTPMSupport
+from imcsdk.mometa.bios.BiosVfTpmSupport import BiosVfTpmSupport
 from imcsdk.mometa.bios.BiosVfUSBEmulation import BiosVfUSBEmulation
 from imcsdk.mometa.bios.BiosVfUSBPortsConfig import BiosVfUSBPortsConfig
 from imcsdk.mometa.bios.BiosVfUsbXhciSupport import BiosVfUsbXhciSupport
@@ -117,7 +108,6 @@ from imcsdk.mometa.comm.CommSnmp import CommSnmp
 from imcsdk.mometa.comm.CommSnmpTrap import CommSnmpTrap
 from imcsdk.mometa.comm.CommSnmpUser import CommSnmpUser
 from imcsdk.mometa.comm.CommSsh import CommSsh
-from imcsdk.mometa.comm.CommSvcEp import CommSvcEp
 from imcsdk.mometa.comm.CommSyslog import CommSyslog
 from imcsdk.mometa.comm.CommSyslogClient import CommSyslogClient
 from imcsdk.mometa.comm.CommVMedia import CommVMedia
@@ -159,16 +149,12 @@ from imcsdk.mometa.storage.StorageController import StorageController
 from imcsdk.mometa.storage.StorageFlexFlashController import StorageFlexFlashController
 from imcsdk.mometa.storage.StorageFlexFlashOperationalProfile import StorageFlexFlashOperationalProfile
 from imcsdk.mometa.storage.StorageLocalDisk import StorageLocalDisk
-from imcsdk.mometa.storage.StorageLocalDiskUsage import StorageLocalDiskUsage
 from imcsdk.mometa.storage.StorageVirtualDrive import StorageVirtualDrive
 from imcsdk.mometa.storage.StorageVirtualDriveCreatorUsingUnusedPhysicalDrive import \
     StorageVirtualDriveCreatorUsingUnusedPhysicalDrive
 from imcsdk.mometa.storage.StorageVirtualDriveCreatorUsingVirtualDriveGroup import \
     StorageVirtualDriveCreatorUsingVirtualDriveGroup
 from imcsdk.mometa.top.TopSystem import TopSystem as ImcTopSystem
-
-from ucsmsdk.ucsexception import UcsException
-from imcsdk.imcexception import ImcException
 
 
 class UcsImcAdminNetwork(UcsImcConfigObject):
@@ -2042,8 +2028,8 @@ class UcsImcBios(UcsImcConfigObject):
             elif self._device.platform_type == "modular":
                 bios_dn = "sys/chassis-1/server-1/bios/bios-settings"  # FIXME: Add support for server-2 in S3260
 
-            if "biosVfTPMSupport" in self._config.sdk_objects:
-                for policy in self._config.sdk_objects["biosVfTPMSupport"]:
+            if "biosVfTpmSupport" in self._config.sdk_objects:
+                for policy in self._config.sdk_objects["biosVfTpmSupport"]:
                     if bios_dn in policy.dn:
                         self.tpm_support = policy.vp_tpm_support
             if "biosVfPowerOnPasswordSupport" in self._config.sdk_objects:
@@ -2329,7 +2315,7 @@ class UcsImcBios(UcsImcConfigObject):
             parent_mo = "sys/chassis-1/server-1/bios"  # FIXME: Add support for setting BIOS params for server-2
         mo_bios_settings = BiosSettings(parent_mo_or_dn=parent_mo)
 
-        BiosVfTPMSupport(parent_mo_or_dn=mo_bios_settings, vp_tpm_support=self.tpm_support)
+        BiosVfTpmSupport(parent_mo_or_dn=mo_bios_settings, vp_tpm_support=self.tpm_support)
         BiosVfPowerOnPasswordSupport(parent_mo_or_dn=mo_bios_settings, vp_pop_support=self.power_on_password_support)
         BiosVfIntelHyperThreadingTech(parent_mo_or_dn=mo_bios_settings,
                                       vp_intel_hyper_threading_tech=self.intel_hyper_threading_technology)

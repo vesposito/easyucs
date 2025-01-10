@@ -6,9 +6,9 @@
 import re
 
 from __init__ import __version__
-from draw.ucs.chassis import UcsSystemDrawInfraChassis
+from draw.ucs.chassis import UcsChassisDrawInfra
 from draw.ucs.neighbor import UcsSystemDrawInfraNeighborsLan, UcsSystemDrawInfraNeighborsSan
-from draw.ucs.rack import UcsSystemDrawInfraRack, UcsSystemDrawInfraRackEnclosure
+from draw.ucs.rack import UcsRackDrawInfra, UcsSystemDrawInfraRackEnclosure
 from draw.ucs.service_profile import UcsSystemDrawInfraServiceProfile
 from inventory.manager import GenericInventoryManager
 from inventory.ucs.chassis import UcsImcChassis, UcsSystemChassis
@@ -176,10 +176,10 @@ class UcsSystemInventoryManager(GenericUcsInventoryManager):
             # if FI is embedded then the chassis 1 is a UCS Mini/X-Direct chassis, so no need to draw infra
             if not (is_embedded_fi and chassis_draw._parent.id == '1'):
                 if fi_rear_draw_list:
-                    infra = UcsSystemDrawInfraChassis(chassis=chassis_draw,
-                                                      fi_list=fi_rear_draw_list,
-                                                      fex_list=fex_rear_draw_list,
-                                                      parent=fi_rear_draw_list[0]._parent)
+                    infra = UcsChassisDrawInfra(
+                        chassis=chassis_draw, fi_list=fi_rear_draw_list, fex_list=fex_rear_draw_list,
+                        parent=fi_rear_draw_list[0]._parent
+                    )
                     if hasattr(infra, "_file_name"):
                         # If wires are present
                         chassis_draw._parent._draw_infra = infra
@@ -190,9 +190,10 @@ class UcsSystemInventoryManager(GenericUcsInventoryManager):
 
         for rack_draw in rack_rear_draw_list:
             if fi_rear_draw_list:
-                infra = UcsSystemDrawInfraRack(rack=rack_draw, fi_list=fi_rear_draw_list,
-                                               fex_list=fex_rear_draw_list,
-                                               parent=fi_rear_draw_list[0]._parent)
+                infra = UcsRackDrawInfra(
+                    rack=rack_draw, fi_list=fi_rear_draw_list, fex_list=fex_rear_draw_list,
+                    parent=fi_rear_draw_list[0]._parent
+                )
                 if hasattr(infra, "_file_name"):
                     # If wires are present
                     rack_draw._parent._draw_infra = infra

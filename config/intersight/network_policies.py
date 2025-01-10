@@ -1,11 +1,6 @@
 # !/usr/bin/env python
 
 """ network_policies.py: Easy UCS Deployment Tool """
-import copy
-
-import natsort
-
-from common import format_descr, convert_to_range
 from config.intersight.object import IntersightConfigObject
 from config.intersight.pools import IntersightMacPool, IntersightIqnPool
 from config.intersight.pools import IntersightWwnnPool, IntersightWwpnPool
@@ -223,6 +218,8 @@ class IntersightVnicTemplate(IntersightConfigObject, IntersightGenericVnic):
             kwargs["name"] = self.name
         if self.descr is not None:
             kwargs["description"] = self.descr
+        if self.tags is not None:
+            kwargs["tags"] = self.create_tags()
         if self.enable_override is not None:
             kwargs["enable_override"] = self.enable_override
         if self.enable_failover is not None:
@@ -537,6 +534,8 @@ class IntersightVhbaTemplate(IntersightConfigObject, IntersightGenericVhba):
             kwargs["name"] = self.name
         if self.descr is not None:
             kwargs["description"] = self.descr
+        if self.tags is not None:
+            kwargs["tags"] = self.create_tags()
         if self.enable_override is not None:
             kwargs["enable_override"] = self.enable_override
         if self.pin_group_name is not None:

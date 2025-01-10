@@ -35,6 +35,7 @@ from ucsmsdk.ucsmeta import version as ucsmsdk_ucs_version
 
 import common
 from backup.ucs.manager import UcsCentralBackupManager, UcsImcBackupManager, UcsSystemBackupManager
+from cache.ucs.manager import UcsSystemCacheManager
 from config.ucs.manager import UcsImcConfigManager, UcsSystemConfigManager, UcsCentralConfigManager
 from device.device import GenericDevice
 from device.device_connector import DeviceConnector
@@ -308,6 +309,7 @@ class UcsSystem(GenericUcsDevice):
         self.version_min_required = UcsVersion(self.UCS_SYSTEM_MIN_REQUIRED_VERSION)
         self.version_sdk = str(ucsmsdk_sdk_version)
         self.backup_manager = UcsSystemBackupManager(parent=self)
+        self.cache_manager = UcsSystemCacheManager(parent=self)
         self.config_manager = UcsSystemConfigManager(parent=self)
         self.inventory_manager = UcsSystemInventoryManager(parent=self)
         self.report_manager = UcsSystemReportManager(parent=self)
@@ -317,17 +319,17 @@ class UcsSystem(GenericUcsDevice):
         self.metadata.device_type = "ucsm"
         self.metadata.device_type_long = "UCS System"
 
-    def initial_setup(self, fi_ip_list=[], config=None):
+    def initial_setup(self, fi_ip_list=None, config=None, target_admin_password=None):
         """
         Performs initial setup of UCS System
         :param fi_ip_list: List of DHCP IP addresses taken by the Fabric Interconnect(s) after boot stage
         :param config: Config of device to be used for initial setup (for Hostname/IP/DNS/Domain Name)
+        :param target_admin_password: Admin password to be set for UCSM device
         :return: True if initial setup is successful, False otherwise
         """
 
-        if config is None:
-            return False
-        if not fi_ip_list:
+        if config is None or not fi_ip_list:
+            self.logger(level="error", message="Please provide config OR FI IP list to do initial setup")
             return False
 
         self.set_task_progression(25)
@@ -341,22 +343,33 @@ class UcsSystem(GenericUcsDevice):
         target_sysname = ""
         target_vip = ""
         target_domain_name = ""
-        target_admin_password = ""
         target_dns1 = ""
 
         self.logger(message="Performing initial setup of UCS System")
 
+        if self.task is not None:
+            self.task.taskstep_manager.start_taskstep(
+                name="ValidateUcsmConfigAndSetupDetails",
+                description=f"Validating the contents of the UCS System config and provided setup details")
+
         # Getting management interfaces configuration parameters
         if not config.management_interfaces:
-            self.logger(level="error", message="Could not find management interfaces parameters in config")
+            message_str = "Could not find management interfaces parameters in config"
+            self.logger(level="error", message=message_str)
+            if self.task is not None:
+                self.task.taskstep_manager.stop_taskstep(
+                    name="ValidateUcsmConfigAndSetupDetails", status="failed", status_message=message_str)
             return False
 
         if len(fi_ip_list) == 1:
             # We are doing an initial setup in standalone mode
             fi_a_dhcp_ip_address = fi_ip_list[0]
             if not common.is_ip_address_valid(fi_a_dhcp_ip_address):
-                self.logger(level="error",
-                            message=fi_a_dhcp_ip_address + " is not a valid DHCP IP address for Fabric Interconnect A")
+                message_str = fi_a_dhcp_ip_address + " is not a valid DHCP IP address for Fabric Interconnect A"
+                self.logger(level="error", message=message_str)
+                if self.task is not None:
+                    self.task.taskstep_manager.stop_taskstep(
+                        name="ValidateUcsmConfigAndSetupDetails", status="failed", status_message=message_str)
                 return False
 
             # Going through all entries in management_interfaces to find the right one
@@ -367,7 +380,11 @@ class UcsSystem(GenericUcsDevice):
                         self.logger(message="Using IP address for Fabric A: " + fi_a_target_ip_address)
                     else:
                         # IP address of FI A is a mandatory input - Exiting
-                        self.logger(level="error", message="Could not find Management IP address of FI A in config")
+                        message_str = "Could not find Management IP address of FI A in config"
+                        self.logger(level="error", message=message_str)
+                        if self.task is not None:
+                            self.task.taskstep_manager.stop_taskstep(
+                                name="ValidateUcsmConfigAndSetupDetails", status="failed", status_message=message_str)
                         return False
 
                     if management_interface.netmask:
@@ -375,7 +392,11 @@ class UcsSystem(GenericUcsDevice):
                         self.logger(message="Using netmask for Fabric A: " + target_netmask)
                     else:
                         # Netmask of FI A is a mandatory input - Exiting
-                        self.logger(level="error", message="Could not find netmask of FI A in config")
+                        message_str = "Could not find netmask of FI A in config"
+                        self.logger(level="error", message=message_str)
+                        if self.task is not None:
+                            self.task.taskstep_manager.stop_taskstep(
+                                name="ValidateUcsmConfigAndSetupDetails", status="failed", status_message=message_str)
                         return False
 
                     if management_interface.gateway:
@@ -389,11 +410,17 @@ class UcsSystem(GenericUcsDevice):
 
             # We went through all entries in management_interfaces - making sure we got the information we needed
             if not fi_a_target_ip_address or not target_netmask:
-                self.logger(level="error", message="Could not find IP address and netmask for FI A in config")
+                message_str = "Could not find IP address and netmask for FI A in config"
+                self.logger(level="error", message=message_str)
+                if self.task is not None:
+                    self.task.taskstep_manager.stop_taskstep(
+                        name="ValidateUcsmConfigAndSetupDetails", status="failed", status_message=message_str)
                 return False
 
             # Generates warning in case no default gateway has been set
             if not target_gateway:
+                # Storing "..." so that while performing split, empty string will be used in payload
+                target_gateway = "..."
                 self.logger(level="warning",
                             message="Could not find gateway of FI A in config! Proceeding without default gateway")
 
@@ -403,12 +430,18 @@ class UcsSystem(GenericUcsDevice):
             fi_b_dhcp_ip_address = fi_ip_list[1]
 
             if not common.is_ip_address_valid(fi_a_dhcp_ip_address):
-                self.logger(level="error",
-                            message=fi_a_dhcp_ip_address + " is not a valid DHCP IP address for Fabric Interconnect A")
+                message_str = fi_a_dhcp_ip_address + " is not a valid DHCP IP address for Fabric Interconnect A"
+                self.logger(level="error", message=message_str)
+                if self.task is not None:
+                    self.task.taskstep_manager.stop_taskstep(
+                        name="ValidateUcsmConfigAndSetupDetails", status="failed", status_message=message_str)
                 return False
             if not common.is_ip_address_valid(fi_b_dhcp_ip_address):
-                self.logger(level="error",
-                            message=fi_b_dhcp_ip_address + " is not a valid DHCP IP address for Fabric Interconnect B")
+                message_str = fi_b_dhcp_ip_address + " is not a valid DHCP IP address for Fabric Interconnect B"
+                self.logger(level="error", message=message_str)
+                if self.task is not None:
+                    self.task.taskstep_manager.stop_taskstep(
+                        name="ValidateUcsmConfigAndSetupDetails", status="failed", status_message=message_str)
                 return False
 
             # Going through all entries in management_interfaces to find the right one
@@ -419,7 +452,11 @@ class UcsSystem(GenericUcsDevice):
                         self.logger(message="Using IP address for FI A: " + fi_a_target_ip_address)
                     else:
                         # IP address of FI A is a mandatory input - Exiting
-                        self.logger(level="error", message="Could not find Management IP address of FI A in config")
+                        message_str = "Could not find Management IP address of FI A in config"
+                        self.logger(level="error", message=message_str)
+                        if self.task is not None:
+                            self.task.taskstep_manager.stop_taskstep(
+                                name="ValidateUcsmConfigAndSetupDetails", status="failed", status_message=message_str)
                         return False
 
                     if management_interface.netmask:
@@ -436,7 +473,11 @@ class UcsSystem(GenericUcsDevice):
                         self.logger(message="Using IP address for FI B: " + fi_b_target_ip_address)
                     else:
                         # IP address of FI B is a mandatory input - Exiting
-                        self.logger(level="error", message="Could not find Management IP address of FI B in config")
+                        message_str = "Could not find Management IP address of FI B in config"
+                        self.logger(level="error", message=message_str)
+                        if self.task is not None:
+                            self.task.taskstep_manager.stop_taskstep(
+                                name="ValidateUcsmConfigAndSetupDetails", status="failed", status_message=message_str)
                         return False
 
                     if management_interface.netmask:
@@ -453,17 +494,27 @@ class UcsSystem(GenericUcsDevice):
 
             # We went through all entries in management_interfaces - making sure we got the information we needed
             if not fi_a_target_ip_address or not fi_b_target_ip_address or not target_netmask:
-                self.logger(level="error", message="Could not find IP addresses and netmask for FI A and B in config")
+                message_str = "Could not find IP addresses and netmask for FI A and B in config"
+                self.logger(level="error", message=message_str)
+                if self.task is not None:
+                    self.task.taskstep_manager.stop_taskstep(
+                        name="ValidateUcsmConfigAndSetupDetails", status="failed", status_message=message_str)
                 return False
 
             # Generates warning in case no default gateway has been set
             if not target_gateway:
+                # Storing "..." so that while performing split, empty string will be used in payload
+                target_gateway = "..."
                 self.logger(level="warning",
                             message="Could not find gateway of FI A or B in config! Proceeding without default gateway")
 
         # Getting system configuration parameters
         if len(config.system) != 1:
-            self.logger(level="error", message="Could not find system parameters in config")
+            message_str = "Could not find system parameters in config"
+            self.logger(level="error", message=message_str)
+            if self.task is not None:
+                self.task.taskstep_manager.stop_taskstep(
+                    name="ValidateUcsmConfigAndSetupDetails", status="failed", status_message=message_str)
             return False
 
         # Fetching system name
@@ -472,7 +523,11 @@ class UcsSystem(GenericUcsDevice):
             self.logger(message="Using System Name: " + target_sysname)
         else:
             # sysname is a mandatory input - Exiting
-            self.logger(level="error", message="Could not find system name in config")
+            message_str = "Could not find system name in config"
+            self.logger(level="error", message=message_str)
+            if self.task is not None:
+                self.task.taskstep_manager.stop_taskstep(
+                    name="ValidateUcsmConfigAndSetupDetails", status="failed", status_message=message_str)
             return False
 
         # Fetching VIP or FI A IP Address (for stand-alone):
@@ -482,7 +537,11 @@ class UcsSystem(GenericUcsDevice):
                 target_vip = config.system[0].virtual_ip
                 self.logger(message="Using IP address for Cluster: " + target_vip)
             else:
-                self.logger(level="error", message="Could not find system virtual_ip in config")
+                message_str = "Could not find system virtual_ip in config"
+                self.logger(level="error", message=message_str)
+                if self.task is not None:
+                    self.task.taskstep_manager.stop_taskstep(
+                        name="ValidateUcsmConfigAndSetupDetails", status="failed", status_message=message_str)
                 return False
         elif fi_a_dhcp_ip_address:
             self.logger(message="Using IP address of FI A for UCS Manager: " + fi_a_target_ip_address)
@@ -496,43 +555,68 @@ class UcsSystem(GenericUcsDevice):
             self.logger(level="warning", message="Could not find system domain_name in config")
 
         # Getting admin password
-        if not config.local_users:
-            # Could not find local_users in config - Admin password is a mandatory parameter - Exiting
-            self.logger(level="error", message="Could not find users in config")
-            return False
+        if not target_admin_password:
+            if not config.local_users:
+                # Could not find local_users in config - Admin password is a mandatory parameter - Exiting
+                message_str = "Could not find users in config"
+                self.logger(level="error", message=message_str)
+                if self.task is not None:
+                    self.task.taskstep_manager.stop_taskstep(
+                        name="ValidateUcsmConfigAndSetupDetails", status="failed", status_message=message_str)
+                return False
 
-        # Going through all users to find admin
-        for user in config.local_users:
-            if user.id:
-                if user.id == "admin":
-                    if user.password:
-                        target_admin_password = user.password
-                        self.logger(message="Using password for admin user: " + target_admin_password)
-                    else:
-                        # Admin password is a mandatory input - Exiting
-                        self.logger(level="error", message="Could not find password for user id admin in config")
-                        return False
+            # Going through all users to find admin
+            for user in config.local_users:
+                if user.id:
+                    if user.id == "admin":
+                        if user.password:
+                            target_admin_password = user.password
+                            self.logger(message="Using password for admin user: " + target_admin_password)
+                        else:
+                            # Admin password is a mandatory input - Exiting
+                            message_str = "Could not find password for user id admin in config"
+                            self.logger(level="error", message=message_str)
+                            if self.task is not None:
+                                self.task.taskstep_manager.stop_taskstep(
+                                    name="ValidateUcsmConfigAndSetupDetails", status="failed", status_message=message_str)
+                            return False
 
         # We went through all users - Making sure we got the information we needed
         if not target_admin_password:
-            self.logger(level="error", message="Could not find user id admin in config")
+            message_str = "Could not find user id admin in config"
+            self.logger(level="error", message=message_str)
+            if self.task is not None:
+                self.task.taskstep_manager.stop_taskstep(
+                    name="ValidateUcsmConfigAndSetupDetails", status="failed", status_message=message_str)
             return False
 
         # Getting DNS config
-        if not config.dns:
+        if not config.dns or len(config.dns) == 0:
+            # Storing "..." so that while performing split, empty string will be used in payload
+            target_dns1 = "..."
             self.logger(level="warning", message="Could not find DNS parameters in config")
-
-        # We only support setting a single DNS server
-        if common.is_ip_address_valid(config.dns[0]):
-            target_dns1 = config.dns[0]
-            self.logger(message="Using DNS server: " + target_dns1)
         else:
-            self.logger(level="warning", message="DNS server " + config.dns[0] + " is not a valid IP address!")
+            # We only support setting a single DNS server
+            if common.is_ip_address_valid(config.dns[0]):
+                target_dns1 = config.dns[0]
+                self.logger(message="Using DNS server: " + target_dns1)
+            else:
+                # Storing "..." so that while performing split, empty string will be used in payload
+                target_dns1 = "..."
+                self.logger(level="warning", message="DNS server " + config.dns[0] + " is not a valid IP address!")
 
-        # FIXME: Handle empty optional inputs
+        if self.task is not None:
+            self.task.taskstep_manager.stop_taskstep(
+                name="ValidateUcsmConfigAndSetupDetails", status="successful",
+                status_message="Successfully validated the UCSM config and provided setup details")
 
         # if cluster mode
         if fi_a_target_ip_address and fi_b_target_ip_address:
+
+            if self.task is not None:
+                self.task.taskstep_manager.start_taskstep(
+                    name="SetupFabricA", description=f"Setting up Fabric A in UCSM mode")
+
             payload_fi_a = {'hidden_init': 'hidden_init',
                             'cluster': '1',
                             'ooblocalFIIP1': '',
@@ -608,36 +692,159 @@ class UcsSystem(GenericUcsDevice):
             for fi_ip in fi_ip_list:
                 if not common.check_web_page(device=self, url="https://" + fi_ip, str_match="Express Setup",
                                              timeout=30):
-                    self.logger(level="error",
-                                message="Fabric Interconnect " + fi_ip + " is not ready for initial setup")
+                    message_str = "Fabric Interconnect " + fi_ip + " is not ready for initial setup"
+                    self.logger(level="error", message=message_str)
+                    if self.task is not None:
+                        self.task.taskstep_manager.stop_taskstep(
+                            name="SetupFabricA", status="failed", status_message=message_str)
                     return False
 
             # Send configuration to FI A
-            if not self.post_requests(request_url=url_fi_a, request_payload=payload_fi_a,
-                                      error_message="send initial configuration to FI A"):
+            resp = self.post_request_initial_setup(request_url=url_fi_a, request_payload=payload_fi_a,
+                                                   error_message="send initial configuration to FI A")
+            if not resp or resp.status_code != 200:
+                message_str = "Error while setting up Fabric A in UCSM Mode"
+                self.logger(level="error", message=message_str)
+                if self.task is not None:
+                    self.task.taskstep_manager.stop_taskstep(
+                        name="SetupFabricA", status="failed", status_message=message_str)
                 return False
             self.logger(message="Sent initial configuration to FI A")
             self.set_task_progression(30)
 
+            if self.task is not None:
+                self.task.taskstep_manager.stop_taskstep(
+                    name="SetupFabricA", status="successful",
+                    status_message="Successfully completed setting up Fabric A in UCSM mode")
+
+            if self.task is not None:
+                self.task.taskstep_manager.start_taskstep(
+                    name="WaitForFabricAToBeReachable", description=f"Waiting until Fabric A IP is reachable")
+
+            self.logger(message="Waiting up to 240 seconds for FI A configuration to be processed")
+
+            # Sleeping 2 minutes before checking if the IP is reachable
+            # If we try to check the reachability immediately it is taking longer time for the IP to be reachable
+            # If we use check_web_page function to check whether web page is available immediately it takes around 15
+            # minutes for the link to be reachable
+            time.sleep(120)
+
             # Wait until FI A has processed configuration - needed for FI B to recognize that its peer is configured
             self.logger(message="Waiting up to 180 seconds for FI A configuration to be processed")
             if not common.check_web_page(self, "https://" + fi_a_target_ip_address, "Cisco", 180):
-                self.logger(level="error", message="Impossible to reconnect to FI A after the initial configuration")
+                message_str = "Impossible to reconnect to FI A after the initial configuration"
+                self.logger(level="error", message=message_str)
+                if self.task is not None:
+                    self.task.taskstep_manager.stop_taskstep(
+                        name="WaitForFabricAToBeReachable", status="failed", status_message=message_str)
                 return False
 
+            if self.task is not None:
+                self.task.taskstep_manager.stop_taskstep(
+                    name="WaitForFabricAToBeReachable", status="successful",
+                    status_message="FI A is configured in UCSM mode and is reachable")
+
+            if self.task is not None:
+                self.task.taskstep_manager.start_taskstep(
+                    name="SetupFabricB", description=f"Setting up Fabric B in UCSM mode")
+
             # Send password of FI A to FI B - Step 1
-            if not self.post_requests(request_url=url_fi_b_step_1, request_payload=payload_fi_b_step_1,
-                                      error_message="send initial configuration to FI B - Step 1"):
+            resp = self.post_request_initial_setup(request_url=url_fi_b_step_1, request_payload=payload_fi_b_step_1,
+                                                   error_message="send initial configuration to FI B - Step 1")
+            if not resp or resp.status_code != 200:
+                message_str = "Error while setting up Fabric B step-1 in UCSM Mode"
+                self.logger(level="error", message=message_str)
+                if self.task is not None:
+                    self.task.taskstep_manager.stop_taskstep(
+                        name="SetupFabricB", status="failed", status_message=message_str)
                 return False
 
             # Send local IP address to FI B - Step 2
-            if not self.post_requests(request_url=url_fi_b_step_2, request_payload=payload_fi_b_step_2,
-                                      error_message="send initial configuration to FI B - Step 2"):
+            resp = self.post_request_initial_setup(request_url=url_fi_b_step_2, request_payload=payload_fi_b_step_2,
+                                                   error_message="send initial configuration to FI B - Step 2")
+            if not resp or resp.status_code != 200:
+                message_str = "Error while setting up Fabric B step-2 in UCSM Mode"
+                self.logger(level="error", message=message_str)
+                if self.task is not None:
+                    self.task.taskstep_manager.stop_taskstep(
+                        name="SetupFabricB", status="failed", status_message=message_str)
                 return False
             self.logger(message="Sent initial configuration to FI B")
 
+            if self.task is not None:
+                self.task.taskstep_manager.stop_taskstep(
+                    name="SetupFabricB", status="successful",
+                    status_message="Successfully completed setting up Fabric B in UCSM mode")
+
+            self.set_task_progression(35)
+
+            message_str = "Waiting up to 300 seconds for initial configuration process and cluster election to complete"
+            if self.task is not None:
+                self.task.taskstep_manager.start_taskstep(
+                    name="WaitForInitialConfigurationProcess", description=message_str)
+            self.logger(message=message_str)
+            time.sleep(80)
+
+            self.target = self.metadata.target = target_vip
+            self.username = self.metadata.username = "admin"
+            self.password = self.metadata.password = target_admin_password
+
+            # We need to refresh the UCS device handle so that it has the right attributes
+            self.handle = UcsHandle(ip=self.target, username=self.username,
+                                    password=self.password)
+            # We also need to refresh the config handle
+            config.refresh_config_handle()
+
+            if not common.check_web_page(device=self, url="https://" + self.target, str_match="Cisco",
+                                         timeout=220):
+                message_str = "Impossible to reconnect to UCS system"
+                if self.task is not None:
+                    self.task.taskstep_manager.stop_taskstep(
+                        name="WaitForInitialConfigurationProcess", status="failed", status_message=message_str)
+                self.logger(level="error", message=message_str)
+                return False
+            self.set_task_progression(40)
+
+            # Reconnecting and waiting for HA cluster to be ready (if in cluster mode)
+            # or FI to be ready (if in stand-alone mode)
+            if not self.connect(bypass_version_checks=True, retries=3):
+                message_str = "Impossible to reconnect to UCS system"
+                if self.task is not None:
+                    self.task.taskstep_manager.stop_taskstep(
+                        name="WaitForInitialConfigurationProcess", status="failed", status_message=message_str)
+                self.logger(level="error", message=message_str)
+                return False
+
+            if self.task is not None:
+                self.task.taskstep_manager.stop_taskstep(
+                    name="WaitForInitialConfigurationProcess", status="successful",
+                    status_message="Initial configuration process and cluster election successfully completed and "
+                                   "device reconnected")
+
+            message_str = "Waiting up to 300 seconds for UCS HA cluster to be ready..."
+            if self.task is not None:
+                self.task.taskstep_manager.start_taskstep(
+                    name="WaitForUcsManagerReady", description=message_str)
+            self.logger(message=message_str)
+            if not self.wait_for_ha_cluster_ready(timeout=300):
+                message_str = "Timeout exceeded while waiting for UCS HA cluster to be in ready state"
+                if self.task is not None:
+                    self.task.taskstep_manager.stop_taskstep(
+                        name="WaitForUcsManagerReady", status="failed", status_message=message_str)
+                self.logger(level="error", message=message_str)
+                return False
+            if self.task is not None:
+                self.task.taskstep_manager.stop_taskstep(
+                    name="WaitForUcsManagerReady", status="successful",
+                    status_message="UCS HA Cluster in ready state")
+
         # if stand-alone mode
         else:
+
+            if self.task is not None:
+                self.task.taskstep_manager.start_taskstep(
+                    name="SetupFabricA", description=f"Setting up Fabric A in UCSM mode")
+
             payload_fi_a = {'hidden_init': 'hidden_init',
                             'cluster': '2',
                             'ooblocalFIIP1': '',
@@ -699,22 +906,135 @@ class UcsSystem(GenericUcsDevice):
             for fi_ip in fi_ip_list:
                 if not common.check_web_page(device=self, url="https://" + fi_ip, str_match="Express Setup",
                                              timeout=30):
-                    self.logger(level="error",
-                                message="Fabric Interconnect " + fi_ip + " is not ready for initial setup")
+                    message_str = "Fabric Interconnect " + fi_ip + " is not ready for initial setup"
+                    self.logger(level="error", message=message_str)
+                    if self.task is not None:
+                        self.task.taskstep_manager.stop_taskstep(
+                            name="SetupFabricA", status="failed", status_message=message_str)
                     return False
 
             # Send configuration to FI A
-            if not self.post_requests(url_fi_a, payload_fi_a,
-                                      error_message="send initial configuration to FI"):
+            resp = self.post_request_initial_setup(url_fi_a, payload_fi_a,
+                                                   error_message="send initial configuration to FI")
+            if not resp or resp.status_code != 200:
+                message_str = "Error while setting up Fabric A in UCSM Mode"
+                self.logger(level="error", message=message_str)
+                if self.task is not None:
+                    self.task.taskstep_manager.stop_taskstep(
+                        name="SetupFabricA", status="failed", status_message=message_str)
                 return False
+
             self.logger(message="Sent initial configuration to FI")
             self.set_task_progression(30)
 
-        self.set_task_progression(35)
+            if self.task is not None:
+                self.task.taskstep_manager.stop_taskstep(
+                    name="SetupFabricA", status="successful",
+                    status_message="Successfully completed setting up Fabric A to UCSM mode")
+
+            if self.task is not None:
+                self.task.taskstep_manager.start_taskstep(
+                    name="WaitForFabricAToBeReachable", description=f"Waiting until Fabric A IP is reachable")
+
+            self.logger(message="Waiting up to 240 seconds for FI A configuration to be processed")
+
+            # Sleeping 2 minutes before checking if the IP is reachable
+            # If we try to check the reachability immediately it is taking longer time for the IP to be reachable
+            # If we use check_web_page function to check whether web page is available immediately it takes around 15
+            # minutes for the link to be reachable
+            time.sleep(120)
+
+            # Wait until FI A has processed configuration - needed for FI B to recognize that its peer is configured
+            if not common.check_web_page(self, "https://" + fi_a_target_ip_address, "Cisco", 120):
+                message_str = "Impossible to reconnect to FI A after the initial configuration"
+                self.logger(level="error", message=message_str)
+                if self.task is not None:
+                    self.task.taskstep_manager.stop_taskstep(
+                        name="WaitForFabricAToBeReachable", status="failed", status_message=message_str)
+                return False
+
+            if self.task is not None:
+                self.task.taskstep_manager.stop_taskstep(
+                    name="WaitForFabricAToBeReachable", status="successful",
+                    status_message="FI A is configured in UCSM mode and is reachable")
+
+            if self.task is not None:
+                self.task.taskstep_manager.skip_taskstep(
+                    name="SetupFabricB",
+                    status_message="Setting up " + self.metadata.device_type_long + " device in standalone mode")
+
+            if self.task is not None:
+                self.task.taskstep_manager.skip_taskstep(
+                    name="WaitForFabricBToBeReachable",
+                    status_message="Setting up " + self.metadata.device_type_long + " device in standalone mode")
+
+            self.set_task_progression(35)
+
+            message_str = "Waiting up to 240 seconds for initial configuration to complete"
+            if self.task is not None:
+                self.task.taskstep_manager.start_taskstep(
+                    name="WaitForInitialConfigurationProcess", description=message_str)
+            self.logger(message=message_str)
+            time.sleep(20)
+
+            self.target = self.metadata.target = fi_a_target_ip_address
+            self.username = self.metadata.username = "admin"
+            self.password = self.metadata.password = target_admin_password
+
+            # We need to refresh the UCS device handle so that it has the right attributes
+            self.handle = UcsHandle(ip=self.target, username=self.username,
+                                    password=self.password)
+            # We also need to refresh the config handle
+            config.refresh_config_handle()
+
+            if not common.check_web_page(device=self, url="https://" + self.target, str_match="Cisco",
+                                         timeout=220):
+                message_str = "Impossible to reconnect to UCS system"
+                if self.task is not None:
+                    self.task.taskstep_manager.stop_taskstep(
+                        name="WaitForInitialConfigurationProcess", status="failed", status_message=message_str)
+                self.logger(level="error", message=message_str)
+                return False
+            self.set_task_progression(40)
+
+            # Reconnecting and waiting for HA cluster to be ready (if in cluster mode)
+            # or FI to be ready (if in stand-alone mode)
+            if not self.connect(bypass_version_checks=True, retries=3):
+                message_str = "Impossible to reconnect to UCS system"
+                if self.task is not None:
+                    self.task.taskstep_manager.stop_taskstep(
+                        name="WaitForInitialConfigurationProcess", status="failed", status_message=message_str)
+                self.logger(level="error", message=message_str)
+                return False
+
+            if self.task is not None:
+                self.task.taskstep_manager.stop_taskstep(
+                    name="WaitForInitialConfigurationProcess", status="successful",
+                    status_message="Initial configuration successfully completed and device reconnected")
+
+            message_str = "Waiting up to 300 seconds for UCS stand-alone FI to be ready..."
+            if self.task is not None:
+                self.task.taskstep_manager.start_taskstep(
+                    name="WaitForUcsManagerReady", description=message_str)
+            self.logger(message=message_str)
+            if not self.wait_for_standalone_fi_ready(timeout=300):
+                message_str = "Timeout exceeded while waiting for UCS stand-alone FI to be ready"
+                if self.task is not None:
+                    self.task.taskstep_manager.stop_taskstep(
+                        name="WaitForUcsManagerReady", status="failed", status_message=message_str)
+                self.logger(level="error", message=message_str)
+                return False
+            if self.task is not None:
+                self.task.taskstep_manager.stop_taskstep(
+                    name="WaitForUcsManagerReady", status="successful",
+                    status_message="UCS stand-alone FI in ready state")
+
+        self.set_task_progression(45)
         return True
 
     def reset(self, bypass_version_checks=False, reset_device_connector=False, clear_sel_logs=False,
-              decommission_rack_servers=False, erase_flexflash=False, erase_virtual_drives=False,
+              decommission_rack_servers=False, decommission_chassis=False, decommission_blade_servers=False,
+              erase_flexflash=False, erase_virtual_drives=False,
               unregister_from_central=True):
         """
         Erases all configuration from the UCS System
@@ -722,6 +1042,8 @@ class UcsSystem(GenericUcsDevice):
         :param reset_device_connector: Whether the Device Connector should be reset if claimed
         :param clear_sel_logs: Whether SEL Logs should be cleared before reset
         :param decommission_rack_servers: Whether rack servers should be decommissioned before reset
+        :param decommission_blade_servers: Whether blade servers should be decommissioned before reset
+        :param decommission_chassis: Whether chassis should be decommissioned before reset
         :param erase_flexflash: Whether FlexFlash should be formatted before reset
         :param erase_virtual_drives: Whether existing virtual drives should be erased from servers before reset
         :param unregister_from_central: Whether to unregister UCS Manager from UCS Central
@@ -748,9 +1070,9 @@ class UcsSystem(GenericUcsDevice):
                                    f"it is not claimed to Intersight"
                 )
 
+        # Decommissioning Rack servers
         if decommission_rack_servers:
-            # Decommissioning Rack servers
-            if not self.decommission_all_rack_servers():
+            if not self.decommission(device_type="rack", decommission_all=True):
                 self.logger(level="error", message=f"Error while performing decommission of rack servers in "
                                                    f"{self.metadata.device_type_long} device {self.name}")
                 return False
@@ -762,6 +1084,33 @@ class UcsSystem(GenericUcsDevice):
                                    f"device {self.name}"
                 )
 
+        # Decommission Chassis
+        if decommission_chassis:
+            if not self.decommission(device_type="chassis", decommission_all=True):
+                self.logger(level="error", message=f"Error while performing decommission of chassis in "
+                                                   f"{self.metadata.device_type_long} device {self.name}")
+                return False
+        else:
+            if self.task is not None:
+                self.task.taskstep_manager.skip_taskstep(
+                    name="DecommissionAllChassis",
+                    status_message=f"Skipping the decommissioning of chassis"
+                                   f"in {self.metadata.device_type_long} device {self.name}"
+                )
+
+        # Decommission Blade Servers
+        if decommission_blade_servers:
+            if not self.decommission(device_type="blade", decommission_all=True):
+                self.logger(level="error", message=f"Error while performing decommission of blade servers in "
+                                                   f"{self.metadata.device_type_long} device {self.name}")
+                return False
+        else:
+            if self.task is not None:
+                self.task.taskstep_manager.skip_taskstep(
+                    name="DecommissionAllBladeServers",
+                    status_message=f"Skipping the decommissioning of Blade Servers"
+                                   f"in {self.metadata.device_type_long} device {self.name}"
+                )
         if erase_flexflash:
             self.erase_flexflash()
 
@@ -1211,54 +1560,165 @@ class UcsSystem(GenericUcsDevice):
 
         return True
 
-    def decommission_all_rack_servers(self):
+    def decommission(self, device_type, decommission_all=False, decommission_ids=None):
         """
-        Decommissions all rack servers connected to the UCS System.
+        Decommissions all blade, chassis, or rack servers connected to the UCS System.
         This is a necessary operation before converting a UCSM domain to Intersight Managed Mode (IMM)
+        :param device_type: Type of device to decommission ('blade', 'chassis', or 'rack')
+        :param decommission_all: Boolean flag to decommission all devices of the specified type
+        :param decommission_ids: List of specific IDs to decommission.
+                    For 'blade', use format ['chassis_id/slot_id'],
+                    For 'rack' and 'chassis', use format ['id']
         :return: True if successful, False otherwise
         """
+        from ucsmsdk.mometa.compute.ComputeBlade import ComputeBlade
+        from ucsmsdk.mometa.equipment.EquipmentChassis import EquipmentChassis
         from ucsmsdk.mometa.compute.ComputeRackUnit import ComputeRackUnit
+
+        if device_type == "chassis":
+            task_name = "DecommissionAllChassis"
+        else:
+            task_name = f"DecommissionAll{device_type.capitalize()}Servers"
 
         if self.task is not None:
             self.task.taskstep_manager.start_taskstep(
-                name="DecommissionAllRackServers", description=f"Decommissioning all rack servers in "
-                                                               f"{self.metadata.device_type_long} device "
-                                                               f"{self.name}")
+                name=task_name,
+                description=f"Decommissioning all {device_type} in "
+                            f"{self.metadata.device_type_long} device {self.name}"
+            )
 
         if not self.is_connected():
             self.connect()
-        self.logger(level="info", message="Decommissioning all discovered Rack Servers")
-        all_rack_servers = self.handle.query_classid("computeRackUnit")
+
+        self.logger(level="info", message=f"Decommissioning {device_type.capitalize()} devices")
+
         error_msg = None
-        for rack_server in all_rack_servers:
+        # If specific IDs are provided, set decommission_all to False
+        # This to handle the scenario where decommission_ids are provided along with 'decommission_all' set to True
+        if decommission_ids:
+            decommission_all = False
+
+        # Query all servers of the specified type if decommission_all is True.
+        if decommission_all:
+            if device_type == "blade":
+                all_servers = self.handle.query_classid("computeBlade")
+            elif device_type == "chassis":
+                all_servers = self.handle.query_classid("equipmentChassis")
+            elif device_type == "rack":
+                all_servers = self.handle.query_classid("computeRackUnit")
+            else:
+                raise ValueError("Invalid device type. Must be 'blade', 'chassis', or 'rack'.")
+        else:
+            all_servers = []
+
+        # Define regex patterns for syntax validation
+        # eg. decommission("chassis", decommission_ids=["4","5"])
+        # eg. decommission("blade", decommission_ids=["1/2","3/4"])
+        blade_id_pattern = re.compile(r'^\d+/\d+$')
+        id_pattern = re.compile(r'^\d+$')
+
+        # Validate the IDs, if provided, for different device types
+        if decommission_ids:
+            if device_type == "blade":
+                invalid_ids = [id_pair for id_pair in decommission_ids if not blade_id_pattern.match(id_pair)]
+            else:
+                invalid_ids = [id for id in decommission_ids if not id_pattern.match(id)]
+
+            if invalid_ids:
+                error_msg = f"Invalid ID format for {device_type}: {', '.join(invalid_ids)}"
+                self.logger(level="error", message=error_msg)
+                if self.task is not None:
+                    self.task.taskstep_manager.stop_taskstep(
+                        name=task_name, status="failed",
+                        status_message=error_msg
+                    )
+                return False
+
+        # Processing the IDs, if provided, for different device types and adding them to all_servers list
+        if decommission_ids:
+            if device_type == "blade":
+                for id_pair in decommission_ids:
+                    chassis_id, slot_id = id_pair.split('/')
+                    server = self.handle.query_dn(f"sys/chassis-{chassis_id}/blade-{slot_id}")
+                    if server:
+                        all_servers.append(server)
+            else:
+                for id in decommission_ids:
+                    server = self.handle.query_dn(f"sys/{device_type}-{id}")
+                    if server:
+                        all_servers.append(server)
+
+        # If no matches found, log an error message and stop the task step
+        if not all_servers:
+            if decommission_all:
+                self.logger(level="info", message=f"No {device_type} devices found to decommission. Continuing...")
+                if self.task is not None:
+                    self.task.taskstep_manager.stop_taskstep(
+                        name=task_name, status="successful",
+                        status_message=f"No {device_type} devices found to decommission."
+                    )
+                return True
+            else:
+                self.logger(level="error", message=f"No matching {device_type} devices found to decommission.")
+                if self.task is not None:
+                    self.task.taskstep_manager.stop_taskstep(
+                        name=task_name, status="failed",
+                        status_message=f"No matching {device_type} devices found to decommission."
+                    )
+                return False
+
+        # Decommission Blades/Rack/Chassis in the list all_servers
+        for server in all_servers:
             try:
-                self.logger(level="debug", message="Decommissioning server " + rack_server.id +
-                                                   " with serial " + rack_server.serial)
-                mo_rack_server = ComputeRackUnit(parent_mo_or_dn="sys", id=rack_server.id, lc="decommission")
-                self.handle.add_mo(mo=mo_rack_server, modify_present=True)
+                if device_type == "blade":
+                    self.logger(level="info",
+                                message="Decommissioning server " + server.slot_id + " with serial " + server.serial)
+                    chassis_dn = f"sys/chassis-{server.chassis_id}"
+                    mo_server = ComputeBlade(parent_mo_or_dn=chassis_dn, slot_id=server.slot_id, lc="decommission")
+                elif device_type == "chassis":
+                    self.logger(level="info",
+                                message="Decommissioning chassis " + server.id + " with serial " + server.serial)
+                    mo_server = EquipmentChassis(parent_mo_or_dn="sys", id=server.id, admin_state="decommission")
+                elif device_type == "rack":
+                    self.logger(level="info",
+                                message="Decommissioning rack server " + server.id + " with serial " + server.serial)
+                    mo_server = ComputeRackUnit(parent_mo_or_dn="sys", id=server.id, lc="decommission")
+
+                self.handle.add_mo(mo=mo_server, modify_present=True)
                 self.handle.commit()
 
             except UcsException as err:
-                error_msg = "Error while decommissioning server " + rack_server.id
+                error_msg = (f"Error while decommissioning {device_type} " +
+                             server.slot_id) if device_type == "blade" else server.id
                 self.logger(level="error", message=error_msg + ": " + err.error_descr)
             except urllib.error.URLError:
-                error_msg = "Timeout Error while decommissioning server " + rack_server.id
+                error_msg = (f"Timeout Error while decommissioning {device_type} " +
+                             server.slot_id) if device_type == "blade" else server.id
                 self.logger(level="error", message=error_msg)
             except Exception as err:
-                error_msg = "Error while decommissioning server " + rack_server.id
+                error_msg = (f"Error while decommissioning {device_type} " +
+                             server.slot_id) if device_type == "blade" else server.id
                 self.logger(level="error", message=error_msg + ": " + str(err))
 
             if error_msg:
                 if self.task is not None:
                     self.task.taskstep_manager.stop_taskstep(
-                        name="DecommissionAllRackServers", status="failed", status_message=error_msg)
+                        name=f"DecommissionAll{device_type.capitalize()}", status="failed",
+                        status_message=error_msg
+                    )
                 return False
+
+        if all_servers:
+            # FIXME: Pause for 3 minutes to ensure decommission operation is complete. To be enhanced with FSM tracking
+            self.logger(level="info", message="Waiting for 3 minutes to ensure decommission operation is complete")
+            time.sleep(180)
 
         if self.task is not None:
             self.task.taskstep_manager.stop_taskstep(
-                name="DecommissionAllRackServers", status="successful",
-                status_message=f"Successfully decommissioned all rack servers in {self.metadata.device_type_long} "
-                               f"device {self.name}")
+                name=task_name, status="successful",
+                status_message=f"Successfully decommissioned all {device_type}"
+                               f"in {self.metadata.device_type_long} device {self.name}"
+            )
         return True
 
     def erase_virtual_drives(self):
@@ -1476,33 +1936,6 @@ class UcsSystem(GenericUcsDevice):
 
         self.logger(level="error", message="Unable to fetch " + target + " after " + str(retries) + " attempts")
         return []
-
-    def post_requests(self, request_url=None, request_payload=None, retries=3, error_message=""):
-        """
-        Performs an HTTP POST (using Requests) of the specified payload to the specified URL, with a retry mechanism
-        :param request_url: ex. "https://10.0.0.1/cgi-bin/initial_setup_new.cgi"
-        :param request_payload:
-        :param retries: Number of retries
-        :param error_message: ex. "send initial configuration to FI B"
-        :return:
-        """
-
-        for i in range(retries):
-            if i:
-                self.logger(level="warning", message="Retrying to do a request to " + error_message)
-            try:
-                req = requests.post(request_url, request_payload, verify=False)
-                return req
-            except (ConnectionRefusedError, ValueError, requests.exceptions.ChunkedEncodingError) as err:
-                self.logger(level="debug",
-                            message="Failed to " + error_message + " : " + str(err))
-            except Exception as err:
-                self.logger(level="debug",
-                            message="Failed to " + error_message + " : " + str(err))
-            time.sleep(self.push_interval_after_fail)
-
-        self.logger(level="error", message="Unable to " + error_message + " after " + str(retries) + " attempts")
-        return False
 
     def upload_file(self, directory=None, filename=None):
         """
@@ -1877,18 +2310,18 @@ class UcsImc(GenericUcsDevice):
         self.metadata.device_type = "cimc"
         self.metadata.device_type_long = "UCS IMC"
 
-    def initial_setup(self, imc_ip=None, config=None, bypass_version_checks=False):
+    def initial_setup(self, imc_ip=None, config=None, target_admin_password=None, bypass_version_checks=False):
         """
         Performs initial setup of UCS IMC
         :param imc_ip: DHCP IP address taken by the CIMC after boot stage
         :param config: Config of device to be used for initial setup (for Hostname/IP/DNS/Domain Name)
+        :param target_admin_password: Password to be used for CIMC setup
         :param bypass_version_checks: Whether the minimum version checks should be bypassed when connecting
         :return: True if initial setup is successful, False otherwise
         """
 
-        if config is None:
-            return False
-        if imc_ip is None:
+        if config is None or imc_ip is None:
+            self.logger(level="error", message="Please provide config OR IMC IP to do initial setup")
             return False
 
         self.set_task_progression(25)
@@ -1898,53 +2331,75 @@ class UcsImc(GenericUcsDevice):
         target_netmask = ""
         target_gateway = ""
         target_sysname = ""
-        target_admin_password = ""
         target_dns_preferred = ""
 
         self.logger(message="Performing initial setup of UCS IMC")
 
+        if self.task is not None:
+            self.task.taskstep_manager.start_taskstep(
+                name="ValidateUcsImcConfigAndSetupDetails",
+                description=f"Validating the contents of the CIMC config and provided setup details")
+
         # Getting management interfaces configuration parameters
         if not config.admin_networking:
-            self.logger(level="error", message="Could not find admin networking parameters in config")
+            message_str = "Could not find admin networking parameters in config"
+            self.logger(level="error", message=message_str)
+            if self.task is not None:
+                self.task.taskstep_manager.stop_taskstep(
+                    name="ValidateUcsImcConfigAndSetupDetails", status="failed", status_message=message_str)
             return False
 
-        if imc_ip:
-            # We are doing an initial setup
-            imc_dhcp_ip_address = imc_ip
-            if not common.is_ip_address_valid(imc_dhcp_ip_address):
-                self.logger(level="error",
-                            message=imc_dhcp_ip_address + " is not a valid DHCP IP address for UCS IMC")
-                return False
+        # We are doing an initial setup
+        imc_dhcp_ip_address = imc_ip
+        if not common.is_ip_address_valid(imc_dhcp_ip_address):
+            message_str = imc_dhcp_ip_address + " is not a valid DHCP IP address for UCS IMC"
+            self.logger(level="error", message=message_str)
+            if self.task is not None:
+                self.task.taskstep_manager.stop_taskstep(
+                    name="ValidateUcsImcConfigAndSetupDetails", status="failed", status_message=message_str)
+            return False
 
-            if config.admin_networking[0].management_ipv4_address:
-                imc_target_ip_address = config.admin_networking[0].management_ipv4_address
-                self.logger(message="Using IP address for UCS IMC: " + imc_target_ip_address)
-            else:
-                # IP address of UCS IMC is a mandatory input - Exiting
-                self.logger(level="error", message="Could not find Management IP address of UCS IMC in config")
-                return False
+        if config.admin_networking[0].management_ipv4_address:
+            imc_target_ip_address = config.admin_networking[0].management_ipv4_address
+            self.logger(message="Using IP address for UCS IMC: " + imc_target_ip_address)
+        else:
+            # IP address of UCS IMC is a mandatory input - Exiting
+            message_str = "Could not find Management IP address of UCS IMC in config"
+            self.logger(level="error", message=message_str)
+            if self.task is not None:
+                self.task.taskstep_manager.stop_taskstep(
+                    name="ValidateUcsImcConfigAndSetupDetails", status="failed", status_message=message_str)
+            return False
 
-            if config.admin_networking[0].management_subnet_mask:
-                target_netmask = config.admin_networking[0].management_subnet_mask
-                self.logger(message="Using netmask for UCS IMC: " + target_netmask)
-            else:
-                # Netmask of UCS IMC is a mandatory input - Exiting
-                self.logger(level="error", message="Could not find netmask of UCS IMC in config")
-                return False
+        if config.admin_networking[0].management_subnet_mask:
+            target_netmask = config.admin_networking[0].management_subnet_mask
+            self.logger(message="Using netmask for UCS IMC: " + target_netmask)
+        else:
+            # Netmask of UCS IMC is a mandatory input - Exiting
+            message_str = "Could not find netmask of UCS IMC in config"
+            self.logger(level="error", message=message_str)
+            if self.task is not None:
+                self.task.taskstep_manager.stop_taskstep(
+                    name="ValidateUcsImcConfigAndSetupDetails", status="failed", status_message=message_str)
+            return False
 
-            if config.admin_networking[0].gateway_ipv4:
-                target_gateway = config.admin_networking[0].gateway_ipv4
-                self.logger(message="Using gateway for UCS IMC: " + target_gateway)
-            else:
-                # Default gateway of UCS IMC is not a mandatory input - Displaying warning message
-                self.logger(
-                    level="warning",
-                    message="Could not find gateway of UCS IMC in config! Proceeding without default gateway")
+        if config.admin_networking[0].gateway_ipv4:
+            target_gateway = config.admin_networking[0].gateway_ipv4
+            self.logger(message="Using gateway for UCS IMC: " + target_gateway)
+        else:
+            # Default gateway of UCS IMC is not a mandatory input - Displaying warning message
+            self.logger(
+                level="warning",
+                message="Could not find gateway of UCS IMC in config! Proceeding without default gateway")
 
-            # We went through all entries in management_interfaces - making sure we got the information we needed
-            if not imc_target_ip_address or not target_netmask:
-                self.logger(level="error", message="Could not find IP address and netmask for UCS IMC in config")
-                return False
+        # We went through all entries in management_interfaces - making sure we got the information we needed
+        if not imc_target_ip_address or not target_netmask:
+            message_str = "Could not find IP address and netmask for UCS IMC in config"
+            self.logger(level="error", message=message_str)
+            if self.task is not None:
+                self.task.taskstep_manager.stop_taskstep(
+                    name="ValidateUcsImcConfigAndSetupDetails", status="failed", status_message=message_str)
+            return False
 
         # Fetching system name
         if config.admin_networking[0].management_hostname:
@@ -1952,31 +2407,54 @@ class UcsImc(GenericUcsDevice):
             self.logger(message="Using System Name: " + target_sysname)
         else:
             # sysname is a mandatory input - Exiting
-            self.logger(level="error", message="Could not find management hostname in config")
+            message_str = "Could not find management hostname in config"
+            self.logger(level="error", message=message_str)
+            if self.task is not None:
+                self.task.taskstep_manager.stop_taskstep(
+                    name="ValidateUcsImcConfigAndSetupDetails", status="failed", status_message=message_str)
             return False
 
         # Getting admin password
         if not config.local_users:
             # Could not find local_users in config - Admin password is a mandatory parameter - Exiting
-            self.logger(level="error", message="Could not find users in config")
+            message_str = "Could not find users in config"
+            self.logger(level="error", message=message_str)
+            if self.task is not None:
+                self.task.taskstep_manager.stop_taskstep(
+                    name="ValidateUcsImcConfigAndSetupDetails", status="failed", status_message=message_str)
             return False
 
-        # Going through all users to find admin
-        for user in config.local_users:
-            if user.username:
-                if user.username == "admin":
-                    if user.password:
-                        target_admin_password = user.password
-                        self.logger(message="Using password for admin user: " + target_admin_password)
-                    else:
-                        # Admin password is a mandatory input - Exiting
-                        self.logger(level="error", message="Could not find password for user id admin in config")
-                        return False
+        if not target_admin_password:
+            # Going through all users to find admin
+            for user in config.local_users:
+                if user.username:
+                    if user.username == "admin":
+                        if user.password:
+                            target_admin_password = user.password
+                            self.logger(message="Using password for admin user: " + target_admin_password)
+                        else:
+                            # Admin password is a mandatory input - Exiting
+                            message_str = "Could not find password for user id admin in config"
+                            self.logger(level="error", message=message_str)
+                            if self.task is not None:
+                                self.task.taskstep_manager.stop_taskstep(
+                                    name="ValidateUcsImcConfigAndSetupDetails", status="failed",
+                                    status_message=message_str)
+                            return False
 
         # We went through all users - Making sure we got the information we needed
         if not target_admin_password:
-            self.logger(level="error", message="Could not find user id admin in config")
+            message_str = "Could not find user id admin in config"
+            self.logger(level="error", message=message_str)
+            if self.task is not None:
+                self.task.taskstep_manager.stop_taskstep(
+                    name="ValidateUcsImcConfigAndSetupDetails", status="failed", status_message=message_str)
             return False
+
+        if self.task is not None:
+            self.task.taskstep_manager.stop_taskstep(
+                name="ValidateUcsImcConfigAndSetupDetails", status="successful",
+                status_message="Successfully validated the CIMC config and provided setup details")
 
         # Getting DNS config
         if config.admin_networking[0].dns_preferred_ipv4:
@@ -1986,9 +2464,9 @@ class UcsImc(GenericUcsDevice):
             self.logger(level="warning", message="Could not find DNS parameters in config")
 
         self.logger(level="debug", message="Pushing initial configuration : new management IP and password")
-        self.target = imc_dhcp_ip_address
-        self.password = "password"
-        self.username = "admin"
+        self.target = self.metadata.target = imc_dhcp_ip_address
+        self.password = self.metadata.password = target_admin_password
+        self.username = self.metadata.username = "admin"
 
         # We need to refresh the UCS device handle so that it has the right attributes
         self.handle = ImcHandle(self.target, self.username, self.password)
@@ -2000,6 +2478,9 @@ class UcsImc(GenericUcsDevice):
         if self.connect(bypass_version_checks=bypass_version_checks):
             # Setting the handle with the DHCP IP Address
             config.refresh_config_handle()
+            if self.task is not None:
+                self.task.taskstep_manager.start_taskstep(
+                    name="SetupUcsImc", description=f"Setting CIMC")
             # Pushing objects / Changing handle
             if config.local_users_properties:
                 is_pushed = config.local_users_properties[0].push_object() and is_pushed
@@ -2007,6 +2488,15 @@ class UcsImc(GenericUcsDevice):
                 is_pushed = local_user.push_object() and is_pushed
             if config.admin_networking:
                 is_pushed = config.admin_networking[0].push_object() and is_pushed
+            if self.task is not None:
+                if is_pushed:
+                    self.task.taskstep_manager.stop_taskstep(name="SetupUcsImc", status="successful",
+                                                             description="Successfully completed setting up CIMC")
+                else:
+                    message_str = "Some objects failed to push"
+                    self.logger(level="error", message=message_str)
+                    self.task.taskstep_manager.stop_taskstep(
+                        name="SetupUcsImc", status="failed", status_message=message_str)
             self.set_task_progression(35)
             return is_pushed
         else:
@@ -2060,7 +2550,7 @@ class UcsImc(GenericUcsDevice):
         if self.task is not None:
             self.task.taskstep_manager.start_taskstep(
                 name="EraseConfiguration",
-                description=f"Resetting Fabric Interconnects of {self.metadata.device_type_long} device {self.name}")
+                description=f"Resetting CIMC of {self.metadata.device_type_long} device {self.name}")
 
         # Verifying that SSH Service is enabled before trying to connect
         self.logger(level="debug", message="Verifying that SSH service is enabled on UCS IMC")
@@ -2179,7 +2669,7 @@ class UcsImc(GenericUcsDevice):
             buff = ""
 
             self.logger(level="debug", message="\tSending 'factory-default all'")
-            channel.send('factory-default bmc vic\n')
+            channel.send('factory-default all\n')
             while not buff.endswith("[y|N]"):
                 resp = channel.recv(9999)
                 buff += resp.decode("utf-8")

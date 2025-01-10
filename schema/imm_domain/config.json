@@ -1,0 +1,37 @@
+{
+   "id": "imm_domain_config#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS IMM Config section",
+   "description": "EasyUCS IMM Config section JSON schema",
+   "type": "object",
+   "properties": {
+      "device_connector": {
+         "description": "EasyUCS config/device_connector section",
+         "type": "array",
+         "items": {
+            "description": "EasyUCS config/device_connector element",
+            "type": "object",
+            "$ref": "config/device_connector.json"
+         },
+         "minItems": 1,
+         "maxItems": 1
+      },
+      "system_information": {
+         "description": "EasyUCS config/system_information section",
+         "type": "array",
+         "items": {
+            "description": "EasyUCS config/system_information element",
+            "type": "object",
+            "$ref": "config/system_information.json"
+         },
+         "minItems": 1,
+         "maxItems": 1
+      }
+   },
+   "additionalProperties": false,
+   "minProperties": 1,
+   "$comment": "Below is for supporting any additional commented property starting with a #",
+   "patternProperties": {
+      "^#": {}
+   }
+}

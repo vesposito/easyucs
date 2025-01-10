@@ -2,15 +2,13 @@
 # !/usr/bin/env python
 
 """ cpu_module.py: Easy UCS Deployment Tool """
-from __init__ import __author__, __copyright__,  __version__, __status__
 
+from PIL import Image
 
 from draw.object import GenericUcsDrawEquipment
-from PIL import Image, ImageDraw, ImageFont
-from draw.ucs.port import UcsSystemDrawPort
 
 
-class UcsSystemDrawCpuModule(GenericUcsDrawEquipment):
+class UcsCpuModuleDraw(GenericUcsDrawEquipment):
     def __init__(self, parent=None, parent_draw=None):
         self.parent_draw = parent_draw
         self.module_id = int(parent.id) // 2 + int(parent.id) % 2

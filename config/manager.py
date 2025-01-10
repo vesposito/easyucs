@@ -8,9 +8,9 @@ import os
 
 from packaging import version as packaging_version
 
+import export
 from __init__ import __version__
 from common import read_json_file, validate_json
-import export
 
 
 class GenericConfigManager:
@@ -210,12 +210,7 @@ class GenericConfigManager:
                     return False
 
         if import_format in ["json"]:
-            # We verify that the JSON content is valid
-            if not self._validate_config_from_json(config_json=complete_json):
-                self.logger(level="error", message="Can't import invalid config JSON file", set_api_error_message=False)
-                return False
-            else:
-                self.logger(message="Successfully validated config JSON file")
+            # First of all, we perform hash verification, as we might need to refactor the config later
 
             # We verify the hash of the file to check if it has been modified
             custom = False
@@ -239,6 +234,28 @@ class GenericConfigManager:
                                                                    "metadata hash. Config will be marked as custom")
                                 custom = True
 
+            # Now we need to deal with importing a configuration file from an older version if the current version
+            # is "1.0.0" or higher. This is due to backward-incompatible changes introduced in version "1.0.0",
+            # which revisited the entire "device_connector" section.
+            easyucs_version_from_file = complete_json["easyucs"]["metadata"][0]["easyucs_version"]
+            if packaging_version.parse(__version__) >= packaging_version.parse("1.0.0") > \
+                    packaging_version.parse(easyucs_version_from_file):
+                if complete_json.get("config"):
+                    if complete_json["config"].get("device_connector"):
+                        self.logger(
+                            level="warning",
+                            message=f"Ignoring the device_connector section from config because it was created with " +
+                                    f"an older version of EasyUCS ({easyucs_version_from_file})."
+                        )
+                        del complete_json["config"]["device_connector"]
+
+            # We verify that the JSON content is valid
+            if not self._validate_config_from_json(config_json=complete_json):
+                self.logger(level="error", message="Can't import invalid config JSON file", set_api_error_message=False)
+                return False
+            else:
+                self.logger(message="Successfully validated config JSON file")
+
             # We make sure there is a "config" section in the file
             if "config" in complete_json:
                 config_json = complete_json["config"]
@@ -259,7 +276,7 @@ class GenericConfigManager:
             config.load_from = "file"
             config.metadata.easyucs_version = __version__
 
-            # If device is system catalog device, and import is not from /samples directory, we mark config as Custom
+            # If device is system catalog device, and import is not from /samples directory, we mark category as Custom
             if self.parent.metadata.is_system and self.parent.metadata.system_usage == "catalog" \
                     and directory != "samples":
                 config.metadata.category = "custom"
@@ -332,6 +349,14 @@ class GenericConfigManager:
         :return: True if config is valid, False otherwise
         """
 
+        # We first validate that the easyucs_version of the file is not greater than the running version of EasyUCS
+        easyucs_version_from_file = config_json["easyucs"]["metadata"][0]["easyucs_version"]
+        if packaging_version.parse(easyucs_version_from_file) > packaging_version.parse(__version__):
+            self.logger(level="error",
+                        message="Failed to validate config JSON file because it has been created using a more " +
+                                "recent version of EasyUCS (" + easyucs_version_from_file + " > " + __version__ + ")")
+            return False
+
         # Open JSON master schema for the corresponding config
         if self.parent.metadata.device_type in ["cimc", "ucsc", "ucsm"]:
             master_file_path = "schema/ucs/" + self.parent.metadata.device_type + "/master.json"
@@ -342,21 +367,15 @@ class GenericConfigManager:
             self.logger(level="error", message="Failed to validate config from json file", set_api_error_message=False)
             return False
 
-        # We now validate that the easyucs_version of the file is not greater than the running version of EasyUCS
-        easyucs_version_from_file = config_json["easyucs"]["metadata"][0]["easyucs_version"]
-        if packaging_version.parse(easyucs_version_from_file) > packaging_version.parse(__version__):
-            self.logger(level="error",
-                        message="Failed to validate config JSON file because it has been created using a more " +
-                                "recent version of EasyUCS (" + easyucs_version_from_file + " > " + __version__ + ")")
-            return False
-
         return True
 
-    def push_config(self, uuid=None, reset=False):
+    def push_config(self, uuid=None, reset=False, bypass_version_checks=False, force=False):
         """
         Push the specified config on the live system
         :param uuid: The UUID of the config to be exported. If not specified, the most recent config will be used
         :param reset: Whether the device must be reset before pushing the config
+        :param bypass_version_checks: Whether the minimum version checks should be bypassed when connecting
+        :param force: Force the push to proceed even in-case of critical errors.
         :return: True if config push was successful, False otherwise
         """
         return False

@@ -8,8 +8,8 @@
             "subcategory": "BIOS",
             "name": "Intersight BIOS Policy for Data Analytics on Cisco UCS M6 Servers",
             "url": "https://www.cisco.com/c/en/us/products/collateral/servers-unified-computing/ucs-b-series-blade-servers/performance-tuning-guide-ucs-m6-servers.html",
-            "easyucs_version": "0.9.8.4",
-            "revision": "1.0"
+            "easyucs_version": "1.0.0",
+            "revision": "1.1"
          }
       ]
    },

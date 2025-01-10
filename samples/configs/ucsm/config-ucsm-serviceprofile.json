@@ -7,8 +7,8 @@
             "category": "samples",
             "subcategory": "Service Profiles",
             "name": "UCS Manager service profile-related sections configuration sample",
-            "easyucs_version": "0.9.8.3",
-            "revision": "1.2"
+            "easyucs_version": "1.0.0",
+            "revision": "1.3"
          }
       ]
    },

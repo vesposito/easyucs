@@ -1,5 +1,6 @@
 {
-  "model_short_name": "VIC 1240",
-  "imm_compatible": false,
-  "data_sheet_url": "https://www.cisco.com/c/en/us/products/collateral/interfaces-modules/ucs-virtual-interface-card-1240/data_sheet_c78-699459.pdf"
+   "model_short_name": "VIC 1240",
+   "imm_compatible": false,
+   "data_sheet_url": "https://www.cisco.com/c/en/us/products/collateral/interfaces-modules/ucs-virtual-interface-card-1240/data_sheet_c78-699459.pdf",
+   "adaptor_type": "vic"
 }

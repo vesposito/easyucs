@@ -22,6 +22,7 @@ function afterDOMloaded() {
   inventoryTable = createDataTable("#inventoryTable", 3, 3);
   reportTable = createDataTable("#reportTable", 3, 3);
   backupTable = createDataTable("#backupTable", 3, 3);
+  subDevicesTable = createDataTable("#subDevicesTable", 4, 4);
 
   // Adding class to menu element in base.html to reflect that it is open
   document.getElementById("navLinkDevices").className += " active" 
@@ -36,8 +37,47 @@ function afterDOMloaded() {
   // Getting device UUID from URL
   current_device_uuid = url.substring(url.lastIndexOf('/') + 1); 
 
+  //Display actions available for the device
+  displayDeviceActions();
+
   refreshData();
 };
+
+function displayDeviceActions() {
+  const target_api_endpoint = api_base_url + api_device_endpoint + "/" + current_device_uuid + "/actions";
+  httpRequestAsync("GET", target_api_endpoint, (response) => {
+    const actions = JSON.parse(response)['actions'];
+    actions_to_element_id = {
+      "clear_config": "action-clear-config",
+      "claim_to_intersight": "action-claim-to-intersight",
+      "reset_device_connector": "action-clear-intersight-claim-status",
+      "clear_sel_logs": "action-clear-sel-logs",
+      "regenerate_certificate": "action-regenerate-certificate",
+      "reset": "action-reset-device"
+    }
+    Object.entries(actions_to_element_id).forEach(([action, element_id]) => {
+      if(actions.includes(action)){
+        $(`#${element_id}`).show();
+      }
+    });
+  });
+}
+
+function resetDevice() {
+  Swal.fire({
+    title: "Resetting the device to factory settings is an irreversible action. Do you wish to proceed?",
+    showDenyButton: true,
+    confirmButtonText: `Yes`,
+    denyButtonText: `No`,
+  }).then((result) => {
+      if (result.isConfirmed) {
+        const target_api_endpoint = api_base_url + api_device_endpoint + "/" + current_device_uuid + "/actions/reset";
+        const action_type_message = "Reset Device";
+        httpRequestAsync("POST", target_api_endpoint, alertActionStarted.bind(null, action_type_message));
+      }
+  });
+}
+
 
 // Gets executed every X [in milliseconds]: here we are collecting device logs
 window.setInterval(function() {
@@ -279,15 +319,10 @@ function displayCatalogConfigs(data){
  * Hides the action "Claim to Intersight" in the Actions button
  */
 function disableClaimToIntersight(){
-  $("#action-claim-to-intersight").hide();
+  // Using a class instead of .hide(), so it overrides the .show() from displayDeviceActions()
+  $("#action-claim-to-intersight").addClass("d-none")
 }
 
-/**
- * Hides the action "Clear Config" in the Actions button
- */
-function disableClearConfig(){
-  $("#action-clear-config").hide();
-}
 
 /**
  * Displays the device
@@ -315,6 +350,26 @@ function displayDevice(data){
   // Stored the current device
   current_device = data.device;
 
+  // If device has subdevices
+  if (current_device.sub_device_uuids) {
+    // Show subdevices tab
+    $("#nav-subdevices-tab").removeClass("d-none");
+    // Load subdevices into table
+    getFromDb(all_devices => {
+      const devices = JSON.parse(all_devices).devices;
+      // Only show devices that are in the list of subdevices
+      const sub_devices = devices.filter(device => current_device.sub_device_uuids.includes(device.uuid));
+      // Clean subdevices table 
+      subDevicesTable.clear().draw();
+
+      // For each subdevice, we create the specific row in the DataTable
+      sub_devices.map( device => {
+        subDevicesTable.row.add($(createRowForDevice(device)));
+      });
+      subDevicesTable.draw();
+    }, "device");
+  }
+
   // Resets the DOM element
   document.getElementById('deviceCardContainer').innerHTML = "";
   var device_version = "unknown"
@@ -330,6 +385,21 @@ function displayDevice(data){
   </div> 
   `
 
+  if (current_device.parent_device_uuid){
+    getFromDb(response => {
+      const parent_device = JSON.parse(response).device;
+      if(parent_device.device_name){
+        const node = $(".parent-device-breadcrumb")
+        node.find("a").text(parent_device.device_name);
+        node.find("a").attr("href", `/devices/${parent_device.uuid}`);
+        node.removeClass("d-none"); 
+      }
+    }, "device", current_device.parent_device_uuid);
+  }
+  //Updates the breadcrumb to display the name of the device
+  $(".current-device-breadcrumb").text(current_device.device_name);
+  color = "bg-light";
+  avatar_src = "/static/img/unknown_device_logo.png";
   // Changes the style of the card based on the type of device
   if(current_device.device_type == "intersight"){
     username_element = `
@@ -342,23 +412,15 @@ function displayDevice(data){
     `
     avatar_src = "/static/img/intersight_logo.png";
     color = "bg-info";
-    enableClearConfig();
-    $("#action-generate-report").hide();
-    $("#report-separator").hide();
+  } else if (current_device.device_type == "imm_domain"){
+    avatar_src = "/static/img/imm_domain_logo.png";
+    color = "bg-success";
   } else if (current_device.device_type == "ucsm"){
     avatar_src = "/static/img/ucsm_logo.png";
     color = "bg-primary";
-    enableClaimToIntersight();
-    enableResetDeviceConnector();
-    enableClearSelLogs();
-    enableRegenerateCertificate();
   } else if (current_device.device_type == "cimc"){
     avatar_src = "/static/img/cimc_logo.png";
     color = "bg-warning";
-    enableClaimToIntersight();
-    enableResetDeviceConnector();
-    enableClearSelLogs();
-    enableRegenerateCertificate();
   } else if (current_device.device_type == "ucsc"){
     avatar_src = "/static/img/ucsc_logo.png";
     color = "bg-dark";
@@ -663,7 +725,6 @@ function displayObjects(data){
       document.getElementById('inventories_options').innerHTML = object_options_list;
     }
   } else if(object_type == "orgs"){
-    console.log("youpi")
     var object_options_list = "";
     if(loaded_object.length < 1){
       object_options_list = `
@@ -706,45 +767,6 @@ async function downloadObjects(object_type){
   }
 }
 
-/**
- * Shows the action "Claim to Intersight" in the Actions button
- */
-function enableClaimToIntersight(){
-  $("#actions-separator").show();
-  $("#action-claim-to-intersight").show();
-}
-
-/**
- * Shows the action "Clear Config" in the Actions button
- */
-function enableClearConfig(){
-  $("#actions-separator").show();
-  $("#action-clear-config").show();
-}
-
-/**
- * Shows the action "Reset Device Connector" in the Actions button
- */
-function enableResetDeviceConnector(){
-  $("#actions-separator").show();
-  $("#action-clear-intersight-claim-status").show();
-}
-
-/**
- * Shows the action "Enable Clear SEL Logs" in the Actions button
- */
-function enableClearSelLogs(){
-  $("#actions-separator").show();
-  $("#action-clear-sel-logs").show();
-}
-
-/**
- * Shows the action "Regenerate Certificate" in the Actions button
- */
-function enableRegenerateCertificate(){
-  $("#actions-separator").show();
-  $("#action-regenerate-certificate").show();
-}
 
 /**
  * Fetches an object from the device
@@ -1163,7 +1185,7 @@ function toggleEditDeviceModal(event){
   // Populates the fields of the modal
   document.getElementById('edit_device_label').innerText = "Editing device: " + current_device.device_name;
   document.getElementById('edit_target').value = current_device.target;
-  document.getElementById('edit_user_label').value = current_device.user_label;
+  document.getElementById('edit_user_label').value = current_device.user_label ? current_device.user_label : "";
   
   // Shows the relevant form elements based on the device type
   if(current_device.device_type == "intersight"){

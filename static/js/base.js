@@ -19,7 +19,7 @@ var api_report_endpoint = '/reports';
 var api_backup_endpoint = '/backups';
 var api_notification_endpoint = '/notifications';
 var api_log_endpoint = '/logs/session';
-var api_orgs_endpoint = '/orgs';
+var api_orgs_endpoint = '/cache/orgs';
 var repo_download_endpoint = 'http://127.0.0.1:5001/repo';
 var api_repo_files_endpoint = '/repo/files';
 var api_repo_upload_endpoint = '/repo/actions/upload';
@@ -688,7 +688,7 @@ function displayTasks(data){
         deviceTasksTable.clear().draw();
         tableFromTasks(device_specific_tasks, deviceTasksTable, device_column = false);
     }
-    // Only displays the first 10 tasks in the navbar tasks dropbdown
+    // Only displays the first 10 tasks in the navbar tasks dropdown
     if(allTasksNumber > 10){
         loaded_tasks = loaded_tasks.slice(0, 10)
     }
@@ -1171,7 +1171,7 @@ function handleHttpResponse(success_callback, received_http_response, error_call
     if(!received_http_response){
         console.error("Impossible to handle response: no response specified");
     }
-
+    
     // A value of 4 means that the response is complete
     if (received_http_response.readyState == 4){
 
@@ -1182,6 +1182,9 @@ function handleHttpResponse(success_callback, received_http_response, error_call
             if(success_callback){
                 success_callback(received_http_response.responseText);
             }
+        } else if (received_http_response.status == 0){
+            // No need to handle response as this request was aborted
+            return;
         } else {
             // If the returned code is supported by EasyUCS, we return the associated error message
             if(supported_error_status_codes.includes(received_http_response.status)){
@@ -1732,3 +1735,48 @@ function validateIPaddress(ipaddress) {
     }  
     return (false)  ;
 } 
+
+// Used to display the all devices list table and the subdevices list table
+function createRowForDevice(device, phantom=false){
+    let device_version = "unknown";
+    let claimed = "N/A";
+    let on_click = phantom ? 'null' : `window.location='/devices/${device.device_uuid}';`
+    if(device.device_version != undefined){
+      device_version = device.device_version;
+    }
+  
+    if(device.device_connector_claim_status){
+      if(device.device_connector_claim_status == "claimed"){
+        if(device.intersight_device_uuid){
+          claimed_target = `<a href="/devices/${device.intersight_device_uuid}">${device.device_connector_ownership_name}</a>`
+        } else {
+          claimed_target = `${device.device_connector_ownership_name}`
+        }
+        claimed = `Claimed to Intersight (${claimed_target})`;
+      } else {
+        claimed = "Not claimed";
+      }
+    }
+  
+    let date_timestamp = new Date(device.timestamp);
+    date_timestamp = Date.parse(date_timestamp)/1000;
+  
+    let device_data = JSON.stringify({
+      "device_name": device.device_name,
+      "device_uuid": device.uuid,
+      "device_type": device.device_type
+    })
+  
+    return `
+    <tr class="${phantom ? 'phantomRow table-warning' : ''}" style="cursor: pointer;">
+      <td class = "text-middle">${device_data}</td>
+      <td class = "text-middle" onclick="${on_click}">${phantom ? device.device_type : device.device_type_long}</td>
+      <td class = "text-middle" onclick="${on_click}">${device.device_name}</td>
+      <td class = "text-middle" onclick="${on_click}">${device.user_label ? device.user_label : ""}</td>
+      <td class = "text-middle" data-order="${date_timestamp}"  onclick="${on_click}">${device.timestamp}</td>
+      <td class = "text-middle" onclick="${on_click}">${claimed}</td>
+      <td class = "text-middle" onclick="${on_click}">${device.username}</td>
+      <td class = "text-middle" onclick="${on_click}">${device_version}</td>
+      <td class = "text-middle" onclick="${on_click}">${device.target}</td>
+    </tr>`
+  }

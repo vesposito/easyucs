@@ -163,6 +163,36 @@
                         "default": "",
                         "pattern": "^$|^([1-9]|1[0-5]|MLOM)$"
                      },
+                     "tags": {
+                        "description": "SAN Connectivity Policy - vHBA Tags",
+                        "type": "array",
+                        "items": {
+                           "description": "SAN Connectivity Policy - vHBA Tag",
+                           "type": "object",
+                           "properties": {
+                              "key": {
+                                 "description": "SAN Connectivity Policy - vHBA Tag Key",
+                                 "type": "string",
+                                 "default": "",
+                                 "minLength": 1,
+                                 "maxLength": 128
+                              },
+                              "value": {
+                                 "description": "SAN Connectivity Policy - vHBA Tag Value",
+                                 "type": "string",
+                                 "default": "",
+                                 "minLength": 0,
+                                 "maxLength": 256
+                              }
+                           },
+                           "additionalProperties": false,
+                           "required": [
+                              "key",
+                              "value"
+                           ]
+                        },
+                        "minItems": 1
+                     },
                      "switch_id": {
                         "description": "SAN Connectivity Policy - vHBA Switch ID",
                         "type": "string",
@@ -567,6 +597,36 @@
                         "type": "string",
                         "default": "",
                         "pattern": "^$|^([1-9]|1[0-5]|MLOM)$"
+                     },
+                     "tags": {
+                        "description": "SAN Connectivity Policy - vHBA Tags",
+                        "type": "array",
+                        "items": {
+                           "description": "SAN Connectivity Policy - vHBA Tag",
+                           "type": "object",
+                           "properties": {
+                              "key": {
+                                 "description": "SAN Connectivity Policy - vHBA Tag Key",
+                                 "type": "string",
+                                 "default": "",
+                                 "minLength": 1,
+                                 "maxLength": 128
+                              },
+                              "value": {
+                                 "description": "SAN Connectivity Policy - vHBA Tag Value",
+                                 "type": "string",
+                                 "default": "",
+                                 "minLength": 0,
+                                 "maxLength": 256
+                              }
+                           },
+                           "additionalProperties": false,
+                           "required": [
+                              "key",
+                              "value"
+                           ]
+                        },
+                        "minItems": 1
                      },
                      "uplink_port": {
                         "description": "SAN Connectivity Policy - vHBA Uplink Port",

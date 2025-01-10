@@ -2,7 +2,6 @@
 # !/usr/bin/env python
 
 """ mgmt.py: Easy UCS Deployment Tool """
-from __init__ import __author__, __copyright__,  __version__, __status__
 
 
 class UcsSystemDrawMgmtInterface:

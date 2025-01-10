@@ -215,7 +215,7 @@ class UcsSystemServiceProfile(UcsSystemConfigObject):
         self.power_sync_policy = None
         self.persistent_memory_policy = None
         # Operational State
-        self.operational_state = None
+        self.operational_state = {}
         oper_inband_ipv4_pool = None
         oper_inband_ipv6_pool = None
         oper_lan_connectivity_policy = None
@@ -985,7 +985,6 @@ class UcsSystemServiceProfile(UcsSystemConfigObject):
                                                     if mo_if.dn in mo_lun.dn:
                                                         interface.update({"lun_id": mo_lun.id})
                                             # Fetching the operational state of the referenced policies
-                                            operational_state = {}
                                             authentication_profile = self.get_operational_state(
                                                 policy_dn=mo_if.oper_auth_profile_name,
                                                 separator="/iscsi-auth-profile-",
@@ -1002,6 +1001,7 @@ class UcsSystemServiceProfile(UcsSystemConfigObject):
                                                                 policy_name="authentication_profile"
                                                             )
                                                             break
+                                            operational_state = {}
                                             operational_state.update(authentication_profile)
                                             interface.update({"operational_state":
                                                               operational_state})
@@ -1235,145 +1235,150 @@ class UcsSystemServiceProfile(UcsSystemConfigObject):
                         parent=self, json_content=json_content["specific_vmedia_policy"]
                     )
 
-                for element in self.vhbas:
-                    for value in ["adapter_policy", "vhba_template", "fabric", "name", "order", "wwpn_pool",
-                                  "pin_group", "max_data_field_size", "qos_policy", "vsan", "stats_threshold_policy",
-                                  "persistent_binding", "wwpn", "operational_state"]:
-                        if value not in element:
-                            element[value] = None
-
-                    # Flagging this as a vHBA
-                    element["_object_type"] = "vhbas"
-
-                    if element["operational_state"]:
-                        for policy in ["adapter_policy", "pin_group", "qos_policy", "stats_threshold_policy",
-                                       "vhba_template", "wwpn_pool"]:
-                            if policy not in element["operational_state"]:
-                                element["operational_state"][policy] = None
-                            else:
-                                for value in ["name", "org"]:
-                                    if value not in element["operational_state"][policy]:
-                                        element["operational_state"][policy][value] = None
-
-                        for state in ["host_port", "order", "vcon"]:
-                            if state not in element["operational_state"]:
-                                element["operational_state"][state] = None
-
-                for element in self.vhba_initiator_groups:
-                    for value in ["descr", "initiators", "name", "operational_state", "storage_connection_policy"]:
-                        if value not in element:
-                            element[value] = None
-
-                    if element["operational_state"]:
-                        if "storage_connection_policy" not in element["operational_state"]:
-                            element["operational_state"]["storage_connection_policy"] = None
-                        else:
-                            for value in ["name", "org"]:
-                                if value not in element["operational_state"]["storage_connection_policy"]:
-                                    element["operational_state"]["storage_connection_policy"][value] = None
-
-                for element in self.iscsi_vnics:
-                    for value in ["name", "vlan", "mac_address_pool", "iscsi_adapter_policy", "mac_address",
-                                  "overlay_vnic", "operational_state"]:
-                        if value not in element:
-                            element[value] = None
-
-                    if element["operational_state"]:
-                        for policy in ["iscsi_adapter_policy"]:
-                            if policy not in element["operational_state"]:
-                                element["operational_state"][policy] = None
-                            else:
-                                for value in ["name", "org"]:
-                                    if value not in element["operational_state"][policy]:
-                                        element["operational_state"][policy][value] = None
-
-                for element in self.placement:
-                    for value in ["vcon", "vnic", "vhba", "order", "host_port"]:
-                        if value not in element:
-                            element[value] = None
-
-                for element in self.specific_placement:
-                    for value in ["vcon", "vnic", "vhba"]:
-                        if value not in element:
-                            element[value] = None
-
-                for element in self.vnics:
-                    for value in ["vlans", "vnic_template", "adapter_policy", "name", "cdn_source", "cdn_name",
-                                  "vlan_native", "vlan_q_in_q", "order", "fabric", "q_in_q", "mac_address_pool", "mtu",
-                                  "qos_policy", "network_control_policy", "dynamic_vnic", "pin_group",
-                                  "stats_threshold_policy", "mac_address", "vlan_groups", "operational_state",
-                                  "redundancy_pair", "usnic_connection_policy", "vmq_connection_policy",
-                                  "sriov_hpn_connection_policy"]:
-                        if value not in element:
-                            element[value] = None
-
-                    # Flagging this as a vNIC
-                    element["_object_type"] = "vnics"
-
-                    if element["operational_state"]:
-                        for policy in ["adapter_policy", "mac_address_pool", "network_control_policy", "pin_group",
-                                       "qos_policy", "sriov_hpn_connection_policy", "stats_threshold_policy",
-                                       "usnic_connection_policy", "vmq_connection_policy", "vnic_template"]:
-                            if policy not in element["operational_state"]:
-                                element["operational_state"][policy] = None
-                            else:
-                                for value in ["name", "org"]:
-                                    if value not in element["operational_state"][policy]:
-                                        element["operational_state"][policy][value] = None
-
-                        for state in ["host_port", "order", "vcon"]:
-                            if state not in element["operational_state"]:
-                                element["operational_state"][state] = None
-
-                for element in self.iscsi_boot_parameters:
-                    for value in ["iscsi_vnic_name", "authentication_profile", "iqn_pool",
-                                  "initiator_ip_address_policy", "iscsi_target_interface", "iscsi_static_targets",
-                                  "dhcp_vendor_id", "priority", "iqn", "default_gateway", "ipv4_address",
-                                  "primary_dns", "secondary_dns", "subnet_mask"]:
-                        if value not in element:
-                            element[value] = None
-
-                    # Flagging this as an iscsi_boot_parameter
-                    element["_object_type"] = "iscsi_boot_parameters"
-
-                    if element["iscsi_static_targets"]:
-                        for subelement in element["iscsi_static_targets"]:
-                            for subvalue in ["name", "port", "lun_id", "authentication_profile", "ip_address"]:
-                                if subvalue not in subelement:
-                                    subelement[subvalue] = None
-                    else:
-                        element["iscsi_static_targets"] = []
-
-                if not self.operational_state:
-                    self.operational_state = {}
-                for policy in [
-                    "bios_policy", "boot_policy", "dynamic_vnic_connection_policy", "graphics_card_policy",
-                    "host_firmware_package", "inband_ipv4_pool", "inband_ipv4", "inband_ipv6_pool", "inband_ipv6",
-                    "ipmi_access_profile", "kvm_management_policy", "lan_connectivity_policy",
-                    "local_disk_configuration_policy", "maintenance_policy", "outband_ipv4_pool", "outband_ipv4"
-                    "persistent_memory_policy", "placement_policy", "power_control_policy", "power_sync_policy",
-                    "san_connectivity_policy", "scrub_policy", "serial_over_lan_policy", "server_pool",
-                    "service_profile_template", "spdm_certificate_policy", "storage_profile", "threshold_policy",
-                    "uuid_pool", "vmedia_policy", "wwnn_pool", "wwnn"
-                ]:
-                    if policy not in self.operational_state:
-                        self.operational_state[policy] = None
-                    else:
-                        for value in ["name", "org"]:
-                            if value not in self.operational_state[policy]:
-                                self.operational_state[policy][value] = None
-
-                if "assigned_server" not in self.operational_state:
-                    self.operational_state["assigned_server"] = None
-                else:
-                    for value in ["server_id", "chassis_id", "slot_id"]:
-                        if value not in self.operational_state["assigned_server"]:
-                            self.operational_state["assigned_server"][value] = None
-
-                if "profile_state" not in self.operational_state:
-                    self.operational_state["profile_state"] = None
 
         self.clean_object()
+
+    def clean_object(self):
+        UcsSystemConfigObject.clean_object(self)
+
+        for element in self.vhbas:
+            for value in ["adapter_policy", "vhba_template", "fabric", "name", "order", "wwpn_pool",
+                          "pin_group", "max_data_field_size", "qos_policy", "vsan", "stats_threshold_policy",
+                          "persistent_binding", "wwpn", "operational_state"]:
+                if value not in element:
+                    element[value] = None
+
+            # Flagging this as a vHBA
+            element["_object_type"] = "vhbas"
+
+            if element["operational_state"]:
+                for policy in ["adapter_policy", "pin_group", "qos_policy", "stats_threshold_policy",
+                               "vhba_template", "wwpn_pool"]:
+                    if policy not in element["operational_state"]:
+                        element["operational_state"][policy] = None
+                    elif element["operational_state"][policy]:
+                        for value in ["name", "org"]:
+                            if value not in element["operational_state"][policy]:
+                                element["operational_state"][policy][value] = None
+
+                for state in ["host_port", "order", "vcon"]:
+                    if state not in element["operational_state"]:
+                        element["operational_state"][state] = None
+
+        for element in self.vhba_initiator_groups:
+            for value in ["descr", "initiators", "name", "operational_state", "storage_connection_policy"]:
+                if value not in element:
+                    element[value] = None
+
+            if element["operational_state"]:
+                if "storage_connection_policy" not in element["operational_state"]:
+                    element["operational_state"]["storage_connection_policy"] = None
+                elif element["operational_state"]["storage_connection_policy"]:
+                    for value in ["name", "org"]:
+                        if value not in element["operational_state"]["storage_connection_policy"]:
+                            element["operational_state"]["storage_connection_policy"][value] = None
+
+        for element in self.iscsi_vnics:
+            for value in ["name", "vlan", "mac_address_pool", "iscsi_adapter_policy", "mac_address",
+                          "overlay_vnic", "operational_state"]:
+                if value not in element:
+                    element[value] = None
+
+            if element["operational_state"]:
+                for policy in ["iscsi_adapter_policy"]:
+                    if policy not in element["operational_state"]:
+                        element["operational_state"][policy] = None
+                    elif element["operational_state"][policy]:
+                        for value in ["name", "org"]:
+                            if value not in element["operational_state"][policy]:
+                                element["operational_state"][policy][value] = None
+
+        for element in self.placement:
+            for value in ["vcon", "vnic", "vhba", "order", "host_port"]:
+                if value not in element:
+                    element[value] = None
+
+        for element in self.specific_placement:
+            for value in ["vcon", "vnic", "vhba"]:
+                if value not in element:
+                    element[value] = None
+
+        for element in self.vnics:
+            for value in ["vlans", "vnic_template", "adapter_policy", "name", "cdn_source", "cdn_name",
+                          "vlan_native", "vlan_q_in_q", "order", "fabric", "q_in_q", "mac_address_pool", "mtu",
+                          "qos_policy", "network_control_policy", "dynamic_vnic", "pin_group",
+                          "stats_threshold_policy", "mac_address", "vlan_groups", "operational_state",
+                          "redundancy_pair", "usnic_connection_policy", "vmq_connection_policy",
+                          "sriov_hpn_connection_policy"]:
+                if value not in element:
+                    element[value] = None
+
+            # Flagging this as a vNIC
+            element["_object_type"] = "vnics"
+
+            if element["operational_state"]:
+                for policy in ["adapter_policy", "mac_address_pool", "network_control_policy", "pin_group",
+                               "qos_policy", "sriov_hpn_connection_policy", "stats_threshold_policy",
+                               "usnic_connection_policy", "vmq_connection_policy", "vnic_template"]:
+                    if policy not in element["operational_state"]:
+                        element["operational_state"][policy] = None
+                    elif element["operational_state"][policy]:
+                        for value in ["name", "org"]:
+                            if value not in element["operational_state"][policy]:
+                                element["operational_state"][policy][value] = None
+
+                for state in ["host_port", "order", "vcon"]:
+                    if state not in element["operational_state"]:
+                        element["operational_state"][state] = None
+
+        for element in self.iscsi_boot_parameters:
+            for value in ["iscsi_vnic_name", "authentication_profile", "iqn_pool",
+                          "initiator_ip_address_policy", "iscsi_target_interface", "iscsi_static_targets",
+                          "dhcp_vendor_id", "priority", "iqn", "default_gateway", "ipv4_address",
+                          "primary_dns", "secondary_dns", "subnet_mask"]:
+                if value not in element:
+                    element[value] = None
+
+            # Flagging this as an iscsi_boot_parameter
+            element["_object_type"] = "iscsi_boot_parameters"
+
+            if element["iscsi_static_targets"]:
+                for subelement in element["iscsi_static_targets"]:
+                    for subvalue in ["name", "port", "lun_id", "authentication_profile", "ip_address"]:
+                        if subvalue not in subelement:
+                            subelement[subvalue] = None
+            else:
+                element["iscsi_static_targets"] = []
+
+        if not self.operational_state:
+            self.operational_state = {}
+        for policy in [
+            "bios_policy", "boot_policy", "dynamic_vnic_connection_policy", "graphics_card_policy",
+            "host_firmware_package", "inband_ipv4_pool", "inband_ipv4", "inband_ipv6_pool", "inband_ipv6",
+            "ipmi_access_profile", "kvm_management_policy", "lan_connectivity_policy",
+            "local_disk_configuration_policy", "maintenance_policy", "outband_ipv4_pool", "outband_ipv4"
+                                                                                          "persistent_memory_policy",
+            "placement_policy", "power_control_policy", "power_sync_policy",
+            "san_connectivity_policy", "scrub_policy", "serial_over_lan_policy", "server_pool",
+            "service_profile_template", "spdm_certificate_policy", "storage_profile", "threshold_policy",
+            "uuid_pool", "vmedia_policy", "wwnn_pool", "wwnn"
+        ]:
+            if policy not in self.operational_state:
+                self.operational_state[policy] = None
+            elif self.operational_state[policy]:
+                for value in ["name", "org"]:
+                    if value not in self.operational_state[policy]:
+                        self.operational_state[policy][value] = None
+
+        if "assigned_server" not in self.operational_state:
+            self.operational_state["assigned_server"] = None
+        elif self.operational_state["assigned_server"]:
+            for value in ["server_id", "chassis_id", "slot_id"]:
+                if value not in self.operational_state["assigned_server"]:
+                    self.operational_state["assigned_server"][value] = None
+
+        if "profile_state" not in self.operational_state:
+            self.operational_state["profile_state"] = None
 
     def push_object(self, commit=True):
         if commit:

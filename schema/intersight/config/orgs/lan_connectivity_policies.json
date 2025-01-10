@@ -278,6 +278,36 @@
                            "B"
                         ]
                      },
+                     "tags": {
+                        "description": "LAN Connectivity Policy - vNIC Tags",
+                        "type": "array",
+                        "items": {
+                           "description": "LAN Connectivity Policy - vNIC Tag",
+                           "type": "object",
+                           "properties": {
+                              "key": {
+                                 "description": "LAN Connectivity Policy - vNIC Tag Key",
+                                 "type": "string",
+                                 "default": "",
+                                 "minLength": 1,
+                                 "maxLength": 128
+                              },
+                              "value": {
+                                 "description": "LAN Connectivity Policy - vNIC Tag Value",
+                                 "type": "string",
+                                 "default": "",
+                                 "minLength": 0,
+                                 "maxLength": 256
+                              }
+                           },
+                           "additionalProperties": false,
+                           "required": [
+                              "key",
+                              "value"
+                           ]
+                        },
+                        "minItems": 1
+                     },
                      "usnic_settings": {
                         "description": "LAN Connectivity Policy - vNIC usNIC Settings",
                         "type": "object",
@@ -935,6 +965,36 @@
                            }
                         },
                         "additionalProperties": false
+                     },
+                     "tags": {
+                        "description": "LAN Connectivity Policy - vNIC Tags",
+                        "type": "array",
+                        "items": {
+                           "description": "LAN Connectivity Policy - vNIC Tag",
+                           "type": "object",
+                           "properties": {
+                              "key": {
+                                 "description": "LAN Connectivity Policy - vNIC Tag Key",
+                                 "type": "string",
+                                 "default": "",
+                                 "minLength": 1,
+                                 "maxLength": 128
+                              },
+                              "value": {
+                                 "description": "LAN Connectivity Policy - vNIC Tag Value",
+                                 "type": "string",
+                                 "default": "",
+                                 "minLength": 0,
+                                 "maxLength": 256
+                              }
+                           },
+                           "additionalProperties": false,
+                           "required": [
+                              "key",
+                              "value"
+                           ]
+                        },
+                        "minItems": 1
                      },
                      "uplink_port": {
                         "description": "LAN Connectivity Policy - vNIC Uplink Port",

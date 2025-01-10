@@ -53,6 +53,87 @@ class GenericConfigObject:
         else:
             return None
 
+    def copy(self, new_parent=None, hierarchical=True):
+        """
+        This function creates a copy of a Generic Config Object.
+        :param new_parent: Parent of the new (copied) config object
+        :param hierarchical: Whether to copy EasyUCS objects which comes under the hierarchy of current object (self).
+        E.g. When copying an Org:
+        - hierarchical=True will copy all its fields including the list of EasyUCS objects
+        policies/pools/profiles/templates
+        - hierarchical=False will only copy non EasyUCS objects fields ('name','descr','resource_groups')
+        :return: New (copied) config object if successful
+        """
+        def copy_subobject(source_subobject, subobject_parent=None):
+            """
+            Returns a copy of a sub-object of an EasyUCS object. Should be used if sub-object is list or dict.
+            :param source_subobject: Source sub-object which needs to be copied (list or dict). It usually refers to
+            vNICs, boot devices, etc.
+            :param subobject_parent: Parent of the new (copied) sub-object.
+            :return: New (copied) sub-object
+            """
+            if isinstance(source_subobject, dict):
+                new_object = {}
+                for key in source_subobject:
+                    if isinstance(source_subobject[key], (list, dict)):
+                        new_object[key] = copy_subobject(source_subobject[key], subobject_parent=subobject_parent)
+                    elif isinstance(source_subobject[key], GenericConfigObject):
+                        if hierarchical:
+                            new_object[key] = source_subobject[key].copy(new_parent=subobject_parent)
+                    else:
+                        new_object[key] = source_subobject[key]
+            else:
+                new_object = []
+                for element in source_subobject:
+                    if isinstance(element, (list, dict)):
+                        new_object.append(copy_subobject(element, subobject_parent=subobject_parent))
+                    elif isinstance(element, GenericConfigObject):
+                        if hierarchical:
+                            new_object.append(element.copy(new_parent=subobject_parent))
+                    else:
+                        new_object.append(element)
+            return new_object
+
+        new_object = self.__class__(parent=new_parent)
+        for attribute in vars(self):
+            if not attribute.startswith('_') and getattr(self, attribute) is not None:
+                if isinstance(getattr(self, attribute), (dict, list)):
+                    # Attribute of EasyUCS object is a list or dictionary
+                    setattr(new_object, attribute, copy_subobject(getattr(self, attribute),
+                                                                  subobject_parent=new_object))
+                elif isinstance(getattr(self, attribute), GenericConfigObject):
+                    if hierarchical:
+                        # Attribute of EasyUCS object is an EasyUCS object
+                        new_copied_object = getattr(self, attribute).copy(new_parent=new_object)
+                        setattr(new_object, attribute, new_copied_object)
+                else:
+                    # Attribute of EasyUCS object is a regular value
+                    setattr(new_object, attribute, getattr(self, attribute))
+
+        return new_object
+
+    def get_attributes_from_json(self, json_content=None, allow_int=False, allow_bool=False):
+        if json_content is None:
+            return False
+
+        for attribute in json_content.keys():
+            if isinstance(json_content[attribute], str):
+                setattr(self, attribute, json_content[attribute])
+            # Support list of values (like for NTP entries)
+            elif isinstance(json_content[attribute], list):
+                setattr(self, attribute, [])
+                for element in json_content[attribute]:
+                    if isinstance(element, (str, dict)):
+                        getattr(self, attribute).append(element)
+            # Support dict of values (like for operational_state)
+            elif isinstance(json_content[attribute], dict):
+                setattr(self, attribute, json_content[attribute])
+            elif isinstance(json_content[attribute], int) and allow_int:
+                setattr(self, attribute, json_content[attribute])
+            elif isinstance(json_content[attribute], bool) and allow_bool:
+                setattr(self, attribute, json_content[attribute])
+        return True
+
     @staticmethod
     def update_taskstep_description(attribute_name="name"):
         """

@@ -2,7 +2,6 @@
 # !/usr/bin/env python
 
 """ wire.py: Easy UCS Deployment Tool """
-from __init__ import __author__, __copyright__,  __version__, __status__
 
 from draw.object import GenericUcsDrawObject
 
@@ -48,6 +47,12 @@ class UcsSystemDrawWire(GenericUcsDrawObject):
                     "8gbps": self.COLOR_LINK_FC_8G,
                     "16gbps": self.COLOR_LINK_FC_16G,
                     "32gbps": self.COLOR_LINK_FC_32G,
+                    "1G": self.COLOR_LINK_FC_1G,
+                    "2G": self.COLOR_LINK_FC_2G,
+                    "4G": self.COLOR_LINK_FC_4G,
+                    "8G": self.COLOR_LINK_FC_8G,
+                    "16G": self.COLOR_LINK_FC_16G,
+                    "32G": self.COLOR_LINK_FC_32G,
                     "auto": self.COLOR_LINK_FC_AUTO,
                     "indeterminate": self.COLOR_LINK_FC_INDETERMINATE}
         ether_speed = {"1gbps": self.COLOR_LINK_ETHER_1G,
@@ -56,6 +61,11 @@ class UcsSystemDrawWire(GenericUcsDrawObject):
                        "25gbps": self.COLOR_LINK_ETHER_25G,
                        "40gbps": self.COLOR_LINK_ETHER_40G,
                        "100gbps": self.COLOR_LINK_ETHER_100G,
+                       "1G": self.COLOR_LINK_ETHER_1G,
+                       "10G": self.COLOR_LINK_ETHER_10G,
+                       "25G": self.COLOR_LINK_ETHER_25G,
+                       "40G": self.COLOR_LINK_ETHER_40G,
+                       "100G": self.COLOR_LINK_ETHER_100G,
                        "auto": self.COLOR_LINK_ETHER_AUTO,
                        "indeterminate": self.COLOR_LINK_ETHER_INDETERMINATE}
         if self.speed and self.transport:

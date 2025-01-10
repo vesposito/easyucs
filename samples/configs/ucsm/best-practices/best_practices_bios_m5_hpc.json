@@ -1,53 +1,53 @@
 {
-   "easyucs":{
-      "metadata":[
+   "easyucs": {
+      "metadata": [
          {
             "file_type": "config",
             "device_type": "ucsm",
-            "category":"best-practices",
-            "subcategory":"BIOS",
-            "name":"UCS Manager BIOS Policy for High-Performance Computing on Cisco UCS M5 Servers",
-            "url":"https://www.cisco.com/c/en/us/products/collateral/servers-unified-computing/ucs-b-series-blade-servers/white-paper-c11-744678.html",
-            "easyucs_version":"0.9.0",
-            "revision": "1.1"
+            "category": "best-practices",
+            "subcategory": "BIOS",
+            "name": "UCS Manager BIOS Policy for High-Performance Computing on Cisco UCS M5 Servers",
+            "url": "https://www.cisco.com/c/en/us/products/collateral/servers-unified-computing/ucs-b-series-blade-servers/white-paper-c11-744678.html",
+            "easyucs_version": "1.0.0",
+            "revision": "1.2"
          }
       ]
    },
-   "config":{
-      "orgs":[
+   "config": {
+      "orgs": [
          {
-            "name":"root",
+            "name": "root",
             "bios_policies": [
                {
-                  "name":"HPC-M5",
+                  "name": "HPC-M5",
                   "descr": "BIOS Policy for High-Performance Computing on Cisco UCS M5 Servers",
-                  "enhanced_intel_speedstep_tech":"platform-default",
-                  "intel_hyperthreading_tech":"disabled",
-  				  "intel_virtualization_technology":"disabled",
-				  "intel_vt_for_directed_io":"disabled",
-				  "cpu_performance":"platform-default",
+                  "enhanced_intel_speedstep_tech": "platform-default",
+                  "intel_hyperthreading_tech": "disabled",
+  				  "intel_virtualization_technology": "disabled",
+				  "intel_vt_for_directed_io": "disabled",
+				  "cpu_performance": "platform-default",
                   "llc_prefetch": "platform-default",
-				  "direct_cache_access":"platform-default",
-                  "power_technology":"platform-default",
-                  "intel_turbo_boost_tech":"platform-default",
+				  "direct_cache_access": "platform-default",
+                  "power_technology": "platform-default",
+                  "intel_turbo_boost_tech": "platform-default",
                   "p_state_coordination": "platform-default",
-                  "energy_performance":"performance",
-                  "processor_c_state":"platform-default",
-                  "processor_c1e":"platform-default",
-				  "processor_c3_report":"platform-default",
-				  "processor_c6_report":"platform-default",
-				  "processor_c7_report":"platform-default",
-                  "package_c_state_limit":"platform-default",
+                  "energy_performance": "performance",
+                  "processor_c_state": "platform-default",
+                  "processor_c1e": "platform-default",
+				  "processor_c3_report": "platform-default",
+				  "processor_c6_report": "platform-default",
+				  "processor_c7_report": "platform-default",
+                  "package_c_state_limit": "platform-default",
                   "energy_performance_tuning": "platform-default",
-                  "cpu_hardware_power_management":"platform-default",
+                  "cpu_hardware_power_management": "platform-default",
                   "workload_configuration": "balanced",
                   "autonomous_core_c_state": "platform-default",
-                  "numa_optimized":"platform-default",
+                  "numa_optimized": "platform-default",
                   "imc_inteleave": "platform-default",
                   "xpt_prefetch": "platform-default",
                   "upi_prefetch": "platform-default",
                   "sub_numa_clustering": "platform-default",
-                  "memory_ras_configuration":"platform-default"
+                  "memory_ras_configuration": "platform-default"
                }
             ]
          }

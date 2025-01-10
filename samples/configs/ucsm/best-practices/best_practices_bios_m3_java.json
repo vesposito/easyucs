@@ -1,41 +1,41 @@
 {
-   "easyucs":{
-      "metadata":[
+   "easyucs": {
+      "metadata": [
          {
             "file_type": "config",
             "device_type": "ucsm",
-            "category":"best-practices",
-            "subcategory":"BIOS",
-            "name":"UCS Manager BIOS Policy for Java Application Server on Cisco UCS M3 Servers",
-            "url":"https://www.cisco.com/c/en/us/products/collateral/servers-unified-computing/ucs-c-series-rack-servers/whitepaper_c11-727827.html",
-            "easyucs_version":"0.9.0",
-            "revision": "1.0"
+            "category": "best-practices",
+            "subcategory": "BIOS",
+            "name": "UCS Manager BIOS Policy for Java Application Server on Cisco UCS M3 Servers",
+            "url": "https://www.cisco.com/c/en/us/products/collateral/servers-unified-computing/ucs-c-series-rack-servers/whitepaper_c11-727827.html",
+            "easyucs_version": "1.0.0",
+            "revision": "1.1"
          }
       ]
    },
-   "config":{
-      "orgs":[
+   "config": {
+      "orgs": [
          {
-            "name":"root",
+            "name": "root",
             "bios_policies": [
                {
-                  "name":"Java-M3",
+                  "name": "Java-M3",
                   "descr": "BIOS Policy for Java Application Server on Cisco UCS M3 Servers",
-                  "intel_turbo_boost_tech":"enabled",
-				  "enhanced_intel_speedstep_tech":"enabled",
-				  "intel_hyperthreading_tech":"enabled",
-				  "core_multi_processing":"platform-default",
-				  "intel_virtualization_technology":"disabled",
-				  "direct_cache_access":"enabled",
-				  "processor_c_state":"enabled",
-				  "processor_c1e":"enabled",
-				  "processor_c3_report":"enabled",
-				  "processor_c6_report":"enabled",
-				  "processor_c7_report":"enabled",
-				  "cpu_performance":"enterprise",
-				  "memory_ras_configuration":"maximum-performance",
-				  "numa_optimized":"enabled",
-				  "lv_ddr_mode":"performance-mode"
+                  "intel_turbo_boost_tech": "enabled",
+				  "enhanced_intel_speedstep_tech": "enabled",
+				  "intel_hyperthreading_tech": "enabled",
+				  "core_multi_processing": "platform-default",
+				  "intel_virtualization_technology": "disabled",
+				  "direct_cache_access": "enabled",
+				  "processor_c_state": "enabled",
+				  "processor_c1e": "enabled",
+				  "processor_c3_report": "enabled",
+				  "processor_c6_report": "enabled",
+				  "processor_c7_report": "enabled",
+				  "cpu_performance": "enterprise",
+				  "memory_ras_configuration": "maximum-performance",
+				  "numa_optimized": "enabled",
+				  "lv_ddr_mode": "performance-mode"
                }
             ]
          }

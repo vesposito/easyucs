@@ -1,38 +1,38 @@
 {
-   "easyucs":{
-      "metadata":[
+   "easyucs": {
+      "metadata": [
          {
             "file_type": "config",
             "device_type": "ucsm",
-            "category":"best-practices",
-            "subcategory":"BIOS",
-            "name":"UCS Manager BIOS Policy for Virtualization on Cisco UCS M3 Servers",
-            "url":"https://www.cisco.com/c/en/us/products/collateral/servers-unified-computing/ucs-c-series-rack-servers/whitepaper_c11-727827.html",
-            "easyucs_version":"0.9.0",
-            "revision": "1.0"
+            "category": "best-practices",
+            "subcategory": "BIOS",
+            "name": "UCS Manager BIOS Policy for Virtualization on Cisco UCS M3 Servers",
+            "url": "https://www.cisco.com/c/en/us/products/collateral/servers-unified-computing/ucs-c-series-rack-servers/whitepaper_c11-727827.html",
+            "easyucs_version": "1.0.0",
+            "revision": "1.1"
          }
       ]
    },
-   "config":{
-      "orgs":[
+   "config": {
+      "orgs": [
          {
-            "name":"root",
+            "name": "root",
             "bios_policies": [
                {
-                  "name":"Virtu-M3",
+                  "name": "Virtu-M3",
                   "descr": "BIOS Policy for Virtualization on Cisco UCS M3 Servers",
-                  "intel_turbo_boost_tech":"enabled",
-				  "enhanced_intel_speedstep_tech":"enabled",
-				  "intel_hyperthreading_tech":"enabled",
-				  "core_multi_processing":"all",
-				  "execute_disable_bit":"enabled",
-				  "intel_virtualization_technology":"enabled",
-				  "direct_cache_access":"enabled",
-				  "cpu_performance":"enterprise",
+                  "intel_turbo_boost_tech": "enabled",
+				  "enhanced_intel_speedstep_tech": "enabled",
+				  "intel_hyperthreading_tech": "enabled",
+				  "core_multi_processing": "all",
+				  "execute_disable_bit": "enabled",
+				  "intel_virtualization_technology": "enabled",
+				  "direct_cache_access": "enabled",
+				  "cpu_performance": "enterprise",
 				  "intel_vt_for_directed_io": "enabled",
-				  "memory_ras_configuration":"maximum-performance",
-				  "numa_optimized":"enabled",
-				  "lv_ddr_mode":"performance-mode"
+				  "memory_ras_configuration": "maximum-performance",
+				  "numa_optimized": "enabled",
+				  "lv_ddr_mode": "performance-mode"
                }
             ]
          }

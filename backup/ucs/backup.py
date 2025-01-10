@@ -19,7 +19,7 @@ class GenericUcsBackup(GenericBackup):
 class UcsSystemBackup(GenericUcsBackup):
     def __init__(self, parent=None, backup_type=None):
         GenericUcsBackup.__init__(self, parent=parent, backup_type=backup_type)
-        self.metadata.backup_file_extension = ".tgz"
+        self.metadata.backup_file_extension = ".bin"
         self.backup_mo = ucsmsdk_MgmtBackup
         self.valid_backup_types = ["full-state", "config-logical", "config-system", "config-all"]
 

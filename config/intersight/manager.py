@@ -7,8 +7,11 @@ import common
 from __init__ import __version__
 
 from config.intersight.config import IntersightConfig
-from config.intersight.settings import IntersightAccountDetails, IntersightOrganization, IntersightResourceGroup, \
-    IntersightRole, IntersightUser, IntersightUserGroup
+from config.intersight.equipment import IntersightFabricInterconnect
+from config.intersight.settings import IntersightAccountDetails, IntersightOrganization, \
+    IntersightResourceGroup, IntersightRole, IntersightUser, IntersightUserGroup
+from config.intersight.pools import IntersightMacPool, IntersightIqnPool, IntersightIpPool, IntersightUuidPool, \
+    IntersightWwnnPool, IntersightWwpnPool
 from config.manager import GenericConfigManager
 
 
@@ -77,6 +80,12 @@ class IntersightConfigManager(GenericConfigManager):
             if getattr(resource_group, "name", None) not in ["License-Standard", "License-Essential",
                                                              "License-Advantage", "License-Premier"]:
                 config.resource_groups.append(IntersightResourceGroup(parent=config, resource_group=resource_group))
+
+        for network_element in config.sdk_objects["network_element"]:
+            if network_element.switch_type == "FabricInterconnect" and network_element.management_mode == "Intersight":
+                if len(config.equipment) == 0:
+                    config.equipment.append({"fabric_interconnects": []})
+                config.equipment[0]["fabric_interconnects"].append(IntersightFabricInterconnect(parent=config, network_element=network_element))
 
         for organization_organization in config.sdk_objects["organization_organization"]:
             config.orgs.append(IntersightOrganization(parent=config,
@@ -185,7 +194,7 @@ class IntersightConfigManager(GenericConfigManager):
         self._get_profiles(config.orgs, profiles)
         return profiles
 
-    def push_config(self, uuid=None, reset=False, bypass_version_checks=False, force=False):
+    def push_config(self, uuid=None, reset=False, bypass_version_checks=False, force=False, push_equipment=False):
         """
         Push the specified config to the live system
         :param uuid: The UUID of the config to be pushed. If not specified, the most recent config will be used
@@ -194,6 +203,8 @@ class IntersightConfigManager(GenericConfigManager):
         :param force: Force the push to proceed even in-case of critical errors. Eg: If we fail to push a source
         shared org then we will continue pushing target orgs (orgs with which the source org is shared)
         if and only if force is true, otherwise we will skip the push of the target orgs.
+        :param push_equipment: Whether the equipment section of the configuration should be pushed alongside the rest of the configuration.
+        that the domain or server profile deployment has been successfully completed.
         :return: True if config push was successful, False otherwise
         """
         if uuid is None:
@@ -280,6 +291,10 @@ class IntersightConfigManager(GenericConfigManager):
             for account_details in config.account_details:
                 is_pushed = account_details.push_object() and is_pushed
 
+            if push_equipment and config.equipment:
+                for fabric_interconnect in config.equipment[0]["fabric_interconnects"]:
+                    is_pushed = fabric_interconnect.push_object() and is_pushed
+
             for role in config.roles:
                 is_pushed = role.push_object() and is_pushed
 
@@ -326,6 +341,13 @@ class IntersightConfigManager(GenericConfigManager):
             for account_details in config_json["account_details"]:
                 config.account_details.append(IntersightAccountDetails(parent=config,
                                                                        iam_account=account_details))
+                
+        if "equipment" in config_json:
+            for key, values in config_json["equipment"][0].items():
+                if len(config.equipment) == 0:
+                    config.equipment.append({key: []})
+                for value in values:
+                    config.equipment[0][key].append(IntersightFabricInterconnect(parent=config, network_element=value))
 
         if "roles" in config_json:
             for role in config_json["roles"]:

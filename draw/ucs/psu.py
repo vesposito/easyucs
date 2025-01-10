@@ -1,15 +1,14 @@
 # coding: utf-8
 # !/usr/bin/env python
 
-""" chassis.py: Easy UCS Deployment Tool """
-from __init__ import __author__, __copyright__,  __version__, __status__
+""" psu.py: Easy UCS Deployment Tool """
 
+from PIL import Image
 
 from draw.object import GenericUcsDrawEquipment
-from PIL import Image, ImageDraw, ImageFont
 
 
-class GenericUcsDrawPsu(GenericUcsDrawEquipment):
+class UcsPsuDraw(GenericUcsDrawEquipment):
     def __init__(self, parent=None, parent_draw=None):
         self.parent_draw = parent_draw
         GenericUcsDrawEquipment.__init__(self, parent=parent)

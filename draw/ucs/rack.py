@@ -2,19 +2,19 @@
 # !/usr/bin/env python
 
 """ rack.py: Easy UCS Deployment Tool """
-from __init__ import __author__, __copyright__,  __version__, __status__
 
+import copy
+
+from PIL import Image, ImageFont
 
 from draw.object import GenericUcsDrawEquipment, UcsSystemDrawInfraEquipment, GenericUcsDrawObject
-from draw.ucs.psu import GenericUcsDrawPsu
-from draw.ucs.storage import UcsSystemDrawStorageController, UcsSystemDrawStorageLocalDisk
-from draw.ucs.adaptor import UcsSystemDrawAdaptor
-from draw.ucs.riser import GenericUcsDrawPcieRiser
+from draw.ucs.adaptor import UcsAdaptorDraw
+from draw.ucs.cpu_module import UcsCpuModuleDraw
 from draw.ucs.mgmt import UcsSystemDrawMgmtInterface
-from draw.ucs.cpu_module import UcsSystemDrawCpuModule
+from draw.ucs.psu import UcsPsuDraw
+from draw.ucs.riser import GenericUcsDrawPcieRiser
+from draw.ucs.storage import UcsStorageControllerDraw, UcsStorageLocalDiskDraw
 from draw.wire import UcsSystemDrawWire
-from PIL import Image, ImageDraw, ImageFont
-import copy
 
 
 class GenericDrawRackFront(GenericUcsDrawObject):
@@ -78,9 +78,9 @@ class GenericDrawRackFront(GenericUcsDrawObject):
         storage_controller_list = []
         for storage_controller in self._parent.storage_controllers:
             # We skip M.2 and internal controllers on racks
-            if storage_controller.type not in ["SAS", "NVME"]:
+            if storage_controller.type not in ["Hba", "HBA", "Raid", "RAID", "SAS", "Nvme", "NVME"]:
                 continue
-            storage_controller_list.append(UcsSystemDrawStorageController(storage_controller, self))
+            storage_controller_list.append(UcsStorageControllerDraw(storage_controller, self))
         # storage_controller_list = remove_not_completed_in_list(storage_controller_list)
         return storage_controller_list
 
@@ -88,7 +88,7 @@ class GenericDrawRackFront(GenericUcsDrawObject):
         cpu_module_list = []
         for cpu in self._parent.cpus:
             if int(cpu.id) % 2:  # We have one CPU Module for two CPUs
-                cpu_module_list.append(UcsSystemDrawCpuModule(cpu, self))
+                cpu_module_list.append(UcsCpuModuleDraw(cpu, self))
         cpu_module_list = [cpu for cpu in cpu_module_list if cpu.picture_size]
         return cpu_module_list
 
@@ -98,13 +98,13 @@ class GenericDrawRackFront(GenericUcsDrawObject):
             # Prevent potential disk with ID 0 to be used in Draw (happens sometimes with B200 M2)
             if disk.id != "0" and disk.slot_type == "sff-nvme":
                 if disk.id in [str(i["id"]) for i in self.json_file["disks_slots"]]:
-                    disk_list.append(UcsSystemDrawStorageLocalDisk(parent=disk, parent_draw=self))
+                    disk_list.append(UcsStorageLocalDiskDraw(parent=disk, parent_draw=self))
                     self.disk_slots_used.append(int(disk.id))
         # TODO: NVMe Disks need rework to prevent having to paste layer each time and integrate it into get_nvme_disks()
         return disk_list
 
 
-class UcsSystemDrawRackFront(GenericDrawRackFront, GenericUcsDrawEquipment):
+class UcsRackDrawFront(GenericDrawRackFront, GenericUcsDrawEquipment):
     def __init__(self, parent=None):
         GenericUcsDrawEquipment.__init__(self, parent=parent, orientation="front")
         if not self.picture:
@@ -129,7 +129,14 @@ class UcsSystemDrawRackFront(GenericDrawRackFront, GenericUcsDrawEquipment):
 
         self.fill_blanks()
 
-        self._file_name = self._device_target + "_rack_" + self._parent.id + "_front"
+        if parent.__class__.__name__ in ["IntersightComputeRackUnit"]:
+            if parent._parent.__class__.__name__ in ["IntersightImmDomain", "IntersightUcsmDomain"]:
+                self._file_name = (self._device_target + "_" + parent._parent.name + "_rack_" +
+                                   str(self._parent.id) + "_front")
+            else:
+                self._file_name = (self._device_target + "_rack_" + str(self._parent.name) + "_front")
+        else:
+            self._file_name = self._device_target + "_rack_" + str(self._parent.id) + "_front"
 
         # We drop the picture in order to save on memory
         self.picture = None
@@ -170,8 +177,8 @@ class GenericDrawRackRear(GenericUcsDrawObject):
     def get_storage_controllers(self):
         storage_controller_list = []
         for storage_controller in self._parent.storage_controllers:
-            if storage_controller.type in ["SAS", "NVME"]:
-                storage_controller_list.append(UcsSystemDrawStorageController(storage_controller, self))
+            if storage_controller.type in ["Hba", "HBA", "Raid", "RAID", "SAS", "Nvme", "NVME"]:
+                storage_controller_list.append(UcsStorageControllerDraw(storage_controller, self))
         # storage_controller_list = remove_not_completed_in_list(storage_controller_list)
         return storage_controller_list
 
@@ -179,7 +186,7 @@ class GenericDrawRackRear(GenericUcsDrawObject):
         psu_list = []
         for psu in self._parent.power_supplies:
             if psu.id != '0':  # UCS PE sometimes adds an invalid PSU with ID 0
-                psu_list.append(GenericUcsDrawPsu(psu, self))
+                psu_list.append(UcsPsuDraw(psu, self))
         # psu_list = remove_not_supported_in_list(psu_list)
         # psu_list = remove_not_completed_in_list(psu_list)
         # We only keep the PSU that have been fully created -> picture
@@ -189,16 +196,17 @@ class GenericDrawRackRear(GenericUcsDrawObject):
     def get_mgmt_if_list(self):
         mgmt_if_list = []
         if "lom_ports" in self.json_file:
-            for mgmt_if in self._parent.mgmt_interfaces:
-                if mgmt_if.id is not None:
-                    mgmt_if_list.append(UcsSystemDrawMgmtInterface(mgmt_if, self))
+            if hasattr(self._parent, "mgmt_interfaces"):
+                for mgmt_if in self._parent.mgmt_interfaces:
+                    if mgmt_if.id is not None:
+                        mgmt_if_list.append(UcsSystemDrawMgmtInterface(mgmt_if, self))
             # mgmt_if_list = remove_not_completed_in_list(mgmt_if_list)
         return mgmt_if_list
 
     def get_pcie_riser_list(self, infra=False):
         pcie_riser_list = []
         self._parent_pcie_risers = None
-        if self._parent.pcie_risers:
+        if hasattr(self._parent, "pcie_risers") and self._parent.pcie_risers:
             self._parent_pcie_risers = self._parent.pcie_risers
 
         # If no PCIe Riser detected
@@ -263,7 +271,7 @@ class GenericDrawRackRear(GenericUcsDrawObject):
         adaptor_list = []
         for adaptor in self._parent.adaptors:
             if adaptor.pci_slot not in ["L", "N/A"]:
-                adaptor_list.append(UcsSystemDrawAdaptor(parent=adaptor, parent_draw=self))
+                adaptor_list.append(UcsAdaptorDraw(parent=adaptor, parent_draw=self))
         # adaptor_list = remove_not_supported_in_list(adaptor_list)
         # adaptor_list = remove_not_completed_in_list(adaptor_list)
         # We only keep the adaptor that have been fully created -> picture
@@ -276,7 +284,7 @@ class GenericDrawRackRear(GenericUcsDrawObject):
             # Prevent potential disk with ID 0 to be used in Draw (happens sometimes with B200 M2)
             if disk.id != "0" and disk.slot_type == "sff-nvme":
                 if disk.id in [str(i["id"]) for i in self.json_file["disks_slots_rear"]]:
-                    disk_list.append(UcsSystemDrawStorageLocalDisk(parent=disk, parent_draw=self))
+                    disk_list.append(UcsStorageLocalDiskDraw(parent=disk, parent_draw=self))
                     self.disk_slots_used.append(int(disk.id))
         return disk_list
 
@@ -299,11 +307,13 @@ class GenericDrawRackRear(GenericUcsDrawObject):
                     if hasattr(slot, "id"):
                         if slot.id == "MLOM":
                             mlom_used_slot.append(1)
-                        else:
+                        elif slot.id.isdigit():
                             mlom_used_slot.append(int(slot.id))
+                        else:
+                            mlom_used_slot.append(1)
                     else:
                         mlom_used_slot.append(1)
-                elif slot.pci_slot.isdigit():
+                elif slot.pci_slot and slot.pci_slot.isdigit():
                     pcie_used_slot.append(int(slot.pci_slot))
 
             for slot in self.json_file["pcie_slots"]:
@@ -458,7 +468,7 @@ class GenericDrawRackRear(GenericUcsDrawObject):
                             self.paste_layer(img, coord_offset)
 
 
-class UcsSystemDrawRackRear(GenericDrawRackRear, GenericUcsDrawEquipment):
+class UcsRackDrawRear(GenericDrawRackRear, GenericUcsDrawEquipment):
     def __init__(self, parent=None, color_ports=True):
         GenericUcsDrawEquipment.__init__(self, parent=parent, orientation="rear")
         self.color_ports = color_ports
@@ -485,13 +495,28 @@ class UcsSystemDrawRackRear(GenericDrawRackRear, GenericUcsDrawEquipment):
                 self.paste_layer(disk.picture, disk.picture_offset)
 
         self.fill_blanks()
-        self._file_name = self._device_target + "_rack_" + self._parent.id + "_rear"
+
+        if parent.__class__.__name__ in ["IntersightComputeRackUnit"]:
+            if parent._parent.__class__.__name__ in ["IntersightImmDomain", "IntersightUcsmDomain"]:
+                self._file_name = (self._device_target + "_" + parent._parent.name + "_rack_" +
+                                   str(self._parent.id) + "_rear")
+            else:
+                self._file_name = self._device_target + "_rack_" + str(self._parent.name) + "_rear"
+        else:
+            self._file_name = self._device_target + "_rack_" + str(self._parent.id) + "_rear"
 
         if not self.color_ports:
-            self._file_name = self._device_target + "_rack_" + self._parent.id + "_rear_clear"
+            if parent.__class__.__name__ in ["IntersightComputeRackUnit"]:
+                if parent._parent.__class__.__name__ in ["IntersightImmDomain", "IntersightUcsmDomain"]:
+                    self._file_name = (self._device_target + "_" + parent._parent.name + "_rack_" +
+                                       str(self._parent.id) + "_rear_clear")
+                else:
+                    self._file_name = self._device_target + "_rack_" + str(self._parent.name) + "_rear_clear"
+            else:
+                self._file_name = self._device_target + "_rack_" + str(self._parent.id) + "_rear_clear"
 
         if self.color_ports:
-            self.clear_version = UcsSystemDrawRackRear(parent=parent, color_ports=False)
+            self.clear_version = UcsRackDrawRear(parent=parent, color_ports=False)
 
         # We drop the picture in order to save on memory
         self.picture = None
@@ -527,15 +552,15 @@ class UcsImcDrawRackRear(GenericDrawRackRear, GenericUcsDrawEquipment):
         self._file_name = self._device_target + "_rack_rear"
 
 
-class UcsSystemDrawInfraRack(UcsSystemDrawInfraEquipment):
+class UcsRackDrawInfra(UcsSystemDrawInfraEquipment):
     def __init__(self, rack, fi_list, fex_list=None, parent=None):
 
         UcsSystemDrawInfraEquipment.__init__(self, parent=parent)
         # Create a copy of the DrawRack
         if 'Rear' in rack.__class__.__name__:
-            self.rack = UcsSystemDrawRackRear(parent=rack._parent)
+            self.rack = UcsRackDrawRear(parent=rack._parent)
         else:
-            self.rack = UcsSystemDrawRackFront(parent=rack._parent)
+            self.rack = UcsRackDrawFront(parent=rack._parent)
 
         self.fi_a = self._get_fi(fi_list, "A")
         self.fi_b = self._get_fi(fi_list, "B")
@@ -552,7 +577,7 @@ class UcsSystemDrawInfraRack(UcsSystemDrawInfraEquipment):
                 elif self.fex_b:
                     self.valid_fex = self.fex_b
                 else:
-                    self.logger(level="warning", message="Infra of rack #" + self.rack._parent.id +
+                    self.logger(level="warning", message="Infra of rack #" + str(self.rack._parent.id) +
                                                          " not saved because FEX presence confirmed "
                                                          "but could not be found")
                     return None
@@ -679,9 +704,13 @@ class UcsSystemDrawInfraRack(UcsSystemDrawInfraEquipment):
 
         # if there is no wire at all, there is no need to save the picture
         if self.wires:
-            self._file_name = self._device_target + "_infra_rack_" + self.rack._parent.id
+            if parent.__class__.__name__ in ["IntersightFi"]:
+                self._file_name = (self._device_target + "_" + parent._parent.name + "_infra_rack_" +
+                                   str(self.rack._parent.id))
+            else:
+                self._file_name = self._device_target + "_infra_rack_" + str(self.rack._parent.id)
         else:
-            self.logger(level="warning", message="Infra of rack #" + self.rack._parent.id +
+            self.logger(level="warning", message="Infra of rack #" + str(self.rack._parent.id) +
                                                  " not saved because no connection between the FI and the rack")
 
         # We drop the picture in order to save on memory
@@ -696,20 +725,22 @@ class UcsSystemDrawInfraRack(UcsSystemDrawInfraEquipment):
                     if "fex" in adapt_port.peer:
                         return True
         # Used to know if a FEX needs to be used for this infra - for connecting rack servers LOM management ports
-        for mgmt_if in self.rack._parent.mgmt_interfaces:
-            if hasattr(mgmt_if, "peer"):
-                if mgmt_if.peer:
-                    if "fex" in mgmt_if.peer:
-                        return True
+        if hasattr(self.rack._parent, "mgmt_interfaces"):
+            for mgmt_if in self.rack._parent.mgmt_interfaces:
+                if hasattr(mgmt_if, "peer"):
+                    if mgmt_if.peer:
+                        if "fex" in mgmt_if.peer:
+                            return True
         return False
 
     def _get_fex(self, list):
         fex_id_list = []
-        for mgmt_if in self.rack._parent.mgmt_interfaces:
-            if hasattr(mgmt_if, "peer"):
-                if mgmt_if.peer:
-                    if "fex" in mgmt_if.peer.keys():
-                        fex_id_list.append(str(mgmt_if.peer["fex"]))
+        if hasattr(self.rack._parent, "mgmt_interfaces"):
+            for mgmt_if in self.rack._parent.mgmt_interfaces:
+                if hasattr(mgmt_if, "peer"):
+                    if mgmt_if.peer:
+                        if "fex" in mgmt_if.peer.keys():
+                            fex_id_list.append(str(mgmt_if.peer["fex"]))
 
         # Handle case where adaptor is connected to FEX, but management interface is not
         if not fex_id_list:
@@ -723,7 +754,7 @@ class UcsSystemDrawInfraRack(UcsSystemDrawInfraEquipment):
         fex_list = [None, None]
         for id in fex_id_list:
             for fex in list:
-                if fex._parent.id == id:
+                if str(fex._parent.id) == id:
                     if fex._parent.switch_id == 'A':
                         fex_list[0] = copy.copy(fex)
                     elif fex._parent.switch_id == 'B':
@@ -763,22 +794,22 @@ class UcsSystemDrawInfraRack(UcsSystemDrawInfraEquipment):
         font_size = 60
         font_title = ImageFont.truetype('arial.ttf', font_size)
         if self.rack._parent.user_label:
-            msg = "Rack #" + self.rack._parent.id + " - " + self.rack._parent.user_label
+            msg = "Rack #" + str(self.rack._parent.id) + " - " + self.rack._parent.user_label
         else:
-            msg = "Rack #" + self.rack._parent.id
+            msg = "Rack #" + str(self.rack._parent.id)
         w = self.draw.textlength(msg, font=font_title)
         # 16 px space between text and equipment
         self.draw.text((round(self.canvas_width / 2 - w / 2), self.rack_offset[1] - (font_size + 16)), msg,
                        fill=fill_color, font=font_title)
         if self.fex_presence:
             if self.fex_a:
-                msg = "Fex #" + self.fex_a._parent.id
+                msg = "Fex #" + str(self.fex_a._parent.id)
                 w = self.draw.textlength(msg, font=font_title)
                 # 16 px space between text and equipment
                 self.draw.text((self.fex_a.picture_size[0] - w, self.fex_a_offset[1] - (font_size + 16)), msg,
                                fill=fill_color, font=font_title)
             if self.fex_b:
-                msg = "Fex #" + self.fex_b._parent.id
+                msg = "Fex #" + str(self.fex_b._parent.id)
                 w = self.draw.textlength(msg, font=font_title)
                 # 16 px space between text and equipment
                 self.draw.text((self.canvas_width - self.fex_b.picture_size[0],
@@ -797,12 +828,12 @@ class UcsSystemDrawInfraRack(UcsSystemDrawInfraEquipment):
                         peer_fex = peer["fex"]
                         if hasattr(self, "fex_a"):
                             if self.fex_a:
-                                if self.fex_a._parent.id == str(peer_fex):
+                                if str(self.fex_a._parent.id) == str(peer_fex):
                                     fex = self.fex_a
                                     fabric = "a"
                         if hasattr(self, "fex_b"):
                             if self.fex_b:
-                                if self.fex_b._parent.id == str(peer_fex):
+                                if str(self.fex_b._parent.id) == str(peer_fex):
                                     fex = self.fex_b
                                     fabric = "b"
                         if not hasattr(self, "fex_a") and not hasattr(self, "fex_b"):
@@ -899,7 +930,7 @@ class UcsSystemDrawInfraRack(UcsSystemDrawInfraEquipment):
                                                                1] + round(port.size[1] / 2)
                                                 peer_port = port
 
-                        self.logger(level="debug", message="Setting wire for rack " + self.rack._parent.id +
+                        self.logger(level="debug", message="Setting wire for rack " + str(self.rack._parent.id) +
                                                            ", width : " + str(wire_width))
                         if point_fi:
                             # draw_wire(self.draw, point_fi, point_rack, wire_color, wire_width)
@@ -925,7 +956,7 @@ class UcsSystemDrawInfraRack(UcsSystemDrawInfraEquipment):
                                 if "-C25Q-04" in adapt_port._parent._parent.sku:
                                     wire_width = self.WIDTH_WIRE_BREAKOUT
                                     if fabric == "a":
-                                        if int(adaptor._parent.id) % 2:
+                                        if adaptor._parent.id.isdigit() and int(adaptor._parent.id) % 2:
                                             if int(adapt_port.id) % 2:
                                                 step = self.WIRE_DISTANCE_SHORT + round(adapt_port.size[1] / 2)
                                             else:
@@ -936,7 +967,7 @@ class UcsSystemDrawInfraRack(UcsSystemDrawInfraEquipment):
                                             else:
                                                 step = self.WIRE_DISTANCE_LONG + round(adapt_port.size[1] / 2)
                                     if fabric == "b":
-                                        if int(adaptor._parent.id) % 2:
+                                        if adaptor._parent.id.isdigit() and int(adaptor._parent.id) % 2:
                                             if int(adapt_port.id) % 2:
                                                 step = - self.WIRE_DISTANCE_LONG - round(adapt_port.size[1] / 2)
                                             else:
@@ -949,13 +980,13 @@ class UcsSystemDrawInfraRack(UcsSystemDrawInfraEquipment):
                                 # for all the non quad port cards
                                 else:
                                     if fabric == "a":
-                                        if int(adaptor._parent.id) % 2:
+                                        if adaptor._parent.id.isdigit() and int(adaptor._parent.id) % 2:
                                         # if (int(adapt_port._parent.port_id) % 2):
                                             step = self.WIRE_DISTANCE_SHORT + round(adapt_port.size[1]/2)
                                         else:
                                             step = self.WIRE_DISTANCE_LONG + round(adapt_port.size[1]/2)
                                     if fabric == "b":
-                                        if int(adaptor._parent.id) % 2:
+                                        if adaptor._parent.id.isdigit() and int(adaptor._parent.id) % 2:
                                             step = - self.WIRE_DISTANCE_LONG - round(adapt_port.size[1]/2)
                                         else:
                                             step = - self.WIRE_DISTANCE_SHORT - round(adapt_port.size[1]/2)
@@ -979,7 +1010,7 @@ class UcsSystemDrawInfraRack(UcsSystemDrawInfraEquipment):
                                     port.size[1] / 2)
                                 peer_port = port
 
-                        self.logger(level="debug", message="Setting wire for rack " + self.rack._parent.id +
+                        self.logger(level="debug", message="Setting wire for rack " + str(self.rack._parent.id) +
                                                            ", width : " + str(wire_width))
                         if point_fex:
                             # draw_wire(self.draw, point_fex, point_rack, wire_color, wire_width)
@@ -1005,7 +1036,7 @@ class UcsSystemDrawInfraRack(UcsSystemDrawInfraEquipment):
                                 if "-C25Q-04" in adapt_port._parent._parent.sku:
                                     wire_width = self.WIDTH_WIRE_BREAKOUT
                                     if fabric == "a":
-                                        if int(adaptor._parent.id) % 2:
+                                        if adaptor._parent.id.isdigit() and int(adaptor._parent.id) % 2:
                                             if int(adapt_port.id) % 2:
                                                 step = self.WIRE_DISTANCE_SHORT + round(adapt_port.size[1] / 2)
                                             else:
@@ -1016,7 +1047,7 @@ class UcsSystemDrawInfraRack(UcsSystemDrawInfraEquipment):
                                             else:
                                                 step = self.WIRE_DISTANCE_LONG + round(adapt_port.size[1] / 2)
                                     if fabric == "b":
-                                        if int(adaptor._parent.id) % 2:
+                                        if adaptor._parent.id.isdigit() and int(adaptor._parent.id) % 2:
                                             if int(adapt_port.id) % 2:
                                                 step = - self.WIRE_DISTANCE_LONG - round(adapt_port.size[1] / 2)
                                             else:
@@ -1029,13 +1060,13 @@ class UcsSystemDrawInfraRack(UcsSystemDrawInfraEquipment):
                                 # for all the non quad port cards
                                 else:
                                     if fabric == "a":
-                                        if int(adaptor._parent.id) % 2:
+                                        if adaptor._parent.id.isdigit() and int(adaptor._parent.id) % 2:
                                         # if (int(adapt_port._parent.port_id) % 2):
                                             step = self.WIRE_DISTANCE_SHORT + round(adapt_port.size[1]/2)
                                         else:
                                             step = self.WIRE_DISTANCE_LONG + round(adapt_port.size[1]/2)
                                     if fabric == "b":
-                                        if int(adaptor._parent.id) % 2:
+                                        if adaptor._parent.id.isdigit() and int(adaptor._parent.id) % 2:
                                             step = - self.WIRE_DISTANCE_LONG - round(adapt_port.size[1]/2)
                                         else:
                                             step = - self.WIRE_DISTANCE_SHORT - round(adapt_port.size[1]/2)
@@ -1137,7 +1168,7 @@ class UcsSystemDrawInfraRack(UcsSystemDrawInfraEquipment):
                                                     port.size[1] / 2)
                                                 peer_port = port
 
-                        self.logger(level="debug", message="Setting wire for FEX " + fex._parent.id +
+                        self.logger(level="debug", message="Setting wire for FEX " + str(fex._parent.id) +
                                                            ", width : " + str(wire_width))
                         if point_fi:
                             # draw_wire(self.draw, point_fi, point_fex, wire_color, wire_width)
@@ -1153,7 +1184,8 @@ class UcsSystemDrawInfraRack(UcsSystemDrawInfraEquipment):
         # Handling wires from mgmt interface to FEX
         if self.fex_presence:
             # Determine if the rack connection to FEX is dual wire mode (shared-lom) or single wire (sideband)
-            if self.rack._parent.mgmt_connection_type == "shared-lom":
+            if hasattr(self.rack._parent, "mgmt_connection_type") and \
+                    self.rack._parent.mgmt_connection_type == "shared-lom":
                 for mgmt_port in self.rack.mgmt_if_list:
                     peer_port_id = mgmt_port.peer['port']
 
@@ -1311,7 +1343,7 @@ class GenericDrawRackEnclosureRear(GenericUcsDrawEquipment):
         psu_list = []
         for psu in self._parent.power_supplies:
             if psu.id != '0':  # UCS PE sometimes adds an invalid PSU with ID 0
-                psu_list.append(GenericUcsDrawPsu(psu, self))
+                psu_list.append(UcsPsuDraw(psu, self))
         # psu_list = remove_not_supported_in_list(psu_list)
         # psu_list = remove_not_completed_in_list(psu_list)
         # We only keep the PSU that have been fully created -> picture
@@ -1447,9 +1479,9 @@ class UcsSystemDrawServerNodeFront(GenericUcsDrawEquipment):
             for storage_controller in self._parent.storage_controllers:
                 # We skip M.2 controllers on M5 server nodes
                 if any(x in self._parent.sku for x in ["M5", "C125"]) and \
-                        (storage_controller.type not in ["SAS", "NVME"]):
+                        (storage_controller.type not in ["Hba", "HBA", "Raid", "RAID", "SAS", "Nvme", "NVME"]):
                     continue
-                storage_controller_list.append(UcsSystemDrawStorageController(storage_controller, self))
+                storage_controller_list.append(UcsStorageControllerDraw(storage_controller, self))
                 # storage_controller_list = remove_not_completed_in_list(storage_controller_list)
         return storage_controller_list
 
@@ -1559,7 +1591,7 @@ class UcsSystemDrawServerNodeRear(GenericUcsDrawEquipment):
         adaptor_list = []
         for adaptor in self._parent.adaptors:
             if adaptor.pci_slot not in ["L", "N/A"]:
-                adaptor_list.append(UcsSystemDrawAdaptor(parent=adaptor, parent_draw=self))
+                adaptor_list.append(UcsAdaptorDraw(parent=adaptor, parent_draw=self))
         # adaptor_list = remove_not_supported_in_list(adaptor_list)
         # adaptor_list = remove_not_completed_in_list(adaptor_list)
         # We only keep the adaptor that have been fully created -> picture

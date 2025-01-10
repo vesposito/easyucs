@@ -200,6 +200,9 @@ function displayDevice(){
         `;
         avatar_src = "/static/img/intersight_logo.png";
         color = "bg-info";
+    } else if (loaded_device.device_type == "imm_domain"){
+        avatar_src = "/static/img/imm_domain_logo.png";
+        color = "bg-success";
     } else if (loaded_device.device_type == "ucsm"){
         avatar_src = "/static/img/ucsm_logo.png";
         color = "bg-primary";

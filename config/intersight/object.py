@@ -120,8 +120,12 @@ class IntersightConfigObject(GenericConfigObject):
                         # We are facing a key attribute that is a reference to an object like fabric.PortPolicy
                         # or vnic.LanConnectivityPolicy. We will use the Moid of that reference as a key
                         # attribute. To do this, we add it to the filter string (like "PortPolicy/Moid eq ...")
-                        filter_str += attribute.object_type.split(".")[-1] + "/Moid eq '" + \
-                            str(attribute.moid) + "' and "
+                        if object_type == "fabric.SpanSession":
+                            filter_str += attribute.object_type.title().replace(".", "") + "/Moid eq '" + \
+                                str(attribute.moid) + "' and "
+                        else:
+                            filter_str += attribute.object_type.split(".")[-1] + "/Moid eq '" + \
+                                str(attribute.moid) + "' and "
                     elif isinstance(getattr(payload, key_attribute), int):
                         filter_str += key_attributes_dict[key_attribute] + " eq " + str(attribute) + " and "
                     else:
@@ -138,8 +142,12 @@ class IntersightConfigObject(GenericConfigObject):
                         for key_attribute in key_attributes:
                             attribute = getattr(payload, key_attribute)
                             if attribute.__class__.__name__ in ["MoMoRef"]:
-                                message_str += attribute.object_type.split(".")[-1] + ".Moid='" + \
-                                    str(attribute.moid) + "' and "
+                                if object_type == "fabric.SpanSession":
+                                    message_str += attribute.object_type.title().replace(".", "") + ".Moid='" + \
+                                        str(attribute.moid) + "' and "
+                                else:
+                                    message_str += attribute.object_type.split(".")[-1] + ".Moid='" + \
+                                        str(attribute.moid) + "' and "
                             else:
                                 message_str += key_attribute + "='" + str(attribute) + "' and "
                         if message_str[-5:] == " and ":

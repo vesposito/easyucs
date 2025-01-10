@@ -141,6 +141,11 @@
       "width": "half"
     },
     {
+      "name": "UCSB-B200-M6",
+      "description": "UCS B200 M6 Blade Server",
+      "width": "half"
+    },
+    {
       "name": "UCSB-B420-M3",
       "description": "UCS B420 M3 Blade Server",
       "width": "full"

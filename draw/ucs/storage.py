@@ -2,13 +2,13 @@
 # !/usr/bin/env python
 
 """ storage.py: Easy UCS Deployment Tool """
-from __init__ import __author__, __copyright__, __version__, __status__
+
+from PIL import Image, ImageFont
 
 from draw.object import GenericUcsDrawEquipment
-from PIL import Image, ImageDraw, ImageFont
 
 
-class GenericUcsDrawStorageEnclosure:
+class UcsStorageEnclosureDraw:
     def __init__(self, parent=None, parent_draw=None):
         self.parent_draw = parent_draw
         self._parent = parent
@@ -20,22 +20,22 @@ class GenericUcsDrawStorageEnclosure:
     def _get_disks(self):
         disk_list = []
         for disk in self._parent.disks:
-            disk_list.append(UcsSystemDrawStorageLocalDisk(parent=disk, parent_draw=self))
+            disk_list.append(UcsStorageLocalDiskDraw(parent=disk, parent_draw=self))
         # disk_list = remove_not_completed_in_list(disk_list)
         return disk_list
 
     def draw_disks(self):
         for disk in self.disks:
-            if self.parent_draw.__class__.__name__ == "GenericUcsDrawBlade":
+            if self.parent_draw.__class__.__name__ == "UcsBladeDrawFront":
                 self.parent_draw.parent_draw.paste_layer(disk.picture, disk.picture_offset)
-            elif self.parent_draw.__class__.__name__ in ["UcsImcDrawChassisRear", "UcsSystemDrawChassisRear"]:
+            elif self.parent_draw.__class__.__name__ in ["UcsImcDrawChassisRear", "UcsChassisDrawRear"]:
                 self.parent_draw.paste_layer(disk.picture, disk.picture_offset)
             # else:
             #     self.parent_draw.paste_layer(disk.picture, disk.picture_offset)
             disk.picture = None
 
 
-class UcsSystemDrawStorageController:
+class UcsStorageControllerDraw:
     def __init__(self, parent=None, parent_draw=None):
         self.parent_draw = parent_draw
         self._parent = parent
@@ -61,14 +61,14 @@ class UcsSystemDrawStorageController:
                     continue
 
             # We handle the internal slot disks present on C480 M5 models
-            if ("DrawRackFront" in self.parent_draw.__class__.__name__) \
+            if (any(x in self.parent_draw.__class__.__name__ for x in ["DrawRackFront", "RackDrawFront"])) \
                     and (self.parent_draw._parent.sku == "UCSC-C480-M5"):
                 if int(disk.id) > 24:
                     continue
 
             # Prevent potential disk with ID 0 to be used in Draw (happens sometimes with B200 M2)
             if disk.id != "0":
-                disk_list.append(UcsSystemDrawStorageLocalDisk(parent=disk, parent_draw=self))
+                disk_list.append(UcsStorageLocalDiskDraw(parent=disk, parent_draw=self))
                 self.parent_draw.disk_slots_used.append(int(disk.id))
         # disk_list = remove_not_completed_in_list(disk_list)
         return disk_list
@@ -76,7 +76,7 @@ class UcsSystemDrawStorageController:
     def draw_disks(self):
         for disk in self.disks:
             if disk.picture is not None:
-                if self.parent_draw.__class__.__name__ == "GenericUcsDrawBlade":
+                if self.parent_draw.__class__.__name__ == "UcsBladeDrawFront":
                     self.parent_draw.parent_draw.paste_layer(disk.picture, disk.picture_offset)
                 else:
                     self.parent_draw.paste_layer(disk.picture, disk.picture_offset)
@@ -121,7 +121,7 @@ class UcsSystemDrawStorageController:
                                     coord = slot["coord"]
                             coord_offset = self.parent_draw.picture_offset[0] + coord[0], \
                                            self.parent_draw.picture_offset[1] + coord[1]
-                            if self.parent_draw.__class__.__name__ == "GenericUcsDrawBlade":
+                            if self.parent_draw.__class__.__name__ == "UcsBladeDrawFront":
                                 self.parent_draw.parent_draw.paste_layer(img, coord_offset)
                             else:
                                 self.parent_draw.paste_layer(img, coord_offset)
@@ -166,7 +166,7 @@ class UcsSystemDrawStorageController:
                             self.parent_draw.paste_layer(img, coord_offset)
 
 
-class UcsSystemDrawStorageLocalDisk(GenericUcsDrawEquipment):
+class UcsStorageLocalDiskDraw(GenericUcsDrawEquipment):
     def __init__(self, parent=None, parent_draw=None):
         self.parent_draw = parent_draw
         self._parent = parent
@@ -230,14 +230,14 @@ class UcsSystemDrawStorageLocalDisk(GenericUcsDrawEquipment):
 
     def _get_picture_offset(self):
         if hasattr(self.parent_draw, "parent_draw"):
-            if self.parent_draw.parent_draw.__class__.__name__ == "GenericUcsDrawBlade":
-                if isinstance(self.parent_draw, GenericUcsDrawStorageEnclosure):
+            if self.parent_draw.parent_draw.__class__.__name__ == "UcsBladeDrawFront":
+                if isinstance(self.parent_draw, UcsStorageEnclosureDraw):
                     if (self.parent_draw.parent_draw._parent.sku == "UCSC-C3X60-SVRNB") \
                             or (self.parent_draw.parent_draw._parent.sku == "UCSC-C3K-M4SRB"):
                         return self.parent_draw.parent_draw.parent_draw.picture_offset[0] + self.disk_info["coord"][0],\
                                self.parent_draw.parent_draw.parent_draw.picture_offset[1] + self.disk_info["coord"][1]
             # For NVMe Disk on a blade
-            elif self.parent_draw.__class__.__name__ == "GenericUcsDrawBlade":
+            elif self.parent_draw.__class__.__name__ == "UcsBladeDrawFront":
                 return self.parent_draw.picture_offset[0] + self.disk_info["coord"][0], \
                        self.parent_draw.picture_offset[1] + self.disk_info["coord"][1]
 
@@ -249,7 +249,7 @@ class UcsSystemDrawStorageLocalDisk(GenericUcsDrawEquipment):
 
     def _get_disk_info(self):
         if hasattr(self.parent_draw, "parent_draw") and self.device_type != "NVME SSD":
-            if "DrawRackRear" in self.parent_draw.parent_draw.__class__.__name__:
+            if any(x in self.parent_draw.parent_draw.__class__.__name__ for x in ["DrawRackRear", "RackDrawRear"]):
                 if any(x in self.parent_draw.parent_draw._parent.sku
                        for x in ["UCSC-C240-M5", "HX240C-M5", "HXAF240C-M5", "UCSC-C240-M5SD", "UCSC-C240-M6",
                                  "UCSC-C245-M6", "UCSC-C240-M7", "UCSC-C245-M8"]):
@@ -275,7 +275,7 @@ class UcsSystemDrawStorageLocalDisk(GenericUcsDrawEquipment):
                     if self.id == disk['id']:
                         return disk
 
-            elif self.parent_draw.parent_draw.__class__.__name__ not in ["UcsSystemDrawChassisFront"] and \
+            elif self.parent_draw.parent_draw.__class__.__name__ not in ["UcsChassisDrawFront"] and \
                     (hasattr(self.parent_draw.parent_draw, "json_file") and "disks_slots" not in
                      self.parent_draw.parent_draw.json_file):
                 return None
@@ -298,7 +298,7 @@ class UcsSystemDrawStorageLocalDisk(GenericUcsDrawEquipment):
 
         # For NVME disks (no storage controller as parent)
         elif hasattr(self, "parent_draw") and self.device_type == "NVME SSD":
-            if "DrawRackRear" in self.parent_draw.__class__.__name__:
+            if any(x in self.parent_draw.__class__.__name__ for x in ["DrawRackRear", "RackDrawRear"]):
                 if any(x in self.parent_draw._parent.sku
                        for x in ["UCSC-C240-M5", "HX240C-M5", "HXAF240C-M5"]):
                     for disk in self.parent_draw.json_file["disks_slots_rear"]:
@@ -316,11 +316,11 @@ class UcsSystemDrawStorageLocalDisk(GenericUcsDrawEquipment):
                         return disk
 
         else:
-            if "DrawRackRear" in self.parent_draw.__class__.__name__:
+            if any(x in self.parent_draw.__class__.__name__ for x in ["DrawRackRear", "RackDrawRear"]):
                 for disk in self.parent_draw.json_file["disks_slots_rear"]:
                     if self.id == disk['id']:
                         return disk
-            elif "DrawRackFront" in self.parent_draw.__class__.__name__:
+            elif any(x in self.parent_draw.__class__.__name__ for x in ["DrawRackFront", "RackDrawFront"]):
                 for disk in self.parent_draw.json_file["disks_slots"]:
                     if self.id == disk['id']:
                         return disk
@@ -333,20 +333,20 @@ class UcsSystemDrawStorageLocalDisk(GenericUcsDrawEquipment):
         warning = False
         fill_color_sku_warning = "red"
         if self.sku is None:
-            if self._parent._parent._parent.__class__.__name__ == "UcsSystemBlade":
+            if self._parent._parent._parent.__class__.__name__ in ["IntersightComputeBlade", "UcsSystemBlade"]:
                 self.logger(level="warning", message="Disk with id " + str(self.id) + " in chassis/blade " +
-                                                     self._parent._parent._parent.id +
+                                                     str(self._parent._parent._parent.id) +
                                                      " has an unknown SKU!")
-            elif self._parent._parent._parent.__class__.__name__ in ["UcsSystemChassis", "UcsImcChassis"]:
+            elif self._parent._parent._parent.__class__.__name__ in ["IntersightChassis", "UcsSystemChassis", "UcsImcChassis"]:
                 self.logger(level="warning",
                             message="Disk with id " + str(self.id) + " in the chassis has an unknown SKU!")
-            elif self._parent._parent.__class__.__name__ in ["UcsImcRack"]:
+            elif self._parent._parent.__class__.__name__ in ["IntersightComputeRackUnit", "UcsImcRack"]:
                 self.logger(level="warning", message="Disk with id " + str(self.id) + " in rack " +
-                                                     self._parent._parent.id +
+                                                     str(self._parent._parent.id) +
                                                      " has an unknown SKU!")
             else:
                 self.logger(level="warning", message="Disk with id " + str(self.id) + " in rack " +
-                                                     self._parent._parent._parent.id +
+                                                     str(self._parent._parent._parent.id) +
                                                      " has an unknown SKU!")
             warning = True
             if self._parent.vendor and self._parent.model:
@@ -355,14 +355,26 @@ class UcsSystemDrawStorageLocalDisk(GenericUcsDrawEquipment):
                 self.sku = "UNKNOWN"
 
         if self.device_type is None:
-            self.logger(level="warning", message="Disk with id " + str(self.id) + " of server " +
-                                                 self._parent._parent.id + " has an unknown device type!")
+            if "StorageController" in self._parent._parent.__class__.__name__:
+                self.logger(level="warning",
+                            message="Disk with id " + str(self.id) + " of server " +
+                                    str(self._parent._parent._parent.id) + " has an unknown device type!")
+            else:
+                self.logger(level="warning",
+                            message="Disk with id " + str(self.id) + " of server " +
+                                    str(self._parent._parent.id) + " has an unknown device type!")
             warning = True
             self.device_type = ""
 
         if self.disk_size is None:
-            self.logger(level="warning", message="Disk with id " + str(self.id) + " of server " +
-                                                 self._parent._parent.id + " has an unknown size!")
+            if "StorageController" in self._parent._parent.__class__.__name__:
+                self.logger(level="warning",
+                            message="Disk with id " + str(self.id) + " of server " +
+                                    str(self._parent._parent._parent.id) + " has an unknown size!")
+            else:
+                self.logger(level="warning",
+                            message="Disk with id " + str(self.id) + " of server " +
+                                    str(self._parent._parent.id) + " has an unknown size!")
             warning = True
             self.disk_size = ""
 

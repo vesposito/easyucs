@@ -244,18 +244,21 @@ class UcsSystemVlan(UcsSystemConfigObject):
                     self.logger(level="error",
                                 message="Unable to get attributes from JSON content for " + self._CONFIG_NAME)
 
-                # We need to set all values that are not present in the config file to None
-                for element in self.lan_uplink_ports:
-                    for value in ["aggr_id", "slot_id", "port_id", "fabric", "native_vlan"]:
-                        if value not in element:
-                            element[value] = None
-
-                for element in self.lan_port_channels:
-                    for value in ["pc_id", "fabric", "native_vlan"]:
-                        if value not in element:
-                            element[value] = None
-
         self.clean_object()
+
+    def clean_object(self):
+        UcsSystemConfigObject.clean_object(self)
+
+        # We need to set all values that are not present in the config file to None
+        for element in self.lan_uplink_ports:
+            for value in ["aggr_id", "slot_id", "port_id", "fabric", "native_vlan"]:
+                if value not in element:
+                    element[value] = None
+
+        for element in self.lan_port_channels:
+            for value in ["pc_id", "fabric", "native_vlan"]:
+                if value not in element:
+                    element[value] = None
 
     def push_object(self, commit=True):
         if commit:
@@ -367,13 +370,16 @@ class UcsSystemLanPinGroup(UcsSystemConfigObject):
                     self.logger(level="error",
                                 message="Unable to get attributes from JSON content for " + self._CONFIG_NAME)
 
-                # We need to set all values that are not present in the config file to None
-                for element in self.interfaces:
-                    for value in ["aggr_id", "slot_id", "port_id", "fabric", "pc_id"]:
-                        if value not in element:
-                            element[value] = None
-
         self.clean_object()
+
+    def clean_object(self):
+        UcsSystemConfigObject.clean_object(self)
+
+        # We need to set all values that are not present in the config file to None
+        for element in self.interfaces:
+            for value in ["aggr_id", "slot_id", "port_id", "fabric", "pc_id"]:
+                if value not in element:
+                    element[value] = None
 
     def push_object(self, commit=True):
         if commit:
@@ -505,18 +511,22 @@ class UcsSystemVlanGroup(UcsSystemConfigObject):
                     self.logger(level="error",
                                 message="Unable to get attributes from JSON content for " + self._CONFIG_NAME)
 
-                # We need to set all values that are not present in the config file to None
-                for element in self.lan_uplink_ports:
-                    for value in ["aggr_id", "slot_id", "port_id", "fabric"]:
-                        if value not in element:
-                            element[value] = None
-
-                for element in self.lan_port_channels:
-                    for value in ["pc_id", "fabric"]:
-                        if value not in element:
-                            element[value] = None
 
         self.clean_object()
+
+    def clean_object(self):
+        UcsSystemConfigObject.clean_object(self)
+
+        # We need to set all values that are not present in the config file to None
+        for element in self.lan_uplink_ports:
+            for value in ["aggr_id", "slot_id", "port_id", "fabric"]:
+                if value not in element:
+                    element[value] = None
+
+        for element in self.lan_port_channels:
+            for value in ["pc_id", "fabric"]:
+                if value not in element:
+                    element[value] = None
 
     def push_object(self, commit=True):
         if commit:
@@ -853,21 +863,24 @@ class UcsSystemIpPool(UcsSystemConfigObject):
                     self.logger(level="error",
                                 message="Unable to get attributes from JSON content for " + self._CONFIG_NAME)
 
-                for element in self.ip_blocks:
-                    for value in ["gateway", "primary_dns", "secondary_dns", "netmask", "to", "from", "size"]:
-                        if value not in element:
-                            element[value] = None
-
-                for element in self.ipv6_blocks:
-                    for value in ["gateway", "primary_dns", "secondary_dns", "prefix", "to", "from", "size"]:
-                        if value not in element:
-                            element[value] = None
-
-                for value in ["assigned", "size"]:
-                    if value not in self.operational_state:
-                        self.operational_state[value] = None
-
         self.clean_object()
+
+    def clean_object(self):
+        UcsSystemConfigObject.clean_object(self)
+
+        for element in self.ip_blocks:
+            for value in ["gateway", "primary_dns", "secondary_dns", "netmask", "to", "from", "size"]:
+                if value not in element:
+                    element[value] = None
+
+        for element in self.ipv6_blocks:
+            for value in ["gateway", "primary_dns", "secondary_dns", "prefix", "to", "from", "size"]:
+                if value not in element:
+                    element[value] = None
+
+        for value in ["assigned", "size"]:
+            if value not in self.operational_state:
+                self.operational_state[value] = None
 
     def push_object(self, commit=True):
         if commit:
@@ -1038,19 +1051,19 @@ class UcsSystemMacPool(UcsSystemConfigObject):
                     self.logger(level="error",
                                 message="Unable to get attributes from JSON content for " + self._CONFIG_NAME)
 
-                for element in self.mac_blocks:
-                    for value in ["to",
-                                  "from",
-                                  "size"
-                                  ]:
-                        if value not in element:
-                            element[value] = None
-
-                for value in ["assigned", "size"]:
-                    if value not in self.operational_state:
-                        self.operational_state[value] = None
-
         self.clean_object()
+
+    def clean_object(self):
+        UcsSystemConfigObject.clean_object(self)
+
+        for element in self.mac_blocks:
+            for value in ["to", "from", "size"]:
+                if value not in element:
+                    element[value] = None
+
+        for value in ["assigned", "size"]:
+            if value not in self.operational_state:
+                self.operational_state[value] = None
 
     def push_object(self, commit=True):
         if commit:
@@ -1693,18 +1706,21 @@ class UcsSystemLanTrafficMonitoringSession(UcsSystemConfigObject):
                     self.logger(level="error",
                                 message="Unable to get attributes from JSON content for " + self._CONFIG_NAME)
 
-                for element in self.destination:
-                    for value in ["aggr_id", "port_id", "slot_id"]:
-                        if value not in element:
-                            element[value] = None
-
-                for element in self.sources:
-                    for value in ["aggr_id", "direction", "fabric", "org", "pc_id", "port_id", "service_profile",
-                                  "slot_id", "source_type", "vhba", "vlan", "vnic"]:
-                        if value not in element:
-                            element[value] = None
-
         self.clean_object()
+
+    def clean_object(self):
+        UcsSystemConfigObject.clean_object(self)
+
+        for element in self.destination:
+            for value in ["aggr_id", "port_id", "slot_id"]:
+                if value not in element:
+                    element[value] = None
+
+        for element in self.sources:
+            for value in ["aggr_id", "direction", "fabric", "org", "pc_id", "port_id", "service_profile",
+                          "slot_id", "source_type", "vhba", "vlan", "vnic"]:
+                if value not in element:
+                    element[value] = None
 
     def push_object(self, commit=True):
         if commit:
@@ -2235,7 +2251,7 @@ class UcsSystemVnicTemplate(UcsSystemConfigObject):
         self.vlan_q_in_q = None
         self.vlans = []
         self.vlan_groups = []
-        self.operational_state = None
+        self.operational_state = {}
 
         if self._config.load_from == "live":
             if vnic_lan_conn_templ is not None:
@@ -2255,7 +2271,6 @@ class UcsSystemVnicTemplate(UcsSystemConfigObject):
                 self.stats_threshold_policy = vnic_lan_conn_templ.stats_policy_name
                 self.network_control_policy = vnic_lan_conn_templ.nw_ctrl_policy_name
                 self.q_in_q = vnic_lan_conn_templ.q_in_q
-                self.operational_state = {}
 
                 # Looking for the connection_policy
                 if "vnicDynamicConPolicyRef" in self._parent._config.sdk_objects and \
@@ -2369,19 +2384,20 @@ class UcsSystemVnicTemplate(UcsSystemConfigObject):
                     self.logger(level="error",
                                 message="Unable to get attributes from JSON content for " + self._CONFIG_NAME)
 
-                for policy in ["dynamic_vnic_connection_policy", "mac_address_pool", "network_control_policy",
-                               "peer_redundancy_template", "qos_policy", "sriov_hpn_connection_policy",
-                               "stats_threshold_policy", "usnic_connection_policy", "vmq_connection_policy"]:
-                    if not self.operational_state:
-                        self.operational_state = {}
-                    if policy not in self.operational_state:
-                        self.operational_state[policy] = None
-                    else:
-                        for value in ["name", "org"]:
-                            if value not in self.operational_state[policy]:
-                                self.operational_state[policy][value] = None
-
         self.clean_object()
+
+    def clean_object(self):
+        UcsSystemConfigObject.clean_object(self)
+
+        for policy in ["dynamic_vnic_connection_policy", "mac_address_pool", "network_control_policy",
+                       "peer_redundancy_template", "qos_policy", "sriov_hpn_connection_policy",
+                       "stats_threshold_policy", "usnic_connection_policy", "vmq_connection_policy"]:
+            if policy not in self.operational_state:
+                self.operational_state[policy] = None
+            elif self.operational_state[policy]:
+                for value in ["name", "org"]:
+                    if value not in self.operational_state[policy]:
+                        self.operational_state[policy][value] = None
 
     def push_object(self, commit=True):
         if commit:
@@ -2692,45 +2708,49 @@ class UcsSystemLanConnectivityPolicy(UcsSystemConfigObject):
                     self.logger(level="error",
                                 message="Unable to get attributes from JSON content for " + self._CONFIG_NAME)
 
-                for element in self.vnics:
-                    for value in ["adapter_policy", "cdn_name", "cdn_source", "dynamic_vnic_connection_policy",
-                                  "fabric", "mac_address", "mac_address_pool", "mtu", "name", "network_control_policy",
-                                  "order", "operational_state", "pin_group", "q_in_q", "qos_policy", "redundancy_pair",
-                                  "sriov_hpn_connection_policy", "stats_threshold_policy", "usnic_connection_policy",
-                                  "vlans", "vlan_groups", "vlan_native", "vlan_q_in_q", "vmq_connection_policy",
-                                  "vnic_template"]:
-                        if value not in element:
-                            element[value] = None
-
-                    for policy in ["adapter_policy", "mac_address_pool", "network_control_policy", "pin_group",
-                                   "qos_policy", "stats_threshold_policy", "vnic_template"]:
-                        if element["operational_state"]:
-                            if policy not in element["operational_state"]:
-                                element["operational_state"][policy] = None
-                            else:
-                                for value in ["name", "org"]:
-                                    if value not in element["operational_state"][policy]:
-                                        element["operational_state"][policy][value] = None
-
-                    # Flagging this as a vNIC
-                    element["_object_type"] = "vnics"
-
-                for element in self.iscsi_vnics:
-                    for value in ["vlan", "mac_address_pool", "overlay_vnic", "name", "iscsi_adapter_policy",
-                                  "operational_state"]:
-                        if value not in element:
-                            element[value] = None
-
-                    if element["operational_state"]:
-                        for policy in ["iscsi_adapter_policy"]:
-                            if policy not in element["operational_state"]:
-                                element["operational_state"][policy] = None
-                            else:
-                                for value in ["name", "org"]:
-                                    if value not in element["operational_state"][policy]:
-                                        element["operational_state"][policy][value] = None
 
         self.clean_object()
+
+    def clean_object(self):
+        UcsSystemConfigObject.clean_object(self)
+
+        for element in self.vnics:
+            for value in ["adapter_policy", "cdn_name", "cdn_source", "dynamic_vnic_connection_policy",
+                          "fabric", "mac_address", "mac_address_pool", "mtu", "name", "network_control_policy",
+                          "order", "operational_state", "pin_group", "q_in_q", "qos_policy", "redundancy_pair",
+                          "sriov_hpn_connection_policy", "stats_threshold_policy", "usnic_connection_policy",
+                          "vlans", "vlan_groups", "vlan_native", "vlan_q_in_q", "vmq_connection_policy",
+                          "vnic_template"]:
+                if value not in element:
+                    element[value] = None
+
+            if element["operational_state"]:
+                for policy in ["adapter_policy", "mac_address_pool", "network_control_policy", "pin_group",
+                               "qos_policy", "stats_threshold_policy", "vnic_template"]:
+                    if policy not in element["operational_state"]:
+                        element["operational_state"][policy] = None
+                    elif element["operational_state"][policy]:
+                        for value in ["name", "org"]:
+                            if value not in element["operational_state"][policy]:
+                                element["operational_state"][policy][value] = None
+
+            # Flagging this as a vNIC
+            element["_object_type"] = "vnics"
+
+        for element in self.iscsi_vnics:
+            for value in ["vlan", "mac_address_pool", "overlay_vnic", "name", "iscsi_adapter_policy",
+                          "operational_state"]:
+                if value not in element:
+                    element[value] = None
+
+            if element["operational_state"]:
+                for policy in ["iscsi_adapter_policy"]:
+                    if policy not in element["operational_state"]:
+                        element["operational_state"][policy] = None
+                    elif element["operational_state"][policy]:
+                        for value in ["name", "org"]:
+                            if value not in element["operational_state"][policy]:
+                                element["operational_state"][policy][value] = None
 
     def push_object(self, commit=True):
         if commit:

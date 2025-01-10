@@ -1,20 +1,21 @@
 {
-  "model_short_name": "VIC 1387",
-  "rear_file_name": "UCSC-MLOM-C40Q-03.png",
-  "rear_file_size": [523,94],
-  "rear_ports": {
-    "x/2": {
-      "port_coord": [82, 22],
-      "port_type": "qsfp+",
-      "port_size": [111, 49]
-    },
-    "x/1": {
-      "port_coord": [209, 22],
-      "port_type": "qsfp+",
-      "port_size": [111, 49]
-    }
-  },
-  "imm_compatible": true,
-  "imm_min_required_version": "4.2(2d)",
-  "data_sheet_url": "https://www.cisco.com/c/en/us/products/collateral/interfaces-modules/unified-computing-system-adapters/datasheet-c78-736683.pdf"
+   "model_short_name": "VIC 1387",
+   "rear_file_name": "UCSC-MLOM-C40Q-03.png",
+   "rear_file_size": [523,94],
+   "rear_ports": {
+      "x/2": {
+         "port_coord": [82, 22],
+         "port_type": "qsfp+",
+         "port_size": [111, 49]
+      },
+      "x/1": {
+         "port_coord": [209, 22],
+         "port_type": "qsfp+",
+         "port_size": [111, 49]
+      }
+   },
+   "imm_compatible": true,
+   "imm_min_required_version": "4.2(2d)",
+   "data_sheet_url": "https://www.cisco.com/c/en/us/products/collateral/interfaces-modules/unified-computing-system-adapters/datasheet-c78-736683.pdf",
+   "adaptor_type": "vic"
 }

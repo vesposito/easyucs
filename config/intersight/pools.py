@@ -300,7 +300,8 @@ class IntersightIpPool(IntersightConfigObject):
             kwargs["ip_v4_config"] = ipv4_config
         if ipv6_config is not None:
             kwargs["ip_v6_config"] = ipv6_config
-        kwargs["enable_block_level_subnet_config"] = self.configure_subnet_at_block_level
+        if self.configure_subnet_at_block_level is not None:
+            kwargs["enable_block_level_subnet_config"] = self.configure_subnet_at_block_level
 
         ippool_pool = IppoolPool(**kwargs)
 

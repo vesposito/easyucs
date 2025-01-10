@@ -999,6 +999,7 @@
       "legacy_values": [
          "auto",
          "disabled",
+         "enabled",
          "platform-default"
       ],
       "maximum": null,
@@ -1011,6 +1012,7 @@
       "values": [
          "Auto",
          "Disabled",
+         "Enabled",
          "Platform Default"
       ]
    },
@@ -1724,6 +1726,29 @@
          "Platform Default"
       ]
    },
+   "df_pstate_frequency_optimizer": {
+      "available_in_legacy_mode": false,
+      "feature_group": "Processor",
+      "legacy_values": [
+         "auto",
+         "disabled",
+         "enabled",
+         "platform-default"
+      ],
+      "maximum": null,
+      "minimum": null,
+      "param_name": "DF PState Frequency Optimizer",
+      "step": null,
+      "target_name": "CbsCmnGnbSMUDffoRs",
+      "type": "enum",
+      "unit": null,
+      "values": [
+         "Auto",
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ]
+   },
    "dfx_osb_configuration": {
       "available_in_legacy_mode": false,
       "feature_group": "DFX OSB Configuration",
@@ -1842,6 +1867,39 @@
          "THREE--3---0-",
          "TWO--1---1-",
          "TWO--2---0-",
+         "Platform Default"
+      ]
+   },
+   "downcore_control_f19_ma0h_afh": {
+      "available_in_legacy_mode": false,
+      "feature_group": "Processor",
+      "legacy_values": [
+         "auto",
+         "eight--4---4-",
+         "four--2---2-",
+         "fourteen--7---7-",
+         "six--3---3-",
+         "ten--5---5-",
+         "twelve--6---6-",
+         "two--1---1-",
+         "platform-default"
+      ],
+      "maximum": null,
+      "minimum": null,
+      "param_name": "Downcore control F19 MA0h-AFh",
+      "step": null,
+      "target_name": "CbsCpuDownCoreCtrlBergamo",
+      "type": "enum",
+      "unit": null,
+      "values": [
+         "Auto",
+         "EIGHT--4---4-",
+         "FOUR--2---2-",
+         "FOURTEEN--7---7-",
+         "SIX--3---3-",
+         "TEN--5---5-",
+         "TWELVE--6---6-",
+         "TWO--1---1-",
          "Platform Default"
       ]
    },
@@ -2282,7 +2340,7 @@
       ],
       "maximum": "2",
       "minimum": "0",
-      "param_name": "Fixed SOC Pstate SP5 F19h",
+      "param_name": "Fixed SOC P-State SP5 F19h",
       "step": "1",
       "target_name": "CbsCmnApbdisDfPstateRs",
       "type": "integer",
@@ -6063,6 +6121,7 @@
       "feature_group": "Scrub Policies",
       "legacy_values": [
          "disabled",
+         "enable-at-end-of-post",
          "enabled",
          "platform-default"
       ],
@@ -6075,6 +6134,7 @@
       "unit": null,
       "values": [
          "Disabled",
+         "Enable-at-End-of-POST",
          "Enabled",
          "Platform Default"
       ]
@@ -9877,6 +9937,7 @@
       "available_in_legacy_mode": false,
       "feature_group": "Processor",
       "legacy_values": [
+         "auto",
          "disabled",
          "enabled",
          "platform-default"
@@ -9889,6 +9950,7 @@
       "type": "enum",
       "unit": null,
       "values": [
+         "Auto",
          "Disabled",
          "Enabled",
          "Platform Default"
@@ -9899,6 +9961,8 @@
       "feature_group": "Processor",
       "legacy_values": [
          "auto",
+         "disabled",
+         "enabled",
          "off",
          "platform-default"
       ],
@@ -9911,6 +9975,8 @@
       "unit": null,
       "values": [
          "Auto",
+         "Disabled",
+         "Enabled",
          "Off",
          "Platform Default"
       ]
@@ -10036,6 +10102,27 @@
       "unit": "Hash byte 7-0",
       "values": [
          "Hex",
+         "Platform Default"
+      ]
+   },
+   "sriov": {
+      "available_in_legacy_mode": false,
+      "feature_group": "Sriov Config",
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "platform-default"
+      ],
+      "maximum": null,
+      "minimum": null,
+      "param_name": "Sriov",
+      "step": null,
+      "target_name": "SrIov",
+      "type": "enum",
+      "unit": null,
+      "values": [
+         "Disabled",
+         "Enabled",
          "Platform Default"
       ]
    },

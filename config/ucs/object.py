@@ -18,25 +18,7 @@ class GenericUcsConfigObject(GenericConfigObject):
     def __init__(self, parent=None):
         GenericConfigObject.__init__(self, parent=parent)
         self._dn = None
-        self._handle = self._config.parent.parent.handle
-
-    def get_attributes_from_json(self, json_content=None):
-        if json_content is None:
-            return False
-
-        for attribute in json_content.keys():
-            if isinstance(json_content[attribute], str):
-                setattr(self, attribute, json_content[attribute])
-            # Support list of values (like for NTP entries)
-            elif isinstance(json_content[attribute], list):
-                setattr(self, attribute, [])
-                for element in json_content[attribute]:
-                    if isinstance(element, (str, dict)):
-                        getattr(self, attribute).append(element)
-            # Support dict of values (like for operational_state)
-            elif isinstance(json_content[attribute], dict):
-                setattr(self, attribute, json_content[attribute])
-        return True
+        self._handle = self._device.handle
 
     def get_operational_state(self, policy_dn="", separator="", policy_name=""):
         """
