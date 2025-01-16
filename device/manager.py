@@ -95,7 +95,7 @@ class DeviceManager:
             self.logger(level="error", message="Missing device_type in device add request!")
             return False
 
-        if device_type not in ["cimc", "imm_domain", "intersight", "ucsc", "ucsm"]:
+        if device_type not in ["cimc", "imm_domain", "imm_domain_fi", "intersight", "ucsc", "ucsm"]:
             self.logger(level="error", message="Device type not recognized. Could not add device")
             return False
 
