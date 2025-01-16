@@ -22,7 +22,7 @@ var api_log_endpoint = '/logs/session';
 var api_orgs_endpoint = '/cache/orgs';
 var repo_download_endpoint = 'http://127.0.0.1:5001/repo';
 var api_repo_files_endpoint = '/repo/files';
-var api_repo_upload_endpoint = '/repo/actions/upload';
+var api_repo_upload_endpoint = '/repo/actions/upload/';
 var api_repo_url_download_endpoint = '/repo/actions/url/download';
 var api_repo_checksum_endpoint = '/repo/actions/checksum';
 
