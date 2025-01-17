@@ -445,8 +445,7 @@ class RepositoryManager:
                 file_update = True
 
         if file_update:
-            with (open(os.path.abspath(os.path.join(EASYUCS_ROOT, self.PROXY_SETTINGS_FILE_NAME)), "w") as
-                  proxy_settings_file):
+            with open(os.path.abspath(os.path.join(EASYUCS_ROOT, self.PROXY_SETTINGS_FILE_NAME)), "w") as proxy_settings_file:
                 for content in ['proxy_password']:
                     if content in file_contents:
                         del file_contents[content]
