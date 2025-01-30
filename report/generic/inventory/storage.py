@@ -14,7 +14,7 @@ class UcsDiskReportTable(UcsReportTable):
         for disk in disks:
             connection_protocol = None
             if hasattr(disk, "link_speed"):
-                if disk.link_speed not in ["unknown", "NA", None]:
+                if disk.link_speed not in ["unknown", "NA", "0", 0, None]:
                     connection_protocol = str(disk.connection_protocol) + ' (' + str(disk.link_speed) + 'Gbps)'
                 else:
                     connection_protocol = str(disk.connection_protocol)

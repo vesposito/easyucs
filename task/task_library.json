@@ -226,6 +226,7 @@
    },
    "CreateVmediaPolicyIntersight": {
       "description": "Create vMedia Policy in Intersight",
+      "device_type": "intersight",
       "steps": [
          {
             "name": "ConnectIntersightDevice",
@@ -247,6 +248,7 @@
    },
    "DeployDomainProfileIntersight": {
       "description": "Assign and Deploy of Domain Profile",
+      "device_type": "intersight",
       "steps": [
          {
             "name": "ConnectIntersightDevice",
@@ -342,6 +344,53 @@
          {
             "name": "DisconnectUcsSystemDevice",
             "optional": true,
+            "order": 3,
+            "weight": 1
+         }
+      ]
+   },
+   "FetchCacheIntersight": {
+      "description": "Fetch cache from Intersight",
+      "device_type": "intersight",
+      "steps": [
+         {
+            "name": "ConnectIntersightDevice",
+            "order": 1,
+            "weight": 1
+         },
+         {
+            "name": "FetchOSFirmwareDataObjectsIntersight",
+            "order": 2,
+            "weight": 1
+         },
+         {
+            "name": "FetchOrgs",
+            "order": 3,
+            "weight": 1
+         },
+         {
+            "name": "DisconnectIntersightDevice",
+            "order": 4,
+            "weight": 1
+         }
+      ]
+   },
+   "FetchCacheUcsSystem": {
+      "description": "Fetch cache from UCS System",
+      "device_type": "ucsm",
+      "steps": [
+         {
+            "name": "ConnectUcsSystemDevice",
+            "order": 1,
+            "weight": 1
+         },
+         {
+            "name": "FetchServerDetails",
+            "order": 2,
+            "weight": 1
+         },
+         {
+            "name": "DisconnectUcsSystemDevice",
             "order": 3,
             "weight": 1
          }
@@ -567,31 +616,6 @@
          }
       ]
    },
-   "FetchIntersightCache": {
-      "description": "Fetch cache from Intersight",
-      "steps": [
-         {
-            "name": "ConnectIntersightDevice",
-            "order": 1,
-            "weight": 1
-         },
-         {
-            "name": "FetchOSFirmwareDataObjectsIntersight",
-            "order": 2,
-            "weight": 1
-         },
-         {
-            "name": "FetchOrgs",
-            "order": 3,
-            "weight": 1
-         },
-         {
-            "name": "DisconnectIntersightDevice",
-            "order": 4,
-            "weight": 1
-         }
-      ]
-   },
    "FetchInventoryImmDomain": {
       "description": "Fetch inventory from IMM Domain",
       "device_type": "imm_domain",
@@ -766,26 +790,6 @@
          }
       ]
    },
-   "FetchUcsSystemCache": {
-      "description": "Fetch cache from UCS Systen",
-      "steps": [
-         {
-            "name": "ConnectUcsSystemDevice",
-            "order": 1,
-            "weight": 1
-         },
-         {
-            "name": "FetchServerDetails",
-            "order": 2,
-            "weight": 1
-         },
-         {
-            "name": "DisconnectUcsSystemDevice",
-            "order": 3,
-            "weight": 1
-         }
-      ]
-   },
    "GenerateReportIntersight": {
       "description": "Generate report for Intersight",
       "device_type": "intersight",
@@ -870,7 +874,7 @@
          }
       ]
    },
-   "InitialSetupUcsm": {
+   "InitialSetupUcsSystem": {
       "description": "Performing Initial Setup of both Fabric Interconnects in UCSM mode",
       "device_type": "ucsm",
       "steps": [
@@ -1223,6 +1227,28 @@
          }
       ]
    },
+   "ResetDeviceConnectorImmDomain": {
+      "description": "Reset IMM Domain Device Connector",
+      "device_type": "imm_domain",
+      "steps": [
+         {
+            "name": "ConnectImmDomainDevice",
+            "order": 1,
+            "weight": 1
+         },
+         {
+            "name": "ResetDeviceConnector",
+            "order": 2,
+            "weight": 1
+         },
+         {
+            "name": "DisconnectImmDomainDevice",
+            "optional": true,
+            "order": 3,
+            "weight": 1
+         }
+      ]
+   },
    "ResetDeviceConnectorUcsImc": {
       "description": "Reset UCS IMC Device Connector",
       "device_type": "cimc",
@@ -1345,13 +1371,13 @@
             "weight": 3
          },
          {
-            "name": "DecommissionAllBladeServers",
+            "name": "DecommissionAllChassis",
             "optional": true,
             "order": 4,
             "weight": 3
          },
          {
-            "name": "DecommissionAllChassis",
+            "name": "DecommissionAllBladeServers",
             "optional": true,
             "order": 5,
             "weight": 3
@@ -1371,6 +1397,7 @@
    },
    "SyncToIntersightSoftwareRepository": {
       "description": "Create Software Repository link in Intersight",
+      "device_type": "intersight",
       "steps": [
          {
             "name": "ConnectIntersightDevice",

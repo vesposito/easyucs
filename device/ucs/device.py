@@ -1034,8 +1034,7 @@ class UcsSystem(GenericUcsDevice):
 
     def reset(self, bypass_version_checks=False, reset_device_connector=False, clear_sel_logs=False,
               decommission_rack_servers=False, decommission_chassis=False, decommission_blade_servers=False,
-              erase_flexflash=False, erase_virtual_drives=False,
-              unregister_from_central=True):
+              erase_flexflash=False, erase_virtual_drives=False, unregister_from_central=True):
         """
         Erases all configuration from the UCS System
         :param bypass_version_checks: Whether the minimum version checks should be bypassed when connecting

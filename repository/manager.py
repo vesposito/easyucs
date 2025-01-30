@@ -16,6 +16,7 @@ from sqlite3 import IntegrityError
 
 import sqlalchemy.exc
 from cryptography.fernet import Fernet
+from packaging.version import Version
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session
 from sqlalchemy.orm import sessionmaker
@@ -1009,6 +1010,37 @@ class RepositoryManager:
 
         # Initializing the config catalog at the end to avoid duplicate catalog records
         self._init_config_catalog()
+
+        return True
+
+    def process_restored_files(self, backup_easyucs_version=None):
+        """
+        Processes files after a restore operation to handle specific upgrade scenarios
+        :param backup_easyucs_version: The EasyUCS backup version
+        :return: True if successful, False otherwise
+        """
+
+        # Delete cache files if EasyUCS backup version is 1.0.0 as the cache structure has changed
+        if Version(backup_easyucs_version) == Version("1.0.0"):
+            device_folder = os.path.join("data", "files", "devices")
+            try:
+                # Traverse each device folder to delete the cache.json file and its folder
+                for device_name in os.listdir(device_folder):
+                    device_path = os.path.join(device_folder, device_name)
+                    cache_folder = os.path.join(device_path, "cache")
+                    cache_file = os.path.join(cache_folder, "cache.json")
+
+                    # Delete cache.json and cache folder if they exist
+                    if os.path.exists(cache_folder):
+                        if os.path.exists(cache_file):
+                            os.remove(cache_file)
+                            self.logger(level="info", message=f"Deleted cache.json for device: {device_name}")
+
+                        os.rmdir(cache_folder)
+                        self.logger(level="info", message=f"Deleted cache folder for device: {device_name}")
+            except Exception as e:
+                self.logger(level="error", message=f"Unexpected error while deleting cache files: {e}")
+                return False
 
         return True
 

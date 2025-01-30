@@ -32,7 +32,7 @@ Minimum versions of UCS devices :
 * UCS Central: ***2.0(1a)*** or above
 * Intersight SaaS ***(no prerequisite)*** & Appliance: ***1.1.1-0*** or above
 
-This tool requires ***Python 3.8+*** to work. *Python 2.x* is not supported.
+This tool requires ***Python 3.9+*** to work. *Python 2.x* is not supported.
 
 Python can be used on Windows, Linux/Unix, Mac OS X and more.
 
@@ -153,6 +153,9 @@ python easyucs.py device reset_device_connector -t ucsm -i 192.168.0.1 -u admin 
 
 
 ## Versioning
+
+### 1.0.1
+* Miscellaneous bug fixes and improvements
 
 ### 1.0.0
 * Add support for Intersight device inventory fetch

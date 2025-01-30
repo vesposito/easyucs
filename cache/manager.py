@@ -49,12 +49,12 @@ class GenericCacheManager:
             logger=self
         )
         if not cache_json:
-            self.logger(level="error", message="Cache JSON file is not available to fill.")
+            self.logger(level="info", message="Cache JSON file is not available to fill.")
             return False
 
         # Fill cache from JSON data
-        if cache_json.get("server_details", None):
-            self.cache.server_details = cache_json["server_details"]
+        if cache_json.get("servers", None):
+            self.cache.server_details = cache_json["servers"]
         if cache_json.get("orgs", None):
             self.cache.orgs = cache_json["orgs"]
         if cache_json.get("os_firmware", None):
@@ -132,7 +132,7 @@ class GenericCacheManager:
         elif cache_key == "orgs":
             cached_data["orgs"] = self.cache.orgs
         elif cache_key == "server_details":
-            cached_data["server_details"] = self.cache.server_details
+            cached_data["servers"] = self.cache.server_details
 
         # Write the updated data back to the cache JSON file
         try:
@@ -179,7 +179,7 @@ class GenericCacheManager:
             self.logger(level="debug", message="Requested cache export format is JSON")
             self.logger(message="Exporting cache to file: " + directory + "/" + filename)
             if getattr(cache, "server_details", None):
-                cache_json["server_details"] = cache.server_details
+                cache_json["servers"] = cache.server_details
             if getattr(cache, "os_firmware_data", None):
                 cache_json["os_firmware"] = cache.os_firmware_data
             if getattr(cache, "orgs", None):

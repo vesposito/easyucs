@@ -177,11 +177,12 @@ class DeviceConnector:
             if self.task is not None:
                 # If the device is already claimed then we skip the task steps SetDeviceConnectorAccessMode and
                 # ConfigureDeviceConnectorProxy, and fail the task step ClaimDeviceToIntersight.
-                self.task.taskstep_manager.skip_taskstep(
-                    name="SetDeviceConnectorAccessMode",
-                    status_message=f"Skipping setting device connector access mode of "
-                                   f"{self.metadata.device_type_long} device {self.name}"
-                )
+                if self.metadata.device_type in ["cimc", "ucsm"]:
+                    self.task.taskstep_manager.skip_taskstep(
+                        name="SetDeviceConnectorAccessMode",
+                        status_message=f"Skipping setting device connector access mode of "
+                                       f"{self.metadata.device_type_long} device {self.name}"
+                    )
                 self.task.taskstep_manager.skip_taskstep(
                     name="ConfigureDeviceConnectorProxy",
                     status_message=f"Skipped configuring device connector proxy of "
@@ -220,14 +221,15 @@ class DeviceConnector:
                 self.reset_device_connector(intersight_device.target)
 
         # Setting the device connector access mode (only for CIMC and UCSM devices)
-        if self.metadata.device_type in ["cimc", "ucsm"] and access_mode:
-            self.set_device_connector_access_mode(access_mode=access_mode)
-        elif self.task is not None:
-            self.task.taskstep_manager.skip_taskstep(
-                name="SetDeviceConnectorAccessMode",
-                status_message=f"Skipping setting device connector access mode of {self.metadata.device_type_long} "
-                               f"device {self.name}"
-            )
+        if self.metadata.device_type in ["cimc", "ucsm"]:
+            if access_mode:
+                self.set_device_connector_access_mode(access_mode=access_mode)
+            elif self.task is not None:
+                self.task.taskstep_manager.skip_taskstep(
+                    name="SetDeviceConnectorAccessMode",
+                    status_message=f"Skipping setting device connector access mode of {self.metadata.device_type_long}"
+                                   f" device {self.name}"
+                )
 
         # Setting the device connector proxy settings
         if proxy_details:
@@ -351,6 +353,8 @@ class DeviceConnector:
             self.task.taskstep_manager.start_taskstep(name="RefreshIntersightClaimStatus",
                                                       description="Refreshing Intersight Device Connector info")
             # We force an update of the Device Connector info
+            # Adding a 5 seconds sleep for the device connector to come up
+            time.sleep(5)
             self._set_device_connector_info(wait_for_connection_status=True, wait_for_claiming=True)
             if self.metadata.device_connector_claim_status == "claimed":
                 self.task.taskstep_manager.stop_taskstep(
@@ -518,8 +522,8 @@ class DeviceConnector:
                                     break
                         else:
                             self.logger(level="error",
-                                        message="Error while checking the device connector connection state:")
-                            break
+                                        message=f"Error while checking the device connector connection state: "
+                                                f"{response.text}")
                     except Exception as err:
                         self.logger(level="error", message="Error while checking the device connector connection state:"
                                                            + str(err))
@@ -546,8 +550,8 @@ class DeviceConnector:
                                     break
                         else:
                             self.logger(level="error",
-                                        message="Error while checking the device connector claim state:")
-                            break
+                                        message=f"Error while checking the device connector claim state: "
+                                                f"{response.text}")
                     except Exception as err:
                         self.logger(level="error",
                                     message="Error while checking the device connector claim state:"

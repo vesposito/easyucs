@@ -1578,6 +1578,21 @@ class IntersightDevice(GenericDevice):
             self.logger(message=f"Starting the assignment of domain profile {domain_profile.name} "
                                 f"to Fabric Interconnect {imm_domain_name}.")
 
+            # Check for missing network elements for FI-A and FI-B, before assignment of domain profile
+            switch_ids = {fi.switch_id for fi in network_elements}
+            missing_switches = {'A', 'B'} - switch_ids
+
+            if missing_switches:
+                self.logger(
+                    level="error",
+                    message=(
+                        f"Cannot proceed with Assignment: The registered device {imm_domain_name} is missing "
+                        f"network elements for the following switches: {', '.join(sorted(missing_switches))}. "
+                        f"Ensure both FI-A and FI-B are properly configured."
+                    )
+                )
+                return False
+
             fabric_api = FabricApi(api_client=self.handle)
 
             if self.task:
@@ -1649,7 +1664,7 @@ class IntersightDevice(GenericDevice):
         except OpenApiException as err:
             self.logger(level="error",
                         message=f"Failed to assign UCS Domain Profile {domain_profile.name} to Fabric Interconnect "
-                                f"{imm_domain_name}.")
+                                f"{imm_domain_name}: {str(err)}")
             if self.task is not None:
                 self.task.taskstep_manager.stop_taskstep(
                     name="AssignDomainProfile", status="failed", status_message=str(err)[:255]
@@ -1688,6 +1703,21 @@ class IntersightDevice(GenericDevice):
                 self.logger(
                     level="error",
                     message=f"Cannot proceed with deployment: The specified organization {org_name} does not exist."
+                )
+                return False
+
+            # Check whether the specified organization associated with the resource group has the necessary permissions
+            # to access the claimed device.
+            has_permission = False
+            for resource_org in registered_devices[0].permission_resources:
+                if resource_org.moid == org[0].moid:
+                    has_permission = True
+                    break
+            if not has_permission:
+                self.logger(
+                    level="error",
+                    message=f"Cannot proceed with deployment: The target IMM domain '{imm_domain_name}' is not part of "
+                            f"any Resource Group assigned to the organization '{org_name}'."
                 )
                 return False
 

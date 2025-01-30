@@ -608,7 +608,7 @@ def perform_action(device=None, action_type="", object_type="", task_uuid=None, 
                            str(intersight_device.name))
         intersight_device.disconnect()
 
-    # In case this is a delete operation, we now need to generate the delete summary report
+    # In case this is a clear_config operation, we now need to generate the delete summary report
     delete_summary = False
     if action_type in ["clear_config"]:
         delete_summary = device.report_manager.generate_report(output_formats=["json"],
@@ -713,6 +713,7 @@ def perform_action(device=None, action_type="", object_type="", task_uuid=None, 
         elif action_type in ["fetch_os_firmware_data"]:
             # We save the OS and Firmware data to the cache
             device.cache_manager.save_to_cache(cache_key="os_firmware")
+
         elif action_type in ["sync_to_software_repository"]:
             # We save software repository link details to reposynctodevice table
 
@@ -1024,7 +1025,7 @@ def device_actions():
             actions = {
                 "imm_domain": {
                     "display_name": "IMM Domain",
-                    "available_actions": ["claim_to_intersight", "reset_device_connector", "test_connection"]
+                    "available_actions": ["claim_to_intersight", "reset", "reset_device_connector", "test_connection"]
                 },
                 "intersight": {
                     "display_name": "Intersight",
@@ -1106,10 +1107,10 @@ def device_actions_add():
 
             # Validating the contents of the CSV file
             for row in device_data_list:
-                if row["Device Type"] not in ["ucsm", "ucsc", "cimc"]:
+                if row["Device Type"] not in ["ucsm", "ucsc", "cimc", "imm_domain"]:
                     response = response_handle(
                         code=400,
-                        response="The device type in CSV file should be ucsm/ucsc/cimc"
+                        response="The device type in CSV file should be ucsm/ucsc/cimc/imm_domain"
                     )
                     return response
 
@@ -1165,6 +1166,10 @@ def device_actions_add():
             for device in device_list:
                 if device.metadata.device_type == "cimc":
                     task_uuid = easyucs.task_manager.add_task(name="TestConnectionUcsImc",
+                                                              device_name=str(device.metadata.name),
+                                                              device_uuid=str(device.metadata.device_uuid))
+                elif device.metadata.device_type == "imm_domain":
+                    task_uuid = easyucs.task_manager.add_task(name="TestConnectionImmDomain",
                                                               device_name=str(device.metadata.name),
                                                               device_uuid=str(device.metadata.device_uuid))
                 elif device.metadata.device_type == "ucsc":
@@ -1360,6 +1365,10 @@ def devices_actions_reset_device_connector():
                         task_uuid = easyucs.task_manager.add_task(name="ResetDeviceConnectorUcsImc",
                                                                   device_name=str(device.name),
                                                                   device_uuid=str(device.uuid))
+                    elif device.metadata.device_type in ["imm_domain"]:
+                        task_uuid = easyucs.task_manager.add_task(name="ResetDeviceConnectorImmDomain",
+                                                                  device_name=str(device.name),
+                                                                  device_uuid=str(device.uuid))
                     elif device.metadata.device_type in ["ucsm"]:
                         task_uuid = easyucs.task_manager.add_task(name="ResetDeviceConnectorUcsSystem",
                                                                   device_name=str(device.name),
@@ -1546,7 +1555,7 @@ def device_uuid_actions(device_uuid):
                                "erase_all_virtual_drives", "erase_all_flexflash", "regenerate_certificate", "reset",
                                "reset_device_connector", "set_all_drives_status", "test_connection"]
                 elif device_type in ["imm_domain"]:
-                    actions = ["claim_to_intersight", "reset_device_connector", "test_connection"]
+                    actions = ["claim_to_intersight", "reset", "reset_device_connector", "test_connection"]
                 elif device_type in ["intersight"]:
                     actions = ["clear_config", "test_connection"]
                 elif device_type in ["ucsc"]:
@@ -1915,7 +1924,7 @@ def devices_uuid_actions_initial_setup(device_uuid):
                                                                   device_name=str(device.name),
                                                                   device_uuid=str(device.uuid))
                     elif device.metadata.device_type == "ucsm":
-                        task_uuid = easyucs.task_manager.add_task(name="InitialSetupUcsm",
+                        task_uuid = easyucs.task_manager.add_task(name="InitialSetupUcsSystem",
                                                                   device_name=str(device.name),
                                                                   device_uuid=str(device.uuid))
                     else:
@@ -2026,6 +2035,8 @@ def device_uuid_actions_reset(device_uuid):
                                                                   device_uuid=str(device.uuid))
                         action_kwargs = {
                             "clear_sel_logs": payload.get("clear_sel_logs", False),
+                            "decommission_blade_servers":  payload.get("decommission_blade_servers", False),
+                            "decommission_chassis":  payload.get("decommission_chassis", True),
                             "decommission_rack_servers":  payload.get("decommission_rack_servers", True),
                             "erase_flexflash": payload.get("erase_flexflash", False),
                             "erase_virtual_drives": payload.get("erase_virtual_drives", False),
@@ -2084,6 +2095,10 @@ def device_uuid_actions_reset_device_connector(device_uuid):
                     # We create a new task
                     if device.metadata.device_type in ["cimc"]:
                         task_uuid = easyucs.task_manager.add_task(name="ResetDeviceConnectorUcsImc",
+                                                                  device_name=str(device.name),
+                                                                  device_uuid=str(device.uuid))
+                    elif device.metadata.device_type in ["imm_domain"]:
+                        task_uuid = easyucs.task_manager.add_task(name="ResetDeviceConnectorImmDomain",
                                                                   device_name=str(device.name),
                                                                   device_uuid=str(device.uuid))
                     elif device.metadata.device_type in ["ucsm"]:
@@ -2528,11 +2543,11 @@ def device_uuid_cache_actions_fetch(device_uuid):
                 try:
                     # We create a new task
                     if device.metadata.device_type in ["intersight"]:
-                        task_uuid = easyucs.task_manager.add_task(name="FetchIntersightCache",
+                        task_uuid = easyucs.task_manager.add_task(name="FetchCacheIntersight",
                                                                   device_name=str(device.name),
                                                                   device_uuid=str(device.uuid))
                     elif device.metadata.device_type in ["ucsm"]:
-                        task_uuid = easyucs.task_manager.add_task(name="FetchUcsSystemCache",
+                        task_uuid = easyucs.task_manager.add_task(name="FetchCacheUcsSystem",
                                                                   device_name=str(device.name),
                                                                   device_uuid=str(device.uuid))
                     else:
@@ -2623,18 +2638,11 @@ def device_uuid_cache_orgs(device_uuid):
                     return response
 
                 cached_orgs = device.cache_manager.cache.get_orgs()
-                if cached_orgs:
-                    response = response_handle(response={"orgs": cached_orgs}, code=200)
+                if cached_orgs.get("orgs", None):
+                    response = response_handle(response={"orgs": cached_orgs["orgs"]}, code=200)
                 else:
-                    default = {
-                        "description": "There are no cached organizations available. "
-                                       "Showing the 'default' organization.",
-                        "is_shared": False,
-                        "resource_groups": [],
-                        "shared_with_orgs": []
-                    }
                     easyucs.logger(level="info", message="No cached orgs were found. Showing the default org.")
-                    response = response_handle(response={"orgs": default}, code=200)
+                    response = response_handle(response={"orgs": cached_orgs}, code=200)
             else:
                 response = response_handle(response="Device not found with UUID: " + device_uuid, code=404)
         except Exception as err:
@@ -3000,7 +3008,6 @@ def device_uuid_config_uuid_actions_push(device_uuid, config_uuid):
                 if "reset" in payload:
                     action_kwargs["reset"] = payload["reset"]
                 action_kwargs["force"] = payload.get("force", False)
-                action_kwargs["push_equipment"] = payload.get("push_equipment", False)
 
             device = load_object(object_type="device", object_uuid=device_uuid)
             if device:
@@ -3024,6 +3031,7 @@ def device_uuid_config_uuid_actions_push(device_uuid, config_uuid):
                             config_uuid=str(config.uuid)
                         )
                     elif device.metadata.device_type in ["intersight"]:
+                        action_kwargs["push_equipment"] = payload.get("push_equipment", False)
                         task_uuid = easyucs.task_manager.add_task(
                             name="PushConfigIntersight", device_name=str(device.name), device_uuid=str(device.uuid),
                             config_uuid=str(config.uuid)
@@ -4286,6 +4294,10 @@ def easyucs_backup_actions_restore():
                 if not error_message:
                     error_message = "Failed to extract and decrypt the backup file. Check logs."
                 return response_handle(code=400, response=error_message)
+
+            # Processes restored files after a restore operation to handle specific upgrade scenarios
+            if not easyucs.repository_manager.process_restored_files(backup_easyucs_version=backup_easyucs_version):
+                return response_handle(code=400, response="Failed to process restored files Check logs.")
 
             # Restoring the key and settings from the backed up files
             if not easyucs.repository_manager.restore_key_and_settings_backup():

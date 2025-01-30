@@ -65,9 +65,17 @@ components:
       type: boolean
       description: True if configuration/inventory is manually edited by a user otherwise False
       example: false
+    decommission_blade_servers:
+      type: boolean
+      description: Whether blade servers should be decommissioned
+      example: true
+    decommission_chassis:
+      type: boolean
+      description: Whether chassis should be decommissioned
+      example: true
     decommission_rack_servers:
       type: boolean
-      description: Decommission all rack servers in UCS domain
+      description: Whether rack servers should be decommissioned
       example: true
     delete_existing_resource_group_memberships_for_intersight_shared_orgs:
       type: boolean
@@ -696,7 +704,6 @@ components:
         enum:
           - clear_sel_logs
           - clear_user_sessions
-          - decommission_all_rack_servers
           - erase_all_virtual_drives
           - erase_all_flexflash
           - regenerate_certificate
@@ -1075,6 +1082,10 @@ components:
           $ref: '#/components/schemas/password'
         clear_sel_logs:
           $ref: '#/components/schemas/clear_sel_logs'
+        decommission_blade_servers:
+          $ref: '#/components/schemas/decommission_blade_servers'
+        decommission_chassis:
+          $ref: '#/components/schemas/decommission_chassis'
         decommission_rack_servers:
           $ref: '#/components/schemas/decommission_rack_servers'
         erase_flexflash:
@@ -2665,6 +2676,8 @@ paths:
                   os_firmware:
                     type: object
                     properties:
+                      timestamp:
+                        $ref: '#/components/schemas/timestamp'
                       os:
                         type: object
                       firmware:
@@ -2680,25 +2693,33 @@ paths:
                               $ref: '#/components/schemas/supported_models'
                             version:
                               $ref: '#/components/schemas/version'
-                  server_details:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        timestamp:
-                          type: string
-                        serial:
-                          type: string
-                        model:
-                          type: string
-                        dn:
-                          type: string
-                        oper_state:
-                          type: string
-                        oper_power:
-                          type: string
+                  servers:
+                    type: object
+                    properties:
+                      timestamp:
+                        $ref: '#/components/schemas/timestamp'
+                      servers:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            serial:
+                              type: string
+                            model:
+                              type: string
+                            dn:
+                              type: string
+                            oper_state:
+                              type: string
+                            oper_power:
+                              type: string
                   orgs:
                     type: object
+                    properties:
+                      timestamp:
+                        $ref: '#/components/schemas/timestamp'
+                      orgs:
+                        $ref: '#/components/schemas/cached_orgs'
                 additionalProperties: false
         '400':
           $ref: '#/components/responses/400ClientError'

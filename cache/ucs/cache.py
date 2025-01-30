@@ -1,6 +1,6 @@
 
 from cache.cache import GenericCache
-import common
+import datetime
 
 
 class UcsSystemCache(GenericCache):
@@ -39,7 +39,6 @@ class UcsSystemCache(GenericCache):
 
             for server in all_servers:
                 server_info = {
-                    "timestamp": common.get_timestamp(),
                     "serial": server.serial,
                     "model": server.model,
                     "dn": server.assigned_to_dn,
@@ -47,9 +46,6 @@ class UcsSystemCache(GenericCache):
                     "oper_power": server.oper_power
                 }
                 servers_list.append(server_info)
-
-            # Update the `server_details` attribute with the collected data
-            self.server_details = servers_list
 
             if self.device.task is not None:
                 self.device.task.taskstep_manager.stop_taskstep(
@@ -68,7 +64,13 @@ class UcsSystemCache(GenericCache):
             )
             return None
 
-        return servers_list
+        servers_info = {
+            "timestamp": datetime.datetime.now().isoformat()[:-3] + 'Z',
+            "servers": servers_list
+        }
+
+        self.server_details = servers_info
+        return servers_info
 
     def get_server_details(self):
         """

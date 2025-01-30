@@ -1,6 +1,6 @@
 
 from cache.cache import GenericCache
-import os
+import datetime
 import common
 from intersight.api.organization_api import OrganizationApi
 from intersight.exceptions import OpenApiException
@@ -11,7 +11,15 @@ class IntersightCache(GenericCache):
         GenericCache.__init__(self, parent=parent)
 
         self.server_details = None
-        self.orgs = {"default": ""}
+        self.orgs = {
+            "default": {
+                "description": "There are no cached organizations available. "
+                               "Showing the 'default' organization.",
+                "is_shared": False,
+                "resource_groups": [],
+                "shared_with_orgs": []
+            }
+        }
         self.os_firmware_data = None
 
     def fetch_server_details(self):
@@ -29,9 +37,7 @@ class IntersightCache(GenericCache):
             self.device.task.taskstep_manager.start_taskstep(name="FetchOrgs",
                                                              description="Fetching Intersight Organizations")
 
-        cached_orgs = {
-            "timestamp": common.get_timestamp(),
-        }
+        cached_orgs = {}
         org_api = OrganizationApi(api_client=self.device.handle)
         try:
             orgs = org_api.get_organization_organization_list(expand="ResourceGroups,SharedWithResources",
@@ -77,13 +83,16 @@ class IntersightCache(GenericCache):
                 if cached_orgs[result.name]["shared_with_orgs"]:
                     cached_orgs[result.name]["is_shared"] = True
 
-        self.orgs = cached_orgs
         if self.device.task is not None:
             self.device.task.taskstep_manager.stop_taskstep(
                 name="FetchOrgs", status="successful",
                 status_message="Successfully fetched Organizations from Intersight")
-
-        return cached_orgs
+        orgs_info = {
+            "timestamp": datetime.datetime.now().isoformat()[:-3] + 'Z',
+            "orgs": cached_orgs
+        }
+        self.orgs = orgs_info
+        return orgs_info
 
     def fetch_os_firmware_data(self):
         """
@@ -95,7 +104,7 @@ class IntersightCache(GenericCache):
                                                              description="Fetching OS and Firmware Objects")
 
         result = {
-            "timestamp": common.get_timestamp(),
+            "timestamp": datetime.datetime.now().isoformat()[:-3] + 'Z',
             "os": {},
             "firmware": []
         }
