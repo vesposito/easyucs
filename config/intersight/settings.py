@@ -17,6 +17,7 @@ from config.intersight.pools import (
     IntersightIqnPool,
     IntersightMacPool,
     IntersightResourcePool,
+    IntersightServerPoolQualificationPolicy,
     IntersightUuidPool,
     IntersightWwnnPool,
     IntersightWwpnPool,
@@ -57,11 +58,13 @@ from config.intersight.server_policies import (
     IntersightLanConnectivityPolicy,
     IntersightLdapPolicy,
     IntersightLocalUserPolicy,
+    IntersightMemoryPolicy,
     IntersightNetworkConnectivityPolicy,
     IntersightNtpPolicy,
     IntersightPersistentMemoryPolicy,
     IntersightPowerPolicy,
     IntersightSanConnectivityPolicy,
+    IntersightScrubPolicy,
     IntersightSdCardPolicy,
     IntersightSerialOverLanPolicy,
     IntersightSmtpPolicy,
@@ -334,6 +337,7 @@ class IntersightOrganization(IntersightConfigObject):
         "link_control_policies": "Link Control Policies",
         "local_user_policies": "Local User Policies",
         "mac_pools": "MAC Pools",
+        "memory_policies": "Memory Policy",
         "multicast_policies": "Multicast Policies",
         "network_connectivity_policies": "Network Connectivity Policies",
         "ntp_policies": "NTP Policies",
@@ -342,8 +346,10 @@ class IntersightOrganization(IntersightConfigObject):
         "power_policies": "Power Policies",
         "resource_pools": "Resource Pools",
         "san_connectivity_policies": "SAN Connectivity Policies",
+        "scrub_policies": "Scrub Policies",
         "sd_card_policies": "SD Card Policies",
         "serial_over_lan_policies": "Serial Over LAN Policies",
+        "server_pool_qualification_policies": "Server Pool Qualification Policies",
         "smtp_policies": "SMTP Policies",
         "snmp_policies": "SNMP Policies",
         "ssh_policies": "SSH Policies",
@@ -614,6 +620,11 @@ class IntersightOrganization(IntersightConfigObject):
             object_class=IntersightNetworkConnectivityPolicy,
             name_to_fetch="network_connectivity_policies",
         )
+        self.memory_policies = self._get_generic_element(
+            json_content=organization_organization,
+            object_class=IntersightMemoryPolicy,
+            name_to_fetch="memory_policies",
+        )
         self.ntp_policies = self._get_generic_element(
             json_content=organization_organization,
             object_class=IntersightNtpPolicy,
@@ -629,6 +640,11 @@ class IntersightOrganization(IntersightConfigObject):
             object_class=IntersightSanConnectivityPolicy,
             name_to_fetch="san_connectivity_policies",
         )
+        self.scrub_policies = self._get_generic_element(
+            json_content=organization_organization,
+            object_class=IntersightScrubPolicy,
+            name_to_fetch="scrub_policies",
+        )
         self.sd_card_policies = self._get_generic_element(
             json_content=organization_organization,
             object_class=IntersightSdCardPolicy,
@@ -638,6 +654,11 @@ class IntersightOrganization(IntersightConfigObject):
             json_content=organization_organization,
             object_class=IntersightSerialOverLanPolicy,
             name_to_fetch="serial_over_lan_policies",
+        )
+        self.server_pool_qualification_policies = self._get_generic_element(
+            json_content=organization_organization,
+            object_class=IntersightServerPoolQualificationPolicy,
+            name_to_fetch="server_pool_qualification_policies",
         )
         self.smtp_policies = self._get_generic_element(
             json_content=organization_organization,
@@ -890,17 +911,18 @@ class IntersightOrganization(IntersightConfigObject):
         # We push all subconfig elements, in a specific optimized order
         # TODO: Verify order
         objects_to_push_in_order = [
-            'ip_pools', 'iqn_pools', 'mac_pools', 'resource_pools', 'uuid_pools', 'wwnn_pools', 'wwpn_pools',
-            'flow_control_policies', 'link_aggregation_policies', 'link_control_policies', 'switch_control_policies',
-            'system_qos_policies', 'multicast_policies', 'vlan_policies', 'vsan_policies', 'local_user_policies',
-            'adapter_configuration_policies', 'bios_policies', 'boot_policies', 'certificate_management_policies',
-            'device_connector_policies', 'drive_security_policies', 'ethernet_adapter_policies',
-            'ethernet_network_control_policies', 'ethernet_network_group_policies', 'ethernet_network_policies',
-            'ethernet_qos_policies', 'fc_zone_policies', 'fibre_channel_adapter_policies',
+            'ip_pools', 'iqn_pools', 'mac_pools', 'server_pool_qualification_policies', 'resource_pools', 'uuid_pools',
+            'wwnn_pools', 'wwpn_pools', 'flow_control_policies', 'link_aggregation_policies', 'link_control_policies',
+            'switch_control_policies', 'system_qos_policies', 'multicast_policies', 'vlan_policies', 'vsan_policies',
+            'local_user_policies', 'adapter_configuration_policies', 'bios_policies', 'boot_policies',
+            'certificate_management_policies', 'device_connector_policies', 'drive_security_policies',
+            'ethernet_adapter_policies', 'ethernet_network_control_policies', 'ethernet_network_group_policies',
+            'ethernet_network_policies', 'ethernet_qos_policies', 'fc_zone_policies', 'fibre_channel_adapter_policies',
             'fibre_channel_network_policies', 'fibre_channel_qos_policies', 'firmware_policies', 'imc_access_policies',
             'ipmi_over_lan_policies', 'iscsi_adapter_policies', 'iscsi_static_target_policies', 'iscsi_boot_policies',
-            'ldap_policies', 'network_connectivity_policies', 'ntp_policies', 'persistent_memory_policies',
-            'power_policies', 'sd_card_policies', 'serial_over_lan_policies', 'smtp_policies', 'snmp_policies',
+            'ldap_policies', 'memory_policies', 'network_connectivity_policies', 'ntp_policies',
+            'persistent_memory_policies', 'power_policies', 'scrub_policies', 'sd_card_policies',
+            'serial_over_lan_policies', 'smtp_policies', 'snmp_policies',
             'ssh_policies', 'storage_policies', 'syslog_policies', 'thermal_policies', 'virtual_kvm_policies',
             'virtual_media_policies', 'vnic_templates', 'lan_connectivity_policies', 'vhba_templates',
             'san_connectivity_policies', 'port_policies', 'ucs_domain_profile_templates', 'ucs_domain_profiles',

@@ -518,6 +518,7 @@ class IntersightEthAdapterPolicyReportTable(UcsReportTable):
             ["Organization", eth_adapter_policy._parent.name],
             ["Enable VXLAN Offload", eth_adapter_policy.enable_vxlan_offload],
             ["Enable NVGRE Offload", eth_adapter_policy.enable_nvgre_offload],
+            ["Enable EtherChannel Pinning", eth_adapter_policy.enable_etherchannel_pinning],
             [
                 "Enable Accelerated Receive Flow Steering",
                 eth_adapter_policy.enable_accelerated_receive_flow_steering,
@@ -1933,7 +1934,9 @@ class IntersightLanConnectivityPolicyVnicsReportTable(UcsReportTable):
             rows.append(["Ethernet Adapter Policy", vnic["ethernet_adapter_policy"]])
         if vnic.get("ethernet_network_control_policy"):
             rows.append(["Ethernet Network Control Policy", vnic["ethernet_network_control_policy"]])
-        if vnic.get("ethernet_network_group_policy"):
+        if vnic.get("ethernet_network_group_policies"):
+            rows.append(["Ethernet Network Group Policies", ', '.join(vnic["ethernet_network_group_policies"])])
+        elif vnic.get("ethernet_network_group_policy"):  # Deprecated
             rows.append(["Ethernet Network Group Policy", vnic["ethernet_network_group_policy"]])
         if vnic.get("ethernet_qos_policy"):
             rows.append(["Ethernet QoS Policy", vnic["ethernet_qos_policy"]])
@@ -2172,6 +2175,73 @@ class IntersightLocalUserPolicyUserReportTable(UcsReportTable):
         )
 
 
+class IntersightMemoryPoliciesReportSection(UcsReportSection):
+    def __init__(self, order_id, parent, title="Memory Policies"):
+        UcsReportSection.__init__(self, order_id=order_id, parent=parent, title=title)
+        config = self.report.config
+
+        memory_policies_list = []
+        # Searching for all Memory Policies
+        for org in config.orgs:
+            self.parse_org(org, memory_policies_list, element_to_parse="memory_policies")
+
+        if memory_policies_list:
+            for memory_policy in memory_policies_list:
+                self.content_list.append(
+                    IntersightMemoryPolicyReportSection(
+                        order_id=self.report.get_current_order_id(),
+                        parent=self,
+                        memory_policy=memory_policy,
+                        title="Memory Policy " + memory_policy.name,
+                    )
+                )
+        else:
+            text = "No Memory Policies found."
+            self.content_list.append(
+                GenericReportText(
+                    order_id=self.report.get_current_order_id(),
+                    parent=self,
+                    string=text,
+                    italicized=True,
+                )
+            )
+
+
+class IntersightMemoryPolicyReportSection(UcsReportSection):
+    def __init__(self, order_id, parent, memory_policy, title=""):
+        UcsReportSection.__init__(self, order_id=order_id, parent=parent, title=title)
+
+        self.content_list.append(
+            IntersightMemoryPolicyReportTable(
+                order_id=self.report.get_current_order_id(),
+                parent=self,
+                centered=True,
+                memory_policy=memory_policy
+            )
+        )
+
+
+class IntersightMemoryPolicyReportTable(UcsReportTable):
+    def __init__(self, order_id, parent, memory_policy, centered=False):
+        rows = [
+            ["Description", "Value"],
+            ["Name", memory_policy.name],
+            ["Description", memory_policy.descr],
+            ["Organization", memory_policy._parent.name],
+            ["Enable DIMM Blocklisting", memory_policy.enable_dimm_blocklisting]
+        ]
+
+        UcsReportTable.__init__(
+            self,
+            order_id=order_id,
+            parent=parent,
+            row_number=len(rows),
+            column_number=len(rows[0]),
+            centered=centered,
+            cells_list=rows,
+        )
+
+
 class IntersightNetworkConnectivityPoliciesReportSection(UcsReportSection):
     def __init__(self, order_id, parent, title="Network Connectivity Policies"):
         UcsReportSection.__init__(self, order_id=order_id, parent=parent, title=title)
@@ -2376,6 +2446,7 @@ class IntersightPowerPolicyReportTable(UcsReportTable):
             ["Power Profiling", power_policy.power_profiling],
             ["Power Priority", power_policy.power_priority],
             ["Power Restore", power_policy.power_restore],
+            ["Processor Package Power Limit", power_policy.processor_package_power_limit]
         ]
 
         UcsReportTable.__init__(
@@ -2538,6 +2609,74 @@ class IntersightSanConnectivityPolicyVhbasReportTable(UcsReportTable):
         )
 
 
+class IntersightScrubPoliciesReportSection(UcsReportSection):
+    def __init__(self, order_id, parent, title="Scrub Policies"):
+        UcsReportSection.__init__(self, order_id=order_id, parent=parent, title=title)
+        config = self.report.config
+
+        scrub_policies_list = []
+
+        for org in config.orgs:
+            self.parse_org(org, scrub_policies_list, element_to_parse="scrub_policies")
+
+        if scrub_policies_list:
+            for scrub_policy in scrub_policies_list:
+                self.content_list.append(
+                    IntersightScrubPolicyReportSection(
+                        order_id=self.report.get_current_order_id(),
+                        parent=self,
+                        scrub_policy=scrub_policy,
+                        title="Scrub Policy " + scrub_policy.name,
+                    )
+                )
+        else:
+            text = "No Scrub Policies found."
+            self.content_list.append(
+                GenericReportText(
+                    order_id=self.report.get_current_order_id(),
+                    parent=self,
+                    string=text,
+                    italicized=True,
+                )
+            )
+
+
+class IntersightScrubPolicyReportSection(UcsReportSection):
+    def __init__(self, order_id, parent, scrub_policy, title=""):
+        UcsReportSection.__init__(self, order_id=order_id, parent=parent, title=title)
+
+        self.content_list.append(
+            IntersightScrubPolicyReportTable(
+                order_id=self.report.get_current_order_id(),
+                parent=self,
+                centered=True,
+                scrub_policy=scrub_policy,
+            )
+        )
+
+
+class IntersightScrubPolicyReportTable(UcsReportTable):
+    def __init__(self, order_id, parent, scrub_policy, centered=False):
+
+        rows = [
+            ["Description", "Value"],
+            ["Name", scrub_policy.name],
+            ["Description", scrub_policy.descr],
+            ["Disk Scrub", scrub_policy.disk ],
+            ["BIOS Settings Scrub", scrub_policy.bios]
+        ]
+
+        UcsReportTable.__init__(
+            self,
+            order_id=order_id,
+            parent=parent,
+            row_number=len(rows),
+            column_number=len(rows[0]),
+            centered=centered,
+            cells_list=rows,
+        )
+
+
 class IntersightSdCardPoliciesReportSection(UcsReportSection):
     def __init__(self, order_id, parent, title="SD Card Policies"):
         UcsReportSection.__init__(self, order_id=order_id, parent=parent, title=title)
@@ -2602,6 +2741,510 @@ class IntersightSdCardPolicyReportTable(UcsReportTable):
                         rows.append(["Enable Virtual Drive", virtual_drive["enable"]])
                         rows.append(["Virtual Drive Name", virtual_drive["name"]])
                         rows.append(["Virtual Drive Type", virtual_drive["object_type"]])
+
+        UcsReportTable.__init__(
+            self,
+            order_id=order_id,
+            parent=parent,
+            row_number=len(rows),
+            column_number=len(rows[1]),
+            centered=centered,
+            cells_list=rows,
+        )
+
+
+class IntersightServerPoolQualificationPoliciesReportSection(UcsReportSection):
+    def __init__(self, order_id, parent, title="Server Pool Qualification Policies"):
+        UcsReportSection.__init__(self, order_id=order_id, parent=parent, title=title)
+        config = self.report.config
+
+        server_pool_qualification_policies_list = []
+        # Searching for all Ethernet Adapter Policies
+        for org in config.orgs:
+            self.parse_org(org, server_pool_qualification_policies_list,
+                           element_to_parse="server_pool_qualification_policies")
+
+        if server_pool_qualification_policies_list:
+            for server_pool_qualification_policy in server_pool_qualification_policies_list:
+                self.content_list.append(
+                    IntersightServerPoolQualificationPolicyReportSection(
+                        order_id=self.report.get_current_order_id(),
+                        parent=self,
+                        server_pool_qualification_policy=server_pool_qualification_policy,
+                        title="Server Pool Qualification Policy " + server_pool_qualification_policy.name,
+                    )
+                )
+        else:
+            text = "No Server Pool Qualification Policies found."
+            self.content_list.append(
+                GenericReportText(
+                    order_id=self.report.get_current_order_id(),
+                    parent=self,
+                    string=text,
+                    italicized=True,
+                )
+            )
+
+
+class IntersightServerPoolQualificationPolicyReportSection(UcsReportSection):
+    def __init__(self, order_id, parent, server_pool_qualification_policy, title=""):
+        UcsReportSection.__init__(self, order_id=order_id, parent=parent, title=title)
+
+        self.content_list.append(
+            IntersightServerPoolQualificationPolicyReportTable(
+                order_id=self.report.get_current_order_id(),
+                parent=self,
+                centered=True,
+                server_pool_qualification_policy=server_pool_qualification_policy,
+            )
+        )
+
+        if server_pool_qualification_policy.domain_qualifiers:
+            self.content_list.append(
+                GenericReportText(
+                    order_id=self.report.get_current_order_id(),
+                    parent=self,
+                    string="\nDomain Qualifiers:",
+                    bolded=True,
+                )
+            )
+
+            self.content_list.append(
+                IntersightServerPoolQualificationPolicyDomainQualifiersReportTable(
+                    order_id=self.report.get_current_order_id(),
+                    parent=self,
+                    centered=True,
+                    domain_qualifiers=server_pool_qualification_policy.domain_qualifiers,
+                )
+            )
+
+        if server_pool_qualification_policy.hardware_qualifiers:
+            if server_pool_qualification_policy.hardware_qualifiers.get("memory_qualifier"):
+                memory_qualifier = server_pool_qualification_policy.hardware_qualifiers["memory_qualifier"]
+                self.content_list.append(
+                    GenericReportText(
+                        order_id=self.report.get_current_order_id(),
+                        parent=self,
+                        string="\nHardware Qualifiers: Memory Qualifier",
+                        bolded=True,
+                    )
+                )
+                self.content_list.append(
+                    IntersightServerPoolQualificationPolicyMemoryQualifierReportTable(
+                        order_id=self.report.get_current_order_id(),
+                        parent=self,
+                        centered=True,
+                        memory_qualifier=memory_qualifier,
+                    )
+                )
+            if server_pool_qualification_policy.hardware_qualifiers.get("gpu_qualifier"):
+                gpu_qualifier = server_pool_qualification_policy.hardware_qualifiers["gpu_qualifier"]
+                self.content_list.append(
+                    GenericReportText(
+                        order_id=self.report.get_current_order_id(),
+                        parent=self,
+                        string="\nHardware Qualifiers: GPU Qualifier",
+                        bolded=True,
+                    )
+                )
+                self.content_list.append(
+                    IntersightServerPoolQualificationPolicyGpuQualifierReportTable(
+                        order_id=self.report.get_current_order_id(),
+                        parent=self,
+                        centered=True,
+                        gpu_qualifier=gpu_qualifier,
+                    )
+                )
+            if server_pool_qualification_policy.hardware_qualifiers.get("cpu_qualifier"):
+                cpu_qualifier = server_pool_qualification_policy.hardware_qualifiers["cpu_qualifier"]
+                self.content_list.append(
+                    GenericReportText(
+                        order_id=self.report.get_current_order_id(),
+                        parent=self,
+                        string="\nHardware Qualifiers: CPU Qualifier",
+                        bolded=True,
+                    )
+                )
+                self.content_list.append(
+                    IntersightServerPoolQualificationPolicyCpuQualifierReportTable(
+                        order_id=self.report.get_current_order_id(),
+                        parent=self,
+                        centered=True,
+                        cpu_qualifier=cpu_qualifier,
+                    )
+                )
+            if server_pool_qualification_policy.hardware_qualifiers.get("network_adapter_qualifier"):
+                network_adapter_qualifier = (
+                    server_pool_qualification_policy.hardware_qualifiers["network_adapter_qualifier"])
+                self.content_list.append(
+                    GenericReportText(
+                        order_id=self.report.get_current_order_id(),
+                        parent=self,
+                        string="\nHardware Qualifiers: Network Adapter Qualifier",
+                        bolded=True,
+                    )
+                )
+                self.content_list.append(
+                    IntersightServerPoolQualificationPolicyNetworkAdapterQualifierReportTable(
+                        order_id=self.report.get_current_order_id(),
+                        parent=self,
+                        centered=True,
+                        network_adapter_qualifier=network_adapter_qualifier,
+                    )
+                )
+
+        if server_pool_qualification_policy.tag_qualifiers:
+            self.content_list.append(
+                GenericReportText(
+                    order_id=self.report.get_current_order_id(),
+                    parent=self,
+                    string="\nTag Qualifiers:",
+                    bolded=True,
+                )
+            )
+
+            self.content_list.append(
+                IntersightServerPoolQualificationPolicyTagQualifiersReportTable(
+                    order_id=self.report.get_current_order_id(),
+                    parent=self,
+                    centered=True,
+                    tag_qualifiers=server_pool_qualification_policy.tag_qualifiers,
+                )
+            )
+
+        if server_pool_qualification_policy.server_qualifiers:
+
+            if server_pool_qualification_policy.server_qualifiers.get("rack_server_qualifier"):
+                rack_server_qualifier = server_pool_qualification_policy.server_qualifiers["rack_server_qualifier"]
+                self.content_list.append(
+                    GenericReportText(
+                        order_id=self.report.get_current_order_id(),
+                        parent=self,
+                        string="\nRack Server Qualifier:",
+                        bolded=True,
+                    )
+                )
+                self.content_list.append(
+                    IntersightServerPoolQualificationPolicyRackServerQualifierReportTable(
+                        order_id=self.report.get_current_order_id(),
+                        parent=self,
+                        centered=True,
+                        rack_server_qualifier=rack_server_qualifier,
+                    )
+                )
+                if rack_server_qualifier.get("rack_ids"):
+                    self.content_list.append(
+                        GenericReportText(
+                            order_id=self.report.get_current_order_id(),
+                            parent=self,
+                            string="\nRack Server Qualifier: Rack IDs",
+                            bolded=True,
+                        )
+                    )
+
+                    for rack_id in rack_server_qualifier["rack_ids"]:
+                        self.content_list.append(
+                            IntersightServerPoolQualificationPolicyRackServerQualifierRackIDsReportTable(
+                                order_id=self.report.get_current_order_id(),
+                                parent=self,
+                                centered=True,
+                                rack_ids=rack_id,
+                            )
+                        )
+
+            if server_pool_qualification_policy.server_qualifiers.get("blade_server_qualifier"):
+                blade_server_qualifier = server_pool_qualification_policy.server_qualifiers["blade_server_qualifier"]
+                self.content_list.append(
+                    GenericReportText(
+                        order_id=self.report.get_current_order_id(),
+                        parent=self,
+                        string="\nBlade Server Qualifier:",
+                        bolded=True,
+                    )
+                )
+
+                self.content_list.append(
+                    IntersightServerPoolQualificationPolicyBladeServerQualifierReportTable(
+                        order_id=self.report.get_current_order_id(),
+                        parent=self,
+                        centered=True,
+                        blade_server_qualifier=blade_server_qualifier,
+                    )
+                )
+                if blade_server_qualifier.get("chassis_slot_ids"):
+                    self.content_list.append(
+                        GenericReportText(
+                            order_id=self.report.get_current_order_id(),
+                            parent=self,
+                            string="\nBlade Server Qualifier: Chassis and Slot IDs",
+                            bolded=True,
+                        )
+                    )
+                    for chassis_slot_id in blade_server_qualifier["chassis_slot_ids"]:
+                        if chassis_slot_id.get("chassis_ids"):
+                            self.content_list.append(
+                                IntersightServerPoolQualificationPolicyBladeServerQualifierChassisIDsReportTable(
+                                    order_id=self.report.get_current_order_id(),
+                                    parent=self,
+                                    centered=True,
+                                    chassis_ids=chassis_slot_id["chassis_ids"]
+                                )
+                            )
+                        if chassis_slot_id.get("slot_ids"):
+                            for slot_id in chassis_slot_id["slot_ids"]:
+                                self.content_list.append(
+                                    IntersightServerPoolQualificationPolicyBladeServerQualifierSlotIDsReportTable(
+                                        order_id=self.report.get_current_order_id(),
+                                        parent=self,
+                                        centered=True,
+                                        slot_id=slot_id,
+                                    )
+                                )
+
+
+class IntersightServerPoolQualificationPolicyReportTable(UcsReportTable):
+    def __init__(self, order_id, parent, server_pool_qualification_policy, centered=False):
+
+        rows = [
+            ["Description", "Value"],
+            ["Name", server_pool_qualification_policy.name],
+            ["Description", server_pool_qualification_policy.descr],
+            ["Organization", server_pool_qualification_policy._parent.name]
+        ]
+
+        UcsReportTable.__init__(
+            self,
+            order_id=order_id,
+            parent=parent,
+            row_number=len(rows),
+            column_number=len(rows[1]),
+            centered=centered,
+            cells_list=rows,
+        )
+
+
+class IntersightServerPoolQualificationPolicyDomainQualifiersReportTable(UcsReportTable):
+    def __init__(self, order_id, parent, domain_qualifiers, centered=False):
+
+        rows = [
+            ["Description", "Value"],
+            ["Domain Names", domain_qualifiers.get("domain_names")],
+            ["Fabric Interconnect PIDs", domain_qualifiers.get("fabric_interconnect_pids")]
+
+        ]
+
+        UcsReportTable.__init__(
+            self,
+            order_id=order_id,
+            parent=parent,
+            row_number=len(rows),
+            column_number=len(rows[1]),
+            centered=centered,
+            cells_list=rows,
+        )
+
+
+class IntersightServerPoolQualificationPolicyRackServerQualifierReportTable(UcsReportTable):
+    def __init__(self, order_id, parent, rack_server_qualifier, centered=False):
+
+        rows = [
+            ["Description", "Value"],
+            ["Asset Tags", rack_server_qualifier.get("asset_tags")],
+            ["Rack PIDs", rack_server_qualifier.get("rack_pids")],
+            ["User Labels", rack_server_qualifier.get("user_labels")]
+        ]
+
+        UcsReportTable.__init__(
+            self,
+            order_id=order_id,
+            parent=parent,
+            row_number=len(rows),
+            column_number=len(rows[1]),
+            centered=centered,
+            cells_list=rows,
+        )
+
+
+class IntersightServerPoolQualificationPolicyRackServerQualifierRackIDsReportTable(UcsReportTable):
+    def __init__(self, order_id, parent, rack_ids, centered=False):
+
+        rows = [
+            ["Description", "Value"],
+            ["Rack ID From", rack_ids.get("rack_id_from")],
+            ["Rack ID To", rack_ids.get("rack_id_to")]
+        ]
+
+        UcsReportTable.__init__(
+            self,
+            order_id=order_id,
+            parent=parent,
+            row_number=len(rows),
+            column_number=len(rows[1]),
+            centered=centered,
+            cells_list=rows,
+        )
+
+
+class IntersightServerPoolQualificationPolicyBladeServerQualifierReportTable(UcsReportTable):
+    def __init__(self, order_id, parent, blade_server_qualifier, centered=False):
+
+        rows = [
+            ["Description", "Value"],
+            ["Asset Tags", blade_server_qualifier.get("asset_tags")],
+            ["Blade PIDs", blade_server_qualifier.get("rack_pids")],
+            ["Chassis PIDs", blade_server_qualifier.get("chassis_pids")],
+            ["User Labels", blade_server_qualifier.get("user_labels")]
+        ]
+
+        UcsReportTable.__init__(
+            self,
+            order_id=order_id,
+            parent=parent,
+            row_number=len(rows),
+            column_number=len(rows[1]),
+            centered=centered,
+            cells_list=rows,
+        )
+
+
+class IntersightServerPoolQualificationPolicyBladeServerQualifierChassisIDsReportTable(UcsReportTable):
+    def __init__(self, order_id, parent, chassis_ids, centered=False):
+
+        rows = [
+            ["Description", "Value"],
+            ["Chassis ID From", chassis_ids.get("chassis_id_from")],
+            ["Chassis ID To", chassis_ids.get("chassis_id_to")]
+        ]
+
+        UcsReportTable.__init__(
+            self,
+            order_id=order_id,
+            parent=parent,
+            row_number=len(rows),
+            column_number=len(rows[1]),
+            centered=centered,
+            cells_list=rows,
+        )
+
+
+class IntersightServerPoolQualificationPolicyBladeServerQualifierSlotIDsReportTable(UcsReportTable):
+    def __init__(self, order_id, parent, slot_id, centered=False):
+
+        rows = [
+            ["Description", "Value"],
+            ["Slot ID From", slot_id.get("slot_id_from")],
+            ["Slot ID To", slot_id.get("slot_id_to")]
+        ]
+
+        UcsReportTable.__init__(
+            self,
+            order_id=order_id,
+            parent=parent,
+            row_number=len(rows),
+            column_number=len(rows[1]),
+            centered=centered,
+            cells_list=rows,
+        )
+
+
+class IntersightServerPoolQualificationPolicyTagQualifiersReportTable(UcsReportTable):
+    def __init__(self, order_id, parent, tag_qualifiers, centered=False):
+
+        rows = [
+            ["Description", "Value"],
+            ["Chassis Tags", tag_qualifiers.get("chassis_tags")],
+            ["Domain Profile Tags", tag_qualifiers.get("domain_profile_tags")],
+            ["Server Tags", tag_qualifiers.get("server_tags")]
+        ]
+
+        UcsReportTable.__init__(
+            self,
+            order_id=order_id,
+            parent=parent,
+            row_number=len(rows),
+            column_number=len(rows[1]),
+            centered=centered,
+            cells_list=rows,
+        )
+
+
+class IntersightServerPoolQualificationPolicyMemoryQualifierReportTable(UcsReportTable):
+    def __init__(self, order_id, parent, memory_qualifier, centered=False):
+
+        rows = [
+            ["Description", "Value"],
+            ["Capacity Minimum", memory_qualifier.get("capacity_minimum")],
+            ["Capacity Maximum", memory_qualifier.get("capacity_maximum")],
+            ["Number of Units Minimum", memory_qualifier.get("number_of_units_minimum")],
+            ["Number of Units Maximum", memory_qualifier.get("number_of_units_maximum")]
+        ]
+
+        UcsReportTable.__init__(
+            self,
+            order_id=order_id,
+            parent=parent,
+            row_number=len(rows),
+            column_number=len(rows[1]),
+            centered=centered,
+            cells_list=rows,
+        )
+
+
+class IntersightServerPoolQualificationPolicyGpuQualifierReportTable(UcsReportTable):
+    def __init__(self, order_id, parent, gpu_qualifier, centered=False):
+
+        rows = [
+            ["Description", "Value"],
+            ["GPU PIDs", gpu_qualifier.get("gpu_pids")],
+            ["GPU Evaluation Type", gpu_qualifier.get("gpu_evaluation_type")],
+            ["Number of GPUs Minimum", gpu_qualifier.get("number_of_gpus_minimum")],
+            ["Number of Gpus Maximum", gpu_qualifier.get("number_of_gpus_maximum")],
+            ["Vendor", gpu_qualifier.get("vendor")]
+        ]
+
+        UcsReportTable.__init__(
+            self,
+            order_id=order_id,
+            parent=parent,
+            row_number=len(rows),
+            column_number=len(rows[1]),
+            centered=centered,
+            cells_list=rows,
+        )
+
+
+class IntersightServerPoolQualificationPolicyCpuQualifierReportTable(UcsReportTable):
+    def __init__(self, order_id, parent, cpu_qualifier, centered=False):
+
+        rows = [
+            ["Description", "Value"],
+            ["CPU PIDs", cpu_qualifier.get("cpu_pids")],
+            ["Number of Cores Minimum", cpu_qualifier.get("number_of_cores_minimum")],
+            ["Number of Cores Maximum", cpu_qualifier.get("number_of_cores_maximum")],
+            ["Speed Minimum", cpu_qualifier.get("speed_minimum")],
+            ["Speed Maximum", cpu_qualifier.get("speed_maximum")],
+            ["Vendor", cpu_qualifier.get("vendor")]
+        ]
+
+        UcsReportTable.__init__(
+            self,
+            order_id=order_id,
+            parent=parent,
+            row_number=len(rows),
+            column_number=len(rows[1]),
+            centered=centered,
+            cells_list=rows,
+        )
+
+
+class IntersightServerPoolQualificationPolicyNetworkAdapterQualifierReportTable(UcsReportTable):
+    def __init__(self, order_id, parent, network_adapter_qualifier, centered=False):
+
+        rows = [
+            ["Description", "Value"],
+            ["Number of Network Adapters Minimum", network_adapter_qualifier.get("number_of_network_adapters_minimum")],
+            ["Number of Network Adapters Maximum", network_adapter_qualifier.get("number_of_network_adapters_maximum")]
+        ]
 
         UcsReportTable.__init__(
             self,
@@ -2839,8 +3482,10 @@ class IntersightStoragePolicyReportTable(UcsReportTable):
             ["Name", storage_policy.name],
             ["Description", storage_policy.descr],
             ["Organization", storage_policy._parent.name],
-            ["Use JBOD for VD Creation", storage_policy.use_jbod_for_vd_creation],
+            ["Use JBOD drives for VD Creation", storage_policy.use_jbod_for_vd_creation],
             ["Unused Disks State", storage_policy.unused_disks_state],
+            ["Default Drive State", storage_policy.default_drive_state],
+            ["Secure JBOD Disk Slots", storage_policy.secure_jbod_disk_slots],
             ["Global Hot Spares", storage_policy.global_hot_spares],
         ]
 
@@ -2960,8 +3605,8 @@ class IntersightStoragePolicyHybridSlotConfigReportTable(UcsReportTable):
 
         rows = [
             ["Description", "Value"],
-            ["Direct Attached NVMe Slots", hybrid_slot_config.get("direct_attached_nvme_slots")],
-            ["RAID Attached NVMe Slots", hybrid_slot_config.get("raid_attached_nvme_slots")]
+            ["Controller Attached NVMe Slots", hybrid_slot_config.get("controller_attached_nvme_slots")],
+            ["Direct Attached NVMe Slots", hybrid_slot_config.get("direct_attached_nvme_slots")]
         ]
 
         UcsReportTable.__init__(

@@ -1,0 +1,60 @@
+{
+   "id": "intersight_config_equipment_imm_domains#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS intersight config equipment imm_domains section",
+   "description": "EasyUCS intersight config equipment imm_domains section JSON schema",
+   "type": "object",
+   "properties": {
+      "comment": {
+         "description": "IMM Domain Comments",
+         "type": "string",
+         "default": ""
+      },
+      "name": {
+         "description": "IMM Domain Name",
+         "type": "string",
+         "default": ""
+      },
+      "chassis": {
+         "description": "EasyUCS config/equipment/imm_domains/chassis section",
+         "type": "array",
+         "items": {
+            "description": "EasyUCS config/equipment/imm_domains/chassis element",
+            "type": "object",
+            "$ref": "imm_domains/chassis.json"
+         },
+         "minItems": 1
+      },
+      "fabric_extenders": {
+         "description": "EasyUCS config/equipment/imm_domains/fabric_extenders section",
+         "type": "array",
+         "items": {
+            "description": "EasyUCS config/equipment/imm_domains/fabric_extenders element",
+            "type": "object",
+            "$ref": "imm_domains/fabric_extenders.json"
+         },
+         "minItems": 1
+      },
+      "fabric_interconnects": {
+         "description": "EasyUCS config/equipment/imm_domains/fabric_interconnects section",
+         "type": "array",
+         "items": {
+            "description": "EasyUCS config/equipment/imm_domains/fabric_interconnects element",
+            "type": "object",
+            "$ref": "imm_domains/fabric_interconnects.json"
+         },
+         "minItems": 1      
+      },
+      "rack_units": {
+         "description": "EasyUCS config/equipment/imm_domains/rack_units section",
+         "type": "array",
+         "items": {
+            "description": "EasyUCS config/equipment/imm_domains/rack_units element",
+            "type": "object",
+            "$ref": "imm_domains/rack_units.json"
+         },
+         "minItems": 1      
+      }
+   },
+   "additionalProperties": false
+}

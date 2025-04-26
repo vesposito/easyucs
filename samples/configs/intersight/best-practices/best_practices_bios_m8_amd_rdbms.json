@@ -1,0 +1,47 @@
+{
+   "easyucs": {
+      "metadata": [
+         {
+            "file_type": "config",
+            "device_type": "intersight",
+            "category": "best-practices",
+            "subcategory": "BIOS",
+            "name": "Intersight BIOS Policy for RDBMS on Cisco UCS M8 AMD Servers",
+            "url": "https://www.cisco.com/c/en/us/products/collateral/servers-unified-computing/ucs-c-series-rack-servers/ucs-c245-m8-rack-ser-4th-gen-amd-epyc-pro-wp.html",
+            "easyucs_version": "1.0.2",
+            "revision": "1.0"
+         }
+      ]
+   },
+   "config": {
+      "orgs": [
+         {
+            "name": "default",
+            "bios_policies": [
+               {
+                  "name": "RDBMS-M8-AMD",
+                  "descr": "BIOS Policy for RDBMS on Cisco UCS M8 AMD Servers",
+                  "cbs_cpu_smt_ctrl": "enabled",
+                  "svm_mode": "platform-default",
+                  "cbs_cmn_gnb_smu_df_cstates": "disabled",
+                  "cbs_df_cmn_acpi_srat_l3numa": "Auto",
+                  "cbs_cmn_apbdis": "1",
+                  "cbs_cmn_fixed_soc_pstate": "Auto",
+                  "cbs_df_cmn4link_max_xgmi_speed": "Auto",
+                  "cpu_perf_enhancement": "Disabled",
+                  "cbs_df_cmn_dram_nps": "NPS4",
+                  "cbs_cmn_gnb_nb_iommu": "Auto",
+                  "cbs_df_cmn_mem_intlv": "Auto",
+                  "cbs_cmn_cpu_cpb": "Auto",
+                  "cbs_cmn_cpu_global_cstate_ctrl": "Auto",
+                  "cbs_cmn_cpu_l1stream_hw_prefetcher": "Auto",
+                  "cbs_cmn_cpu_l2stream_hw_prefetcher": "Auto",
+                  "cbs_cmn_determinism_slider": "Auto",
+                  "cbs_cmn_gnb_smucppc": "Auto",
+                  "cbs_cmn_efficiency_mode_en_rs": "Maximum IO Performance Mode"
+               }
+            ]
+         }
+      ]
+   }
+}

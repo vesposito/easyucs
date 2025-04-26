@@ -9,6 +9,62 @@
          }
       ]
    },
+   "ChangeModeToIntersightUcsSystem": {
+      "description": "Changes the UCS domain management mode from UCS Manager to Intersight Managed Mode.",
+      "device_type": "ucsm",
+      "steps": [
+         {
+            "name": "ConnectUcsSystemDevice",
+            "order": 1,
+            "weight": 1
+         },
+         {
+            "name": "ResetDeviceConnector",
+            "optional": true,
+            "order": 2,
+            "weight": 1
+         },
+         {
+            "name": "DecommissionAllRackServers",
+            "optional": true,
+            "order": 3,
+            "weight": 3
+         },
+         {
+            "name": "DecommissionAllChassis",
+            "optional": true,
+            "order": 4,
+            "weight": 3
+         },
+         {
+            "name": "DecommissionAllBladeServers",
+            "optional": true,
+            "order": 5,
+            "weight": 3
+         },
+         {
+            "name": "ChangeModeToIntersight",
+            "order": 6,
+            "weight": 1
+         },
+         {
+            "name": "WaitForRebootAfterChangeModeUcsSystem",
+            "order": 7,
+            "weight": 10
+         },
+         {
+            "name": "ConnectImmDomainDevice",
+            "order": 8,
+            "weight": 1
+         },
+         {
+            "name": "DisconnectImmDomainDevice",
+            "optional": true,
+            "order": 9,
+            "weight": 1
+         }
+      ]
+   },
    "ClaimToIntersightImmDomain": {
       "description": "Claim IMM Domain device to Intersight",
       "device_type": "imm_domain",
@@ -948,23 +1004,31 @@
          },
          {
             "name": "PushOrgsSectionIntersight",
+            "optional": true,
             "order": 3,
             "weight": 10
          },
          {
             "name": "PushAdminSectionIntersight",
+            "optional": true,
             "order": 4,
             "weight": 2
          },
          {
-            "name": "DisconnectIntersightDevice",
+            "name": "PushEquipmentSectionIntersight",
             "optional": true,
             "order": 5,
             "weight": 1
          },
          {
-            "name": "GenerateReportDevice",
+            "name": "DisconnectIntersightDevice",
+            "optional": true,
             "order": 6,
+            "weight": 1
+         },
+         {
+            "name": "GenerateReportDevice",
+            "order": 7,
             "weight": 1
          }
       ]

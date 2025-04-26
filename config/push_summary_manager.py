@@ -161,9 +161,11 @@ class PushSummaryManager:
                 # This implies that commit() was not called for this EasyUCS object. Very unlikely to happen.
                 if getattr(current_object, "name", None):
                     push_summary_pointer["name"] = current_object.name
-                push_summary_pointer["push_status"] = "not_committed"
-                push_summary_pointer["easyucs_object_type"] = current_object.__class__.__name__
-                push_summary_pointer["easyucs_object_name"] = current_object._CONFIG_NAME
+                # We do not include the push status for sections Equipment and IMM Domain.
+                if current_object.__class__.__name__ not in ["IntersightEquipment", "IntersightImmDomain"]:
+                    push_summary_pointer["push_status"] = "not_committed"
+                    push_summary_pointer["easyucs_object_type"] = current_object.__class__.__name__
+                    push_summary_pointer["easyucs_object_name"] = current_object._CONFIG_NAME
 
             for attribute in sorted(vars(current_object)):
                 if not attribute.startswith('_') and not attribute == "dn" \

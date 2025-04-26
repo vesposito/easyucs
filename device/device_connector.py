@@ -132,6 +132,15 @@ class DeviceConnector:
                         self.task.taskstep_manager.stop_taskstep(name="ConfigureDeviceConnectorProxy",
                                                                  status="successful", status_message=message)
                     self.logger(level="info", message=message)
+
+                    # EASYUCS-1575: We add some delay after setting the device connector proxy settings to let it
+                    # potentially self-upgrade. There is no easy way to determine whether a Device Connector is about
+                    # to self-upgrade, so it is best to give it some time before trying to claim it.
+                    self.logger(level="debug",
+                                message="Pausing for 10 seconds to let Device Connector potentially perform " +
+                                        "self-upgrade after proxy configuration")
+                    time.sleep(10)
+
                     return True
                 else:
                     err_message = (f"Failed to configure device connector proxy of {self.metadata.device_type_long}"
@@ -290,7 +299,7 @@ class DeviceConnector:
             except (ApiValueError, ApiTypeError, ApiException) as err:
 
                 message_str = (f"Error while claiming {self.metadata.device_type_long} {self.name} to "
-                               f"{intersight_device.metadata.device_type_long} to "
+                               f"{intersight_device.metadata.device_type_long} "
                                f"{intersight_device.target}: {str(err)}")
                 self.logger(level="error", message=message_str)
                 if self.task is not None:
@@ -330,8 +339,8 @@ class DeviceConnector:
 
             except (ApiValueError, ApiTypeError, ApiException) as err:
                 message_str = (f"Error while claiming {self.metadata.device_type_long} {self.name} to "
-                               f"{intersight_device.metadata.device_type_long} to "
-                               f"{intersight_device.target}: {str(err)}")
+                               f"{intersight_device.metadata.device_type_long} "
+                               f"{intersight_device.name}: {str(err)}")
                 self.logger(level="error", message=message_str)
                 if self.task is not None:
                     self.task.taskstep_manager.stop_taskstep(
@@ -521,15 +530,24 @@ class DeviceConnector:
                                                                       f"{resp.get('ConnectionState')}")
                                     break
                         else:
-                            self.logger(level="error",
-                                        message=f"Error while checking the device connector connection state: "
-                                                f"{response.text}")
+                            self.logger(level="debug",
+                                        message=f"Checking device connector connection state... Attempt {count + 1}/12."
+                                                f" Received response: {response.text}")
                     except Exception as err:
                         self.logger(level="error", message="Error while checking the device connector connection state:"
                                                            + str(err))
-                        break
+                        return False
                     time.sleep(10)
                     count += 1
+
+                # If the action still fails after 12 retries, return False
+                response = requests.get(uri, verify=False, headers=auth_header)
+                if response.status_code != 200:
+                    self.logger(level="error",
+                                message=f"After multiple attempts, Error while checking the device connector "
+                                        f"connection state: {response.text}")
+
+                    return False
 
             # We add this to handle an intermittent issue where the claim to intersight taskstep was done
             # successfully but refresh device connector status info failed because the device connector claim state
@@ -549,16 +567,25 @@ class DeviceConnector:
                                     self.logger(level="info", message=f"Device is claimed")
                                     break
                         else:
-                            self.logger(level="error",
-                                        message=f"Error while checking the device connector claim state: "
-                                                f"{response.text}")
+                            self.logger(level="debug",
+                                        message=f"Checking device connector claim state... Attempt {count + 1}/12."
+                                                f" Received response: {response.text}")
                     except Exception as err:
                         self.logger(level="error",
                                     message="Error while checking the device connector claim state:"
                                             + str(err))
-                        break
+                        return False
                     time.sleep(10)
                     count += 1
+
+                # If the action still fails after 12 retries, return False
+                response = requests.get(uri, verify=False, headers=auth_header)
+                if response.status_code != 200:
+                    self.logger(level="error",
+                                message=f"After multiple attempts, Error while checking the device connector "
+                                        f"claim state: {response.text}")
+
+                    return False
 
             for end_uri, value in dict_requests.items():
                 uri = base_uri + "/connector" + end_uri

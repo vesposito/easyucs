@@ -2241,6 +2241,7 @@ class UcsSystemVnicTemplate(UcsSystemConfigObject):
         self.template_type = None
         self.pin_group = None
         self.q_in_q = None
+        self.etherchannel_pinning = None
         self.dynamic_vnic_connection_policy = None
         self.stats_threshold_policy = None
         self.sriov_hpn_connection_policy = None
@@ -2271,6 +2272,7 @@ class UcsSystemVnicTemplate(UcsSystemConfigObject):
                 self.stats_threshold_policy = vnic_lan_conn_templ.stats_policy_name
                 self.network_control_policy = vnic_lan_conn_templ.nw_ctrl_policy_name
                 self.q_in_q = vnic_lan_conn_templ.q_in_q
+                self.etherchannel_pinning = vnic_lan_conn_templ.ether_channel_pinning
 
                 # Looking for the connection_policy
                 if "vnicDynamicConPolicyRef" in self._parent._config.sdk_objects and \
@@ -2427,6 +2429,7 @@ class UcsSystemVnicTemplate(UcsSystemConfigObject):
                                                  nw_ctrl_policy_name=self.network_control_policy,
                                                  admin_cdn_name=self.cdn_name,
                                                  q_in_q=self.q_in_q,
+                                                 ether_channel_pinning=self.etherchannel_pinning,
                                                  redundancy_pair_type=redundancy_pair_type,
                                                  qos_policy_name=self.qos_policy,
                                                  peer_redundancy_templ_name=self.peer_redundancy_template,
@@ -2530,6 +2533,7 @@ class UcsSystemLanConnectivityPolicy(UcsSystemConfigObject):
                                 else:
                                     vnic.update({"fabric": vnic_ether.switch_id})
                                     vnic.update({"q_in_q": vnic_ether.q_in_q})
+                                    vnic.update({"etherchannel_pinning": vnic_ether.ether_channel_pinning})
                                     vnic.update({"mac_address_pool": vnic_ether.ident_pool_name})
                                     if not vnic_ether.ident_pool_name and vnic_ether.addr == "derived":
                                         vnic.update({"mac_address": "hardware-default"})
@@ -2716,11 +2720,11 @@ class UcsSystemLanConnectivityPolicy(UcsSystemConfigObject):
 
         for element in self.vnics:
             for value in ["adapter_policy", "cdn_name", "cdn_source", "dynamic_vnic_connection_policy",
-                          "fabric", "mac_address", "mac_address_pool", "mtu", "name", "network_control_policy",
-                          "order", "operational_state", "pin_group", "q_in_q", "qos_policy", "redundancy_pair",
-                          "sriov_hpn_connection_policy", "stats_threshold_policy", "usnic_connection_policy",
-                          "vlans", "vlan_groups", "vlan_native", "vlan_q_in_q", "vmq_connection_policy",
-                          "vnic_template"]:
+                          "etherchannel_pinning", "fabric", "mac_address", "mac_address_pool", "mtu", "name",
+                          "network_control_policy", "order", "operational_state", "pin_group", "q_in_q", "qos_policy",
+                          "redundancy_pair", "sriov_hpn_connection_policy", "stats_threshold_policy",
+                          "usnic_connection_policy", "vlans", "vlan_groups", "vlan_native", "vlan_q_in_q",
+                          "vmq_connection_policy", "vnic_template"]:
                 if value not in element:
                     element[value] = None
 
@@ -2801,6 +2805,7 @@ class UcsSystemLanConnectivityPolicy(UcsSystemConfigObject):
                                               adaptor_profile_name=vnic['adapter_policy'],
                                               order=vnic['order'], switch_id=vnic['fabric'],
                                               q_in_q=vnic['q_in_q'],
+                                              ether_channel_pinning=vnic['etherchannel_pinning'],
                                               ident_pool_name=mac_address_pool,
                                               addr=mac_address,
                                               qos_policy_name=vnic['qos_policy'],

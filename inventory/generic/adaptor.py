@@ -156,6 +156,8 @@ class GenericAdaptor(GenericInventoryObject):
             self.sku = "UCSC-MLOM-IRJ45"
         elif self.model == "Intel i350 Quad Port 1Gb Adapter":
             self.sku = "UCSC-PCIE-IRJ45"
+        elif self.model == "Intel Ethernet Server Adapter I350-T4" and self.pci_slot != "L":
+            self.sku = "UCSC-PCIE-IRJ45"
         elif self.model == "Intel X520-DA2 10 Gbps 2 port NIC":
             self.sku = "N2XX-AIPCI01"
         elif self.model == "Intel X710-DA4 Quad Port 10Gb SFP+ converged NIC":
@@ -164,6 +166,8 @@ class GenericAdaptor(GenericInventoryObject):
             self.sku = "UCSC-PCIE-ID40GF"
         elif self.model == "Cisco - Intel E810XXVDA2 2x25/10 GbE SFP PCIe NIC":
             self.sku = "UCSC-P-I8D25GF"
+        elif self.model == "Cisco - Intel E810XXVDA4 4x25/10 GbE SFP28 PCIe NIC":
+            self.sku = "UCSC-P-I8Q25GF"
 
         # Getting adaptor type info from catalog files
         if self.sku:
@@ -180,7 +184,7 @@ class GenericAdaptor(GenericInventoryObject):
                           "UCSC-P-MDD100GF", "UCSC-P-N6D25GF", "UCSC-P-N7Q25GF", "UCSC-P-N7D200GF", "UCSC-PCIE-QNICBT",
                           "UCSC-PCIE-QNICSFP", "UCSC-PCIE-QD10GC", "UCSC-O-N6CD25GF", "UCSC-O-N6CD100GF"]:
             self.type = "nic"
-        elif self.sku in []:
+        elif self.sku in ["UCSC-C3260-SIOC"]:
             self.type = "vic"
         elif self.pci_slot == "L":  # For LoM ports
             self.type = "nic"

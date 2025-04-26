@@ -121,6 +121,15 @@
             "enabled"
          ]
       },
+      "etherchannel_pinning": {
+         "description": "vNIC Template - Enable EtherChannel Pinning",
+         "type": "string",
+         "default": "disabled",
+         "enum": [
+            "disabled",
+            "enabled"
+         ]
+      },
       "pin_group": {
          "description": "vNIC Template - Pin Group",
          "type": "string",

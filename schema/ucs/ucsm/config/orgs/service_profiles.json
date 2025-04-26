@@ -417,6 +417,15 @@
                      "enabled"
                   ]
                },
+               "etherchannel_pinning": {
+                  "description": "Service Profile - vNIC - Enable EtherChannel Pinning",
+                  "type": "string",
+                  "default": "disabled",
+                  "enum": [
+                     "disabled",
+                     "enabled"
+                  ]
+               },
                "mac_address_pool": {
                   "description": "Service Profile - vNIC - MAC Address Pool",
                   "type": "string"

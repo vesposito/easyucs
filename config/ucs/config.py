@@ -551,6 +551,7 @@ class UcsSystemConfig(GenericUcsConfig):
         "qos_system_class": "QoS System Class",
         "radius": "RADIUS",
         "roles": "Roles",
+        "scrub_policies": "Scrub Policies",
         "san_pin_groups": "SAN Pin Groups",
         "san_port_channels": "SAN Port-Channels",
         "san_storage_ports": "SAN Storage Ports",
@@ -618,6 +619,7 @@ class UcsSystemConfig(GenericUcsConfig):
         self.qos_system_class = []
         self.radius = []
         self.roles = []
+        self.scrub_policies = []
         self.san_pin_groups = []
         self.san_port_channels = []
         self.san_storage_ports = []

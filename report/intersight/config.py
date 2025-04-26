@@ -23,12 +23,15 @@ from report.intersight.server_policies import (
     IntersightIscsiStaticTargetPoliciesReportSection,
     IntersightLanConnectivityPoliciesReportSection,
     IntersightLocalUserPoliciesReportSection,
+    IntersightMemoryPoliciesReportSection,
     IntersightNetworkConnectivityPoliciesReportSection,
     IntersightNtpPoliciesReportSection,
     IntersightPowerPoliciesReportSection,
     IntersightSanConnectivityPoliciesReportSection,
+    IntersightScrubPoliciesReportSection,
     IntersightSdCardPoliciesReportSection,
     IntersightSerialOverLanPoliciesReportSection,
+    IntersightServerPoolQualificationPoliciesReportSection,
     IntersightStoragePoliciesReportSection,
     IntersightSyslogPoliciesReportSection,
     IntersightThermalPoliciesReportSection,
@@ -128,6 +131,8 @@ class IntersightPoliciesReportSection(UcsReportSection):
         self.content_list.append(
             IntersightLocalUserPoliciesReportSection(order_id=self.report.get_current_order_id(), parent=self))
         self.content_list.append(
+            IntersightMemoryPoliciesReportSection(order_id=self.report.get_current_order_id(), parent=self))
+        self.content_list.append(
             IntersightNetworkConnectivityPoliciesReportSection(order_id=self.report.get_current_order_id(),
                                                                parent=self))
         self.content_list.append(
@@ -137,9 +142,14 @@ class IntersightPoliciesReportSection(UcsReportSection):
         self.content_list.append(
             IntersightSanConnectivityPoliciesReportSection(order_id=self.report.get_current_order_id(), parent=self))
         self.content_list.append(
+            IntersightScrubPoliciesReportSection(order_id=self.report.get_current_order_id(), parent=self))
+        self.content_list.append(
             IntersightSdCardPoliciesReportSection(order_id=self.report.get_current_order_id(), parent=self))
         self.content_list.append(
             IntersightSerialOverLanPoliciesReportSection(order_id=self.report.get_current_order_id(), parent=self))
+        self.content_list.append(
+            IntersightServerPoolQualificationPoliciesReportSection(order_id=self.report.get_current_order_id(),
+                                                                   parent=self))
         self.content_list.append(
             IntersightStoragePoliciesReportSection(order_id=self.report.get_current_order_id(), parent=self))
         self.content_list.append(

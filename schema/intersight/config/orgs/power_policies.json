@@ -126,6 +126,16 @@
             "Disabled",
             "Enabled"
          ]
+      },
+      "processor_package_power_limit": {
+         "description": "Power Policy - Processor Package Power Limit (PPL)",
+         "type": "string",
+         "default": "Default",
+         "enum": [
+            "Default",
+            "Maximum",
+            "Minimum"
+         ]
       }
    },
    "additionalProperties": false,

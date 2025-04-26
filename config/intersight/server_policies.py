@@ -2,8 +2,7 @@
 # !/usr/bin/env python
 
 """ server_policies.py: Easy UCS Deployment Tool """
-from common import generate_self_signed_cert, get_decoded_pem_certificate, \
-    get_encoded_pem_certificate, read_json_file
+from common import generate_self_signed_cert, get_decoded_pem_certificate, get_encoded_pem_certificate, read_json_file
 from config.intersight.object import IntersightConfigObject
 from config.intersight.pools import IntersightIpPool, IntersightIqnPool, \
     IntersightMacPool, IntersightWwnnPool, IntersightWwpnPool
@@ -715,27 +714,41 @@ class IntersightCertificateManagementPolicy(IntersightConfigObject):
         self.certificates = None
 
         if self._config.load_from == "live":
-            if hasattr(self._object, "certificates"):
-                if self._object.certificates is not None:
-                    certificates_dict = {}
-                    for cert in self._object.certificates:
-                        # We only support IMC Certificates for now
-                        if getattr(cert, "object_type", None) == "certificatemanagement.Imc":
-                            imc_certificate = {}
-                            if hasattr(cert, "certificate"):
-                                cert_contents = getattr(cert, "certificate")
-                                if hasattr(cert_contents, "pem_certificate"):
-                                    imc_certificate["certificate"] = get_decoded_pem_certificate(
-                                        certificate=getattr(cert_contents, "pem_certificate"))
-                            if hasattr(cert, "enabled"):
-                                imc_certificate["enable"] = cert.enabled
-                            if hasattr(cert, "is_privatekey_set"):
-                                if getattr(cert, "is_privatekey_set"):
-                                    self.logger(level="warning",
-                                                message="Private Key of " + self._CONFIG_NAME + " " + self.name +
-                                                        " - IMC Certificate can't be exported ")
-                            certificates_dict["imc_certificate"] = imc_certificate
-                    self.certificates = certificates_dict
+            if hasattr(self._object, "certificates") and self._object.certificates is not None:
+                for cert in self._object.certificates:
+                    cert_type = getattr(cert, "object_type", None)
+                    certificate_data = {}
+
+                    if hasattr(cert, "certificate"):
+                        cert_contents = getattr(cert, "certificate")
+                        if hasattr(cert_contents, "pem_certificate"):
+                            certificate_data["certificate"] = get_decoded_pem_certificate(
+                                certificate=getattr(cert_contents, "pem_certificate")
+                            )
+
+                    if hasattr(cert, "enabled"):
+                        certificate_data["enable"] = cert.enabled
+
+                    if cert_type == "certificatemanagement.Imc":
+                        if hasattr(cert, "is_privatekey_set") and cert.is_privatekey_set:
+                            self.logger(
+                                level="warning",
+                                message=f"Private Key of {self._CONFIG_NAME} {self.name} - IMC Certificate can't be exported"
+                            )
+                        if certificate_data:
+                            if self.certificates is None:
+                                self.certificates = {}
+                            self.certificates["imc_certificate"] = certificate_data
+
+                    elif cert_type == "certificatemanagement.RootCaCertificate":
+                        if hasattr(cert, "certificate_name"):
+                            certificate_data["certificate_name"] = cert.certificate_name
+                        if certificate_data:
+                            if self.certificates is None:
+                                self.certificates = {}
+                            if "root_ca_certificates" not in self.certificates:
+                                self.certificates["root_ca_certificates"] = []
+                            self.certificates["root_ca_certificates"].append(certificate_data)
 
         elif self._config.load_from == "file":
             for attribute in ["certificates"]:
@@ -748,7 +761,7 @@ class IntersightCertificateManagementPolicy(IntersightConfigObject):
     def clean_object(self):
         # We use this to make sure all options of a Certificate are set to None if they are not present
         if self.certificates:
-            for attribute in ["imc_certificate"]:
+            for attribute in ["imc_certificate", "root_ca_certificates"]:
                 if attribute not in self.certificates:
                     self.certificates[attribute] = None
 
@@ -760,6 +773,9 @@ class IntersightCertificateManagementPolicy(IntersightConfigObject):
     @IntersightConfigObject.update_taskstep_description()
     def push_object(self):
         from intersight.model.certificatemanagement_policy import CertificatemanagementPolicy
+        from intersight.model.certificatemanagement_root_ca_certificate import CertificatemanagementRootCaCertificate
+        from intersight.model.x509_certificate import X509Certificate
+        from intersight.model.certificatemanagement_imc import CertificatemanagementImc
 
         self.logger(message=f"Pushing {self._CONFIG_NAME} configuration: {self.name}")
 
@@ -775,64 +791,141 @@ class IntersightCertificateManagementPolicy(IntersightConfigObject):
         if self.tags is not None:
             kwargs["tags"] = self.create_tags()
 
-        if self.certificates is not None:
-            certificates = []
+        existing_certificates = []
+
+        # Query Intersight to check if a policy with the specified name already exists
+        existing_policies = self._device.query(
+            object_type=self._INTERSIGHT_SDK_OBJECT_NAME,
+            filter=f"Name eq '{self.name}' and Organization.Moid eq '{self.get_parent_org_relationship().moid}'"
+        )
+        # If the policy exists, retrieve its details
+        if existing_policies:
+            existing_policy = existing_policies[0]
+            if hasattr(existing_policy, "certificates") and existing_policy.certificates:
+                existing_certificates = existing_policy.certificates
+
+        # Check if "overwrite" is enabled in settings
+        overwrite_enabled = getattr(self._config, "update_existing_intersight_objects", False)
+
+        # Preserve existing certificates
+        # Ensure existing certificates are retained and not overwritten
+        certificates = existing_certificates.copy()
+
+        # Modify the existing IMC certificate ONLY if overwrite is enabled AND a new IMC cert is provided
+        if overwrite_enabled and self.certificates.get("imc_certificate"):
+            certificates = [cert for cert in certificates if cert.object_type != "certificatemanagement.Imc"]
+
+        # Check if an IMC certificate already exists in the current policy
+        existing_imc_certificate = any(
+            cert.object_type == "certificatemanagement.Imc" for cert in existing_certificates
+        )
+
+        if self.certificates:
+            # Process IMC Certificate
             if self.certificates.get("imc_certificate"):
-                imc_certificate = self.certificates.get("imc_certificate")
-                from intersight.model.certificatemanagement_imc import CertificatemanagementImc
-
-                cert_kwargs = {
-                    "object_type": "certificatemanagement.Imc",
-                    "class_id": "certificatemanagement.Imc"
-                }
-                if imc_certificate.get("enable") is not None:
-                    cert_kwargs["enabled"] = imc_certificate["enable"]
-
-                # Because we cannot fetch the original private key from Intersight, we can have 2 scenarios:
-                # 1. The config file is explicitly populated with certificate and private key fields. In this case we
-                # use them and proceed with the push config.
-                # 2. We only have certificate, but not the private key. In this case we generate our own certificate
-                # and private key which enables us to successfully push the policy to Intersight.
-                certificate = None
-                if imc_certificate.get("certificate"):
-                    certificate = imc_certificate.get("certificate")
-
-                if imc_certificate.get("private_key"):
-                    private_key = imc_certificate.get("private_key")
+                if existing_imc_certificate and not overwrite_enabled:
+                    self.logger(level="warning", message="IMC certificate already exists in policy. Skipping addition.")
                 else:
-                    self.logger(level="warning", message="Private Key not found. Using self signed certificate"
-                                                         " to create " + self._CONFIG_NAME + " " + self.name)
-                    try:
-                        private_key, certificate = generate_self_signed_cert()
-                    except Exception as err:
-                        err_message = "Error in generating certificate and private key: " + str(err)
-                        self.logger(level="error", message=err_message)
-                        self._config.push_summary_manager.add_object_status(obj=self, obj_detail=self.name,
-                                                                            obj_type=self._INTERSIGHT_SDK_OBJECT_NAME,
-                                                                            status="failed", message=err_message)
-                        return False
+                    # Remove existing IMC certificate if overwrite is enabled
+                    certificates = [cert for cert in certificates if cert.object_type != "certificatemanagement.Imc"]
 
-                if private_key:
-                    cert_kwargs["privatekey"] = get_encoded_pem_certificate(private_key)
-
-                if certificate:
-                    from intersight.model.x509_certificate import X509Certificate
-
-                    x509_certificate_kwargs = {
-                        "object_type": "x509.Certificate",
-                        "class_id": "x509.Certificate",
-                        "pem_certificate": get_encoded_pem_certificate(certificate)
+                    imc_certificate = self.certificates["imc_certificate"]
+                    cert_kwargs = {
+                        "object_type": "certificatemanagement.Imc",
+                        "class_id": "certificatemanagement.Imc"
                     }
-                    cert = X509Certificate(**x509_certificate_kwargs)
-                    cert_kwargs["certificate"] = cert
+                    if imc_certificate.get("enable") is not None:
+                        cert_kwargs["enabled"] = imc_certificate["enable"]
 
-                certificates.append(CertificatemanagementImc(**cert_kwargs))
-            kwargs["certificates"] = certificates
+                    # Because we cannot fetch the original private key from Intersight, we can have 2 scenarios:
+                    # 1. The config file is explicitly populated with certificate and private key fields. In this case we
+                    # use them and proceed with the push config.
+                    # 2. We only have certificate, but not the private key. In this case we generate our own certificate
+                    # and private key which enables us to successfully push the policy to Intersight.
+                    certificate = None
+                    if imc_certificate.get("certificate"):
+                        certificate = imc_certificate.get("certificate")
+
+                    if imc_certificate.get("private_key"):
+                        private_key = imc_certificate.get("private_key")
+                    else:
+                        self.logger(level="warning", message="Private Key not found. Using self signed certificate"
+                                                             " to create " + self._CONFIG_NAME + " " + self.name)
+                        try:
+                            private_key, certificate = generate_self_signed_cert()
+                        except Exception as err:
+                            err_message = "Error in generating certificate and private key: " + str(err)
+                            self.logger(level="error", message=err_message)
+                            self._config.push_summary_manager.add_object_status(obj=self, obj_detail=self.name,
+                                                                                obj_type=self._INTERSIGHT_SDK_OBJECT_NAME,
+                                                                                status="failed", message=err_message)
+                            return False
+
+                    if private_key:
+                        cert_kwargs["privatekey"] = get_encoded_pem_certificate(private_key)
+
+                    if certificate:
+                        x509_certificate_kwargs = {
+                            "object_type": "x509.Certificate",
+                            "class_id": "x509.Certificate",
+                            "pem_certificate": get_encoded_pem_certificate(certificate)
+                        }
+                        cert_kwargs["certificate"] = X509Certificate(**x509_certificate_kwargs)
+
+                    certificates.append(CertificatemanagementImc(**cert_kwargs))
+
+            # Process Root CA Certificates
+            if self.certificates.get("root_ca_certificates"):
+                for root_ca_cert in self.certificates["root_ca_certificates"]:
+                    cert_name = root_ca_cert.get("certificate_name")
+                    # Check if a Root CA certificate with the same name already exists in the policy
+                    existing_root_ca_cert = next(
+                        (cert for cert in existing_certificates if
+                         cert.object_type == "certificatemanagement.RootCaCertificate"
+                         and getattr(cert, "certificate_name", None) == cert_name), None
+                    )
+
+                    if existing_root_ca_cert:
+                        if overwrite_enabled:
+                            self.logger(level="info",
+                                        message=f"Overwriting existing Root CA certificate '{cert_name}' in policy.")
+                            certificates = [
+                                cert for cert in certificates
+                                if not (
+                                            cert.object_type == "certificatemanagement.RootCaCertificate"
+                                            and cert.certificate_name == cert_name)
+                            ]
+                        else:
+                            self.logger(level="warning",
+                                        message=f"Root CA certificate '{cert_name}' already exists. Skipping addition.")
+                            continue
+                    cert_kwargs = {
+                        "object_type": "certificatemanagement.RootCaCertificate",
+                        "class_id": "certificatemanagement.RootCaCertificate"
+                    }
+                    if root_ca_cert.get("enable") is not None:
+                        cert_kwargs["enabled"] = root_ca_cert["enable"]
+                    if root_ca_cert.get("certificate_name"):
+                        cert_kwargs["certificate_name"] = root_ca_cert["certificate_name"]
+
+                    if root_ca_cert.get("certificate"):
+                        x509_certificate_kwargs = {
+                            "object_type": "x509.Certificate",
+                            "class_id": "x509.Certificate",
+                            "pem_certificate": get_encoded_pem_certificate(root_ca_cert["certificate"])
+                        }
+                        cert_kwargs["certificate"] = X509Certificate(**x509_certificate_kwargs)
+
+                    certificates.append(CertificatemanagementRootCaCertificate(**cert_kwargs))
+
+        kwargs["certificates"] = certificates
 
         certificatemanagement_policy = CertificatemanagementPolicy(**kwargs)
 
+        # Set modify_present based on overwrite settings
+        modify_present = overwrite_enabled
         if not self.commit(object_type=self._INTERSIGHT_SDK_OBJECT_NAME, payload=certificatemanagement_policy,
-                           detail=self.name):
+                           detail=self.name, modify_present=modify_present):
             return False
 
         self._config.push_summary_manager.add_object_message(
@@ -1093,6 +1186,8 @@ class IntersightEthernetAdapterPolicy(IntersightConfigObject):
         self.enable_accelerated_receive_flow_steering = None
         self.enable_advanced_filter = self.get_attribute(attribute_name="advanced_filter",
                                                          attribute_secondary_name="enable_advanced_filter")
+        self.enable_etherchannel_pinning = self.get_attribute(attribute_name="ether_channel_pinning_enabled",
+                                                              attribute_secondary_name="enable_etherchannel_pinning")
         self.enable_geneve_offload = self.get_attribute(attribute_name="geneve_enabled",
                                                         attribute_secondary_name="enable_geneve_offload")
         self.enable_interrupt_scaling = self.get_attribute(attribute_name="interrupt_scaling",
@@ -1252,6 +1347,8 @@ class IntersightEthernetAdapterPolicy(IntersightConfigObject):
             kwargs["tags"] = self.create_tags()
         if self.enable_advanced_filter is not None:
             kwargs["advanced_filter"] = self.enable_advanced_filter
+        if self.enable_etherchannel_pinning is not None:
+            kwargs["ether_channel_pinning_enabled"] = self.enable_etherchannel_pinning
         if self.enable_geneve_offload is not None:
             kwargs["geneve_enabled"] = self.enable_geneve_offload
         if self.enable_interrupt_scaling is not None:
@@ -1606,7 +1703,7 @@ class IntersightEthernetNetworkPolicy(IntersightConfigObject):
         self.vlan_mode = None
 
         if self._config.load_from == "live":
-            # Renaming Target Platform to be more user friendly
+            # Renaming Target Platform to be more user-friendly
             if self.target_platform == "FIAttached":
                 self.target_platform = "FI-Attached"
 
@@ -2875,7 +2972,8 @@ class IntersightLanConnectivityPolicy(IntersightConfigObject):
             {
                 "ethernet_adapter_policy": IntersightEthernetAdapterPolicy,
                 "ethernet_network_control_policy": IntersightEthernetNetworkControlPolicy,
-                "ethernet_network_group_policy": IntersightEthernetNetworkGroupPolicy,
+                "ethernet_network_group_policies": [IntersightEthernetNetworkGroupPolicy],
+                "ethernet_network_group_policy": IntersightEthernetNetworkGroupPolicy,  # Deprecated
                 "ethernet_network_policy": IntersightEthernetNetworkPolicy,
                 "ethernet_qos_policy": IntersightEthernetQosPolicy,
                 "iscsi_boot_policy": IntersightIscsiBootPolicy,
@@ -2921,7 +3019,7 @@ class IntersightLanConnectivityPolicy(IntersightConfigObject):
         self.vnics = None
 
         if self._config.load_from == "live":
-            # Renaming Target Platform to be more user friendly
+            # Renaming Target Platform to be more user-friendly
             if self.target_platform == "FIAttached":
                 self.target_platform = "FI-Attached"
 
@@ -2949,11 +3047,11 @@ class IntersightLanConnectivityPolicy(IntersightConfigObject):
                     for attribute in ["automatic_pci_link_assignment", "automatic_slot_id_assignment", "cdn_source",
                                       "cdn_value", "enable_failover", "enable_virtual_machine_multi_queue",
                                       "ethernet_adapter_policy", "ethernet_network_control_policy",
-                                      "ethernet_network_group_policy", "ethernet_network_policy", "ethernet_qos_policy",
-                                      "iscsi_boot_policy", "mac_address_allocation_type", "mac_address_pool",
-                                      "mac_address_static", "name", "pci_link", "pci_link_assignment_mode", "pci_order",
-                                      "pin_group_name", "slot_id", "sriov_settings", "switch_id", "uplink_port",
-                                      "usnic_settings", "vmq_settings"]:
+                                      "ethernet_network_group_policies", "ethernet_network_group_policy",
+                                      "ethernet_network_policy", "ethernet_qos_policy", "iscsi_boot_policy",
+                                      "mac_address_allocation_type", "mac_address_pool", "mac_address_static", "name",
+                                      "pci_link", "pci_link_assignment_mode", "pci_order", "pin_group_name", "slot_id",
+                                      "sriov_settings", "switch_id", "uplink_port", "usnic_settings", "vmq_settings"]:
                         if attribute not in vnic:
                             vnic[attribute] = None
 
@@ -3050,16 +3148,24 @@ class IntersightLanConnectivityPolicy(IntersightConfigObject):
                             # iSCSI Boot Policy for FI-Attached servers
                             if not vnic.get("vnic_template"):
                                 # If vNIC Template is attached then Ethernet Network Group Policy and Ethernet
-                                # Network Control Policy are set at the Template level and cannot be overriden.
+                                # Network Control Policy are set at the Template level and cannot be overridden.
                                 # If vNIC Template is not attached, then these fields are set at the vNIC level.
                                 if vnic_eth_if.fabric_eth_network_group_policy:
                                     if len(vnic_eth_if.fabric_eth_network_group_policy) == 1:
                                         fabric_eth_network_group_policy = self._get_policy_name(
                                             policy=vnic_eth_if.fabric_eth_network_group_policy[0])
                                         if fabric_eth_network_group_policy:
-                                            vnic["ethernet_network_group_policy"] = fabric_eth_network_group_policy
+                                            vnic["ethernet_network_group_policies"] = [fabric_eth_network_group_policy]
+                                    elif len(vnic_eth_if.fabric_eth_network_group_policy) > 1:
+                                        vnic["ethernet_network_group_policies"] = []
+                                        for eth_network_group_policy in vnic_eth_if.fabric_eth_network_group_policy:
+                                            fabric_eth_network_group_policy = self._get_policy_name(
+                                                policy=eth_network_group_policy)
+                                            if fabric_eth_network_group_policy:
+                                                vnic["ethernet_network_group_policies"].append(
+                                                    fabric_eth_network_group_policy)
                                     else:
-                                        self.logger(level="error", message="Multiple Ethernet Network Group Policies " +
+                                        self.logger(level="error", message="No Ethernet Network Group Policies " +
                                                                            "assigned to vNIC " + vnic_eth_if.name)
                                 if vnic_eth_if.fabric_eth_network_control_policy:
                                     fabric_eth_network_control_policy = \
@@ -3082,7 +3188,7 @@ class IntersightLanConnectivityPolicy(IntersightConfigObject):
 
                         if not vnic.get("vnic_template"):
                             # If vNIC Template is attached then Ethernet Qos Policy, usnic_settings, vmq_settings,
-                            # sriov_settings are set at the Template level and cannot be overriden.
+                            # sriov_settings are set at the Template level and cannot be overridden.
                             # If vNIC Template is not attached, then these fields are set at the vNIC level.
                             if vnic_eth_if.eth_qos_policy:
                                 eth_qos_policy = self._get_policy_name(policy=vnic_eth_if.eth_qos_policy)
@@ -3606,7 +3712,26 @@ class IntersightLanConnectivityPolicy(IntersightConfigObject):
                                     f"'{vnic['ethernet_network_control_policy']}'"
                         )
 
-                if vnic.get("ethernet_network_group_policy") is not None:
+                if vnic.get("ethernet_network_group_policies") is not None:
+                    # We need to identify the Ethernet Network Group Policies objects references
+                    kwargs["fabric_eth_network_group_policy"] = []
+                    for engp in vnic["ethernet_network_group_policies"]:
+                        eth_nw_grp_policy = self.get_live_object(
+                            object_name=engp,
+                            object_type="fabric.EthNetworkGroupPolicy"
+                        )
+                        if eth_nw_grp_policy:
+                            kwargs["fabric_eth_network_group_policy"].append(eth_nw_grp_policy)
+                        else:
+                            self._config.push_summary_manager.add_object_status(
+                                obj=self, obj_detail=f"Attaching Eth Network Group Policy "
+                                                     f"'{engp}' to vNIC '{str(vnic['name'])}'",
+                                obj_type="vnic.EthIf", status="failed",
+                                message=f"Failed to find Eth Network Group Policy '{engp}'"
+                            )
+                elif vnic.get("ethernet_network_group_policy") is not None:
+                    # We keep this section for compatibility purposes, but "ethernet_network_group_policy" attribute
+                    # is deprecated starting with EasyUCS 1.0.2 (replaced by "ethernet_network_group_policies")
                     # We need to identify the Ethernet Network Group Policy object reference
                     eth_nw_grp_policy = self.get_live_object(
                         object_name=vnic["ethernet_network_group_policy"],
@@ -3795,6 +3920,9 @@ class IntersightLdapPolicy(IntersightConfigObject):
                             base_properties["base_dn"] = getattr(ldap_base_properties, "base_dn")
                         if hasattr(ldap_base_properties, "domain") and getattr(ldap_base_properties, "domain"):
                             base_properties["domain"] = getattr(ldap_base_properties, "domain")
+                        if hasattr(ldap_base_properties, "enable_nested_group_search"):
+                            base_properties[
+                                "enable_nested_group_search"] = ldap_base_properties.enable_nested_group_search
                         if hasattr(ldap_base_properties, "timeout") and getattr(ldap_base_properties, "timeout"):
                             base_properties["timeout"] = getattr(ldap_base_properties, "timeout")
                         if hasattr(ldap_base_properties, "enable_encryption"):
@@ -3861,6 +3989,42 @@ class IntersightLdapPolicy(IntersightConfigObject):
                 if attribute in self._object:
                     setattr(self, attribute, self.get_attribute(attribute_name=attribute))
 
+        self.clean_object()
+
+    def clean_object(self):
+        if self.tags:
+            for tag in self.tags:
+                for attribute in ["key", "value"]:
+                    if attribute not in tag:
+                        tag[attribute] = None
+
+        if self.base_properties:
+            for attribute in [
+                "attribute", "base_dn", "bind_dn", "bind_method", "bind_password", "domain",
+                "enable_encryption", "enable_group_authorization", "enable_nested_group_search", "filter",
+                "group_attribute", "nested_group_search_depth", "timeout"
+            ]:
+                if attribute not in self.base_properties:
+                    self.base_properties[attribute] = None
+
+        if self.dns_parameters:
+            for attribute in ["search_domain", "search_forest", "source"]:
+                if attribute not in self.dns_parameters:
+                    self.dns_parameters[attribute] = None
+
+        if self.groups:
+            for group in self.groups:
+                for attribute in ["domain", "name", "group_dn", "role"]:
+                    if attribute not in group:
+                        group[attribute] = None
+
+        if self.providers:
+            for provider in self.providers:
+                for attribute in ["ldap_server", "ldap_server_port", "vendor"]:
+                    if attribute not in provider:
+                        provider[attribute] = None
+
+
     def _get_ldap_groups(self):
         # Fetches the LDAP groups of LDAP policy
         if "iam_ldap_group" in self._config.sdk_objects:
@@ -3868,15 +4032,16 @@ class IntersightLdapPolicy(IntersightConfigObject):
             for ldap_group in self._config.sdk_objects["iam_ldap_group"]:
                 if ldap_group.ldap_policy:
                     if ldap_group.ldap_policy.moid == self._moid:
+                        role = None
                         # We first need to find the iam.EndPointRole object with the same name and same type.
                         if hasattr(ldap_group, "end_point_role"):
                             iam_end_point_role = self.get_config_objects_from_ref(ref=ldap_group.end_point_role)
-                            role = None
                             if iam_end_point_role:
                                 role = iam_end_point_role[0].name
                         group = {
                             "name": ldap_group.name,
                             "domain": ldap_group.domain,
+                            "group_dn": ldap_group.group_dn,
                             "role": role
                         }
                         groups.append(group)
@@ -3894,7 +4059,8 @@ class IntersightLdapPolicy(IntersightConfigObject):
                     if ldap_provider.ldap_policy.moid == self._moid:
                         provider = {
                             "ldap_server": ldap_provider.server,
-                            "ldap_server_port": ldap_provider.port
+                            "ldap_server_port": ldap_provider.port,
+                            "vendor": ldap_provider.vendor
                         }
                         ldap_providers.append(provider)
 
@@ -3959,6 +4125,9 @@ class IntersightLdapPolicy(IntersightConfigObject):
                     if ldap_base_settings["enable_group_authorization"] is not None:
                         base_properties_kwargs["enable_group_authorization"] = \
                             ldap_base_settings["enable_group_authorization"]
+                    if ldap_base_settings["enable_nested_group_search"] is not None:
+                        base_properties_kwargs["enable_nested_group_search"] = ldap_base_settings[
+                            "enable_nested_group_search"]
                     if ldap_base_settings["nested_group_search_depth"] is not None:
                         base_properties_kwargs["nested_group_search_depth"] = \
                             ldap_base_settings["nested_group_search_depth"]
@@ -4007,6 +4176,8 @@ class IntersightLdapPolicy(IntersightConfigObject):
                             ldap_group_kwargs["name"] = ldap_group["name"]
                         if ldap_group["domain"] is not None:
                             ldap_group_kwargs["domain"] = ldap_group["domain"]
+                        if ldap_group["group_dn"] is not None:
+                            ldap_group_kwargs["group_dn"] = ldap_group["group_dn"]
                         if ldap_group["role"] is not None:
                             end_point_role = self._device.query(
                                 object_type="iam.EndPointRole",
@@ -4044,6 +4215,8 @@ class IntersightLdapPolicy(IntersightConfigObject):
                             ldap_provider_kwargs["server"] = ldap_provider["ldap_server"]
                         if ldap_provider["ldap_server_port"] is not None:
                             ldap_provider_kwargs["port"] = ldap_provider["ldap_server_port"]
+                        if ldap_provider.get("vendor") is not None:
+                            ldap_provider_kwargs["vendor"] = ldap_provider["vendor"]
 
                         ldap_providers = (IamLdapProvider(**ldap_provider_kwargs))
 
@@ -4587,6 +4760,7 @@ class IntersightPowerPolicy(IntersightConfigObject):
         self.power_restore = self.get_attribute(attribute_name="power_restore_state",
                                                 attribute_secondary_name="power_restore")
         self.power_save_mode = self.get_attribute(attribute_name="power_save_mode")
+        self.processor_package_power_limit = self.get_attribute(attribute_name="processor_package_power_limit")
 
         if self._config.load_from == "live":
             power_redundancy_dict = {
@@ -4647,6 +4821,8 @@ class IntersightPowerPolicy(IntersightConfigObject):
             kwargs["power_restore_state"] = power_restore_dict.get(self.power_restore)
         if self.power_save_mode is not None:
             kwargs["power_save_mode"] = self.power_save_mode
+        if self.processor_package_power_limit is not None:
+            kwargs["processor_package_power_limit"] = self.processor_package_power_limit
 
         power_policy = PowerPolicy(**kwargs)
 
@@ -4700,7 +4876,7 @@ class IntersightSanConnectivityPolicy(IntersightConfigObject):
                                               attribute_secondary_name="wwnn_static")
 
         if self._config.load_from == "live":
-            # Renaming Target Platform to be more user friendly
+            # Renaming Target Platform to be more user-friendly
             if self.target_platform == "FIAttached":
                 self.target_platform = "FI-Attached"
 
@@ -5370,6 +5546,65 @@ class IntersightSanConnectivityPolicy(IntersightConfigObject):
         return True
 
 
+class IntersightScrubPolicy(IntersightConfigObject):
+    _CONFIG_NAME = "Scrub Policy"
+    _CONFIG_SECTION_NAME = "scrub_policies"
+    _INTERSIGHT_SDK_OBJECT_NAME = "compute.ScrubPolicy"
+
+    def __init__(self, parent=None, scrub_policy=None):
+        IntersightConfigObject.__init__(self, parent=parent, sdk_object=scrub_policy)
+        self.name = self.get_attribute(attribute_name="name")
+        self.descr = self.get_attribute(attribute_name="description", attribute_secondary_name="descr")
+        self.disk = None
+        self.bios = None
+
+        if self._config.load_from == "live":
+            if self._object and hasattr(self._object, "scrub_targets"):
+                self.disk = "Disk" in self._object.scrub_targets
+                self.bios = "BIOS" in self._object.scrub_targets
+        elif self._config.load_from == "file":
+            if self._object:
+                if self._object.get('disk') is not None:
+                    self.disk = self._object['disk']
+                if self._object.get('bios') is not None:
+                    self.bios = self._object['bios']
+
+    @IntersightConfigObject.update_taskstep_description()
+    def push_object(self):
+        from intersight.model.compute_scrub_policy import ComputeScrubPolicy
+
+        self.logger(message=f"Pushing {self._CONFIG_NAME} configuration: {self.name}")
+
+        kwargs = {
+            "object_type": self._INTERSIGHT_SDK_OBJECT_NAME,
+            "class_id": self._INTERSIGHT_SDK_OBJECT_NAME,
+            "organization": self.get_parent_org_relationship()
+        }
+        if self.name:
+            kwargs["name"] = self.name
+        if self.descr:
+            kwargs["description"] = self.descr
+        if self.tags is not None:
+            kwargs["tags"] = self.create_tags()
+
+        # Convert boolean values to scrub_targets
+        scrub_targets = []
+        if self.disk:
+            scrub_targets.append("Disk")
+        if self.bios:
+            scrub_targets.append("BIOS")
+
+        if scrub_targets:
+            kwargs["scrub_targets"] = scrub_targets
+
+        scrub_policy = ComputeScrubPolicy(**kwargs)
+
+        if not self.commit(object_type=self._INTERSIGHT_SDK_OBJECT_NAME, payload=scrub_policy, detail=self.name):
+            return False
+
+        return True
+
+
 class IntersightSdCardPolicy(IntersightConfigObject):
     _CONFIG_NAME = "SD Card Policy"
     _CONFIG_SECTION_NAME = "sd_card_policies"
@@ -5889,6 +6124,10 @@ class IntersightStoragePolicy(IntersightConfigObject):
         self.name = self.get_attribute(attribute_name="name")
         self.use_jbod_for_vd_creation = self.get_attribute(attribute_name="use_jbod_for_vd_creation")
         self.unused_disks_state = self.get_attribute(attribute_name="unused_disks_state")
+        self.default_drive_state = self.get_attribute(attribute_name="default_drive_mode",
+                                                      attribute_secondary_name="default_drive_state")
+        self.secure_jbod_disk_slots = self.get_attribute(attribute_name="secure_jbods",
+                                                         attribute_secondary_name="secure_jbod_disk_slots")
         self.m2_configuration = None
         self.hybrid_slot_configuration = None
         self.global_hot_spares = self.get_attribute(attribute_name="global_hot_spares")
@@ -5896,18 +6135,23 @@ class IntersightStoragePolicy(IntersightConfigObject):
         self.single_drive_raid_configuration = None
 
         if self._config.load_from == "live":
-            # Renaming Unused Disk State to be more user friendly
+            # Renaming Unused Disk State to be more user-friendly
             self.unused_disks_state = self._format_parameter_values(policy="unused_disks_state",
                                                                     param_value=self.unused_disks_state,
                                                                     param_type="file")
+            # Renaming Default Drive State to be more user-friendly
+            self.default_drive_state = self._format_parameter_values(policy="default_drive_state",
+                                                                     param_value=self.default_drive_state,
+                                                                     param_type="file")
 
             if (getattr(self._object, "direct_attached_nvme_slots", None) or
-                    getattr(self._object, "raid_attached_nvme_slots", None)):
+                    getattr(self._object, "controller_attached_nvme_slots", None)):
                 hybrid_slot_configuration = {}
                 if getattr(self._object, "direct_attached_nvme_slots", None):
                     hybrid_slot_configuration["direct_attached_nvme_slots"] = self._object.direct_attached_nvme_slots
-                if getattr(self._object, "raid_attached_nvme_slots", None):
-                    hybrid_slot_configuration["raid_attached_nvme_slots"] = self._object.raid_attached_nvme_slots
+                if getattr(self._object, "controller_attached_nvme_slots", None):
+                    hybrid_slot_configuration["controller_attached_nvme_slots"] = \
+                        self._object.controller_attached_nvme_slots
                 self.hybrid_slot_configuration = hybrid_slot_configuration
 
             if hasattr(self._object, "m2_virtual_drive"):
@@ -6026,6 +6270,12 @@ class IntersightStoragePolicy(IntersightConfigObject):
                 if attribute in self._object:
                     setattr(self, attribute, self.get_attribute(attribute_name=attribute))
 
+            # Attribute "raid_attached_nvme_slots" is now deprecated in favor of "controller_attached_nvme_slots"
+            if self.hybrid_slot_configuration:
+                if self.hybrid_slot_configuration.get("raid_attached_nvme_slots"):
+                    self.hybrid_slot_configuration["controller_attached_nvme_slots"] = \
+                        self.hybrid_slot_configuration.get("raid_attached_nvme_slots")
+
         self.clean_object()
 
     def clean_object(self):
@@ -6033,7 +6283,8 @@ class IntersightStoragePolicy(IntersightConfigObject):
         # if they are not present
 
         if self.hybrid_slot_configuration:
-            for hsc_attribute in ["direct_attached_nvme_slots", "raid_attached_nvme_slots"]:
+            for hsc_attribute in ["controller_attached_nvme_slots", "direct_attached_nvme_slots",
+                                  "raid_attached_nvme_slots"]:
                 if hsc_attribute not in self.hybrid_slot_configuration:
                     self.hybrid_slot_configuration[hsc_attribute] = None
 
@@ -6089,6 +6340,11 @@ class IntersightStoragePolicy(IntersightConfigObject):
             "Unconfigured Good": "UnconfiguredGood",
             "JBOD": "Jbod"
         }
+        default_drive_state_dict = {
+            "RAID0": "RAID0",
+            "Unconfigured Good": "UnconfiguredGood",
+            "JBOD": "Jbod"
+        }
         access_policy_dict = {
             "Default": "Default",
             "Read Write": "ReadWrite",
@@ -6116,6 +6372,8 @@ class IntersightStoragePolicy(IntersightConfigObject):
         param_dict = {}
         if policy == "unused_disks_state":
             param_dict = unused_disks_state_dict
+        elif policy == "default_drive_state":
+            param_dict = default_drive_state_dict
         elif policy == "access_policy":
             param_dict = access_policy_dict
         elif policy == "drive_cache":
@@ -6171,14 +6429,21 @@ class IntersightStoragePolicy(IntersightConfigObject):
             kwargs["unused_disks_state"] = self._format_parameter_values(policy="unused_disks_state",
                                                                          param_value=self.unused_disks_state,
                                                                          param_type="live")
+        if self.default_drive_state is not None:
+            kwargs["default_drive_mode"] = self._format_parameter_values(policy="default_drive_state",
+                                                                         param_value=self.default_drive_state,
+                                                                         param_type="live")
+        if self.secure_jbod_disk_slots is not None:
+            kwargs["secure_jbods"] = self.secure_jbod_disk_slots
         if self.global_hot_spares is not None:
             kwargs["global_hot_spares"] = self.global_hot_spares
 
         if self.hybrid_slot_configuration:
             if self.hybrid_slot_configuration.get("direct_attached_nvme_slots"):
                 kwargs["direct_attached_nvme_slots"] = self.hybrid_slot_configuration.get("direct_attached_nvme_slots")
-            if self.hybrid_slot_configuration.get("raid_attached_nvme_slots"):
-                kwargs["raid_attached_nvme_slots"] = self.hybrid_slot_configuration.get("raid_attached_nvme_slots")
+            if self.hybrid_slot_configuration.get("controller_attached_nvme_slots"):
+                kwargs["controller_attached_nvme_slots"] = \
+                    self.hybrid_slot_configuration.get("controller_attached_nvme_slots")
 
         if self.m2_configuration is not None and self.m2_configuration.get("enable"):
             from intersight.model.storage_m2_virtual_drive_config import StorageM2VirtualDriveConfig
@@ -6450,20 +6715,20 @@ class IntersightSyslogPolicy(IntersightConfigObject):
 
             remote_clients = []
             for server in ["server1", "server2"]:
-                if self.remote_logging[server] is not None:
+                if self.remote_logging.get(server, None) is not None:
                     remote_logging_kwargs = {
                         "object_type": "syslog.RemoteLoggingClient",
                         "class_id": "syslog.RemoteLoggingClient",
                     }
-                    if self.remote_logging[server]["enable"] is not None:
+                    if self.remote_logging[server].get("enable", None) is not None:
                         remote_logging_kwargs["enabled"] = self.remote_logging[server]["enable"]
-                    if self.remote_logging[server]["hostname"] is not None:
+                    if self.remote_logging[server].get("hostname", None) is not None:
                         remote_logging_kwargs["hostname"] = self.remote_logging[server]["hostname"]
-                    if self.remote_logging[server]["port"] is not None:
+                    if self.remote_logging[server].get("port", None) is not None:
                         remote_logging_kwargs["port"] = self.remote_logging[server]["port"]
-                    if self.remote_logging[server]["protocol"] is not None:
+                    if self.remote_logging[server].get("protocol", None) is not None:
                         remote_logging_kwargs["protocol"] = self.remote_logging[server]["protocol"]
-                    if self.remote_logging[server]["min_severity"] is not None:
+                    if self.remote_logging[server].get("min_severity", None) is not None:
                         remote_logging_kwargs["min_severity"] = self.remote_logging[server]["min_severity"]
                     remote_clients.append(SyslogRemoteLoggingClient(**remote_logging_kwargs))
 
@@ -6719,6 +6984,47 @@ class IntersightVirtualMediaPolicy(IntersightConfigObject):
         vmedia_policy = VmediaPolicy(**kwargs)
 
         if not self.commit(object_type=self._INTERSIGHT_SDK_OBJECT_NAME, payload=vmedia_policy, detail=self.name):
+            return False
+
+        return True
+
+
+class IntersightMemoryPolicy(IntersightConfigObject):
+    _CONFIG_NAME = "Memory Policy"
+    _CONFIG_SECTION_NAME = "memory_policies"
+    _INTERSIGHT_SDK_OBJECT_NAME = "memory.Policy"
+
+    def __init__(self, parent=None, memory_policy=None):
+        IntersightConfigObject.__init__(self, parent=parent, sdk_object=memory_policy)
+
+        self.name = self.get_attribute(attribute_name="name")
+        self.descr = self.get_attribute(attribute_name="description", attribute_secondary_name="descr")
+        self.enable_dimm_blocklisting = self.get_attribute(attribute_name="enable_dimm_blocklisting")
+
+    @IntersightConfigObject.update_taskstep_description()
+    def push_object(self):
+        from intersight.model.memory_policy import MemoryPolicy
+
+        self.logger(message=f"Pushing {self._CONFIG_NAME} configuration: {self.name}")
+
+        kwargs = {
+            "object_type": self._INTERSIGHT_SDK_OBJECT_NAME,
+            "class_id": self._INTERSIGHT_SDK_OBJECT_NAME,
+            "organization": self.get_parent_org_relationship()
+        }
+        if self.name is not None:
+            kwargs["name"] = self.name
+        if self.descr is not None:
+            kwargs["description"] = self.descr
+        if self.tags is not None:
+            kwargs["tags"] = self.create_tags()
+        if self.enable_dimm_blocklisting is not None:
+            kwargs["enable_dimm_blocklisting"] = self.enable_dimm_blocklisting
+
+        memory_policy = MemoryPolicy(**kwargs)
+
+        if not self.commit(object_type=self._INTERSIGHT_SDK_OBJECT_NAME, payload=memory_policy,
+                           detail=self.name):
             return False
 
         return True

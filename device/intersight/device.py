@@ -6,14 +6,15 @@
 import base64
 import datetime
 import importlib
-import intersight
 import json
 import re
-import requests
 import time
-import urllib3
 
+import intersight
 import intersight.signing
+import requests
+import urllib3
+from intersight import __version__ as intersight_sdk_version
 from intersight.api.access_api import AccessApi
 from intersight.api.adapter_api import AdapterApi
 from intersight.api.appliance_api import ApplianceApi
@@ -21,6 +22,7 @@ from intersight.api.bios_api import BiosApi
 from intersight.api.boot_api import BootApi
 from intersight.api.certificatemanagement_api import CertificatemanagementApi
 from intersight.api.chassis_api import ChassisApi
+from intersight.api.compute_api import ComputeApi
 from intersight.api.deviceconnector_api import DeviceconnectorApi
 from intersight.api.fabric_api import FabricApi
 from intersight.api.fcpool_api import FcpoolApi
@@ -51,30 +53,29 @@ from intersight.api.thermal_api import ThermalApi
 from intersight.api.uuidpool_api import UuidpoolApi
 from intersight.api.vmedia_api import VmediaApi
 from intersight.api.vnic_api import VnicApi
-
-from intersight.model.mo_mo_ref import MoMoRef
-from intersight.model.organization_organization import OrganizationOrganization
-from intersight.model.resource_group import ResourceGroup
 from intersight.api_client import ApiClient
 from intersight.configuration import Configuration
 from intersight.exceptions import ApiValueError, ApiTypeError, ApiException, OpenApiException
-from intersight import __version__ as intersight_sdk_version
 from intersight.model.fabric_switch_cluster_profile import FabricSwitchClusterProfile
+from intersight.model.mo_mo_ref import MoMoRef
+from intersight.model.organization_organization import OrganizationOrganization
+from intersight.model.resource_group import ResourceGroup
+from werkzeug.utils import secure_filename
 
-from cache.intersight.manager import IntersightCacheManager
+import common
 from __init__ import EASYUCS_ROOT
+from cache.intersight.manager import IntersightCacheManager
 from config.intersight.manager import IntersightConfigManager
 from device.delete_summary_manager import DeleteSummaryManager
+from device.device import GenericDevice
 from inventory.intersight.manager import IntersightInventoryManager
 from report.intersight.manager import IntersightReportManager
-from device.device import GenericDevice
-import common
 
 urllib3.disable_warnings()
 
 
 class IntersightDevice(GenericDevice):
-    INTERSIGHT_APPLIANCE_MIN_REQUIRED_VERSION = "1.1.1-0"
+    INTERSIGHT_APPLIANCE_MIN_REQUIRED_VERSION = "1.1.2-0"
 
     def __init__(self, parent=None, uuid=None, target="us-east-1.intersight.com", key_id="", private_key_path="",
                  is_hidden=False, is_system=False, system_usage=None, proxy=None, proxy_user=None, proxy_password=None,
@@ -278,7 +279,7 @@ class IntersightDevice(GenericDevice):
             {SmtpApi: ["smtp_policy"]},
             {FirmwareApi: ["firmware_policy"]},
             {CertificatemanagementApi: ["certificatemanagement_policy"]},
-            {MemoryApi: ["memory_persistent_memory_policy"]},
+            {MemoryApi: ["memory_persistent_memory_policy", "memory_policy"]},
             {NetworkconfigApi: ["networkconfig_policy"]},
             {BootApi: ["boot_precision_policy"]},
             {KvmApi: ["kvm_policy"]},
@@ -292,6 +293,7 @@ class IntersightDevice(GenericDevice):
             {StorageApi: ["storage_storage_policy", "storage_drive_security_policy"]},
             {ThermalApi: ["thermal_policy"]},
             {PowerApi: ["power_policy"]},
+            {ComputeApi: ["compute_scrub_policy"]},
             {DeviceconnectorApi: ["deviceconnector_policy"]},
             {AdapterApi: ["adapter_config_policy"]},
             {IppoolApi: ["ippool_reservation", "ippool_pool"]},
@@ -299,7 +301,8 @@ class IntersightDevice(GenericDevice):
             {FcpoolApi: ["fcpool_reservation", "fcpool_pool"]},
             {IqnpoolApi: ["iqnpool_reservation",  "iqnpool_pool"]},
             {UuidpoolApi: ["uuidpool_reservation", "uuidpool_pool"]},
-            {ResourcepoolApi: ["resourcepool_membership_reservation", "resourcepool_pool"]},
+            {ResourcepoolApi: ["resourcepool_membership_reservation", "resourcepool_pool",
+                               "resourcepool_qualification_policy"]},
             {IamApi: ["iam_user_group", "iam_user", "iam_end_point_user_policy", "iam_end_point_user",
                       "iam_permission", "iam_ldap_policy", "iam_sharing_rule"]},
             {OrganizationApi: ["organization_organization"]}
@@ -405,18 +408,45 @@ class IntersightDevice(GenericDevice):
                                     result_is_system_defined = True
                                     self.logger(level="debug",
                                                 message=f"Skipping {result.object_type} with name "
-                                                        f"{getattr(result, 'name', '')} as its System defined")
+                                                        f"{getattr(result, 'name', '')} as it is System defined")
                                     self.delete_summary_manager.add_obj_status(
                                         obj=result,
                                         status="skipped",
-                                        message="Appliance system defined Objects"
+                                        message="Appliance system defined Object"
                                     )
                                     break
                             if result_is_system_defined:
                                 continue
 
-                        # If we need to restrict the deletion to a list of organizations, then we need to handle
-                        # some these specific objects as they do not contain direct reference to organization object.
+                        # We skip some System defined objects which exists on appliance for the software repository
+                        if sdk_object == "organization_organization":
+                            # We can't delete org "private-catalog" on an Intersight Appliance device
+                            if self.is_appliance and getattr(result, "name", None) in ["private-catalog"]:
+                                self.logger(level="debug",
+                                            message=f"Skipping {result.object_type} with name "
+                                                    f"{getattr(result, 'name', '')} as it is System defined")
+                                self.delete_summary_manager.add_obj_status(
+                                    obj=result,
+                                    status="skipped",
+                                    message="Appliance system defined Object"
+                                )
+                                continue
+
+                        elif sdk_object == "resource_group":
+                            # We don't delete RG "private-catalog-rg" on an Intersight Appliance device
+                            if self.is_appliance and getattr(result, "name", None) in ["private-catalog-rg"]:
+                                self.logger(level="debug",
+                                            message=f"Skipping {result.object_type} with name "
+                                                    f"{getattr(result, 'name', '')} as it is System defined")
+                                self.delete_summary_manager.add_obj_status(
+                                    obj=result,
+                                    status="skipped",
+                                    message="Appliance system defined Object"
+                                )
+                                continue
+
+                        # If we need to restrict the deletion to a list of organizations, then we need to handle some
+                        # of these specific objects as they do not contain a direct reference to organization object.
                         if orgs_to_be_deleted:
                             if sdk_object == "iam_sharing_rule":
                                 if result.shared_with_resource.moid in orgs_to_be_deleted:
@@ -428,7 +458,7 @@ class IntersightDevice(GenericDevice):
                                 if result.organization.moid in orgs_to_be_deleted:
                                     filtered_results.append(result)
                         else:
-                            # If we do not restrict the deletion to a list of organizations, then we need add all
+                            # If we do not restrict the deletion to a list of organizations, then we need to add all
                             # the objects to the filtered list.
                             filtered_results.append(result)
 
@@ -522,7 +552,9 @@ class IntersightDevice(GenericDevice):
                                 # name to "default". This is done to deliver a factory reset environment to the user.
                                 org_objects = self.query(api_class=OrganizationApi,
                                                          sdk_object_type="organization_organization")
-                                if len(org_objects) == 1:
+                                if (len(org_objects) == 1) or (len(org_objects) == 2 and self.is_appliance and
+                                        getattr(obj, "name", None) != "private-catalog" and
+                                        any(getattr(x, "name", None) == "private-catalog" for x in org_objects)):
                                     # "obj" is the last organization which is being deleted
                                     last_organization = obj
                                     if org_objects[0].name != "default":
@@ -538,7 +570,15 @@ class IntersightDevice(GenericDevice):
                                 # Intersight account, then we don't delete that resource group. Rather, we rename
                                 # that resource group to "default". This is done to deliver a factory reset
                                 # environment to the user.
-                                if any([org_moref.moid == last_organization.moid for org_moref in obj.organizations]):
+
+                                if last_organization is None:
+                                    # This indicates that one or more organizations failed to delete,
+                                    # which may impact deletion of resource group associated with these organizations.
+                                    self.logger(level="warning",
+                                                message="Deletion of some organizations failed, "
+                                                        "which may prevent removal of associated resource groups.")
+                                if last_organization and any([org_moref.moid == last_organization.moid
+                                                              for org_moref in obj.organizations]):
                                     # "obj" is the resource group belonging to the last organization 'default'
                                     if obj.name != "default":
                                         self.logger(level="info",
@@ -1032,7 +1072,7 @@ class IntersightDevice(GenericDevice):
     def _set_device_name_and_version(self):
         appliance_api = ApplianceApi(api_client=self.handle)
         try:
-            system_info = appliance_api.get_appliance_system_info_list(_request_timeout=self.timeout)
+            system_info = appliance_api.get_appliance_system_info_list(_request_timeout=self.timeout, select="Version")
 
             if system_info.results:
                 self.version = system_info.results[0].version

@@ -29,11 +29,13 @@ from config.intersight.server_policies import (
     IntersightLanConnectivityPolicy,
     IntersightLdapPolicy,
     IntersightLocalUserPolicy,
+    IntersightMemoryPolicy,
     IntersightNetworkConnectivityPolicy,
     IntersightNtpPolicy,
     IntersightPersistentMemoryPolicy,
     IntersightPowerPolicy,
     IntersightSanConnectivityPolicy,
+    IntersightScrubPolicy,
     IntersightSdCardPolicy,
     IntersightSerialOverLanPolicy,
     IntersightSmtpPolicy,
@@ -61,12 +63,14 @@ class IntersightGenericUcsServerProfile(IntersightConfigObject):
         "lan_connectivity_policy": IntersightLanConnectivityPolicy,
         "ldap_policy": IntersightLdapPolicy,
         "local_user_policy": IntersightLocalUserPolicy,
+        "memory_policy": IntersightMemoryPolicy,
         "network_connectivity_policy": IntersightNetworkConnectivityPolicy,
         "ntp_policy": IntersightNtpPolicy,
         "persistent_memory_policy": IntersightPersistentMemoryPolicy,
         "power_policy": IntersightPowerPolicy,
         "resource_pool": IntersightResourcePool,
         "san_connectivity_policy": IntersightSanConnectivityPolicy,
+        "scrub_policy": IntersightScrubPolicy,
         "sd_card_policy": IntersightSdCardPolicy,
         "serial_over_lan_policy": IntersightSerialOverLanPolicy,
         "smtp_policy": IntersightSmtpPolicy,
@@ -92,6 +96,7 @@ class IntersightGenericUcsServerProfile(IntersightConfigObject):
         "iscsi_iqn_pool_name": IntersightIqnPool,
         "mac_address_pool": IntersightMacPool,
         "outband_ipv4_pool": IntersightIpPool,
+        "scrub_policy": IntersightScrubPolicy,
         "server_pool": IntersightResourcePool,
         "uuid_pool": IntersightUuidPool,
         "wwnn_pool": IntersightWwnnPool,
@@ -117,11 +122,13 @@ class IntersightGenericUcsServerProfile(IntersightConfigObject):
         self.lan_connectivity_policy = None
         self.ldap_policy = None
         self.local_user_policy = None
+        self.memory_policy = None
         self.network_connectivity_policy = None
         self.ntp_policy = None
         self.persistent_memory_policy = None
         self.power_policy = None
         self.san_connectivity_policy = None
+        self.scrub_policy = None
         self.sd_card_policy = None
         self.serial_over_lan_policy = None
         self.smtp_policy = None
@@ -329,12 +336,12 @@ class IntersightUcsServerProfile(IntersightGenericUcsServerProfile):
                 "adapter_configuration_policy", "assigned_server", "bios_policy", "boot_policy",
                 "certificate_management_policy", "device_connector_policy", "drive_security_policy", "firmware_policy",
                 "imc_access_policy", "ipmi_over_lan_policy", "lan_connectivity_policy", "ldap_policy",
-                "local_user_policy", "network_connectivity_policy", "ntp_policy", "operational_state",
+                "local_user_policy", "memory_policy", "network_connectivity_policy", "ntp_policy", "operational_state",
                 "persistent_memory_policy", "power_policy", "reservations", "resource_pool", "san_connectivity_policy",
-                "sd_card_policy", "serial_over_lan_policy", "server_pre_assign_by_serial", "server_pre_assign_by_slot",
-                "smtp_policy", "snmp_policy", "ssh_policy", "storage_policy", "syslog_policy", "thermal_policy",
-                "ucs_server_profile_template", "uuid_allocation_type", "uuid_pool", "uuid_static", "virtual_kvm_policy",
-                "virtual_media_policy"
+                "scrub_policy", "sd_card_policy", "serial_over_lan_policy", "server_pre_assign_by_serial",
+                "server_pre_assign_by_slot", "smtp_policy", "snmp_policy", "ssh_policy", "storage_policy",
+                "syslog_policy", "thermal_policy", "ucs_server_profile_template", "uuid_allocation_type", "uuid_pool",
+                "uuid_static", "virtual_kvm_policy", "virtual_media_policy"
             ]:
                 setattr(self, attribute, None)
                 if attribute in self._object:
@@ -1402,10 +1409,10 @@ class IntersightUcsServerProfile(IntersightGenericUcsServerProfile):
         for policy_name in [
             "adapter_configuration_policy", "bios_policy", "boot_policy", "certificate_management_policy",
             "device_connector_policy", "drive_security_policy", "firmware_policy", "imc_access_policy",
-            "ipmi_over_lan_policy", "lan_connectivity_policy", "ldap_policy", "local_user_policy",
+            "ipmi_over_lan_policy", "lan_connectivity_policy", "ldap_policy", "local_user_policy", "memory_policy",
             "network_connectivity_policy", "ntp_policy", "persistent_memory_policy", "power_policy",
-            "san_connectivity_policy", "sd_card_policy", "serial_over_lan_policy", "smtp_policy", "snmp_policy",
-            "ssh_policy", "storage_policy", "syslog_policy", "thermal_policy", "virtual_kvm_policy",
+            "san_connectivity_policy", "scrub_policy", "sd_card_policy", "serial_over_lan_policy", "smtp_policy",
+            "snmp_policy", "ssh_policy", "storage_policy", "syslog_policy", "thermal_policy", "virtual_kvm_policy",
             "virtual_media_policy"
         ]:
             if getattr(self, policy_name, None) is not None:
@@ -1474,11 +1481,11 @@ class IntersightUcsServerProfileTemplate(IntersightGenericUcsServerProfile):
             for attribute in [
                 "adapter_configuration_policy", "bios_policy", "boot_policy", "certificate_management_policy",
                 "device_connector_policy", "drive_security_policy", "firmware_policy", "imc_access_policy",
-                "ipmi_over_lan_policy", "lan_connectivity_policy", "ldap_policy", "local_user_policy",
+                "ipmi_over_lan_policy", "lan_connectivity_policy", "ldap_policy", "local_user_policy", "memory_policy",
                 "network_connectivity_policy", "ntp_policy", "persistent_memory_policy", "power_policy",
-                "san_connectivity_policy", "sd_card_policy", "serial_over_lan_policy", "smtp_policy", "snmp_policy",
-                "ssh_policy", "storage_policy", "syslog_policy", "thermal_policy", "uuid_pool", "virtual_kvm_policy",
-                "virtual_media_policy"
+                "san_connectivity_policy", "scrub_policy", "sd_card_policy", "serial_over_lan_policy", "smtp_policy",
+                "snmp_policy", "ssh_policy", "storage_policy", "syslog_policy", "thermal_policy", "uuid_pool",
+                "virtual_kvm_policy", "virtual_media_policy"
             ]:
                 setattr(self, attribute, None)
                 if attribute in self._object:
@@ -1528,10 +1535,10 @@ class IntersightUcsServerProfileTemplate(IntersightGenericUcsServerProfile):
         for policy_name in [
             "adapter_configuration_policy", "bios_policy", "boot_policy", "certificate_management_policy",
             "device_connector_policy", "drive_security_policy", "firmware_policy", "imc_access_policy",
-            "ipmi_over_lan_policy", "lan_connectivity_policy", "ldap_policy", "local_user_policy",
+            "ipmi_over_lan_policy", "lan_connectivity_policy", "ldap_policy", "local_user_policy", "memory_policy",
             "network_connectivity_policy", "ntp_policy", "persistent_memory_policy", "power_policy",
-            "san_connectivity_policy", "sd_card_policy", "serial_over_lan_policy", "smtp_policy", "snmp_policy",
-            "ssh_policy", "storage_policy", "syslog_policy", "thermal_policy", "virtual_kvm_policy",
+            "san_connectivity_policy", "scrub_policy", "sd_card_policy", "serial_over_lan_policy", "smtp_policy",
+            "snmp_policy", "ssh_policy", "storage_policy", "syslog_policy", "thermal_policy", "virtual_kvm_policy",
             "virtual_media_policy"
         ]:
             if getattr(self, policy_name, None) is not None:

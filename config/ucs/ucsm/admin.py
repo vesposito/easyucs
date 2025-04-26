@@ -2593,12 +2593,12 @@ class UcsSystemSwitchingMode(UcsSystemConfigObject):
 
                 # Check the FSM State after reboot of primary FI
                 self.logger(message="Waiting up to 120 seconds for the FSM state of LAN switching mode to reach 100%")
-                if not self._device.wait_for_fsm_complete(ucs_sdk_object_class="fabricLanCloud", timeout=120):
+                if not self._device.wait_for_fsm_complete(ucs_sdk_object_classes="fabricLanCloud", timeout=120):
                     self.logger(level="error", message="Timeout exceeded while waiting for FSM state of LAN switching" +
                                 " mode to reach 100%")
                     return False
                 self.logger(message="Waiting up to 120 seconds for the FSM state of SAN switching mode to reach 100%")
-                if not self._device.wait_for_fsm_complete(ucs_sdk_object_class="fabricSanCloud", timeout=120):
+                if not self._device.wait_for_fsm_complete(ucs_sdk_object_classes="fabricSanCloud", timeout=120):
                     self.logger(level="error", message="Timeout exceeded while waiting for FSM state of SAN switching" +
                                 " mode to reach 100%")
                     return False
@@ -2649,7 +2649,7 @@ class UcsSystemSwitchingMode(UcsSystemConfigObject):
                 # Check the FSM State after reboot of FI
                 self.logger(
                     message="Waiting up to 120 seconds for the FSM state of LAN switching mode to reach 100%")
-                if not self._device.wait_for_fsm_complete(ucs_sdk_object_class="fabricLanCloud",
+                if not self._device.wait_for_fsm_complete(ucs_sdk_object_classes="fabricLanCloud",
                                                           timeout=120):
                     self.logger(level="error",
                                 message="Timeout exceeded while waiting for FSM state of LAN switching" +
@@ -2657,7 +2657,7 @@ class UcsSystemSwitchingMode(UcsSystemConfigObject):
                     return False
                 self.logger(
                     message="Waiting up to 120 seconds for the FSM state of SAN switching mode to reach 100%")
-                if not self._device.wait_for_fsm_complete(ucs_sdk_object_class="fabricSanCloud",
+                if not self._device.wait_for_fsm_complete(ucs_sdk_object_classes="fabricSanCloud",
                                                           timeout=120):
                     self.logger(level="error",
                                 message="Timeout exceeded while waiting for FSM state of SAN switching" +

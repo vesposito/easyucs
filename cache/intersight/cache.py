@@ -67,6 +67,10 @@ class IntersightCache(GenericCache):
             return None
 
         for result in orgs.results:
+            # We don't return the "private-catalog" org if it is present on Intersight Appliance as it is a system org
+            if self.device.is_appliance and getattr(result, "name", None) == "private-catalog":
+                continue
+
             cached_orgs[result.name] = {
                 "description": result.description,
                 "is_shared": False,

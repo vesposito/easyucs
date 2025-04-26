@@ -33,13 +33,14 @@ class IntersightVnic(dict, IntersightGenericVnic):
 
 
 class IntersightVnicTemplate(IntersightConfigObject, IntersightGenericVnic):
-    _CONFIG_NAME = "vNIC Templates"
+    _CONFIG_NAME = "vNIC Template"
     _CONFIG_SECTION_NAME = "vnic_templates"
     _INTERSIGHT_SDK_OBJECT_NAME = "vnic.VnicTemplate"
     _POLICY_MAPPING_TABLE = {
         "ethernet_adapter_policy": IntersightEthernetAdapterPolicy,
         "ethernet_network_control_policy": IntersightEthernetNetworkControlPolicy,
-        "ethernet_network_group_policy": IntersightEthernetNetworkGroupPolicy,
+        "ethernet_network_group_policies": [IntersightEthernetNetworkGroupPolicy],
+        "ethernet_network_group_policy": IntersightEthernetNetworkGroupPolicy,  # Deprecated
         "ethernet_network_policy": IntersightEthernetNetworkPolicy,
         "ethernet_qos_policy": IntersightEthernetQosPolicy,
         "iscsi_boot_policy": IntersightIscsiBootPolicy,
@@ -63,6 +64,7 @@ class IntersightVnicTemplate(IntersightConfigObject, IntersightGenericVnic):
         self.enable_override = self.get_attribute(attribute_name="enable_override")
         self.ethernet_adapter_policy = None
         self.ethernet_network_control_policy = None
+        self.ethernet_network_group_policies = None
         self.ethernet_network_group_policy = None
         self.ethernet_qos_policy = None
         self.iscsi_boot_policy = None
@@ -84,16 +86,22 @@ class IntersightVnicTemplate(IntersightConfigObject, IntersightGenericVnic):
                 mac_pool = self._get_policy_name(policy=self._object.mac_pool)
                 if mac_pool:
                     self.mac_address_pool = mac_pool
-            # Fetch Ethernet Network Group Policy
+            # Fetch Ethernet Network Group Policies
             if getattr(self._object, "fabric_eth_network_group_policy", None):
                 if len(self._object.fabric_eth_network_group_policy) == 1:
                     fabric_eth_network_group_policy = self._get_policy_name(
                         policy=self._object.fabric_eth_network_group_policy[0])
                     if fabric_eth_network_group_policy:
-                        self.ethernet_network_group_policy = fabric_eth_network_group_policy
+                        self.ethernet_network_group_policies = [fabric_eth_network_group_policy]
+                elif len(self._object.fabric_eth_network_group_policy) > 1:
+                    self.ethernet_network_group_policies = []
+                    for eth_network_group_policy in self._object.fabric_eth_network_group_policy:
+                        fabric_eth_network_group_policy = self._get_policy_name(policy=eth_network_group_policy)
+                        if fabric_eth_network_group_policy:
+                            self.ethernet_network_group_policies.append(fabric_eth_network_group_policy)
                 else:
-                    self.logger(level="error", message="Multiple Ethernet Network Group Policies " +
-                                                               "assigned to vNIC " + self._object.name)
+                    self.logger(level="error", message="No Ethernet Network Group Policies " +
+                                                       "assigned to vNIC Template " + self._object.name)
             # Fetch Ethernet Network Control Policy
             if getattr(self._object, "fabric_eth_network_control_policy", None):
                 fabric_eth_network_control_policy = \
@@ -175,8 +183,9 @@ class IntersightVnicTemplate(IntersightConfigObject, IntersightGenericVnic):
 
         elif self._config.load_from == "file":
             for attribute in ["cdn_source", "cdn_value", "ethernet_adapter_policy", "ethernet_network_control_policy",
-                              "ethernet_network_group_policy", "ethernet_qos_policy", "iscsi_boot_policy",
-                              "mac_address_pool", "sriov_settings", "usnic_settings", "vmq_settings"]:
+                              "ethernet_network_group_policies", "ethernet_network_group_policy",
+                              "ethernet_qos_policy", "iscsi_boot_policy", "mac_address_pool", "sriov_settings",
+                              "usnic_settings", "vmq_settings"]:
                 setattr(self, attribute, None)
                 if attribute in self._object:
                     setattr(self, attribute, self.get_attribute(attribute_name=attribute))
@@ -277,7 +286,27 @@ class IntersightVnicTemplate(IntersightConfigObject, IntersightGenericVnic):
                             f"'{self.ethernet_network_control_policy}'"
                 )
 
-        if self.ethernet_network_group_policy is not None:
+        if self.ethernet_network_group_policies is not None:
+            # We need to identify the Ethernet Network Group Policies objects references
+            kwargs["fabric_eth_network_group_policy"] = []
+            for engp in self.ethernet_network_group_policies:
+                eth_nw_grp_policy = self.get_live_object(
+                    object_name=engp,
+                    object_type="fabric.EthNetworkGroupPolicy"
+                )
+                if eth_nw_grp_policy:
+                    kwargs["fabric_eth_network_group_policy"].append(eth_nw_grp_policy)
+                else:
+                    self._config.push_summary_manager.add_object_status(
+                        obj=self, obj_detail=f"Attaching Eth Network Group Policy '{engp}' to vNIC Template '"
+                                             f"{str(self.name)}'",
+                        obj_type="vnic.EthIf", status="failed",
+                        message=f"Failed to find Eth Network Group Policy '{engp}'"
+                    )
+
+        elif self.ethernet_network_group_policy is not None:
+            # We keep this section for compatibility purposes, but "ethernet_network_group_policy" attribute
+            # is deprecated starting with EasyUCS 1.0.2 (replaced by "ethernet_network_group_policies")
             # We need to identify the Ethernet Network Group Policy object reference
             eth_nw_grp_policy = self.get_live_object(
                 object_name=self.ethernet_network_group_policy,
@@ -452,7 +481,7 @@ class IntersightVhba(dict, IntersightGenericVhba):
 
 
 class IntersightVhbaTemplate(IntersightConfigObject, IntersightGenericVhba):
-    _CONFIG_NAME = "vHBA Templates"
+    _CONFIG_NAME = "vHBA Template"
     _CONFIG_SECTION_NAME = "vhba_templates"
     _INTERSIGHT_SDK_OBJECT_NAME = "vnic.VhbaTemplate"
     _POLICY_MAPPING_TABLE = {

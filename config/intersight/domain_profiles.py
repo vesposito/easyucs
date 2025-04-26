@@ -6,14 +6,15 @@
 import copy
 
 from config.intersight.object import IntersightConfigObject
-from config.intersight.server_policies import IntersightNetworkConnectivityPolicy, IntersightNtpPolicy, \
-    IntersightSnmpPolicy, IntersightSyslogPolicy
+from config.intersight.server_policies import IntersightLdapPolicy, IntersightNetworkConnectivityPolicy, \
+    IntersightNtpPolicy, IntersightSnmpPolicy, IntersightSyslogPolicy
 from config.intersight.fabric_policies import IntersightFabricPortPolicy, IntersightFabricSwitchControlPolicy, \
     IntersightFabricSystemQosPolicy, IntersightFabricVlanPolicy, IntersightFabricVsanPolicy
 
 
 class IntersightGenericUcsDomainProfile(IntersightConfigObject):
     _POLICY_MAPPING_TABLE = {
+        "ldap_policy": IntersightLdapPolicy,
         "network_connectivity_policy": IntersightNetworkConnectivityPolicy,
         "ntp_policy": IntersightNtpPolicy,
         "port_policies": {
@@ -42,6 +43,7 @@ class IntersightGenericUcsDomainProfile(IntersightConfigObject):
         self.user_label = self.get_attribute(attribute_name="user_label")
 
         self.network_connectivity_policy = None
+        self.ldap_policy = None
         self.ntp_policy = None
         self.port_policies = None
         self.snmp_policy = None
@@ -146,7 +148,7 @@ class IntersightUcsDomainProfile(IntersightGenericUcsDomainProfile):
                     })
 
         elif self._config.load_from == "file":
-            for attribute in ["network_connectivity_policy", "ntp_policy", "operational_state", "port_policies",
+            for attribute in ["ldap_policy","network_connectivity_policy", "ntp_policy", "operational_state", "port_policies",
                               "snmp_policy", "switch_control_policy", "syslog_policy", "system_qos_policy",
                               "vlan_policies", "vsan_policies", "ucs_domain_profile_template"]:
                 setattr(self, attribute, None)
@@ -422,7 +424,7 @@ class IntersightUcsDomainProfile(IntersightGenericUcsDomainProfile):
         if self.name is not None:
             switch_profile_b_kwargs["name"] = self.name + "-B"
 
-        for policy_section in ["network_connectivity_policy", "ntp_policy", "port_policies", "snmp_policy",
+        for policy_section in ["ldap_policy", "network_connectivity_policy", "ntp_policy", "port_policies", "snmp_policy",
                                "switch_control_policy", "syslog_policy", "system_qos_policy", "vlan_policies",
                                "vsan_policies"]:
             if getattr(self, policy_section, None):
@@ -592,7 +594,7 @@ class IntersightUcsDomainProfileTemplate(IntersightGenericUcsDomainProfile):
         if self.name is not None:
             switch_profile_template_b_kwargs["name"] = self.name + "-B"
 
-        for policy_section in ["network_connectivity_policy", "ntp_policy", "port_policies", "snmp_policy",
+        for policy_section in ["ldap_policy","network_connectivity_policy", "ntp_policy", "port_policies", "snmp_policy",
                                "switch_control_policy", "syslog_policy", "system_qos_policy", "vlan_policies",
                                "vsan_policies"]:
             if getattr(self, policy_section, None):

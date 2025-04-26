@@ -1,0 +1,592 @@
+{
+  "id": "intersight_config_orgs_server_pool_qualification_policies#",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "EasyUCS intersight config orgs server_pool_qualification_policies section",
+  "description": "EasyUCS intersight config orgs server_pool_qualification_policies section JSON schema",
+  "type": "object",
+  "properties": {
+    "comment": {
+      "description": "Server Pool Qualification Policy Comments",
+      "type": "string",
+      "default": ""
+    },
+    "descr": {
+      "description": "Server Pool Qualification Policy Description",
+      "type": "string",
+      "default": "",
+      "pattern": "^$|^[a-zA-Z0-9]+[\\x00-\\xFF]*$",
+      "maxLength": 1024
+    },
+    "name": {
+      "description": "Server Pool Qualification Policy Name",
+      "type": "string",
+      "default": "",
+      "pattern": "^[a-zA-Z0-9_.:-]{1,64}$"
+    },
+    "tags": {
+      "description": "Server Pool Qualification Policy Tags",
+      "type": "array",
+      "items": {
+        "description": "Server Pool Qualification Policy Tag",
+        "type": "object",
+        "properties": {
+          "key": {
+            "description": "Server Pool Qualification Policy Tag Key",
+            "type": "string",
+            "default": "",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "value": {
+            "description": "Server Pool Qualification Policy Tag Value",
+            "type": "string",
+            "default": "",
+            "minLength": 0,
+            "maxLength": 256
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "key",
+          "value"
+        ]
+      },
+      "minItems": 1
+    },
+    "domain_qualifiers": {
+      "description": "Domain qualification criteria for the Server Pool Qualification Policy",
+      "type": "object",
+      "properties": {
+        "domain_names": {
+          "description": "List of domain names",
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 100
+        },
+        "fabric_interconnect_pids": {
+          "description": "List of Fabric Interconnect product IDs",
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 20
+        }
+      },
+      "additionalProperties": false
+    },
+    "server_qualifiers": {
+      "description": "Server qualification criteria for the Server Pool Qualification Policy",
+      "type": "object",
+      "properties": {
+        "rack_server_qualifier": {
+          "description": "Qualification criteria for rack servers",
+          "type": "object",
+          "properties": {
+            "asset_tags": {
+              "description": "List of asset tags for rack servers",
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "maxItems": 20
+            },
+            "rack_pids": {
+              "description": "List of PIDs for rack servers",
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "maxItems": 20
+            },
+            "user_labels": {
+              "description": "List of user-defined labels for rack servers",
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "maxItems": 20
+            },
+            "rack_ids": {
+              "description": "Rack ID range for rack servers",
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "rack_id_from": {
+                    "description": "Starting rack ID",
+                    "type": "integer",
+                    "maximum": 256
+                  },
+                  "rack_id_to": {
+                    "description": "Ending rack ID",
+                    "type": "integer",
+                    "maximum": 256
+                  }
+                },
+                "required": [
+                  "rack_id_from",
+                  "rack_id_to"
+                ],
+                "additionalProperties": false
+              },
+              "maxItems": 20
+            }
+          },
+          "additionalProperties": false
+        },
+        "blade_server_qualifier": {
+          "description": "Qualification criteria for blade servers",
+          "type": "object",
+          "properties": {
+            "asset_tags": {
+              "description": "List of asset tags for blade servers",
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "maxItems": 20
+            },
+            "blade_pids": {
+              "description": "List of PIDs for blade servers",
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "maxItems": 20
+            },
+            "chassis_pids": {
+              "description": "List of PIDs for chassis",
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "maxItems": 20
+            },
+            "user_labels": {
+              "description": "List of user-defined labels for blade servers",
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "maxItems": 20
+            },
+            "chassis_slot_ids": {
+              "description": "Chassis and slot ID qualification for blade servers",
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "chassis_ids": {
+                    "description": "Chassis ID range",
+                    "type": "object",
+                    "properties": {
+                      "chassis_id_from": {
+                        "description": "Starting chassis ID",
+                        "type": "integer",
+                        "maximum": 40
+                      },
+                      "chassis_id_to": {
+                        "description": "Ending chassis ID",
+                        "type": "integer",
+                        "maximum": 40
+                      }
+                    },
+                    "required": [
+                      "chassis_id_from",
+                      "chassis_id_to"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "slot_ids": {
+                    "description": "Slot ID range within the chassis",
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "slot_id_from": {
+                          "description": "Starting slot ID",
+                          "type": "integer",
+                          "maximum": 8
+                        },
+                        "slot_id_to": {
+                          "description": "Ending slot ID",
+                          "type": "integer",
+                          "maximum": 8
+                        }
+                      },
+                      "required": [
+                        "slot_id_from",
+                        "slot_id_to"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "maxItems": 20
+                  }
+                },
+                "additionalProperties": false
+              },
+              "maxItems": 20
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "tag_qualifiers": {
+      "description": "Tag-based qualification criteria for the Server Pool Qualification Policy",
+      "type": "object",
+      "properties": {
+        "chassis_tags": {
+          "description": "List of tags associated with chassis",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "key": {
+                "description": "Tag key for chassis",
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              },
+              "value": {
+                "description": "Tag value for chassis",
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256
+              }
+            },
+            "required": [
+              "key",
+              "value"
+            ],
+            "additionalProperties": false
+          },
+          "maxItems": 20
+        },
+        "domain_profile_tags": {
+          "description": "List of tags associated with domain profiles",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "key": {
+                "description": "Tag key for domain profile",
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              },
+              "value": {
+                "description": "Tag value for domain profile",
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256
+              }
+            },
+            "required": [
+              "key",
+              "value"
+            ],
+            "additionalProperties": false
+          },
+          "maxItems": 20
+        },
+        "server_tags": {
+          "description": "List of tags associated with servers",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "key": {
+                "description": "Tag key for server",
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              },
+              "value": {
+                "description": "Tag value for server",
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256
+              }
+            },
+            "required": [
+              "key",
+              "value"
+            ],
+            "additionalProperties": false
+          },
+          "maxItems": 20
+        }
+      },
+      "additionalProperties": false
+    },
+    "hardware_qualifiers": {
+      "description": "Hardware qualification criteria for the Server Pool Qualification Policy",
+      "type": "object",
+      "properties": {
+        "memory_qualifier": {
+          "description": "Qualification criteria for memory",
+          "type": "object",
+          "properties": {
+            "capacity_minimum": {
+              "description": "Minimum memory capacity",
+              "type": "integer",
+              "maximum": 999999
+            },
+            "capacity_maximum": {
+              "description": "Maximum memory capacity",
+              "type": "integer",
+              "maximum": 999999
+            },
+            "number_of_units_minimum": {
+              "description": "Minimum number of memory units",
+              "type": "integer",
+              "maximum": 99999
+            },
+            "number_of_units_maximum": {
+              "description": "Maximum number of memory units",
+              "type": "integer",
+              "maximum": 99999
+            }
+          },
+          "additionalProperties": false,
+          "allOf": [
+            {
+              "if": {
+                "required": [
+                  "capacity_minimum"
+                ]
+              },
+              "then": {
+                "required": [
+                  "capacity_maximum"
+                ]
+              }
+            },
+            {
+              "if": {
+                "required": [
+                  "capacity_maximum"
+                ]
+              },
+              "then": {
+                "required": [
+                  "capacity_minimum"
+                ]
+              }
+            },
+            {
+              "if": {
+                "required": [
+                  "number_of_units_minimum"
+                ]
+              },
+              "then": {
+                "required": [
+                  "number_of_units_maximum"
+                ]
+              }
+            },
+            {
+              "if": {
+                "required": [
+                  "number_of_units_maximum"
+                ]
+              },
+              "then": {
+                "required": [
+                  "number_of_units_minimum"
+                ]
+              }
+            }
+          ]
+        },
+        "gpu_qualifier": {
+          "description": "Qualification criteria for GPUs",
+          "type": "object",
+          "properties": {
+            "gpu_pids": {
+              "description": "List of GPU product IDs",
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "maxItems": 20
+            },
+            "number_of_gpus_minimum": {
+              "description": "Minimum number of GPUs",
+              "type": "integer",
+              "maximum": 16
+            },
+            "number_of_gpus_maximum": {
+              "description": "Maximum number of GPUs",
+              "type": "integer",
+              "maximum": 16
+            },
+            "gpu_evaluation_type": {
+              "description": "Evaluation type for GPU qualification",
+              "type": "string",
+              "enum": [
+                "ServerWithoutGpu",
+                "ServerWithGpu",
+                "Unspecified"
+              ],
+              "default": "ServerWithoutGpu"
+            },
+            "vendor": {
+              "description": "GPU vendor",
+              "type": "string",
+              "default": ""
+            }
+          },
+          "additionalProperties": false,
+          "allOf": [
+            {
+              "if": {
+                "required": [
+                  "number_of_gpus_minimum"
+                ]
+              },
+              "then": {
+                "required": [
+                  "number_of_gpus_maximum"
+                ]
+              }
+            },
+            {
+              "if": {
+                "required": [
+                  "number_of_gpus_maximum"
+                ]
+              },
+              "then": {
+                "required": [
+                  "number_of_gpus_minimum"
+                ]
+              }
+            }
+          ]
+        },
+        "cpu_qualifier": {
+          "description": "Qualification criteria for CPUs",
+          "type": "object",
+          "properties": {
+            "number_of_cores_minimum": {
+              "description": "Minimum numb",
+              "type": "integer",
+              "maximum": 9999
+            },
+            "number_of_cores_maximum": {
+              "description": "Maximum numb",
+              "type": "integer",
+              "maximum": 9999
+            },
+            "speed_minimum": {
+              "description": "Minimum CPU speed",
+              "type": "integer",
+              "maximum": 99
+            },
+            "speed_maximum": {
+              "description": "Maximum CPU speed",
+              "type": "integer",
+              "maximum": 99
+            },
+            "cpu_pids": {
+              "description": "List of CPU product IDs",
+              "type": "array",
+              "items": {
+                "type": "string",
+                "pattern": "^[a-zA-Z0-9_-]+$"
+              },
+              "maxItems": 100
+            },
+            "vendor": {
+              "description": "CPU vendor",
+              "type": "string"
+            }
+          },
+          "additionalProperties": false,
+          "allOf": [
+            {
+              "if": {
+                "required": [
+                  "number_of_cores_minimum"
+                ]
+              },
+              "then": {
+                "required": [
+                  "number_of_cores_maximum"
+                ]
+              }
+            },
+            {
+              "if": {
+                "required": [
+                  "number_of_cores_maximum"
+                ]
+              },
+              "then": {
+                "required": [
+                  "number_of_cores_minimum"
+                ]
+              }
+            },
+            {
+              "if": {
+                "required": [
+                  "speed_minimum"
+                ]
+              },
+              "then": {
+                "required": [
+                  "speed_maximum"
+                ]
+              }
+            },
+            {
+              "if": {
+                "required": [
+                  "speed_maximum"
+                ]
+              },
+              "then": {
+                "required": [
+                  "speed_minimum"
+                ]
+              }
+            }
+          ]
+        },
+        "network_adapter_qualifier": {
+          "description": "Qualification criteria for network adapters",
+          "type": "object",
+          "properties": {
+            "number_of_network_adapters_minimum": {
+              "description": "Minimum number of network adapters",
+              "type": "integer",
+              "maximum": 16
+            },
+            "number_of_network_adapters_maximum": {
+              "description": "Maximum number of network adapters",
+              "type": "integer",
+              "maximum": 16
+            }
+          },
+          "required": [
+            "number_of_network_adapters_minimum",
+            "number_of_network_adapters_maximum"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "name"
+  ]
+}

@@ -553,6 +553,7 @@ class UcsSystemServiceProfile(UcsSystemConfigObject):
                                         vnic["order"] = None
                                     vnic.update({"fabric": vnic_ether.switch_id})
                                     vnic.update({"q_in_q": vnic_ether.q_in_q})
+                                    vnic.update({"etherchannel_pinning": vnic_ether.ether_channel_pinning})
                                     vnic.update({"pin_group": vnic_ether.pin_to_group_name})
                                     vnic.update({"cdn_source": vnic_ether.cdn_source})
                                     vnic.update({"cdn_name": vnic_ether.admin_cdn_name})
@@ -1309,7 +1310,7 @@ class UcsSystemServiceProfile(UcsSystemConfigObject):
                           "qos_policy", "network_control_policy", "dynamic_vnic", "pin_group",
                           "stats_threshold_policy", "mac_address", "vlan_groups", "operational_state",
                           "redundancy_pair", "usnic_connection_policy", "vmq_connection_policy",
-                          "sriov_hpn_connection_policy"]:
+                          "sriov_hpn_connection_policy", "etherchannel_pinning"]:
                 if value not in element:
                     element[value] = None
 
@@ -1547,6 +1548,7 @@ class UcsSystemServiceProfile(UcsSystemConfigObject):
                                       order=vnic['order'],
                                       switch_id=vnic['fabric'],
                                       q_in_q=vnic['q_in_q'],
+                                      ether_channel_pinning=vnic['etherchannel_pinning'],
                                       admin_cdn_name=vnic['cdn_name'],
                                       cdn_source=vnic['cdn_source'],
                                       nw_ctrl_policy_name=vnic['network_control_policy'],

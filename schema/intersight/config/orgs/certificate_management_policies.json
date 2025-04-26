@@ -81,6 +81,36 @@
                "required": [
                   "enable"
                ]
+            },
+            "root_ca_certificates": {
+               "description": "List of Root CA Certificates",
+               "type": "array",
+               "items": {
+                  "type": "object",
+                  "properties": {
+                     "enable": {
+                        "description": "Enable or disable the Root CA certificate",
+                        "type": "boolean",
+                        "default": true
+                     },
+                     "certificate_name": {
+                        "description": "Name of the Root CA Certificate",
+                        "type": "string",
+                        "default": "",
+                        "maxLength": 256
+                     },
+                     "certificate": {
+                        "description": "PEM-encoded Root CA Certificate",
+                        "type": "string",
+                        "default": ""
+                     }
+                  },
+                  "additionalProperties": false,
+                  "required": [
+                     "enable",
+                     "certificate"
+                  ]
+               }
             }
          },
          "additionalProperties": false
@@ -91,4 +121,3 @@
       "name"
    ]
 }
- 

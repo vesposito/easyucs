@@ -7,7 +7,7 @@ import common
 from __init__ import __version__
 
 from config.intersight.config import IntersightConfig
-from config.intersight.equipment import IntersightFabricInterconnect
+from config.intersight.equipment import IntersightEquipment
 from config.intersight.settings import IntersightAccountDetails, IntersightOrganization, \
     IntersightResourceGroup, IntersightRole, IntersightUser, IntersightUserGroup
 from config.intersight.pools import IntersightMacPool, IntersightIqnPool, IntersightIpPool, IntersightUuidPool, \
@@ -76,18 +76,28 @@ class IntersightConfigManager(GenericConfigManager):
             config.user_groups.append(IntersightUserGroup(parent=config, iam_user_group=iam_user_group))
 
         for resource_group in config.sdk_objects["resource_group"]:
+            # We don't fetch the system created "private-catalog-rg" RG if this is an Intersight Appliance device
+            if self.parent.is_appliance and getattr(resource_group, "name", None) in ["private-catalog-rg"]:
+                self.logger(level="debug", message="Skipping Resource Group 'private-catalog-rg'")
+                continue
             # We don't fetch the system created License-based Resource Groups
             if getattr(resource_group, "name", None) not in ["License-Standard", "License-Essential",
                                                              "License-Advantage", "License-Premier"]:
                 config.resource_groups.append(IntersightResourceGroup(parent=config, resource_group=resource_group))
 
-        for network_element in config.sdk_objects["network_element"]:
-            if network_element.switch_type == "FabricInterconnect" and network_element.management_mode == "Intersight":
-                if len(config.equipment) == 0:
-                    config.equipment.append({"fabric_interconnects": []})
-                config.equipment[0]["fabric_interconnects"].append(IntersightFabricInterconnect(parent=config, network_element=network_element))
+        if config.sdk_objects["asset_device_registration"]:
+            for asset_device_registration in config.sdk_objects["asset_device_registration"]:
+                # Filtering to IMM domains and standalone rack servers claimed on the Intersight account.
+                if asset_device_registration.platform_type == "UCSFIISM" or (asset_device_registration.platform_type in
+                    ["IMC", "IMCM4", "IMCM5", "IMCRack"] and not asset_device_registration.parent_connection):
+                    config.equipment.append(IntersightEquipment(parent=config, equipment=None))
+                    break
 
         for organization_organization in config.sdk_objects["organization_organization"]:
+            # We don't fetch the system created "private-catalog" org if this is an Intersight Appliance device
+            if self.parent.is_appliance and getattr(organization_organization, "name", None) in ["private-catalog"]:
+                self.logger(level="debug", message="Skipping Organization 'private-catalog'")
+                continue
             config.orgs.append(IntersightOrganization(parent=config,
                                                       organization_organization=organization_organization))
 
@@ -194,7 +204,7 @@ class IntersightConfigManager(GenericConfigManager):
         self._get_profiles(config.orgs, profiles)
         return profiles
 
-    def push_config(self, uuid=None, reset=False, bypass_version_checks=False, force=False, push_equipment=False):
+    def push_config(self, uuid=None, reset=False, bypass_version_checks=False, force=False, push_equipment=False, push_equipment_only=False):
         """
         Push the specified config to the live system
         :param uuid: The UUID of the config to be pushed. If not specified, the most recent config will be used
@@ -204,6 +214,7 @@ class IntersightConfigManager(GenericConfigManager):
         shared org then we will continue pushing target orgs (orgs with which the source org is shared)
         if and only if force is true, otherwise we will skip the push of the target orgs.
         :param push_equipment: Whether the equipment section of the configuration should be pushed alongside the rest of the configuration.
+        :param push_equipment_only: Only the equipment section of the configuration should be pushed.
         that the domain or server profile deployment has been successfully completed.
         :return: True if config push was successful, False otherwise
         """
@@ -235,81 +246,118 @@ class IntersightConfigManager(GenericConfigManager):
             self.parent.set_task_progression(50)
             self.logger(message="Pushing configuration " + str(config.uuid) + " to " + self.parent.target)
 
-            if self.parent.task is not None:
-                self.parent.task.taskstep_manager.start_taskstep(
-                    name="PushOrgsSectionIntersight", description="Pushing Orgs section of config")
-
-            # We push all config elements, in a specific optimized order
-            self.logger(message="Now configuring Orgs/Policies/Profiles section")
             is_pushed = True
-            for resource_group in config.resource_groups:
-                is_pushed = resource_group.push_object() and is_pushed
+            if not push_equipment_only:
+                if self.parent.task is not None:
+                    self.parent.task.taskstep_manager.start_taskstep(
+                        name="PushOrgsSectionIntersight", description="Pushing Orgs section of config")
 
-            # We sort the organizations in an order where shared organizations are pushed first.
-            config.orgs.sort(key=lambda o: len(o.shared_with_orgs) if o.shared_with_orgs else 0,
-                             reverse=True)
+                # We push all config elements, in a specific optimized order
+                self.logger(message="Now configuring Orgs/Policies/Profiles section")
+                for resource_group in config.resource_groups:
+                    is_pushed = resource_group.push_object() and is_pushed
 
-            # First we push the Orgs not including their sub policies/profiles/pools
-            failed_orgs = []
-            for org in config.orgs:
-                if org.name not in failed_orgs and not org.push_object():
-                    # If we fail to push the organization object then we skip pushing its sub-objects, sharing rules
-                    # and organizations which this organization is shared to.
-                    is_pushed = False
-                    failed_orgs.append(org.name)
-                    if org.shared_with_orgs and not force:
-                        failed_orgs += org.shared_with_orgs
-                        self.logger(level="error",
-                                    message=f"Failed to push the organization(s) {', '.join(org.shared_with_orgs)}. "
-                                            f"As the organization '{org.name}' which is shared to the organization(s) "
-                                            f"have failed to be pushed.")
+                # We sort the organizations in an order where shared organizations are pushed first.
+                config.orgs.sort(key=lambda o: len(o.shared_with_orgs) if o.shared_with_orgs else 0,
+                                reverse=True)
 
-            # Then we push the sharing rules between the orgs
-            for org in config.orgs:
-                if org.name not in failed_orgs or force:
-                    is_pushed = org.push_sharing_rules() and is_pushed
+                # First we push the Orgs not including their sub policies/profiles/pools
+                failed_orgs = []
+                for org in config.orgs:
+                    if org.name not in failed_orgs and not org.push_object():
+                        # If we fail to push the organization object then we skip pushing its sub-objects, sharing rules
+                        # and organizations which this organization is shared to.
+                        is_pushed = False
+                        failed_orgs.append(org.name)
+                        if org.shared_with_orgs and not force:
+                            failed_orgs += org.shared_with_orgs
+                            self.logger(level="error",
+                                        message=f"Failed to push the organization(s) {', '.join(org.shared_with_orgs)}. "
+                                                f"As the organization '{org.name}' which is shared to the organization(s) "
+                                                f"have failed to be pushed.")
 
-            # Finally we push the Organizations policies/profiles/pools in an order where shared organizations are
-            # pushed first
-            for org in config.orgs:
-                if org.name not in failed_orgs or force:
-                    is_pushed = org.push_subobjects() and is_pushed
+                # Then we push the sharing rules between the orgs
+                for org in config.orgs:
+                    if org.name not in failed_orgs or force:
+                        is_pushed = org.push_sharing_rules() and is_pushed
 
-            if self.parent.task is not None:
-                self.parent.task.taskstep_manager.stop_taskstep(
-                    name="PushOrgsSectionIntersight", status="successful",
-                    status_message="Successfully pushed Orgs section of config")
+                # Finally we push the Organizations policies/profiles/pools in an order where shared organizations are
+                # pushed first
+                for org in config.orgs:
+                    if org.name not in failed_orgs or force:
+                        is_pushed = org.push_subobjects() and is_pushed
 
-            self.parent.set_task_progression(75)
+                if self.parent.task is not None:
+                    self.parent.task.taskstep_manager.stop_taskstep(
+                        name="PushOrgsSectionIntersight", status="successful",
+                        status_message="Successfully pushed Orgs section of config")
 
-            if self.parent.task is not None:
-                self.parent.task.taskstep_manager.start_taskstep(
-                    name="PushAdminSectionIntersight", description="Pushing Admin section of config")
+                self.parent.set_task_progression(75)
 
-            # We push the entire admin section after the orgs because roles can be mapped to orgs
-            self.logger(message="Now configuring Admin section")
-            for account_details in config.account_details:
-                is_pushed = account_details.push_object() and is_pushed
+                if self.parent.task is not None:
+                    self.parent.task.taskstep_manager.start_taskstep(
+                        name="PushAdminSectionIntersight", description="Pushing Admin section of config")
 
-            if push_equipment and config.equipment:
-                for fabric_interconnect in config.equipment[0]["fabric_interconnects"]:
-                    is_pushed = fabric_interconnect.push_object() and is_pushed
+                # We push the entire admin section after the orgs because roles can be mapped to orgs
+                self.logger(message="Now configuring Admin section")
+                for account_details in config.account_details:
+                    is_pushed = account_details.push_object() and is_pushed
 
-            for role in config.roles:
-                is_pushed = role.push_object() and is_pushed
+                for role in config.roles:
+                    is_pushed = role.push_object() and is_pushed
 
-            for user in config.users:
-                is_pushed = user.push_object() and is_pushed
+                for user in config.users:
+                    is_pushed = user.push_object() and is_pushed
 
-            for user_group in config.user_groups:
-                is_pushed = user_group.push_object() and is_pushed
+                for user_group in config.user_groups:
+                    is_pushed = user_group.push_object() and is_pushed
 
-            if self.parent.task is not None:
-                self.parent.task.taskstep_manager.stop_taskstep(
-                    name="PushAdminSectionIntersight", status="successful",
-                    status_message="Successfully pushed Admin section of config")
+                if self.parent.task is not None:
+                    self.parent.task.taskstep_manager.stop_taskstep(
+                        name="PushAdminSectionIntersight", status="successful",
+                        status_message="Successfully pushed Admin section of config")
+                if not push_equipment:
+                    if self.parent.task is not None:
+                        self.parent.task.taskstep_manager.skip_taskstep(
+                            name="PushEquipmentSectionIntersight",
+                            status_message="Skipped pushing equipment section of config"
+                        )
 
-            self.parent.set_task_progression(90)
+                self.parent.set_task_progression(85)
+
+            if push_equipment_only or push_equipment:
+                if push_equipment_only:
+                    if self.parent.task is not None:
+                        self.parent.task.taskstep_manager.skip_taskstep(
+                            name="PushOrgsSectionIntersight",
+                            status_message="Skipped pushing org section of config"
+                        )
+                        self.parent.task.taskstep_manager.skip_taskstep(
+                            name="PushAdminSectionIntersight",
+                            status_message="Skipped pushing admin section of config"
+                        )
+                if config.equipment:
+                    if self.parent.task is not None:
+                        self.parent.task.taskstep_manager.start_taskstep(
+                            name="PushEquipmentSectionIntersight", description="Pushing Equipment section of config")
+
+                    # We push the entire equipment section after the orgs because profiles can be assigned to FIs
+                    self.logger(message="Now configuring Equipment section")
+                    is_pushed = config.equipment[0].push_subobjects() and is_pushed
+                    
+                    if self.parent.task is not None:
+                        self.parent.task.taskstep_manager.stop_taskstep(
+                            name="PushEquipmentSectionIntersight", status="successful",
+                            status_message="Successfully pushed Equipment section of config")
+
+                    self.parent.set_task_progression(90)
+                else:
+                    self.logger(level="error", message="No equipment section to push!")
+                    if self.parent.task is not None:
+                        self.parent.task.taskstep_manager.skip_taskstep(
+                            name="PushEquipmentSectionIntersight",
+                            status_message="Skipped pushing equipment section of config"
+                        )
 
             if is_pushed:
                 # Checking the push summary failed count
@@ -343,11 +391,7 @@ class IntersightConfigManager(GenericConfigManager):
                                                                        iam_account=account_details))
                 
         if "equipment" in config_json:
-            for key, values in config_json["equipment"][0].items():
-                if len(config.equipment) == 0:
-                    config.equipment.append({key: []})
-                for value in values:
-                    config.equipment[0][key].append(IntersightFabricInterconnect(parent=config, network_element=value))
+            config.equipment.append(IntersightEquipment(parent=config, equipment=config_json["equipment"][0]))
 
         if "roles" in config_json:
             for role in config_json["roles"]:

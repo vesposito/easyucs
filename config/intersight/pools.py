@@ -863,10 +863,595 @@ class IntersightMacPool(IntersightConfigObject):
         return True
 
 
+class IntersightServerPoolQualificationPolicy(IntersightConfigObject):
+    _CONFIG_NAME = "Server Pool Qualification Policy"
+    _CONFIG_SECTION_NAME = "server_pool_qualification_policies"
+    _INTERSIGHT_SDK_OBJECT_NAME = "resourcepool.QualificationPolicy"
+
+    def __init__(self, parent=None, server_pool_qualification_policy=None):
+        IntersightConfigObject.__init__(self, parent=parent, sdk_object=server_pool_qualification_policy)
+
+        self.descr = self.get_attribute(attribute_name="description", attribute_secondary_name="descr")
+        self.name = self.get_attribute(attribute_name="name")
+        self.domain_qualifiers = None
+        self.server_qualifiers = None
+        self.tag_qualifiers = None
+        self.hardware_qualifiers = None
+
+        if self._config.load_from == "live":
+            if hasattr(self._object, "qualifiers"):
+                for qualifiers in getattr(self._object, "qualifiers"):
+                    obj_type = qualifiers.object_type
+
+                    if obj_type == "resource.DomainQualifier":
+                        domain_qualifier = {
+                            "domain_names": qualifiers.domain_names,
+                            "fabric_interconnect_pids": qualifiers.fabric_inter_connect_pids
+                        }
+                        self.domain_qualifiers = domain_qualifier
+
+                    elif obj_type == "resource.RackServerQualifier":
+                        self.server_qualifiers = self.server_qualifiers or {}
+                        rack_server = {
+                            "asset_tags": qualifiers.asset_tags,
+                            "rack_pids": qualifiers.pids,
+                            "user_labels": qualifiers.user_labels,
+                            "rack_ids": self._get_rack_server_id_range(getattr(qualifiers, "rack_id_range", []))
+                        }
+                        self.server_qualifiers.update({"rack_server_qualifier": rack_server})
+
+                    elif obj_type == "resource.BladeQualifier":
+                        self.server_qualifiers = self.server_qualifiers or {}
+                        blade_server = {
+                            "asset_tags": qualifiers.asset_tags,
+                            "blade_pids": qualifiers.pids,
+                            "chassis_pids": qualifiers.chassis_pids,
+                            "user_labels": qualifiers.user_labels,
+                            "chassis_slot_ids":
+                                self._get_chassis_and_slot_id_range(getattr(qualifiers, "chassis_and_slot_id_range", []))
+                        }
+                        self.server_qualifiers.update({"blade_server_qualifier": blade_server})
+
+                    elif obj_type == "resource.TagQualifier":
+                        tag_qualifier = {
+                            "chassis_tags": self._get_qualifier_tags(getattr(qualifiers, "chassis_tags", [])),
+                            "domain_profile_tags":
+                                self._get_qualifier_tags(getattr(qualifiers, "domain_profile_tags", [])),
+                            "server_tags": self._get_qualifier_tags(getattr(qualifiers, "server_tags", []))
+                        }
+                        self.tag_qualifiers = tag_qualifier
+
+                    elif obj_type == "resource.MemoryQualifier":
+                        self.hardware_qualifiers = self.hardware_qualifiers or {}
+                        memory_qualifier = {
+                            "capacity_minimum": self._get_hardware_qualifier_min_range(
+                                getattr(qualifiers, "memory_capacity_range", {})),
+                            "capacity_maximum": self._get_hardware_qualifier_max_range(
+                                getattr(qualifiers, "memory_capacity_range", {})),
+                            "number_of_units_minimum": self._get_hardware_qualifier_min_range(
+                                getattr(qualifiers, "memory_units_range", {})),
+                            "number_of_units_maximum": self._get_hardware_qualifier_max_range(
+                                getattr(qualifiers, "memory_units_range", {}))
+                        }
+                        self.hardware_qualifiers.update({"memory_qualifier": memory_qualifier})
+
+                    elif obj_type == "resource.GpuQualifier":
+                        self.hardware_qualifiers = self.hardware_qualifiers or {}
+                        gpu_qualifier = {
+                            "gpu_pids": qualifiers.pids,
+                            "number_of_gpus_minimum": self._get_hardware_qualifier_min_range(
+                                getattr(qualifiers, "gpu_controllers_range", {})),
+                            "number_of_gpus_maximum": self._get_hardware_qualifier_max_range(
+                                getattr(qualifiers, "gpu_controllers_range", {})),
+                            "gpu_evaluation_type": qualifiers.gpu_evaluation_type,
+                            "vendor": qualifiers.vendor
+                        }
+                        self.hardware_qualifiers.update({"gpu_qualifier": gpu_qualifier})
+
+                    elif obj_type == "resource.ProcessorQualifier":
+                        self.hardware_qualifiers = self.hardware_qualifiers or {}
+                        cpu_qualifier = {
+                            "number_of_cores_minimum": self._get_hardware_qualifier_min_range(
+                                getattr(qualifiers, "cpu_cores_range", {})),
+                            "number_of_cores_maximum": self._get_hardware_qualifier_max_range(
+                                getattr(qualifiers, "cpu_cores_range", {})),
+                            "speed_minimum": self._get_hardware_qualifier_min_range(
+                                getattr(qualifiers, "speed_range", {})),
+                            "speed_maximum": self._get_hardware_qualifier_max_range(
+                                getattr(qualifiers, "speed_range", {})),
+                            "cpu_pids": qualifiers.pids,
+                            "vendor": qualifiers.vendor
+                        }
+                        self.hardware_qualifiers.update({"cpu_qualifier": cpu_qualifier})
+
+                    elif obj_type == "resource.NetworkAdaptorQualifier":
+                        self.hardware_qualifiers = self.hardware_qualifiers or {}
+                        adpater_qualifier = {
+                            "number_of_network_adapters_minimum": self._get_hardware_qualifier_min_range(
+                                getattr(qualifiers, "adaptors_range", {})),
+                            "number_of_network_adapters_maximum": self._get_hardware_qualifier_max_range(
+                                getattr(qualifiers, "adaptors_range", {}))
+                        }
+                        self.hardware_qualifiers.update({"network_adapter_qualifier": adpater_qualifier})
+
+        elif self._config.load_from == "file":
+            for attribute in ["domain_qualifiers", "server_qualifiers", "tag_qualifiers", "hardware_qualifiers"]:
+                setattr(self, attribute, None)
+                if attribute in self._object:
+                    setattr(self, attribute, self.get_attribute(attribute_name=attribute))
+
+        self.clean_object()
+
+    def clean_object(self):
+        if self.domain_qualifiers:
+            for attribute in ["domain_names", "fabric_interconnect_pids"]:
+                if attribute not in self.domain_qualifiers:
+                    self.domain_qualifiers[attribute] = None
+
+        if self.hardware_qualifiers:
+            for qualifier in ["cpu_qualifier", "gpu_qualifier", "memory_qualifier", "network_adapter_qualifier"]:
+                if qualifier not in self.hardware_qualifiers:
+                    self.hardware_qualifiers[qualifier] = None
+                elif self.hardware_qualifiers[qualifier]:
+                    if qualifier == "cpu_qualifier":
+                        for attribute in ["number_of_cores_maximum", "number_of_cores_minimum", "speed_maximum",
+                                          "speed_minimum", "cpu_pids", "vendor"]:
+                            if attribute not in self.hardware_qualifiers[qualifier]:
+                                self.hardware_qualifiers[qualifier][attribute] = None
+
+                    elif qualifier == "gpu_qualifier":
+                        for attribute in ["number_of_gpus_maximum", "number_of_gpus_minimum", "gpu_evaluation_type",
+                                          "gpu_pids", "vendor"]:
+                            if attribute not in self.hardware_qualifiers[qualifier]:
+                                self.hardware_qualifiers[qualifier][attribute] = None
+
+                    elif qualifier == "memory_qualifier":
+                        for attribute in ["capacity_maximum", "capacity_minimum", "number_of_units_minimum",
+                                          "number_of_units_maximum"]:
+                            if attribute not in self.hardware_qualifiers[qualifier]:
+                                self.hardware_qualifiers[qualifier][attribute] = None
+
+                    elif qualifier == "network_adapter_qualifier":
+                        for attribute in ["number_of_network_adapters_maximum", "number_of_network_adapters_minimum"]:
+                            if attribute not in self.hardware_qualifiers[qualifier]:
+                                self.hardware_qualifiers[qualifier][attribute] = None
+        if self.server_qualifiers:
+            if "blade_server_qualifier" not in self.server_qualifiers:
+                self.server_qualifiers["blade_server_qualifier"] = None
+            elif self.server_qualifiers["blade_server_qualifier"]:
+                for attribute in ["asset_tags", "blade_pids", "chassis_pids", "chassis_slot_ids", "user_labels"]:
+                    if attribute not in self.server_qualifiers["blade_server_qualifier"]:
+                        self.server_qualifiers["blade_server_qualifier"][attribute] = None
+                    if attribute == "chassis_slot_ids" and self.server_qualifiers["blade_server_qualifier"][attribute]:
+                        for slot in self.server_qualifiers["blade_server_qualifier"]["chassis_slot_ids"]:
+                            if "chassis_ids" not in slot:
+                                slot["chassis_ids"] = None
+                            else:
+                                for sub_attr in ["chassis_id_from", "chassis_id_to"]:
+                                    if sub_attr not in slot["chassis_ids"]:
+                                        slot["chassis_ids"][sub_attr] = None
+                            if "slot_ids" not in slot:
+                                slot["slot_ids"] = None
+                            elif slot["slot_ids"]:
+                                for slot_range in slot["slot_ids"]:
+                                    for sub_attr in ["slot_id_from", "slot_id_to"]:
+                                        if sub_attr not in slot_range:
+                                            slot_range[sub_attr] = None
+            if "rack_server_qualifier" not in self.server_qualifiers:
+                self.server_qualifiers["rack_server_qualifier"] = None
+            elif self.server_qualifiers["rack_server_qualifier"]:
+                for attribute in ["asset_tags", "rack_ids", "rack_pids", "user_labels"]:
+                    if attribute not in self.server_qualifiers["rack_server_qualifier"]:
+                        self.server_qualifiers["rack_server_qualifier"][attribute] = None
+                    if attribute == "rack_ids" and self.server_qualifiers["rack_server_qualifier"][attribute]:
+                        for rack in self.server_qualifiers["rack_server_qualifier"]["rack_ids"]:
+                            for sub_attr in ["rack_id_from", "rack_id_to"]:
+                                if sub_attr not in rack:
+                                    rack[sub_attr] = None
+
+        if self.tag_qualifiers:
+            for attribute in ["chassis_tags", "domain_profile_tags", "server_tags"]:
+                if attribute not in self.tag_qualifiers:
+                    self.tag_qualifiers[attribute] = None
+
+    def _get_qualifier_tags(self, qualifier_tags):
+        if qualifier_tags:
+            tags = []
+            for tag in qualifier_tags:
+                tags.append({
+                    "key": tag.key,
+                    "value": tag.value
+                })
+
+            return tags
+
+        return None
+
+    def _get_rack_server_id_range(self, server_id_range):
+        if server_id_range:
+            id_range = []
+            for range in server_id_range:
+                id_range.append({
+                    "rack_id_from": range.min_value,
+                    "rack_id_to": range.max_value
+                })
+            return id_range
+        return None
+
+    def _get_chassis_and_slot_id_range(self, chassis_and_slot_id_range):
+        if chassis_and_slot_id_range:
+            chassis_and_slot_range = []
+            for id_range in chassis_and_slot_id_range:
+                slot_ranges = []
+                if getattr(id_range, "chassis_id_range", {}):
+                    chassis_range = {
+                        "chassis_id_from": id_range.chassis_id_range.get("min_value", 0),
+                        "chassis_id_to": id_range.chassis_id_range.get("max_value", 0)
+                    }
+
+                    for slot_range in getattr(id_range, "slot_id_ranges", []):
+                        slot_id = {
+                            "slot_id_from": slot_range.get("min_value", 0),
+                            "slot_id_to": slot_range.get("max_value", 0)
+                        }
+                        slot_ranges.append(slot_id)
+
+                    chassis_and_slot_range.append({
+                        "chassis_ids": chassis_range,
+                        "slot_ids": slot_ranges
+                    })
+
+            return chassis_and_slot_range
+
+        return None
+
+    def _get_hardware_qualifier_min_range(self, hardware_qualifier_range):
+        if hardware_qualifier_range:
+            return hardware_qualifier_range.min_value
+        return None
+
+    def _get_hardware_qualifier_max_range(self, hardware_qualifier_range):
+        if hardware_qualifier_range:
+            return hardware_qualifier_range.max_value
+        return None
+
+    @IntersightConfigObject.update_taskstep_description()
+    def push_object(self):
+        from intersight.model.resourcepool_qualification_policy import ResourcepoolQualificationPolicy
+
+        self.logger(message=f"Pushing {self._CONFIG_NAME} configuration: {self.name}")
+
+        kwargs = {
+            "object_type": self._INTERSIGHT_SDK_OBJECT_NAME,
+            "class_id": self._INTERSIGHT_SDK_OBJECT_NAME,
+            "organization": self.get_parent_org_relationship()
+        }
+        if self.name is not None:
+            kwargs["name"] = self.name
+        if self.descr is not None:
+            kwargs["description"] = self.descr
+        if self.tags is not None:
+            kwargs["tags"] = self.create_tags()
+
+        resource_qualifiers = []
+
+        if self.domain_qualifiers is not None:
+            from intersight.model.resource_domain_qualifier import ResourceDomainQualifier
+            domain_qualifiers_kwargs = {
+                "object_type": "resource.DomainQualifier",
+                "class_id": "resource.DomainQualifier",
+            }
+            if self.domain_qualifiers.get("domain_names", []):
+                domain_qualifiers_kwargs["domain_names"] = self.domain_qualifiers["domain_names"]
+            if self.domain_qualifiers.get("fabric_interconnect_pids", []):
+                domain_qualifiers_kwargs["fabric_inter_connect_pids"] = (
+                    self.domain_qualifiers)["fabric_interconnect_pids"]
+
+            resource_qualifiers.append(ResourceDomainQualifier(**domain_qualifiers_kwargs))
+
+        if self.server_qualifiers is not None:
+            from intersight.model.resource_chassis_and_slot_qualification import ResourceChassisAndSlotQualification
+            from intersight.model.resource_blade_qualifier import ResourceBladeQualifier
+            from intersight.model.resource_slot_id_range_filter import ResourceSlotIdRangeFilter
+            from intersight.model.resource_chassis_id_range_filter import ResourceChassisIdRangeFilter
+            from intersight.model.resource_rack_server_qualifier import ResourceRackServerQualifier
+            from intersight.model.resource_rack_id_range_filter import ResourceRackIdRangeFilter
+
+            if self.server_qualifiers.get("blade_server_qualifier", {}):
+                blade_qualifiers_kwargs = {
+                    "object_type": "resource.BladeQualifier",
+                    "class_id": "resource.BladeQualifier",
+                }
+                if self.server_qualifiers["blade_server_qualifier"].get("asset_tags", []):
+                    blade_qualifiers_kwargs["asset_tags"] = (
+                        self.server_qualifiers)["blade_server_qualifier"]["asset_tags"]
+                if self.server_qualifiers["blade_server_qualifier"].get("blade_pids", []):
+                    blade_qualifiers_kwargs["pids"] = (
+                        self.server_qualifiers)["blade_server_qualifier"]["blade_pids"]
+                if self.server_qualifiers["blade_server_qualifier"].get("chassis_pids", []):
+                    blade_qualifiers_kwargs["chassis_pids"] = (
+                        self.server_qualifiers)["blade_server_qualifier"]["chassis_pids"]
+                if self.server_qualifiers["blade_server_qualifier"].get("user_labels", []):
+                    blade_qualifiers_kwargs["user_labels"] = (
+                        self.server_qualifiers)["blade_server_qualifier"]["user_labels"]
+                if self.server_qualifiers["blade_server_qualifier"].get("chassis_slot_ids", []):
+                    chassis_slot_ids = []
+                    for chassis_slot_id in self.server_qualifiers["blade_server_qualifier"]["chassis_slot_ids"]:
+                        slot_ids = []
+                        chassis_slot_kwargs = {
+                            "object_type": "resource.ChassisAndSlotQualification",
+                            "class_id": "resource.ChassisAndSlotQualification",
+                        }
+                        if chassis_slot_id.get("slot_ids", []):
+                            for slot_id in chassis_slot_id["slot_ids"]:
+                                slot_kwargs = {
+                                    "object_type": "resource.SlotIdRangeFilter",
+                                    "class_id": "resource.SlotIdRangeFilter"
+                                }
+                                if slot_id.get("slot_id_from"):
+                                    slot_kwargs["min_value"] = slot_id["slot_id_from"]
+                                if slot_id.get("slot_id_to"):
+                                    slot_kwargs["max_value"] = slot_id["slot_id_to"]
+
+                                slot_ids.append(ResourceSlotIdRangeFilter(**slot_kwargs))
+                        chassis_ids_kwargs = {
+                            "object_type": "resource.ChassisIdRangeFilter",
+                            "class_id": "resource.ChassisIdRangeFilter",
+                        }
+                        if chassis_slot_id.get("chassis_ids", {}):
+                            if chassis_slot_id["chassis_ids"].get("chassis_id_from"):
+                                chassis_ids_kwargs["min_value"] = chassis_slot_id["chassis_ids"]["chassis_id_from"]
+                            if chassis_slot_id["chassis_ids"].get("chassis_id_to"):
+                                chassis_ids_kwargs["max_value"] = chassis_slot_id["chassis_ids"]["chassis_id_to"]
+
+                        chassis_slot_kwargs["chassis_id_range"] = ResourceChassisIdRangeFilter(**chassis_ids_kwargs)
+                        chassis_slot_kwargs["slot_id_ranges"] = slot_ids
+
+                        chassis_slot_ids.append(ResourceChassisAndSlotQualification(**chassis_slot_kwargs))
+
+                    blade_qualifiers_kwargs["chassis_and_slot_id_range"] = chassis_slot_ids
+
+                resource_qualifiers.append(ResourceBladeQualifier(**blade_qualifiers_kwargs))
+
+            if self.server_qualifiers.get("rack_server_qualifier", {}):
+
+                rack_server_qualifiers_kwargs = {
+                    "object_type": "resource.RackServerQualifier",
+                    "class_id": "resource.RackServerQualifier",
+                }
+                if self.server_qualifiers["rack_server_qualifier"].get("asset_tags", []):
+                    rack_server_qualifiers_kwargs["asset_tags"] = (
+                        self.server_qualifiers)["rack_server_qualifier"]["asset_tags"]
+                if self.server_qualifiers["rack_server_qualifier"].get("rack_pids", []):
+                    rack_server_qualifiers_kwargs["pids"] = (
+                        self.server_qualifiers)["rack_server_qualifier"]["rack_pids"]
+                if self.server_qualifiers["rack_server_qualifier"].get("user_labels", []):
+                    rack_server_qualifiers_kwargs["user_labels"] = (
+                        self.server_qualifiers)["rack_server_qualifier"]["user_labels"]
+                if self.server_qualifiers["rack_server_qualifier"].get("rack_ids", []):
+                    rack_ids = []
+                    for rack_id in self.server_qualifiers["rack_server_qualifier"]["rack_ids"]:
+                        rack_id_kwargs = {
+                            "object_type": "resource.RackIdRangeFilter",
+                            "class_id": "resource.RackIdRangeFilter"
+                        }
+                        if rack_id.get("rack_id_from"):
+                            rack_id_kwargs["min_value"] = rack_id["rack_id_from"]
+                        if rack_id.get("rack_id_to"):
+                            rack_id_kwargs["max_value"] = rack_id["rack_id_to"]
+
+                        rack_ids.append(ResourceRackIdRangeFilter(**rack_id_kwargs))
+
+                    rack_server_qualifiers_kwargs["rack_id_range"] = rack_ids
+                resource_qualifiers.append(ResourceRackServerQualifier(**rack_server_qualifiers_kwargs))
+
+        if self.tag_qualifiers is not None:
+            from intersight.model.resource_tag_qualifier import ResourceTagQualifier
+            from intersight.model.resource_tag import ResourceTag
+            tag_qualifiers_kwargs = {
+                "object_type": "resource.TagQualifier",
+                "class_id": "resource.TagQualifier",
+            }
+            if self.tag_qualifiers.get("chassis_tags", []):
+                chassis_tags = []
+                for tag in self.tag_qualifiers["chassis_tags"]:
+                    tag_kwargs = {
+                        "object_type": "resource.Tag",
+                        "class_id": "resource.Tag",
+                        "key": tag["key"],
+                        "value": tag["value"]
+                    }
+                    chassis_tags.append(ResourceTag(**tag_kwargs))
+                tag_qualifiers_kwargs["chassis_tags"] = chassis_tags
+
+            if self.tag_qualifiers.get("domain_profile_tags", []):
+                domain_profile_tags = []
+                for tag in self.tag_qualifiers["domain_profile_tags"]:
+                    tag_kwargs = {
+                        "object_type": "resource.Tag",
+                        "class_id": "resource.Tag",
+                        "key": tag["key"],
+                        "value": tag["value"]
+                    }
+                    domain_profile_tags.append(ResourceTag(**tag_kwargs))
+                tag_qualifiers_kwargs["domain_profile_tags"] = domain_profile_tags
+
+            if self.tag_qualifiers.get("server_tags", []):
+                server_tags = []
+                for tag in self.tag_qualifiers["server_tags"]:
+                    tag_kwargs = {
+                        "object_type": "resource.Tag",
+                        "class_id": "resource.Tag",
+                        "key": tag["key"],
+                        "value": tag["value"]
+                    }
+                    server_tags.append(ResourceTag(**tag_kwargs))
+                tag_qualifiers_kwargs["server_tags"] = server_tags
+
+            resource_qualifiers.append(ResourceTagQualifier(**tag_qualifiers_kwargs))
+
+        if self.hardware_qualifiers is not None:
+            if self.hardware_qualifiers.get("memory_qualifier", {}):
+                from intersight.model.resource_memory_qualifier import ResourceMemoryQualifier
+                from intersight.model.resource_memory_capacity_range_filter import ResourceMemoryCapacityRangeFilter
+                from intersight.model.resource_memory_units_range_filter import ResourceMemoryUnitsRangeFilter
+
+                memory_qualifier_kwargs = {
+                    "object_type": "resource.MemoryQualifier",
+                    "class_id": "resource.MemoryQualifier",
+                }
+
+                memory_capacity_range_kwargs = {
+                    "object_type": "resource.MemoryCapacityRangeFilter",
+                    "class_id": "resource.MemoryCapacityRangeFilter"
+                }
+                if self.hardware_qualifiers["memory_qualifier"].get("capacity_minimum"):
+                    memory_capacity_range_kwargs["min_value"] = (
+                        self.hardware_qualifiers)["memory_qualifier"]["capacity_minimum"]
+                if self.hardware_qualifiers["memory_qualifier"].get("capacity_maximum"):
+                    memory_capacity_range_kwargs["max_value"] = (
+                        self.hardware_qualifiers)["memory_qualifier"]["capacity_maximum"]
+
+                memory_qualifier_kwargs["memory_capacity_range"] = (
+                    ResourceMemoryCapacityRangeFilter(**memory_capacity_range_kwargs))
+
+                memory_units_range_kwargs = {
+                    "object_type": "resource.MemoryUnitsRangeFilter",
+                    "class_id": "resource.MemoryUnitsRangeFilter"
+                }
+                if self.hardware_qualifiers["memory_qualifier"].get("number_of_units_minimum"):
+                    memory_units_range_kwargs["min_value"] = (
+                        self.hardware_qualifiers)["memory_qualifier"]["number_of_units_minimum"]
+                if self.hardware_qualifiers["memory_qualifier"].get("number_of_units_maximum"):
+                    memory_units_range_kwargs["max_value"] = (
+                        self.hardware_qualifiers)["memory_qualifier"]["number_of_units_maximum"]
+                memory_qualifier_kwargs["memory_units_range"] = (
+                    ResourceMemoryUnitsRangeFilter(**memory_units_range_kwargs))
+
+                resource_qualifiers.append(ResourceMemoryQualifier(**memory_qualifier_kwargs))
+
+            if self.hardware_qualifiers.get("cpu_qualifier", {}):
+                from intersight.model.resource_processor_qualifier import ResourceProcessorQualifier
+                from intersight.model.resource_cpu_core_range_filter import ResourceCpuCoreRangeFilter
+                from intersight.model.resource_cpu_speed_range_filter import ResourceCpuSpeedRangeFilter
+                cpu_qualifier_kwargs = {
+                    "object_type": "resource.ProcessorQualifier",
+                    "class_id": "resource.ProcessorQualifier",
+                }
+
+                cpu_cores_range_kwargs = {
+                    "object_type": "resource.CpuCoreRangeFilter",
+                    "class_id": "resource.CpuCoreRangeFilter"
+                }
+                if self.hardware_qualifiers["cpu_qualifier"].get("number_of_cores_minimum"):
+                    cpu_cores_range_kwargs["min_value"] = (
+                        self.hardware_qualifiers)["cpu_qualifier"]["number_of_cores_minimum"]
+                if self.hardware_qualifiers["cpu_qualifier"].get("number_of_cores_maximum"):
+                    cpu_cores_range_kwargs["max_value"] = (
+                        self.hardware_qualifiers)["cpu_qualifier"]["number_of_cores_maximum"]
+
+                cpu_qualifier_kwargs["cpu_cores_range"] = (
+                    ResourceCpuCoreRangeFilter(**cpu_cores_range_kwargs))
+                if self.hardware_qualifiers["cpu_qualifier"].get("cpu_pids", []):
+                    cpu_qualifier_kwargs["pids"] = self.hardware_qualifiers["cpu_qualifier"]["cpu_pids"]
+
+                cpu_speed_range_kwargs = {
+                    "object_type": "resource.CpuSpeedRangeFilter",
+                    "class_id": "resource.CpuSpeedRangeFilter"
+                }
+                if self.hardware_qualifiers["cpu_qualifier"].get("speed_minimum"):
+                    cpu_speed_range_kwargs["min_value"] = (
+                        self.hardware_qualifiers)["cpu_qualifier"]["speed_minimum"]
+                if self.hardware_qualifiers["cpu_qualifier"].get("speed_maximum"):
+                    cpu_speed_range_kwargs["max_value"] = (
+                        self.hardware_qualifiers)["cpu_qualifier"]["speed_maximum"]
+
+                cpu_qualifier_kwargs["speed_range"] = (
+                    ResourceCpuSpeedRangeFilter(**cpu_speed_range_kwargs))
+
+                if self.hardware_qualifiers["cpu_qualifier"].get("vendor", ""):
+                    cpu_qualifier_kwargs["vendor"] = self.hardware_qualifiers["cpu_qualifier"]["vendor"]
+
+                resource_qualifiers.append(ResourceProcessorQualifier(**cpu_qualifier_kwargs))
+
+            if self.hardware_qualifiers.get("gpu_qualifier", {}):
+                from intersight.model.resource_gpu_qualifier import ResourceGpuQualifier
+                from intersight.model.resource_gpu_controllers_range_filter import ResourceGpuControllersRangeFilter
+                from intersight.model.resource_cpu_speed_range_filter import ResourceCpuSpeedRangeFilter
+                gpu_qualifier_kwargs = {
+                    "object_type": "resource.GpuQualifier",
+                    "class_id": "resource.GpuQualifier",
+                }
+                gpu_controllers_range_kwargs = {
+                    "object_type": "resource.GpuControllersRangeFilter",
+                    "class_id": "resource.GpuControllersRangeFilter"
+                }
+                if self.hardware_qualifiers["gpu_qualifier"].get("number_of_gpus_minimum"):
+                    gpu_controllers_range_kwargs["min_value"] = (
+                        self.hardware_qualifiers)["gpu_qualifier"]["number_of_gpus_minimum"]
+                if self.hardware_qualifiers["gpu_qualifier"].get("number_of_gpus_maximum"):
+                    gpu_controllers_range_kwargs["max_value"] = (
+                        self.hardware_qualifiers)["gpu_qualifier"]["number_of_gpus_maximum"]
+
+                gpu_qualifier_kwargs["gpu_controllers_range"] = (
+                    ResourceGpuControllersRangeFilter(**gpu_controllers_range_kwargs))
+
+                if self.hardware_qualifiers["gpu_qualifier"].get("gpu_pids", []):
+                    gpu_qualifier_kwargs["pids"] = self.hardware_qualifiers["gpu_qualifier"]["gpu_pids"]
+                if self.hardware_qualifiers["gpu_qualifier"].get("vendor", ""):
+                    gpu_qualifier_kwargs["vendor"] = self.hardware_qualifiers["gpu_qualifier"]["vendor"]
+
+                gpu_qualifier_kwargs["gpu_evaluation_type"] = (
+                    self.hardware_qualifiers["gpu_qualifier"].get("gpu_evaluation_type"))
+
+                resource_qualifiers.append(ResourceGpuQualifier(**gpu_qualifier_kwargs))
+
+            if self.hardware_qualifiers.get("network_adapter_qualifier", {}):
+                from intersight.model.resource_network_adaptor_qualifier import ResourceNetworkAdaptorQualifier
+                from intersight.model.resource_adaptors_range_filter import ResourceAdaptorsRangeFilter
+                network_adapter_qualifier_kwargs = {
+                    "object_type": "resource.NetworkAdaptorQualifier",
+                    "class_id": "resource.NetworkAdaptorQualifier",
+                }
+                adaptors_range_kwargs = {
+                    "object_type": "resource.AdaptorsRangeFilter",
+                    "class_id": "resource.AdaptorsRangeFilter"
+                }
+                if self.hardware_qualifiers["network_adapter_qualifier"].get("number_of_network_adapters_minimum"):
+                    adaptors_range_kwargs["min_value"] = (
+                        self.hardware_qualifiers)["network_adapter_qualifier"]["number_of_network_adapters_minimum"]
+                if self.hardware_qualifiers["network_adapter_qualifier"].get("number_of_network_adapters_maximum"):
+                    adaptors_range_kwargs["max_value"] = (
+                        self.hardware_qualifiers)["network_adapter_qualifier"]["number_of_network_adapters_maximum"]
+
+                network_adapter_qualifier_kwargs["adaptors_range"] = (
+                    ResourceAdaptorsRangeFilter(**adaptors_range_kwargs))
+
+                resource_qualifiers.append(ResourceNetworkAdaptorQualifier(**network_adapter_qualifier_kwargs))
+
+        kwargs["qualifiers"] = resource_qualifiers
+
+        server_pool_qualification_policy = ResourcepoolQualificationPolicy(**kwargs)
+
+        if not self.commit(object_type=self._INTERSIGHT_SDK_OBJECT_NAME, payload=server_pool_qualification_policy,
+                           detail=self.name):
+            return False
+
+        return True
+
+
 class IntersightResourcePool(IntersightConfigObject):
     _CONFIG_NAME = "Resource Pool"
     _CONFIG_SECTION_NAME = "resource_pools"
     _INTERSIGHT_SDK_OBJECT_NAME = "resourcepool.Pool"
+
+    _POLICY_MAPPING_TABLE = {
+        "server_pool_qualification_policies": [IntersightServerPoolQualificationPolicy]
+    }
+
+    UCS_TO_INTERSIGHT_POLICY_MAPPING_TABLE = {
+        "server_pool_qualification": "server_pool_qualification_policies"
+    }
 
     def __init__(self, parent=None, resourcepool_pool=None):
         IntersightConfigObject.__init__(self, parent=parent, sdk_object=resourcepool_pool)
@@ -874,14 +1459,21 @@ class IntersightResourcePool(IntersightConfigObject):
         self.descr = self.get_attribute(attribute_name="description", attribute_secondary_name="descr")
         self.name = self.get_attribute(attribute_name="name")
         self.resources = None
+        self.server_pool_qualification_policies = None
         self.target_platform = None
 
         if self._config.load_from == "live":
             self.target_platform = self._get_target_platform()
             self.resources = self._get_member_resources()
+            if getattr(self._object, "qualification_policies", None):
+                server_pool_qualification_policies = []
+                for qualification_policy in self._object.qualification_policies:
+                    server_pool_qualification_policies.append(self._get_policy_name(policy=qualification_policy))
+
+                self.server_pool_qualification_policies = server_pool_qualification_policies
 
         elif self._config.load_from == "file":
-            for attribute in ["resources", "target_platform"]:
+            for attribute in ["resources", "server_pool_qualification_policies", "target_platform"]:
                 setattr(self, attribute, None)
                 if attribute in self._object:
                     setattr(self, attribute, self.get_attribute(attribute_name=attribute))
@@ -1063,6 +1655,23 @@ class IntersightResourcePool(IntersightConfigObject):
             kwargs["description"] = self.descr
         if self.tags is not None:
             kwargs["tags"] = self.create_tags()
+        if self.server_pool_qualification_policies is not None:
+            server_pool_qualification_policies_list = []
+            for qualification_policy in self.server_pool_qualification_policies:
+                # We need to identify the Server Pool Qualification Policy object reference
+                server_pool_qualification_policy = self.get_live_object(
+                    object_name=qualification_policy,
+                    object_type="resourcepool.QualificationPolicy"
+                )
+                if server_pool_qualification_policy:
+                    server_pool_qualification_policies_list.append(server_pool_qualification_policy)
+                else:
+                    self._config.push_summary_manager.add_object_status(
+                        obj=self, obj_detail=f"Attaching Server Pool Qualification Policy '{qualification_policy}'",
+                        obj_type=self._INTERSIGHT_SDK_OBJECT_NAME, status="failed",
+                        message=f"Failed to find Server Pool Qualification Policy '{qualification_policy}'"
+                    )
+            kwargs["qualification_policies"] = server_pool_qualification_policies_list
 
         resourcepool_pool = ResourcepoolPool(**kwargs)
 

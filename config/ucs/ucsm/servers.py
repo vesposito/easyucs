@@ -35,8 +35,8 @@ from ucsmsdk.mometa.adaptor.AdaptorFcWorkQueueProfile import AdaptorFcWorkQueueP
 from ucsmsdk.mometa.adaptor.AdaptorHostEthIfProfile import AdaptorHostEthIfProfile
 from ucsmsdk.mometa.adaptor.AdaptorHostFcIfProfile import AdaptorHostFcIfProfile
 from ucsmsdk.mometa.adaptor.AdaptorHostIscsiIfProfile import AdaptorHostIscsiIfProfile
-from ucsmsdk.mometa.adaptor.AdaptorProtocolProfile import AdaptorProtocolProfile
 from ucsmsdk.mometa.adaptor.AdaptorPTP import AdaptorPTP
+from ucsmsdk.mometa.adaptor.AdaptorProtocolProfile import AdaptorProtocolProfile
 from ucsmsdk.mometa.adaptor.AdaptorQual import AdaptorQual
 from ucsmsdk.mometa.adaptor.AdaptorRssProfile import AdaptorRssProfile
 from ucsmsdk.mometa.bios.BiosTokenSettings import BiosTokenSettings
@@ -177,11 +177,11 @@ from ucsmsdk.mometa.lsboot.LsbootUsbFlashStorageImage import LsbootUsbFlashStora
 from ucsmsdk.mometa.lsboot.LsbootUsbInternalImage import LsbootUsbInternalImage
 from ucsmsdk.mometa.lsboot.LsbootVirtualMedia import LsbootVirtualMedia
 from ucsmsdk.mometa.lsmaint.LsmaintMaintPolicy import LsmaintMaintPolicy
-from ucsmsdk.mometa.memory.MemoryPersistentMemoryPolicy import MemoryPersistentMemoryPolicy
 from ucsmsdk.mometa.memory.MemoryPersistentMemoryGoal import MemoryPersistentMemoryGoal
-from ucsmsdk.mometa.memory.MemoryPersistentMemorySecurity import MemoryPersistentMemorySecurity
 from ucsmsdk.mometa.memory.MemoryPersistentMemoryLocalSecurity import MemoryPersistentMemoryLocalSecurity
 from ucsmsdk.mometa.memory.MemoryPersistentMemoryLogicalNamespace import MemoryPersistentMemoryLogicalNamespace
+from ucsmsdk.mometa.memory.MemoryPersistentMemoryPolicy import MemoryPersistentMemoryPolicy
+from ucsmsdk.mometa.memory.MemoryPersistentMemorySecurity import MemoryPersistentMemorySecurity
 from ucsmsdk.mometa.memory.MemoryQual import MemoryQual
 from ucsmsdk.mometa.mgmt.MgmtSpdmCertificate import MgmtSpdmCertificate
 from ucsmsdk.mometa.mgmt.MgmtSpdmCertificatePolicy import MgmtSpdmCertificatePolicy
@@ -190,12 +190,12 @@ from ucsmsdk.mometa.power.PowerPolicy import PowerPolicy
 from ucsmsdk.mometa.processor.ProcessorQual import ProcessorQual
 from ucsmsdk.mometa.sol.SolConfig import SolConfig
 from ucsmsdk.mometa.sol.SolPolicy import SolPolicy
-from ucsmsdk.mometa.stats.StatsThrFloatDefinition import StatsThrFloatDefinition
-from ucsmsdk.mometa.stats.StatsThr64Definition import StatsThr64Definition
 from ucsmsdk.mometa.stats.StatsThr32Definition import StatsThr32Definition
-from ucsmsdk.mometa.stats.StatsThrFloatValue import StatsThrFloatValue
-from ucsmsdk.mometa.stats.StatsThr64Value import StatsThr64Value
 from ucsmsdk.mometa.stats.StatsThr32Value import StatsThr32Value
+from ucsmsdk.mometa.stats.StatsThr64Definition import StatsThr64Definition
+from ucsmsdk.mometa.stats.StatsThr64Value import StatsThr64Value
+from ucsmsdk.mometa.stats.StatsThrFloatDefinition import StatsThrFloatDefinition
+from ucsmsdk.mometa.stats.StatsThrFloatValue import StatsThrFloatValue
 from ucsmsdk.mometa.stats.StatsThresholdClass import StatsThresholdClass
 from ucsmsdk.mometa.stats.StatsThresholdPolicy import StatsThresholdPolicy
 from ucsmsdk.mometa.storage.StorageLocalDiskConfigDef import StorageLocalDiskConfigDef
@@ -384,10 +384,278 @@ class UcsSystemServerPool(UcsSystemConfigObject):
                 return False
 
 
+class UcsSystemServerPoolPolicyQualifications(UcsSystemConfigObject):
+    _CONFIG_NAME = "Server Pool Policy Qualification"
+    _CONFIG_SECTION_NAME = "server_pool_policy_qualifications"
+    _UCS_SDK_OBJECT_NAME = "computeQual"
+
+    def __init__(self, parent=None, json_content=None, compute_qual=None):
+        UcsSystemConfigObject.__init__(self, parent=parent, ucs_sdk_object=compute_qual)
+        self.name = None
+        self.qualifications = []
+        self.descr = None
+
+        if self._config.load_from == "live":
+            if compute_qual is not None:
+                self.name = compute_qual.name
+                self.descr = compute_qual.descr
+
+                if "computePhysicalQual" in self._parent._config.sdk_objects:
+                    for qualif in self._config.sdk_objects["computePhysicalQual"]:
+                        if self._parent._dn:
+                            if self._parent._dn + "/blade-qualifier-" + self.name + "/" in qualif.dn:
+                                qualification = {}
+                                qualification.update({"type": "server_pid"})
+                                qualification.update({"server_pid": qualif.model})
+                                self.qualifications.append(qualification)
+                                break
+
+                if "computeRackQual" in self._parent._config.sdk_objects:
+                    for qualif in self._config.sdk_objects["computeRackQual"]:
+                        if self._parent._dn:
+                            if self._parent._dn + "/blade-qualifier-" + self.name + "/" in qualif.dn:
+                                qualification = {}
+                                qualification.update({"type": "rack"})
+                                qualification.update({"first_rack_id": qualif.min_id})
+                                qualification.update({"last_rack_id": qualif.max_id})
+                                self.qualifications.append(qualification)
+
+                if "powerGroupQual" in self._parent._config.sdk_objects:
+                    for qualif in self._config.sdk_objects["powerGroupQual"]:
+                        if self._parent._dn:
+                            if self._parent._dn + "/blade-qualifier-" + self.name + "/" in qualif.dn:
+                                qualification = {}
+                                qualification.update({"type": "power_group"})
+                                qualification.update({"power_group": qualif.group_name})
+                                self.qualifications.append(qualification)
+
+                if "computeChassisQual" in self._parent._config.sdk_objects:
+                    for qualif in self._config.sdk_objects["computeChassisQual"]:
+                        if self._parent._dn:
+                            if self._parent._dn + "/blade-qualifier-" + self.name + "/" in qualif.dn:
+                                qualification = {}
+                                qualification.update({"type": "chassis-server"})
+                                qualification.update({"first_chassis_id": qualif.min_id})
+                                qualification.update({"last_chassis_id": qualif.max_id})
+                                qualification["server_qualifications"] = []
+                                if "computeSlotQual" in self._parent._config.sdk_objects:
+                                    for slot_qualif in self._config.sdk_objects["computeSlotQual"]:
+                                        if self._parent._dn + "/blade-qualifier-" + self.name + "/chassis-from-" + \
+                                                qualif.min_id + "-to-" + qualif.max_id + "/" in slot_qualif.dn:
+                                            slot_qualification = {}
+                                            slot_qualification.update({"first_slot_id": slot_qualif.min_id})
+                                            slot_qualification.update({"last_slot_id": slot_qualif.max_id})
+                                            qualification["server_qualifications"].append(slot_qualification)
+                                self.qualifications.append(qualification)
+
+                if "adaptorQual" in self._parent._config.sdk_objects:
+                    for qualif in self._config.sdk_objects["adaptorQual"]:
+                        if self._parent._dn:
+                            if self._parent._dn + "/blade-qualifier-" + self.name + "/" in qualif.dn:
+                                qualification = {}
+                                adapter_policies = []
+                                qualification.update({"type": "adapter"})
+                                if "adaptorCapQual" in self._parent._config.sdk_objects:
+                                    for adapt_qualif in self._config.sdk_objects["adaptorCapQual"]:
+                                        if self._parent._dn + "/blade-qualifier-" + self.name + "/adaptor/cap-" \
+                                                in adapt_qualif.dn:
+                                            qualification_element = {}
+                                            qualification_element.update(
+                                                {"adapter_maximum_capacity": adapt_qualif.maximum})
+                                            qualification_element.update({"adapter_type": adapt_qualif.type})
+                                            qualification_element.update({"adapter_pid": adapt_qualif.model})
+                                            adapter_policies.append(qualification_element)
+                                    if len(adapter_policies) > 0:
+                                        qualification["adapter_qualifications"] = adapter_policies
+                                        self.qualifications.append(qualification)
+
+                if "processorQual" in self._parent._config.sdk_objects:
+                    for qualif in self._config.sdk_objects["processorQual"]:
+                        if self._parent._dn:
+                            if self._parent._dn + "/blade-qualifier-" + self.name + "/" in qualif.dn:
+                                qualification = {}
+                                qualification.update({"type": "cpu-cores"})
+                                qualification.update({"min_cores": qualif.min_cores})
+                                qualification.update({"max_cores": qualif.max_cores})
+                                qualification.update({"min_threads": qualif.min_threads})
+                                qualification.update({"max_threads": qualif.max_threads})
+                                qualification.update({"processor_architecture": qualif.arch})
+                                qualification.update({"processor_pid": qualif.model})
+                                qualification.update({"cpu_speed": qualif.speed})
+                                qualification.update({"cpu_stepping": qualif.stepping})
+                                self.qualifications.append(qualification)
+                                break
+
+                if "memoryQual" in self._parent._config.sdk_objects:
+                    for qualif in self._config.sdk_objects["memoryQual"]:
+                        if self._parent._dn:
+                            if self._parent._dn + "/blade-qualifier-" + self.name + "/" in qualif.dn:
+                                qualification = {}
+                                qualification.update({"type": "memory"})
+                                qualification.update({"min_cap": qualif.min_cap})
+                                qualification.update({"max_cap": qualif.max_cap})
+                                qualification.update({"clock": qualif.clock})
+                                qualification.update({"latency": qualif.latency})
+                                qualification.update({"width": qualif.width})
+                                qualification.update({"units": qualif.units})
+                                self.qualifications.append(qualification)
+                                break
+
+                if "storageQual" in self._parent._config.sdk_objects:
+                    for qualif in self._config.sdk_objects["storageQual"]:
+                        if self._parent._dn:
+                            if self._parent._dn + "/blade-qualifier-" + self.name + "/" in qualif.dn:
+                                qualification = {}
+                                qualification.update({"type": "storage"})
+                                qualification.update({"min_cap": qualif.min_cap})
+                                qualification.update({"max_cap": qualif.max_cap})
+                                qualification.update({"disk_type": qualif.disk_type})
+                                qualification.update({"diskless": qualif.diskless})
+                                qualification.update({"number_of_blocks": qualif.number_of_blocks})
+                                qualification.update({"block_size": qualif.block_size})
+                                qualification.update({"units": qualif.units})
+                                qualification.update({"per_disk_cap": qualif.per_disk_cap})
+                                qualification.update({"number_of_flexflash_cards": qualif.number_of_flex_flash_cards})
+                                self.qualifications.append(qualification)
+                                break
+
+        elif self._config.load_from == "file":
+            if json_content is not None:
+                if not self.get_attributes_from_json(json_content=json_content):
+                    self.logger(level="error",
+                                message="Unable to get attributes from JSON content for " + self._CONFIG_NAME)
+
+        self.clean_object()
+
+    def clean_object(self):
+        UcsSystemConfigObject.clean_object(self)
+
+        # We need to set all values that are not present in the config file to None
+        for element in self.qualifications:
+            for value in ["type", "server_pid", "last_rack_id", "first_rack_id", "adapter_qualifications",
+                          "min_cores", "max_cores", "processor_architecture", "processor_pid", "min_cap",
+                          "max_cap", "per_disk_cap", "number_of_flexflash_cards", "units", "block_size",
+                          "number_of_blocks", "diskless", "disk_type", "min_threads", "max_threads",
+                          "cpu_speed", "cpu_stepping", "first_chassis_id", "last_chassis_id", "clock",
+                          "latency", "width", "power_group"]:
+                if value not in element:
+                    element[value] = None
+            if element["adapter_qualifications"]:
+                for subelement in element["adapter_qualifications"]:
+                    for value in ["adapter_maximum_capacity", "adapter_pid", "adapter_type"]:
+                        if value not in subelement:
+                            subelement[value] = None
+
+    def push_object(self, commit=True):
+        if commit:
+            self.logger(message="Pushing " + self._CONFIG_NAME + " configuration: " + str(self.name))
+        else:
+            self.logger(message="Adding to the handle " + self._CONFIG_NAME + " configuration: " +
+                                self.name + ", waiting for a commit")
+
+        if hasattr(self._parent, '_dn'):
+            parent_mo = self._parent._dn
+        else:
+            self.logger(level="error",
+                        message="Impossible to find the parent dn of " + self._CONFIG_NAME + " : " + str(self.name))
+            return False
+
+        mo_compute_qual = ComputeQual(parent_mo_or_dn=parent_mo, name=self.name, descr=self.descr)
+        if self.qualifications:
+            for qualification in self.qualifications:
+                if qualification["type"] == "server_pid":
+                    ComputePhysicalQual(parent_mo_or_dn=mo_compute_qual, model=qualification['server_pid'])
+
+                elif qualification["type"] == "rack":
+                    last_rack_id = None
+                    if "number_of_servers" in qualification:
+                        last_rack_id = str(int(qualification['first_rack_id']) +
+                                           int(qualification['number_of_servers']) - 1)
+                        # If last_rack_id is above 255, assign last_rack_id value as 255
+                        if int(last_rack_id) > 255:
+                            last_rack_id = '255'
+                    elif "last_rack_id" in qualification:
+                        last_rack_id = qualification['last_rack_id']
+                    ComputeRackQual(parent_mo_or_dn=mo_compute_qual, min_id=qualification['first_rack_id'],
+                                    max_id=last_rack_id)
+
+                elif qualification["type"] == "power_group":
+                    PowerGroupQual(parent_mo_or_dn=mo_compute_qual, group_name=qualification["power_group"])
+
+                elif qualification["type"] == "chassis-server":
+                    last_chassis_id = None
+                    if "number_of_chassis" in qualification:
+                        last_chassis_id = str(int(qualification['first_chassis_id']) +
+                                              int(qualification['number_of_chassis']) - 1)
+                        # If last_chassis_id is above 255, assign last_chassis_id value as 255
+                        if int(last_chassis_id) > 255:
+                            last_chassis_id = '255'
+                    elif "last_chassis_id" in qualification:
+                        last_chassis_id = qualification['last_chassis_id']
+                    mo_chassis_qual = ComputeChassisQual(parent_mo_or_dn=mo_compute_qual,
+                                                         min_id=qualification['first_chassis_id'],
+                                                         max_id=last_chassis_id)
+                    if 'server_qualifications' in qualification:
+                        for slot_id_range in qualification['server_qualifications']:
+                            last_slot_id = None
+                            if "number_of_slots" in slot_id_range:
+                                last_slot_id = str(int(slot_id_range['first_slot_id']) +
+                                                   int(slot_id_range['number_of_slots']) - 1)
+                                # If last_slot id is above 8, assign last_slot id value as 8
+                                if int(last_slot_id) > 8:
+                                    last_slot_id = '8'
+                            elif "last_slot_id" in slot_id_range:
+                                last_slot_id = slot_id_range['last_slot_id']
+                            ComputeSlotQual(parent_mo_or_dn=mo_chassis_qual, max_id=last_slot_id,
+                                            min_id=slot_id_range['first_slot_id'])
+
+                elif qualification["type"] == "adapter":
+                    if qualification["adapter_qualifications"]:
+                        mo_adaptor_qual = AdaptorQual(parent_mo_or_dn=mo_compute_qual)
+                        for adapter_qualification in qualification["adapter_qualifications"]:
+                            AdaptorCapQual(
+                                parent_mo_or_dn=mo_adaptor_qual,
+                                maximum=adapter_qualification['adapter_maximum_capacity'],
+                                type=adapter_qualification['adapter_type'],
+                                model=adapter_qualification['adapter_pid'])
+
+                elif qualification["type"] == "cpu-cores":
+                    ProcessorQual(parent_mo_or_dn=mo_compute_qual, min_cores=qualification['min_cores'],
+                                  max_cores=qualification['max_cores'], min_threads=qualification['min_threads'],
+                                  max_threads=qualification['max_threads'], speed=qualification['cpu_speed'],
+                                  arch=qualification['processor_architecture'], model=qualification['processor_pid'],
+                                  stepping=qualification['cpu_stepping'])
+
+                elif qualification["type"] == "memory":
+                    MemoryQual(parent_mo_or_dn=mo_compute_qual, min_cap=qualification['min_cap'],
+                               max_cap=qualification['max_cap'], clock=qualification['clock'],
+                               latency=qualification['latency'], width=qualification['width'],
+                               units=qualification['units'])
+
+                elif qualification["type"] == "storage":
+                    StorageQual(parent_mo_or_dn=mo_compute_qual, min_cap=qualification['min_cap'],
+                                per_disk_cap=qualification['per_disk_cap'],
+                                block_size=qualification['block_size'],
+                                number_of_blocks=qualification['number_of_blocks'],
+                                max_cap=qualification['max_cap'], disk_type=qualification['disk_type'],
+                                units=qualification['units'],
+                                number_of_flex_flash_cards=qualification['number_of_flexflash_cards'],
+                                diskless=qualification['diskless'])
+
+        self._handle.add_mo(mo=mo_compute_qual, modify_present=True)
+        if commit:
+            if self.commit(detail=self.name) != True:
+                return False
+        return True
+
+
 class UcsSystemServerPoolPolicy(UcsSystemConfigObject):
     _CONFIG_NAME = "Server Pool Policy"
     _CONFIG_SECTION_NAME = "server_pool_policies"
     _UCS_SDK_OBJECT_NAME = "computePoolingPolicy"
+    _POLICY_MAPPING_TABLE = {
+        "qualification": UcsSystemServerPoolPolicyQualifications
+    }
 
     def __init__(self, parent=None, json_content=None, compute_pooling_policy=None):
         UcsSystemConfigObject.__init__(self, parent=parent, ucs_sdk_object=compute_pooling_policy)
@@ -737,271 +1005,6 @@ class UcsSystemLocalDiskConfPolicy(UcsSystemConfigObject):
                 # We are in presence of a Specific Local Disk Config Policy under a Service Profile object
                 detail = "Service Profile " + str(self._parent.name)
             if self.commit(detail=detail) != True:
-                return False
-        return True
-
-
-class UcsSystemServerPoolPolicyQualifications(UcsSystemConfigObject):
-    _CONFIG_NAME = "Server Pool Policy Qualification"
-    _CONFIG_SECTION_NAME = "server_pool_policy_qualifications"
-    _UCS_SDK_OBJECT_NAME = "computeQual"
-
-    def __init__(self, parent=None, json_content=None, compute_qual=None):
-        UcsSystemConfigObject.__init__(self, parent=parent, ucs_sdk_object=compute_qual)
-        self.name = None
-        self.qualifications = []
-        self.descr = None
-
-        if self._config.load_from == "live":
-            if compute_qual is not None:
-                self.name = compute_qual.name
-                self.descr = compute_qual.descr
-
-                if "computePhysicalQual" in self._parent._config.sdk_objects:
-                    for qualif in self._config.sdk_objects["computePhysicalQual"]:
-                        if self._parent._dn:
-                            if self._parent._dn + "/blade-qualifier-" + self.name + "/" in qualif.dn:
-                                qualification = {}
-                                qualification.update({"type": "server_pid"})
-                                qualification.update({"server_pid": qualif.model})
-                                self.qualifications.append(qualification)
-                                break
-
-                if "computeRackQual" in self._parent._config.sdk_objects:
-                    for qualif in self._config.sdk_objects["computeRackQual"]:
-                        if self._parent._dn:
-                            if self._parent._dn + "/blade-qualifier-" + self.name + "/" in qualif.dn:
-                                qualification = {}
-                                qualification.update({"type": "rack"})
-                                qualification.update({"first_rack_id": qualif.min_id})
-                                qualification.update({"last_rack_id": qualif.max_id})
-                                self.qualifications.append(qualification)
-
-                if "powerGroupQual" in self._parent._config.sdk_objects:
-                    for qualif in self._config.sdk_objects["powerGroupQual"]:
-                        if self._parent._dn:
-                            if self._parent._dn + "/blade-qualifier-" + self.name + "/" in qualif.dn:
-                                qualification = {}
-                                qualification.update({"type": "power_group"})
-                                qualification.update({"power_group": qualif.group_name})
-                                self.qualifications.append(qualification)
-
-                if "computeChassisQual" in self._parent._config.sdk_objects:
-                    for qualif in self._config.sdk_objects["computeChassisQual"]:
-                        if self._parent._dn:
-                            if self._parent._dn + "/blade-qualifier-" + self.name + "/" in qualif.dn:
-                                qualification = {}
-                                qualification.update({"type": "chassis-server"})
-                                qualification.update({"first_chassis_id": qualif.min_id})
-                                qualification.update({"last_chassis_id": qualif.max_id})
-                                qualification["server_qualifications"] = []
-                                if "computeSlotQual" in self._parent._config.sdk_objects:
-                                    for slot_qualif in self._config.sdk_objects["computeSlotQual"]:
-                                        if self._parent._dn + "/blade-qualifier-" + self.name + "/chassis-from-" + \
-                                                qualif.min_id + "-to-" + qualif.max_id + "/" in slot_qualif.dn:
-                                            slot_qualification = {}
-                                            slot_qualification.update({"first_slot_id": slot_qualif.min_id})
-                                            slot_qualification.update({"last_slot_id": slot_qualif.max_id})
-                                            qualification["server_qualifications"].append(slot_qualification)
-                                self.qualifications.append(qualification)
-
-                if "adaptorQual" in self._parent._config.sdk_objects:
-                    for qualif in self._config.sdk_objects["adaptorQual"]:
-                        if self._parent._dn:
-                            if self._parent._dn + "/blade-qualifier-" + self.name + "/" in qualif.dn:
-                                qualification = {}
-                                adapter_policies = []
-                                qualification.update({"type": "adapter"})
-                                if "adaptorCapQual" in self._parent._config.sdk_objects:
-                                    for adapt_qualif in self._config.sdk_objects["adaptorCapQual"]:
-                                        if self._parent._dn + "/blade-qualifier-" + self.name + "/adaptor/cap-" \
-                                                in adapt_qualif.dn:
-                                            qualification_element = {}
-                                            qualification_element.update(
-                                                {"adapter_maximum_capacity": adapt_qualif.maximum})
-                                            qualification_element.update({"adapter_type": adapt_qualif.type})
-                                            qualification_element.update({"adapter_pid": adapt_qualif.model})
-                                            adapter_policies.append(qualification_element)
-                                    if len(adapter_policies) > 0:
-                                        qualification["adapter_qualifications"] = adapter_policies
-                                        self.qualifications.append(qualification)
-
-                if "processorQual" in self._parent._config.sdk_objects:
-                    for qualif in self._config.sdk_objects["processorQual"]:
-                        if self._parent._dn:
-                            if self._parent._dn + "/blade-qualifier-" + self.name + "/" in qualif.dn:
-                                qualification = {}
-                                qualification.update({"type": "cpu-cores"})
-                                qualification.update({"min_cores": qualif.min_cores})
-                                qualification.update({"max_cores": qualif.max_cores})
-                                qualification.update({"min_threads": qualif.min_threads})
-                                qualification.update({"max_threads": qualif.max_threads})
-                                qualification.update({"processor_architecture": qualif.arch})
-                                qualification.update({"processor_pid": qualif.model})
-                                qualification.update({"cpu_speed": qualif.speed})
-                                qualification.update({"cpu_stepping": qualif.stepping})
-                                self.qualifications.append(qualification)
-                                break
-
-                if "memoryQual" in self._parent._config.sdk_objects:
-                    for qualif in self._config.sdk_objects["memoryQual"]:
-                        if self._parent._dn:
-                            if self._parent._dn + "/blade-qualifier-" + self.name + "/" in qualif.dn:
-                                qualification = {}
-                                qualification.update({"type": "memory"})
-                                qualification.update({"min_cap": qualif.min_cap})
-                                qualification.update({"max_cap": qualif.max_cap})
-                                qualification.update({"clock": qualif.clock})
-                                qualification.update({"latency": qualif.latency})
-                                qualification.update({"width": qualif.width})
-                                qualification.update({"units": qualif.units})
-                                self.qualifications.append(qualification)
-                                break
-
-                if "storageQual" in self._parent._config.sdk_objects:
-                    for qualif in self._config.sdk_objects["storageQual"]:
-                        if self._parent._dn:
-                            if self._parent._dn + "/blade-qualifier-" + self.name + "/" in qualif.dn:
-                                qualification = {}
-                                qualification.update({"type": "storage"})
-                                qualification.update({"min_cap": qualif.min_cap})
-                                qualification.update({"max_cap": qualif.max_cap})
-                                qualification.update({"disk_type": qualif.disk_type})
-                                qualification.update({"diskless": qualif.diskless})
-                                qualification.update({"number_of_blocks": qualif.number_of_blocks})
-                                qualification.update({"block_size": qualif.block_size})
-                                qualification.update({"units": qualif.units})
-                                qualification.update({"per_disk_cap": qualif.per_disk_cap})
-                                qualification.update({"number_of_flexflash_cards": qualif.number_of_flex_flash_cards})
-                                self.qualifications.append(qualification)
-                                break
-
-        elif self._config.load_from == "file":
-            if json_content is not None:
-                if not self.get_attributes_from_json(json_content=json_content):
-                    self.logger(level="error",
-                                message="Unable to get attributes from JSON content for " + self._CONFIG_NAME)
-
-        self.clean_object()
-
-    def clean_object(self):
-        UcsSystemConfigObject.clean_object(self)
-
-        # We need to set all values that are not present in the config file to None
-        for element in self.qualifications:
-            for value in ["type", "server_pid", "last_rack_id", "first_rack_id", "adapter_qualifications",
-                          "min_cores", "max_cores", "processor_architecture", "processor_pid", "min_cap",
-                          "max_cap", "per_disk_cap", "number_of_flexflash_cards", "units", "block_size",
-                          "number_of_blocks", "diskless", "disk_type", "min_threads", "max_threads",
-                          "cpu_speed", "cpu_stepping", "first_chassis_id", "last_chassis_id", "clock",
-                          "latency", "width", "power_group"]:
-                if value not in element:
-                    element[value] = None
-            if element["adapter_qualifications"]:
-                for subelement in element["adapter_qualifications"]:
-                    for value in ["adapter_maximum_capacity", "adapter_pid", "adapter_type"]:
-                        if value not in subelement:
-                            subelement[value] = None
-
-    def push_object(self, commit=True):
-        if commit:
-            self.logger(message="Pushing " + self._CONFIG_NAME + " configuration: " + str(self.name))
-        else:
-            self.logger(message="Adding to the handle " + self._CONFIG_NAME + " configuration: " +
-                                self.name + ", waiting for a commit")
-
-        if hasattr(self._parent, '_dn'):
-            parent_mo = self._parent._dn
-        else:
-            self.logger(level="error",
-                        message="Impossible to find the parent dn of " + self._CONFIG_NAME + " : " + str(self.name))
-            return False
-
-        mo_compute_qual = ComputeQual(parent_mo_or_dn=parent_mo, name=self.name, descr=self.descr)
-        if self.qualifications:
-            for qualification in self.qualifications:
-                if qualification["type"] == "server_pid":
-                    ComputePhysicalQual(parent_mo_or_dn=mo_compute_qual, model=qualification['server_pid'])
-
-                elif qualification["type"] == "rack":
-                    last_rack_id = None
-                    if "number_of_servers" in qualification:
-                        last_rack_id = str(int(qualification['first_rack_id']) +
-                                           int(qualification['number_of_servers']) - 1)
-                        # If last_rack_id is above 255, assign last_rack_id value as 255
-                        if int(last_rack_id) > 255:
-                            last_rack_id = '255'
-                    elif "last_rack_id" in qualification:
-                        last_rack_id = qualification['last_rack_id']
-                    ComputeRackQual(parent_mo_or_dn=mo_compute_qual, min_id=qualification['first_rack_id'],
-                                    max_id=last_rack_id)
-
-                elif qualification["type"] == "power_group":
-                    PowerGroupQual(parent_mo_or_dn=mo_compute_qual, group_name=qualification["power_group"])
-
-                elif qualification["type"] == "chassis-server":
-                    last_chassis_id = None
-                    if "number_of_chassis" in qualification:
-                        last_chassis_id = str(int(qualification['first_chassis_id']) +
-                                              int(qualification['number_of_chassis']) - 1)
-                        # If last_chassis_id is above 255, assign last_chassis_id value as 255
-                        if int(last_chassis_id) > 255:
-                            last_chassis_id = '255'
-                    elif "last_chassis_id" in qualification:
-                        last_chassis_id = qualification['last_chassis_id']
-                    mo_chassis_qual = ComputeChassisQual(parent_mo_or_dn=mo_compute_qual,
-                                                         min_id=qualification['first_chassis_id'],
-                                                         max_id=last_chassis_id)
-                    if 'server_qualifications' in qualification:
-                        for slot_id_range in qualification['server_qualifications']:
-                            last_slot_id = None
-                            if "number_of_slots" in slot_id_range:
-                                last_slot_id = str(int(slot_id_range['first_slot_id']) +
-                                                   int(slot_id_range['number_of_slots']) - 1)
-                                # If last_slot id is above 8, assign last_slot id value as 8
-                                if int(last_slot_id) > 8:
-                                    last_slot_id = '8'
-                            elif "last_slot_id" in slot_id_range:
-                                last_slot_id = slot_id_range['last_slot_id']
-                            ComputeSlotQual(parent_mo_or_dn=mo_chassis_qual, max_id=last_slot_id,
-                                            min_id=slot_id_range['first_slot_id'])
-
-                elif qualification["type"] == "adapter":
-                    if qualification["adapter_qualifications"]:
-                        mo_adaptor_qual = AdaptorQual(parent_mo_or_dn=mo_compute_qual)
-                        for adapter_qualification in qualification["adapter_qualifications"]:
-                            AdaptorCapQual(
-                                parent_mo_or_dn=mo_adaptor_qual,
-                                maximum=adapter_qualification['adapter_maximum_capacity'],
-                                type=adapter_qualification['adapter_type'],
-                                model=adapter_qualification['adapter_pid'])
-
-                elif qualification["type"] == "cpu-cores":
-                    ProcessorQual(parent_mo_or_dn=mo_compute_qual, min_cores=qualification['min_cores'],
-                                  max_cores=qualification['max_cores'], min_threads=qualification['min_threads'],
-                                  max_threads=qualification['max_threads'], speed=qualification['cpu_speed'],
-                                  arch=qualification['processor_architecture'], model=qualification['processor_pid'],
-                                  stepping=qualification['cpu_stepping'])
-
-                elif qualification["type"] == "memory":
-                    MemoryQual(parent_mo_or_dn=mo_compute_qual, min_cap=qualification['min_cap'],
-                               max_cap=qualification['max_cap'], clock=qualification['clock'],
-                               latency=qualification['latency'], width=qualification['width'],
-                               units=qualification['units'])
-
-                elif qualification["type"] == "storage":
-                    StorageQual(parent_mo_or_dn=mo_compute_qual, min_cap=qualification['min_cap'],
-                                per_disk_cap=qualification['per_disk_cap'],
-                                block_size=qualification['block_size'],
-                                number_of_blocks=qualification['number_of_blocks'],
-                                max_cap=qualification['max_cap'], disk_type=qualification['disk_type'],
-                                units=qualification['units'],
-                                number_of_flex_flash_cards=qualification['number_of_flexflash_cards'],
-                                diskless=qualification['diskless'])
-
-        self._handle.add_mo(mo=mo_compute_qual, modify_present=True)
-        if commit:
-            if self.commit(detail=self.name) != True:
                 return False
         return True
 
@@ -3990,9 +3993,11 @@ class UcsSystemMemoryPolicy(UcsSystemConfigObject):
     def __init__(self, parent=None, json_content=None, compute_memory_config_policy=None):
         UcsSystemConfigObject.__init__(self, parent=parent, ucs_sdk_object=compute_memory_config_policy)
         self.blacklisting = None
+        self.name = None
 
         if self._config.load_from == "live":
             if compute_memory_config_policy is not None:
+                self.name = compute_memory_config_policy.name
                 self.blacklisting = compute_memory_config_policy.black_listing
 
         elif self._config.load_from == "file":

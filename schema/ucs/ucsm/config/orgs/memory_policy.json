@@ -10,6 +10,11 @@
          "type": "string",
          "default": ""
       },
+      "name": {
+         "description": "Memory Policy Name",
+         "type": "string",
+         "default": "default"
+      },
       "policy_owner": {
          "description": "Memory Policy Owner (for UCS Central)",
          "type": "string",

@@ -6,7 +6,7 @@
    "type": "object",
    "properties": {
       "fabric_interconnects": {
-         "description": "EasyUCS config/equipment/fabric_interconnects section",
+         "description": "DEPRECATED: EasyUCS config/equipment/fabric_interconnects section",
          "type": "array",
          "items": {
             "description": "EasyUCS config/equipment/fabric_interconnects element",
@@ -14,7 +14,27 @@
             "$ref": "equipment/fabric_interconnects.json"
          },
          "minItems": 1      
-      }
+      },
+      "imm_domains": {
+         "description": "EasyUCS config/equipment/imm_domains section",
+         "type": "array",
+         "items": {
+            "description": "EasyUCS config/equipment/imm_domains element",
+            "type": "object",
+            "$ref": "equipment/imm_domains.json"
+         },
+         "minItems": 1      
+      },
+      "rack_units": {
+         "description": "EasyUCS config/equipment/rack_units section",
+         "type": "array",
+         "items": {
+            "description": "EasyUCS config/equipment/rack_units element",
+            "type": "object",
+            "$ref": "equipment/rack_units.json"
+         },
+         "minItems": 1      
+      }  
    },
    "additionalProperties": false
 }

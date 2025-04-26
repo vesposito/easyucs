@@ -131,6 +131,11 @@
                "type": "boolean",
                "default": false
             },
+            "enable_nested_group_search": {
+               "description": "Enable or disable nested group search in LDAP.",
+               "type": "boolean",
+               "default": false
+            },
             "nested_group_search_depth": {
                "description": "Search depth to look for a nested LDAP group in an LDAP group map.",
                "type": "integer",
@@ -197,6 +202,12 @@
                "default": 389,
                "minimum": 1,
                "maximum": 65535
+            },
+            "vendor": {
+               "description": "LDAP server vendor type used for authentication.",
+               "type": "string",
+               "default": "OpenLDAP",
+               "enum": ["OpenLDAP", "MSAD"]
             }
          }
       },
@@ -215,6 +226,12 @@
                "type": "string",
                "default": "",
                "pattern": "^(([a-zA-Z0-9])|([a-zA-Z0-9][a-zA-Z0-9\\.\\-]*[a-zA-Z0-9]))$"
+            },
+            "group_dn": {
+               "description": "Group Distinguished Name (DN).",
+               "type": "string",
+               "default": "",
+               "maxLength": 254
             },
             "role": {
                "description": "Role assigned to all users in this LDAP server group. This can be one of read-only, user, admin.",

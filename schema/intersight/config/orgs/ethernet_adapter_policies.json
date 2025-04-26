@@ -77,6 +77,11 @@
          "type": "boolean",
          "default": false
       },
+      "enable_etherchannel_pinning": {
+         "description": "Ethernet Adapter Policy Enable EtherChannel Pinning",
+         "type": "boolean",
+         "default": false
+      },
       "enable_geneve_offload": {
          "description": "GENEVE offload protocol allows you to create logical networks that span physical network boundaries by allowing any information to be encoded in a packet and passed between tunnel endpoints",
          "type": "boolean",

@@ -85,6 +85,16 @@
                      "100Gbps"
                   ]
                },
+               "fec": {
+                  "description": "Port Policy - Appliance Port Channel - FEC",
+                  "type": "string",
+                  "default": "Auto",
+                  "enum": [
+                     "Auto",
+                     "Cl74",
+                     "Cl91"
+                  ]
+               },
                "enable_25gb_copper_cable_negotiation": {
                   "description": "Port Policy - Appliance Port Channel - Enable 25Gb Copper Cable Negotiation",
                   "type": "boolean",
@@ -332,6 +342,16 @@
                      "100Gbps"
                   ]
                },
+               "fec": {
+                  "description": "Port Policy - FCoE Port Channel - FEC",
+                  "type": "string",
+                  "default": "Auto",
+                  "enum": [
+                     "Auto",
+                     "Cl74",
+                     "Cl91"
+                  ]
+               },
                "enable_25gb_copper_cable_negotiation": {
                   "description": "Port Policy - FCoE Port Channel - Enable 25Gb Copper Cable Negotiation",
                   "type": "boolean",
@@ -566,6 +586,16 @@
                      "100Gbps"
                   ]
                },
+               "fec": {
+                  "description": "Port Policy - LAN Port Channel - FEC",
+                  "type": "string",
+                  "default": "Auto",
+                  "enum": [
+                     "Auto",
+                     "Cl74",
+                     "Cl91"
+                  ]
+               },
                "enable_25gb_copper_cable_negotiation": {
                   "description": "Port Policy - LAN Port Channel - Enable 25Gb Copper Cable Negotiation",
                   "type": "boolean",
@@ -578,8 +608,20 @@
                   "minimum": 1,
                   "maximum": 256
                },
+               "ethernet_network_group_policies": {
+                  "description": "Port Policy - LAN Port Channel - Ethernet Network Group Policies",
+                  "type": "array",
+                  "items": [
+                     {
+                        "type": "string",
+                        "default": "",
+                        "pattern": "^([a-zA-Z0-9_.:-]{1,64}/)?[a-zA-Z0-9_.:-]{1,64}$"
+                     }
+                  ],
+                  "minItems": 1
+               },
                "ethernet_network_group_policy": {
-                  "description": "Port Policy - LAN Port Channel - Ethernet Network Group Policy",
+                  "description": "DEPRECATED: Port Policy - LAN Port Channel - Ethernet Network Group Policy",
                   "type": "string"
                },
                "flow_control_policy": {
@@ -695,8 +737,20 @@
                      "Cl91"
                   ]
                },
+               "ethernet_network_group_policies": {
+                  "description": "Port Policy - LAN Uplink Port - Ethernet Network Group Policies",
+                  "type": "array",
+                  "items": [
+                     {
+                        "type": "string",
+                        "default": "",
+                        "pattern": "^([a-zA-Z0-9_.:-]{1,64}/)?[a-zA-Z0-9_.:-]{1,64}$"
+                     }
+                  ],
+                  "minItems": 1
+               },
                "ethernet_network_group_policy": {
-                  "description": "Port Policy - LAN Uplink Port - Ethernet Network Group Policy",
+                  "description": "DEPRECATED: Port Policy - LAN Uplink Port - Ethernet Network Group Policy",
                   "type": "string"
                },
                "flow_control_policy": {

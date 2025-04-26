@@ -1,0 +1,66 @@
+{
+   "id": "intersight_config_orgs_scrub_policies#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS intersight config orgs scrub_policies section",
+   "description": "EasyUCS intersight config orgs scrub_policies section JSON schema",
+   "type": "object",
+   "properties": {
+      "comment": {
+         "description": "Scrub Policy Comments",
+         "type": "string",
+         "default": ""
+      },
+      "descr": {
+         "description": "Scrub Policy Description",
+         "type": "string",
+         "default": "",
+         "pattern": "^$|^[a-zA-Z0-9]+[\\x00-\\xFF]*$",
+         "maxLength": 1024
+      },
+      "name": {
+         "description": "Scrub Policy Name",
+         "type": "string",
+         "default": "",
+         "pattern": "^[a-zA-Z0-9_.:-]{1,64}$"
+      },
+      "tags": {
+         "description": "Scrub Policy Tags",
+         "type": "array",
+         "items": {
+            "description": "Scrub Policy Tags",
+            "type": "object",
+            "properties": {
+               "key": {
+                  "description": "Tag Key",
+                  "type": "string",
+                  "default": "",
+                  "minLength": 1,
+                  "maxLength": 128
+               },
+               "value": {
+                  "description": "Tag Value",
+                  "type": "string",
+                  "default": "",
+                  "minLength": 0,
+                  "maxLength": 256
+               }
+            },
+            "additionalProperties": false,
+            "required": ["key", "value"]
+         },
+         "default": []
+      },
+      "bios": {
+         "description": "Scrub BIOS Toggle",
+         "type": "boolean",
+         "default": false
+      },
+      "disk": {
+         "description": "Scrub Disk Toggle",
+         "type": "boolean",
+         "default": false
+      }
+   },
+   "additionalProperties": false,
+   "required": ["name"]
+}

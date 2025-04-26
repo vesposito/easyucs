@@ -40,7 +40,7 @@ components:
       type: object
       description: List of cached orgs from last successful connection with their respective descriptions
       minProperties: 1
-      example: { 'default': {'description': 'This is the default org', 'is_shared': false, 'resource_groups': ['default-rg'], 'shared_with_orgs': ['easyucs']} }
+      example: { 'default': {'description': 'This is the default org', 'is_shared': false, 'resource_groups': ['default'], 'shared_with_orgs': ['easyucs']} }
     cancel:
       type: string
       description: Whether to cancel upload or not
@@ -186,6 +186,13 @@ components:
       type: boolean
       description: Erase all Virtual Drives from all servers
       example: false
+    fabric_id:
+      type: string
+      description: Identifier for the Fabric (A or B)
+      example: "A"
+      enum:
+        - "A"
+        - "B"
     fi_ip_list:
       type: array
       description: List of DHCP IP addresses of Fabric Interconnects for initial setup
@@ -302,6 +309,11 @@ components:
       enum:
         - en
         - fr
+    mac_address:
+      type: string
+      description: MAC address of a device/interface
+      example: "00:1A:2B:3C:4D:5E"
+      pattern: "^([0-9A-Fa-f]{2}:){5}[0-9A-Fa-f]{2}$"
     md5:
       type: string
       description: MD5 Checksum value
@@ -392,6 +404,10 @@ components:
     push_equipment:
         type: boolean
         description: Whether the equipment section of the configuration should be pushed alongside the rest of the configuration
+        example: false
+    push_equipment_only:
+        type: boolean
+        description: Whether only equipment section of the configuration should be pushed
         example: false
     ucs_service_profile_state:
       type: string
@@ -491,6 +507,11 @@ components:
       type: string
       description: Revision of the config
       example: '1.0'
+    serial:
+      type: string
+      description: Serial number of a device
+      example: "FIC1234567"
+      default: "UNKNOWN-SERIAL"
     sha1:
       type: string
       description: SHA1 Checksum value
@@ -878,6 +899,8 @@ components:
           "$ref": "#/components/schemas/force"
         push_equipment:
           "$ref": "#/components/schemas/push_equipment"
+        push_equipment_only:
+          "$ref": "#/components/schemas/push_equipment_only"
       additionalProperties: false
     device_actions_deploy_domain_profile:
       type: object
@@ -1074,6 +1097,30 @@ components:
           $ref: '#/components/schemas/user_label'
       additionalProperties: false
     device_reset_post:
+      type: object
+      required:
+        - password
+      properties:
+        password:
+          $ref: '#/components/schemas/password'
+        clear_sel_logs:
+          $ref: '#/components/schemas/clear_sel_logs'
+        decommission_blade_servers:
+          $ref: '#/components/schemas/decommission_blade_servers'
+        decommission_chassis:
+          $ref: '#/components/schemas/decommission_chassis'
+        decommission_rack_servers:
+          $ref: '#/components/schemas/decommission_rack_servers'
+        erase_flexflash:
+          $ref: '#/components/schemas/erase_flexflash'
+        erase_virtual_drives:
+          $ref: '#/components/schemas/erase_virtual_drives'
+        reset_device_connector:
+          $ref: '#/components/schemas/reset_device_connector'
+        unregister_from_central:
+          $ref: '#/components/schemas/unregister_from_central'
+      additionalProperties: false
+    device_change_mode_post:
       type: object
       required:
         - password
@@ -2398,6 +2445,37 @@ paths:
           $ref: '#/components/responses/404NotFound'
         '500':
           $ref: '#/components/responses/500ServerError'
+  '/devices/{device_uuid}/actions/change_mode':
+    post:
+      tags:
+        - devices
+      summary: Changes the UCS Manager mode to Intersight Managed Mode
+      description: Changes the given UCS System from UCS Manager mode to Intersight Managed Mode
+      parameters:
+        - $ref: '#/components/parameters/device_uuid'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/device_change_mode_post'
+      responses:
+        '200':
+          description: The corresponding task to follow progress
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  task:
+                    $ref: '#/components/schemas/task_uuid'
+                additionalProperties: false
+        '400':
+          $ref: '#/components/responses/400ClientError'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+        '500':
+          $ref: '#/components/responses/500ServerError'
   '/devices/{device_uuid}/actions/reset_device_connector':
     post:
       tags:
@@ -3267,6 +3345,38 @@ paths:
       responses:
         '200':
           description: inventory deleted
+        '400':
+          $ref: '#/components/responses/400ClientError'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+        '500':
+          $ref: '#/components/responses/500ServerError'
+  '/devices/{device_uuid}/inventories/{inventory_uuid}/fabric_interconnects':
+    get:
+      tags:
+        - inventories
+      summary: Returns Fabric Interconnects information from an inventory
+      description: Returns Fabric Interconnects (FIs) information (ID, MAC address, serial number, etc.) from the specified inventory.
+      parameters:
+        - $ref: '#/components/parameters/device_uuid'
+        - $ref: '#/components/parameters/inventory_uuid'
+      responses:
+        '200':
+          description: List of FI details (ID, MAC, Serial, etc.)
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      $ref: '#/components/schemas/fabric_id'
+                    mac_address:
+                      $ref: '#/components/schemas/mac_address'
+                    serial:
+                      $ref: '#/components/schemas/serial'
+                  additionalProperties: true
         '400':
           $ref: '#/components/responses/400ClientError'
         '404':

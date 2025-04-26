@@ -100,6 +100,7 @@ class IntersightFi(GenericFi, IntersightInventoryObject):
         self.vendor = self.get_attribute(attribute_name="vendor")
 
         self.expansion_modules = []
+        self.firmware_version = None
         self.ports = self._get_ports()
         self.power_supplies = self._get_power_supplies()
 

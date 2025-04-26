@@ -118,7 +118,12 @@
          "default": ""
       },
       "local_user_policy": {
-         "description": "UCS Server Profile Template Local User  Policy",
+         "description": "UCS Server Profile Template Local User Policy",
+         "type": "string",
+         "default": ""
+      },
+      "memory_policy": {
+         "description": "UCS Server Profile Template Memory Policy",
          "type": "string",
          "default": ""
       },
@@ -144,6 +149,11 @@
       },
       "san_connectivity_policy": {
          "description": "UCS Server Profile Template SAN Connectivity Policy",
+         "type": "string",
+         "default": ""
+      },
+      "scrub_policy":  {
+         "description": "UCS Server Profile Template Scrub Policy",
          "type": "string",
          "default": ""
       },

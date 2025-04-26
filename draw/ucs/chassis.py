@@ -203,7 +203,7 @@ class UcsChassisDrawRear(GenericUcsDrawEquipment):
                 self._file_name = self._device_target + "_chassis_" + self._parent.id + "_rear"
 
         else:
-            self.logger(level="error", message="No FI, SIOC or IOM in chassis " + self.chassis.id +
+            self.logger(level="error", message="No FI, SIOC or IOM in chassis " + str(self._parent.id) +
                                                ". Skipping chassis...")
 
         if not self.color_ports:
@@ -229,6 +229,9 @@ class UcsChassisDrawRear(GenericUcsDrawEquipment):
     
     def fill_blanks(self):
         # Fills unused FI, IOM or SIOC slots with blanking panels
+        slots_list = []
+        models_list = []
+        objects_list = []
         if hasattr(self._parent, "fabric_interconnects") and self._parent.fabric_interconnects:
             slots_list = self.json_file["io_modules_slots"]
             models_list = self.json_file["io_modules_models"]

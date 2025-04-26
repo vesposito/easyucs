@@ -360,6 +360,16 @@
          },
          "minItems": 1
       },
+      "memory_policies": {
+         "description": "EasyUCS config/orgs/memory_policies section",
+         "type": "array",
+         "items": {
+            "description:": "EasyUCS config/orgs/memory_policies element",
+            "type": "object",
+            "$ref": "orgs/memory_policies.json"
+         },
+         "minItems": 1
+      },
       "multicast_policies": {
          "description": "EasyUCS config/orgs/multicast_policies section",
          "type": "array",
@@ -440,6 +450,16 @@
          },
          "minItems": 1
       },
+      "scrub_policies": {
+         "description": "EasyUCS config/orgs/scrub_policies section",
+         "type": "array",
+         "items": {
+            "description": "EasyUCS config/orgs/scrub_policies element",
+            "type": "object",
+            "$ref": "orgs/scrub_policies.json"
+         },
+         "minItems": 1
+      },
       "sd_card_policies": {
          "description": "EasyUCS config/orgs/sd_card_policies section",
          "type": "array",
@@ -447,6 +467,16 @@
             "description:": "EasyUCS config/orgs/sd_card_policies element",
             "type": "object",
             "$ref": "orgs/sd_card_policies.json"
+         },
+         "minItems": 1
+      },
+      "server_pool_qualification_policies": {
+         "description": "EasyUCS config/orgs/server_pool_qualification_policies section",
+         "type": "array",
+         "items": {
+            "description:": "EasyUCS config/orgs/server_pool_qualification_policies element",
+            "type": "object",
+            "$ref": "orgs/server_pool_qualification_policies.json"
          },
          "minItems": 1
       },

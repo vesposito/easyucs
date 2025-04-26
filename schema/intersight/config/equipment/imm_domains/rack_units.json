@@ -1,0 +1,77 @@
+{
+   "id": "intersight_config_equipment_imm_domains_rack_units#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS intersight config equipment imm_domains rack_units section",
+   "description": "EasyUCS intersight config equipment imm_domains rack_units section JSON schema",
+   "type": "object",
+   "properties": {
+      "asset_tag": {
+         "description": "Rack Unit Asset Tag",
+         "type": "string"
+      },
+      "comment": {
+         "description": "Rack Unit Comments",
+         "type": "string",
+         "default": ""
+      },
+      "id": {
+         "description": "Rack Unit Server ID",
+         "type": "integer"
+      },
+      "name": {
+         "description": "Rack Unit Name",
+         "type": "string",
+         "default": ""
+      },
+      "serial": {
+         "description": "Rack Unit Serial",
+         "type": "string"
+      },
+      "tags": {
+         "description": "Rack Unit Tags",
+         "type": "array",
+         "items": {
+            "description": "Rack Unit Tag",
+            "type": "object",
+            "properties": {
+               "key": {
+                  "description": "Rack Unit Tag Key",
+                  "type": "string",
+                  "default": "",
+                  "minLength": 1,
+                  "maxLength": 128
+               },
+               "value": {
+                  "description": "Rack Unit Tag Value",
+                  "type": "string",
+                  "default": "",
+                  "minLength": 0,
+                  "maxLength": 256
+               }
+            },
+            "additionalProperties": false,
+            "required": [
+               "key",
+               "value"
+            ]
+         },
+         "minItems": 1
+      },
+      "user_label": {
+         "description": "Rack Unit User Label",
+         "type": "string"
+      }
+   },
+   "additionalProperties": false,
+   "anyOf": [
+      {
+         "required": ["serial"]
+      },
+      {
+         "required": ["id"]
+      },
+      {
+         "required": ["name"]
+      }
+   ]
+}

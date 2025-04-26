@@ -10,7 +10,7 @@ Some of these functions are called directly within the js files specific to thes
 // Global variables
 
 // Major API Endpoints
-var api_base_url = 'http://127.0.0.1:5001/api/v1';
+var api_base_url = window.location.origin + '/api/v1';
 var api_device_endpoint = '/devices';
 var api_task_endpoint = '/tasks';
 var api_config_endpoint = '/configs';
@@ -20,7 +20,7 @@ var api_backup_endpoint = '/backups';
 var api_notification_endpoint = '/notifications';
 var api_log_endpoint = '/logs/session';
 var api_orgs_endpoint = '/cache/orgs';
-var repo_download_endpoint = 'http://127.0.0.1:5001/repo';
+var repo_download_endpoint = window.location.origin + '/repo';
 var api_repo_files_endpoint = '/repo/files';
 var api_repo_upload_endpoint = '/repo/actions/upload/';
 var api_repo_url_download_endpoint = '/repo/actions/url/download';

@@ -13,9 +13,10 @@ from ucscsdk.mometa.vnic.VnicLanConnTempl import VnicLanConnTempl
 from ucscsdk.mometa.vnic.VnicSanConnTempl import VnicSanConnTempl
 from ucscsdk.mometa.vnic.VnicUsnicConPolicyRef import VnicUsnicConPolicyRef
 from ucscsdk.mometa.vnic.VnicVmqConPolicyRef import VnicVmqConPolicyRef
-from config.ucs.ucsc.policies import (UcsCentralDynamicVnicConnectionPolicy, UcsCentralMacPool,
-                                      UcsCentralNetworkControlPolicy, UcsCentralQosPolicy, UcsCentralThresholdPolicy,
-                                      UcsCentralUsnicConnectionPolicy, UcsCentralVmqConnectionPolicy, UcsCentralWwpnPool)
+from config.ucs.ucsc.policies import (UcsCentralDynamicVnicConnectionPolicy, UcsCentralNetworkControlPolicy,
+                                      UcsCentralQosPolicy, UcsCentralThresholdPolicy, UcsCentralUsnicConnectionPolicy,
+                                      UcsCentralVmqConnectionPolicy)
+from config.ucs.ucsc.pools import UcsCentralMacPool, UcsCentralWwpnPool
 
 
 class UcsCentralVhbaTemplate(UcsCentralConfigObject):

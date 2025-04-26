@@ -198,6 +198,11 @@
          "type": "string",
          "default": ""
       },
+      "memory_policy": {
+         "description": "Memory Policy associated to UCS Server Profile",
+         "type": "string",
+         "default": ""
+      },
       "network_connectivity_policy": {
          "description": "Network Connectivity Policy associated to UCS Server Profile",
          "type": "string",
@@ -421,6 +426,11 @@
       },
       "san_connectivity_policy": {
          "description": "SAN Connectivity Policy associated to UCS Server Profile",
+         "type": "string",
+         "default": ""
+      },
+      "scrub_policy":  {
+         "description": "Scrub Policy associated to UCS Server Profile",
          "type": "string",
          "default": ""
       },

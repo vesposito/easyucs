@@ -137,6 +137,17 @@
          },
          "minItems": 1
       },
+      "server_pool_qualification_policies": {
+         "description": "Resource Pool - Server Pool Qualification Policies",
+         "type": "array",
+         "items": {
+            "description": "Resource Pool - Server Pool Qualification Policy Name",
+            "type": "string",
+            "default": "",
+            "pattern": "^[a-zA-Z0-9_.:-]{1,64}$"
+         },
+         "minItems": 1
+      },
       "target_platform": {
          "description": "Resource Pool Target Platform",
          "type": "string",

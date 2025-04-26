@@ -254,7 +254,8 @@ class IntersightFabricPortPolicy(IntersightConfigObject):
         ],
         "lan_port_channels": [
             {
-                "ethernet_network_group_policy": IntersightEthernetNetworkGroupPolicy,
+                "ethernet_network_group_policies": [IntersightEthernetNetworkGroupPolicy],
+                "ethernet_network_group_policy": IntersightEthernetNetworkGroupPolicy,  # Deprecated
                 "flow_control_policy": IntersightFabricFlowControlPolicy,
                 "link_aggregation_policy": IntersightFabricLinkAggregationPolicy,
                 "link_control_policy": IntersightFabricLinkControlPolicy
@@ -262,7 +263,8 @@ class IntersightFabricPortPolicy(IntersightConfigObject):
         ],
         "lan_uplink_ports": [
             {
-                "ethernet_network_group_policy": IntersightEthernetNetworkGroupPolicy,
+                "ethernet_network_group_policies": [IntersightEthernetNetworkGroupPolicy],
+                "ethernet_network_group_policy": IntersightEthernetNetworkGroupPolicy,  # Deprecated
                 "flow_control_policy": IntersightFabricFlowControlPolicy,
                 "link_control_policy": IntersightFabricLinkControlPolicy
             }
@@ -356,10 +358,15 @@ class IntersightFabricPortPolicy(IntersightConfigObject):
                                 admin_speed = "25Gbps"
                                 enable_25g_auto_neg = True
 
+                        fec = None
+                        if hasattr(fabric_appliance_pc_role, "fec"):
+                            fec = fabric_appliance_pc_role.fec
+
                         appliance_port_channels.append(
                             {"interfaces": interfaces,
                              "pc_id": fabric_appliance_pc_role.pc_id,
                              "admin_speed": admin_speed,
+                             "fec": fec,
                              "enable_25gb_copper_cable_negotiation": enable_25g_auto_neg,
                              "mode": fabric_appliance_pc_role.mode,
                              "priority": fabric_appliance_pc_role.priority,
@@ -514,9 +521,14 @@ class IntersightFabricPortPolicy(IntersightConfigObject):
                                 admin_speed = "25Gbps"
                                 enable_25g_auto_neg = True
 
+                        fec = None
+                        if hasattr(fabric_fcoe_uplink_pc_role, "fec"):
+                            fec = fabric_fcoe_uplink_pc_role.fec
+
                         fcoe_port_channels.append({"interfaces": interfaces,
                                                    "pc_id": fabric_fcoe_uplink_pc_role.pc_id,
                                                    "admin_speed": admin_speed,
+                                                   "fec": fec,
                                                    "enable_25gb_copper_cable_negotiation": enable_25g_auto_neg,
                                                    "link_aggregation_policy": link_aggregation_policy,
                                                    "link_control_policy": link_control_policy})
@@ -624,13 +636,14 @@ class IntersightFabricPortPolicy(IntersightConfigObject):
                                     interfaces.append({"slot_id": port.slot_id, "port_id": port.port_id,
                                                        "aggr_id": None})
 
-                        ethernet_network_group_policy = None
+                        ethernet_network_group_policies = None
                         if hasattr(fabric_uplink_pc_role, "eth_network_group_policy"):
-                            eth_network_group_policy = \
+                            eth_network_group_policies = \
                                 self.get_config_objects_from_ref(fabric_uplink_pc_role.eth_network_group_policy)
-                            if eth_network_group_policy:
-                                if len(eth_network_group_policy) == 1:
-                                    ethernet_network_group_policy = eth_network_group_policy[0].name
+                            if eth_network_group_policies:
+                                ethernet_network_group_policies = []
+                                for eth_network_group_policy in eth_network_group_policies:
+                                    ethernet_network_group_policies.append(eth_network_group_policy.name)
 
                         flow_control_policy = None
                         if hasattr(fabric_uplink_pc_role, "flow_control_policy"):
@@ -663,12 +676,17 @@ class IntersightFabricPortPolicy(IntersightConfigObject):
                             if fabric_uplink_pc_role.admin_speed == "NegAuto25Gbps":
                                 admin_speed = "25Gbps"
                                 enable_25g_auto_neg = True
+                        
+                        fec = None
+                        if hasattr(fabric_uplink_pc_role, "fec"):
+                            fec = fabric_uplink_pc_role.fec
 
                         lan_port_channels.append({"interfaces": interfaces,
                                                   "pc_id": fabric_uplink_pc_role.pc_id,
                                                   "admin_speed": admin_speed,
                                                   "enable_25gb_copper_cable_negotiation": enable_25g_auto_neg,
-                                                  "ethernet_network_group_policy": ethernet_network_group_policy,
+                                                  "ethernet_network_group_policies": ethernet_network_group_policies,
+                                                  "fec": fec,
                                                   "flow_control_policy": flow_control_policy,
                                                   "link_aggregation_policy": link_aggregation_policy,
                                                   "link_control_policy": link_control_policy})
@@ -692,13 +710,14 @@ class IntersightFabricPortPolicy(IntersightConfigObject):
                                 if len(fabric_flow_control_policy) == 1:
                                     flow_control_policy = fabric_flow_control_policy[0].name
 
-                        ethernet_network_group_policy = None
+                        ethernet_network_group_policies = None
                         if hasattr(fabric_uplink_role, "eth_network_group_policy"):
-                            eth_network_group_policy = \
+                            eth_network_group_policies = \
                                 self.get_config_objects_from_ref(fabric_uplink_role.eth_network_group_policy)
-                            if eth_network_group_policy:
-                                if len(eth_network_group_policy) == 1:
-                                    ethernet_network_group_policy = eth_network_group_policy[0].name
+                            if eth_network_group_policies:
+                                ethernet_network_group_policies = []
+                                for eth_network_group_policy in eth_network_group_policies:
+                                    ethernet_network_group_policies.append(eth_network_group_policy.name)
 
                         link_control_policy = None
                         if hasattr(fabric_uplink_role, "link_control_policy"):
@@ -723,7 +742,7 @@ class IntersightFabricPortPolicy(IntersightConfigObject):
                                                      "admin_speed": admin_speed,
                                                      "enable_25gb_copper_cable_negotiation": enable_25g_auto_neg,
                                                      "fec": fabric_uplink_role.fec,
-                                                     "ethernet_network_group_policy": ethernet_network_group_policy,
+                                                     "ethernet_network_group_policies": ethernet_network_group_policies,
                                                      "flow_control_policy": flow_control_policy,
                                                      "link_control_policy": link_control_policy})
                         else:
@@ -733,7 +752,7 @@ class IntersightFabricPortPolicy(IntersightConfigObject):
                                                      "admin_speed": admin_speed,
                                                      "enable_25gb_copper_cable_negotiation": enable_25g_auto_neg,
                                                      "fec": fabric_uplink_role.fec,
-                                                     "ethernet_network_group_policy": ethernet_network_group_policy,
+                                                     "ethernet_network_group_policies": ethernet_network_group_policies,
                                                      "flow_control_policy": flow_control_policy,
                                                      "link_control_policy": link_control_policy})
 
@@ -907,8 +926,8 @@ class IntersightFabricPortPolicy(IntersightConfigObject):
         if self.appliance_port_channels:
             for appliance_port_channel in self.appliance_port_channels:
                 for attribute in ["admin_speed", "enable_25gb_copper_cable_negotiation",
-                                  "ethernet_network_control_policy", "ethernet_network_group_policy", "interfaces",
-                                  "mode", "pc_id", "priority"]:
+                                  "ethernet_network_control_policy", "ethernet_network_group_policy", "fec",
+                                  "interfaces", "mode", "pc_id", "priority"]:
                     if attribute not in appliance_port_channel:
                         appliance_port_channel[attribute] = None
 
@@ -937,7 +956,7 @@ class IntersightFabricPortPolicy(IntersightConfigObject):
         # We use this to make sure all options of a FCoE Port-Channel are set to None if they are not present
         if self.fcoe_port_channels:
             for fcoe_port_channel in self.fcoe_port_channels:
-                for attribute in ["admin_speed", "enable_25gb_copper_cable_negotiation", "interfaces",
+                for attribute in ["admin_speed", "enable_25gb_copper_cable_negotiation", "fec", "interfaces",
                                   "link_aggregation_policy", "link_control_policy", "pc_id"]:
                     if attribute not in fcoe_port_channel:
                         fcoe_port_channel[attribute] = None
@@ -967,8 +986,9 @@ class IntersightFabricPortPolicy(IntersightConfigObject):
         if self.lan_port_channels:
             for lan_port_channel in self.lan_port_channels:
                 for attribute in ["admin_speed", "enable_25gb_copper_cable_negotiation",
-                                  "ethernet_network_group_policy", "flow_control_policy", "interfaces",
-                                  "link_aggregation_policy", "link_control_policy", "pc_id"]:
+                                  "ethernet_network_group_policies", "ethernet_network_group_policy",
+                                  "fec", "flow_control_policy", "interfaces", "link_aggregation_policy",
+                                  "link_control_policy", "pc_id"]:
                     if attribute not in lan_port_channel:
                         lan_port_channel[attribute] = None
 
@@ -982,8 +1002,8 @@ class IntersightFabricPortPolicy(IntersightConfigObject):
         if self.lan_uplink_ports:
             for lan_uplink_port in self.lan_uplink_ports:
                 for attribute in ["admin_speed", "aggr_id", "enable_25gb_copper_cable_negotiation",
-                                  "ethernet_network_group_policy", "fec", "flow_control_policy",
-                                  "link_control_policy", "port_id", "slot_id"]:
+                                  "ethernet_network_group_policies", "ethernet_network_group_policy", "fec",
+                                  "flow_control_policy", "link_control_policy", "port_id", "slot_id"]:
                     if attribute not in lan_uplink_port:
                         lan_uplink_port[attribute] = None
 
@@ -1162,6 +1182,8 @@ class IntersightFabricPortPolicy(IntersightConfigObject):
                     kwargs["pc_id"] = appliance_port_channel["pc_id"]
                 if appliance_port_channel["admin_speed"] is not None:
                     kwargs["admin_speed"] = appliance_port_channel["admin_speed"]
+                if appliance_port_channel["fec"] is not None:
+                    kwargs["fec"] = appliance_port_channel["fec"]
                 if appliance_port_channel["enable_25gb_copper_cable_negotiation"]:
                     kwargs["admin_speed"] = "NegAuto25Gbps"
                 if appliance_port_channel["mode"] is not None:
@@ -1357,6 +1379,8 @@ class IntersightFabricPortPolicy(IntersightConfigObject):
                     kwargs["pc_id"] = fcoe_port_channel["pc_id"]
                 if fcoe_port_channel["admin_speed"] is not None:
                     kwargs["admin_speed"] = fcoe_port_channel["admin_speed"]
+                if fcoe_port_channel["fec"] is not None:
+                    kwargs["fec"] = fcoe_port_channel["fec"]
                 if fcoe_port_channel["enable_25gb_copper_cable_negotiation"]:
                     kwargs["admin_speed"] = "NegAuto25Gbps"
 
@@ -1513,10 +1537,34 @@ class IntersightFabricPortPolicy(IntersightConfigObject):
                     kwargs["pc_id"] = lan_port_channel["pc_id"]
                 if lan_port_channel["admin_speed"] is not None:
                     kwargs["admin_speed"] = lan_port_channel["admin_speed"]
+                if lan_port_channel["fec"] is not None:
+                    kwargs["fec"] = lan_port_channel["fec"]
                 if lan_port_channel["enable_25gb_copper_cable_negotiation"]:
                     kwargs["admin_speed"] = "NegAuto25Gbps"
 
-                if lan_port_channel["ethernet_network_group_policy"] is not None:
+                if lan_port_channel["ethernet_network_group_policies"] is not None:
+                    # We first need to identify the Ethernet Network Group Policies objects references
+                    kwargs["eth_network_group_policy"] = []
+                    for engp in lan_port_channel["ethernet_network_group_policies"]:
+                        ethernet_network_group_policy = self.get_live_object(
+                            object_name=engp,
+                            object_type="fabric.EthNetworkGroupPolicy"
+                        )
+                        if ethernet_network_group_policy:
+                            kwargs["eth_network_group_policy"].append(ethernet_network_group_policy)
+                        else:
+                            self.logger(level="warning",
+                                        message="Could not find unique Ethernet Network Group Policy '" + engp +
+                                                "' to assign to LAN Port Channel " + str(lan_port_channel["pc_id"]))
+                            self._config.push_summary_manager.add_object_status(
+                                obj=self, obj_detail=f"Attaching Ethernet Network Group Policy '{engp}'",
+                                obj_type=self._INTERSIGHT_SDK_OBJECT_NAME, status="failed",
+                                message=f"Failed to find Ethernet Network Group Policy '{engp}'"
+                            )
+
+                elif lan_port_channel["ethernet_network_group_policy"] is not None:
+                    # We keep this section for compatibility purposes, but "ethernet_network_group_policy" attribute
+                    # is deprecated starting with EasyUCS 1.0.2 (replaced by "ethernet_network_group_policies")
                     # We first need to identify the Ethernet Network Group Policy object reference
                     ethernet_network_group_policy = self.get_live_object(
                         object_name=lan_port_channel["ethernet_network_group_policy"],
@@ -1632,7 +1680,39 @@ class IntersightFabricPortPolicy(IntersightConfigObject):
                 if lan_uplink_port["enable_25gb_copper_cable_negotiation"]:
                     kwargs["admin_speed"] = "NegAuto25Gbps"
 
-                if lan_uplink_port["ethernet_network_group_policy"] is not None:
+                if lan_uplink_port["ethernet_network_group_policies"] is not None:
+                    # We first need to identify the Ethernet Network Group Policies objects references
+                    kwargs["eth_network_group_policy"] = []
+                    for engp in lan_uplink_port["ethernet_network_group_policies"]:
+                        ethernet_network_group_policy = self.get_live_object(
+                            object_name=engp,
+                            object_type="fabric.EthNetworkGroupPolicy"
+                        )
+                        if ethernet_network_group_policy:
+                            kwargs["eth_network_group_policy"].append(ethernet_network_group_policy)
+                        else:
+                            if lan_uplink_port["aggr_id"]:
+                                self.logger(level="warning",
+                                            message="Could not find unique Ethernet Network Group Policy '" + engp +
+                                                    "' to assign to LAN Uplink Port " +
+                                                    str(lan_uplink_port["slot_id"]) +
+                                                    "/" + str(lan_uplink_port["port_id"]) + "/" +
+                                                    str(lan_uplink_port["aggr_id"]))
+                            else:
+                                self.logger(level="warning",
+                                            message="Could not find unique Ethernet Network Group Policy '" + engp +
+                                                    "' to assign to LAN Uplink Port " +
+                                                    str(lan_uplink_port["slot_id"]) +
+                                                    "/" + str(lan_uplink_port["port_id"]))
+                            self._config.push_summary_manager.add_object_status(
+                                obj=self, obj_detail=f"Attaching Ethernet Network Group Policy '{engp}'",
+                                obj_type=self._INTERSIGHT_SDK_OBJECT_NAME, status="failed",
+                                message=f"Failed to find Ethernet Network Group Policy '{engp}'"
+                            )
+
+                elif lan_uplink_port["ethernet_network_group_policy"] is not None:
+                    # We keep this section for compatibility purposes, but "ethernet_network_group_policy" attribute
+                    # is deprecated starting with EasyUCS 1.0.2 (replaced by "ethernet_network_group_policies")
                     # We first need to identify the Ethernet Network Group Policy object reference
                     ethernet_network_group_policy = self.get_live_object(
                         object_name=lan_uplink_port["ethernet_network_group_policy"],

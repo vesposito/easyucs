@@ -268,6 +268,15 @@
                            "enabled"
                         ]
                      },
+                     "etherchannel_pinning": {
+                        "description": "LAN Connectivity Policy - vNIC - Enable EtherChannel Pinning",
+                        "type": "string",
+                        "default": "disabled",
+                        "enum": [
+                           "disabled",
+                           "enabled"
+                        ]
+                     },
                      "qos_policy": {
                         "description": "LAN Connectivity Policy - vNIC - QOS Policy",
                         "type": "string",

@@ -49,7 +49,7 @@ class GenericCacheManager:
             logger=self
         )
         if not cache_json:
-            self.logger(level="info", message="Cache JSON file is not available to fill.")
+            self.logger(level="info", message="Cache JSON file is not available in the repository for this device")
             return False
 
         # Fill cache from JSON data

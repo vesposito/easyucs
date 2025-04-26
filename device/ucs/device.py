@@ -39,6 +39,7 @@ from cache.ucs.manager import UcsSystemCacheManager
 from config.ucs.manager import UcsImcConfigManager, UcsSystemConfigManager, UcsCentralConfigManager
 from device.device import GenericDevice
 from device.device_connector import DeviceConnector
+from device.imm_domain.device import ImmDomainDevice
 from inventory.ucs.manager import UcsImcInventoryManager, UcsSystemInventoryManager, UcsCentralInventoryManager
 from report.ucs.manager import UcsCentralReportManager, UcsImcReportManager, UcsSystemReportManager
 
@@ -291,6 +292,7 @@ class GenericUcsDevice(GenericDevice, DeviceConnector):
 
 class UcsSystem(GenericUcsDevice):
     UCS_SYSTEM_MIN_REQUIRED_VERSION = "3.1(3a)"
+    UCS_SYSTEM_CHANGE_MODE_MIN_VERSION = "4.3(5c)"
 
     def __init__(self, parent=None, uuid=None, target="", user="", password="", is_hidden=False, is_system=False,
                  system_usage=None, logger_handle_log_level="info", log_file_path=None, bypass_connection_checks=False,
@@ -318,6 +320,333 @@ class UcsSystem(GenericUcsDevice):
 
         self.metadata.device_type = "ucsm"
         self.metadata.device_type_long = "UCS System"
+
+    def change_mode(self, reset_device_connector=False, clear_sel_logs=False, decommission_rack_servers=False,
+                    decommission_chassis=False, decommission_blade_servers=False, erase_flexflash=False,
+                    erase_virtual_drives=False, unregister_from_central=True):
+        """
+        Changes the given UCS System from UCS Manager mode to Intersight Managed Mode.
+        :param reset_device_connector: Whether the Device Connector should be reset if claimed
+        :param clear_sel_logs: Whether SEL Logs should be cleared before change-mode operation
+        :param decommission_rack_servers: Whether rack servers should be decommissioned before change-mode operation
+        :param decommission_blade_servers: Whether blade servers should be decommissioned before change-mode operation
+        :param decommission_chassis: Whether chassis should be decommissioned before change-mode operation
+        :param erase_flexflash: Whether FlexFlash should be formatted before change-mode operation
+        :param erase_virtual_drives: Whether existing virtual drives should be erased from servers before change-mode
+        operation
+        :param unregister_from_central: Whether to unregister UCS Manager from UCS Central before change-mode operation
+        :return: New Imm Domain Device if change mode is successful, None otherwise
+        """
+
+        self.set_task_progression(5)
+
+        # Check if UCS version meets the minimum requirement for change-mode
+        min_ucs_change_mode_version = UcsVersion(self.UCS_SYSTEM_CHANGE_MODE_MIN_VERSION)
+        if self.version.__lt__(min_ucs_change_mode_version):
+            self.logger(
+                level="error",
+                message=f"change-mode requires UCS version {self.UCS_SYSTEM_CHANGE_MODE_MIN_VERSION} or higher, "
+                        f"but the current version is {self.version.version}, which is not supported."
+            )
+            return None
+
+        # Ensure the UCS system is connected
+        if not self.is_connected():
+            self.logger(level="error", message="Failed to connect to the UCS System.")
+            return None
+
+        if reset_device_connector and self.metadata.device_connector_claim_status == "claimed":
+            # If the UCSM device is claimed to Intersight, unclaim the device
+            if not self.reset_device_connector():
+                self.logger(level="error", message=f"Error while un-claiming the {self.metadata.device_type_long} "
+                                                   f"device {self.name} from Intersight")
+                return None
+        else:
+            if self.task is not None:
+                self.task.taskstep_manager.skip_taskstep(
+                    name="ResetDeviceConnector",
+                    status_message=f"Skipping the unclaim of {self.metadata.device_type_long} device {self.name} since "
+                                   f"it is not claimed to Intersight"
+                )
+
+        if erase_flexflash:
+            self.erase_flexflash()
+
+        if erase_virtual_drives:
+            self.erase_virtual_drives()
+
+        if clear_sel_logs:
+            self.clear_sel_logs()
+
+        # Decommissioning Rack servers
+        if decommission_rack_servers:
+            if not self.decommission(device_type="rack", decommission_all=True):
+                self.logger(level="error", message=f"Error while performing decommission of rack servers in "
+                                                   f"{self.metadata.device_type_long} device {self.name}")
+                return None
+        else:
+            if self.task is not None:
+                self.task.taskstep_manager.skip_taskstep(
+                    name="DecommissionAllRackServers",
+                    status_message=f"Skipping the decommissioning of rack servers in {self.metadata.device_type_long} "
+                                   f"device {self.name}"
+                )
+
+        # Decommission Chassis
+        if decommission_chassis:
+            if not self.decommission(device_type="chassis", decommission_all=True):
+                self.logger(level="error", message=f"Error while performing decommission of chassis in "
+                                                   f"{self.metadata.device_type_long} device {self.name}")
+                return None
+        else:
+            if self.task is not None:
+                self.task.taskstep_manager.skip_taskstep(
+                    name="DecommissionAllChassis",
+                    status_message=f"Skipping the decommissioning of chassis"
+                                   f"in {self.metadata.device_type_long} device {self.name}"
+                )
+
+        # Decommission Blade Servers
+        if decommission_blade_servers:
+            if not self.decommission(device_type="blade", decommission_all=True):
+                self.logger(level="error", message=f"Error while performing decommission of blade servers in "
+                                                   f"{self.metadata.device_type_long} device {self.name}")
+                return None
+        else:
+            if self.task is not None:
+                self.task.taskstep_manager.skip_taskstep(
+                    name="DecommissionAllBladeServers",
+                    status_message=f"Skipping the decommissioning of Blade Servers"
+                                   f"in {self.metadata.device_type_long} device {self.name}"
+                )
+
+        self.set_task_progression(5)
+
+        if self.task:
+            self.task.taskstep_manager.start_taskstep(
+                name="ChangeModeToIntersight",
+                description=f"Changing UCS Domain Mode for {self.metadata.device_type_long} device {self.name} to Intersight Managed Mode"
+            )
+
+        # Unregister from UCS Central if required
+        if unregister_from_central:
+            self.logger(level="debug", message="Checking UCS Central registration status.")
+            try:
+                ucs_central = self.handle.query_dn("sys/control-ep-policy")
+                if ucs_central and ucs_central.registration_state == "registered":
+                    self.logger(level="warning",
+                                message=f"UCS System is registered with UCS Central ({ucs_central.svc_reg_name}). "
+                                        f"Initiating unregistration.")
+                    self.handle.remove_mo(ucs_central)
+                    self.handle.commit()
+                    time.sleep(5)
+                    self.wait_for_reboot_after_reset(fi_ip_list=[self.target])
+
+                    # Attempt reconnection after unregistration
+                    if not self.connect():
+                        self.logger(level="error", message="Reconnection to UCS System failed after unregistration.")
+                        self.task.taskstep_manager.stop_taskstep(name="ChangeModeToIntersight", status="failed",
+                                                                 status_message="Reconnection failed after UCS Central "
+                                                                                "unregistration.")
+                        return None
+
+            except Exception as err:
+                self.logger(level="error", message=f"Failed to unregister from UCS Central: {err}")
+                if self.task:
+                    self.task.taskstep_manager.stop_taskstep(name="ChangeModeToIntersight", status="failed",
+                                                             status_message=str(err))
+                return None
+
+        # Retrieve Fabric Interconnect (FI) IPs
+        self.logger(level="debug", message="Retrieving Fabric Interconnect IPs.")
+        try:
+            switch_a = self.query(mode="dn", target="sys/switch-A")
+            fi_a_ip_address = switch_a.oob_if_ip
+            switch_b = self.query(mode="dn", target="sys/switch-B")
+            fi_b_ip_address = switch_b.oob_if_ip
+            self.logger(level="debug", message=f"FI-A IP: {fi_a_ip_address}, FI-B IP: {fi_b_ip_address}")
+        except Exception as err:
+            message_str = "Failed to retrieve Fabric Interconnect A's IP address."
+            self.logger(level="error", message=message_str + f" Error: {err}")
+            if self.task is not None:
+                self.task.taskstep_manager.stop_taskstep(
+                    name="ChangeModeToIntersight", status="failed", status_message=message_str)
+            return None
+
+        self.logger(level="info", message=f"Attempting SSH connection to FI-A {fi_a_ip_address}.")
+
+        # Establish SSH connection to FI-A
+        try:
+            error_msg = None
+            client = paramiko.SSHClient()
+            client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+            client.connect(fi_a_ip_address, port=22, username=self.username, password=self.password, banner_timeout=30)
+
+        except paramiko.AuthenticationException:
+            error_msg = f"Authentication failed when connecting to Fabric Interconnect {fi_a_ip_address}."
+            self.logger(level="error", message=error_msg)
+
+        except TypeError as err:
+            self.logger(level="debug", message=f"TypeError encountered while connecting to {fi_a_ip_address}: {err}")
+            error_msg = f"Connection error to Fabric Interconnect {fi_a_ip_address}. Please retry."
+
+        except Exception as err:
+            error_msg = f"Unexpected error while connecting to Fabric Interconnect {fi_a_ip_address}: {err}"
+            self.logger(level="error", message=error_msg)
+
+        if error_msg:
+            if self.task is not None:
+                self.task.taskstep_manager.stop_taskstep(
+                    name="ChangeModeToIntersight", status="failed", status_message=error_msg)
+            return None
+
+        self.logger(level="info", message=f"Successfully established SSH connection to FI-A {fi_a_ip_address}.")
+
+        # Execute change-mode command via SSH
+        try:
+            error_msg = None
+            channel = client.invoke_shell()
+            channel.settimeout(20)
+
+            self.logger(level="debug", message="Connecting to local-mgmt.")
+            channel.send('connect local-mgmt\n')
+            buff = ""
+            while not buff.endswith("(local-mgmt)# "):
+                resp = channel.recv(9999)
+                buff += resp.decode("utf-8")
+
+            self.logger(level="debug", message="Executing 'change-mode' command.")
+            channel.send('change-mode\n')
+            buff = ""
+            while not buff.endswith("(yes/no):"):
+                resp = channel.recv(9999)
+                buff += resp.decode("utf-8")
+            self.logger(level="debug", message="Confirming change-mode execution.")
+            channel.send('yes\n')
+            time.sleep(5)
+            self.set_task_progression(50)
+
+        except paramiko.ChannelException as err:
+            error_msg = f"SSH communication failure with Fabric Interconnect {fi_a_ip_address}: {err}"
+            self.logger(level="error", message=error_msg)
+        except (paramiko.buffered_pipe.PipeTimeout, socket.timeout):
+            error_msg = f"SSH timeout while communicating with Fabric Interconnect {fi_a_ip_address}."
+            self.logger(level="error", message=error_msg)
+        except Exception as err:
+            error_msg = f"Error while executing change-mode on Fabric Interconnect {fi_a_ip_address}: {err}"
+            self.logger(level="error", message=error_msg)
+
+        if error_msg:
+            if self.task is not None:
+                self.task.taskstep_manager.stop_taskstep(
+                    name="ChangeModeToIntersight", status="failed", status_message=error_msg)
+            return None
+
+        self.logger(
+            message="UCS Manager configuration will be erased and Fabric Interconnects will reboot and come up as "
+                    "Intersight Managed Mode Fabric Interconnects. Please wait ...")
+
+        if self.task:
+            self.task.taskstep_manager.stop_taskstep(
+                name="ChangeModeToIntersight", status="successful",
+                status_message=f"Successfully sent change-mode command for {self.metadata.device_type_long} device {self.name}."
+            )
+
+        # Wait for FI reboot after mode change
+        message_str = ("Waiting up to 1500 seconds for Fabric Interconnects to reboot and come up in "
+                       "Intersight Managed Mode.")
+        if self.task is not None:
+            self.task.taskstep_manager.start_taskstep(
+                name="WaitForRebootAfterChangeModeUcsSystem",
+                description=message_str
+            )
+        self.logger(level="info", message=message_str)
+
+        # A 5-minute pause is added to allow for initial stabilization.
+        time.sleep(300)
+        if not self.wait_for_reboot_after_reset(timeout=1200, fi_ip_list=[fi_a_ip_address, fi_b_ip_address],
+                                                str_match="device-console"):
+            message_str = "Failed to reconnect to Fabric Interconnect(s) after change mode."
+            if self.task is not None:
+                self.task.taskstep_manager.stop_taskstep(
+                    name="WaitForRebootAfterChangeModeUcsSystem", status="failed", status_message=message_str)
+            self.logger(level="error", message=message_str)
+            return None
+
+        message_str = "Fabric Interconnect(s) successfully rebooted after change-mode operation."
+        if self.task is not None:
+            self.task.taskstep_manager.stop_taskstep(
+                name="WaitForRebootAfterChangeModeUcsSystem", status="successful",
+                status_message=message_str
+            )
+        self.logger(level="info", message=message_str)
+
+        # After the Fabric Interconnect(s) reboot and reconnect, they transition to Intersight mode.
+        # Attempt to establish a connection to the IMM Domain device after the change-mode operation.
+        message_str = "Attempting to connect to IMM domain device after change-mode operation."
+        if self.task is not None:
+            self.task.taskstep_manager.start_taskstep(
+                name="ConnectImmDomainDevice",
+                description=message_str
+            )
+        self.logger(level="info", message=message_str)
+
+        # Create an IMM domain device instance using target ip, username, and password
+        imm_domain_device = ImmDomainDevice(target=fi_a_ip_address, username=self.username, password=self.password)
+        if imm_domain_device:
+            if not imm_domain_device.connect():
+                message_str = (f"Unable to connect to IMM domain device {imm_domain_device.name} after change-mode "
+                               f"operation.")
+                if self.task is not None:
+                    self.task.taskstep_manager.stop_taskstep(
+                        name="ConnectImmDomainDevice", status="failed",
+                        status_message=message_str)
+                self.logger(level="error", message=message_str)
+
+                return None
+
+            message_str = (f"Successfully connected to IMM domain device {imm_domain_device.name} after "
+                           f"change-mode operation.")
+            if self.task is not None:
+                self.task.taskstep_manager.stop_taskstep(
+                    name="ConnectImmDomainDevice", status="successful",
+                    status_message=message_str)
+
+            self.logger(level="info", message=message_str)
+
+            # Disconnect after a successful connection attempt
+            message_str = f"Disconnecting from IMM Domain device {imm_domain_device.name}."
+            if self.task is not None:
+                self.task.taskstep_manager.start_taskstep(
+                    name="DisconnectImmDomainDevice",
+                    description=message_str)
+            self.logger(level="info", message=message_str)
+
+            if not imm_domain_device.disconnect():
+                message_str = f"Could not disconnect from IMM domain device {imm_domain_device.name}."
+                if self.task is not None:
+                    self.task.taskstep_manager.stop_taskstep(
+                        name="DisconnectImmDomainDevice", status="failed",
+                        status_message=message_str)
+                self.logger(level="error", message=message_str)
+
+                return None
+
+            message_str = f"Successfully disconnected from IMM domain device {imm_domain_device.name}."
+            if self.task is not None:
+                self.task.taskstep_manager.stop_taskstep(
+                    name="DisconnectImmDomainDevice", status="successful",
+                    status_message=message_str)
+
+            self.logger(level="info", message=message_str)
+
+            self.set_task_progression(100)
+
+            self.logger(level="info", message="UCS System successfully transitioned to Intersight Managed Mode.")
+
+            return imm_domain_device
+
+        return None
 
     def initial_setup(self, fi_ip_list=None, config=None, target_admin_password=None):
         """
@@ -692,7 +1021,8 @@ class UcsSystem(GenericUcsDevice):
             for fi_ip in fi_ip_list:
                 if not common.check_web_page(device=self, url="https://" + fi_ip, str_match="Express Setup",
                                              timeout=30):
-                    message_str = "Fabric Interconnect " + fi_ip + " is not ready for initial setup"
+                    message_str = (f"Fabric Interconnect {fi_ip} is not ready for initial setup. Verify if it has been "
+                                   f"properly erased and try again.")
                     self.logger(level="error", message=message_str)
                     if self.task is not None:
                         self.task.taskstep_manager.stop_taskstep(
@@ -1667,6 +1997,8 @@ class UcsSystem(GenericUcsDevice):
                 return False
 
         # Decommission Blades/Rack/Chassis in the list all_servers
+        failed_servers = []
+        object_classes_to_track = set()
         for server in all_servers:
             try:
                 if device_type == "blade":
@@ -1674,14 +2006,17 @@ class UcsSystem(GenericUcsDevice):
                                 message="Decommissioning server " + server.slot_id + " with serial " + server.serial)
                     chassis_dn = f"sys/chassis-{server.chassis_id}"
                     mo_server = ComputeBlade(parent_mo_or_dn=chassis_dn, slot_id=server.slot_id, lc="decommission")
+                    object_classes_to_track.add("ComputeBlade")
                 elif device_type == "chassis":
                     self.logger(level="info",
                                 message="Decommissioning chassis " + server.id + " with serial " + server.serial)
                     mo_server = EquipmentChassis(parent_mo_or_dn="sys", id=server.id, admin_state="decommission")
+                    object_classes_to_track.add("EquipmentChassis")
                 elif device_type == "rack":
                     self.logger(level="info",
                                 message="Decommissioning rack server " + server.id + " with serial " + server.serial)
                     mo_server = ComputeRackUnit(parent_mo_or_dn="sys", id=server.id, lc="decommission")
+                    object_classes_to_track.add("ComputeRackUnit")
 
                 self.handle.add_mo(mo=mo_server, modify_present=True)
                 self.handle.commit()
@@ -1707,10 +2042,29 @@ class UcsSystem(GenericUcsDevice):
                     )
                 return False
 
-        if all_servers:
-            # FIXME: Pause for 3 minutes to ensure decommission operation is complete. To be enhanced with FSM tracking
-            self.logger(level="info", message="Waiting for 3 minutes to ensure decommission operation is complete")
-            time.sleep(180)
+        self.logger(level="info", message="The decommission operation is underway. "
+                                          "Please wait for up to 10 minutes while the process completes.")
+
+        if object_classes_to_track:
+            fsm_result = self.wait_for_fsm_complete(ucs_sdk_object_classes=list(object_classes_to_track), timeout=600)
+            if not fsm_result:
+                failed_servers.extend(
+                    [server.id if device_type != "blade" else server.slot_id for server in all_servers]
+                )
+
+        if failed_servers:
+            failed_servers_str = ", ".join(failed_servers)
+            error_msg = f"Decommissioning failed for {device_type}s: {failed_servers_str}"
+            self.logger(level="error", message=error_msg)
+
+            if self.task is not None:
+                self.task.taskstep_manager.stop_taskstep(
+                    name=task_name, status="failed", status_message=error_msg
+                )
+            return False
+        else:
+            self.logger(level="info", message=f"Decommissioning process for"
+                                              f" {device_type}(s) completed successfully.")
 
         if self.task is not None:
             self.task.taskstep_manager.stop_taskstep(
@@ -2020,21 +2374,25 @@ class UcsSystem(GenericUcsDevice):
             self.logger(level="debug", message="Waiting for the firmware upload operation to finish...")
             time.sleep(20)
 
-    def wait_for_fsm_complete(self, ucs_sdk_object_class=None, timeout=300):
+    def wait_for_fsm_complete(self, ucs_sdk_object_classes=None, timeout=300):
         """
-        Waits for UCS FSM state of given UCS SDK Object class to reach 100%
-        :param ucs_sdk_object_class: UCS SDK FSM object with fsmProgr attribute
+        Waits for UCS FSM state of given UCS SDK Object classes to reach 100%.
+        :param ucs_sdk_object_classes: List of UCS SDK FSM object class names.
         :param timeout: time in seconds above which the wait will be considered failed
         :return: True when FSM has reached 100%, False if timeout exceeded or error
         """
-        if ucs_sdk_object_class is None:
+        if not ucs_sdk_object_classes:
             return False
+
+        # Ensure ucs_sdk_object_classes is a list
+        if not isinstance(ucs_sdk_object_classes, list):
+            ucs_sdk_object_classes = [ucs_sdk_object_classes]
 
         start = time.time()
         while (time.time() - start) < timeout:
-            result = []
             try:
-                ucs_sdk_object_list = self.handle.query_classid(ucs_sdk_object_class)
+                ucs_sdk_object_dict = self.handle.query_classids(*ucs_sdk_object_classes)
+
             except UcsException as err:
                 if err.error_descr == "Authorization required":
                     # After a change of switching mode the user is disconnected (in stand-alone mode)
@@ -2042,8 +2400,8 @@ class UcsSystem(GenericUcsDevice):
                     self.connect(force=True, auto_refresh=True)
                     continue
                 else:
-                    self.logger(level="error", message="Unable to get the FSM progress of " + ucs_sdk_object_class +
-                                                       ": " + err.error_descr)
+                    self.logger(level="error", message="Unable to get the FSM progress of classes: " +
+                                                       str(ucs_sdk_object_classes) + ": " + err.error_descr)
                     return False
             except http.client.RemoteDisconnected:
                 # After a change of switching mode the user is disconnected (in stand-alone mode)
@@ -2051,15 +2409,23 @@ class UcsSystem(GenericUcsDevice):
                 self.connect(force=True, auto_refresh=True)
                 continue
 
-            for obj in ucs_sdk_object_list:
-                if obj.fsm_progr == "100":
-                    result.append(obj)
+            all_done = True
+            for class_id, obj_list in ucs_sdk_object_dict.items():
+                # Log and exit if no objects exist for the given class
+                if not obj_list:
+                    self.logger(level="debug", message=f"No objects of class {class_id} found. Exiting.")
+                    return True
 
-            if len(result) == len(ucs_sdk_object_list):
+                for obj in obj_list:
+                    if obj.fsm_progr != "100":
+                        all_done = False
+                        break
+
+            if all_done:
                 self.logger(level="debug",
-                            message="All objects of class " + ucs_sdk_object_class + " have an FSM progress at 100%")
+                            message=f"All objects of classes {ucs_sdk_object_classes} have reached FSM 100%")
                 return True
-            self.logger(level="debug", message="Re-checking FSM progress of " + ucs_sdk_object_class)
+            self.logger(level="debug", message=f"Re-checking FSM progress of {ucs_sdk_object_classes}")
             time.sleep(20)
 
         return False
@@ -2176,7 +2542,7 @@ class UcsSystem(GenericUcsDevice):
                 if mo.fsm_status == "SwitchModeSwConfigLocal":
                     self.logger(
                         message="Please wait for Fabric Interconnect Switching Mode to be configured Primary")
-                    if not self.wait_for_fsm_complete(ucs_sdk_object_class=mo.__class__.__name__, timeout=timeout):
+                    if not self.wait_for_fsm_complete(ucs_sdk_object_classes=mo.__class__.__name__, timeout=timeout):
                         self.logger(level="error",
                                     message="Timeout exceeded while waiting for FSM state of switching mode " +
                                             "to reach Primary")
@@ -2184,11 +2550,12 @@ class UcsSystem(GenericUcsDevice):
             return True
         return False
 
-    def wait_for_reboot_after_reset(self, timeout=480, fi_ip_list=[]):
+    def wait_for_reboot_after_reset(self, timeout=480, fi_ip_list=[], str_match="Cisco"):
         """
         Waits for Fabric Interconnect(s) to reboot after a complete reset
         :param timeout: time in seconds above which the wait will be considered failed
         :param fi_ip_list: list of DHCP IP addresses taken by each FI after the reset
+        :param str_match: string content to check for at the given URL
         :return: True when Fabric Interconnect(s) has(have) rebooted, False if timeout exceeded
         """
         if not fi_ip_list:
@@ -2198,11 +2565,11 @@ class UcsSystem(GenericUcsDevice):
         # If cluster
         if len(fi_ip_list) == 2:
             self.logger(level="info", message="Waiting for both FIs to come back after reset")
-            if not common.check_web_page(self, "https://" + fi_ip_list[0], "Cisco", timeout):
+            if not common.check_web_page(self, "https://" + fi_ip_list[0], str_match, timeout):
                 self.logger(level="error",
                             message="Impossible to reconnect to FI " + fi_ip_list[0] + " after the reset")
                 return False
-            if not common.check_web_page(self, "https://" + fi_ip_list[1], "Cisco", timeout):
+            if not common.check_web_page(self, "https://" + fi_ip_list[1], str_match, timeout):
                 self.logger(level="error",
                             message="Impossible to reconnect to FI " + fi_ip_list[1] + " after the reset")
                 return False
@@ -2210,7 +2577,7 @@ class UcsSystem(GenericUcsDevice):
         # If only one FI
         elif len(fi_ip_list) == 1:
             self.logger(level="info", message="Waiting for FI to come back after reset")
-            if not common.check_web_page(self, "https://" + fi_ip_list[0], "Cisco", timeout):
+            if not common.check_web_page(self, "https://" + fi_ip_list[0], str_match, timeout):
                 self.logger(level="error",
                             message="Impossible to reconnect to FI " + fi_ip_list[0] + " after the reset")
                 return False

@@ -1001,7 +1001,7 @@ class UcsSystemConfigManager(GenericUcsConfigManager):
                         self.parent.task.taskstep_manager.start_taskstep(
                             name="WaitForFiPortsFsmStateUcsSystem", description=message_str)
                     self.logger(message=message_str)
-                    if not self.parent.wait_for_fsm_complete(ucs_sdk_object_class="swPhys", timeout=300):
+                    if not self.parent.wait_for_fsm_complete(ucs_sdk_object_classes="swPhys", timeout=300):
                         message_str = "Timeout exceeded while waiting for FSM state of physical ports to reach 100%"
                         if self.parent.task is not None:
                             self.parent.task.taskstep_manager.stop_taskstep(

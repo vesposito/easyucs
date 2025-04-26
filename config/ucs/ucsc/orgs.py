@@ -11,7 +11,8 @@ from ucscsdk.mometa.org.OrgOrg import OrgOrg
 
 from config.ucs.object import UcsCentralConfigObject
 from config.ucs.ucsc.pools import UcsCentralIpPool, UcsCentralIqnPool, UcsCentralMacPool, \
-    UcsCentralServerPool, UcsCentralUuidPool, UcsCentralWwnnPool, UcsCentralWwpnPool, UcsCentralWwxnPool
+    UcsCentralServerPool, UcsCentralServerPoolPolicyQualifications, UcsCentralUuidPool, UcsCentralWwnnPool, \
+    UcsCentralWwpnPool, UcsCentralWwxnPool
 from config.ucs.ucsc.policies import UcsCentralBiosPolicy, UcsCentralBootPolicy, UcsCentralChassisFirmwarePackage, \
     UcsCentralComputeConnectionPolicy,  UcsCentralDiskGroupPolicy, UcsCentralDiskZoningPolicy, \
     UcsCentralDynamicVnicConnectionPolicy, UcsCentralEthernetAdapterPolicy, UcsCentralFibreChannelAdapterPolicy, \
@@ -20,7 +21,7 @@ from config.ucs.ucsc.policies import UcsCentralBiosPolicy, UcsCentralBootPolicy,
     UcsCentralIscsiAuthenticationProfile, UcsCentralLanConnectivityPolicy, UcsCentralLocalDiskConfPolicy,  \
     UcsCentralMaintenancePolicy, UcsCentralNetworkControlPolicy, UcsCentralPowerControlPolicy,\
     UcsCentralPowerSyncPolicy, UcsCentralQosPolicy, UcsCentralSanConnectivityPolicy, UcsCentralScrubPolicy, \
-    UcsCentralSerialOverLanPolicy, UcsCentralServerPoolPolicyQualifications, UcsCentralStorageConnectionPolicy, \
+    UcsCentralSerialOverLanPolicy, UcsCentralStorageConnectionPolicy, \
     UcsCentralStorageProfile, UcsCentralThresholdPolicy, UcsCentralUsnicConnectionPolicy, UcsCentralVmediaPolicy, \
     UcsCentralVmqConnectionPolicy
 

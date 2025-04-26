@@ -24,11 +24,12 @@ class ImmDomainDevice(GenericDevice, DeviceConnector):
 
     def __init__(self, parent=None, uuid=None, target=None, username=None, password=None, sub_device_uuids=None,
                  fi_a=None, fi_b=None, standalone=False, is_hidden=False, is_system=False, system_usage=None,
-                 logger_handle_log_level="info", log_file_path=None, user_label=""):
+                 logger_handle_log_level="info", log_file_path=None, user_label="", bypass_connection_checks=False):
         GenericDevice.__init__(self, parent=parent, uuid=uuid, target=target, user=username, password=password,
                                is_hidden=is_hidden, is_system=is_system, system_usage=system_usage,
                                log_file_path=log_file_path, logger_handle_log_level=logger_handle_log_level,
-                               sub_device_uuids=sub_device_uuids, user_label=user_label)
+                               sub_device_uuids=sub_device_uuids, user_label=user_label,
+                               bypass_connection_checks=bypass_connection_checks)
         self._session_id = None
         self._csrf_token = None
 
@@ -78,7 +79,14 @@ class ImmDomainDevice(GenericDevice, DeviceConnector):
                     "Password": self.metadata.password
                 }
                 response = requests.post(url=f"https://{self.target}/Login", json=payload, verify=False)
-                if response.status_code != 200:
+                # Handle scenario where the device is not an IMM Domain device
+                if response.status_code == 404:
+                    self.logger(level="error",
+                                message=f"Failed to connect to IMM Domain. Device may not be an IMM Domain. "
+                                        f"Verify the Fabric Interconnect(s) status and connectivity. "
+                                        f"[Response: 404 - URL not found]")
+                    break
+                elif response.status_code != 200:
                     self.logger(level="error",
                                 message=f"Couldn't login to the device connector, response: {response.text}")
                     continue

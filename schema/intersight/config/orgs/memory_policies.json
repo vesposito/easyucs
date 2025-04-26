@@ -1,0 +1,66 @@
+{
+   "id": "intersight_config_orgs_memory_policies#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS intersight config orgs memory_policies section",
+   "description": "EasyUCS intersight config orgs memory_policies section JSON schema",
+   "type": "object",
+   "properties": {
+      "comment": {
+         "description": "Memory Policy Comments",
+         "type": "string",
+         "default": ""
+      },
+      "descr": {
+         "description": "Memory Policy Description",
+         "type": "string",
+         "default": "",
+         "pattern": "^$|^[a-zA-Z0-9]+[\\x00-\\xFF]*$",
+         "maxLength": 1024
+      },
+      "name": {
+         "description": "Memory Policy Name",
+         "type": "string",
+         "default": "",
+         "pattern": "^[a-zA-Z0-9_.:-]{1,64}$"
+      },
+      "tags": {
+         "description": "Memory Policy Tags",
+         "type": "array",
+         "items": {
+            "description": "Memory Policy Tag",
+            "type": "object",
+            "properties": {
+               "key": {
+                  "description": "Memory Policy Tag Key",
+                  "type": "string",
+                  "default": "",
+                  "minLength": 1,
+                  "maxLength": 128
+               },
+               "value": {
+                  "description": "Memory Policy Tag Value",
+                  "type": "string",
+                  "default": "",
+                  "minLength": 0,
+                  "maxLength": 256
+               }
+            },
+            "additionalProperties": false,
+            "required": [
+               "key",
+               "value"
+            ]
+         },
+         "minItems": 1
+      },
+      "enable_dimm_blocklisting": {
+        "description": "Memory Policy - Enable DIMM Blocklisting on the server",
+        "type": "boolean",
+        "default": false
+      }
+   },
+   "additionalProperties": false,
+   "required": [
+      "name"
+   ]
+}

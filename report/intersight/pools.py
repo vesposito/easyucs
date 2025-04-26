@@ -512,8 +512,12 @@ class IntersightResourcePoolReportTable(UcsReportTable):
             ["Description", "Value"],
             ["Name", resource_pool.name],
             ["Description", resource_pool.descr],
-            ["Organization", resource_pool._parent.name],
+            ["Organization", resource_pool._parent.name]
         ]
+        if resource_pool.server_pool_qualification_policies:
+            rows.append(
+                ["Server Pool Qualification Policies", ', '.join(resource_pool.server_pool_qualification_policies)]
+            )
 
         UcsReportTable.__init__(
             self,

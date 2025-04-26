@@ -95,7 +95,7 @@ class DeviceManager:
             self.logger(level="error", message="Missing device_type in device add request!")
             return False
 
-        if device_type not in ["cimc", "imm_domain", "imm_domain_fi", "intersight", "ucsc", "ucsm"]:
+        if device_type not in ["cimc", "imm_domain", "intersight", "ucsc", "ucsm"]:
             self.logger(level="error", message="Device type not recognized. Could not add device")
             return False
 
@@ -136,7 +136,8 @@ class DeviceManager:
             device = ImmDomainDevice(parent=self, uuid=uuid, target=target, username=username, password=password,
                                      sub_device_uuids=sub_device_uuids, standalone=standalone, is_hidden=is_hidden,
                                      is_system=is_system, system_usage=system_usage,
-                                     logger_handle_log_level=logger_handle_log_level, user_label=user_label)
+                                     logger_handle_log_level=logger_handle_log_level, user_label=user_label,
+                                     bypass_connection_checks=bypass_connection_checks)
             if sub_device_uuids:
                 sub_devices = []
                 # Add references to the sub devices in parent device and vice versa.

@@ -59,6 +59,11 @@
          },
          "minItems": 1
       },
+      "ldap_policy": {
+         "description": "UCS Domain Profile LDAP Policy",
+         "type": "string",
+         "default": ""
+      },
       "network_connectivity_policy": {
          "description": "UCS Domain Profile Network Connectivity Policy",
          "type": "string",

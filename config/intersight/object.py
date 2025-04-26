@@ -28,14 +28,16 @@ class IntersightConfigObject(GenericConfigObject):
         self.tags = None
 
         if self._config.load_from == "live":
-            self._moid = self.get_attribute(attribute_name="moid")
+            if self._object:
+                self._moid = self.get_attribute(attribute_name="moid")
             # Uncomment for debug purposes
             # self.moid = self._moid
 
             if hasattr(self._object, "tags"):
                 self.tags = []
                 for tag in self._object.tags:
-                    if not tag.get("key", "").startswith("cisco.meta"):  # Ignoring system defined tags
+                    if not tag.get("key", "").startswith("cisco.meta") \
+                        and not tag.get("key", "").endswith("LicenseTier"):  # Ignoring system defined tags
                         self.tags.append({"key": tag["key"], "value": tag["value"]})
 
         elif self._config.load_from == "file":

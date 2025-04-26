@@ -149,8 +149,20 @@
                         "default": "",
                         "pattern": "^([a-zA-Z0-9_.:-]{1,64}/)?[a-zA-Z0-9_.:-]{1,64}$"
                      },
+                     "ethernet_network_group_policies": {
+                        "description": "LAN Connectivity Policy - vNIC Ethernet Network Group Policies",
+                        "type": "array",
+                        "items": [
+                           {
+                              "type": "string",
+                              "default": "",
+                              "pattern": "^([a-zA-Z0-9_.:-]{1,64}/)?[a-zA-Z0-9_.:-]{1,64}$"
+                           }
+                        ],
+                        "minItems": 1
+                     },
                      "ethernet_network_group_policy": {
-                        "description": "LAN Connectivity Policy - vNIC Ethernet Network Group Policy",
+                        "description": "DEPRECATED: LAN Connectivity Policy - vNIC Ethernet Network Group Policy",
                         "type": "string",
                         "default": "",
                         "pattern": "^([a-zA-Z0-9_.:-]{1,64}/)?[a-zA-Z0-9_.:-]{1,64}$"
@@ -480,6 +492,11 @@
                                        {
                                           "required": [
                                              "ethernet_network_control_policy"
+                                          ]
+                                       },
+                                       {
+                                          "required": [
+                                             "ethernet_network_group_policies"
                                           ]
                                        },
                                        {
