@@ -55,7 +55,7 @@ class UcsImcCpu(UcsCpu, UcsImcInventoryObject):
 
         if self._inventory.load_from == "live":
             # We convert the speed string to integer
-            if self.speed != 'unspecified':
+            if self.speed not in [None, 'unspecified']:
                 self.speed = int(self.speed)
 
         UcsImcInventoryObject.__init__(self, parent=parent, ucs_sdk_object=processor_unit)

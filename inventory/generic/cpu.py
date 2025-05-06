@@ -128,7 +128,7 @@ class GenericCpu(GenericInventoryObject):
                                 self.family_name = "3rd Gen Intel Xeon Processor Scalable Family"
 
                         else:
-                            # We might have an M7 Intel CPU
+                            # We might have an M7 4th Gen Intel CPU
                             regex2 = r"Xeon\(R\) .* (\d*\w?\+?)"
                             res2 = re.search(regex2, self.model)
                             if res2 is not None:

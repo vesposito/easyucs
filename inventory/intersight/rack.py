@@ -21,6 +21,7 @@ class IntersightComputeRackUnit(GenericRack, IntersightInventoryObject):
 
         self.cpus = []
         self.id = self.get_attribute(attribute_name="server_id", attribute_secondary_name="id")
+        self.gpus = []
         self.management_mode = self.get_attribute(attribute_name="management_mode")
         self.memory_arrays = []
         self.memory_available = self.get_attribute(attribute_name="available_memory",
@@ -41,7 +42,6 @@ class IntersightComputeRackUnit(GenericRack, IntersightInventoryObject):
         self._get_memory_total_marketing()
 
         self.adaptors = self._get_adaptors()
-        self.gpus = self._get_gpus()
         self.power_supplies = self._get_power_supplies()
 
         if self._inventory.load_from == "live":
@@ -63,6 +63,8 @@ class IntersightComputeRackUnit(GenericRack, IntersightInventoryObject):
             if len(compute_board) == 1:
                 self.cpus = self.get_inventory_objects_from_ref(
                     ref=compute_board[0].processors, object_class=IntersightCpu, parent=self)
+                self.gpus = self.get_inventory_objects_from_ref(
+                    ref=compute_board[0].graphics_cards, object_class=IntersightGpu, parent=self)
                 self.memory_arrays = self.get_inventory_objects_from_ref(
                     ref=compute_board[0].memory_arrays, object_class=IntersightMemoryArray, parent=self)
                 self.storage_controllers = self.get_inventory_objects_from_ref(
@@ -96,6 +98,9 @@ class IntersightComputeRackUnit(GenericRack, IntersightInventoryObject):
             if "cpus" in self._object:
                 for cpu in self._object["cpus"]:
                     self.cpus.append(IntersightCpu(parent=self, processor_unit=cpu))
+            if "gpus" in self._object:
+                for gpu in self._object["gpus"]:
+                    self.gpus.append(IntersightGpu(parent=self, graphics_card=gpu))
             if "nvme_drives" in self._object:
                 for nvme_drive in self._object["nvme_drives"]:
                     self.nvme_drives.append(IntersightStorageControllerNvmeDrive(parent=self, storage_local_disk=nvme_drive))
@@ -121,15 +126,6 @@ class IntersightComputeRackUnit(GenericRack, IntersightInventoryObject):
                                                        parent=self)
         elif self._inventory.load_from == "file" and "adaptors" in self._object:
             return [IntersightAdaptor(self, adapter) for adapter in self._object["adaptors"]]
-        else:
-            return []
-
-    def _get_gpus(self):
-        if self._inventory.load_from == "live":
-            return self.get_inventory_objects_from_ref(ref=self._object.graphics_cards, object_class=IntersightGpu,
-                                                       parent=self)
-        elif self._inventory.load_from == "file" and "gpus" in self._object:
-            return [IntersightGpu(self, gpu) for gpu in self._object["gpus"]]
         else:
             return []
 

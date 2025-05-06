@@ -164,11 +164,12 @@ class GenericUcsInventory(GenericInventory):
                                 if object_class is UcsImcSioc and hasattr(sdk_object, "pid"):
                                     if sdk_object.pid == "N/A":
                                         continue
-                                # Also filter storageControllerNVMe of types PCIe-Switch, NVMe-direct-U.2-drives or
-                                # NVMe-direct-HHHL-drives
+                                # Also filter storageControllerNVMe of types PCIe-Switch, NVMe-direct-U.2-drives,
+                                # NVMe-direct-HHHL-drives or NVMe-direct-E3.S-drives
                                 if object_class is UcsImcStorageControllerNvmeDrive and hasattr(sdk_object, "id"):
                                     if any(x in sdk_object.id for x in ["PCIe-Switch", "NVMe-direct-U.2-drives",
-                                                                        "NVMe-direct-HHHL-drives"]):
+                                                                        "NVMe-direct-HHHL-drives",
+                                                                        "NVMe-direct-E3.S-drives"]):
                                         continue
                                 # Also filter absent DIMMs reported by UCS Manager as "NO DIMM"
                                 if hasattr(sdk_object, "model") and sdk_object.model == "NO DIMM":

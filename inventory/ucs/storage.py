@@ -794,7 +794,7 @@ class UcsImcStorageLocalDisk(UcsStorageLocalDisk, UcsImcInventoryObject):
         self.serial = self.get_attribute(ucs_sdk_object=storage_local_disk, attribute_name="drive_serial_number",
                                          attribute_secondary_name="serial")
         if self._inventory.load_from == "live":
-            if storage_local_disk.coerced_size:
+            if storage_local_disk.coerced_size not in [None, "", "N/A", "Not Available"]:
                 self.size = int(storage_local_disk.coerced_size.split(" ")[0])
             else:
                 self.size = None
@@ -866,15 +866,14 @@ class UcsImcStorageLocalDisk(UcsStorageLocalDisk, UcsImcInventoryObject):
                                     " of model \"" + self.model + "\" with ID " + self.id)
                 return False
             else:
-                if storage_local_disk_props_list[0].block_size:
+                if storage_local_disk_props_list[0].block_size not in [None, "", "N/A", "Not Available"]:
                     self.block_size = int(storage_local_disk_props_list[0].block_size)
                 if storage_local_disk_props_list[0].boot_drive:
                     self.bootable = storage_local_disk_props_list[0].boot_drive
-                if storage_local_disk_props_list[0].block_count not in [None, "", "N/A"]:
+                if storage_local_disk_props_list[0].block_count not in [None, "", "N/A", "Not Available"]:
                     self.number_of_blocks = int(storage_local_disk_props_list[0].block_count)
-                if storage_local_disk_props_list[0].raw_size:
+                if storage_local_disk_props_list[0].raw_size not in [None, "", "N/A", "Not Available"]:
                     self.size_raw = int(storage_local_disk_props_list[0].raw_size.split(" ")[0])
-
                 if storage_local_disk_props_list[0].percentage_life_left not in [None, "0", "N/A", "Not Available"]:
                     self.life_left_in_percent = int(storage_local_disk_props_list[0].percentage_life_left)
                 if storage_local_disk_props_list[0].power_cycle_count not in [None, "0", "N/A", "Not Available"]:
