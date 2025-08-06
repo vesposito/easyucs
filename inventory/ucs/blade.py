@@ -40,6 +40,15 @@ class UcsBlade(GenericBlade, GenericUcsInventoryObject):
         self.storage_flexflash_controllers = self._get_storage_flexflash_controllers()
         self.tpms = self._get_tpms()
 
+        if self._inventory.load_from == "live":
+            self.front_mezzanine = self._get_front_mezzanine_model()
+
+        elif self._inventory.load_from == "file":
+            for attribute in ["front_mezzanine"]:
+                setattr(self, attribute, None)
+                if attribute in compute_blade:
+                    setattr(self, attribute, self.get_attribute(ucs_sdk_object=compute_blade, attribute_name=attribute))
+
     def _get_adaptors(self):
         return []
 

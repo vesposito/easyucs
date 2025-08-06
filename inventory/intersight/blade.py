@@ -95,6 +95,8 @@ class IntersightComputeBlade(GenericBlade, IntersightInventoryObject):
                             message="Unable to find unique management.Controller object for blade with ID " +
                                     str(self.id))
 
+            self.front_mezzanine = self._get_front_mezzanine_model()
+
         elif self._inventory.load_from == "file":
             if "cpus" in self._object:
                 for cpu in self._object["cpus"]:
@@ -112,8 +114,8 @@ class IntersightComputeBlade(GenericBlade, IntersightInventoryObject):
             if "tpms" in self._object:
                 for tpm in self._object["tpms"]:
                     self.tpms.append(IntersightTpm(parent=self, equipment_tpm=tpm))
-            for attribute in ["firmware_version", "id", "locator_led_status", "memory_total_marketing", "name",
-                              "short_name", "sku"]:
+            for attribute in ["firmware_version", "front_mezzanine", "id", "locator_led_status",
+                              "memory_total_marketing", "name", "short_name", "sku"]:
                 setattr(self, attribute, None)
                 if attribute in self._object:
                     setattr(self, attribute, self.get_attribute(attribute_name=attribute))

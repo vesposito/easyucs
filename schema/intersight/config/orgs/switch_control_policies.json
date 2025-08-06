@@ -53,6 +53,16 @@
          },
          "minItems": 1
       },
+      "aes_encryption_key": {
+          "description": "Primary key used for encrypting or decrypting MACsec keys in type-6 format.",
+          "type": "string",
+          "default": ""
+      },
+      "enable_aes_encryption_key": {
+          "description": "If enabled, MACsec keys will be encrypted using type-6 format. If a MACsec key is already in type-6 format, the primary key will be used for decryption.",
+          "type": "boolean",
+          "default": false
+      },
       "fabric_port_channel_vhba_reset": {
          "description": "Switch Control Policy Fabric Port-Channel vHBA Reset Admin State",
          "type": "boolean",

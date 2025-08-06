@@ -12,9 +12,30 @@ class GenericBlade(GenericInventoryObject):
 
         self.imm_compatible = None
         self.memory_total_marketing = None
+        self.model = None
         self.short_name = None
         self.sku = None
         self.sku_scaled = None
+
+    def _get_front_mezzanine_model(self):
+        # Determining the front mezzanine model for X-Series blades
+        if self.model and self.model.startswith("UCSX-"):
+            front_mezzanine = {
+                "model": None,
+                "name": None,
+                "serial": None,
+                "sku": None,
+                "vendor": None
+            }
+            if hasattr(self, "storage_controllers") and self.storage_controllers:
+                for storage_controller in self.storage_controllers:
+                    if storage_controller.id and storage_controller.id in ["MRAID"]:
+                        for key in front_mezzanine.keys():
+                            front_mezzanine[key] = getattr(storage_controller, key, None)
+
+                        return front_mezzanine
+
+        return None
 
     def _get_memory_total_marketing(self):
         # Adding a human-readable attribute for memory capacity

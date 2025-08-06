@@ -218,20 +218,22 @@
             "name": {
                "description": "LDAP Group name in the LDAP server database.",
                "type": "string",
-               "default": "",
-               "pattern": "^([^+\\-][a-zA-Z0-9=!#$%()*+,-.:;@ _{|}~?&]*)$"
+               "pattern": "^([^+\\-][a-zA-Z0-9=!#$%()*+,-.:;@ _{|}~?&]*)$",
+               "maxLength": 127
             },
             "domain": {
                "description": "LDAP server domain name where the Group resides",
                "type": "string",
                "default": "",
-               "pattern": "^(([a-zA-Z0-9])|([a-zA-Z0-9][a-zA-Z0-9\\.\\-]*[a-zA-Z0-9]))$"
+               "pattern": "^$|^[a-zA-Z0-9-]+(.[a-zA-Z0-9-]+)*$",
+               "maxLength": 255
             },
             "group_dn": {
                "description": "Group Distinguished Name (DN).",
                "type": "string",
                "default": "",
-               "maxLength": 254
+               "pattern": "^$|^([^+\\-][a-zA-Z0-9=!#$%()*+,-.:;@ _{|}~?&]*)$",
+               "maxLength": 300
             },
             "role": {
                "description": "Role assigned to all users in this LDAP server group. This can be one of read-only, user, admin.",
@@ -239,7 +241,7 @@
                "default": "admin",
                "enum": [
                   "admin",
-                  "read-only",
+                  "readonly",
                   "user"
                ]
             }

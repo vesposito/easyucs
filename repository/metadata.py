@@ -104,8 +104,8 @@ class DeviceMetadata(GenericMetadata):
     OBJECT_TYPE = "device"
 
     def __init__(self, backups_path=None, bypass_connection_checks=False, bypass_version_checks=False,
-                 db_record=None, device_connector_claim_status=None, device_name=None,
-                 device_connector_ownership_name=None, device_connector_ownership_user=None, device_type="generic",
+                 db_record=None, device_connector_claim_status=None, device_connector_ownership_name=None,
+                 device_connector_ownership_user=None, device_endpoint_id=None, device_name=None, device_type="generic",
                  device_type_long="Generic", device_uuid=None, device_version=None, easyucs_version=None,
                  file_path=None, file_type="device", hash=None, intersight_device_uuid=None, images_path=None,
                  is_custom=False, is_hidden=False, is_reachable=False, is_system=False, key_id=None, name=None,
@@ -123,6 +123,7 @@ class DeviceMetadata(GenericMetadata):
         self.device_connector_claim_status = device_connector_claim_status
         self.device_connector_ownership_name = device_connector_ownership_name
         self.device_connector_ownership_user = device_connector_ownership_user
+        self.device_endpoint_id = device_endpoint_id
         self.device_type = device_type
         self.device_type_long = device_type_long
         self.images_path = images_path
@@ -225,15 +226,16 @@ class TaskMetadata(GenericTaskMetadata):
     TABLE_RECORD = TaskRecord
     OBJECT_TYPE = "task"
 
-    def __init__(self, db_record=None, description=None, config_uuid=None, device_name=None, device_uuid=None,
-                 easyucs_version=None,  inventory_uuid=None, name=None, parent=None, progress=None, repo_file_path=None,
-                 repo_file_uuid=None, report_uuid=None, status="pending", status_message=None, target_device_uuid=None,
-                 timestamp=None, timestamp_start=None, timestamp_stop=None, uuid=None):
+    def __init__(self, db_record=None, description=None, config_uuid=None, device_endpoint_id=None, device_name=None,
+                 device_uuid=None, easyucs_version=None,  inventory_uuid=None, name=None, parent=None, progress=None,
+                 repo_file_path=None, repo_file_uuid=None, report_uuid=None, status="pending", status_message=None,
+                 target_device_uuid=None, timestamp=None, timestamp_start=None, timestamp_stop=None, uuid=None):
         GenericTaskMetadata.__init__(self, db_record=db_record, description=description,
                                      easyucs_version=easyucs_version, name=name, parent=parent, status=status,
                                      status_message=status_message, timestamp=timestamp,
                                      timestamp_start=timestamp_start, timestamp_stop=timestamp_stop, uuid=uuid)
         self.config_uuid = config_uuid
+        self.device_endpoint_id = device_endpoint_id
         self.device_name = device_name
         self.device_uuid = device_uuid
         self.inventory_uuid = inventory_uuid

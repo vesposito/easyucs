@@ -44,6 +44,11 @@ class GenericCacheManager:
             self.logger(level="error", message="Invalid device provided to fill the cache")
             return False
 
+        # System catalog devices don't have a cache as they are not real devices. Ignoring them
+        if self.parent.metadata.is_system and self.parent.metadata.is_hidden and \
+                self.parent.metadata.system_usage == "catalog":
+            return False
+
         cache_json = common.read_json_file(
             file_path=os.path.join("data", "files", "devices", str(self.parent.uuid), "cache", "cache.json"),
             logger=self

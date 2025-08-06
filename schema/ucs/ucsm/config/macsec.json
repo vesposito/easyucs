@@ -13,6 +13,225 @@
             "disabled",
             "enabled"
          ]
+      },
+      "eapol": {
+         "description": "List of MACsec EAPOL Configurations",
+         "type": "array",
+         "items": {
+            "type": "object",
+            "properties": {
+               "name": {
+                  "description": "MACsec EAPOL Name",
+                  "type": "string",
+                  "pattern": "^[\\-\\.:_a-zA-Z0-9]{1,16}$"
+               },
+               "mac_address": {
+                  "description": "MACsec EAPOL MAC Address Where You Wish To Enable The EAPOL Configuration",
+                  "type": "string",
+                  "pattern": "^(([0-9a-fA-F][0-9a-fA-F]:){5}([0-9a-fA-F][0-9a-fA-F]))|0$"
+               },
+               "ether_type": {
+                  "description": "MACsec EAPOL Ethernet Type",
+                  "type": "string",
+                  "pattern": "^0x[0-9a-fA-F]{1,4}$"
+               },
+               "descr": {
+                  "description": "Description Of MACsec EAPOL",
+                  "type": "string",
+                  "pattern": "^[ !#$%&\\(\\)\\*\\+,\\-\\./:;\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{0,256}$"
+               }
+            },
+            "additionalProperties": false
+         }
+      },
+      "interface_configuration": {
+         "description": "List of MACsec Interface Configuration",
+         "type": "array",
+         "items": {
+            "type": "object",
+            "properties": {
+               "name": {
+                  "description": "MACsec Interface Configuration Name",
+                  "type": "string",
+                  "pattern": "^[\\-\\.:_a-zA-Z0-9]{1,16}$"
+               },
+               "macsec_eapol_name": {
+                  "description": "MACsec EAPOL Name",
+                  "type": "string",
+                  "pattern": "^[\\-\\.:_a-zA-Z0-9]{0,16}$"
+               },
+               "macsec_keychain_name": {
+                  "description": "MACsec Keychain Name",
+                  "type": "string",
+                  "pattern": "^[\\-\\.:_a-zA-Z0-9]{0,63}$"
+               },
+               "macsec_fallback_keychain_name": {
+                  "description": "MACsec Backup Keychain Name",
+                  "type": "string",
+                  "pattern": "^[\\-\\.:_a-zA-Z0-9]{0,63}$"
+               },
+               "macsec_policy_name": {
+                  "description": "MACsec Policy Name",
+                  "type": "string",
+                  "pattern": "^[\\-\\.:_a-zA-Z0-9]{0,32}$"
+               }
+            },
+            "additionalProperties": false
+         }
+      },
+      "keychain": {
+         "description": "List of MACsec Keychains",
+         "type": "array",
+         "items": {
+            "type": "object",
+            "properties": {
+               "name": {
+                  "description": "MACsec Keychain Name",
+                  "type": "string",
+                  "pattern": "^[\\-\\.:_a-zA-Z0-9]{1,63}$"
+               },
+               "keys": {
+                  "description": "List of MACsec Keys",
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "key_id": {
+                        "type": "string",
+                        "description": "MACsec Key Identifier",
+                        "pattern": "^[\\-\\.:_a-zA-Z0-9]{2,64}$"
+                      },
+                      "key_hex_string": {
+                        "type": "string",
+                        "description": "Hexadecimal Representation Of The MACsec Key"
+                      },
+                      "encrypt_type": {
+                        "type": "string",
+                        "description": "Encryption Type Used For The MACsec Key",
+                        "enum": [
+                          "type-6",
+                          "type-7",
+                          "unencrypted"
+                        ]
+                      },
+                      "cryptographic_algorithm": {
+                        "type": "string",
+                        "description": "Cryptographic Algorithm Used For The MACsec Key",
+                        "enum": [
+                          "AES-128-CMAC",
+                          "AES-256-CMAC"
+                        ]
+                      },
+                      "lifetime": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "duration": {
+                              "type": "string",
+                              "description": "Length Of The MACsec LifeTime In Seconds"
+                            },
+                            "start_date_time": {
+                              "type": "string",
+                              "description": "Start Time For MACsec Key Validity",
+                              "pattern": "^([0-9]){4}-([0-9]){2}-([0-9]){2}T([0-9]){2}:([0-9]){2}:([0-9]){2}((\\.([0-9]){3})){0,1}$"
+                            },
+                            "end_date_time": {
+                              "type": "string",
+                              "description": "End Time For MACsec Key Validity",
+                              "pattern": "^([0-9]){4}-([0-9]){2}-([0-9]){2}T([0-9]){2}:([0-9]){2}:([0-9]){2}((\\.([0-9]){3})){0,1}$"
+                            },
+                            "time_zone": {
+                              "type": "string",
+                              "description": "Timezone For The MACsec Key Lifetime",
+                              "enum": [
+                                "UTC",
+                                "local"
+                              ]
+                            },
+                            "infinite_lifetime": {
+                              "type": "string",
+                              "description": "Whether The MACsec Key Has Infinite Lifetime",
+                              "enum": [
+                                "enabled",
+                                "disabled"
+                              ]
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+               }
+            }
+         }
+      },
+      "policies": {
+         "description": "List of MACsec Policies",
+         "type": "array",
+         "items": {
+            "type": "object",
+            "properties": {
+               "name": {
+                  "description": "MACsec Policy Name",
+                  "type": "string",
+                  "pattern": "^[\\-\\.:_a-zA-Z0-9]{1,32}$"
+               },
+               "descr": {
+                  "description": "MACsec Policy Description",
+                  "type": "string",
+                  "pattern": "^[ !#$%&\\(\\)\\*\\+,\\-\\./:;\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]{0,256}$"
+               },
+               "cipher_suite": {
+                  "description": "MACsec Policy Cipher Suite Used For The Encryption",
+                  "type": "string",
+                  "enum": [
+                     "GCM-AES-128",
+                     "GCM-AES-256",
+                     "GCM-AES-XPN-128",
+                     "GCM-AES-XPN-256"
+                  ]
+               },
+               "conf_offset": {
+                  "description": "MACsec Policy Conf Offset Which Configures The Confidentiality Offsets In The Layer 2 Frame, Where Encryption Begins",
+                  "type": "string",
+                  "enum": [
+                     "conf-offset-0",
+                     "conf-offset-30",
+                     "conf-offset-50"
+                  ]
+               },
+               "include_icv_param": {
+                  "description": "MACsec Policy Include ICV Param To Configure The ICV For The Frame Arriving On The Port",
+                  "type": "string",
+                  "enum": [
+                     "yes",
+                     "no"
+                  ]
+               },
+               "key_server_priority": {
+                  "description": "MACsec Policy Key Server Priority",
+                  "type": "string"
+               },
+               "replay_window_size": {
+                  "description": "MACsec Policy Replay Window Size To Configure The Window Size",
+                  "type": "string"
+               },
+               "sak_expiry_time": {
+                  "description": "MACsec Policy SAK Expiry Time Configures The Time In Seconds To Force An SAK Rekey",
+                  "type": "string"
+               },
+               "security_policy": {
+                  "description": "MACsec Policy Security Policy Which Configures The Security Policy Parameters",
+                  "type": "string",
+                  "enum": [
+                     "must-secure",
+                     "should-secure"
+                  ]
+               }
+            },
+            "additionalProperties": false
+         }
       }
   },
    "additionalProperties": false,

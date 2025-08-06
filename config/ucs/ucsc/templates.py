@@ -11,10 +11,12 @@ from ucscsdk.mometa.vnic.VnicEtherIf import VnicEtherIf
 from ucscsdk.mometa.vnic.VnicFcIf import VnicFcIf
 from ucscsdk.mometa.vnic.VnicLanConnTempl import VnicLanConnTempl
 from ucscsdk.mometa.vnic.VnicSanConnTempl import VnicSanConnTempl
+from ucscsdk.mometa.vnic.VnicSriovHpnConPolicyRef import VnicSriovHpnConPolicyRef
 from ucscsdk.mometa.vnic.VnicUsnicConPolicyRef import VnicUsnicConPolicyRef
 from ucscsdk.mometa.vnic.VnicVmqConPolicyRef import VnicVmqConPolicyRef
 from config.ucs.ucsc.policies import (UcsCentralDynamicVnicConnectionPolicy, UcsCentralNetworkControlPolicy,
-                                      UcsCentralQosPolicy, UcsCentralThresholdPolicy, UcsCentralUsnicConnectionPolicy,
+                                      UcsCentralQosPolicy, UcsCentralSriovHpnConnectionPolicy,
+                                      UcsCentralThresholdPolicy, UcsCentralUsnicConnectionPolicy,
                                       UcsCentralVmqConnectionPolicy)
 from config.ucs.ucsc.pools import UcsCentralMacPool, UcsCentralWwpnPool
 
@@ -171,6 +173,7 @@ class UcsCentralVnicTemplate(UcsCentralConfigObject):
         "network_control_policy": UcsCentralNetworkControlPolicy,
         "pin_group": None,
         "qos_policy": UcsCentralQosPolicy,
+        "sriov_hpn_connection_policy": UcsCentralSriovHpnConnectionPolicy,
         "stats_threshold_policy": UcsCentralThresholdPolicy,
         "usnic_connection_policy": UcsCentralUsnicConnectionPolicy,
         "vmq_connection_policy": UcsCentralVmqConnectionPolicy,
@@ -192,6 +195,7 @@ class UcsCentralVnicTemplate(UcsCentralConfigObject):
         self.mac_address_pool = None
         self.template_type = None
         self.pin_group = None
+        self.sriov_hpn_connection_policy = None
         self.stats_threshold_policy = None
         self.network_control_policy = None
         self.usnic_connection_policy = None
@@ -260,6 +264,20 @@ class UcsCentralVnicTemplate(UcsCentralConfigObject):
                                     )
                                 )
                                 break
+                if "vnicSriovHpnConPolicyRef" in self._parent._config.sdk_objects and \
+                        not self.sriov_hpn_connection_policy:
+                    for policy in self._config.sdk_objects["vnicSriovHpnConPolicyRef"]:
+                        if self._parent._dn:
+                            if self._parent._dn + "/lan-conn-templ-" + self.name + "/" in policy.dn:
+                                self.sriov_hpn_connection_policy = policy.con_policy_name
+                                self.operational_state.update(
+                                    self.get_operational_state(
+                                        policy_dn=policy.oper_con_policy_name,
+                                        separator="/sriov-hpn-con-",
+                                        policy_name="sriov_hpn_connection_policy"
+                                    )
+                                )
+                                break
                 if "vnicEtherIf" in self._config.sdk_objects:
                     if self._parent._dn:
                         vlans = [vlan for vlan in self._config.sdk_objects["vnicEtherIf"] if
@@ -320,7 +338,7 @@ class UcsCentralVnicTemplate(UcsCentralConfigObject):
         UcsCentralConfigObject.clean_object(self)
 
         for policy in ["dynamic_vnic_connection_policy", "mac_address_pool", "network_control_policy",
-                       "peer_redundancy_template", "qos_policy", "stats_threshold_policy",
+                       "peer_redundancy_template", "qos_policy", "sriov_hpn_connection_policy", "stats_threshold_policy",
                        "usnic_connection_policy", "vmq_connection_policy"]:
             if policy not in self.operational_state:
                 self.operational_state[policy] = None
@@ -373,6 +391,9 @@ class UcsCentralVnicTemplate(UcsCentralConfigObject):
         if self.vmq_connection_policy:
             VnicVmqConPolicyRef(parent_mo_or_dn=mo_vnic_lan_conn_temp,
                                 con_policy_name=self.vmq_connection_policy)
+        if self.sriov_hpn_connection_policy:
+            VnicSriovHpnConPolicyRef(parent_mo_or_dn=mo_vnic_lan_conn_temp,
+                                     con_policy_name=self.sriov_hpn_connection_policy)
 
         # self._handle.add_mo(mo=mo_vnic_lan_conn_temp, modify_present=True)
         # if commit:

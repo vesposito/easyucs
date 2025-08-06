@@ -738,6 +738,7 @@ class UcsSystemPowerControlPolicy(UcsSystemConfigObject):
         self.name = None
         self.descr = None
         self.aggressive_cooling = None
+        self.cpu_package_power_limit = None
         self.fan_speed_policy = None
         self.power_capping = None
 
@@ -748,6 +749,7 @@ class UcsSystemPowerControlPolicy(UcsSystemConfigObject):
                 self.aggressive_cooling = power_policy.aggressive_cooling
                 self.fan_speed_policy = power_policy.fan_speed
                 self.power_capping = power_policy.prio
+                self.cpu_package_power_limit = power_policy.configured_ppl
 
         elif self._config.load_from == "file":
             if json_content is not None:
@@ -775,6 +777,7 @@ class UcsSystemPowerControlPolicy(UcsSystemConfigObject):
                                       prio=self.power_capping,
                                       name=self.name,
                                       aggressive_cooling=self.aggressive_cooling,
+                                      configured_ppl=self.cpu_package_power_limit, 
                                       fan_speed=self.fan_speed_policy,
                                       descr=self.descr)
         self._handle.add_mo(mo=mo_power_policy, modify_present=True)

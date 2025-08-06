@@ -1,0 +1,57 @@
+{
+   "model_short_name": "RAID SFF",
+   "front_file_name": "UCSX-X10C-RAIDF.png",
+   "front_file_size": [228,1679],
+   "disks_slots": [
+      {
+         "id": 1,
+         "format": "sff_m5",
+         "orientation": "vertical",
+         "coord": [16,132],
+         "size": [437,97]
+      },
+      {
+         "id": 2,
+         "format": "sff_m5",
+         "orientation": "vertical",
+         "coord": [129,132],
+         "size": [437,97]
+      },
+      {
+         "id": 3,
+         "format": "sff_m5",
+         "orientation": "vertical",
+         "coord": [16,622],
+         "size": [437,97]
+      },
+      {
+         "id": 4,
+         "format": "sff_m5",
+         "orientation": "vertical",
+         "coord": [129,622],
+         "size": [437,97]
+      },
+      {
+         "id": 5,
+         "format": "sff_m5",
+         "orientation": "vertical",
+         "coord": [16,1112],
+         "size": [437,97]
+      },
+      {
+         "id": 6,
+         "format": "sff_m5",
+         "orientation": "vertical",
+         "coord": [129,1112],
+         "size": [437,97]
+      }
+   ],
+   "disks_models": [
+      {
+         "name": "UCSC-BBLKD-S2",
+         "type": "blank",
+         "format": "sff_m5",
+         "description": "UCS C-Series E3.S 1T Drive Filler"
+      }
+   ]
+}

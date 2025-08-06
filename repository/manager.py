@@ -394,9 +394,6 @@ class RepositoryManager:
 
         if file_update:
             with open(os.path.abspath(os.path.join(EASYUCS_ROOT, self.SETTINGS_FILE_NAME)), "w") as settings_file:
-                for content in ['default_password', 'default_password_mutual_chap_authentication']:
-                    if content in file_contents["convert_settings"]:
-                        del file_contents["convert_settings"][content]
                 json.dump(file_contents, settings_file, indent=3)
         return True
 
@@ -1044,9 +1041,10 @@ class RepositoryManager:
 
         return True
 
-    def restore_key_and_settings_backup(self):
+    def restore_key_and_settings_backup(self, backup_version=None):
         """
         Function to restore the key and settings from the replaced file
+        :param backup_version: The version of the backup
         :return: True if successful, False otherwise
         """
         # Reloading the key

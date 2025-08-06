@@ -110,6 +110,27 @@
                                  "org"
                               ]
                            },
+                           "sriov_hpn_connection_policy": {
+                              "description": "LAN Connectivity Policy - vNIC - Operational State - SRIOV HPN Connection Policy",
+                              "type": "object",
+                              "properties": {
+                                 "name": {
+                                    "description": "LAN Connectivity Policy - vNIC - Operational State - SRIOV HPN Connection Policy - Name",
+                                    "type": "string",
+                                    "default": ""
+                                 },
+                                 "org": {
+                                    "description": "LAN Connectivity Policy - vNIC - Operational State - SRIOV HPN Connection Policy - Org",
+                                    "type": "string",
+                                    "default": ""
+                                 }
+                              },
+                              "additionalProperties": false,
+                              "required": [
+                                 "name",
+                                 "org"
+                              ]
+                           },
                            "usnic_connection_policy": {
                               "description": "LAN Connectivity Policy - vNIC - Operational State - usNIC Connection Policy",
                               "type": "object",
@@ -327,6 +348,12 @@
                         "default": "",
                         "pattern": "^[\\-\\.:_a-zA-Z0-9]{0,16}$"
                      },
+                     "sriov_hpn_connection_policy": {
+                        "description": "LAN Connectivity Policy - vNIC - SRIOV HPN Connection Policy Name",
+                        "type": "string",
+                        "default": "",
+                        "pattern": "^[\\-\\.:_a-zA-Z0-9]{0,16}$"
+                     },
                      "usnic_connection_policy": {
                         "description": "LAN Connectivity Policy - vNIC - usNIC Connection Policy Name",
                         "type": "string",
@@ -407,6 +434,27 @@
                                  },
                                  "org": {
                                     "description": "LAN Connectivity Policy - vNIC - Operational State - Dynamic vNIC Connection Policy  - Org",
+                                    "type": "string",
+                                    "default": ""
+                                 }
+                              },
+                              "additionalProperties": false,
+                              "required": [
+                                 "name",
+                                 "org"
+                              ]
+                           },
+                           "sriov_hpn_connection_policy": {
+                              "description": "LAN Connectivity Policy - vNIC - Operational State - SRIOV HPN Connection Policy",
+                              "type": "object",
+                              "properties": {
+                                 "name": {
+                                    "description": "LAN Connectivity Policy - vNIC - Operational State - SRIOV HPN Connection Policy - Name",
+                                    "type": "string",
+                                    "default": ""
+                                 },
+                                 "org": {
+                                    "description": "LAN Connectivity Policy - vNIC - Operational State - SRIOV HPN Connection Policy  - Org",
                                     "type": "string",
                                     "default": ""
                                  }

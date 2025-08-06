@@ -68,6 +68,27 @@
          "Platform Default"
       ]
    },
+   "acpi_srat_special_purpose_memory_flag": {
+      "available_in_legacy_mode": false,
+      "feature_group": "ACPI Special Flag",
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "platform-default"
+      ],
+      "maximum": null,
+      "minimum": null,
+      "param_name": "ACPI SRAT Special Purpose Memory Flag",
+      "step": null,
+      "target_name": "AcpiSratSpFlagEn",
+      "type": "enum",
+      "unit": null,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ]
+   },
    "acs_control_gpu_1": {
       "available_in_legacy_mode": false,
       "feature_group": "Access Control Services",
@@ -898,6 +919,8 @@
       "feature_group": "Processor",
       "legacy_values": [
          "10-ccds",
+         "12-ccds",
+         "14-ccds",
          "2-ccds",
          "3-ccds",
          "4-ccds",
@@ -915,6 +938,8 @@
       "unit": null,
       "values": [
          "10-CCDs",
+         "12-CCDs",
+         "14-CCDs",
          "2-CCDs",
          "3-CCDs",
          "4-CCDs",
@@ -1198,8 +1223,30 @@
          "62",
          "63",
          "64",
+         "65",
+         "66",
+         "67",
+         "68",
+         "69",
          "7",
+         "70",
+         "71",
+         "72",
+         "73",
+         "74",
+         "75",
+         "76",
+         "77",
+         "78",
+         "79",
          "8",
+         "80",
+         "81",
+         "82",
+         "83",
+         "84",
+         "85",
+         "86",
          "9",
          "all",
          "platform-default"
@@ -1273,8 +1320,30 @@
          "62",
          "63",
          "64",
+         "65",
+         "66",
+         "67",
+         "68",
+         "69",
          "7",
+         "70",
+         "71",
+         "72",
+         "73",
+         "74",
+         "75",
+         "76",
+         "77",
+         "78",
+         "79",
          "8",
+         "80",
+         "81",
+         "82",
+         "83",
+         "84",
+         "85",
+         "86",
          "9",
          "All",
          "Platform Default"
@@ -1385,12 +1454,20 @@
       "feature_group": "Processor",
       "legacy_values": [
          "auto",
+         "eight--8---0-",
+         "eleven--11---0-",
+         "fifteen--15---0-",
          "five--5---0-",
          "four--4---0-",
+         "fourteen--14---0-",
+         "nine--9---0-",
          "one--1---0-",
          "seven--7---0-",
          "six--6---0-",
+         "ten--10---0-",
+         "thirteen--13---0-",
          "three--3---0-",
+         "twelve--12---0-",
          "two--2---0-",
          "platform-default"
       ],
@@ -1403,12 +1480,20 @@
       "unit": null,
       "values": [
          "Auto",
+         "EIGHT--8---0-",
+         "ELEVEN--11---0-",
+         "FIFTEEN--15---0-",
          "FIVE--5---0-",
          "FOUR--4---0-",
+         "FOURTEEN--14---0-",
+         "NINE--9---0-",
          "ONE--1---0-",
          "SEVEN--7---0-",
          "SIX--6---0-",
+         "TEN--10---0-",
+         "THIRTEEN--13---0-",
          "THREE--3---0-",
+         "TWELVE--12---0-",
          "TWO--2---0-",
          "Platform Default"
       ]
@@ -1621,6 +1706,7 @@
       "available_in_legacy_mode": true,
       "feature_group": "Processor Prefetch Config",
       "legacy_values": [
+         "auto",
          "disabled",
          "enabled",
          "platform-default"
@@ -1633,6 +1719,7 @@
       "type": "enum",
       "unit": null,
       "values": [
+         "Auto",
          "Disabled",
          "Enabled",
          "Platform Default"
@@ -2287,8 +2374,12 @@
       "available_in_legacy_mode": false,
       "feature_group": "External SSC Enable",
       "legacy_values": [
+         "0p3_percent",
+         "0p5_percent",
          "disabled",
          "enabled",
+         "hardware",
+         "off",
          "platform-default"
       ],
       "maximum": null,
@@ -2299,8 +2390,12 @@
       "type": "enum",
       "unit": null,
       "values": [
+         "0P3_Percent",
+         "0P5_Percent",
          "Disabled",
          "Enabled",
+         "Hardware",
+         "Off",
          "Platform Default"
       ]
    },
@@ -2879,6 +2974,171 @@
          "Platform Default"
       ]
    },
+   "front_nvme25_link_speed": {
+      "available_in_legacy_mode": false,
+      "feature_group": "PCI Slot LINK Speed",
+      "legacy_values": [
+         "auto",
+         "disabled",
+         "enabled",
+         "gen1",
+         "gen2",
+         "gen3",
+         "gen4",
+         "gen5",
+         "platform-default"
+      ],
+      "maximum": null,
+      "minimum": null,
+      "param_name": "Front NVME25 Link Speed",
+      "step": null,
+      "target_name": "PcieSlotFrontNvme25LinkSpeed",
+      "type": "enum",
+      "unit": null,
+      "values": [
+         "Auto",
+         "Disabled",
+         "Enabled",
+         "GEN1",
+         "GEN2",
+         "GEN3",
+         "GEN4",
+         "GEN5",
+         "Platform Default"
+      ]
+   },
+   "front_nvme26_link_speed": {
+      "available_in_legacy_mode": false,
+      "feature_group": "PCI Slot LINK Speed",
+      "legacy_values": [
+         "auto",
+         "disabled",
+         "enabled",
+         "gen1",
+         "gen2",
+         "gen3",
+         "gen4",
+         "gen5",
+         "platform-default"
+      ],
+      "maximum": null,
+      "minimum": null,
+      "param_name": "Front NVME26 Link Speed",
+      "step": null,
+      "target_name": "PcieSlotFrontNvme26LinkSpeed",
+      "type": "enum",
+      "unit": null,
+      "values": [
+         "Auto",
+         "Disabled",
+         "Enabled",
+         "GEN1",
+         "GEN2",
+         "GEN3",
+         "GEN4",
+         "GEN5",
+         "Platform Default"
+      ]
+   },
+   "front_nvme27_link_speed": {
+      "available_in_legacy_mode": false,
+      "feature_group": "PCI Slot LINK Speed",
+      "legacy_values": [
+         "auto",
+         "disabled",
+         "enabled",
+         "gen1",
+         "gen2",
+         "gen3",
+         "gen4",
+         "gen5",
+         "platform-default"
+      ],
+      "maximum": null,
+      "minimum": null,
+      "param_name": "Front NVME27 Link Speed",
+      "step": null,
+      "target_name": "PcieSlotFrontNvme27LinkSpeed",
+      "type": "enum",
+      "unit": null,
+      "values": [
+         "Auto",
+         "Disabled",
+         "Enabled",
+         "GEN1",
+         "GEN2",
+         "GEN3",
+         "GEN4",
+         "GEN5",
+         "Platform Default"
+      ]
+   },
+   "front_nvme28_link_speed": {
+      "available_in_legacy_mode": false,
+      "feature_group": "PCI Slot LINK Speed",
+      "legacy_values": [
+         "auto",
+         "disabled",
+         "enabled",
+         "gen1",
+         "gen2",
+         "gen3",
+         "gen4",
+         "gen5",
+         "platform-default"
+      ],
+      "maximum": null,
+      "minimum": null,
+      "param_name": "Front NVME28 Link Speed",
+      "step": null,
+      "target_name": "PcieSlotFrontNvme28LinkSpeed",
+      "type": "enum",
+      "unit": null,
+      "values": [
+         "Auto",
+         "Disabled",
+         "Enabled",
+         "GEN1",
+         "GEN2",
+         "GEN3",
+         "GEN4",
+         "GEN5",
+         "Platform Default"
+      ]
+   },
+   "front_nvme29_link_speed": {
+      "available_in_legacy_mode": false,
+      "feature_group": "PCI Slot LINK Speed",
+      "legacy_values": [
+         "auto",
+         "disabled",
+         "enabled",
+         "gen1",
+         "gen2",
+         "gen3",
+         "gen4",
+         "gen5",
+         "platform-default"
+      ],
+      "maximum": null,
+      "minimum": null,
+      "param_name": "Front NVME29 Link Speed",
+      "step": null,
+      "target_name": "PcieSlotFrontNvme29LinkSpeed",
+      "type": "enum",
+      "unit": null,
+      "values": [
+         "Auto",
+         "Disabled",
+         "Enabled",
+         "GEN1",
+         "GEN2",
+         "GEN3",
+         "GEN4",
+         "GEN5",
+         "Platform Default"
+      ]
+   },
    "front_nvme2_link_speed": {
       "available_in_legacy_mode": false,
       "feature_group": "PCI Slot LINK Speed",
@@ -2907,6 +3167,105 @@
          "GEN2",
          "GEN3",
          "GEN4",
+         "Platform Default"
+      ]
+   },
+   "front_nvme30_link_speed": {
+      "available_in_legacy_mode": false,
+      "feature_group": "PCI Slot LINK Speed",
+      "legacy_values": [
+         "auto",
+         "disabled",
+         "enabled",
+         "gen1",
+         "gen2",
+         "gen3",
+         "gen4",
+         "gen5",
+         "platform-default"
+      ],
+      "maximum": null,
+      "minimum": null,
+      "param_name": "Front NVME30 Link Speed",
+      "step": null,
+      "target_name": "PcieSlotFrontNvme30LinkSpeed",
+      "type": "enum",
+      "unit": null,
+      "values": [
+         "Auto",
+         "Disabled",
+         "Enabled",
+         "GEN1",
+         "GEN2",
+         "GEN3",
+         "GEN4",
+         "GEN5",
+         "Platform Default"
+      ]
+   },
+   "front_nvme31_link_speed": {
+      "available_in_legacy_mode": false,
+      "feature_group": "PCI Slot LINK Speed",
+      "legacy_values": [
+         "auto",
+         "disabled",
+         "enabled",
+         "gen1",
+         "gen2",
+         "gen3",
+         "gen4",
+         "gen5",
+         "platform-default"
+      ],
+      "maximum": null,
+      "minimum": null,
+      "param_name": "Front NVME31 Link Speed",
+      "step": null,
+      "target_name": "PcieSlotFrontNvme31LinkSpeed",
+      "type": "enum",
+      "unit": null,
+      "values": [
+         "Auto",
+         "Disabled",
+         "Enabled",
+         "GEN1",
+         "GEN2",
+         "GEN3",
+         "GEN4",
+         "GEN5",
+         "Platform Default"
+      ]
+   },
+   "front_nvme32_link_speed": {
+      "available_in_legacy_mode": false,
+      "feature_group": "PCI Slot LINK Speed",
+      "legacy_values": [
+         "auto",
+         "disabled",
+         "enabled",
+         "gen1",
+         "gen2",
+         "gen3",
+         "gen4",
+         "gen5",
+         "platform-default"
+      ],
+      "maximum": null,
+      "minimum": null,
+      "param_name": "Front NVME32 Link Speed",
+      "step": null,
+      "target_name": "PcieSlotFrontNvme32LinkSpeed",
+      "type": "enum",
+      "unit": null,
+      "values": [
+         "Auto",
+         "Disabled",
+         "Enabled",
+         "GEN1",
+         "GEN2",
+         "GEN3",
+         "GEN4",
+         "GEN5",
          "Platform Default"
       ]
    },
@@ -3449,6 +3808,111 @@
          "Platform Default"
       ]
    },
+   "front_nvme_25_optionrom": {
+      "available_in_legacy_mode": false,
+      "feature_group": "PCI Slot OptionROM Enable",
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "platform-default"
+      ],
+      "maximum": null,
+      "minimum": null,
+      "param_name": "Front Nvme-25 OptionRom",
+      "step": null,
+      "target_name": "PcieSlotFrontNvme25OptionROM",
+      "type": "enum",
+      "unit": null,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ]
+   },
+   "front_nvme_26_optionrom": {
+      "available_in_legacy_mode": false,
+      "feature_group": "PCI Slot OptionROM Enable",
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "platform-default"
+      ],
+      "maximum": null,
+      "minimum": null,
+      "param_name": "Front Nvme-26 OptionRom",
+      "step": null,
+      "target_name": "PcieSlotFrontNvme26OptionROM",
+      "type": "enum",
+      "unit": null,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ]
+   },
+   "front_nvme_27_optionrom": {
+      "available_in_legacy_mode": false,
+      "feature_group": "PCI Slot OptionROM Enable",
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "platform-default"
+      ],
+      "maximum": null,
+      "minimum": null,
+      "param_name": "Front Nvme-27 OptionRom",
+      "step": null,
+      "target_name": "PcieSlotFrontNvme27OptionROM",
+      "type": "enum",
+      "unit": null,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ]
+   },
+   "front_nvme_28_optionrom": {
+      "available_in_legacy_mode": false,
+      "feature_group": "PCI Slot OptionROM Enable",
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "platform-default"
+      ],
+      "maximum": null,
+      "minimum": null,
+      "param_name": "Front Nvme-28 OptionRom",
+      "step": null,
+      "target_name": "PcieSlotFrontNvme28OptionROM",
+      "type": "enum",
+      "unit": null,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ]
+   },
+   "front_nvme_29_optionrom": {
+      "available_in_legacy_mode": false,
+      "feature_group": "PCI Slot OptionROM Enable",
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "platform-default"
+      ],
+      "maximum": null,
+      "minimum": null,
+      "param_name": "Front Nvme-29 OptionRom",
+      "step": null,
+      "target_name": "PcieSlotFrontNvme29OptionROM",
+      "type": "enum",
+      "unit": null,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ]
+   },
    "front_nvme_2_optionrom": {
       "available_in_legacy_mode": false,
       "feature_group": "PCI Slot OptionROM Enable",
@@ -3462,6 +3926,69 @@
       "param_name": "Front Nvme-2 OptionRom",
       "step": null,
       "target_name": "PcieSlotFrontNvme2OptionROM",
+      "type": "enum",
+      "unit": null,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ]
+   },
+   "front_nvme_30_optionrom": {
+      "available_in_legacy_mode": false,
+      "feature_group": "PCI Slot OptionROM Enable",
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "platform-default"
+      ],
+      "maximum": null,
+      "minimum": null,
+      "param_name": "Front Nvme-30 OptionRom",
+      "step": null,
+      "target_name": "PcieSlotFrontNvme30OptionROM",
+      "type": "enum",
+      "unit": null,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ]
+   },
+   "front_nvme_31_optionrom": {
+      "available_in_legacy_mode": false,
+      "feature_group": "PCI Slot OptionROM Enable",
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "platform-default"
+      ],
+      "maximum": null,
+      "minimum": null,
+      "param_name": "Front Nvme-31 OptionRom",
+      "step": null,
+      "target_name": "PcieSlotFrontNvme31OptionROM",
+      "type": "enum",
+      "unit": null,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ]
+   },
+   "front_nvme_32_optionrom": {
+      "available_in_legacy_mode": false,
+      "feature_group": "PCI Slot OptionROM Enable",
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "platform-default"
+      ],
+      "maximum": null,
+      "minimum": null,
+      "param_name": "Front Nvme-32 OptionRom",
+      "step": null,
+      "target_name": "PcieSlotFrontNvme32OptionROM",
       "type": "enum",
       "unit": null,
       "values": [
@@ -3851,11 +4378,17 @@
       "available_in_legacy_mode": false,
       "feature_group": "IntelSpeedSelect Configuration",
       "legacy_values": [
+         "auto",
          "base",
          "config-1",
          "config-2",
          "config-3",
          "config-4",
+         "level-0",
+         "level-1",
+         "level-2",
+         "level-3",
+         "level-4",
          "platform-default"
       ],
       "maximum": null,
@@ -3866,11 +4399,17 @@
       "type": "enum",
       "unit": null,
       "values": [
+         "Auto",
          "Base",
          "Config-1",
          "Config-2",
          "Config-3",
          "Config-4",
+         "Level-0",
+         "Level-1",
+         "Level-2",
+         "Level-3",
+         "Level-4",
          "Platform Default"
       ]
    },
@@ -4450,6 +4989,27 @@
       "unit": null,
       "values": [
          "Auto",
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ]
+   },
+   "latency_optimized_mode": {
+      "available_in_legacy_mode": false,
+      "feature_group": "Latency Optimized Mode",
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "platform-default"
+      ],
+      "maximum": null,
+      "minimum": null,
+      "param_name": "Latency Optimized Mode",
+      "step": null,
+      "target_name": "LatencyOptimizedMode",
+      "type": "enum",
+      "unit": null,
+      "values": [
          "Disabled",
          "Enabled",
          "Platform Default"
@@ -5054,6 +5614,7 @@
          "4t",
          "512g",
          "56t",
+         "auto",
          "platform-default"
       ],
       "maximum": null,
@@ -5073,6 +5634,7 @@
          "4T",
          "512G",
          "56T",
+         "Auto",
          "Platform Default"
       ]
    },
@@ -5084,8 +5646,10 @@
          "16g",
          "1g",
          "256g",
+         "32g",
          "4g",
          "64g",
+         "auto",
          "platform-default"
       ],
       "maximum": null,
@@ -5100,8 +5664,10 @@
          "16G",
          "1G",
          "256G",
+         "32G",
          "4G",
          "64G",
+         "Auto",
          "Platform Default"
       ]
    },
@@ -7920,6 +8486,9 @@
       "available_in_legacy_mode": false,
       "feature_group": "Processor",
       "legacy_values": [
+         "auto",
+         "balanced-core-memory-performance-mode",
+         "balanced-core-performance-mode",
          "balanced-memory-performance-mode",
          "efficiency-mode",
          "high-performance-mode",
@@ -7934,6 +8503,9 @@
       "type": "enum",
       "unit": null,
       "values": [
+         "Auto",
+         "Balanced-Core-Memory-Performance-Mode",
+         "Balanced-Core-Performance-Mode",
          "Balanced-Memory-Performance-Mode",
          "Efficiency-Mode",
          "High-Performance-Mode",
@@ -7963,6 +8535,27 @@
          "Disabled",
          "Energy-Efficient",
          "Performance",
+         "Platform Default"
+      ]
+   },
+   "preboot_dma_protection": {
+      "available_in_legacy_mode": false,
+      "feature_group": "PreBoot DMA Protection",
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "platform-default"
+      ],
+      "maximum": null,
+      "minimum": null,
+      "param_name": "PreBoot DMA Protection",
+      "step": null,
+      "target_name": "PreBootDMAProtection",
+      "type": "enum",
+      "unit": null,
+      "values": [
+         "Disabled",
+         "Enabled",
          "Platform Default"
       ]
    },
@@ -8105,6 +8698,7 @@
       "available_in_legacy_mode": true,
       "feature_group": "Processor C6 Report",
       "legacy_values": [
+         "auto",
          "disabled",
          "enabled",
          "platform-default"
@@ -8117,6 +8711,7 @@
       "type": "enum",
       "unit": null,
       "values": [
+         "Auto",
          "Disabled",
          "Enabled",
          "Platform Default"
@@ -8985,6 +9580,7 @@
          "change-to-new-random-owner-epochs",
          "manual-user-defined-owner-epochs",
          "sgx-owner-epoch-activated",
+         "sgx-owner-epoch-deactivated",
          "platform-default"
       ],
       "maximum": null,
@@ -8998,6 +9594,7 @@
          "Change-to-New-Random-Owner-EPOCHs",
          "Manual-User-Defined-Owner-EPOCHs",
          "SGX-Owner-EPOCH-activated",
+         "SGX-Owner-EPOCH-deactivated",
          "Platform Default"
       ]
    },
@@ -10392,6 +10989,27 @@
          "Platform Default"
       ]
    },
+   "uefi_memory_map_special_purpose_memory_flag": {
+      "available_in_legacy_mode": false,
+      "feature_group": "Mem Special Flag",
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "platform-default"
+      ],
+      "maximum": null,
+      "minimum": null,
+      "param_name": "UEFI Memory Map Special Purpose Memory Flag",
+      "step": null,
+      "target_name": "UefiMemMapSpFlagEn",
+      "type": "enum",
+      "unit": null,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ]
+   },
    "uefi_os_use_legacy_video": {
       "available_in_legacy_mode": true,
       "feature_group": "UEFI OS use legacy video",
@@ -10442,6 +11060,8 @@
       "legacy_values": [
          "disabled",
          "enabled",
+         "mode-0",
+         "mode-1",
          "platform-default"
       ],
       "maximum": null,
@@ -10454,6 +11074,8 @@
       "values": [
          "Disabled",
          "Enabled",
+         "Mode-0",
+         "Mode-1",
          "Platform Default"
       ]
    },
@@ -10492,6 +11114,7 @@
          "14.4gt-s",
          "16.0gt-s",
          "20.0gt-s",
+         "24.0gt-s",
          "9.6gt-s",
          "auto",
          "use-per-link-setting",
@@ -10511,6 +11134,7 @@
          "14.4GT-s",
          "16.0GT-s",
          "20.0GT-s",
+         "24.0GT-s",
          "9.6GT-s",
          "Auto",
          "Use-Per-Link-Setting",

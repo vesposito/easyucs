@@ -40,6 +40,7 @@
             "err",
             "high-power",
             "low-power",
+            "max-cooling",
             "max-power",
             "na",
             "no-update",
@@ -54,6 +55,15 @@
          "enum": [
             "Disable",
             "Enable"
+         ]
+      },
+      "cpu_package_power_limit": {
+         "description": "CPU Package Power Limit of Power Control Policy",
+         "type": "string",
+         "enum": [
+            "Default",
+            "Min",
+            "Max"
          ]
       },
       "power_capping": {

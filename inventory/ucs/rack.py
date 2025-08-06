@@ -381,6 +381,77 @@ class UcsSystemRack(UcsRack, UcsSystemInventoryObject):
             elif riser3b:
                 self.pcie_risers.append({"id": "3", "sku": "UCSC-RIS3B-245M8"})
 
+        # We also do this for C220 M8, since it is mandatory for the draw operation
+        elif any(self.sku.startswith(x) for x in ["UCSC-C220-M8"]):
+            riser1a = False
+            riser2a = False
+            riser3a = False
+            if self.adaptors:
+                for adaptor in self.adaptors:
+                    if adaptor.pci_slot in ["1"]:
+                        riser1a = True
+                    if adaptor.pci_slot in ["2"]:
+                        riser2a = True
+                    elif adaptor.pci_slot in ["3"]:
+                        riser3a = True
+
+            self.pcie_risers = []
+            if riser1a:
+                self.pcie_risers.append({"id": "1", "sku": "UCSC-RIS1A-220M8"})
+            if riser2a:
+                self.pcie_risers.append({"id": "2", "sku": "UCSC-RIS2A-220M8"})
+            if riser3a:
+                self.pcie_risers.append({"id": "3", "sku": "UCSC-RIS3A-220M8"})
+
+        # We also do this for C240 M8, since it is mandatory for the draw operation
+        elif any(self.sku.startswith(x) for x in ["UCSC-C240-M8"]):
+            riser1b = False
+            riser1d = False
+            riser3b = False
+            riser3d = False
+            if self.storage_controllers:
+                for storage_controller in self.storage_controllers:
+                    if storage_controller.disks:
+                        for disk in storage_controller.disks:
+                            if disk.id in ["101", "102"]:
+                                if self.sku.endswith("E3S"):
+                                    riser1d = True
+                                else:
+                                    riser1b = True
+                            elif disk.id in ["103", "104"]:
+                                if self.sku.endswith("E3S"):
+                                    riser3d = True
+                                else:
+                                    riser3b = True
+
+            riser1a = False
+            riser2a = False
+            riser3a = False
+            if self.adaptors:
+                for adaptor in self.adaptors:
+                    if adaptor.pci_slot in ["1", "2", "3"]:
+                        riser1a = True
+                    if adaptor.pci_slot in ["4", "5", "6"]:
+                        riser2a = True
+                    elif adaptor.pci_slot in ["8"]:
+                        riser3a = True
+
+            self.pcie_risers = []
+            if riser1a:
+                self.pcie_risers.append({"id": "1", "sku": "UCSC-RIS1A-240M8"})
+            elif riser1b:
+                self.pcie_risers.append({"id": "1", "sku": "UCSC-RIS1B-240M8"})
+            elif riser1d:
+                self.pcie_risers.append({"id": "1", "sku": "UCSC-RIS1D-240M8"})
+            if riser2a:
+                self.pcie_risers.append({"id": "2", "sku": "UCSC-RIS2A-240M8"})
+            if riser3a:
+                self.pcie_risers.append({"id": "3", "sku": "UCSC-RIS3A-240M8"})
+            elif riser3b:
+                self.pcie_risers.append({"id": "3", "sku": "UCSC-RIS3B-240M8"})
+            elif riser3d:
+                self.pcie_risers.append({"id": "3", "sku": "UCSC-RIS3D-240M8"})
+
         return False
 
     def _get_adaptors(self):
@@ -758,87 +829,160 @@ class UcsImcRack(UcsRack, UcsImcInventoryObject):
 
     def _find_pcie_risers(self):
         c240_m5_pcie_risers_matrix = {
-            "riser1": {"No Riser": "None",
-                       "(2 Slots x8, 1 Slot x16)": "UCSC-PCI-1-C240M5/UCSC-RIS-1-240M5",
-                       "1A(2 Slots x8, 1 Slot x16)": "UCSC-PCI-1-C240M5/UCSC-RIS-1-240M5",
-                       "(3 Slots x8)": "UCSC-PCI-1B-240M5/UCSC-RIS-1B-240M5",
-                       "1B(3 Slots x8)": "UCSC-PCI-1B-240M5/UCSC-RIS-1B-240M5",
-                       "(2 Slots x4, 1 Slot x16)": "UCSC-RS1C-240M5SD",
-                       "1C(2 Slots x4, 1 Slot x16)": "UCSC-RS1C-240M5SD"},
-            "riser2": {"No Riser": "None",
-                       "(1 Slot x8, 2 Slots x16)": "UCSC-PCI-2A-240M5/UCSC-RIS-2A-240M5",
-                       "2A(1 Slot x8, 2 Slots x16)": "UCSC-PCI-2A-240M5/UCSC-RIS-2A-240M5",
-                       "(3 Slots x8, 1 Slot x16)": "UCSC-PCI-2B-240M5/UCSC-RIS-2B-240M5",
-                       "2B(3 Slots x8, 1 Slot x16)": "UCSC-PCI-2B-240M5/UCSC-RIS-2B-240M5",
-                       "(5 Slots x8)": "UCSC-PCI-2C-240M5/UCSC-RIS-2C-240M5",
-                       "2C(5 Slots x8)": "UCSC-PCI-2C-240M5/UCSC-RIS-2C-240M5",
-                       "(2 Slots x4, 1 Slot x16, 1 Slot x8)": "UCSC-RS2E-240M5SD",
-                       "2E(2 Slots x4, 1 Slot x16, 1 Slot x8)": "UCSC-RS2E-240M5SD"}
+            "riser1": {
+                "No Riser": "None",
+                "(2 Slots x8, 1 Slot x16)": "UCSC-PCI-1-C240M5/UCSC-RIS-1-240M5",
+                "1A(2 Slots x8, 1 Slot x16)": "UCSC-PCI-1-C240M5/UCSC-RIS-1-240M5",
+                "(3 Slots x8)": "UCSC-PCI-1B-240M5/UCSC-RIS-1B-240M5",
+                "1B(3 Slots x8)": "UCSC-PCI-1B-240M5/UCSC-RIS-1B-240M5",
+                "(2 Slots x4, 1 Slot x16)": "UCSC-RS1C-240M5SD",
+                "1C(2 Slots x4, 1 Slot x16)": "UCSC-RS1C-240M5SD"
+            },
+            "riser2": {
+                "No Riser": "None",
+                "(1 Slot x8, 2 Slots x16)": "UCSC-PCI-2A-240M5/UCSC-RIS-2A-240M5",
+                "2A(1 Slot x8, 2 Slots x16)": "UCSC-PCI-2A-240M5/UCSC-RIS-2A-240M5",
+                "(3 Slots x8, 1 Slot x16)": "UCSC-PCI-2B-240M5/UCSC-RIS-2B-240M5",
+                "2B(3 Slots x8, 1 Slot x16)": "UCSC-PCI-2B-240M5/UCSC-RIS-2B-240M5",
+                "(5 Slots x8)": "UCSC-PCI-2C-240M5/UCSC-RIS-2C-240M5",
+                "2C(5 Slots x8)": "UCSC-PCI-2C-240M5/UCSC-RIS-2C-240M5",
+                "(2 Slots x4, 1 Slot x16, 1 Slot x8)": "UCSC-RS2E-240M5SD",
+                "2E(2 Slots x4, 1 Slot x16, 1 Slot x8)": "UCSC-RS2E-240M5SD"
+            }
         }
         c240_m6_pcie_risers_matrix = {
-            "riser1": {"No Riser": "None",
-                       "(2 Slots x8, 1 Slot x16)": "UCSC-RIS1A-240M6",
-                       "1A(2 Slots x8, 1 Slot x16)": "UCSC-RIS1A-240M6",
-                       "(2 Slots x8)": "UCSC-RIS1B-240M6",
-                       "1B(2 Slots x8)": "UCSC-RIS1B-240M6"},
-            "riser2": {"No Riser": "None",
-                       "(2 Slots x8, 1 Slot x16)": "UCSC-RIS2A-240M6",
-                       "2A(2 Slots x8, 1 Slot x16)": "UCSC-RIS2A-240M6"},
-            "riser3": {"No Riser": "None",
-                       "(2 Slots x8)": "UCSC-RIS3A-240M6",
-                       "3A(2 Slots x8)": "UCSC-RIS3A-240M6",
-                       "(1 Slot x8)": "UCSC-RIS3B-240M6",
-                       "3B(1 Slot x8)": "UCSC-RIS3B-240M6"}
+            "riser1": {
+                "No Riser": "None",
+                "(2 Slots x8, 1 Slot x16)": "UCSC-RIS1A-240M6",
+                "1A(2 Slots x8, 1 Slot x16)": "UCSC-RIS1A-240M6",
+                "(2 Slots x8)": "UCSC-RIS1B-240M6",
+                "1B(2 Slots x8)": "UCSC-RIS1B-240M6"
+            },
+            "riser2": {
+                "No Riser": "None",
+                "(2 Slots x8, 1 Slot x16)": "UCSC-RIS2A-240M6",
+                "2A(2 Slots x8, 1 Slot x16)": "UCSC-RIS2A-240M6"
+            },
+            "riser3": {
+                "No Riser": "None",
+                "(2 Slots x8)": "UCSC-RIS3A-240M6",
+                "3A(2 Slots x8)": "UCSC-RIS3A-240M6",
+                "(1 Slot x8)": "UCSC-RIS3B-240M6",
+                "3B(1 Slot x8)": "UCSC-RIS3B-240M6"
+            }
         }
         c220_m7_pcie_risers_matrix = {
-            "riser1": {"No Riser": "None",
-                       "1A(1 Slot x16)": "UCSC-RIS1A-22XM7",
-                       "1B(1 Slot x16)": "UCSC-RIS1B-22XM7",
-                       "1C(1 Slot x16)": "UCSC-RIS1C-22XM7"},
-            "riser2": {"No Riser": "None",
-                       "2A(1 Slot x16)": "UCSC-RIS2A-22XM7",
-                       "2B(1 Slot x16)": "UCSC-RIS2B-22XM7"},
-            "riser3": {"No Riser": "None",
-                       "3A(1 Slot x16)": "UCSC-RIS3A-22XM7",
-                       "3C(1 Slot x16)": "UCSC-RIS3C-22XM7"}
+            "riser1": {
+                "No Riser": "None",
+                "1A(1 Slot x16)": "UCSC-RIS1A-22XM7",
+                "1B(1 Slot x16)": "UCSC-RIS1B-22XM7",
+                "1C(1 Slot x16)": "UCSC-RIS1C-22XM7"
+            },
+            "riser2": {
+                "No Riser": "None",
+                "2A(1 Slot x16)": "UCSC-RIS2A-22XM7",
+                "2B(1 Slot x16)": "UCSC-RIS2B-22XM7"
+            },
+            "riser3": {
+                "No Riser": "None",
+                "3A(1 Slot x16)": "UCSC-RIS3A-22XM7",
+                "3C(1 Slot x16)": "UCSC-RIS3C-22XM7"
+            }
         }
         c240_m7_pcie_risers_matrix = {
-            "riser1": {"No Riser": "None",
-                       "(2 Slots x8, 1 Slot x16)": "UCSC-RIS1A-240-D",
-                       "1B(2 Slots x4, 1 Slot x8)": "UCSC-RIS1B-24XM7",
-                       "1C(2 Slots x16)": "UCSC-RIS1C-24XM7"},
-            "riser2": {"No Riser": "None",
-                       "(2 Slots x8, 1 Slot x16)": "UCSC-RIS2A-240-D",
-                       "2C(2 Slots x16)": "UCSC-RIS2C-24XM7"},
-            "riser3": {"No Riser": "None",
-                       "(2 Slots x8)": "UCSC-RIS3A-240-D",
-                       "3B(2 Slots x4)": "UCSC-RIS3B-24XM7",
-                       "3C(1 Slot x16)": "UCSC-RIS3C-240-D"}
+            "riser1": {
+                "No Riser": "None",
+                "(2 Slots x8, 1 Slot x16)": "UCSC-RIS1A-240-D",
+                "1B(2 Slots x4, 1 Slot x8)": "UCSC-RIS1B-24XM7",
+                "1C(2 Slots x16)": "UCSC-RIS1C-24XM7"
+            },
+            "riser2": {
+                "No Riser": "None",
+                "(2 Slots x8, 1 Slot x16)": "UCSC-RIS2A-240-D",
+                "2C(2 Slots x16)": "UCSC-RIS2C-24XM7"
+            },
+            "riser3": {
+                "No Riser": "None",
+                "(2 Slots x8)": "UCSC-RIS3A-240-D",
+                "3B(2 Slots x4)": "UCSC-RIS3B-24XM7",
+                "3C(1 Slot x16)": "UCSC-RIS3C-240-D"
+            }
         }
         c225_m8_pcie_risers_matrix = {
-            "riser1": {"No Riser": "None",
-                       "1A(1 Slot x16)": "UCSC-RIS1A-225M8",
-                       "1B(1 Slot x16)": "UCSC-RIS1B-225M8",
-                       "1C(1 Slot x16)": "UCSC-RIS1C-225M8"},
-            "riser2": {"No Riser": "None",
-                       "2A(1 Slot x16)": "UCSC-RIS2A-225M8",
-                       "2B(1 Slot x16)": "UCSC-RIS2B-225M8"},
-            "riser3": {"No Riser": "None",
-                       "3A(1 Slot x16)": "UCSC-RIS3A-225M8",
-                       "3C(1 Slot x16)": "UCSC-RIS3C-225M8"}
+            "riser1": {
+                "No Riser": "None",
+                "1A(1 Slot x16)": "UCSC-RIS1A-225M8",
+                "1B(1 Slot x16)": "UCSC-RIS1B-225M8",
+                "1C(1 Slot x16)": "UCSC-RIS1C-225M8"
+            },
+            "riser2": {
+                "No Riser": "None",
+                "2A(1 Slot x16)": "UCSC-RIS2A-225M8",
+                "2B(1 Slot x16)": "UCSC-RIS2B-225M8"
+            },
+            "riser3": {
+                "No Riser": "None",
+                "3A(1 Slot x16)": "UCSC-RIS3A-225M8",
+                "3C(1 Slot x16)": "UCSC-RIS3C-225M8"
+            }
         }
         c245_m8_pcie_risers_matrix = {
-            "riser1": {"No Riser": "None",
-                       "1A(2 Slots x8, 1 Slot x16)": "UCSC-RIS1A-240-D",
-                       "1B(2 Slots x4, 1 Slot x8)": "UCSC-RIS1B-245M8",
-                       "1C(2 Slots x16)": "UCSC-RIS1C-245M8"},
-            "riser2": {"No Riser": "None",
-                       "2A(2 Slots x8, 1 Slot x16)": "UCSC-RIS2A-240-D",
-                       "2C(2 Slots x16)": "UCSC-RIS2C-245M8"},
-            "riser3": {"No Riser": "None",
-                       "(2 Slots x8)": "UCSC-RIS3A-240-D",
-                       "3B(2 Slots x4)": "UCSC-RIS3B-245M8",
-                       "3C(1 Slot x16)": "UCSC-RIS3C-240-D"}
+            "riser1": {
+                "No Riser": "None",
+                "1A(2 Slots x8, 1 Slot x16)": "UCSC-RIS1A-240-D",
+                "1B(2 Slots x4, 1 Slot x8)": "UCSC-RIS1B-245M8",
+                "1C(2 Slots x16)": "UCSC-RIS1C-245M8"
+            },
+            "riser2": {
+                "No Riser": "None",
+                "2A(2 Slots x8, 1 Slot x16)": "UCSC-RIS2A-240-D",
+                "2C(2 Slots x16)": "UCSC-RIS2C-245M8"
+            },
+            "riser3": {
+                "No Riser": "None",
+                "(2 Slots x8)": "UCSC-RIS3A-240-D",
+                "3B(2 Slots x4)": "UCSC-RIS3B-245M8",
+                "3C(1 Slot x16)": "UCSC-RIS3C-240-D"
+            }
+        }
+        c220_m8_pcie_risers_matrix = {
+            "riser1": {
+                "No Riser": "None",
+                "1A(1 Slot x16)": "UCSC-RIS1A-220M8",
+                "1B(1 Slot x16)": "UCSC-RIS1B-220M8"
+            },
+            "riser2": {
+                "No Riser": "None",
+                "2A(1 Slot x16)": "UCSC-RIS2A-220M8"
+            },
+            "riser3": {
+                "No Riser": "None",
+                "3A(1 Slot x16)": "UCSC-RIS3A-220M8",
+                "3B(1 Slot x16)": "UCSC-RIS3B-220M8"
+            }
+        }
+        c240_m8_pcie_risers_matrix = {
+            "riser1": {
+                "No Riser": "None",
+                "1A(2 Slots x8, 1 Slot x16)": "UCSC-RIS1A-240M8",
+                "1B(2 Slots x4, 1 Slot x16)": "UCSC-RIS1B-240M8",
+                "1C(2 Slots x16)": "UCSC-RIS1C-240M8",
+                "1D(4 Slots x4)": "UCSC-RIS1D-240M8",
+                "1E(8 Slots x4)": "UCSC-RIS1E-240M8"
+            },
+            "riser2": {
+                "No Riser": "None",
+                "2A(2 Slots x8, 1 Slot x16)": "UCSC-RIS2A-240M8",
+                "2C(2 Slots x16)": "UCSC-RIS2C-240M8",
+                "2E(8 Slots x4)": "UCSC-RIS2E-240M8"
+            },
+            "riser3": {
+                "No Riser": "None",
+                "3A(2 Slots x8)": "UCSC-RIS3A-240M8",
+                "3B(4 Slots x4)": "UCSC-RIS3B-240M8",
+                "3C(1 Slot x16)": "UCSC-RIS3C-240M8",
+                "3D(4 Slots x4)": "UCSC-RIS3D-240M8",
+            }
         }
 
         # We check if we already have fetched the list of systemBoardUnit objects
@@ -1064,6 +1208,78 @@ class UcsImcRack(UcsRack, UcsImcInventoryObject):
                                     self.pcie_risers.append(pci_riser2_entry)
                                 continue
                         for (key, value) in c225_m8_pcie_risers_matrix["riser3"].items():
+                            if system_board_unit.riser3 == key:
+                                pci_riser3_entry = {"id": "3", "sku": value}
+                                if value not in ["None"]:
+                                    self.pcie_risers.append(pci_riser3_entry)
+                                continue
+
+                        if not pci_riser1_entry:
+                            self.logger(level="warning",
+                                        message="Could not find PCI riser 1 SKU for value: " + system_board_unit.riser1)
+                        if not pci_riser2_entry:
+                            self.logger(level="warning",
+                                        message="Could not find PCI riser 2 SKU for value: " + system_board_unit.riser2)
+                        if not pci_riser3_entry:
+                            self.logger(level="warning",
+                                        message="Could not find PCI riser 3 SKU for value: " + system_board_unit.riser3)
+
+                        return True
+
+                    # Handling C240 M8 servers
+                    if all(x in self.sku for x in ["C240", "M8"]):
+                        pci_riser1_entry = None
+                        pci_riser2_entry = None
+                        pci_riser3_entry = None
+                        for (key, value) in c240_m8_pcie_risers_matrix["riser1"].items():
+                            if system_board_unit.riser1 == key:
+                                pci_riser1_entry = {"id": "1", "sku": value}
+                                if value not in ["None"]:
+                                    self.pcie_risers.append(pci_riser1_entry)
+                                continue
+                        for (key, value) in c240_m8_pcie_risers_matrix["riser2"].items():
+                            if system_board_unit.riser2 == key:
+                                pci_riser2_entry = {"id": "2", "sku": value}
+                                if value not in ["None"]:
+                                    self.pcie_risers.append(pci_riser2_entry)
+                                continue
+                        for (key, value) in c240_m8_pcie_risers_matrix["riser3"].items():
+                            if system_board_unit.riser3 == key:
+                                pci_riser3_entry = {"id": "3", "sku": value}
+                                if value not in ["None"]:
+                                    self.pcie_risers.append(pci_riser3_entry)
+                                continue
+
+                        if not pci_riser1_entry:
+                            self.logger(level="warning",
+                                        message="Could not find PCI riser 1 SKU for value: " + system_board_unit.riser1)
+                        if not pci_riser2_entry:
+                            self.logger(level="warning",
+                                        message="Could not find PCI riser 2 SKU for value: " + system_board_unit.riser2)
+                        if not pci_riser3_entry:
+                            self.logger(level="warning",
+                                        message="Could not find PCI riser 3 SKU for value: " + system_board_unit.riser3)
+
+                        return True
+
+                    # Handling C220 M8 servers
+                    if all(x in self.sku for x in ["C220", "M8"]):
+                        pci_riser1_entry = None
+                        pci_riser2_entry = None
+                        pci_riser3_entry = None
+                        for (key, value) in c220_m8_pcie_risers_matrix["riser1"].items():
+                            if system_board_unit.riser1 == key:
+                                pci_riser1_entry = {"id": "1", "sku": value}
+                                if value not in ["None"]:
+                                    self.pcie_risers.append(pci_riser1_entry)
+                                continue
+                        for (key, value) in c220_m8_pcie_risers_matrix["riser2"].items():
+                            if system_board_unit.riser2 == key:
+                                pci_riser2_entry = {"id": "2", "sku": value}
+                                if value not in ["None"]:
+                                    self.pcie_risers.append(pci_riser2_entry)
+                                continue
+                        for (key, value) in c220_m8_pcie_risers_matrix["riser3"].items():
                             if system_board_unit.riser3 == key:
                                 pci_riser3_entry = {"id": "3", "sku": value}
                                 if value not in ["None"]:

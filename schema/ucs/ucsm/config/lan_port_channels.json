@@ -77,6 +77,11 @@
                      "disabled",
                      "enabled"
                   ]
+               },
+               "macsec_interface_configuration": {
+                  "description": "MACsec Interface Configuration assigned to Interface member of LAN Port-Channel",
+                  "type": "string",
+                  "pattern": "^[\\-\\.:_a-zA-Z0-9]{0,16}$"
                }
             },
             "additionalProperties": false,

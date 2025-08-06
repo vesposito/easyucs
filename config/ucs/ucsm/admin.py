@@ -2886,7 +2886,7 @@ class UcsSystemLdap(UcsSystemConfigObject):
                     if "aaaProviderRef" in self._config.sdk_objects:
                         for aaa_provider_ref in [aaa_provider_ref for aaa_provider_ref in
                                                  self._config.sdk_objects["aaaProviderRef"]
-                                                 if "sys/ldap-ext/" in aaa_provider_ref.dn]:
+                                                 if f"sys/ldap-ext/providergroup-{aaa_provider_group.name}" in aaa_provider_ref.dn]:
                             provider_ref.append(aaa_provider_ref.name)
                     provider_group["included_providers"] = provider_ref
                     self.provider_groups.append(provider_group)

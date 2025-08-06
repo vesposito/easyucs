@@ -5,6 +5,17 @@
    "description": "EasyUCS ucsc config section JSON schema",
    "type": "object",
    "properties": {
+      "authentication": {
+         "description": "EasyUCS config/authentication section",
+         "type": "array",
+         "items": {
+            "description": "EasyUCS config/authentication element",
+            "type": "object",
+            "$ref": "config/authentication.json"
+         },
+         "minItems": 1,
+         "maxItems": 1
+      },
       "date_time": {
          "description": "EasyUCS config/date_time section",
          "type": "array",
@@ -37,6 +48,16 @@
          },
          "minItems": 1,
          "maxItems": 1
+      },
+      "ldap": {
+         "description": "EasyUCS config/ldap section",
+         "type": "array",
+         "items": {
+            "description": "EasyUCS config/ldap element",
+            "type": "object",
+            "$ref": "config/ldap.json"
+         },
+         "minItems": 1
       },
       "local_users": {
          "description": "EasyUCS config/local_users section",

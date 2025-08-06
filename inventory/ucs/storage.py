@@ -1207,8 +1207,11 @@ class UcsImcStorageNvmeDrive(UcsStorageNvmeDrive, UcsImcInventoryObject):
             self.drive_type = "SSD"
 
             self.slot_type = None
-            if "FRONT-NVME-" in self.id:
-                self.slot_type = "sff-nvme"
+            if any(x in self.id for x in ["FRONT-NVME-", "REAR-NVME-"]):
+                if "NVMe-direct-E3.S-drives" in storage_nvme_physical_drive.dn:
+                    self.slot_type = "e3s-nvme"
+                else:
+                    self.slot_type = "sff-nvme"
                 regex = r"\d+"
                 res = re.search(regex, self.id)
                 if res is not None:
@@ -1222,7 +1225,10 @@ class UcsImcStorageNvmeDrive(UcsStorageNvmeDrive, UcsImcInventoryObject):
                                                       attribute_name="temperature")
             if self.temperature is not None:
                 if " degrees C" in self.temperature:
-                    self.temperature = float(self.temperature.split(" degrees C")[0])
+                    if "No or stale temperature data" in self.temperature:
+                        self.temperature = None
+                    else:
+                        self.temperature = float(self.temperature.split(" degrees C")[0])
                 else:
                     self.temperature = float(self.temperature)
 
@@ -1241,7 +1247,7 @@ class UcsImcStorageNvmeDrive(UcsStorageNvmeDrive, UcsImcInventoryObject):
                         else:
                             self.size_marketing = str(float(self.size / 1000000)) + "TB"
                     elif "TB" in size_marketing:
-                        self.size = float(res.group(1)) * 1000000
+                        self.size = int(float(res.group(1)) * 1000000)
                         if str(round(self.size / 1000000, ndigits=1))[-2:] == ".0":
                             self.size_marketing = str(int(self.size / 1000000)) + "TB"
                         else:

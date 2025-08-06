@@ -92,7 +92,10 @@
                   "enum": [
                      "Auto",
                      "Cl74",
-                     "Cl91"
+                     "Cl91",
+                     "Off",
+                     "rs-cons16",
+                     "rs-ieee"
                   ]
                },
                "enable_25gb_copper_cable_negotiation": {
@@ -237,7 +240,10 @@
                   "enum": [
                      "Auto",
                      "Cl74",
-                     "Cl91"
+                     "Cl91",
+                     "Off",
+                     "rs-cons16",
+                     "rs-ieee"
                   ]
                },
                "mode": {
@@ -349,7 +355,10 @@
                   "enum": [
                      "Auto",
                      "Cl74",
-                     "Cl91"
+                     "Cl91",
+                     "Off",
+                     "rs-cons16",
+                     "rs-ieee"
                   ]
                },
                "enable_25gb_copper_cable_negotiation": {
@@ -469,7 +478,10 @@
                   "enum": [
                      "Auto",
                      "Cl74",
-                     "Cl91"
+                     "Cl91",
+                     "Off",
+                     "rs-cons16",
+                     "rs-ieee"
                   ]
                },
                "link_control_policy": {
@@ -593,7 +605,10 @@
                   "enum": [
                      "Auto",
                      "Cl74",
-                     "Cl91"
+                     "Cl91",
+                     "Off",
+                     "rs-cons16",
+                     "rs-ieee"
                   ]
                },
                "enable_25gb_copper_cable_negotiation": {
@@ -672,6 +687,11 @@
                      ]
                   },
                   "minItems": 1
+               },
+               "macsec_policy": {
+                  "description": "Port Policy - LAN Port Channel - MACsec Policy",
+                  "type": "string",
+                  "pattern": "^[a-zA-Z0-9_.:-]{1,64}$"
                }
             },
             "additionalProperties": false,
@@ -734,7 +754,10 @@
                   "enum": [
                      "Auto",
                      "Cl74",
-                     "Cl91"
+                     "Cl91",
+                     "Off",
+                     "rs-cons16",
+                     "rs-ieee"
                   ]
                },
                "ethernet_network_group_policies": {
@@ -760,6 +783,11 @@
                "link_control_policy": {
                   "description": "Port Policy - LAN Uplink Port - Link Control Policy",
                   "type": "string"
+               },
+               "macsec_policy": {
+                  "description": "Port Policy - LAN Uplink Port - MACsec Policy",
+                  "type": "string",
+                  "pattern": "^[a-zA-Z0-9_.:-]{1,64}$"
                }
             },
             "additionalProperties": false,
@@ -1161,7 +1189,10 @@
                   "enum": [
                      "Auto",
                      "Cl74",
-                     "Cl91"
+                     "Cl91",
+                     "Off",
+                     "rs-cons16",
+                     "rs-ieee"
                   ]
                }
             },

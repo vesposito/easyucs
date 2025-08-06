@@ -56,6 +56,7 @@ class IntersightConfig(GenericConfig):
     _CONFIG_SECTION_ATTRIBUTES_MAP = {
         "account_details": "Account Details",
         "equipment": "Equipment",
+        "ldap": "LDAP",
         "orgs": "Organizations",
         "resource_groups": "Resource Groups",
         "roles": "Roles",
@@ -75,6 +76,7 @@ class IntersightConfig(GenericConfig):
 
         self.account_details = []
         self.equipment = []
+        self.ldap = []
         self.orgs = []
         self.resource_groups = []
         self.roles = []
@@ -112,6 +114,7 @@ class IntersightConfig(GenericConfig):
                                              "fabric_fcoe_uplink_pc_role", "fabric_fcoe_uplink_role",
                                              "fabric_flow_control_policy", "fabric_lan_pin_group",
                                              "fabric_link_aggregation_policy", "fabric_link_control_policy",
+                                             "fabric_mac_sec_policy",
                                              "fabric_multicast_policy", "fabric_port_mode", "fabric_port_policy",
                                              "fabric_san_pin_group", "fabric_server_role", "fabric_span_session",
                                              "fabric_span_dest_eth_port", "fabric_span_source_vlan", "fabric_span_source_vnic_eth_if",

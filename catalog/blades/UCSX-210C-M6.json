@@ -2,56 +2,18 @@
    "model_short_name": "X210c M6",
    "front_file_name": "UCSX-210C-M6.png",
    "front_file_size": [289,1755],
-   "disks_slots": [
+   "front_mezzanine_slots": [
       {
          "id": 1,
-         "format": "sff_m5",
-         "orientation": "vertical",
-         "coord": [16,132],
-         "size": [437,97]
-      },
-      {
-         "id": 2,
-         "format": "sff_m5",
-         "orientation": "vertical",
-         "coord": [129,132],
-         "size": [437,97]
-      },
-      {
-         "id": 3,
-         "format": "sff_m5",
-         "orientation": "vertical",
-         "coord": [16,622],
-         "size": [437,97]
-      },
-      {
-         "id": 4,
-         "format": "sff_m5",
-         "orientation": "vertical",
-         "coord": [129,622],
-         "size": [437,97]
-      },
-      {
-         "id": 5,
-         "format": "sff_m5",
-         "orientation": "vertical",
-         "coord": [16,1112],
-         "size": [437,97]
-      },
-      {
-         "id": 6,
-         "format": "sff_m5",
-         "orientation": "vertical",
-         "coord": [129,1112],
-         "size": [437,97]
+         "coord": [0,40],
+         "size": [226,1681]
       }
    ],
-   "disks_models": [
+   "front_mezzanine_models": [
       {
-         "name": "UCSC-BBLKD-S2",
+         "name": "UCSX-X10C-FMBK",
          "type": "blank",
-         "format": "sff_m5",
-         "description": "C-Series M5 SFF drive blanking panel"
+         "description": "Blanking Panel"
       }
    ],
    "imm_compatible": true,

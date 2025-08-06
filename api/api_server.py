@@ -13,21 +13,24 @@ import tarfile
 import threading
 import time
 import uuid
-
-from cryptography.fernet import Fernet
-from io import StringIO
 from functools import wraps
+from io import StringIO
+from urllib.parse import urlparse
 
+from OpenSSL import crypto
+from cryptography import x509
+from cryptography.fernet import Fernet
+from cryptography.hazmat.backends import default_backend
+from cryptography.x509.oid import NameOID
 from flask import Flask, Response, request, send_file, after_this_request
 from flask_cors import CORS
-from urllib.parse import urlparse
+from packaging.version import Version
 from werkzeug.exceptions import BadRequest
 from werkzeug.utils import secure_filename
-from packaging.version import Version
 
-from common import (decrypt, encrypt, extract, get_disk_space_usage, guess_image_metadata, read_json_file,
-                    validate_json)
 from __init__ import EASYUCS_ROOT, __version__
+from common import (decrypt, encrypt, extract, get_disk_space_usage, guess_image_metadata,
+                    read_json_file, validate_json)
 from device.device import GenericDevice
 
 app = Flask(__name__)
@@ -152,14 +155,42 @@ def timeout_wrapper(action_func):
         # We reset the task attribute on the device/repo
         obj.task = None
 
-        # If the device/repo has any queued tasks, then we move the oldest one to the system's (task manager's)
-        # task queue.
+        # If the device/repo has any queued tasks, move the oldest one to the system's (task manager's) task queue.
+        #
+        # Additional handling is required for devices that share the same endpoint ID
+        # (e.g., registered using different API keys but ultimately pointing to the same backend system).
+        # In such cases, queued tasks across all devices with the same endpoint must be considered.
+        # Example scenario:
+        # Devices A and B sharing same endpoint ID. A task is currently running on device A.
+        # If a new task is initiated on device B during that time, it will be queued under device B.
+        # Once the task on device A completes:
+        #   1. We first check if device A has any queued tasks to schedule.
+        #   2. If not, we then look for queued tasks on other devices (like B) sharing the same endpoint ID.
+
         if not obj.queued_tasks.empty():
             if not easyucs.task_manager.add_to_pending_tasks(obj.queued_tasks.get()):
                 # Should not happen theoretically
                 easyucs.logger(level="error",
                                message="Error while scheduling the device's/repo's queued task. System's task queue "
                                        "might be full")
+        else:
+            secondary_obj = None
+            # Find all devices sharing the same endpoint ID (may have different API credentials)
+            devices_with_same_endpoint = obj.parent.find_devices_by_endpoint_id(
+                endpoint_id=obj.metadata.device_endpoint_id
+            )
+            # Look for another device (sharing same endpoint ID) that has queued tasks
+            if devices_with_same_endpoint and len(devices_with_same_endpoint) > 1:
+                for device in devices_with_same_endpoint:
+                    if hasattr(device, "queued_tasks") and not device.queued_tasks.empty():
+                        secondary_obj = device
+                        break
+            # Move the next queued task from the device (sharing same endpoint ID) to pending tasks
+            if secondary_obj:
+                if not easyucs.task_manager.add_to_pending_tasks(secondary_obj.queued_tasks.get()):
+                    easyucs.logger(level="error",
+                                   message="Error while scheduling queued task from device "
+                                           "sharing the same endpoint ID. System's task queue might be full")
 
         sys.exit()
 
@@ -275,9 +306,10 @@ def get_object_from_db(object_type=None, uuid=None, device_uuid=None, task_uuid=
 
         elif object_type == "device":
             for attribute in ["bypass_connection_checks", "bypass_version_checks", "device_connector_claim_status",
-                              "device_connector_ownership_name", "device_connector_ownership_user", "device_name",
-                              "device_type", "device_type_long", "is_reachable", "key_id", "sub_device_uuids",
-                              "target", "timestamp_last_connected", "username", "use_proxy", "user_label"]:
+                              "device_connector_ownership_name", "device_connector_ownership_user",
+                              "device_endpoint_id", "device_name", "device_type", "device_type_long", "is_reachable",
+                              "key_id", "sub_device_uuids", "target", "timestamp_last_connected", "username",
+                              "use_proxy", "user_label"]:
                 if getattr(object_metadata, attribute) not in [None, ""]:
                     if "timestamp" in attribute:
                         obj[attribute] = getattr(object_metadata, attribute).isoformat()[:-3] + 'Z'
@@ -307,9 +339,9 @@ def get_object_from_db(object_type=None, uuid=None, device_uuid=None, task_uuid=
                     obj[attribute] = getattr(object_metadata, attribute)
 
         elif object_type == "task":
-            for attribute in ["config_uuid", "description", "device_name", "easyucs_version", "inventory_uuid", "name",
-                              "progress", "repo_file_path", "repo_file_uuid", "report_uuid", "status", "status_message",
-                              "target_device_uuid", "timestamp_start", "timestamp_stop"]:
+            for attribute in ["config_uuid", "description", "device_endpoint_id", "device_name", "easyucs_version",
+                              "inventory_uuid", "name", "progress", "repo_file_path", "repo_file_uuid", "report_uuid",
+                              "status", "status_message", "target_device_uuid", "timestamp_start", "timestamp_stop"]:
                 if getattr(object_metadata, attribute) not in [None, ""]:
                     if "timestamp" in attribute:
                         obj[attribute] = getattr(object_metadata, attribute).isoformat()[:-3] + 'Z'
@@ -561,8 +593,8 @@ def perform_action(device=None, action_type="", object_type="", task_uuid=None, 
     manager_target = None
     file_uuid = None
     file_path = None
-    if object_type in ["device"] and action_type in ["claim_to_intersight", "clear_config",
-                                                     "clear_sel_logs", "deploy_domain_profile", "fetch_os_firmware_data",
+    if object_type in ["device"] and action_type in ["claim_to_intersight", "clear_config", "clear_sel_logs",
+                                                     "deploy_domain_profile", "fetch_os_firmware_data",
                                                      "initial_setup", "regenerate_certificate", "reset",
                                                      "reset_device_connector"]:
         # The operation to perform is a direct call to the function at the device level
@@ -861,6 +893,9 @@ def backups():
             response = response_handle(code=500, response=str(err))
         return response
 
+    else:
+        return response_handle(code=500, response="Invalid HTTP method")
+
 
 @app.route("/configs", methods=['GET'])
 # @cross_origin()
@@ -900,6 +935,9 @@ def configs():
             response = response_handle(code=500, response=str(err))
         return response
 
+    else:
+        return response_handle(code=500, response="Invalid HTTP method")
+
 
 @app.route("/devices", methods=['GET', 'POST'])
 # @cross_origin()
@@ -909,9 +947,16 @@ def devices():
             filter_attribute = request.args.get("filter_attribute", None)
             filter_type = request.args.get("filter_type", None)
             filter_value = request.args.get("filter_value", None)
+            device_type = request.args.get("device_type", None)
 
             if filter_attribute is None or filter_type is None or filter_value is None:
-                filter = None
+                if device_type:
+                    if device_type not in ["cimc", "imm_domain", "intersight", "ucsc", "ucsm"]:
+                        response = response_handle(code=400, response="Invalid device type")
+                        return response
+                    filter = ["device_type", "==", device_type]
+                else:
+                    filter = None
             else:
                 filter = [filter_attribute, filter_type, filter_value]
 
@@ -939,7 +984,7 @@ def devices():
             response = response_handle(code=500, response=str(err))
         return response
 
-    if request.method == 'POST':
+    elif request.method == 'POST':
         try:
             payload = request.json
 
@@ -1044,53 +1089,9 @@ def devices():
         return response
 
 
-@app.route("/devices/types", methods=['GET'])
-# @cross_origin()
-def device_actions():
-    if request.method == 'GET':
-        try:
-            # Ordered by display_name
-            actions = {
-                "imm_domain": {
-                    "display_name": "IMM Domain",
-                    "available_actions": ["claim_to_intersight", "reset", "reset_device_connector", "test_connection"]
-                },
-                "intersight": {
-                    "display_name": "Intersight",
-                    "available_actions": ["clear_config", "test_connection"]
-                },
-                "cimc": {
-                    "display_name": "UCS IMC",
-                    "available_actions": ["claim_to_intersight", "clear_sel_logs", "clear_user_sessions",
-                                          "erase_all_virtual_drives", "erase_all_flexflash", "regenerate_certificate",
-                                          "reset", "reset_device_connector", "set_all_drives_status",
-                                          "test_connection"]
-                },
-                "ucsc": {
-                    "display_name": "UCS Central",
-                    "available_actions": ["clear_user_sessions", "test_connection"]
-                },
-                "ucsm": {
-                    "display_name": "UCS System",
-                    "available_actions": ["claim_to_intersight", "clear_sel_logs", "clear_user_sessions",
-                                          "decommission_all_rack_servers", "erase_all_virtual_drives",
-                                          "erase_all_flexflash", "regenerate_certificate", "reset",
-                                          "reset_device_connector", "test_connection"]
-                }
-            }
-
-            actions_dict = {"types": actions}
-
-            response = response_handle(actions_dict, 200)
-
-        except Exception as err:
-            response = response_handle(code=500, response=str(err))
-        return response
-
-
 @app.route("/devices/actions/add", methods=['POST'])
 # Method to add multiple devices from CSV file
-def device_actions_add():
+def devices_actions_add():
     if request.method == 'POST':
         try:
             if "devices_file" not in request.files:
@@ -1231,6 +1232,9 @@ def device_actions_add():
             response = response_handle(code=500, response=str(err))
         return response
 
+    else:
+        return response_handle(code=500, response="Invalid HTTP method")
+
 
 @app.route("/devices/actions/claim_to_intersight", methods=['POST'])
 # @cross_origin()
@@ -1321,6 +1325,9 @@ def devices_actions_claim_to_intersight():
             response = response_handle(code=500, response=str(err))
         return response
 
+    else:
+        return response_handle(code=500, response="Invalid HTTP method")
+
 
 @app.route("/devices/actions/delete", methods=['POST'])
 # @cross_origin()
@@ -1358,6 +1365,9 @@ def devices_actions_delete():
         except Exception as err:
             response = response_handle(code=500, response=str(err))
         return response
+
+    else:
+        return response_handle(code=500, response="Invalid HTTP method")
 
 
 @app.route("/devices/actions/reset_device_connector", methods=['POST'])
@@ -1432,6 +1442,57 @@ def devices_actions_reset_device_connector():
             response = response_handle(code=500, response=str(err))
         return response
 
+    else:
+        return response_handle(code=500, response="Invalid HTTP method")
+
+
+@app.route("/devices/types", methods=['GET'])
+# @cross_origin()
+def devices_types():
+    if request.method == 'GET':
+        try:
+            # Ordered by display_name
+            actions = {
+                "imm_domain": {
+                    "display_name": "IMM Domain",
+                    "available_actions": ["claim_to_intersight", "convert_to_imm_domain", "reset",
+                                          "reset_device_connector", "test_connection"]
+                },
+                "intersight": {
+                    "display_name": "Intersight",
+                    "available_actions": ["clear_config", "test_connection"]
+                },
+                "cimc": {
+                    "display_name": "UCS IMC",
+                    "available_actions": ["claim_to_intersight", "clear_sel_logs", "clear_user_sessions",
+                                          "erase_all_virtual_drives", "erase_all_flexflash", "regenerate_certificate",
+                                          "reset", "reset_device_connector", "set_all_drives_status",
+                                          "test_connection"]
+                },
+                "ucsc": {
+                    "display_name": "UCS Central",
+                    "available_actions": ["clear_user_sessions", "convert_to_intersight", "test_connection"]
+                },
+                "ucsm": {
+                    "display_name": "UCS System",
+                    "available_actions": ["claim_to_intersight", "clear_sel_logs", "clear_user_sessions",
+                                          "convert_to_intersight", "erase_all_virtual_drives", "erase_all_flexflash",
+                                          "regenerate_certificate", "reset", "reset_device_connector",
+                                          "test_connection"]
+                }
+            }
+
+            actions_dict = {"types": actions}
+
+            response = response_handle(actions_dict, 200)
+
+        except Exception as err:
+            response = response_handle(code=500, response=str(err))
+        return response
+
+    else:
+        return response_handle(code=500, response="Invalid HTTP method")
+
 
 @app.route("/devices/<device_uuid>", methods=['GET', 'DELETE', 'PUT'])
 # @cross_origin()
@@ -1470,7 +1531,7 @@ def device_uuid(device_uuid):
             response = response_handle(code=500, response=str(err))
         return response
 
-    if request.method == 'DELETE':
+    elif request.method == 'DELETE':
         try:
             device_metadata_list = easyucs.repository_manager.get_metadata(object_type="device", uuid=device_uuid)
             if len(device_metadata_list) == 1:
@@ -1485,7 +1546,7 @@ def device_uuid(device_uuid):
             response = response_handle(code=500, response=str(err))
         return response
 
-    if request.method == 'PUT':
+    elif request.method == 'PUT':
         try:
             device_metadata_list = easyucs.repository_manager.get_metadata(object_type="device", uuid=device_uuid)
             if len(device_metadata_list) == 1:
@@ -1567,6 +1628,9 @@ def device_uuid(device_uuid):
             response = response_handle(code=500, response=str(err))
         return response
 
+    else:
+        return response_handle(code=500, response="Invalid HTTP method")
+
 
 @app.route("/devices/<device_uuid>/actions", methods=['GET'])
 # @cross_origin()
@@ -1590,7 +1654,7 @@ def device_uuid_actions(device_uuid):
                     actions = ["clear_user_sessions", "test_connection"]
                 elif device_type in ["ucsm"]:
                     actions = ["claim_to_intersight", "clear_sel_logs", "clear_user_sessions",
-                               "decommission_all_rack_servers", "erase_all_virtual_drives", "erase_all_flexflash",
+                               "erase_all_virtual_drives", "erase_all_flexflash",
                                "regenerate_certificate", "reset", "reset_device_connector", "test_connection"]
 
                 actions_dict = {"actions": actions}
@@ -1602,66 +1666,72 @@ def device_uuid_actions(device_uuid):
             response = response_handle(code=500, response=str(err))
         return response
 
+    else:
+        return response_handle(code=500, response="Invalid HTTP method")
 
-@app.route("/devices/<device_uuid>/actions/deploy_domain_profile", methods=['POST'])
+
+@app.route("/devices/<device_uuid>/actions/change_mode", methods=['POST'])
 # @cross_origin()
-def devices_uuid_actions_deploy_domain_profile(device_uuid):
+def device_uuid_actions_change_mode(device_uuid):
     if request.method == 'POST':
         try:
             payload = request.json
+
             # Check if payload valid
-            if payload:
-                if not validate_json(json_data=payload,
-                                     schema_path="api/specs/device_actions_deploy_domain_profile.json",
-                                     logger=easyucs):
-                    response = response_handle(code=400, response="Invalid payload")
-                    return response
+            if not validate_json(json_data=payload, schema_path="api/specs/device_change_mode_post.json", logger=easyucs):
+                response = response_handle(response="Invalid Payload", code=400)
+                return response
+
             device = load_object(object_type="device", object_uuid=device_uuid)
-            if not device:
-                response = response_handle(response="Device not found with UUID: " + device_uuid, code=404)
-                return response
+            if device:
+                if device.task is not None:
+                    response = response_handle(response="Device already has a task running: " + str(device.task.uuid),
+                                               code=500)
+                    return response
 
-            action_kwargs = {
-                "domain_profile_name": payload.get("domain_profile_name", None),
-                "imm_domain_name": payload.get("imm_domain_name", None),
-                "org_name": payload.get("org_name", None)
-            }
+                if payload.get("password") == device.password:
+                    if device.metadata.device_type == "ucsm":
+                        task_uuid = easyucs.task_manager.add_task(name="ChangeModeToIntersightUcsSystem",
+                                                                  device_name=str(device.name),
+                                                                  device_uuid=str(device.uuid))
+                        action_kwargs = {
+                            "clear_sel_logs": payload.get("clear_sel_logs", False),
+                            "decommission_blade_servers": payload.get("decommission_blade_servers", False),
+                            "decommission_chassis": payload.get("decommission_chassis", True),
+                            "decommission_rack_servers": payload.get("decommission_rack_servers", True),
+                            "erase_flexflash": payload.get("erase_flexflash", False),
+                            "erase_virtual_drives": payload.get("erase_virtual_drives", False),
+                            "reset_device_connector": payload.get("reset_device_connector", True),
+                            "unregister_from_central": payload.get("unregister_from_central", False)
+                        }
 
-            try:
-                # We create a new task
-                if device.metadata.device_type in ["intersight"]:
-                    task_uuid = easyucs.task_manager.add_task(
-                        name="DeployDomainProfileIntersight", device_name=str(device.name),
-                        device_uuid=str(device.uuid)
-                    )
+                    pending_task = {
+                        "task_uuid": task_uuid,
+                        "action_type": "change_mode",
+                        "object_type": "device",
+                        "timeout": timeout_values["change_mode"],
+                        "action_kwargs": action_kwargs
+                    }
+
+                    if not easyucs.task_manager.add_to_pending_tasks(pending_task):
+                        response = response_handle(response="Error while scheduling the task. Task Queue might be Full."
+                                                            " Try again after some time.", code=400)
+                        return response
+                    response = response_handle(response={"task": str(task_uuid)}, code=200)
+
                 else:
-                    response = response_handle(response="Unsupported device type", code=500)
-                    return response
-
-                # We schedule the  action through the scheduler
-                pending_task = {
-                    "task_uuid": task_uuid,
-                    "action_type": "deploy_domain_profile",
-                    "object_type": "device",
-                    "timeout": timeout_values["deploy_domain_profile"],
-                    "action_kwargs": action_kwargs
-                }
-                if not easyucs.task_manager.add_to_pending_tasks(pending_task):
-                    response = response_handle(response="Error while scheduling the task. Task Queue might be Full."
-                                                        " Try again after some time.", code=400)
-                    return response
-
-            except Exception as err:
-                response = response_handle(response="Error while performing assign and deployment of domain profiles. " +
-                                                    str(err), code=500)
-                return response
-
-            response = response_handle(response={"task": str(task_uuid)}, code=200)
+                    response = response_handle(response="Admin password mismatch", code=400)
+            else:
+                response = response_handle(response="Device not found with UUID: " + device_uuid, code=404)
         except BadRequest as err:
             response = response_handle(code=err.code, response=str(err.description))
         except Exception as err:
+            easyucs.logger(level="error", message="Unexpected error while changing the mode of the device!")
             response = response_handle(code=500, response=str(err))
         return response
+
+    else:
+        return response_handle(code=500, response="Invalid HTTP method")
 
 
 @app.route("/devices/<device_uuid>/actions/claim_to_intersight", methods=['POST'])
@@ -1744,6 +1814,9 @@ def device_uuid_actions_claim_to_intersight(device_uuid):
             response = response_handle(code=500, response=str(err))
         return response
 
+    else:
+        return response_handle(code=500, response="Invalid HTTP method")
+
 
 @app.route("/devices/<device_uuid>/actions/clear_config", methods=['POST'])
 # @cross_origin()
@@ -1808,6 +1881,9 @@ def device_uuid_actions_clear_config(device_uuid):
             response = response_handle(response="Error while performing clear config: " + str(err), code=500)
         return response
 
+    else:
+        return response_handle(code=500, response="Invalid HTTP method")
+
 
 @app.route("/devices/<device_uuid>/actions/clear_sel_logs", methods=['POST'])
 # @cross_origin()
@@ -1854,6 +1930,73 @@ def device_uuid_actions_clear_sel_logs(device_uuid):
         except Exception as err:
             response = response_handle(response="Error while performing clear SEL logs: " + str(err), code=500)
         return response
+
+    else:
+        return response_handle(code=500, response="Invalid HTTP method")
+
+
+@app.route("/devices/<device_uuid>/actions/deploy_domain_profile", methods=['POST'])
+# @cross_origin()
+def device_uuid_actions_deploy_domain_profile(device_uuid):
+    if request.method == 'POST':
+        try:
+            payload = request.json
+            # Check if payload valid
+            if payload:
+                if not validate_json(json_data=payload,
+                                     schema_path="api/specs/device_actions_deploy_domain_profile.json",
+                                     logger=easyucs):
+                    response = response_handle(code=400, response="Invalid payload")
+                    return response
+            device = load_object(object_type="device", object_uuid=device_uuid)
+            if not device:
+                response = response_handle(response="Device not found with UUID: " + device_uuid, code=404)
+                return response
+
+            action_kwargs = {
+                "domain_profile_name": payload.get("domain_profile_name", None),
+                "imm_domain_name": payload.get("imm_domain_name", None),
+                "org_name": payload.get("org_name", None)
+            }
+
+            try:
+                # We create a new task
+                if device.metadata.device_type in ["intersight"]:
+                    task_uuid = easyucs.task_manager.add_task(
+                        name="DeployDomainProfileIntersight", device_name=str(device.name),
+                        device_uuid=str(device.uuid)
+                    )
+                else:
+                    response = response_handle(response="Unsupported device type", code=500)
+                    return response
+
+                # We schedule the  action through the scheduler
+                pending_task = {
+                    "task_uuid": task_uuid,
+                    "action_type": "deploy_domain_profile",
+                    "object_type": "device",
+                    "timeout": timeout_values["deploy_domain_profile"],
+                    "action_kwargs": action_kwargs
+                }
+                if not easyucs.task_manager.add_to_pending_tasks(pending_task):
+                    response = response_handle(response="Error while scheduling the task. Task Queue might be Full."
+                                                        " Try again after some time.", code=400)
+                    return response
+
+            except Exception as err:
+                response = response_handle(response="Error while performing assign and deployment of domain profiles. " +
+                                                    str(err), code=500)
+                return response
+
+            response = response_handle(response={"task": str(task_uuid)}, code=200)
+        except BadRequest as err:
+            response = response_handle(code=err.code, response=str(err.description))
+        except Exception as err:
+            response = response_handle(code=500, response=str(err))
+        return response
+
+    else:
+        return response_handle(code=500, response="Invalid HTTP method")
 
 
 @app.route("/devices/<device_uuid>/actions/fetch_config_and_inventory", methods=['POST'])
@@ -1915,10 +2058,13 @@ def device_uuid_actions_fetch_config_and_inventory(device_uuid):
             response = response_handle(code=500, response=str(err))
         return response
 
+    else:
+        return response_handle(code=500, response="Invalid HTTP method")
+
 
 @app.route("/devices/<device_uuid>/actions/initial_setup", methods=['POST'])
 # @cross_origin()
-def devices_uuid_actions_initial_setup(device_uuid):
+def device_uuid_actions_initial_setup(device_uuid):
     if request.method == 'POST':
         try:
             payload = request.json
@@ -1990,6 +2136,9 @@ def devices_uuid_actions_initial_setup(device_uuid):
             response = response_handle(code=500, response=str(err))
         return response
 
+    else:
+        return response_handle(code=500, response="Invalid HTTP method")
+
 
 @app.route("/devices/<device_uuid>/actions/regenerate_certificate", methods=['POST'])
 # @cross_origin()
@@ -2034,6 +2183,9 @@ def device_uuid_actions_regenerate_certificate(device_uuid):
         except Exception:
             response = response_handle(code=500)
         return response
+
+    else:
+        return response_handle(code=500, response="Invalid HTTP method")
 
 
 @app.route("/devices/<device_uuid>/actions/reset", methods=['POST'])
@@ -2111,66 +2263,8 @@ def device_uuid_actions_reset(device_uuid):
             response = response_handle(code=500)
         return response
 
-
-@app.route("/devices/<device_uuid>/actions/change_mode", methods=['POST'])
-# @cross_origin()
-def device_uuid_actions_change_mode(device_uuid):
-    if request.method == 'POST':
-        try:
-            payload = request.json
-
-            # Check if payload valid
-            if not validate_json(json_data=payload, schema_path="api/specs/device_change_mode_post.json", logger=easyucs):
-                response = response_handle(response="Invalid Payload", code=400)
-                return response
-
-            device = load_object(object_type="device", object_uuid=device_uuid)
-            if device:
-                if device.task is not None:
-                    response = response_handle(response="Device already has a task running: " + str(device.task.uuid),
-                                               code=500)
-                    return response
-
-                if payload.get("password") == device.password:
-                    if device.metadata.device_type == "ucsm":
-                        task_uuid = easyucs.task_manager.add_task(name="ChangeModeToIntersightUcsSystem",
-                                                                  device_name=str(device.name),
-                                                                  device_uuid=str(device.uuid))
-                        action_kwargs = {
-                            "clear_sel_logs": payload.get("clear_sel_logs", False),
-                            "decommission_blade_servers": payload.get("decommission_blade_servers", False),
-                            "decommission_chassis": payload.get("decommission_chassis", True),
-                            "decommission_rack_servers": payload.get("decommission_rack_servers", True),
-                            "erase_flexflash": payload.get("erase_flexflash", False),
-                            "erase_virtual_drives": payload.get("erase_virtual_drives", False),
-                            "reset_device_connector": payload.get("reset_device_connector", True),
-                            "unregister_from_central": payload.get("unregister_from_central", False)
-                        }
-
-                    pending_task = {
-                        "task_uuid": task_uuid,
-                        "action_type": "change_mode",
-                        "object_type": "device",
-                        "timeout": timeout_values["change_mode"],
-                        "action_kwargs": action_kwargs
-                    }
-
-                    if not easyucs.task_manager.add_to_pending_tasks(pending_task):
-                        response = response_handle(response="Error while scheduling the task. Task Queue might be Full."
-                                                            " Try again after some time.", code=400)
-                        return response
-                    response = response_handle(response={"task": str(task_uuid)}, code=200)
-
-                else:
-                    response = response_handle(response="Admin password mismatch", code=400)
-            else:
-                response = response_handle(response="Device not found with UUID: " + device_uuid, code=404)
-        except BadRequest as err:
-            response = response_handle(code=err.code, response=str(err.description))
-        except Exception as err:
-            easyucs.logger(level="error", message="Unexpected error while changing the mode of the device!")
-            response = response_handle(code=500, response=str(err))
-        return response
+    else:
+        return response_handle(code=500, response="Invalid HTTP method")
 
 
 @app.route("/devices/<device_uuid>/actions/reset_device_connector", methods=['POST'])
@@ -2223,6 +2317,9 @@ def device_uuid_actions_reset_device_connector(device_uuid):
             response = response_handle(response="Error while performing Reset Device Connector: " + str(err),
                                        code=500)
         return response
+
+    else:
+        return response_handle(code=500, response="Invalid HTTP method")
 
 
 @app.route("/devices/<device_uuid>/actions/test_connection", methods=['POST'])
@@ -2286,6 +2383,9 @@ def device_uuid_actions_test_connection(device_uuid):
             response = response_handle(code=500, response=str(err))
         return response
 
+    else:
+        return response_handle(code=500, response="Invalid HTTP method")
+
 
 @app.route("/devices/<device_uuid>/backups", methods=['GET'])
 # @cross_origin()
@@ -2325,6 +2425,9 @@ def device_uuid_backups(device_uuid):
             response = response_handle(code=500, response=str(err))
         return response
 
+    else:
+        return response_handle(code=500, response="Invalid HTTP method")
+
 
 @app.route("/devices/<device_uuid>/backups/actions", methods=['GET'])
 # @cross_origin()
@@ -2347,6 +2450,9 @@ def device_uuid_backups_actions(device_uuid):
         except Exception as err:
             response = response_handle(code=500, response=str(err))
         return response
+
+    else:
+        return response_handle(code=500, response="Invalid HTTP method")
 
 
 @app.route("/devices/<device_uuid>/backups/actions/delete", methods=['POST'])
@@ -2384,6 +2490,9 @@ def device_uuid_backups_actions_delete(device_uuid):
         except Exception as err:
             response = response_handle(code=500, response=str(err))
         return response
+
+    else:
+        return response_handle(code=500, response="Invalid HTTP method")
 
 
 @app.route("/devices/<device_uuid>/backups/actions/fetch", methods=['POST'])
@@ -2451,6 +2560,9 @@ def device_uuid_backups_actions_fetch(device_uuid):
             response = response_handle(code=500, response=str(err))
         return response
 
+    else:
+        return response_handle(code=500, response="Invalid HTTP method")
+
 
 @app.route("/devices/<device_uuid>/backups/<backup_uuid>", methods=['GET', 'DELETE'])
 # @cross_origin()
@@ -2489,7 +2601,7 @@ def device_uuid_backup_uuid(device_uuid, backup_uuid):
             response = response_handle(code=500, response=str(err))
         return response
 
-    if request.method == 'DELETE':
+    elif request.method == 'DELETE':
         try:
             backup_metadata_list = easyucs.repository_manager.get_metadata(object_type="backup", uuid=backup_uuid)
             if len(backup_metadata_list) == 1:
@@ -2502,6 +2614,9 @@ def device_uuid_backup_uuid(device_uuid, backup_uuid):
         except Exception as err:
             response = response_handle(code=500, response=str(err))
         return response
+
+    else:
+        return response_handle(code=500, response="Invalid HTTP method")
 
 
 @app.route("/devices/<device_uuid>/backups/<backup_uuid>/actions", methods=['GET'])
@@ -2533,6 +2648,9 @@ def device_uuid_backup_uuid_actions(device_uuid, backup_uuid):
             response = response_handle(code=500, response=str(err))
         return response
 
+    else:
+        return response_handle(code=500, response="Invalid HTTP method")
+
 
 @app.route("/devices/<device_uuid>/backups/<backup_uuid>/actions/download", methods=['GET'])
 # @cross_origin()
@@ -2561,6 +2679,9 @@ def device_uuid_backup_uuid_actions_download(device_uuid, backup_uuid):
         except Exception as err:
             response = response_handle(code=500, response=str(err))
         return response
+
+    else:
+        return response_handle(code=500, response="Invalid HTTP method")
 
 
 @app.route("/devices/<device_uuid>/cache", methods=['GET'])
@@ -2601,6 +2722,10 @@ def device_uuid_cache(device_uuid):
                             if not cache_details.get("os_firmware", {}).get(field):
                                 response = response_handle(response="OS and Firmware cached data not found", code=404)
                                 return response
+                        elif field in ["server_details"]:
+                            if not cache_details.get("servers"):
+                                response = response_handle(response="Server details cached data not found", code=404)
+                                return response
                         else:
                             if not cache_details.get(field):
                                 response = response_handle(response=f"{field} data not found", code=404)
@@ -2610,6 +2735,9 @@ def device_uuid_cache(device_uuid):
                         if field in ["os", "firmware"]:
                             if cache_details.get("os_firmware", {}).get(field):
                                 del cache_details["os_firmware"][field]
+                        elif field in ["server_details"]:
+                            if cache_details.get("servers"):
+                                del cache_details["servers"]
                         else:
                             if cache_details.get(field):
                                 del cache_details[field]
@@ -2622,6 +2750,9 @@ def device_uuid_cache(device_uuid):
             response = response_handle(code=500, response=str(err))
         return response
 
+    else:
+        return response_handle(code=500, response="Invalid HTTP method")
+
 
 @app.route("/devices/<device_uuid>/cache/actions/fetch", methods=['POST'])
 def device_uuid_cache_actions_fetch(device_uuid):
@@ -2633,6 +2764,10 @@ def device_uuid_cache_actions_fetch(device_uuid):
                     # We create a new task
                     if device.metadata.device_type in ["intersight"]:
                         task_uuid = easyucs.task_manager.add_task(name="FetchCacheIntersight",
+                                                                  device_name=str(device.name),
+                                                                  device_uuid=str(device.uuid))
+                    elif device.metadata.device_type in ["ucsc"]:
+                        task_uuid = easyucs.task_manager.add_task(name="FetchCacheUcsCentral",
                                                                   device_name=str(device.name),
                                                                   device_uuid=str(device.uuid))
                     elif device.metadata.device_type in ["ucsm"]:
@@ -2668,6 +2803,9 @@ def device_uuid_cache_actions_fetch(device_uuid):
         except Exception as err:
             response = response_handle(code=500, response=str(err))
         return response
+
+    else:
+        return response_handle(code=500, response="Invalid HTTP method")
 
 
 @app.route("/devices/<device_uuid>/cache/actions/fetch_os_firmware_data", methods=['POST'])
@@ -2715,6 +2853,9 @@ def device_uuid_cache_actions_fetch_os_firmware_data(device_uuid):
             response = response_handle(code=500, response=str(err))
         return response
 
+    else:
+        return response_handle(code=500, response="Invalid HTTP method")
+
 
 @app.route("/devices/<device_uuid>/cache/orgs", methods=['GET'])
 def device_uuid_cache_orgs(device_uuid):
@@ -2722,21 +2863,30 @@ def device_uuid_cache_orgs(device_uuid):
         try:
             device = load_object(object_type="device", object_uuid=device_uuid)
             if device:
-                if device.metadata.device_type not in ["intersight"]:
+                if device.metadata.device_type not in ["intersight", "ucsm", "ucsc"]:
                     response = response_handle(response="Invalid device type", code=400)
                     return response
 
-                cached_orgs = device.cache_manager.cache.get_orgs()
+            cached_orgs = device.cache_manager.cache.get_orgs()
+            if device.metadata.device_type == "intersight":
                 if cached_orgs.get("orgs", None):
                     response = response_handle(response={"orgs": cached_orgs["orgs"]}, code=200)
                 else:
                     easyucs.logger(level="info", message="No cached orgs were found. Showing the default org.")
                     response = response_handle(response={"orgs": cached_orgs}, code=200)
-            else:
-                response = response_handle(response="Device not found with UUID: " + device_uuid, code=404)
+
+            elif device.metadata.device_type in ["ucsm", "ucsc"]:
+                if not cached_orgs or not cached_orgs.get("orgs"):
+                    easyucs.logger(level="info", message="No cached orgs were found. Showing default root org.")
+                    response = response_handle(response=cached_orgs, code=200)
+                else:
+                    response = response_handle(response=cached_orgs, code=200)
         except Exception as err:
             response = response_handle(code=500, response=str(err))
         return response
+
+    else:
+        return response_handle(code=500, response="Invalid HTTP method")
 
 
 @app.route("/devices/<device_uuid>/configs", methods=['GET', 'POST'])
@@ -2776,7 +2926,7 @@ def device_uuid_configs(device_uuid):
             response = response_handle(code=500, response=str(err))
         return response
 
-    if request.method == 'POST':
+    elif request.method == 'POST':
         try:
             if request.form:
                 if not validate_json(json_data=request.form, schema_path="api/specs/config_post.json",
@@ -2837,6 +2987,9 @@ def device_uuid_configs(device_uuid):
             response = response_handle(code=500, response=str(err))
         return response
 
+    else:
+        return response_handle(code=500, response="Invalid HTTP method")
+
 
 @app.route("/devices/<device_uuid>/configs/actions", methods=['GET'])
 # @cross_origin()
@@ -2859,6 +3012,9 @@ def device_uuid_configs_actions(device_uuid):
         except Exception as err:
             response = response_handle(code=500, response=str(err))
         return response
+
+    else:
+        return response_handle(code=500, response="Invalid HTTP method")
 
 
 @app.route("/devices/<device_uuid>/configs/actions/delete", methods=['POST'])
@@ -2896,6 +3052,9 @@ def device_uuid_configs_actions_delete(device_uuid):
         except Exception as err:
             response = response_handle(code=500, response=str(err))
         return response
+
+    else:
+        return response_handle(code=500, response="Invalid HTTP method")
 
 
 @app.route("/devices/<device_uuid>/configs/actions/fetch", methods=['POST'])
@@ -2968,6 +3127,9 @@ def device_uuid_configs_actions_fetch(device_uuid):
             response = response_handle(code=500, response=str(err))
         return response
 
+    else:
+        return response_handle(code=500, response="Invalid HTTP method")
+
 
 @app.route("/devices/<device_uuid>/configs/<config_uuid>", methods=['GET', 'DELETE'])
 # @cross_origin()
@@ -3006,7 +3168,7 @@ def device_uuid_config_uuid(device_uuid, config_uuid):
             response = response_handle(code=500, response=str(err))
         return response
 
-    if request.method == 'DELETE':
+    elif request.method == 'DELETE':
         try:
             config_metadata_list = easyucs.repository_manager.get_metadata(object_type="config", uuid=config_uuid)
             if len(config_metadata_list) == 1:
@@ -3019,6 +3181,9 @@ def device_uuid_config_uuid(device_uuid, config_uuid):
         except Exception as err:
             response = response_handle(code=500, response=str(err))
         return response
+
+    else:
+        return response_handle(code=500, response="Invalid HTTP method")
 
 
 @app.route("/devices/<device_uuid>/configs/<config_uuid>/actions", methods=['GET'])
@@ -3049,6 +3214,9 @@ def device_uuid_config_uuid_actions(device_uuid, config_uuid):
             response = response_handle(code=500, response=str(err))
         return response
 
+    else:
+        return response_handle(code=500, response="Invalid HTTP method")
+
 
 @app.route("/devices/<device_uuid>/configs/<config_uuid>/actions/download", methods=['GET'])
 # @cross_origin()
@@ -3074,6 +3242,9 @@ def device_uuid_config_uuid_actions_download(device_uuid, config_uuid):
         except Exception as err:
             response = response_handle(code=500, response=str(err))
         return response
+
+    else:
+        return response_handle(code=500, response="Invalid HTTP method")
 
 
 @app.route("/devices/<device_uuid>/configs/<config_uuid>/actions/push", methods=['POST'])
@@ -3166,6 +3337,9 @@ def device_uuid_config_uuid_actions_push(device_uuid, config_uuid):
             response = response_handle(code=500, response=str(err))
         return response
 
+    else:
+        return response_handle(code=500, response="Invalid HTTP method")
+
 
 @app.route("/devices/<device_uuid>/configs/<config_uuid>/profiles", methods=['GET'])
 def device_uuid_config_uuid_profiles(device_uuid, config_uuid):
@@ -3191,6 +3365,90 @@ def device_uuid_config_uuid_profiles(device_uuid, config_uuid):
         except Exception as err:
             response = response_handle(code=500, response=str(err))
         return response
+
+    else:
+        return response_handle(code=500, response="Invalid HTTP method")
+
+
+@app.route("/devices/<device_uuid>/configs/<config_uuid>/orgs", methods=["GET"])
+def device_uuid_config_uuid_orgs(device_uuid, config_uuid):
+    try:
+        # Load the device object using its UUID
+        device = load_object(object_type="device", object_uuid=device_uuid)
+        if not device:
+            # If device is not found, return 404 response
+            return response_handle(response=f"Device not found with UUID: {device_uuid}", code=404)
+
+        if device.metadata.device_type not in ["intersight", "ucsm", "ucsc"]:
+            return response_handle(response="Invalid device type", code=400)
+
+        config = load_object(object_type="config", object_uuid=config_uuid, device=device)
+        if not config:
+            # If config is not found or there was an error loading it, return error response
+            msg = easyucs.api_error_message or f"Failed to load config with UUID {config_uuid}"
+            return response_handle(response=msg, code=400)
+
+        orgs_data = {}
+        if device.metadata.device_type == "intersight":
+            # Iterate over all organizations in the config
+            for org in config.orgs:
+                org_name = org.name
+                # Check if the org is shared (i.e., has shared_with_orgs list)
+                is_shared = bool(getattr(org, "shared_with_orgs", None))
+
+                # Check if the org has any profiles (server/domain/chassis and their templates)
+                has_profiles = any([
+                    getattr(org, "ucs_server_profiles", []),
+                    getattr(org, "ucs_server_profile_templates", []),
+                    getattr(org, "ucs_domain_profiles", []),
+                    getattr(org, "ucs_domain_profile_templates", []),
+                    getattr(org, "ucs_chassis_profiles", []),
+                    getattr(org, "ucs_chassis_profile_templates", []),
+                ])
+
+                # Populate the org data dictionary with relevant information
+                orgs_data[org_name] = {
+                    "description": getattr(org, "descr", "") or "",
+                    "is_shared": is_shared,
+                    "resource_groups": getattr(org, "resource_groups", []),
+                    "shared_with_orgs": getattr(org, "shared_with_orgs", []),
+                    "has_profiles": has_profiles
+                }
+
+            return response_handle(response={"orgs": orgs_data}, code=200)
+
+        elif device.metadata.device_type in ["ucsm", "ucsc"]:
+            # Recursive function to walk through org hierarchy
+            def traverse_orgs(org, parent_path=""):
+                org_name = org.name
+                # Construct the full org path based on current and parent names
+                org_path = f"{parent_path}/{org_name}".strip("/")
+
+                # Check if this org contains any profiles
+                has_profiles = any([
+                    getattr(org, "service_profiles", []),
+                    getattr(org, "chassis_profiles", [])
+                ])
+                # Populate org data into the final result dictionary
+                orgs_data[org_path] = {
+                    "org_name": org_name,
+                    "org_path": org_path,
+                    "description": getattr(org, "descr", "") or "",
+                    "has_profiles": has_profiles
+                }
+
+                # Recurse into sub_orgs
+                for sub_org in getattr(org, "orgs", []) or []:
+                    traverse_orgs(sub_org, parent_path=org_path)
+
+            # Start traversing from each top-level org in the config
+            for root_org in config.orgs:
+                traverse_orgs(root_org)
+
+        return response_handle(response={"orgs": orgs_data}, code=200)
+
+    except Exception as err:
+        return response_handle(code=500, response=str(err))
 
 
 @app.route("/devices/<device_uuid>/inventories", methods=['GET', 'POST'])
@@ -3231,7 +3489,7 @@ def device_uuid_inventories(device_uuid):
             response = response_handle(code=500, response=str(err))
         return response
 
-    if request.method == 'POST':
+    elif request.method == 'POST':
         try:
             if request.form:
                 if not validate_json(json_data=request.form, schema_path="api/specs/inventory_post.json",
@@ -3285,6 +3543,9 @@ def device_uuid_inventories(device_uuid):
             response = response_handle(code=500, response=str(err))
         return response
 
+    else:
+        return response_handle(code=500, response="Invalid HTTP method")
+
 
 @app.route("/devices/<device_uuid>/inventories/actions", methods=['GET'])
 # @cross_origin()
@@ -3307,6 +3568,9 @@ def device_uuid_inventories_actions(device_uuid):
         except Exception as err:
             response = response_handle(code=500, response=str(err))
         return response
+
+    else:
+        return response_handle(code=500, response="Invalid HTTP method")
 
 
 @app.route("/devices/<device_uuid>/inventories/actions/delete", methods=['POST'])
@@ -3346,6 +3610,9 @@ def device_uuid_inventories_actions_delete(device_uuid):
         except Exception as err:
             response = response_handle(code=500, response=str(err))
         return response
+
+    else:
+        return response_handle(code=500, response="Invalid HTTP method")
 
 
 @app.route("/devices/<device_uuid>/inventories/actions/fetch", methods=['POST'])
@@ -3418,6 +3685,9 @@ def device_uuid_inventories_actions_fetch(device_uuid):
             response = response_handle(code=500, response=str(err))
         return response
 
+    else:
+        return response_handle(code=500, response="Invalid HTTP method")
+
 
 @app.route("/devices/<device_uuid>/inventories/<inventory_uuid>", methods=['GET', 'DELETE'])
 # @cross_origin()
@@ -3456,7 +3726,7 @@ def device_uuid_inventory_uuid(device_uuid, inventory_uuid):
             response = response_handle(code=500, response=str(err))
         return response
 
-    if request.method == 'DELETE':
+    elif request.method == 'DELETE':
         try:
             inventory_metadata_list = easyucs.repository_manager.get_metadata(object_type="inventory",
                                                                               uuid=inventory_uuid)
@@ -3471,36 +3741,8 @@ def device_uuid_inventory_uuid(device_uuid, inventory_uuid):
             response = response_handle(code=500, response=str(err))
         return response
 
-
-@app.route("/devices/<device_uuid>/inventories/<inventory_uuid>/fabric_interconnects", methods=['GET'])
-def device_uuid_inventory_uuid_fabric_interconnects(device_uuid, inventory_uuid):
-    if request.method == 'GET':
-        try:
-            # Retrieve inventory metadata
-            inventory_metadata_list = easyucs.repository_manager.get_metadata(object_type="inventory", uuid=inventory_uuid)
-            if len(inventory_metadata_list) != 1:
-                return response_handle(response=f"Inventory with UUID {inventory_uuid} not found", code=404)
-
-            # Load the inventory file
-            file_path = os.path.abspath(os.path.join(EASYUCS_ROOT, inventory_metadata_list[0].file_path))
-            with open(file_path, "r") as file:
-                inventory_data = json.load(file)
-            # Extract relevant FI information
-            fi_info = []
-            if "inventory" in inventory_data:
-                fabric_interconnects = inventory_data["inventory"].get("fabric_interconnects", [])
-                # Extract only the first-level fields
-                fi_info = [
-                    {key: fi[key] for key in fi if not isinstance(fi[key], (dict, list))}
-                    for fi in fabric_interconnects
-                ]
-            if not fi_info:
-                return response_handle(response="No Fabric Interconnects information found in inventory", code=404)
-            # Return the extracted FI information
-            return response_handle(fi_info, 200)
-
-        except Exception as err:
-            return response_handle(code=500, response=str(err))
+    else:
+        return response_handle(code=500, response="Invalid HTTP method")
 
 
 @app.route("/devices/<device_uuid>/inventories/<inventory_uuid>/actions", methods=['GET'])
@@ -3533,6 +3775,9 @@ def device_uuid_inventory_uuid_actions(device_uuid, inventory_uuid):
             response = response_handle(code=500, response=str(err))
         return response
 
+    else:
+        return response_handle(code=500, response="Invalid HTTP method")
+
 
 @app.route("/devices/<device_uuid>/inventories/<inventory_uuid>/actions/download", methods=['GET'])
 # @cross_origin()
@@ -3562,6 +3807,43 @@ def device_uuid_inventory_uuid_actions_download(device_uuid, inventory_uuid):
             response = response_handle(code=500, response=str(err))
         return response
 
+    else:
+        return response_handle(code=500, response="Invalid HTTP method")
+
+
+@app.route("/devices/<device_uuid>/inventories/<inventory_uuid>/fabric_interconnects", methods=['GET'])
+def device_uuid_inventory_uuid_fabric_interconnects(device_uuid, inventory_uuid):
+    if request.method == 'GET':
+        try:
+            # Retrieve inventory metadata
+            inventory_metadata_list = easyucs.repository_manager.get_metadata(object_type="inventory", uuid=inventory_uuid)
+            if len(inventory_metadata_list) != 1:
+                return response_handle(response=f"Inventory with UUID {inventory_uuid} not found", code=404)
+
+            # Load the inventory file
+            file_path = os.path.abspath(os.path.join(EASYUCS_ROOT, inventory_metadata_list[0].file_path))
+            with open(file_path, "r") as file:
+                inventory_data = json.load(file)
+            # Extract relevant FI information
+            fi_info = []
+            if "inventory" in inventory_data:
+                fabric_interconnects = inventory_data["inventory"].get("fabric_interconnects", [])
+                # Extract only the first-level fields
+                fi_info = [
+                    {key: fi[key] for key in fi if not isinstance(fi[key], (dict, list))}
+                    for fi in fabric_interconnects
+                ]
+            if not fi_info:
+                return response_handle(response="No Fabric Interconnects information found in inventory", code=404)
+            # Return the extracted FI information
+            return response_handle(fi_info, 200)
+
+        except Exception as err:
+            return response_handle(code=500, response=str(err))
+
+    else:
+        return response_handle(code=500, response="Invalid HTTP method")
+
 
 @app.route("/devices/<device_uuid>/logs", methods=['GET'])
 def device_uuid_logs(device_uuid):
@@ -3587,6 +3869,9 @@ def device_uuid_logs(device_uuid):
         except Exception as err:
             response = response_handle(code=500, response=str(err))
         return response
+
+    else:
+        return response_handle(code=500, response="Invalid HTTP method")
 
 
 @app.route("/devices/<device_uuid>/reports", methods=['GET'])
@@ -3627,6 +3912,9 @@ def device_uuid_reports(device_uuid):
             response = response_handle(code=500, response=str(err))
         return response
 
+    else:
+        return response_handle(code=500, response="Invalid HTTP method")
+
 
 @app.route("/devices/<device_uuid>/reports/actions", methods=['GET'])
 # @cross_origin()
@@ -3649,6 +3937,9 @@ def device_uuid_reports_actions(device_uuid):
         except Exception as err:
             response = response_handle(code=500, response=str(err))
         return response
+
+    else:
+        return response_handle(code=500, response="Invalid HTTP method")
 
 
 @app.route("/devices/<device_uuid>/reports/actions/delete", methods=['POST'])
@@ -3686,6 +3977,9 @@ def device_uuid_reports_actions_delete(device_uuid):
         except Exception as err:
             response = response_handle(code=500, response=str(err))
         return response
+
+    else:
+        return response_handle(code=500, response="Invalid HTTP method")
 
 
 @app.route("/devices/<device_uuid>/reports/actions/generate", methods=['POST'])
@@ -3781,6 +4075,9 @@ def device_uuid_reports_actions_generate(device_uuid):
             response = response_handle(code=500, response=str(err))
         return response
 
+    else:
+        return response_handle(code=500, response="Invalid HTTP method")
+
 
 @app.route("/devices/<device_uuid>/reports/<report_uuid>", methods=['GET', 'DELETE'])
 # @cross_origin()
@@ -3818,7 +4115,7 @@ def device_uuid_report_uuid(device_uuid, report_uuid):
             response = response_handle(code=500, response=str(err))
         return response
 
-    if request.method == 'DELETE':
+    elif request.method == 'DELETE':
         try:
             report_metadata_list = easyucs.repository_manager.get_metadata(object_type="report", uuid=report_uuid)
             if len(report_metadata_list) == 1:
@@ -3831,6 +4128,9 @@ def device_uuid_report_uuid(device_uuid, report_uuid):
         except Exception as err:
             response = response_handle(code=500, response=str(err))
         return response
+
+    else:
+        return response_handle(code=500, response="Invalid HTTP method")
 
 
 @app.route("/devices/<device_uuid>/reports/<report_uuid>/actions", methods=['GET'])
@@ -3861,6 +4161,9 @@ def device_uuid_report_uuid_actions(device_uuid, report_uuid):
             response = response_handle(code=500, response=str(err))
         return response
 
+    else:
+        return response_handle(code=500, response="Invalid HTTP method")
+
 
 @app.route("/devices/<device_uuid>/reports/<report_uuid>/actions/download", methods=['GET'])
 # @cross_origin()
@@ -3888,6 +4191,9 @@ def device_uuid_report_uuid_actions_download(device_uuid, report_uuid):
         except Exception as err:
             response = response_handle(code=500, response=str(err))
         return response
+
+    else:
+        return response_handle(code=500, response="Invalid HTTP method")
 
 
 @app.route("/inventories", methods=['GET'])
@@ -3927,6 +4233,9 @@ def inventories():
             response = response_handle(code=500, response=str(err))
         return response
 
+    else:
+        return response_handle(code=500, response="Invalid HTTP method")
+
 
 @app.route("/notifications", methods=['GET', 'POST'])
 def notifications():
@@ -3939,7 +4248,7 @@ def notifications():
             response = response_handle(code=500, response=str(err))
         return response
 
-    if request.method == 'POST':
+    elif request.method == 'POST':
         payload = request.json
         try:
             new_notifs = payload["notifications"]
@@ -3953,6 +4262,9 @@ def notifications():
         except Exception as err:
             response = response_handle(code=500, response=str(err))
         return response
+
+    else:
+        return response_handle(code=500, response="Invalid HTTP method")
 
 
 @app.route("/logs/session", methods=['GET', 'POST'])
@@ -3969,7 +4281,7 @@ def logs():
             response = response_handle(code=500, response=str(err))
         return response
 
-    if request.method == 'POST':
+    elif request.method == 'POST':
         try:
             payload = request.json
             if not ("logs" in payload or "displayLogsBool" in payload):
@@ -3999,6 +4311,9 @@ def logs():
         except Exception as err:
             response = response_handle(code=500, response=str(err))
         return response
+
+    else:
+        return response_handle(code=500, response="Invalid HTTP method")
 
 
 @app.route("/reports", methods=['GET'])
@@ -4038,6 +4353,9 @@ def reports():
             response = response_handle(code=500, response=str(err))
         return response
 
+    else:
+        return response_handle(code=500, response="Invalid HTTP method")
+
 
 @app.route("/tasks", methods=['GET'])
 # @cross_origin()
@@ -4075,6 +4393,9 @@ def tasks():
         except Exception as err:
             response = response_handle(code=500, response=str(err))
         return response
+
+    else:
+        return response_handle(code=500, response="Invalid HTTP method")
 
 
 @app.route("/tasks/<task_uuid>", methods=['GET'])
@@ -4120,6 +4441,9 @@ def task_uuid(task_uuid):
             response = response_handle(code=500, response=str(err))
         return response
 
+    else:
+        return response_handle(code=500, response="Invalid HTTP method")
+
 
 @app.route("/tasks/<task_uuid>/actions", methods=['GET'])
 # @cross_origin()
@@ -4132,6 +4456,9 @@ def task_uuid_actions(task_uuid):
         except Exception as err:
             response = response_handle(code=500, response=str(err))
         return response
+
+    else:
+        return response_handle(code=500, response="Invalid HTTP method")
 
 
 @app.route("/tasks/<task_uuid>/actions/cancel", methods=['POST'])
@@ -4164,6 +4491,9 @@ def task_uuid_actions_cancel(task_uuid):
             response = response_handle(code=500, response=str(err))
         return response
 
+    else:
+        return response_handle(code=500, response="Invalid HTTP method")
+
 
 @app.route("/easyucs/settings", methods=['GET', 'PUT'])
 # @cross_origin()
@@ -4177,7 +4507,7 @@ def easyucs_settings():
             response = response_handle(code=500, response=str(err))
         return response
 
-    if request.method == 'PUT':
+    elif request.method == 'PUT':
         try:
             payload = request.json
             if not validate_json(json_data=payload, schema_path="api/specs/easyucs_settings_put.json", logger=easyucs):
@@ -4208,6 +4538,9 @@ def easyucs_settings():
         except Exception as err:
             response = response_handle(code=500, response=str(err))
         return response
+
+    else:
+        return response_handle(code=500, response="Invalid HTTP method")
 
 
 @app.route("/easyucs/backup/actions/download", methods=['POST'])
@@ -4307,6 +4640,9 @@ def easyucs_backup_actions_download():
         except Exception as err:
             response = response_handle(code=500, response=str(err))
         return response
+
+    else:
+        return response_handle(code=500, response="Invalid HTTP method")
 
 
 @app.route("/easyucs/backup/actions/restore", methods=['POST'])
@@ -4421,7 +4757,8 @@ def easyucs_backup_actions_restore():
                 return response_handle(code=400, response="Failed to process restored files Check logs.")
 
             # Restoring the key and settings from the backed up files
-            if not easyucs.repository_manager.restore_key_and_settings_backup():
+            if not easyucs.repository_manager.restore_key_and_settings_backup(
+                    backup_version=backup_easyucs_version):
                 return response_handle(code=400, response="Failed to restore Key and Settings. Check logs.")
 
             restore_repo = request.args.get("restore_repo", False, type=lambda v: v.lower() == 'true')
@@ -4442,6 +4779,9 @@ def easyucs_backup_actions_restore():
             response = response_handle(code=500, response=str(err))
         return response
 
+    else:
+        return response_handle(code=500, response="Invalid HTTP method")
+
 
 @app.route("/easyucs/proxy", methods=['GET', 'PUT'])
 def easyucs_proxy():
@@ -4460,7 +4800,7 @@ def easyucs_proxy():
             response = response_handle(code=500, response=str(err))
         return response
 
-    if request.method == "PUT":
+    elif request.method == "PUT":
         try:
             payload = request.json
 
@@ -4520,274 +4860,8 @@ def easyucs_proxy():
             response = response_handle(code=500, response=str(err))
         return response
 
-
-@app.route('/repo/actions/create_vmedia_policy', methods=['POST'])
-def repo_actions_create_vmedia():
-    if request.method == 'POST':
-        try:
-            payload = request.json
-            if payload:
-                if not validate_json(json_data=payload, schema_path="api/specs/repo_actions_vmedia_post.json",
-                                     logger=easyucs):
-                    response = response_handle(code=400, response="Invalid payload")
-                    return response
-
-                device_uuid = payload.get("device_uuid", None)
-
-                device = load_object(object_type="device", object_uuid=device_uuid)
-
-                if device:
-                    if device.task is not None:
-                        response = response_handle(
-                            response="Device already has a task running: " + str(device.task.uuid), code=500)
-                        return response
-
-                    action_kwargs = {
-                        "name": payload.get("name"),
-                        "device_name": device.name,
-                        "org_name": payload.get("org_name"),
-                        "enable_virtual_media": payload.get("enable_virtual_media"),
-                        "enable_virtual_encryption": payload.get("enable_virtual_encryption"),
-                        "enable_low_power_usb": payload.get("enable_low_power_usb")
-                    }
-                    if "description" in payload:
-                        action_kwargs["description"] = payload["description"]
-                    if "tags" in payload:
-                        action_kwargs["tags"] = payload["tags"]
-                    if "vmedia_mount" in payload:
-                        action_kwargs["vmedia_mount"] = payload["vmedia_mount"]
-                    
-                    # We create a new task
-                    if device.metadata.device_type in ["intersight"]:
-                        task_uuid = easyucs.task_manager.add_task(name="CreateVmediaPolicyIntersight",
-                                                                  device_name=str(device.name),
-                                                                  device_uuid=str(device.uuid))
-                    else:
-                        response = response_handle(response="Unsupported device type", code=500)
-                        return response
-
-                    # We schedule the test connection action through the scheduler
-                    pending_task = {
-                        "task_uuid": task_uuid,
-                        "action_type": "create_vmedia_policy",
-                        "object_type": "device",
-                        "timeout": timeout_values["create_vmedia_policy"],
-                        "action_kwargs": action_kwargs
-                    }
-                    if not easyucs.task_manager.add_to_pending_tasks(pending_task):
-                        response = response_handle(response="Error while scheduling the task. Task Queue might be Full."
-                                                            " Try again after some time.", code=400)
-                        return response
-
-                    response = response_handle(response={"task": str(task_uuid)}, code=200)
-                else:
-                    response = response_handle(response="Device not found with UUID: " + device_uuid, code=404)
-            
-        except BadRequest as err:
-            response = response_handle(code=err.code, response=str(err.description))
-        except Exception as err:
-            easyucs.logger(level="exception", message="Unexpected error while Creating vMedia Policy")
-            response = response_handle(code=500, response=str(err))
-        return response
-
-
-@app.route('/repo/files/', methods=['GET', 'POST'])
-@app.route('/repo/files/<path:file_path>', methods=['GET', 'POST', 'PUT', 'DELETE'])
-def repo_files(file_path=None):
-    file_hosting_path = absolute_file_path = os.path.abspath(os.path.join(
-        EASYUCS_ROOT, easyucs.repository_manager.REPOSITORY_FOLDER_NAME,
-        easyucs.repository_manager.SOFTWARE_REPOSITORY_FOLDER_NAME))
-
-    if file_path:
-        absolute_file_path = os.path.abspath(os.path.join(file_hosting_path, file_path))
-
-    if os.path.commonpath([file_hosting_path]) != os.path.commonpath([file_hosting_path,
-                                                                      absolute_file_path]):
-        easyucs.logger(level="warning",
-                       message=f"User is trying to access restricted path {absolute_file_path}")
-        return response_handle(code=400, response=f"Please provide a valid file path")
-    
-    if not os.path.exists(absolute_file_path):
-        response = response_handle(f"File {file_path} not found", 404)
-        return response
-
-    if request.method == 'GET':
-        # This API endpoint behaves differently based on the 'file_path' value:
-        # If file_path=None or file_path=Directory: GET list of content and its details inside a directory
-        # If file_path=File: Get the details of the file
-        try:
-            if os.path.isdir(absolute_file_path):
-                total, used, available = get_disk_space_usage(file_hosting_path)
-                summarize = request.args.get("summarize", False, type=lambda v: v.lower() == 'true')
-
-                if not summarize:
-                    recursive = request.args.get("recursive", False, type=lambda v: v.lower() == 'true')
-
-                    def travel_folder(folder_path, result):
-                        file_list = os.listdir(folder_path)
-                        if file_list:
-                            for file_name in file_list:
-                                sub_file_path = os.path.join(folder_path, file_name)
-                                file_info = {
-                                    "name": file_name,
-                                    "timestamp_last_modified": datetime.datetime.fromtimestamp(
-                                        os.path.getmtime(sub_file_path)).isoformat()[:-3] + 'Z',
-                                    "is_directory": os.path.isdir(sub_file_path)
-                                }
-                                if not file_info["is_directory"]:
-                                    file_info = easyucs.repository_manager.repo.get_repofile(
-                                        absolute_file_path=sub_file_path)
-                                else:
-                                    if recursive:
-                                        file_info["sub_files"] = []
-                                        travel_folder(sub_file_path, file_info["sub_files"])
-                                result.append(file_info)
-
-                    result = []
-                    travel_folder(absolute_file_path, result)
-                    result = {
-                        "repofiles": result,
-                        "disk_utilization": {
-                            "total": total,
-                            "used": used,
-                            "available": available
-                        }
-                    }
-                else:
-                    result = {
-                        "repofile": {
-                            "name": os.path.basename(absolute_file_path),
-                            "timestamp_last_modified": datetime.datetime.fromtimestamp(
-                                os.path.getmtime(absolute_file_path)).isoformat()[:-3] + 'Z',
-                            "is_directory": True
-                        },
-                        "disk_utilization": {
-                            "total": total,
-                            "used": used,
-                            "available": available
-                        }
-                    }
-                response = response_handle(result, 200)
-            elif os.path.isfile(absolute_file_path):
-
-                file_info = easyucs.repository_manager.repo.get_repofile(absolute_file_path=absolute_file_path,
-                                                                         synced_data=True)
-                file_info = {
-                    "repofile": file_info
-                }
-
-                response = response_handle(file_info, 200)
-            else:
-                response = response_handle(code=500, response="Path is neither file nor folder")
-        except Exception as err:
-            response = response_handle(code=500, response=str(err))
-        return response
-
-    if request.method == 'POST':
-        # This API endpoint creates folders
-        try:
-            payload = request.json
-            if not validate_json(json_data=payload, schema_path="api/specs/repo_files_post.json",
-                                 logger=easyucs):
-                response = response_handle(code=400, response="Invalid payload")
-                return response
-
-            folder_name = payload.get("folder_name")
-
-            if not os.path.isdir(absolute_file_path):
-                response = response_handle(code=400, response=f"Path {absolute_file_path} is not a directory")
-                return response
-
-            folder_path = os.path.join(absolute_file_path, folder_name)
-
-            if os.path.exists(folder_path):
-                response = response_handle(code=400, response=f"Folder {folder_path} already exists")
-                return response
-
-            os.makedirs(folder_path)
-            response = response_handle(code=200)
-        except BadRequest as err:
-            easyucs.logger(level="error", message=str(err))
-            response = response_handle(code=err.code, response=str(err.description))
-        except Exception as err:
-            easyucs.logger(level="error", message=str(err))
-            response = response_handle(code=500, response=str(err))
-        return response
-
-    if request.method == 'PUT':
-        # This API endpoint moves/renames the file path
-        try:
-            payload = request.json
-            if not validate_json(json_data=payload, schema_path="api/specs/repo_files_put.json",
-                                 logger=easyucs):
-                response = response_handle(code=400, response="Invalid payload")
-                return response
-
-            if not file_path:
-                response = response_handle("Rename failed as no directory path mentioned", code=400)
-                return response
-
-            target_path = payload.get("target_path")
-            absolute_target_path = os.path.join(file_hosting_path, target_path)
-
-            if os.path.commonpath([file_hosting_path]) != os.path.commonpath([file_hosting_path,
-                                                                            absolute_target_path]):
-                easyucs.logger(level="warning",
-                            message=f"User is trying to access restricted path {absolute_target_path}")
-                return response_handle(code=400, response=f"Please provide a valid file path")
-            
-            if os.path.exists(absolute_target_path):
-                response = response_handle(f"File/Folder {absolute_target_path} already exists", code=400)
-                return response
-
-            if not os.path.exists(os.path.dirname(absolute_target_path)):
-                response = response_handle(f"Directory {os.path.dirname(target_path)} does not exists",
-                                           code=400)
-                return response
-
-            shutil.move(absolute_file_path, absolute_target_path)
-            response = response_handle(code=200)
-
-        except BadRequest as err:
-            easyucs.logger(level="error", message=str(err))
-            response = response_handle(code=err.code, response=str(err.description))
-        except Exception as err:
-            easyucs.logger(level="error", message=str(err))
-            response = response_handle(code=500, response=str(err))
-        return response
-
-    if request.method == 'DELETE':
-        # This API endpoint deletes the file path
-        try:
-            if os.path.isfile(absolute_file_path):
-                # If it's a file we delete it directly
-                os.remove(absolute_file_path)
-                response = response_handle(code=200)
-            elif os.path.isdir(absolute_file_path):
-                # If it's a directory then we perform deletion based on whether there is content inside it or not.
-                if not os.listdir(absolute_file_path):
-                    # If directory is empty then we remove the directory
-                    os.rmdir(absolute_file_path)
-                    response = response_handle(code=200)
-                else:
-                    # If directory have some content then we make sure to delete sub files/folders before deleting the
-                    # directory.
-                    # Here topdown=False is used when calling os.walk() to ensure that the files and subdirectories
-                    # within the directory are deleted first before attempting to delete the parent directory.
-                    for root, dirs, files in os.walk(absolute_file_path, topdown=False):
-                        for file in files:
-                            os.remove(os.path.join(root, file))
-                        for directory in dirs:
-                            os.rmdir(os.path.join(root, directory))
-                    os.rmdir(absolute_file_path)
-                    response_message = "Deleted directory " + os.path.basename(absolute_file_path)
-                    response = response_handle(response_message, 200)
-            else:
-                response = response_handle(code=500, response="Path is neither file nor folder")
-        except Exception as err:
-            easyucs.logger(level="error", message=str(err))
-            response = response_handle(code=500, response=str(err))
-        return response
+    else:
+        return response_handle(code=500, response="Invalid HTTP method")
 
 
 @app.route('/repo/actions/checksum/<path:file_path>', methods=['POST'])
@@ -4860,6 +4934,206 @@ def repo_actions_checksum(file_path=None):
         except Exception as err:
             response = response_handle(code=500, response=str(err))
         return response
+
+    else:
+        return response_handle(code=500, response="Invalid HTTP method")
+
+
+@app.route('/repo/actions/create_vmedia_policy', methods=['POST'])
+def repo_actions_create_vmedia_policy():
+    if request.method == 'POST':
+        try:
+            payload = request.json
+            if payload:
+                if not validate_json(json_data=payload, schema_path="api/specs/repo_actions_vmedia_post.json",
+                                     logger=easyucs):
+                    response = response_handle(code=400, response="Invalid payload")
+                    return response
+
+                device_uuid = payload.get("device_uuid", None)
+
+                device = load_object(object_type="device", object_uuid=device_uuid)
+
+                if device:
+                    if device.task is not None:
+                        response = response_handle(
+                            response="Device already has a task running: " + str(device.task.uuid), code=500)
+                        return response
+
+                    action_kwargs = {
+                        "name": payload.get("name"),
+                        "device_name": device.name,
+                        "org_name": payload.get("org_name"),
+                        "enable_virtual_media": payload.get("enable_virtual_media"),
+                        "enable_virtual_encryption": payload.get("enable_virtual_encryption"),
+                        "enable_low_power_usb": payload.get("enable_low_power_usb")
+                    }
+                    if "description" in payload:
+                        action_kwargs["description"] = payload["description"]
+                    if "tags" in payload:
+                        action_kwargs["tags"] = payload["tags"]
+                    if "vmedia_mount" in payload:
+                        action_kwargs["vmedia_mount"] = payload["vmedia_mount"]
+
+                    # We create a new task
+                    if device.metadata.device_type in ["intersight"]:
+                        task_uuid = easyucs.task_manager.add_task(name="CreateVmediaPolicyIntersight",
+                                                                  device_name=str(device.name),
+                                                                  device_uuid=str(device.uuid))
+                    else:
+                        response = response_handle(response="Unsupported device type", code=500)
+                        return response
+
+                    # We schedule the test connection action through the scheduler
+                    pending_task = {
+                        "task_uuid": task_uuid,
+                        "action_type": "create_vmedia_policy",
+                        "object_type": "device",
+                        "timeout": timeout_values["create_vmedia_policy"],
+                        "action_kwargs": action_kwargs
+                    }
+                    if not easyucs.task_manager.add_to_pending_tasks(pending_task):
+                        response = response_handle(response="Error while scheduling the task. Task Queue might be Full."
+                                                            " Try again after some time.", code=400)
+                        return response
+
+                    response = response_handle(response={"task": str(task_uuid)}, code=200)
+                else:
+                    response = response_handle(response="Device not found with UUID: " + device_uuid, code=404)
+
+        except BadRequest as err:
+            response = response_handle(code=err.code, response=str(err.description))
+        except Exception as err:
+            easyucs.logger(level="exception", message="Unexpected error while Creating vMedia Policy")
+            response = response_handle(code=500, response=str(err))
+        return response
+
+    else:
+        return response_handle(code=500, response="Invalid HTTP method")
+
+
+@app.route('/repo/actions/guess', methods=['POST'])
+def repo_actions_guess():
+    if request.method == 'POST':
+        try:
+            payload = request.json
+            if not validate_json(json_data=payload, schema_path="api/specs/repo_guess_post.json",
+                                 logger=easyucs):
+                response = response_handle(code=400, response="Invalid payload")
+                return response
+
+            device_uuid = payload.get("device_uuid", None)
+            image_name = payload.get("image_name", None)
+
+            device = None
+            if device_uuid:
+                device = load_object(object_type="device", object_uuid=device_uuid)
+
+            guessed_data = guess_image_metadata(image_name=image_name, device=device)
+
+            response = response_handle(code=200, response=guessed_data)
+        except BadRequest as err:
+            response = response_handle(code=err.code, response=str(err.description))
+        except Exception as err:
+            response = response_handle(code=500, response=str(err))
+        return response
+
+    else:
+        return response_handle(code=500, response="Invalid HTTP method")
+
+
+@app.route('/repo/actions/sync_to_software_repository', methods=['POST'])
+def repo_actions_sync_to_software_repository():
+    if request.method == 'POST':
+        try:
+            payload = request.json
+            if payload:
+                if not validate_json(json_data=payload,
+                                     schema_path="api/specs/repo_sync_to_software_repository_post.json",
+                                     logger=easyucs):
+                    response = response_handle(code=400, response="Invalid payload")
+                    return response
+
+            # We create the file download link if its not present in payload
+            file_download_link = payload.get("file_download_link")
+            if "file_download_link" not in payload:
+                file_download_link = easyucs.repository_manager.repo.create_repofile_download_link(
+                    host_url=request.host_url,
+                    file_path=payload.get("file_path")
+                )
+
+            device_uuid = payload.get("device_uuid", None)
+
+            device = load_object(object_type="device", object_uuid=device_uuid)
+
+            if device:
+                if device.task is not None:
+                    response = response_handle(response="Device already has a task running: " + str(device.task.uuid),
+                                               code=500)
+                    return response
+
+                action_kwargs = {
+                    "file_download_link": file_download_link,
+                    "image_type": payload["image_type"],
+                    "name": payload["name"],
+                    "org_name": payload["org_name"],
+                    "version": payload["version"]
+                }
+                if "description" in payload:
+                    action_kwargs["description"] = payload["description"]
+                if "file_path" in payload:
+                    path_prefix = os.path.join(easyucs.repository_manager.REPOSITORY_FOLDER_NAME,
+                                               easyucs.repository_manager.SOFTWARE_REPOSITORY_FOLDER_NAME)
+                    if not payload["file_path"].startswith(path_prefix):
+                        action_kwargs["file_path"] = os.path.join(path_prefix, payload["file_path"])
+                    else:
+                        action_kwargs["file_path"] = payload["file_path"]
+                if "file_uuid" in payload:
+                    action_kwargs["file_uuid"] = payload["file_uuid"]
+                if "firmware_image_type" in payload:
+                    action_kwargs["firmware_image_type"] = payload["firmware_image_type"]
+                if "supported_models" in payload:
+                    action_kwargs["supported_models"] = payload["supported_models"]
+                if "tags" in payload:
+                    action_kwargs["tags"] = payload["tags"]
+                if "vendor" in payload:
+                    action_kwargs["vendor"] = payload["vendor"]
+
+                # We create a new task
+                if device.metadata.device_type in ["intersight"]:
+                    task_uuid = easyucs.task_manager.add_task(name="SyncToIntersightSoftwareRepository",
+                                                              device_name=str(device.name),
+                                                              device_uuid=str(device.uuid),
+                                                              repo_file_uuid=action_kwargs.get("file_uuid"),
+                                                              repo_file_path=action_kwargs.get("file_path"))
+                else:
+                    response = response_handle(response="Unsupported device type", code=500)
+                    return response
+
+                # We schedule the test connection action through the scheduler
+                pending_task = {
+                    "task_uuid": task_uuid,
+                    "action_type": "sync_to_software_repository",
+                    "object_type": "device",
+                    "timeout": timeout_values["sync_to_software_repository"],
+                    "action_kwargs": action_kwargs
+                }
+                if not easyucs.task_manager.add_to_pending_tasks(pending_task):
+                    response = response_handle(response="Error while scheduling the task. Task Queue might be Full."
+                                                        " Try again after some time.", code=400)
+                    return response
+
+                response = response_handle(response={"task": str(task_uuid)}, code=200)
+            else:
+                response = response_handle(response="Device not found with UUID: " + device_uuid, code=404)
+        except BadRequest as err:
+            response = response_handle(code=err.code, response=str(err.description))
+        except Exception as err:
+            response = response_handle(code=500, response=str(err))
+        return response
+
+    else:
+        return response_handle(code=500, response="Invalid HTTP method")
 
 
 @app.route('/repo/actions/upload/', methods=['POST'])
@@ -4951,6 +5225,9 @@ def repo_actions_upload(file_path=None):
         except Exception as err:
             response = response_handle(code=500, response=str(err))
         return response
+
+    else:
+        return response_handle(code=500, response="Invalid HTTP method")
 
 
 @app.route('/repo/actions/url/download/', methods=['POST'])
@@ -5049,123 +5326,210 @@ def repo_actions_url_download(file_path=None):
             response = response_handle(code=500, response=str(err))
         return response
 
+    else:
+        return response_handle(code=500, response="Invalid HTTP method")
 
-@app.route('/repo/actions/guess', methods=['POST'])
-def repo_actions_guess():
-    if request.method == 'POST':
+
+@app.route('/repo/files/', methods=['GET', 'POST'])
+@app.route('/repo/files/<path:file_path>', methods=['GET', 'POST', 'PUT', 'DELETE'])
+def repo_files(file_path=None):
+    file_hosting_path = absolute_file_path = os.path.abspath(os.path.join(
+        EASYUCS_ROOT, easyucs.repository_manager.REPOSITORY_FOLDER_NAME,
+        easyucs.repository_manager.SOFTWARE_REPOSITORY_FOLDER_NAME))
+
+    if file_path:
+        absolute_file_path = os.path.abspath(os.path.join(file_hosting_path, file_path))
+
+    if os.path.commonpath([file_hosting_path]) != os.path.commonpath([file_hosting_path,
+                                                                      absolute_file_path]):
+        easyucs.logger(level="warning",
+                       message=f"User is trying to access restricted path {absolute_file_path}")
+        return response_handle(code=400, response=f"Please provide a valid file path")
+
+    if not os.path.exists(absolute_file_path):
+        response = response_handle(f"File {file_path} not found", 404)
+        return response
+
+    if request.method == 'GET':
+        # This API endpoint behaves differently based on the 'file_path' value:
+        # If file_path=None or file_path=Directory: GET list of content and its details inside a directory
+        # If file_path=File: Get the details of the file
+        try:
+            if os.path.isdir(absolute_file_path):
+                total, used, available = get_disk_space_usage(file_hosting_path)
+                summarize = request.args.get("summarize", False, type=lambda v: v.lower() == 'true')
+
+                if not summarize:
+                    recursive = request.args.get("recursive", False, type=lambda v: v.lower() == 'true')
+
+                    def travel_folder(folder_path, result):
+                        file_list = os.listdir(folder_path)
+                        if file_list:
+                            for file_name in file_list:
+                                sub_file_path = os.path.join(folder_path, file_name)
+                                file_info = {
+                                    "name": file_name,
+                                    "timestamp_last_modified": datetime.datetime.fromtimestamp(
+                                        os.path.getmtime(sub_file_path)).isoformat()[:-3] + 'Z',
+                                    "is_directory": os.path.isdir(sub_file_path)
+                                }
+                                if not file_info["is_directory"]:
+                                    file_info = easyucs.repository_manager.repo.get_repofile(
+                                        absolute_file_path=sub_file_path)
+                                else:
+                                    if recursive:
+                                        file_info["sub_files"] = []
+                                        travel_folder(sub_file_path, file_info["sub_files"])
+                                result.append(file_info)
+
+                    result = []
+                    travel_folder(absolute_file_path, result)
+                    result = {
+                        "repofiles": result,
+                        "disk_utilization": {
+                            "total": total,
+                            "used": used,
+                            "available": available
+                        }
+                    }
+                else:
+                    result = {
+                        "repofile": {
+                            "name": os.path.basename(absolute_file_path),
+                            "timestamp_last_modified": datetime.datetime.fromtimestamp(
+                                os.path.getmtime(absolute_file_path)).isoformat()[:-3] + 'Z',
+                            "is_directory": True
+                        },
+                        "disk_utilization": {
+                            "total": total,
+                            "used": used,
+                            "available": available
+                        }
+                    }
+                response = response_handle(result, 200)
+            elif os.path.isfile(absolute_file_path):
+
+                file_info = easyucs.repository_manager.repo.get_repofile(absolute_file_path=absolute_file_path,
+                                                                         synced_data=True)
+                file_info = {
+                    "repofile": file_info
+                }
+
+                response = response_handle(file_info, 200)
+            else:
+                response = response_handle(code=500, response="Path is neither file nor folder")
+        except Exception as err:
+            response = response_handle(code=500, response=str(err))
+        return response
+
+    elif request.method == 'POST':
+        # This API endpoint creates folders
         try:
             payload = request.json
-            if not validate_json(json_data=payload, schema_path="api/specs/repo_guess_post.json",
+            if not validate_json(json_data=payload, schema_path="api/specs/repo_files_post.json",
                                  logger=easyucs):
                 response = response_handle(code=400, response="Invalid payload")
                 return response
 
-            device_uuid = payload.get("device_uuid", None)
-            image_name = payload.get("image_name", None)
+            folder_name = payload.get("folder_name")
 
-            device = None
-            if device_uuid:
-                device = load_object(object_type="device", object_uuid=device_uuid)
+            if not os.path.isdir(absolute_file_path):
+                response = response_handle(code=400, response=f"Path {absolute_file_path} is not a directory")
+                return response
 
-            guessed_data = guess_image_metadata(image_name=image_name, device=device)
+            folder_path = os.path.join(absolute_file_path, folder_name)
 
-            response = response_handle(code=200, response=guessed_data)
+            if os.path.exists(folder_path):
+                response = response_handle(code=400, response=f"Folder {folder_path} already exists")
+                return response
+
+            os.makedirs(folder_path)
+            response = response_handle(code=200)
         except BadRequest as err:
+            easyucs.logger(level="error", message=str(err))
             response = response_handle(code=err.code, response=str(err.description))
         except Exception as err:
+            easyucs.logger(level="error", message=str(err))
             response = response_handle(code=500, response=str(err))
         return response
 
-
-@app.route('/repo/actions/sync_to_software_repository', methods=['POST'])
-def repo_actions_sync_to_software_repository():
-    if request.method == 'POST':
+    elif request.method == 'PUT':
+        # This API endpoint moves/renames the file path
         try:
             payload = request.json
-            if payload:
-                if not validate_json(json_data=payload,
-                                     schema_path="api/specs/repo_sync_to_software_repository_post.json",
-                                     logger=easyucs):
-                    response = response_handle(code=400, response="Invalid payload")
-                    return response
+            if not validate_json(json_data=payload, schema_path="api/specs/repo_files_put.json",
+                                 logger=easyucs):
+                response = response_handle(code=400, response="Invalid payload")
+                return response
 
-            # We create the file download link if its not present in payload
-            file_download_link = payload.get("file_download_link")
-            if "file_download_link" not in payload:
-                file_download_link = easyucs.repository_manager.repo.create_repofile_download_link(
-                    host_url=request.host_url,
-                    file_path=payload.get("file_path")
-                )
+            if not file_path:
+                response = response_handle("Rename failed as no directory path mentioned", code=400)
+                return response
 
-            device_uuid = payload.get("device_uuid", None)
+            target_path = payload.get("target_path")
+            absolute_target_path = os.path.join(file_hosting_path, target_path)
 
-            device = load_object(object_type="device", object_uuid=device_uuid)
+            if os.path.commonpath([file_hosting_path]) != os.path.commonpath([file_hosting_path,
+                                                                              absolute_target_path]):
+                easyucs.logger(level="warning",
+                               message=f"User is trying to access restricted path {absolute_target_path}")
+                return response_handle(code=400, response=f"Please provide a valid file path")
 
-            if device:
-                if device.task is not None:
-                    response = response_handle(response="Device already has a task running: " + str(device.task.uuid),
-                                               code=500)
-                    return response
+            if os.path.exists(absolute_target_path):
+                response = response_handle(f"File/Folder {absolute_target_path} already exists", code=400)
+                return response
 
-                action_kwargs = {
-                    "file_download_link": file_download_link,
-                    "image_type": payload["image_type"],
-                    "name": payload["name"],
-                    "org_name": payload["org_name"],
-                    "version": payload["version"]
-                }
-                if "description" in payload:
-                    action_kwargs["description"] = payload["description"]
-                if "file_path" in payload:
-                    path_prefix = os.path.join(easyucs.repository_manager.REPOSITORY_FOLDER_NAME,
-                                               easyucs.repository_manager.SOFTWARE_REPOSITORY_FOLDER_NAME)
-                    if not payload["file_path"].startswith(path_prefix):
-                        action_kwargs["file_path"] = os.path.join(path_prefix, payload["file_path"])
-                    else:
-                        action_kwargs["file_path"] = payload["file_path"]
-                if "file_uuid" in payload:
-                    action_kwargs["file_uuid"] = payload["file_uuid"]
-                if "firmware_image_type" in payload:
-                    action_kwargs["firmware_image_type"] = payload["firmware_image_type"]
-                if "supported_models" in payload:
-                    action_kwargs["supported_models"] = payload["supported_models"]
-                if "tags" in payload:
-                    action_kwargs["tags"] = payload["tags"]
-                if "vendor" in payload:
-                    action_kwargs["vendor"] = payload["vendor"]
+            if not os.path.exists(os.path.dirname(absolute_target_path)):
+                response = response_handle(f"Directory {os.path.dirname(target_path)} does not exists",
+                                           code=400)
+                return response
 
-                # We create a new task
-                if device.metadata.device_type in ["intersight"]:
-                    task_uuid = easyucs.task_manager.add_task(name="SyncToIntersightSoftwareRepository",
-                                                              device_name=str(device.name),
-                                                              device_uuid=str(device.uuid),
-                                                              repo_file_uuid=action_kwargs.get("file_uuid"),
-                                                              repo_file_path=action_kwargs.get("file_path"))
-                else:
-                    response = response_handle(response="Unsupported device type", code=500)
-                    return response
+            shutil.move(absolute_file_path, absolute_target_path)
+            response = response_handle(code=200)
 
-                # We schedule the test connection action through the scheduler
-                pending_task = {
-                    "task_uuid": task_uuid,
-                    "action_type": "sync_to_software_repository",
-                    "object_type": "device",
-                    "timeout": timeout_values["sync_to_software_repository"],
-                    "action_kwargs": action_kwargs
-                }
-                if not easyucs.task_manager.add_to_pending_tasks(pending_task):
-                    response = response_handle(response="Error while scheduling the task. Task Queue might be Full."
-                                                        " Try again after some time.", code=400)
-                    return response
-
-                response = response_handle(response={"task": str(task_uuid)}, code=200)
-            else:
-                response = response_handle(response="Device not found with UUID: " + device_uuid, code=404)
         except BadRequest as err:
+            easyucs.logger(level="error", message=str(err))
             response = response_handle(code=err.code, response=str(err.description))
         except Exception as err:
+            easyucs.logger(level="error", message=str(err))
             response = response_handle(code=500, response=str(err))
         return response
+
+    elif request.method == 'DELETE':
+        # This API endpoint deletes the file path
+        try:
+            if os.path.isfile(absolute_file_path):
+                # If it's a file we delete it directly
+                os.remove(absolute_file_path)
+                response = response_handle(code=200)
+            elif os.path.isdir(absolute_file_path):
+                # If it's a directory then we perform deletion based on whether there is content inside it or not.
+                if not os.listdir(absolute_file_path):
+                    # If directory is empty then we remove the directory
+                    os.rmdir(absolute_file_path)
+                    response = response_handle(code=200)
+                else:
+                    # If directory have some content then we make sure to delete sub files/folders before deleting the
+                    # directory.
+                    # Here topdown=False is used when calling os.walk() to ensure that the files and subdirectories
+                    # within the directory are deleted first before attempting to delete the parent directory.
+                    for root, dirs, files in os.walk(absolute_file_path, topdown=False):
+                        for file in files:
+                            os.remove(os.path.join(root, file))
+                        for directory in dirs:
+                            os.rmdir(os.path.join(root, directory))
+                    os.rmdir(absolute_file_path)
+                    response_message = "Deleted directory " + os.path.basename(absolute_file_path)
+                    response = response_handle(response_message, 200)
+            else:
+                response = response_handle(code=500, response="Path is neither file nor folder")
+        except Exception as err:
+            easyucs.logger(level="error", message=str(err))
+            response = response_handle(code=500, response=str(err))
+        return response
+
+    else:
+        return response_handle(code=500, response="Invalid HTTP method")
 
 
 def start(easyucs_object=None):

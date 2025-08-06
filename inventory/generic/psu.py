@@ -17,14 +17,16 @@ class GenericPsu(GenericInventoryObject):
         # Small fix for when PSU is not present in UCS catalog
         if not self.sku:
             if self.model:
-                if self.model in ["N20-PAC5-2500W", "N2200-PAC-400W", "N2200-PAC-400W-B", "NNXA-PAC-650W-PI",
-                                  "NXA-PAC-650W-PI", "NXA-PAC-1100W-PE2", "NXA-PAC-1200W-PE"] \
+                if self.model in ["N20-PAC5-2500W", "N2200-PAC-400W", "N2200-PAC-400W-B", "NNXA-PAC-650W-PE",
+                                  "NNXA-PAC-650W-PI", "NXA-PAC-650W-PI", "NXA-PAC-1100W-PE2", "NXA-PAC-1200W-PE"] \
                         or any(self.model.startswith(x) for x in ["UCS-PSU", "UCSB-PSU", "UCSC-PSU", "UCSX-PSU"]):
                     self.sku = self.model
 
         # Small fix for SKU typos in UCS catalog
         if self.sku == "NXK-PAC-400W ":
             self.sku = "NXK-PAC-400W"
+        elif self.sku == "NNXA-PAC-650W-PE":
+            self.sku = "NXA-PAC-650W-PE"
         elif self.sku == "NNXA-PAC-650W-PI":
             self.sku = "NXA-PAC-650W-PI"
         elif self.sku == " UCSC-PSUF-1050W ":
@@ -41,6 +43,8 @@ class GenericPsu(GenericInventoryObject):
             self.sku = "UCSC-PSU2-1400W"
         elif self.sku in ["UCSB-PSU-2500ACDV-AA26870L-A", "UCSB-PSU-2500ACDV-ECD15020029"]:
             self.sku = "UCSB-PSU-2500ACDV"
+        elif self.sku == "UCSBX-PSU-2800AC":
+            self.sku = "UCSX-PSU-2800AC"
 
         # Some equipmentPsu objects don't have a PID or SKU value. Setting them manually here for known models
         if self.sku is None:
@@ -50,7 +54,7 @@ class GenericPsu(GenericInventoryObject):
                 self.sku = "UCSC-PSUF-1050W"
             elif self.model in ["700-014160-0000", "PS-2771-1S-LF"]:
                 self.sku = "UCSC-PSU1-770W"
-            elif self.model in ["PS-2112-9S-LF"]:
+            elif self.model in ["700-014550-0000", "PS-2112-9S-LF"]:
                 self.sku = "UCSC-PSU1-1050W"
             elif self.model in ["PS-2122-9S"]:
                 self.sku = "UCSC-PSU1-1200W"

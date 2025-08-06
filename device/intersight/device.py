@@ -75,7 +75,7 @@ urllib3.disable_warnings()
 
 
 class IntersightDevice(GenericDevice):
-    INTERSIGHT_APPLIANCE_MIN_REQUIRED_VERSION = "1.1.2-0"
+    INTERSIGHT_APPLIANCE_MIN_REQUIRED_VERSION = "1.1.3-0"
 
     def __init__(self, parent=None, uuid=None, target="us-east-1.intersight.com", key_id="", private_key_path="",
                  is_hidden=False, is_system=False, system_usage=None, proxy=None, proxy_user=None, proxy_password=None,
@@ -269,8 +269,8 @@ class IntersightDevice(GenericDevice):
             {FabricApi: ["fabric_switch_cluster_profile",
                          "fabric_switch_cluster_profile_template",
                          "fabric_port_policy", "fabric_flow_control_policy", "fabric_link_aggregation_policy",
-                         "fabric_link_control_policy", "fabric_switch_control_policy", "fabric_system_qos_policy",
-                         "fabric_eth_network_policy",  "fabric_fc_network_policy",
+                         "fabric_link_control_policy", "fabric_mac_sec_policy", "fabric_switch_control_policy",
+                         "fabric_system_qos_policy", "fabric_eth_network_policy",  "fabric_fc_network_policy",
                          "fabric_multicast_policy", "fabric_eth_network_group_policy",
                          "fabric_eth_network_control_policy", "fabric_fc_zone_policy"]},
             {NtpApi: ["ntp_policy"]},
@@ -403,6 +403,7 @@ class IntersightDevice(GenericDevice):
                         # 'APPLIANCE-DEFAULT' which are system defined.
                         if hasattr(result, "tags"):
                             result_is_system_defined = False
+                            is_appliance_ldap_ad_configured = False
                             for tag in result.tags:
                                 if tag and tag.get('key') == "cisco.meta.appliance.default":
                                     result_is_system_defined = True
@@ -415,7 +416,15 @@ class IntersightDevice(GenericDevice):
                                         message="Appliance system defined Object"
                                     )
                                     break
-                            if result_is_system_defined:
+                                elif tag.get('key') == "appliance.management" and sdk_object == "iam_ldap_policy":
+                                    # If 'delete settings' is not set, then skip deleting Appliance LDAP/AD configuration.
+                                    if not delete_settings and result.organization == None:
+                                        is_appliance_ldap_ad_configured = True
+                                        self.logger(level="debug",
+                                                message=f"Skipping {result.object_type} with name "
+                                                        f"{getattr(result, 'name', '')} as it is defined for Appliance LDAP/AD")
+                                        break
+                            if result_is_system_defined or is_appliance_ldap_ad_configured:
                                 continue
 
                         # We skip some System defined objects which exists on appliance for the software repository
@@ -455,7 +464,7 @@ class IntersightDevice(GenericDevice):
                                 if result.moid in orgs_to_be_deleted:
                                     filtered_results.append(result)
                             else:
-                                if result.organization.moid in orgs_to_be_deleted:
+                                if getattr(getattr(result, "organization"), "moid", "") in orgs_to_be_deleted:
                                     filtered_results.append(result)
                         else:
                             # If we do not restrict the deletion to a list of organizations, then we need to add all
@@ -706,10 +715,16 @@ class IntersightDevice(GenericDevice):
         self.logger(level="debug", message="Using Intersight SDK version " + str(self.version_sdk))
         try:
             self._set_device_name_and_version()
-            if self.cache_manager.cache.fetch_orgs():
-                self.cache_manager.save_to_cache(cache_key="orgs")
             self.metadata.timestamp_last_connected = datetime.datetime.now()
             self.metadata.is_reachable = True
+
+            # Fetch device_endpoint_id to uniquely identify the Intersight account.
+            # This helps distinguish devices registered under different Intersight accounts.
+            account_api = IamApi(api_client=self.handle)
+            account = account_api.get_iam_account_list(_request_timeout=self.timeout)
+
+            if account.results:
+                self.metadata.device_endpoint_id = account.results[0].account_moid
 
             version = "unknown"
             if self.version:
@@ -785,6 +800,11 @@ class IntersightDevice(GenericDevice):
                     name="ConnectIntersightDevice", status="successful",
                     status_message="Successfully connected to " + self.metadata.device_type_long + " device " +
                                    str(self.name))
+
+            # Fetch organizations after a successful connection
+            if self.cache_manager.cache.fetch_orgs():
+                self.cache_manager.save_to_cache(cache_key="orgs")
+
             return True
 
         except Exception as err:

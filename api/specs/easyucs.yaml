@@ -77,6 +77,10 @@ components:
       type: boolean
       description: Whether rack servers should be decommissioned
       example: true
+    default_password_set:
+      type: boolean
+      description: True if the default password field is set, False otherwise
+      example: false
     delete_existing_resource_group_memberships_for_intersight_shared_orgs:
       type: boolean
       description: Whether to delete resource membership with organization
@@ -1675,6 +1679,13 @@ components:
       description: UUID of the config
       schema:
        $ref: '#/components/schemas/config_uuid'
+    device_type:
+      name: device_type
+      in: query
+      required: false
+      description: Type of device
+      schema:
+       $ref: '#/components/schemas/device_type'
     device_uuid:
       name: device_uuid
       in: path
@@ -1887,6 +1898,7 @@ paths:
       summary: Get all devices
       description: Returns a list containing all devices in EasyUCS. The list supports paging.
       parameters:
+        - $ref: '#/components/parameters/device_type'
         - $ref: '#/components/parameters/filter_attribute'
         - $ref: '#/components/parameters/filter_type'
         - $ref: '#/components/parameters/filter_value'
@@ -3110,6 +3122,24 @@ paths:
           $ref: '#/components/responses/404NotFound'
         '500':
           $ref: '#/components/responses/500ServerError'
+  "/devices/{device_uuid}/configs/{config_uuid}/orgs":
+    get:
+      tags:
+        - configs
+      summary: Get organization details with profile presence
+      description: Returns details of all organizations in the config
+      parameters:
+        - $ref: "#/components/parameters/device_uuid"
+        - $ref: "#/components/parameters/config_uuid"
+      responses:
+        "200":
+          description: Organization details with profile info
+        "400":
+          $ref: "#/components/responses/400ClientError"
+        "404":
+          $ref: "#/components/responses/404NotFound"
+        "500":
+          $ref: "#/components/responses/500ServerError"
   '/devices/{device_uuid}/configs/{config_uuid}/actions/download':
     get:
       tags:

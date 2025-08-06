@@ -21,7 +21,7 @@ from config.ucs.ucsc.policies import UcsCentralBiosPolicy, UcsCentralBootPolicy,
     UcsCentralIscsiAuthenticationProfile, UcsCentralLanConnectivityPolicy, UcsCentralLocalDiskConfPolicy,  \
     UcsCentralMaintenancePolicy, UcsCentralNetworkControlPolicy, UcsCentralPowerControlPolicy,\
     UcsCentralPowerSyncPolicy, UcsCentralQosPolicy, UcsCentralSanConnectivityPolicy, UcsCentralScrubPolicy, \
-    UcsCentralSerialOverLanPolicy, UcsCentralStorageConnectionPolicy, \
+    UcsCentralSerialOverLanPolicy, UcsCentralSriovHpnConnectionPolicy, UcsCentralStorageConnectionPolicy, \
     UcsCentralStorageProfile, UcsCentralThresholdPolicy, UcsCentralUsnicConnectionPolicy, UcsCentralVmediaPolicy, \
     UcsCentralVmqConnectionPolicy
 
@@ -166,6 +166,7 @@ class UcsCentralOrg(UcsCentralConfigObject):
         "server_pool_policy_qualifications": "Server Pool Policy Qualifications",
         "server_pools": "Server Pools",
         "service_profiles": "Service Profiles",
+        "sriov_hpn_connection_policies": "SRIOV HPN Connection Policies",
         "storage_connection_policies": "Storage Connection Policies",
         "storage_profiles": "Storage Profiles",
         "threshold_policies": "Threshold Policies",
@@ -316,6 +317,9 @@ class UcsCentralOrg(UcsCentralConfigObject):
         self.service_profiles = \
             self._get_generic_element(json_content=json_content, object_class=UcsCentralServiceProfile,
                                       name_to_fetch="service_profiles")
+        self.sriov_hpn_connection_policies = \
+            self._get_generic_element(json_content=json_content, object_class=UcsCentralSriovHpnConnectionPolicy,
+                                      name_to_fetch="sriov_hpn_connection_policies")
         self.storage_connection_policies = \
             self._get_generic_element(json_content=json_content, object_class=UcsCentralStorageConnectionPolicy,
                                       name_to_fetch="storage_connection_policies")
@@ -383,8 +387,8 @@ class UcsCentralOrg(UcsCentralConfigObject):
             'ipmi_access_profiles', 'iscsi_adapter_policies', 'iscsi_authentication_profiles',
             'local_disk_config_policies', 'maintenance_policies', 'power_control_policies', 'power_sync_policies',
             'qos_policies', 'server_pool_policy_qualifications', 'threshold_policies', 'compute_connection_policies',
-            'chassis_profiles', 'bios_policies', 'boot_policies', 'network_control_policies', 'scrub_policies',
-            'storage_connection_policies', 'storage_profiles', 'usnic_connection_policies', 'vhba_templates',
+            'sriov_hpn_connection_policies', 'chassis_profiles', 'bios_policies', 'boot_policies', 'network_control_policies',
+            'scrub_policies', 'storage_connection_policies', 'storage_profiles', 'usnic_connection_policies', 'vhba_templates',
             'vmedia_policies', 'vmq_connection_policies', 'vnic_templates', 'lan_connectivity_policies',
             'san_connectivity_policies', 'service_profiles', 'orgs']
 

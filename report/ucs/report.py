@@ -71,7 +71,7 @@ class UcsSystemReport(UcsGenericReport):
 
 class UcsImcReport(UcsGenericReport):
     def __init__(self, parent, device, inventory, config, language, output_format, page_layout, directory, size):
-        self.title = config.admin_networking[0].management_hostname
+        self.title = config.admin_networking[0].management_hostname or "unknown"
 
         UcsGenericReport.__init__(self, parent=parent, device=device, inventory=inventory, config=config,
                                   language=language, output_format=output_format, page_layout=page_layout,

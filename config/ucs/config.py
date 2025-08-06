@@ -871,18 +871,21 @@ class UcsSystemConfig(GenericUcsConfig):
             'fabricEthVlanPc', 'fabricEthVlanPortEp', 'fabricFcEndpoint', 'fabricFcEstcEp', 'fabricFcMon',
             'fabricFcMonSrcEp', 'fabricFcMonSrcRef', 'fabricFcSan', 'fabricFcSanEp', 'fabricFcSanPc', 'fabricFcSanPcEp',
             'fabricFcUserZone', 'fabricFcVsanPc', 'fabricFcVsanPortEp', 'fabricFcZoneProfile', 'fabricFcoeEstcEp',
-            'fabricFcoeSanEp', 'fabricFcoeSanPc', 'fabricFcoeSanPcEp', 'fabricFcoeVsanPortEp', 'fabricLacpPolicy',
-            'fabricLanCloud', 'fabricLanCloudPolicy', 'fabricLanPinGroup', 'fabricLanPinTarget', 'fabricMacSec',
-            'fabricMacSecEapol', 'fabricMacSecIfConfig', 'fabricMacSecKeyChain', 'fabricMacSecPolicy',
-            'fabricMonOriginIP', 'fabricMonOriginSVI', 'fabricMulticastPolicy', 'fabricNetGroup', 'fabricNetGroupRef',
+            'fabricFcoeSanEp', 'fabricFcoeSanPc', 'fabricFcoeSanPcEp', 'fabricFcoeVsanPortEp', 'fabricFlowMonDefinition',
+            'fabricFlowMonExporterProfile', 'fabricLacpPolicy', 'fabricLanCloud', 'fabricLanCloudPolicy', 'fabricLanPinGroup', 
+            'fabricLanPinTarget', 'fabricLifeTime', 'fabricMacSec', 'fabricMacSecEapol', 'fabricMacSecIfConfig',
+            'fabricMacSecKeyChain', 'fabricMacSecKey', 'fabricMacSecPolicy', 'fabricMonOriginIP', 'fabricMonOriginSVI',
+            'fabricMulticastPolicy', 'fabricNetflowCollector', 'fabricNetflowIPv4Addr', 'fabricNetflowMonitor',
+            'fabricNetflowMonitorRef', 'fabricNetflowMonExporter', 'fabricNetflowMonExporterRef', 'fabricNetflowMonSession',
+            'fabricNetflowMonSrcRef', 'fabricNetflowTimeoutPolicy', 'fabricNetGroup', 'fabricNetGroupRef',
             'fabricOrgVlanPolicy', 'fabricPooledVlan', 'fabricRemoteConfig', 'fabricReservedVlan', 'fabricSanCloud',
             'fabricSanPinGroup', 'fabricSanPinTarget', 'fabricUdldLinkPolicy', 'fabricUdldPolicy', 'fabricVCon',
             'fabricVConProfile', 'fabricVlan', 'fabricVlanGroupReq', 'fabricVlanReq', 'fabricVsan', 'faultPolicy',
             'fcPIo', 'fcpoolBlock', 'fcpoolInitiators', 'fcpoolOui', 'fcpoolOuis', 'firmwareAutoSyncPolicy',
             'firmwareChassisPack', 'firmwareComputeHostPack', 'firmwareExcludeChassisComponent',
-            'firmwareExcludeServerComponent', 'firmwarePackItem', 'flowctrlItem', 'ippoolBlock', 'ippoolIpV6Block',
-            'ippoolPool', 'iqnpoolBlock', 'iqnpoolPool', 'iscsiAuthProfile', 'lsBinding', 'lsPower', 'lsRequirement',
-            'lsServer', 'lsServerExtension', 'lsVConAssign', 'lsbootBootSecurity', 'lsbootDef',
+            'firmwareExcludeServerComponent', 'firmwarePackItem', 'flowctrlItem', 'ipIpV4StaticTargetAddr', 'ippoolBlock',
+            'ippoolIpV6Block', 'ippoolPool', 'iqnpoolBlock', 'iqnpoolPool', 'iscsiAuthProfile', 'lsBinding', 'lsPower',
+            'lsRequirement', 'lsServer', 'lsServerExtension', 'lsVConAssign', 'lsbootBootSecurity', 'lsbootDef',
             'lsbootDefaultLocalImage', 'lsbootEFIShell', 'lsbootEmbeddedLocalDiskImage',
             'lsbootEmbeddedLocalDiskImagePath', 'lsbootEmbeddedLocalLunImage', 'lsbootIScsi', 'lsbootIScsiImagePath',
             'lsbootLan', 'lsbootLanImagePath', 'lsbootLocalDiskImage', 'lsbootLocalDiskImagePath',
@@ -1264,9 +1267,11 @@ class UcsImcConfig(GenericUcsConfig):
 
 class UcsCentralConfig(GenericUcsConfig):
     _CONFIG_SECTION_ATTRIBUTES_MAP = {
+        "authentication": "Authentication",
         "date_time": "Date Time",
         "dns": "DNS",
         "domain_groups": "Domain Groups",
+        "ldap": "LDAP",
         "local_users": "Local Users",
         "locales": "Locales",
         "management_interfaces": "Management Interfaces",
@@ -1279,9 +1284,11 @@ class UcsCentralConfig(GenericUcsConfig):
     }
 
     def __init__(self, parent=None):
+        self.authentication = []
         self.date_time = []
         self.dns = []
         self.domain_groups = []
+        self.ldap = []
         self.local_users = []
         self.locales = []
         self.management_interfaces = []
@@ -1398,7 +1405,9 @@ class UcsCentralConfig(GenericUcsConfig):
 
         # List of SDK objects to fetch that are only available in Central
         sdk_objects_to_fetch = [
-            'aaaDomainGroup', 'aaaEpAuthProfile', 'aaaEpUser', 'aaaLocale', 'aaaOrg', 'aaaPwdProfile', 'aaaRole',
+            'aaaAuthRealm', 'aaaConsoleAuth', 'aaaDefaultAuth', 'aaaDomain', 'aaaDomainAuth', 'aaaDomainGroup',
+            'aaaLdapEp', 'aaaLdapGroup', 'aaaLdapGroupRule', 'aaaLdapProvider', 'aaaProviderGroup',
+            'aaaProviderRef', 'aaaEpAuthProfile', 'aaaEpUser', 'aaaLocale', 'aaaOrg', 'aaaPwdProfile', 'aaaRole',
             'aaaSshAuth', 'aaaUser', 'aaaUserLocale', 'aaaUserRole', 'adaptorCapQual', 'adaptorEthAdvFilterProfile',
             'adaptorEthArfsProfile', 'adaptorEthCompQueueProfile', 'adaptorEthFailoverProfile',
             'adaptorEthGENEVEProfile', 'adaptorEthInterruptProfile', 'adaptorEthInterruptScalingProfile',
@@ -1452,8 +1461,8 @@ class UcsCentralConfig(GenericUcsConfig):
             'vnicIpV4PooledAddr', 'vnicIPv4PooledIscsiAddr', 'vnicIpV6MgmtPooledAddr', 'vnicIScsi',
             'vnicIScsiAutoTargetIf', 'vnicIScsiBootParams', 'vnicIScsiBootVnic', 'vnicIScsiLCP', 'vnicIScsiNode',
             'vnicIScsiStaticTargetIf', 'vnicIScsiTargetParams', 'vnicLanConnPolicy', 'vnicLanConnTempl', 'vnicLun',
-            'vnicMgmtIf', 'vnicSanConnPolicy', 'vnicSanConnTempl', 'vnicUsnicConPolicy', 'vnicUsnicConPolicyRef',
-            'vnicVlan', 'vnicVmqConPolicy', 'vnicVmqConPolicyRef']
+            'vnicMgmtIf', 'vnicSanConnPolicy', 'vnicSanConnTempl', 'vnicSriovHpnConPolicy', 'vnicSriovHpnConPolicyRef',
+            'vnicUsnicConPolicy', 'vnicUsnicConPolicyRef', 'vnicVlan', 'vnicVmqConPolicy', 'vnicVmqConPolicyRef']
 
         self.logger(level="debug",
                     message="Fetching " + self.device.metadata.device_type_long + " SDK objects for config")

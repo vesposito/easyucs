@@ -1,0 +1,17 @@
+{
+   "model_short_name": "",
+   "rear_file_name": "UCSC-RIS3A-240M8.png",
+   "rear_file_size": [651,222],
+   "pcie_slots": [
+      {
+         "id": 8,
+         "width": "full",
+         "coord": [28, 18]
+      },
+      {
+         "id": 7,
+         "width": "full",
+         "coord": [28, 143]
+      }
+   ]
+}

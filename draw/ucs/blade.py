@@ -8,6 +8,7 @@ import json
 from PIL import Image
 
 from draw.object import GenericUcsDrawEquipment
+from draw.ucs.riser import GenericUcsDrawFrontMezz
 from draw.ucs.storage import UcsStorageControllerDraw, UcsStorageLocalDiskDraw
 
 
@@ -25,6 +26,8 @@ class UcsBladeDrawFront(GenericUcsDrawEquipment):
             self.draw = self._create_draw()
 
         self.parent_draw.paste_layer(self.picture, self.picture_offset)
+
+        self.front_mezzanine = self.get_front_mezzanine()
 
         self.storage_controllers = self._get_storage_controllers()
 
@@ -71,6 +74,23 @@ class UcsBladeDrawFront(GenericUcsDrawEquipment):
         except FileNotFoundError:
             self.logger(level="error", message="JSON file " + folder_path + str(file_name) + ".json" + " not found")
 
+    def get_front_mezzanine(self, infra=False):
+        front_mezzanine_list = []
+
+        if self._parent.front_mezzanine:
+            # if hasattr(pcie_riser, "sku"):
+            #     if pcie_riser.sku not in ["None"]:
+            #         pcie_riser_list.append(
+            #             GenericUcsDrawPcieRiser(parent=pcie_riser, parent_draw=self, infra=infra))
+            if self._parent.front_mezzanine["sku"] not in ["None", None]:
+                front_mezzanine_list.append(
+                    GenericUcsDrawFrontMezz(parent=self._parent.front_mezzanine, parent_draw=self, infra=infra))
+
+        # We only keep the Front Mezz that have been fully created -> picture
+        front_mezzanine_list = [fmezz for fmezz in front_mezzanine_list if fmezz.picture_size]
+
+        return front_mezzanine_list
+
     def _get_storage_controllers(self):
         storage_controller_list = []
         # TODO : Check if this condition still needs to be here
@@ -87,7 +107,7 @@ class UcsBladeDrawFront(GenericUcsDrawEquipment):
         disk_list = []
         for disk in self._parent.nvme_drives:
             # Prevent potential disk with ID 0 to be used in Draw (happens sometimes with B200 M2)
-            if disk.id != "0" and disk.slot_type in ["sff-nvme", "sff-7mm-m6-nvme"]:
+            if disk.id != "0" and disk.slot_type in ["sff-nvme", "sff-7mm-m6-nvme", "e3s-nvme"]:
                 if disk.id in [str(i["id"]) for i in self.json_file["disks_slots"]]:
                     disk_list.append(UcsStorageLocalDiskDraw(parent=disk, parent_draw=self))
                     self.disk_slots_used.append(int(disk.id))
@@ -120,3 +140,16 @@ class UcsBladeDrawFront(GenericUcsDrawEquipment):
                                 coord = slot["coord"]
                         coord_offset = self.picture_offset[0] + coord[0], self.picture_offset[1] + coord[1]
                         self.parent_draw.paste_layer(img, coord_offset)
+
+        if not self.front_mezzanine:
+            blank_name = None
+            for model in self.json_file.get("front_mezzanine_models", []):
+                if "type" in model and not blank_name:
+                    if model["type"] == "blank":
+                        blank_name = model["name"]
+                        img = Image.open("catalog/front_mezzanines/img/" + blank_name + ".png", 'r')
+
+            if blank_name:
+                coord = self.json_file["front_mezzanine_slots"][0]["coord"]
+                coord_offset = self.picture_offset[0] + coord[0], self.picture_offset[1] + coord[1]
+                self.parent_draw.paste_layer(img, coord_offset)

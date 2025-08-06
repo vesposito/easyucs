@@ -18,13 +18,30 @@ from ucsmsdk.mometa.fabric.FabricEthMonSrcEp import FabricEthMonSrcEp
 from ucsmsdk.mometa.fabric.FabricFcMonSrcEp import FabricFcMonSrcEp
 from ucsmsdk.mometa.fabric.FabricEthVlanPc import FabricEthVlanPc
 from ucsmsdk.mometa.fabric.FabricEthVlanPortEp import FabricEthVlanPortEp
+from ucsmsdk.mometa.fabric.FabricFlowMonDefinition import FabricFlowMonDefinition
+from ucsmsdk.mometa.fabric.FabricFlowMonExporterProfile import FabricFlowMonExporterProfile
 from ucsmsdk.mometa.fabric.FabricLacpPolicy import FabricLacpPolicy
 from ucsmsdk.mometa.fabric.FabricLanPinGroup import FabricLanPinGroup
 from ucsmsdk.mometa.fabric.FabricLanPinTarget import FabricLanPinTarget
+from ucsmsdk.mometa.fabric.FabricLifeTime import FabricLifeTime
 from ucsmsdk.mometa.fabric.FabricMacSec import FabricMacSec
+from ucsmsdk.mometa.fabric.FabricMacSecEapol import FabricMacSecEapol
+from ucsmsdk.mometa.fabric.FabricMacSecIfConfig import FabricMacSecIfConfig
+from ucsmsdk.mometa.fabric.FabricMacSecKey import FabricMacSecKey
+from ucsmsdk.mometa.fabric.FabricMacSecKeyChain import FabricMacSecKeyChain
+from ucsmsdk.mometa.fabric.FabricMacSecPolicy import FabricMacSecPolicy
 from ucsmsdk.mometa.fabric.FabricMonOriginIP import FabricMonOriginIP
 from ucsmsdk.mometa.fabric.FabricMonOriginSVI import FabricMonOriginSVI
 from ucsmsdk.mometa.fabric.FabricMulticastPolicy import FabricMulticastPolicy
+from ucsmsdk.mometa.fabric.FabricNetflowCollector import FabricNetflowCollector
+from ucsmsdk.mometa.fabric.FabricNetflowIPv4Addr import FabricNetflowIPv4Addr
+from ucsmsdk.mometa.fabric.FabricNetflowMonExporter import FabricNetflowMonExporter
+from ucsmsdk.mometa.fabric.FabricNetflowMonExporterRef import FabricNetflowMonExporterRef
+from ucsmsdk.mometa.fabric.FabricNetflowMonitor import FabricNetflowMonitor
+from ucsmsdk.mometa.fabric.FabricNetflowMonitorRef import FabricNetflowMonitorRef
+from ucsmsdk.mometa.fabric.FabricNetflowMonSession import FabricNetflowMonSession
+from ucsmsdk.mometa.fabric.FabricNetflowMonSrcEp import FabricNetflowMonSrcEp
+from ucsmsdk.mometa.fabric.FabricNetflowTimeoutPolicy import FabricNetflowTimeoutPolicy
 from ucsmsdk.mometa.fabric.FabricNetGroup import FabricNetGroup
 from ucsmsdk.mometa.fabric.FabricNetGroupRef import FabricNetGroupRef
 from ucsmsdk.mometa.fabric.FabricPooledVlan import FabricPooledVlan
@@ -37,6 +54,7 @@ from ucsmsdk.mometa.fabric.FabricVlanGroupReq import FabricVlanGroupReq
 from ucsmsdk.mometa.fabric.FabricVlanReq import FabricVlanReq
 from ucsmsdk.mometa.firmware.FirmwareAck import FirmwareAck
 from ucsmsdk.mometa.flowctrl.FlowctrlItem import FlowctrlItem
+from ucsmsdk.mometa.ip.IpIpV4StaticTargetAddr import IpIpV4StaticTargetAddr
 from ucsmsdk.mometa.ippool.IppoolBlock import IppoolBlock
 from ucsmsdk.mometa.ippool.IppoolIpV6Block import IppoolIpV6Block
 from ucsmsdk.mometa.ippool.IppoolPool import IppoolPool
@@ -2178,11 +2196,195 @@ class UcsSystemNetflowMonitoring(UcsSystemConfigObject):
     def __init__(self, parent=None, json_content=None, fabric_eth_lan_flow_monitoring=None):
         UcsSystemConfigObject.__init__(self, parent=parent, ucs_sdk_object=fabric_eth_lan_flow_monitoring)
         self.admin_state = None
+        self.flow_record_definitions = []
+        self.flow_exporters = []
+        self.flow_collectors = []
+        self.flow_exporter_profiles = []
+        self.flow_monitors = []
+        self.flow_timeout_policies = []
+        self.flow_monitor_sessions= []
         if self._config.load_from == "live":
             if fabric_eth_lan_flow_monitoring is not None:
                 self.admin_state = fabric_eth_lan_flow_monitoring.admin_state
+            
+            if "fabricFlowMonDefinition" in self._config.sdk_objects:
+                for fabric_flow_mon_definition in self._config.sdk_objects["fabricFlowMonDefinition"]:
+                    flow_record_definition = {}
+                    flow_record_definition.update({"name": fabric_flow_mon_definition.name,
+                                                  "descr": fabric_flow_mon_definition.descr,
+                                                  "record_type": fabric_flow_mon_definition.record_type})
+                    if fabric_flow_mon_definition.ipv4keys:
+                        ipv4_keys = []
+                        ipv4_key_list = fabric_flow_mon_definition.ipv4keys.split(",")
+                        for ipv4_key in ipv4_key_list:
+                            ipv4_keys.append(ipv4_key)
+                        flow_record_definition.update({"key_type": fabric_flow_mon_definition.key_type, 
+                                                        "ipv4keys": ipv4_keys})
+                    elif fabric_flow_mon_definition.ipv6keys:
+                        ipv6_keys = []
+                        ipv6_key_list = fabric_flow_mon_definition.ipv6keys.split(",")
+                        for ipv6_key in ipv6_key_list:
+                            ipv6_keys.append(ipv6_key)
+                        flow_record_definition.update({"key_type": fabric_flow_mon_definition.key_type, 
+                                                       "ipv6keys": ipv6_keys})
+                    elif fabric_flow_mon_definition.l2keys:
+                        l2_keys = []
+                        l2_key_list = fabric_flow_mon_definition.l2keys.split(",")
+                        for l2_key in l2_key_list:
+                            l2_keys.append(l2_key)
+                        flow_record_definition.update({"key_type": fabric_flow_mon_definition.key_type, 
+                                                        "l2keys": l2_keys})
+                    if fabric_flow_mon_definition.nonkeys:
+                        non_keys = []
+                        non_key_list = fabric_flow_mon_definition.nonkeys.split(",")
+                        for non_key in non_key_list:
+                            non_keys.append(non_key)
+                        flow_record_definition.update({"nonkeys": non_keys})
+                    self.flow_record_definitions.append(flow_record_definition)
 
-            # TODO: Complete support for NetFlow Monitoring
+            if "fabricNetflowMonExporter" in self._config.sdk_objects:
+                for fabric_netflow_mon_exporter in self._config.sdk_objects["fabricNetflowMonExporter"]:
+                    flow_exporter = {}
+                    flow_exporter.update({
+                        "name": fabric_netflow_mon_exporter.name,
+                        "descr": fabric_netflow_mon_exporter.descr,
+                        "dscp": fabric_netflow_mon_exporter.dscp,
+                        "exporter_profile": fabric_netflow_mon_exporter.flow_exp_profile,
+                        "flow_collector": fabric_netflow_mon_exporter.flow_mon_collector,
+                        "template_data_timeout": fabric_netflow_mon_exporter.template_data_timeout,
+                        "option_exporter_stats_timeout": fabric_netflow_mon_exporter.exporter_stats_timeout,
+                        "option_interface_table_timeout": fabric_netflow_mon_exporter.interface_table_timeout,
+                        "version": fabric_netflow_mon_exporter.version
+                    })
+                    self.flow_exporters.append(flow_exporter) 
+
+            if "fabricNetflowCollector" in self._config.sdk_objects:
+                for fabric_netflow_collector in self._config.sdk_objects["fabricNetflowCollector"]:
+                    flow_collector = {}
+                    flow_collector.update({
+                        "name": fabric_netflow_collector.name,
+                        "descr": fabric_netflow_collector.descr,
+                        "port": fabric_netflow_collector.port,
+                        "vlan": fabric_netflow_collector.source_vlan
+                    })
+                    if "ipIpV4StaticTargetAddr" in self._config.sdk_objects:
+                        for ip_ipv4_static_target_addr in self._config.sdk_objects["ipIpV4StaticTargetAddr"]:
+                            if fabric_netflow_collector.dn + "/" in ip_ipv4_static_target_addr.dn:
+                                flow_collector.update({
+                                    "collector_ip": ip_ipv4_static_target_addr.addr,
+                                    "exporter_gateway_ip": ip_ipv4_static_target_addr.def_gw
+                                })
+                    self.flow_collectors.append(flow_collector) 
+
+            if "fabricFlowMonExporterProfile" in self._config.sdk_objects:
+                for fabric_flow_mon_exporter_profile in self._config.sdk_objects["fabricFlowMonExporterProfile"]:
+                    flow_exporter_profile = {}
+                    flow_exporter_profile.update({
+                        "name": fabric_flow_mon_exporter_profile.name,
+                        "descr": fabric_flow_mon_exporter_profile.descr
+                    })
+                    if "vnicEtherIf" in self._config.sdk_objects:
+                        exporter_interfaces = []
+                        for vnic_ether_if in self._config.sdk_objects["vnicEtherIf"]:
+                            if fabric_flow_mon_exporter_profile.dn in vnic_ether_if.dn:
+                                exporter_interface = {}
+                                exporter_interface.update({"vlan": vnic_ether_if.name})
+                                if "fabricNetflowIPv4Addr" in self._config.sdk_objects:
+                                    for fabric_netflow_ipv4_addr in self._config.sdk_objects["fabricNetflowIPv4Addr"]:
+                                        if vnic_ether_if.dn + "/" in fabric_netflow_ipv4_addr.dn:
+                                            if fabric_netflow_ipv4_addr.fabric_id == "A":
+                                                exporter_interface.update({
+                                                    "fabric_a": {
+                                                        "source_ip": fabric_netflow_ipv4_addr.addr,
+                                                        "subnet_mask": fabric_netflow_ipv4_addr.subnet
+                                                    }
+                                                })
+                                            elif fabric_netflow_ipv4_addr.fabric_id == "B":
+                                                exporter_interface.update({
+                                                    "fabric_b": {
+                                                        "source_ip": fabric_netflow_ipv4_addr.addr,
+                                                        "subnet_mask": fabric_netflow_ipv4_addr.subnet
+                                                    }
+                                                })
+                                    exporter_interfaces.append(exporter_interface)
+                        flow_exporter_profile.update({"exporter_interfaces": exporter_interfaces})
+
+                    self.flow_exporter_profiles.append(flow_exporter_profile)   
+
+            if "fabricNetflowMonitor" in self._config.sdk_objects:
+                for fabric_netflow_monitor in self._config.sdk_objects["fabricNetflowMonitor"]:
+                    flow_monitor = {}
+                    flow_monitor.update({
+                        "name": fabric_netflow_monitor.name,
+                        "descr": fabric_netflow_monitor.descr,
+                        "flow_definition": fabric_netflow_monitor.flow_mon_record_def,
+                        "flow_timeout_policy": fabric_netflow_monitor.flow_timeout_policy
+                    })
+                    if "fabricNetflowMonExporterRef" in self._config.sdk_objects:
+                        exporters = []
+                        for fabric_netflow_exporter_ref in self._config.sdk_objects["fabricNetflowMonExporterRef"]:
+                            if fabric_netflow_monitor.dn + "/" in fabric_netflow_exporter_ref.dn:
+                                exporters.append(fabric_netflow_exporter_ref.nf_mon_exporter_name)
+                        flow_monitor.update({"flow_exporters": exporters})
+                    self.flow_monitors.append(flow_monitor)
+
+            if "fabricNetflowTimeoutPolicy" in self._config.sdk_objects:
+                for fabric_netflow_timeout_policy in self._config.sdk_objects["fabricNetflowTimeoutPolicy"]:
+                    flow_timeout_policy = {}
+                    flow_timeout_policy.update({
+                        "name": fabric_netflow_timeout_policy.name,
+                        "descr": fabric_netflow_timeout_policy.descr,
+                        "active_timeout": fabric_netflow_timeout_policy.active_timeout,
+                        "inactive_timeout": fabric_netflow_timeout_policy.inactive_timeout
+                    })
+                    self.flow_timeout_policies.append(flow_timeout_policy)
+            
+            if "fabricNetflowMonSession" in self._config.sdk_objects:
+                for fabric_netflow_mon_session in self._config.sdk_objects["fabricNetflowMonSession"]:
+                    flow_monitor_session = {}
+                    flow_monitor_session.update({
+                        "name": fabric_netflow_mon_session.name,
+                        "descr": fabric_netflow_mon_session.descr
+                    })
+                    if "fabricNetflowMonitorRef" in self._config.sdk_objects:
+                        flow_monitors = []
+                        for fabric_netflow_monitor_ref in self._config.sdk_objects["fabricNetflowMonitorRef"]:
+                            if fabric_netflow_mon_session.dn + "/" in fabric_netflow_monitor_ref.dn:
+                                flow_monitor = {}
+                                flow_monitor.update({
+                                    "direction": fabric_netflow_monitor_ref.direction,
+                                    "name": fabric_netflow_monitor_ref.nf_monitor_name,
+                                })
+                                flow_monitors.append(flow_monitor)
+                        flow_monitor_session.update({
+                            "flow_monitors": flow_monitors
+                        })
+                        if "fabricNetflowMonSrcRef" in self._config.sdk_objects:
+                            sources=[]
+                            for fabric_netflow_mon_src_ref in self._config.sdk_objects["fabricNetflowMonSrcRef"]:
+                                if fabric_netflow_mon_session.dn + "/" in fabric_netflow_mon_src_ref.dn:
+                                    source={}
+                                    source_dn = fabric_netflow_mon_src_ref.source_dn.split("/")
+                                    source_type = fabric_netflow_mon_src_ref.source_type
+                                    if source_type == "vnic":
+                                        source.update({
+                                            "source_type": source_type,
+                                            "vnic": source_dn[2].replace("ether-", ""),
+                                            "service_profile": source_dn[1].replace("ls-", ""),
+                                            "org": "/".join([i.replace("org-", "", 1) for i in source_dn])
+                                        })
+                                        sources.append(source)
+                                    if source_type == "port-profile":
+                                        source={}
+                                        source.update({
+                                            "source_type": source_type,
+                                            "port_profile": source_dn[3].replace("vnic-", "")
+                                        })
+                                        sources.append(source)
+                            flow_monitor_session.update({
+                                "sources": sources
+                            })
+                    self.flow_monitor_sessions.append(flow_monitor_session)
 
         elif self._config.load_from == "file":
             if json_content is not None:
@@ -2191,6 +2393,69 @@ class UcsSystemNetflowMonitoring(UcsSystemConfigObject):
                                 message="Unable to get attributes from JSON content for " + self._CONFIG_NAME)
 
         self.clean_object()
+    
+    def clean_object(self): 
+        UcsSystemConfigObject.clean_object(self)
+
+        for record_definition in self.flow_record_definitions:
+            for value in ["descr", "ipv4keys", "ipv6keys", "key_type", "l2keys", "name", "nonkeys", "record_type"]:
+                if value not in record_definition:
+                    record_definition[value] = None
+
+        for exporter in self.flow_exporters:
+            for value in ["descr", "dscp", "exporter_profile", "flow_collector", "name", "option_exporter_stats_timeout",
+                           "option_interface_table_timeout", "template_data_timeout", "version"]:
+                if value not in exporter:
+                    exporter[value] = None
+        
+        for collector in self.flow_collectors:
+            for value in ["collector_ip", "descr", "exporter_gateway_ip", "name", "port", "vlan"]:
+                if value not in collector:
+                    collector[value] = None
+
+        for exporter_profile in self.flow_exporter_profiles:
+            for value in ["descr", "exporter_interfaces", "name"]:
+                if value not in exporter_profile:
+                    exporter_profile[value] = None
+
+            if exporter_profile["exporter_interfaces"]:
+                for interface in exporter_profile["exporter_interfaces"]:
+                    if "vlan" not in interface:
+                        interface["vlan"] = None
+                    for value in ["fabric_a", "fabric_b"]:
+                        if value not in interface:
+                            interface[value] = None
+                        elif interface[value]:
+                            for sub_value in ["source_ip", "subnet_mask"]:
+                                if sub_value not in interface[value]:
+                                    interface[value][sub_value] = None
+
+        for monitor in self.flow_monitors:
+            for value in ["descr", "flow_definition", "flow_exporters", "flow_timeout_policy", "name"]:
+                if value not in monitor:
+                    monitor[value] = None
+
+        for timeout_policy in self.flow_timeout_policies:
+            for value in ["active_timeout", "descr", "inactive_timeout", "name"]:
+                if value not in timeout_policy:
+                    timeout_policy[value] = None
+        
+        for monitor_session in self.flow_monitor_sessions:
+            for value in ["descr", "flow_monitors", "name", "sources"]:
+                if value not in monitor_session:
+                    monitor_session[value] = None
+            
+            if monitor_session["flow_monitors"]:
+                for monitor in monitor_session["flow_monitors"]:
+                    for value in ["direction", "name"]:
+                        if value not in monitor:
+                            monitor[value] = None
+
+            if monitor_session["sources"]:
+                for source in monitor_session["sources"]:
+                    for value in ["org", "service_profile", "source_type", "vnic", "port_profile"]:
+                        if value not in source:
+                            source[value] = None
 
     def push_object(self, commit=True):
         if commit:
@@ -2206,6 +2471,135 @@ class UcsSystemNetflowMonitoring(UcsSystemConfigObject):
         if commit:
             if self.commit(detail="Admin State") != True:
                 return False
+
+        if self.flow_record_definitions:
+            for record_definition in self.flow_record_definitions:
+                if record_definition["record_type"] != "system-defined":
+                    mo_fabric_flow_mon_definition = FabricFlowMonDefinition(parent_mo_or_dn=mo_fabric_eth_lan_flow_monitoring,
+                                                                            name=record_definition["name"],
+                                                                            descr=record_definition["descr"],
+                                                                            key_type=record_definition["key_type"],
+                                                                            ipv4keys=",".join(record_definition["ipv4keys"]) if record_definition["ipv4keys"] else None,
+                                                                            ipv6keys=",".join(record_definition["ipv6keys"]) if record_definition["ipv6keys"] else None,
+                                                                            l2keys=",".join(record_definition["l2keys"]) if record_definition["l2keys"] else None,
+                                                                            nonkeys=",".join(record_definition["nonkeys"] if record_definition["nonkeys"] else None)
+                                                                            )
+                    self._handle.add_mo(mo=mo_fabric_flow_mon_definition, modify_present=True)
+                    if commit:
+                        if self.commit(detail="Flow Record Definition - '" + record_definition["name"] + "'") != True:
+                            return False
+
+        if self.flow_exporter_profiles:
+            for exporter_profile in self.flow_exporter_profiles:
+                mo_fabric_flow_mon_exporter_profile = FabricFlowMonExporterProfile(parent_mo_or_dn=mo_fabric_eth_lan_flow_monitoring,
+                                                                    name=exporter_profile["name"],
+                                                                    descr=exporter_profile["descr"]
+                                                                    )
+                for interface in exporter_profile["exporter_interfaces"]:
+                    mo_vnic_ether_if = VnicEtherIf(parent_mo_or_dn=mo_fabric_flow_mon_exporter_profile, name=interface["vlan"])
+                    for fabric_id in ["A", "B"]:
+                        fabric = interface[f"fabric_{fabric_id.lower()}"]
+                        if fabric is not None:
+                            FabricNetflowIPv4Addr(parent_mo_or_dn=mo_vnic_ether_if, addr=fabric["source_ip"], subnet=fabric["subnet_mask"], fabric_id=fabric_id)
+                    self._handle.add_mo(mo=mo_vnic_ether_if, modify_present=True)
+                    if commit:
+                        if self.commit(detail="Flow Exporter Profile - '" + exporter_profile["name"] + "'") != True:
+                            return False
+                        
+        if self.flow_collectors:
+            for collector in self.flow_collectors:
+                mo_fabric_netflow_collector = FabricNetflowCollector(parent_mo_or_dn=mo_fabric_eth_lan_flow_monitoring,
+                                                                    name=collector["name"],
+                                                                    descr=collector["descr"],
+                                                                    source_vlan=collector["vlan"],
+                                                                    port=collector["port"]
+                                                                    )
+                IpIpV4StaticTargetAddr(parent_mo_or_dn=mo_fabric_netflow_collector, addr=collector["collector_ip"],
+                                       def_gw=collector["exporter_gateway_ip"])
+                self._handle.add_mo(mo=mo_fabric_netflow_collector, modify_present=True)
+                if commit:
+                    if self.commit(detail="Flow Collector - '" + collector["name"] + "'") != True:
+                        return False
+        
+        if self.flow_exporters:
+            for exporter in self.flow_exporters:
+                mo_fabric_netflow_mon_exporter = FabricNetflowMonExporter(parent_mo_or_dn=mo_fabric_eth_lan_flow_monitoring,
+                                                                          name=exporter["name"],
+                                                                          descr=exporter["descr"],
+                                                                          dscp=exporter["dscp"],
+                                                                          flow_exp_profile=exporter["exporter_profile"],
+                                                                          flow_mon_collector=exporter["flow_collector"],
+                                                                          exporter_stats_timeout=exporter["option_exporter_stats_timeout"],
+                                                                          interface_table_timeout=exporter["option_interface_table_timeout"],
+                                                                          template_data_timeout=exporter["template_data_timeout"]
+                                                                        )
+                self._handle.add_mo(mo=mo_fabric_netflow_mon_exporter, modify_present=True)
+                if commit:
+                    if self.commit(detail="Flow Exporter - '" + exporter["name"] + "'") != True:
+                        return False
+        
+        if self.flow_monitors:
+            for monitor in self.flow_monitors:
+                mo_fabric_netflow_monitor = FabricNetflowMonitor(parent_mo_or_dn=mo_fabric_eth_lan_flow_monitoring,
+                                                                          name=monitor["name"],
+                                                                          descr=monitor["descr"],
+                                                                          flow_mon_record_def=monitor["flow_definition"],
+                                                                          flow_timeout_policy=monitor["flow_timeout_policy"]
+                                                                )
+                if monitor["flow_exporters"]:
+                    for flow_exporter in monitor["flow_exporters"]:
+                        FabricNetflowMonExporterRef(parent_mo_or_dn=mo_fabric_netflow_monitor, nf_mon_exporter_name=flow_exporter)
+                self._handle.add_mo(mo=mo_fabric_netflow_monitor, modify_present=True)
+                if commit:
+                    if self.commit(detail="Flow Monitor - '" + monitor["name"] + "'") != True:
+                        return False
+        
+        if self.flow_timeout_policies:
+            # Only 'descr' of the pre-defined 'default' flow timeout policy can be pushed.
+            mo_fabric_netflow_timeout_policy = FabricNetflowTimeoutPolicy(parent_mo_or_dn=mo_fabric_eth_lan_flow_monitoring,
+                                                                          name="default",
+                                                                          descr=self.flow_timeout_policies[0]["descr"])
+            self._handle.add_mo(mo=mo_fabric_netflow_timeout_policy, modify_present=True)
+            if commit:
+                if self.commit(detail="Flow Timeout Policy - 'default'") != True:
+                    return False
+            
+
+        if self.flow_monitor_sessions:
+            for monitor_session in self.flow_monitor_sessions:
+                mo_fabric_netflow_mon_session = FabricNetflowMonSession(parent_mo_or_dn=mo_fabric_eth_lan_flow_monitoring,
+                                                                        name=monitor_session["name"],
+                                                                        descr=monitor_session["descr"]
+                                                                        )
+                if monitor_session["flow_monitors"]:
+                    for flow_monitor in monitor_session["flow_monitors"]:
+                        if flow_monitor.get("direction") is not None:
+                            FabricNetflowMonitorRef(parent_mo_or_dn=mo_fabric_netflow_mon_session, nf_monitor_name=flow_monitor["name"],
+                                                    direction=flow_monitor["direction"])
+                self._handle.add_mo(mo=mo_fabric_netflow_mon_session, modify_present=True)
+                if commit:
+                    if self.commit(detail="Flow Monitor Session - '" + monitor_session["name"] + "'") != True:
+                        return False
+                if monitor_session["sources"]:
+                    source_failed = False
+                    for source in monitor_session["sources"]:
+                        src_descr = ""
+                        if source["source_type"] == "vnic":
+                            dn_splitted = source["org"].split("/")
+                            ls_index = dn_splitted.index(next(path for path in dn_splitted if path.startswith("ls-")))
+                            parent_dn = "/".join([f"org-{path}" if i < ls_index else path for i, path in enumerate(dn_splitted[:-1])])
+                            src_descr = source["org"] + "/" + source["service_profile"] + " - " + source["vnic"]
+                            mo_fabric_netflow_mon_src_ep = FabricNetflowMonSrcEp(parent_mo_or_dn=parent_dn, name=monitor_session["name"])
+                            self._handle.add_mo(mo=mo_fabric_netflow_mon_src_ep, modify_present=True)
+                        elif source["source_type"] == "port-profile":
+                            mo_fabric_netflow_mon_src_ep = FabricNetflowMonSrcEp(parent_mo_or_dn="fabric/lan/profiles/vnic-" + source["port_profile"],
+                                                                                 name=monitor_session["name"])
+                            self._handle.add_mo(mo=mo_fabric_netflow_mon_src_ep, modify_present=True)
+                        if commit:
+                            if self.commit(detail="Source " + source["source_type"] + " " + src_descr) != True:
+                                source_failed = True
+                    if source_failed:
+                        return False
 
         return True
 
@@ -2895,11 +3289,99 @@ class UcsSystemMacSec(UcsSystemConfigObject):
     def __init__(self, parent=None, json_content=None, fabric_mac_sec=None):
         UcsSystemConfigObject.__init__(self, parent=parent, ucs_sdk_object=fabric_mac_sec)
         self.admin_state = None
+        self.keychain = None
+        self.policies = None
+        self.eapol = None
+        self.interface_configuration = None
         if self._config.load_from == "live":
             if fabric_mac_sec is not None:
                 self.admin_state = fabric_mac_sec.admin_state
 
-            # TODO: Complete support for MACsec
+            if "fabricMacSecKeyChain" in self._config.sdk_objects:
+                macsec_keychains = []
+                for keychain in self._config.sdk_objects["fabricMacSecKeyChain"]:
+                    if fabric_mac_sec.dn+"/macsec-keychain-"+keychain.name == keychain.dn:
+                        keychain_dict = {
+                            "name": keychain.name
+                        }
+                        if "fabricMacSecKey" in self._config.sdk_objects:
+                            keys = []
+                            for key in self._config.sdk_objects["fabricMacSecKey"]:
+                                if fabric_mac_sec.dn + "/macsec-keychain-" + keychain.name + "/macsec-key-" + key.key_id == key.dn:
+                                    key_dict = {
+                                        "key_id": key.key_id,
+                                        "encrypt_type": key.encrypt_type,
+                                        "cryptographic_algorithm": key.cryptographic_algorithm
+                                    }
+                                    if key.key_hex_string:
+                                        key_dict["key_hex_string"] = key.key_hex_string
+                                    if "fabricLifeTime" in self._config.sdk_objects:
+                                        life_time = []
+                                        for lifetime in self._config.sdk_objects["fabricLifeTime"]:
+                                            if fabric_mac_sec.dn + "/macsec-keychain-" + keychain.name + "/macsec-key-" + key.key_id + "/lifetime" == lifetime.dn:
+                                                lifetime_dict = {
+                                                    "start_date_time": lifetime.start_date_time,
+                                                    "timezone": lifetime.timezone,
+                                                    "infinite_lifetime": lifetime.infinite
+                                                }
+                                                if lifetime.infinite != "enabled":
+                                                    lifetime_dict["duration"] = lifetime.duration
+                                                    lifetime_dict["end_date_time"] = lifetime.end_date_time
+                                                life_time.append(lifetime_dict)
+                                        key_dict["lifetime"] = life_time
+
+                                    keys.append(key_dict)
+                            keychain_dict["keys"] = keys
+
+                        macsec_keychains.append(keychain_dict)
+                self.keychain = macsec_keychains
+
+            if "fabricMacSecPolicy" in self._config.sdk_objects:
+                macsec_policies = []
+                for policy in self._config.sdk_objects["fabricMacSecPolicy"]:
+                    if fabric_mac_sec.dn+"/macsec-policy-"+policy.name == policy.dn:
+                        macsec_policy = {
+                            "name": policy.name,
+                            "descr": policy.descr,
+                            "cipher_suite": policy.cipher_suite,
+                            "conf_offset": policy.conf_offset,
+                            "include_icv_param": policy.include_icv_param,
+                            "security_policy": policy.security_policy,
+                            "key_server_priority": policy.key_server_priority,
+                            "replay_window_size": policy.replay_window_size
+                        }
+                        if policy.sak_expiry_time != "0":
+                            macsec_policy["sak_expiry_time"] = policy.sak_expiry_time
+
+                        macsec_policies.append(macsec_policy)
+                self.policies = macsec_policies
+
+            if "fabricMacSecEapol" in self._config.sdk_objects:
+                macsec_eapol = []
+                for eapol in self._config.sdk_objects["fabricMacSecEapol"]:
+                    if fabric_mac_sec.dn + "/macsec-eapol-" + eapol.name == eapol.dn:
+                        eapol_dict = {
+                            "name": eapol.name,
+                            "descr": eapol.descr,
+                            "ether_type": hex(int(eapol.ether_type)),
+                            "mac_address": eapol.mac_address
+                        }
+                        macsec_eapol.append(eapol_dict)
+                self.eapol = macsec_eapol
+
+            if "fabricMacSecIfConfig" in self._config.sdk_objects:
+                macsec_if_config = []
+                for if_config in self._config.sdk_objects["fabricMacSecIfConfig"]:
+                    if fabric_mac_sec.dn + "/macsec-intf-conf-" + if_config.name == if_config.dn:
+                        config = {
+                            "name": if_config.name,
+                            "macsec_eapol_name": if_config.mac_sec_eapol_name,
+                            "macsec_fallback_keychain_name": if_config.mac_sec_fallback_key_chain_name,
+                            "macsec_keychain_name": if_config.mac_sec_key_chain_name,
+                            "macsec_policy_name": if_config.mac_sec_policy_name
+                        }
+                        macsec_if_config.append(config)
+                self.interface_configuration = macsec_if_config
 
         elif self._config.load_from == "file":
             if json_content is not None:
@@ -2908,6 +3390,46 @@ class UcsSystemMacSec(UcsSystemConfigObject):
                                 message="Unable to get attributes from JSON content for " + self._CONFIG_NAME)
 
         self.clean_object()
+
+    def clean_object(self):
+        UcsSystemConfigObject.clean_object(self)
+
+        if self.policies:
+            for element in self.policies:
+                for value in ["name", "descr", "cipher_suite", "key_server_priority", "security_policy",
+                              "replay_window_size", "sak_expiry_time", "include_icv_param"]:
+                    if value not in element:
+                        element[value] = None
+        if self.eapol:
+            for element in self.eapol:
+                for value in ["name", "descr", "mac_address", "ether_type"]:
+                    if value not in element:
+                        element[value] = None
+        if self.interface_configuration:
+            for element in self.interface_configuration:
+                for value in ["name", "macsec_eapol_name", "macsec_fallback_keychain_name", "macsec_keychain_name",
+                              "macsec_policy_name"]:
+                    if value not in element:
+                        element[value] = None
+        if self.keychain:
+            for element in self.keychain:
+                for value in ["name", "keys"]:
+                    if value not in element:
+                        element[value] = None
+
+                if element["keys"]:
+                    for key in element["keys"]:
+                        for value in ["cryptographic_algorithm", "encrypt_type", "key_hex_string", "key_id",
+                                      "lifetime"]:
+                            if value not in key:
+                                key[value] = None
+
+                        if key["lifetime"]:
+                            for lifetime in key["lifetime"]:
+                                for value in ["duration", "end_date_time", "infinite_lifetime", "start_date_time",
+                                              "timezone"]:
+                                    if value not in lifetime:
+                                        lifetime[value] = None
 
     def push_object(self, commit=True):
         if commit:
@@ -2919,6 +3441,73 @@ class UcsSystemMacSec(UcsSystemConfigObject):
         parent_mo = "fabric/lan"
         mo_fabric_mac_sec = FabricMacSec(parent_mo_or_dn=parent_mo, admin_state=self.admin_state)
         self._handle.add_mo(mo=mo_fabric_mac_sec, modify_present=True)
+
+        if self.policies:
+            for policy in self.policies:
+
+                mo_fabric_mac_sec_policy = FabricMacSecPolicy(parent_mo_or_dn=mo_fabric_mac_sec,
+                                                              name=policy["name"],
+                                                              descr=policy["descr"],
+                                                              cipher_suite=policy["cipher_suite"],
+                                                              conf_offset=policy["conf_offset"],
+                                                              include_icv_param=policy["include_icv_param"],
+                                                              key_server_priority=policy["key_server_priority"],
+                                                              replay_window_size=policy["replay_window_size"],
+                                                              sak_expiry_time=policy["sak_expiry_time"],
+                                                              security_policy=policy["security_policy"]
+                                                              )
+                self._handle.add_mo(mo=mo_fabric_mac_sec_policy, modify_present=True)
+
+        if self.eapol:
+            for eapol in self.eapol:
+                mo_fabric_mac_sec_eapol = FabricMacSecEapol(parent_mo_or_dn=mo_fabric_mac_sec,
+                                                            ether_type=str(int(eapol["ether_type"], 16)),
+                                                            mac_address=eapol["mac_address"],
+                                                            name=eapol["name"],
+                                                            descr=eapol["descr"]
+                                                            )
+                self._handle.add_mo(mo=mo_fabric_mac_sec_eapol, modify_present=True)
+
+        if self.interface_configuration:
+            for intf_config in self.interface_configuration:
+                mo_fabric_mac_sec_intf_config = FabricMacSecIfConfig(
+                    parent_mo_or_dn=mo_fabric_mac_sec,
+                    mac_sec_eapol_name=intf_config["macsec_eapol_name"],
+                    mac_sec_fallback_key_chain_name=intf_config["macsec_fallback_keychain_name"],
+                    mac_sec_key_chain_name=intf_config["macsec_keychain_name"],
+                    mac_sec_policy_name=intf_config["macsec_policy_name"],
+                    name=intf_config["name"]
+                )
+                self._handle.add_mo(mo=mo_fabric_mac_sec_intf_config, modify_present=True)
+
+        if self.keychain:
+            for keychain in self.keychain:
+                mo_fabric_mac_sec_keychain = FabricMacSecKeyChain(parent_mo_or_dn=mo_fabric_mac_sec,
+                                                                  name=keychain["name"])
+                if keychain.get("keys"):
+                    for keys in keychain["keys"]:
+                        mo_fabric_mac_sec_key = FabricMacSecKey(
+                            parent_mo_or_dn=mo_fabric_mac_sec_keychain,
+                            key_id=keys["key_id"],
+                            key_hex_string=keys["key_hex_string"],
+                            encrypt_type=keys["encrypt_type"],
+                            cryptographic_algorithm=keys["cryptographic_algorithm"]
+                        )
+                        self._handle.add_mo(mo=mo_fabric_mac_sec_key, modify_present=True)
+
+                        if keys.get("lifetime"):
+                            for lifetime in keys["lifetime"]:
+                                mo_fabric_mac_sec_key_lifetime = FabricLifeTime(
+                                    parent_mo_or_dn=mo_fabric_mac_sec_key,
+                                    duration=lifetime["duration"],
+                                    start_date_time=lifetime["start_date_time"],
+                                    end_date_time=lifetime["end_date_time"],
+                                    timezone=lifetime["timezone"],
+                                    infinite=lifetime["infinite_lifetime"]
+                                )
+                                self._handle.add_mo(mo=mo_fabric_mac_sec_key_lifetime, modify_present=True)
+                self._handle.add_mo(mo=mo_fabric_mac_sec_keychain, modify_present=True)
+
         if commit:
             if self.commit(detail="Admin State") != True:
                 return False

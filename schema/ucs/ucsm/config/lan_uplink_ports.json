@@ -80,8 +80,16 @@
          "enum": [
             "auto",
             "cl74",
-            "cl91"
+            "cl91",
+            "rs-cons16",
+            "rs-ieee",
+            "off"
          ]
+      },
+      "macsec_interface_configuration": {
+         "description": "MACsec Interface Configuration assigned to LAN Uplink Port",
+         "type": "string",
+         "pattern": "^[\\-\\.:_a-zA-Z0-9]{0,16}$"
       }
    },
    "additionalProperties": false,

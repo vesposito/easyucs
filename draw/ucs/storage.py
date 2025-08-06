@@ -299,8 +299,9 @@ class UcsStorageLocalDiskDraw(GenericUcsDrawEquipment):
         # For NVME disks (no storage controller as parent)
         elif hasattr(self, "parent_draw") and self.device_type == "NVME SSD":
             if any(x in self.parent_draw.__class__.__name__ for x in ["DrawRackRear", "RackDrawRear"]):
-                if any(x in self.parent_draw._parent.sku
-                       for x in ["UCSC-C240-M5", "HX240C-M5", "HXAF240C-M5"]):
+                if any(x in self.parent_draw._parent.sku for x in ["UCSC-C240-M5", "HX240C-M5", "HXAF240C-M5",
+                                                                   "UCSC-C240-M6", "UCSC-C245-M6", "UCSC-C240-M7",
+                                                                   "UCSC-C240-M8", "UCSC-C245-M8"]):
                     for disk in self.parent_draw.json_file["disks_slots_rear"]:
                         if self.id == disk['id']:
                             return disk
@@ -310,10 +311,19 @@ class UcsStorageLocalDiskDraw(GenericUcsDrawEquipment):
                             self.id = self.id - 2
                             return self._get_disk_info()
 
+            # For NVMe disks that are connected via a Tri-Mode Storage Controller
+            elif self.parent_draw.__class__.__name__ in ["UcsStorageControllerDraw"]:
+                if hasattr(self.parent_draw, "parent_draw") and "disks_slots" in self.parent_draw.parent_draw.json_file:
+                    for disk in self.parent_draw.parent_draw.json_file["disks_slots"]:
+                        if self.id == disk['id']:
+                            return disk
+
             elif "disks_slots" in self.parent_draw.json_file:
                 for disk in self.parent_draw.json_file["disks_slots"]:
                     if self.id == disk['id']:
                         return disk
+
+            return None
 
         else:
             if any(x in self.parent_draw.__class__.__name__ for x in ["DrawRackRear", "RackDrawRear"]):
@@ -559,6 +569,15 @@ class UcsStorageLocalDiskDraw(GenericUcsDrawEquipment):
             self.background = self._create_background(self.canvas_width, self.canvas_height, self.canvas_color)
             self.draw = self._create_draw()
             self.paste_layer(self.picture, (0, 0))
+
+        elif self.format == "e3s":
+            fill_color = "black"
+            if warning:
+                fill_color = fill_color_sku_warning
+            font_size = 12
+            font = ImageFont.truetype('arial.ttf', font_size)
+            start_coord = (119, 18)
+            self.draw.text((start_coord[0], start_coord[1] + 0 * font_size), self.disk_size, fill=fill_color, font=font)
 
         self.picture = self.background
 

@@ -97,7 +97,10 @@
          "enum": [
             "auto",
             "cl74",
-            "cl91"
+            "cl91",
+            "rs-cons16",
+            "rs-ieee",
+            "off"
          ]
       },
       "vlan_port_mode": {

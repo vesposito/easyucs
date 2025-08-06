@@ -3896,7 +3896,7 @@ class IntersightLdapPolicy(IntersightConfigObject):
     _CONFIG_SECTION_NAME = "ldap_policies"
     _INTERSIGHT_SDK_OBJECT_NAME = "iam.LdapPolicy"
 
-    def __init__(self, parent=None, ldap_policy=None):
+    def __init__(self, parent=None, ldap_policy=None, appliance_management_ldap=False):
         IntersightConfigObject.__init__(self, parent=parent, sdk_object=ldap_policy)
 
         self.base_properties = None
@@ -3918,12 +3918,14 @@ class IntersightLdapPolicy(IntersightConfigObject):
                         ldap_base_properties = getattr(self._object, "base_properties")
                         if hasattr(ldap_base_properties, "base_dn") and getattr(ldap_base_properties, "base_dn"):
                             base_properties["base_dn"] = getattr(ldap_base_properties, "base_dn")
-                        if hasattr(ldap_base_properties, "domain") and getattr(ldap_base_properties, "domain"):
+                        if hasattr(ldap_base_properties, "domain") and getattr(ldap_base_properties, "domain")\
+                                and not appliance_management_ldap:
                             base_properties["domain"] = getattr(ldap_base_properties, "domain")
                         if hasattr(ldap_base_properties, "enable_nested_group_search"):
                             base_properties[
                                 "enable_nested_group_search"] = ldap_base_properties.enable_nested_group_search
-                        if hasattr(ldap_base_properties, "timeout") and getattr(ldap_base_properties, "timeout"):
+                        if hasattr(ldap_base_properties, "timeout") and getattr(ldap_base_properties, "timeout")\
+                                and not appliance_management_ldap:
                             base_properties["timeout"] = getattr(ldap_base_properties, "timeout")
                         if hasattr(ldap_base_properties, "enable_encryption"):
                             base_properties["enable_encryption"] = getattr(ldap_base_properties, "enable_encryption")
@@ -3939,23 +3941,27 @@ class IntersightLdapPolicy(IntersightConfigObject):
                                         self.logger(level="warning",
                                                     message="Password of " + self._CONFIG_NAME + " '" + self.name +
                                                             "' - Bind DN can't be exported")
-                        if hasattr(ldap_base_properties, "filter") and getattr(ldap_base_properties, "filter"):
+                        if hasattr(ldap_base_properties, "filter") and getattr(ldap_base_properties, "filter")\
+                                and not appliance_management_ldap:
                             base_properties["filter"] = getattr(ldap_base_properties, "filter")
                         if hasattr(ldap_base_properties, "group_attribute") and \
                                 getattr(ldap_base_properties, "group_attribute"):
                             base_properties["group_attribute"] = getattr(ldap_base_properties, "group_attribute")
-                        if hasattr(ldap_base_properties, "attribute") and getattr(ldap_base_properties, "attribute"):
+                        if hasattr(ldap_base_properties, "attribute") and getattr(ldap_base_properties, "attribute")\
+                                and not appliance_management_ldap:
                             base_properties["attribute"] = getattr(ldap_base_properties, "attribute")
-                        if hasattr(ldap_base_properties, "enable_group_authorization"):
+                        if hasattr(ldap_base_properties, "enable_group_authorization") and not appliance_management_ldap:
                             base_properties["enable_group_authorization"] = getattr(ldap_base_properties,
                                                                                     "enable_group_authorization")
-                        if hasattr(ldap_base_properties, "nested_group_search_depth") and \
-                                getattr(ldap_base_properties, "nested_group_search_depth"):
+                        if (hasattr(ldap_base_properties, "nested_group_search_depth") and \
+                                getattr(ldap_base_properties, "nested_group_search_depth") and
+                                not appliance_management_ldap):
                             base_properties["nested_group_search_depth"] = getattr(ldap_base_properties,
                                                                                    "nested_group_search_depth")
                     self.base_properties = base_properties
                     if hasattr(self._object, "enable_dns"):
-                        self.enable_dns = getattr(self._object, "enable_dns")
+                        if not appliance_management_ldap:
+                            self.enable_dns = getattr(self._object, "enable_dns")
                         if getattr(self._object, "enable_dns") is True:
                             dns_parameters = {}
                             if hasattr(self._object, "dns_parameters"):
@@ -3974,12 +3980,13 @@ class IntersightLdapPolicy(IntersightConfigObject):
                             self.dns_parameters = dns_parameters
                         else:
                             if hasattr(self._object, "providers"):
-                                self.providers = self._get_ldap_providers()
+                                self.providers = (
+                                    self._get_ldap_providers(appliance_management_ldap=appliance_management_ldap))
 
                     if hasattr(self._object, "user_search_precedence") and \
-                            getattr(self._object, "user_search_precedence"):
+                            getattr(self._object, "user_search_precedence") and not appliance_management_ldap:
                         self.user_search_precedence = getattr(self._object, "user_search_precedence")
-                    if hasattr(self._object, "groups"):
+                    if hasattr(self._object, "groups") and not appliance_management_ldap:
                         self.groups = self._get_ldap_groups()
 
         elif self._config.load_from == "file":
@@ -4050,7 +4057,7 @@ class IntersightLdapPolicy(IntersightConfigObject):
 
         return None
 
-    def _get_ldap_providers(self):
+    def _get_ldap_providers(self, appliance_management_ldap=False):
         # Fetches the ldap providers of LDAP policy when enable dns is disabled
         if "iam_ldap_provider" in self._config.sdk_objects:
             ldap_providers = []
@@ -4059,26 +4066,31 @@ class IntersightLdapPolicy(IntersightConfigObject):
                     if ldap_provider.ldap_policy.moid == self._moid:
                         provider = {
                             "ldap_server": ldap_provider.server,
-                            "ldap_server_port": ldap_provider.port,
-                            "vendor": ldap_provider.vendor
+                            "ldap_server_port": ldap_provider.port
                         }
+                        if not appliance_management_ldap:
+                            provider["vendor"] = ldap_provider.vendor
                         ldap_providers.append(provider)
 
             return ldap_providers
         return None
 
     @IntersightConfigObject.update_taskstep_description()
-    def push_object(self):
+    def push_object(self, appliance_management_ldap=False):
         from intersight.model.iam_ldap_policy import IamLdapPolicy
 
-        self.logger(message=f"Pushing {self._CONFIG_NAME} configuration: {self.name}")
+        if appliance_management_ldap:
+            self.logger(message=f"Pushing LDAP/AD settings: {self.name}")
+        else:
+            self.logger(message=f"Pushing {self._CONFIG_NAME} configuration: {self.name}")
 
         kwargs = {
             "object_type": self._INTERSIGHT_SDK_OBJECT_NAME,
-            "class_id": self._INTERSIGHT_SDK_OBJECT_NAME,
-            "organization": self.get_parent_org_relationship()
+            "class_id": self._INTERSIGHT_SDK_OBJECT_NAME
         }
 
+        if not appliance_management_ldap:
+            kwargs["organization"] = self.get_parent_org_relationship()
         if self.name is not None:
             kwargs["name"] = self.name
         if self.descr is not None:

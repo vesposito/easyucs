@@ -1,0 +1,29 @@
+{
+   "model_short_name": "GPU FMezz",
+   "front_file_name": "UCSX-X10C-GPUFM.png",
+   "front_file_size": [227,1680],
+   "disks_slots": [
+      {
+         "id": 1,
+         "format": "sff_m5",
+         "orientation": "vertical",
+         "coord": [16,1112],
+         "size": [437,97]
+      },
+      {
+         "id": 2,
+         "format": "sff_m5",
+         "orientation": "vertical",
+         "coord": [129,1112],
+         "size": [437,97]
+      }
+   ],
+   "disks_models": [
+      {
+         "name": "UCSC-BBLKD-S2",
+         "type": "blank",
+         "format": "sff_m5",
+         "description": "C-Series M5 SFF drive blanking panel"
+      }
+   ]
+}

@@ -455,6 +455,12 @@
                   "type": "string",
                   "pattern": "^[\\-\\.:_a-zA-Z0-9]{1,16}$"
                },
+               "sriov_hpn_connection_policy": {
+                  "description": "Service Profile - vNIC - SRIOV HPN Connection Policy Name",
+                  "type": "string",
+                  "default": "",
+                  "pattern": "^[\\-\\.:_a-zA-Z0-9]{0,16}$"
+               },
                "usnic_connection_policy": {
                   "description": "Service Profile - vNIC - usNIC Connection Policy Name",
                   "type": "string",
@@ -664,6 +670,27 @@
                            },
                            "org": {
                               "description": "vNIC - Operational State - Dynamic vNIC Connection Policy  - Org",
+                              "type": "string",
+                              "default": ""
+                           }
+                        },
+                        "additionalProperties": false,
+                        "required": [
+                           "name",
+                           "org"
+                        ]
+                     },
+                      "sriov_hpn_connection_policy": {
+                        "description": "vNIC - Operational State - SRIOV HPN Connection Policy",
+                        "type": "object",
+                        "properties": {
+                           "name": {
+                              "description": "vNIC - Operational State - SRIOV HPN Connection Policy - Name",
+                              "type": "string",
+                              "default": ""
+                           },
+                           "org": {
+                              "description": "vNIC - Operational State - SRIOV HPN Connection Policy  - Org",
                               "type": "string",
                               "default": ""
                            }

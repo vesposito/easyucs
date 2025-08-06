@@ -1,0 +1,395 @@
+{
+   "model_short_name": "C240 M8E3S",
+   "rear_file_name": "UCSC-C240-M8_rear.png",
+   "front_file_name": "UCSC-C240-M8E3S_front.png",
+   "rear_file_size": [2925,547],
+   "front_file_size": [2927,547],
+   "pcie_riser_slots": [
+      {
+         "id": 1,
+         "coord": [260, 26]
+      },
+      {
+         "id": 2,
+         "coord": [1090, 26]
+      },
+      {
+         "id": 3,
+         "coord": [1996, 25]
+      }
+  ],
+   "pcie_riser_models": [
+      {
+         "name": "UCSC-FBRS2-C240M6",
+         "type": "blank",
+         "riser_ids": [1,2],
+         "description": "Blanking Panel"
+      },
+      {
+         "name": "UCSC-FBRS3-C245",
+         "type": "blank",
+         "riser_ids": [3],
+         "description": "Blanking Panel"
+      }
+   ],
+   "mlom_slots": [
+      {
+         "id": 1,
+         "coord": [265, 437]
+      }
+   ],
+   "mlom_models": [
+      {
+         "name": "UCSC-MLOM-BLK-M6",
+         "type": "blank",
+         "description": "MLOM Blanking Panel M6"
+      }
+   ],
+   "pcie_models": [
+      {
+         "name": "UCSC-PCIF-01F",
+         "type": "blank",
+         "width": "full",
+         "description": "PCIe Full Height blanking panel for UCS C-Series Server"
+      },
+      {
+         "name": "UCSC-PCIF-01H",
+         "type": "blank",
+         "width": "half",
+         "description": "PCIe Low Profile blanking panel for UCS C-Series Server"
+      }
+   ],
+   "psus_slots_rear": [
+      {
+         "id": 1,
+         "coord": [1821,282]
+      },
+      {
+         "id": 2,
+         "coord": [2287,282]
+      }
+   ],
+   "psus_models": [
+      {
+         "name": "UCSC-PSU2V2-1400W",
+         "description": "1400W V2 AC Power Supply (200 - 240V) for 2U & 4U C Series"
+      },
+      {
+         "name": "UCSC-PSU2V2-1200W",
+         "description": "1200W / 800W V2 AC Power Supply for 2U C-Series Servers"
+      },
+      {
+         "name": "UCSC-PSU-930WDC",
+         "description": "930W -48V DC Common Slot Power Supply for c-series servers"
+      },
+      {
+         "name": "UCSC-PSU2V2-930DC",
+         "description": "930 W - 48V V2 DC Power Supply for 2U C-Series Servers"
+      },
+      {
+         "name": "UCSC-PSU2V2-650W",
+         "description": "650W V2 AC Power Supply for 2U C-Series Servers"
+      },
+      {
+         "name": "UCSC-PSU-650W",
+         "description": "650W power supply for C-series rack servers"
+      },
+      {
+         "name": "UCSC-PSU2-1200",
+         "description": "1200W 2u Power Supply For UCS"
+      },
+      {
+         "name": "UCSC-PSU2-1400W",
+         "description": "1400W AC Power Supply (200 - 240V) 2U & 4U C Series Servers"
+      },
+      {
+         "name": "UCSC-PSU-BLKP1U",
+         "type": "blank",
+         "description": "Power Supply Blanking Panel for C240 M4 servers"
+      }
+   ],
+   "lom_ports": {
+      "1": {
+         "port_coord": [1100, 463],
+         "port_type": "rj45",
+         "port_size": [70,40]
+      },
+      "2": {
+         "port_coord": [1228,463],
+         "port_type": "rj45",
+         "port_size": [70,40]
+      }
+   },
+   "disks_slots": [
+      {
+         "id": 1,
+         "format": "e3s",
+         "orientation": "horizontal",
+         "coord": [284, 53],
+         "size": [455,50]
+      },
+      {
+         "id": 2,
+         "format": "e3s",
+         "orientation": "horizontal",
+         "coord": [284, 109],
+         "size": [455,50]
+      },
+      {
+         "id": 3,
+         "format": "e3s",
+         "orientation": "horizontal",
+         "coord": [284, 165],
+         "size": [455,50]
+      },
+      {
+         "id": 4,
+         "format": "e3s",
+         "orientation": "horizontal",
+         "coord": [284, 221],
+         "size": [455,50]
+      },
+      {
+         "id": 5,
+         "format": "e3s",
+         "orientation": "horizontal",
+         "coord": [284, 277],
+         "size": [455,50]
+      },
+      {
+         "id": 6,
+         "format": "e3s",
+         "orientation": "horizontal",
+         "coord": [284, 333],
+         "size": [455,50]
+      },
+      {
+         "id": 7,
+         "format": "e3s",
+         "orientation": "horizontal",
+         "coord": [284, 389],
+         "size": [455,50]
+      },
+      {
+         "id": 8,
+         "format": "e3s",
+         "orientation": "horizontal",
+         "coord": [284, 445],
+         "size": [455,50]
+      },
+      {
+         "id": 9,
+         "format": "e3s",
+         "orientation": "horizontal",
+         "coord": [917, 53],
+         "size": [455,50]
+      },
+      {
+         "id": 10,
+         "format": "e3s",
+         "orientation": "horizontal",
+         "coord": [917, 109],
+         "size": [455,50]
+      },
+      {
+         "id": 11,
+         "format": "e3s",
+         "orientation": "horizontal",
+         "coord": [917, 165],
+         "size": [455,50]
+      },
+      {
+         "id": 12,
+         "format": "e3s",
+         "orientation": "horizontal",
+         "coord": [917, 221],
+         "size": [455,50]
+      },
+      {
+         "id": 13,
+         "format": "e3s",
+         "orientation": "horizontal",
+         "coord": [917, 277],
+         "size": [455,50]
+      },
+      {
+         "id": 14,
+         "format": "e3s",
+         "orientation": "horizontal",
+         "coord": [917, 333],
+         "size": [455,50]
+      },
+      {
+         "id": 15,
+         "format": "e3s",
+         "orientation": "horizontal",
+         "coord": [917, 389],
+         "size": [455,50]
+      },
+      {
+         "id": 16,
+         "format": "e3s",
+         "orientation": "horizontal",
+         "coord": [917, 445],
+         "size": [455,50]
+      },
+      {
+         "id": 17,
+         "format": "e3s",
+         "orientation": "horizontal",
+         "coord": [1551, 53],
+         "size": [455,50]
+      },
+      {
+         "id": 18,
+         "format": "e3s",
+         "orientation": "horizontal",
+         "coord": [1551, 109],
+         "size": [455,50]
+      },
+      {
+         "id": 19,
+         "format": "e3s",
+         "orientation": "horizontal",
+         "coord": [1551, 165],
+         "size": [455,50]
+      },
+      {
+         "id": 20,
+         "format": "e3s",
+         "orientation": "horizontal",
+         "coord": [1551, 221],
+         "size": [455,50]
+      },
+      {
+         "id": 21,
+         "format": "e3s",
+         "orientation": "horizontal",
+         "coord": [1551, 277],
+         "size": [455,50]
+      },
+      {
+         "id": 22,
+         "format": "e3s",
+         "orientation": "horizontal",
+         "coord": [1551, 333],
+         "size": [455,50]
+      },
+      {
+         "id": 23,
+         "format": "e3s",
+         "orientation": "horizontal",
+         "coord": [1551, 389],
+         "size": [455,50]
+      },
+      {
+         "id": 24,
+         "format": "e3s",
+         "orientation": "horizontal",
+         "coord": [1551, 445],
+         "size": [455,50]
+      },
+      {
+         "id": 25,
+         "format": "e3s",
+         "orientation": "horizontal",
+         "coord": [2183, 53],
+         "size": [455,50]
+      },
+      {
+         "id": 26,
+         "format": "e3s",
+         "orientation": "horizontal",
+         "coord": [2183, 109],
+         "size": [455,50]
+      },
+      {
+         "id": 27,
+         "format": "e3s",
+         "orientation": "horizontal",
+         "coord": [2183, 165],
+         "size": [455,50]
+      },
+      {
+         "id": 28,
+         "format": "e3s",
+         "orientation": "horizontal",
+         "coord": [2183, 221],
+         "size": [455,50]
+      },
+      {
+         "id": 29,
+         "format": "e3s",
+         "orientation": "horizontal",
+         "coord": [2183, 277],
+         "size": [455,50]
+      },
+      {
+         "id": 30,
+         "format": "e3s",
+         "orientation": "horizontal",
+         "coord": [2183, 333],
+         "size": [455,50]
+      },
+      {
+         "id": 31,
+         "format": "e3s",
+         "orientation": "horizontal",
+         "coord": [2183, 389],
+         "size": [455,50]
+      },
+      {
+         "id": 32,
+         "format": "e3s",
+         "orientation": "horizontal",
+         "coord": [2183, 445],
+         "size": [455,50]
+      }
+   ],
+   "disks_models": [
+      {
+         "name": "UCSC-E3S1T-F",
+         "type": "blank",
+         "format": "e3s",
+         "description": "UCS C-Series E3.S 1T Drive Filler"
+      }
+   ],
+   "imm_compatible": true,
+   "imm_min_required_version": "4.3(6a)",
+   "spec_sheet_url": "https://www.cisco.com/c/dam/en/us/products/collateral/servers-unified-computing/ucs-c-series-rack-servers/ucs-c240-m8-edsff-e3-s-rack-server.pdf",
+   "data_sheet_url": "https://www.cisco.com/c/en/us/products/collateral/servers-unified-computing/ucs-c-series-rack-servers/ucs-c240-m8-rack-server-ds.html",
+   "specs": {
+    "form_factor": "2RU",
+    "chipset": null,
+    "cpu": {
+      "sockets": 2,
+      "family_name": {
+        "granite_rapids": "Intel Xeon 6"
+      }
+    },
+    "memory": {
+      "dimm_type": "DDR5",
+      "dimm_slots": 32,
+      "max_speed": 8000,
+      "max_capacity": 8388608,
+      "dcpmm_support": false
+    },
+    "dimensions": {
+      "centimeters": {
+        "height": 8.7,
+        "width": 42.9,
+        "depth": 76.2
+      },
+      "inches": {
+        "height": 3.42,
+        "width": 16.9,
+        "depth": 30
+      },
+      "rack_units": 2
+    },
+    "weight": {
+      "lb": 66.65,
+      "kg": 30.23
+    }
+  }
+}

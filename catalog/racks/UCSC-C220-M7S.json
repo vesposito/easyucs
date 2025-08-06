@@ -194,13 +194,14 @@
       "cpu": {
          "sockets": 2,
          "family_name": {
-            "ice_lake": "4th Gen Intel Xeon Processor Scalable Family"
+            "sapphire_rapids": "4th Gen Intel Xeon Processor Scalable Family",
+            "emerald_rapids": "5th Gen Intel Xeon Processor Scalable Family"
          }
       },
       "memory": {
          "dimm_type": "DDR5",
          "dimm_slots": 32,
-         "max_speed": 4800,
+         "max_speed": 5600,
          "max_capacity": 4194304,
          "dcpmm_support": false
       },

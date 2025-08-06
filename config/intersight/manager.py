@@ -12,6 +12,7 @@ from config.intersight.settings import IntersightAccountDetails, IntersightOrgan
     IntersightResourceGroup, IntersightRole, IntersightUser, IntersightUserGroup
 from config.intersight.pools import IntersightMacPool, IntersightIqnPool, IntersightIpPool, IntersightUuidPool, \
     IntersightWwnnPool, IntersightWwpnPool
+from config.intersight.server_policies import IntersightLdapPolicy
 from config.manager import GenericConfigManager
 
 
@@ -65,6 +66,13 @@ class IntersightConfigManager(GenericConfigManager):
                                                                    iam_account=iam_account))
             # There should be only one iam.Account, so we take the first object we find
             break
+
+        # Fetch Intersight Appliance LDAP/AD settings
+        if self.parent.is_appliance:
+            for ldap in config.sdk_objects["iam_ldap_policy"]:
+                if ldap.organization is None and (any(tag.get("key") == "appliance.management" for tag in ldap.tags)):
+                    config.ldap.append(IntersightLdapPolicy(parent=config, ldap_policy=ldap,
+                                                            appliance_management_ldap=True))
 
         for iam_permission in config.sdk_objects["iam_permission"]:
             config.roles.append(IntersightRole(parent=config, iam_permission=iam_permission))
@@ -258,8 +266,7 @@ class IntersightConfigManager(GenericConfigManager):
                     is_pushed = resource_group.push_object() and is_pushed
 
                 # We sort the organizations in an order where shared organizations are pushed first.
-                config.orgs.sort(key=lambda o: len(o.shared_with_orgs) if o.shared_with_orgs else 0,
-                                reverse=True)
+                config.orgs.sort(key=lambda o: len(getattr(o, 'shared_with_orgs', []) or []), reverse=True)
 
                 # First we push the Orgs not including their sub policies/profiles/pools
                 failed_orgs = []
@@ -305,6 +312,9 @@ class IntersightConfigManager(GenericConfigManager):
 
                 for role in config.roles:
                     is_pushed = role.push_object() and is_pushed
+
+                for ldap in config.ldap:
+                    is_pushed = ldap.push_object(appliance_management_ldap=True) and is_pushed
 
                 for user in config.users:
                     is_pushed = user.push_object() and is_pushed
@@ -389,6 +399,10 @@ class IntersightConfigManager(GenericConfigManager):
             for account_details in config_json["account_details"]:
                 config.account_details.append(IntersightAccountDetails(parent=config,
                                                                        iam_account=account_details))
+
+        if "ldap" in config_json:
+            for ldap in config_json["ldap"]:
+                config.ldap.append(IntersightLdapPolicy(parent=config, ldap_policy=ldap))
                 
         if "equipment" in config_json:
             config.equipment.append(IntersightEquipment(parent=config, equipment=config_json["equipment"][0]))

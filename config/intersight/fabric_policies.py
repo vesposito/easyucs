@@ -2,8 +2,8 @@
 # !/usr/bin/env python
 
 """ fabric_policies.py: Easy UCS Deployment Tool """
-import copy
-
+import datetime
+from common import password_generator
 from config.intersight.object import IntersightConfigObject
 from config.intersight.server_policies import IntersightNetworkConnectivityPolicy, IntersightNtpPolicy, \
     IntersightSnmpPolicy, IntersightSyslogPolicy, IntersightEthernetNetworkGroupPolicy, \
@@ -224,6 +224,234 @@ class IntersightFabricMulticastPolicy(IntersightConfigObject):
         return True
 
 
+class IntersightMacSecPolicy(IntersightConfigObject):
+    _CONFIG_NAME = "MACsec Policy"
+    _CONFIG_SECTION_NAME = "macsec_policies"
+    _INTERSIGHT_SDK_OBJECT_NAME = "fabric.MacSecPolicy"
+
+    def __init__(self, parent=None, macsec_policy=None):
+        IntersightConfigObject.__init__(self, parent=parent, sdk_object=macsec_policy)
+
+        self.name = self.get_attribute(attribute_name="name")
+        self.cipher_suite = self.get_attribute(attribute_name="cipher_suite")
+        self.confidentiality_offset = self.get_attribute(attribute_name="confidentiality_offset")
+        self.descr = self.get_attribute(attribute_name="description", attribute_secondary_name="descr")
+        self.include_icv_indicator = self.get_attribute(attribute_name="include_icv_indicator")
+        self.key_server_priority = self.get_attribute(attribute_name="key_server_priority")
+        self.replay_window_size = self.get_attribute(attribute_name="replay_window_size")
+        self.sak_expiry_time = self.get_attribute(attribute_name="sak_expiry_time")
+        self.security_policy = self.get_attribute(attribute_name="security_policy")
+
+        self.eapol_configurations = None
+        self.fallback_keychain = None
+        self.primary_keychain = None
+
+        if self._config.load_from == "live":
+            if getattr(self._object, "mac_sec_ea_pol", None):
+                eapol_configuration = {
+                    "ether_type": self._object.mac_sec_ea_pol.get("ea_pol_ethertype"),
+                    "mac_address": self._object.mac_sec_ea_pol.get("ea_pol_mac_address")
+                }
+                self.eapol_configurations = eapol_configuration
+            if hasattr(self._object, "primary_key_chain"):
+                self.primary_keychain = self._get_keychain(getattr(self._object, "primary_key_chain", None))
+            if hasattr(self._object, "fallback_key_chain"):
+                self.fallback_keychain = self._get_keychain(getattr(self._object, "fallback_key_chain", None))
+
+        elif self._config.load_from == "file":
+            for attribute in ["eapol_configurations", "fallback_keychain", "primary_keychain"]:
+                setattr(self, attribute, None)
+                if attribute in self._object:
+                    setattr(self, attribute, self.get_attribute(attribute_name=attribute))
+
+            self.clean_object()
+
+    def _get_keychain(self, keychain_obj):
+
+        if keychain_obj is None:
+            return None
+
+        keychain = {
+            "keychain_name": keychain_obj.get("name")
+        }
+        if hasattr(keychain_obj, "sec_keys") and getattr(keychain_obj, "sec_keys", None) is not None:
+            keys = []
+            for key in keychain_obj["sec_keys"]:
+                key_dict = {
+                    "id": key.get("id"),
+                    "cryptographic_algorithm": key.get("cryptographic_algorithm"),
+                    "key_type": key.get("key_type")
+                }
+                if key.get("is_octet_string_set"):
+                    self.logger(level="warning",
+                                message="The Secret key for the " + self._CONFIG_NAME + " '" + self.name +
+                                        "' with Key Id '" + key.get("id") + "' can't be exported")
+
+                # Check if the key is set to be always active
+                # If `send_lifetime_unlimited` is True, it means the key is always active,
+                # so all other lifetime-related fields are ignored.
+                if key.get("send_lifetime_unlimited", None):
+                    lifetime = {
+                        "always_active": key["send_lifetime_unlimited"]
+                    }
+                    key_dict["lifetime"] = lifetime
+                else:
+                    # Configure lifetime configurations since the key is not always active
+                    lifetime = {
+                        "start_time": key.get("send_lifetime_start_time").isoformat()[:-3] + 'Z',
+                        "always_active": key.get("send_lifetime_unlimited"),
+                        "timezone": key.get("send_lifetime_time_zone"),
+                        "infinite_lifetime": key.get("send_lifetime_infinite")
+                    }
+                    # If the key does not have an infinite lifetime, set the end_time and duration
+                    if not key["send_lifetime_infinite"]:
+                        lifetime["end_time"] = key["send_lifetime_end_time"].isoformat()[:-3] + 'Z'
+                        lifetime["duration"] = key["send_lifetime_duration"]
+
+                    key_dict["lifetime"] = lifetime
+
+                keys.append(key_dict)
+
+            keychain["keys"] = keys
+
+        return keychain
+
+    def clean_object(self):
+        # We use this to make sure all options of a EAPOL Configurations are set to None if they are not present
+        if self.eapol_configurations:
+            for attribute in ["ether_type", "mac_address"]:
+                if attribute not in self.eapol_configurations:
+                    self.eapol_configurations[attribute] = None
+
+        # Ensure all expected fields in both primary and fallback keychains are set to None if missing
+        for keychain in [self.primary_keychain, self.fallback_keychain]:
+            if keychain:
+                if "keychain_name" not in keychain:
+                    keychain["keychain_name"] = None
+                if "keys" not in keychain:
+                    keychain["keys"] = None
+                else:
+                    for key in keychain["keys"]:
+                        for attribute in ["cryptographic_algorithm", "id", "secret_key", "key_type"]:
+                            if attribute not in key:
+                                key[attribute] = None
+                        if "lifetime" not in key:
+                            key["lifetime"] = None
+                        else:
+                            for sub_attribute in ["infinite_lifetime", "always_active", "start_time",
+                                                  "end_time", "duration", "timezone"]:
+                                if sub_attribute not in key["lifetime"]:
+                                    key["lifetime"][sub_attribute] = None
+
+    @IntersightConfigObject.update_taskstep_description()
+    def push_object(self):
+        from intersight.model.fabric_mac_sec_policy import FabricMacSecPolicy
+
+        self.logger(message=f"Pushing {self._CONFIG_NAME} configuration: {self.name}")
+
+        kwargs = {
+            "object_type": self._INTERSIGHT_SDK_OBJECT_NAME,
+            "class_id": self._INTERSIGHT_SDK_OBJECT_NAME,
+            "organization": self.get_parent_org_relationship()
+        }
+        if self.name is not None:
+            kwargs["name"] = self.name
+        if self.descr is not None:
+            kwargs["description"] = self.descr
+        if self.tags is not None:
+            kwargs["tags"] = self.create_tags()
+        if self.cipher_suite is not None:
+            kwargs["cipher_suite"] = self.cipher_suite
+        if self.confidentiality_offset is not None:
+            kwargs["confidentiality_offset"] = self.confidentiality_offset
+        if self.include_icv_indicator is not None:
+            kwargs["include_icv_indicator"] = self.include_icv_indicator
+        if self.key_server_priority is not None:
+            kwargs["key_server_priority"] = self.key_server_priority
+        if self.replay_window_size is not None:
+            kwargs["replay_window_size"] = self.replay_window_size
+        if self.sak_expiry_time is not None:
+            kwargs["sak_expiry_time"] = self.sak_expiry_time
+        if self.security_policy is not None:
+            kwargs["security_policy"] = self.security_policy
+
+        # EAPOL Configurations
+        if self.eapol_configurations is not None:
+            from intersight.model.fabric_mac_sec_ea_pol import FabricMacSecEaPol
+            eapol_kwargs = {
+                "object_type": "fabric.MacSecEaPol",
+                "class_id": "fabric.MacSecEaPol",
+                "ea_pol_ethertype": self.eapol_configurations["ether_type"],
+                "ea_pol_mac_address": self.eapol_configurations["mac_address"]
+            }
+            macsec_eapol = FabricMacSecEaPol(**eapol_kwargs)
+            kwargs["mac_sec_ea_pol"] = macsec_eapol
+        # Primary and Secondary Keychains
+        for keychain in ["primary_keychain", "fallback_keychain"]:
+            from intersight.model.fabric_sec_key_chain import FabricSecKeyChain
+            from intersight.model.fabric_sec_key import FabricSecKey
+            if keychain == "primary_keychain":
+                key_chain = self.primary_keychain
+            else:
+                key_chain = self.fallback_keychain
+            if key_chain is not None:
+                keychain_kwargs = {
+                    "object_type": "fabric.SecKeyChain",
+                    "class_id": "fabric.SecKeyChain",
+                    "name": key_chain["keychain_name"]
+                }
+                if key_chain.get("keys", []):
+                    keys = []
+                    for key in key_chain["keys"]:
+                        key_kwargs = {
+                            "object_type": "fabric.SecKey",
+                            "class_id": "fabric.SecKey",
+                            "cryptographic_algorithm": key.get("cryptographic_algorithm"),
+                            "id": key["id"]
+                        }
+                        if key.get("secret_key"):
+                            key_kwargs["octet_string"] = key["secret_key"]
+                        else:
+                            self.logger(
+                                level="warning",
+                                message="No secret key provided for field 'octet_string' of object fabric.SecKey"
+                            )
+                        if key.get("key_type") is not None:
+                            key_kwargs["key_type"] = key["key_type"]
+                        if key.get("lifetime"):
+                            if key["lifetime"].get("start_time") is not None:
+                                key_kwargs["send_lifetime_start_time"] = (
+                                    datetime.datetime.fromisoformat(((key["lifetime"]["start_time"]).replace('Z', ':00'))))
+                            if key["lifetime"].get("time_zone") is not None:
+                                key_kwargs["send_lifetime_time_zone"] = key["lifetime"]["timezone"]
+                            if key["lifetime"].get("always_active") is not None:
+                                key_kwargs["send_lifetime_unlimited"] = key["lifetime"]["always_active"]
+                            if key["lifetime"].get("infinite_lifetime") is not None:
+                                key_kwargs["send_lifetime_infinite"] = key["lifetime"]["infinite_lifetime"]
+                            if key["lifetime"].get("end_time") is not None:
+                                key_kwargs["send_lifetime_end_time"] = (
+                                    datetime.datetime.fromisoformat(((key["lifetime"]["end_time"]).replace('Z', ':00'))))
+                            if key["lifetime"].get("duration") is not None:
+                                key_kwargs["send_lifetime_duration"] = key["lifetime"]["duration"]
+
+                        keys.append(FabricSecKey(**key_kwargs))
+
+                    keychain_kwargs["sec_keys"] = keys
+
+                macsec_keychain = FabricSecKeyChain(**keychain_kwargs)
+                if keychain == "primary_keychain":
+                    kwargs["primary_key_chain"] = macsec_keychain
+                else:
+                    kwargs["fallback_key_chain"] = macsec_keychain
+
+        macsec_policy = FabricMacSecPolicy(**kwargs)
+
+        if not self.commit(object_type=self._INTERSIGHT_SDK_OBJECT_NAME, payload=macsec_policy, detail=self.name):
+            return False
+
+        return True
+
+
 class IntersightFabricPortPolicy(IntersightConfigObject):
     _CONFIG_NAME = "Port Policy"
     _CONFIG_SECTION_NAME = "port_policies"
@@ -258,7 +486,8 @@ class IntersightFabricPortPolicy(IntersightConfigObject):
                 "ethernet_network_group_policy": IntersightEthernetNetworkGroupPolicy,  # Deprecated
                 "flow_control_policy": IntersightFabricFlowControlPolicy,
                 "link_aggregation_policy": IntersightFabricLinkAggregationPolicy,
-                "link_control_policy": IntersightFabricLinkControlPolicy
+                "link_control_policy": IntersightFabricLinkControlPolicy,
+                "macsec_policy": IntersightMacSecPolicy
             }
         ],
         "lan_uplink_ports": [
@@ -266,7 +495,8 @@ class IntersightFabricPortPolicy(IntersightConfigObject):
                 "ethernet_network_group_policies": [IntersightEthernetNetworkGroupPolicy],
                 "ethernet_network_group_policy": IntersightEthernetNetworkGroupPolicy,  # Deprecated
                 "flow_control_policy": IntersightFabricFlowControlPolicy,
-                "link_control_policy": IntersightFabricLinkControlPolicy
+                "link_control_policy": IntersightFabricLinkControlPolicy,
+                "macsec_policy": IntersightMacSecPolicy
             }
         ]
     }
@@ -669,6 +899,14 @@ class IntersightFabricPortPolicy(IntersightConfigObject):
                                 if len(fabric_link_control_policy) == 1:
                                     link_control_policy = fabric_link_control_policy[0].name
 
+                        macsec_policy = None
+                        if hasattr(fabric_uplink_pc_role, "mac_sec_policy"):
+                            fabric_macsec_policy = \
+                                self.get_config_objects_from_ref(fabric_uplink_pc_role.mac_sec_policy)
+                            if fabric_macsec_policy:
+                                if len(fabric_macsec_policy) == 1:
+                                    macsec_policy = fabric_macsec_policy[0].name
+
                         admin_speed = None
                         enable_25g_auto_neg = None
                         if hasattr(fabric_uplink_pc_role, "admin_speed"):
@@ -689,7 +927,8 @@ class IntersightFabricPortPolicy(IntersightConfigObject):
                                                   "fec": fec,
                                                   "flow_control_policy": flow_control_policy,
                                                   "link_aggregation_policy": link_aggregation_policy,
-                                                  "link_control_policy": link_control_policy})
+                                                  "link_control_policy": link_control_policy,
+                                                  "macsec_policy": macsec_policy})
 
             return lan_port_channels
 
@@ -727,6 +966,14 @@ class IntersightFabricPortPolicy(IntersightConfigObject):
                                 if len(fabric_link_control_policy) == 1:
                                     link_control_policy = fabric_link_control_policy[0].name
 
+                        macsec_policy = None
+                        if hasattr(fabric_uplink_role, "mac_sec_policy"):
+                            fabric_macsec_policy = \
+                                self.get_config_objects_from_ref(fabric_uplink_role.mac_sec_policy)
+                            if fabric_macsec_policy:
+                                if len(fabric_macsec_policy) == 1:
+                                    macsec_policy = fabric_macsec_policy[0].name
+
                         admin_speed = None
                         enable_25g_auto_neg = None
                         if hasattr(fabric_uplink_role, "admin_speed"):
@@ -744,7 +991,8 @@ class IntersightFabricPortPolicy(IntersightConfigObject):
                                                      "fec": fabric_uplink_role.fec,
                                                      "ethernet_network_group_policies": ethernet_network_group_policies,
                                                      "flow_control_policy": flow_control_policy,
-                                                     "link_control_policy": link_control_policy})
+                                                     "link_control_policy": link_control_policy,
+                                                     "macsec_policy": macsec_policy})
                         else:
                             lan_uplink_ports.append({"slot_id": fabric_uplink_role.slot_id,
                                                      "port_id": fabric_uplink_role.port_id,
@@ -754,7 +1002,8 @@ class IntersightFabricPortPolicy(IntersightConfigObject):
                                                      "fec": fabric_uplink_role.fec,
                                                      "ethernet_network_group_policies": ethernet_network_group_policies,
                                                      "flow_control_policy": flow_control_policy,
-                                                     "link_control_policy": link_control_policy})
+                                                     "link_control_policy": link_control_policy,
+                                                     "macsec_policy": macsec_policy})
 
             return lan_uplink_ports
 
@@ -988,7 +1237,7 @@ class IntersightFabricPortPolicy(IntersightConfigObject):
                 for attribute in ["admin_speed", "enable_25gb_copper_cable_negotiation",
                                   "ethernet_network_group_policies", "ethernet_network_group_policy",
                                   "fec", "flow_control_policy", "interfaces", "link_aggregation_policy",
-                                  "link_control_policy", "pc_id"]:
+                                  "link_control_policy", "macsec_policy", "pc_id"]:
                     if attribute not in lan_port_channel:
                         lan_port_channel[attribute] = None
 
@@ -1003,7 +1252,7 @@ class IntersightFabricPortPolicy(IntersightConfigObject):
             for lan_uplink_port in self.lan_uplink_ports:
                 for attribute in ["admin_speed", "aggr_id", "enable_25gb_copper_cable_negotiation",
                                   "ethernet_network_group_policies", "ethernet_network_group_policy", "fec",
-                                  "flow_control_policy", "link_control_policy", "port_id", "slot_id"]:
+                                  "flow_control_policy", "link_control_policy", "macsec_policy", "port_id", "slot_id"]:
                     if attribute not in lan_uplink_port:
                         lan_uplink_port[attribute] = None
 
@@ -1200,11 +1449,12 @@ class IntersightFabricPortPolicy(IntersightConfigObject):
                     if ethernet_network_control_policy:
                         kwargs["eth_network_control_policy"] = ethernet_network_control_policy
                     else:
-                        self.logger(level="warning",
-                                    message="Could not find unique Ethernet Network Control Policy '" +
-                                            appliance_port_channel["ethernet_network_control_policy"] +
-                                            "' to assign to Appliance Port Channel " +
-                                            str(appliance_port_channel["pc_id"]))
+                        self.logger(
+                            level="warning",
+                            message=f"Could not find unique Ethernet Network Control Policy "
+                                    f"'{appliance_port_channel['ethernet_network_control_policy']}' "
+                                    f"to assign to Appliance Port Channel {appliance_port_channel['pc_id']}"
+                        )
                         self._config.push_summary_manager.add_object_status(
                             obj=self, obj_detail=f"Attaching Ethernet Network Control Policy "
                                                  f"'{appliance_port_channel['ethernet_network_control_policy']}'",
@@ -1222,11 +1472,12 @@ class IntersightFabricPortPolicy(IntersightConfigObject):
                     if ethernet_network_group_policy:
                         kwargs["eth_network_group_policy"] = ethernet_network_group_policy
                     else:
-                        self.logger(level="warning",
-                                    message="Could not find unique Ethernet Network Group Policy '" +
-                                            appliance_port_channel["ethernet_network_group_policy"] +
-                                            "' to assign to Appliance Port Channel " +
-                                            str(appliance_port_channel["pc_id"]))
+                        self.logger(
+                            level="warning",
+                            message=f"Could not find unique Ethernet Network Group Policy "
+                                    f"'{appliance_port_channel['ethernet_network_group_policy']}' "
+                                    f"to assign to Appliance Port Channel {appliance_port_channel['pc_id']}"
+                        )
                         self._config.push_summary_manager.add_object_status(
                             obj=self, obj_detail=f"Attaching Ethernet Network Group Policy "
                                                  f"'{appliance_port_channel['ethernet_network_group_policy']}'",
@@ -1282,17 +1533,16 @@ class IntersightFabricPortPolicy(IntersightConfigObject):
                     else:
                         if appliance_port["aggr_id"]:
                             self.logger(level="warning",
-                                        message="Could not find unique Ethernet Network Control Policy '" +
-                                                appliance_port["ethernet_network_control_policy"] +
-                                                "' to assign to Appliance Port " + str(appliance_port["slot_id"]) +
-                                                "/" + str(appliance_port["port_id"]) + "/" +
-                                                str(appliance_port["aggr_id"]))
+                                        message=f"Could not find unique Ethernet Network Control Policy "
+                                                f"'{appliance_port['ethernet_network_control_policy']}' "
+                                                f"to assign to Appliance Port {appliance_port['slot_id']}/"
+                                                f"{appliance_port['port_id']}/{appliance_port['aggr_id']}")
                         else:
                             self.logger(level="warning",
-                                        message="Could not find unique Ethernet Network Control Policy '" +
-                                                appliance_port["ethernet_network_control_policy"] +
-                                                "' to assign to Appliance Port " + str(appliance_port["slot_id"]) +
-                                                "/" + str(appliance_port["port_id"]))
+                                        message=f"Could not find unique Ethernet Network Control Policy "
+                                                f"'{appliance_port['ethernet_network_control_policy']}' "
+                                                f"to assign to Appliance Port {appliance_port['slot_id']}/"
+                                                f"{appliance_port['port_id']}")
                         self._config.push_summary_manager.add_object_status(
                             obj=self, obj_detail=f"Attaching Ethernet Network Control Policy "
                                                  f"'{appliance_port['ethernet_network_control_policy']}'",
@@ -1312,17 +1562,16 @@ class IntersightFabricPortPolicy(IntersightConfigObject):
                     else:
                         if appliance_port["aggr_id"]:
                             self.logger(level="warning",
-                                        message="Could not find unique Ethernet Network Group Policy '" +
-                                                appliance_port["ethernet_network_group_policy"] +
-                                                "' to assign to Appliance Port " + str(appliance_port["slot_id"]) +
-                                                "/" + str(appliance_port["port_id"]) + "/" +
-                                                str(appliance_port["aggr_id"]))
+                                        message=f"Could not find unique Ethernet Network Group Policy "
+                                                f"'{appliance_port['ethernet_network_group_policy']}' "
+                                                f"to assign to Appliance Port {appliance_port['slot_id']}/"
+                                                f"{appliance_port['port_id']}/{appliance_port['aggr_id']}")
                         else:
                             self.logger(level="warning",
-                                        message="Could not find unique Ethernet Network Group Policy '" +
-                                                appliance_port["ethernet_network_group_policy"] +
-                                                "' to assign to Appliance Port " + str(appliance_port["slot_id"]) +
-                                                "/" + str(appliance_port["port_id"]))
+                                        message=f"Could not find unique Ethernet Network Group Policy "
+                                                f"'{appliance_port['ethernet_network_group_policy']}' "
+                                                f"to assign to Appliance Port {appliance_port['slot_id']}/"
+                                                f"{appliance_port['port_id']}")
                         self._config.push_summary_manager.add_object_status(
                             obj=self, obj_detail=f"Attaching Ethernet Network Group Policy "
                                                  f"'{appliance_port['ethernet_network_group_policy']}'",
@@ -1393,10 +1642,12 @@ class IntersightFabricPortPolicy(IntersightConfigObject):
                     if link_aggregation_policy:
                         kwargs["link_aggregation_policy"] = link_aggregation_policy
                     else:
-                        self.logger(level="warning",
-                                    message="Could not find unique Link Aggregation Policy '" +
-                                            fcoe_port_channel["link_aggregation_policy"] +
-                                            "' to assign to FCoE Port Channel " + str(fcoe_port_channel["pc_id"]))
+                        self.logger(
+                            level="warning",
+                            message=f"Could not find unique Link Aggregation Policy "
+                                    f"'{fcoe_port_channel['link_aggregation_policy']}' "
+                                    f"to assign to FCoE Port Channel {fcoe_port_channel['pc_id']}"
+                        )
                         self._config.push_summary_manager.add_object_status(
                             obj=self, obj_detail=f"Attaching Link Aggregation Policy "
                                                  f"'{fcoe_port_channel['link_aggregation_policy']}'",
@@ -1414,10 +1665,12 @@ class IntersightFabricPortPolicy(IntersightConfigObject):
                     if link_control_policy:
                         kwargs["link_control_policy"] = link_control_policy
                     else:
-                        self.logger(level="warning",
-                                    message="Could not find unique Link Control Policy '" +
-                                            fcoe_port_channel["link_control_policy"] +
-                                            "' to assign to FCoE Port Channel " + str(fcoe_port_channel["pc_id"]))
+                        self.logger(
+                            level="warning",
+                            message=f"Could not find unique Link Control Policy "
+                                    f"'{fcoe_port_channel['link_control_policy']}' "
+                                    f"to assign to FCoE Port Channel {fcoe_port_channel['pc_id']}"
+                        )
                         self._config.push_summary_manager.add_object_status(
                             obj=self, obj_detail=f"Attaching Link Control Policy "
                                                  f"'{fcoe_port_channel['link_control_policy']}'",
@@ -1469,19 +1722,16 @@ class IntersightFabricPortPolicy(IntersightConfigObject):
                     else:
                         if fcoe_uplink_port["aggr_id"]:
                             self.logger(level="warning",
-                                        message="Could not find unique Link Control Policy '" +
-                                                fcoe_uplink_port["link_control_policy"] +
-                                                "' to assign to FCoE Uplink Port " +
-                                                str(fcoe_uplink_port["slot_id"]) +
-                                                "/" + str(fcoe_uplink_port["port_id"]) + "/" +
-                                                str(fcoe_uplink_port["aggr_id"]))
+                                        message=f"Could not find unique Link Control Policy "
+                                                f"'{fcoe_uplink_port['link_control_policy']}' "
+                                                f"to assign to FCoE Uplink Port {fcoe_uplink_port['slot_id']}/"
+                                                f"{fcoe_uplink_port['port_id']}/{fcoe_uplink_port['aggr_id']}")
                         else:
                             self.logger(level="warning",
-                                        message="Could not find unique Link Control Policy '" +
-                                                fcoe_uplink_port["link_control_policy"] +
-                                                "' to assign to FCoE Uplink Port " +
-                                                str(fcoe_uplink_port["slot_id"]) +
-                                                "/" + str(fcoe_uplink_port["port_id"]))
+                                        message=f"Could not find unique Link Control Policy "
+                                                f"'{fcoe_uplink_port['link_control_policy']}' "
+                                                f"to assign to FCoE Uplink Port {fcoe_uplink_port['slot_id']}/"
+                                                f"{fcoe_uplink_port['port_id']}")
                         self._config.push_summary_manager.add_object_status(
                             obj=self, obj_detail=f"Attaching Link Control Policy "
                                                  f"'{fcoe_uplink_port['link_control_policy']}'",
@@ -1554,8 +1804,8 @@ class IntersightFabricPortPolicy(IntersightConfigObject):
                             kwargs["eth_network_group_policy"].append(ethernet_network_group_policy)
                         else:
                             self.logger(level="warning",
-                                        message="Could not find unique Ethernet Network Group Policy '" + engp +
-                                                "' to assign to LAN Port Channel " + str(lan_port_channel["pc_id"]))
+                                        message=f"Could not find unique Ethernet Network Group Policy '{engp}' "
+                                                f"to assign to LAN Port Channel {lan_port_channel['pc_id']}")
                             self._config.push_summary_manager.add_object_status(
                                 obj=self, obj_detail=f"Attaching Ethernet Network Group Policy '{engp}'",
                                 obj_type=self._INTERSIGHT_SDK_OBJECT_NAME, status="failed",
@@ -1574,9 +1824,9 @@ class IntersightFabricPortPolicy(IntersightConfigObject):
                         kwargs["eth_network_group_policy"] = [ethernet_network_group_policy]
                     else:
                         self.logger(level="warning",
-                                    message="Could not find unique Ethernet Network Group Policy '" +
-                                            lan_port_channel["ethernet_network_group_policy"] +
-                                            "' to assign to LAN Port Channel " + str(lan_port_channel["pc_id"]))
+                                    message=f"Could not find unique Ethernet Network Group Policy "
+                                            f"'{lan_port_channel['ethernet_network_group_policy']}' "
+                                            f"to assign to LAN Port Channel {lan_port_channel['pc_id']}")
                         self._config.push_summary_manager.add_object_status(
                             obj=self, obj_detail=f"Attaching Ethernet Network Group Policy "
                                                  f"'{lan_port_channel['ethernet_network_group_policy']}'",
@@ -1595,9 +1845,9 @@ class IntersightFabricPortPolicy(IntersightConfigObject):
                         kwargs["flow_control_policy"] = flow_control_policy
                     else:
                         self.logger(level="warning",
-                                    message="Could not find unique Flow Control Policy '" +
-                                            lan_port_channel["flow_control_policy"] +
-                                            "' to assign to LAN Port Channel " + str(lan_port_channel["pc_id"]))
+                                    message=f"Could not find unique Flow Control Policy "
+                                            f"'{lan_port_channel['flow_control_policy']}' "
+                                            f"to assign to LAN Port Channel {lan_port_channel['pc_id']}")
                         self._config.push_summary_manager.add_object_status(
                             obj=self, obj_detail=f"Attaching Flow Control Policy "
                                                  f"'{lan_port_channel['flow_control_policy']}'",
@@ -1616,9 +1866,9 @@ class IntersightFabricPortPolicy(IntersightConfigObject):
                         kwargs["link_aggregation_policy"] = link_aggregation_policy
                     else:
                         self.logger(level="warning",
-                                    message="Could not find unique Link Aggregation Policy '" +
-                                            lan_port_channel["link_aggregation_policy"] +
-                                            "' to assign to LAN Port Channel " + str(lan_port_channel["pc_id"]))
+                                    message=f"Could not find unique Link Aggregation Policy "
+                                            f"'{lan_port_channel['link_aggregation_policy']}' "
+                                            f"to assign to LAN Port Channel {lan_port_channel['pc_id']}")
                         self._config.push_summary_manager.add_object_status(
                             obj=self, obj_detail=f"Attaching Link Aggregation Policy "
                                                  f"'{lan_port_channel['link_aggregation_policy']}'",
@@ -1637,15 +1887,36 @@ class IntersightFabricPortPolicy(IntersightConfigObject):
                         kwargs["link_control_policy"] = link_control_policy
                     else:
                         self.logger(level="warning",
-                                    message="Could not find unique Link Control Policy '" +
-                                            lan_port_channel["link_control_policy"] +
-                                            "' to assign to LAN Port Channel " + str(lan_port_channel["pc_id"]))
+                                    message=f"Could not find unique Link Control Policy "
+                                            f"'{lan_port_channel['link_control_policy']}' "
+                                            f"to assign to LAN Port Channel {lan_port_channel['pc_id']}")
                         self._config.push_summary_manager.add_object_status(
                             obj=self, obj_detail=f"Attaching Link Control Policy "
                                                  f"'{lan_port_channel['link_control_policy']}'",
                             obj_type=self._INTERSIGHT_SDK_OBJECT_NAME, status="failed",
                             message=f"Failed to find Link Control Policy "
                                     f"'{lan_port_channel['link_control_policy']}'"
+                        )
+
+                if lan_port_channel["macsec_policy"] is not None:
+                    # We first need to identify the MACsec Policy object reference
+                    macsec_policy = self.get_live_object(
+                        object_name=lan_port_channel["macsec_policy"],
+                        object_type="fabric.MacSecPolicy"
+                    )
+                    if macsec_policy:
+                        kwargs["mac_sec_policy"] = macsec_policy
+                    else:
+                        self.logger(level="warning",
+                                    message=f"Could not find unique MACsec Policy "
+                                            f"'{lan_port_channel['macsec_policy']}' "
+                                            f"to assign to LAN Port Channel {lan_port_channel['pc_id']}")
+                        self._config.push_summary_manager.add_object_status(
+                            obj=self, obj_detail=f"Attaching MACsec Policy "
+                                                 f"'{lan_port_channel['macsec_policy']}'",
+                            obj_type=self._INTERSIGHT_SDK_OBJECT_NAME, status="failed",
+                            message=f"Failed to find MACsec Policy "
+                                    f"'{lan_port_channel['macsec_policy']}'"
                         )
 
                 fabric_uplink_pc_role = FabricUplinkPcRole(**kwargs)
@@ -1693,17 +1964,14 @@ class IntersightFabricPortPolicy(IntersightConfigObject):
                         else:
                             if lan_uplink_port["aggr_id"]:
                                 self.logger(level="warning",
-                                            message="Could not find unique Ethernet Network Group Policy '" + engp +
-                                                    "' to assign to LAN Uplink Port " +
-                                                    str(lan_uplink_port["slot_id"]) +
-                                                    "/" + str(lan_uplink_port["port_id"]) + "/" +
-                                                    str(lan_uplink_port["aggr_id"]))
+                                            message=f"Could not find unique Ethernet Network Group Policy '{engp}' "
+                                                    f"to assign to LAN Uplink Port {lan_uplink_port['slot_id']}/"
+                                                    f"{lan_uplink_port['port_id']}/{lan_uplink_port['aggr_id']}")
                             else:
                                 self.logger(level="warning",
-                                            message="Could not find unique Ethernet Network Group Policy '" + engp +
-                                                    "' to assign to LAN Uplink Port " +
-                                                    str(lan_uplink_port["slot_id"]) +
-                                                    "/" + str(lan_uplink_port["port_id"]))
+                                            message=f"Could not find unique Ethernet Network Group Policy '{engp}' "
+                                                    f"to assign to LAN Uplink Port {lan_uplink_port['slot_id']}/"
+                                                    f"{lan_uplink_port['port_id']}")
                             self._config.push_summary_manager.add_object_status(
                                 obj=self, obj_detail=f"Attaching Ethernet Network Group Policy '{engp}'",
                                 obj_type=self._INTERSIGHT_SDK_OBJECT_NAME, status="failed",
@@ -1723,19 +1991,16 @@ class IntersightFabricPortPolicy(IntersightConfigObject):
                     else:
                         if lan_uplink_port["aggr_id"]:
                             self.logger(level="warning",
-                                        message="Could not find unique Ethernet Network Group Policy '" +
-                                                lan_uplink_port["ethernet_network_group_policy"] +
-                                                "' to assign to LAN Uplink Port " +
-                                                str(lan_uplink_port["slot_id"]) +
-                                                "/" + str(lan_uplink_port["port_id"]) + "/" +
-                                                str(lan_uplink_port["aggr_id"]))
+                                        message=f"Could not find unique Ethernet Network Group Policy "
+                                                f"'{lan_uplink_port['ethernet_network_group_policy']}' "
+                                                f"to assign to LAN Uplink Port {lan_uplink_port['slot_id']}/"
+                                                f"{lan_uplink_port['port_id']}/{lan_uplink_port['aggr_id']}")
                         else:
                             self.logger(level="warning",
-                                        message="Could not find unique Ethernet Network Group Policy '" +
-                                                lan_uplink_port["ethernet_network_group_policy"] +
-                                                "' to assign to LAN Uplink Port " +
-                                                str(lan_uplink_port["slot_id"]) +
-                                                "/" + str(lan_uplink_port["port_id"]))
+                                        message=f"Could not find unique Ethernet Network Group Policy "
+                                                f"'{lan_uplink_port['ethernet_network_group_policy']}' "
+                                                f"to assign to LAN Uplink Port {lan_uplink_port['slot_id']}/"
+                                                f"{lan_uplink_port['port_id']}")
                         self._config.push_summary_manager.add_object_status(
                             obj=self, obj_detail=f"Attaching Ethernet Network Group Policy "
                                                  f"'{lan_uplink_port['ethernet_network_group_policy']}'",
@@ -1755,19 +2020,16 @@ class IntersightFabricPortPolicy(IntersightConfigObject):
                     else:
                         if lan_uplink_port["aggr_id"]:
                             self.logger(level="warning",
-                                        message="Could not find unique Flow Control Policy '" +
-                                                lan_uplink_port["flow_control_policy"] +
-                                                "' to assign to LAN Uplink Port " +
-                                                str(lan_uplink_port["slot_id"]) +
-                                                "/" + str(lan_uplink_port["port_id"]) + "/" +
-                                                str(lan_uplink_port["aggr_id"]))
+                                        message=f"Could not find unique Flow Control Policy "
+                                                f"'{lan_uplink_port['flow_control_policy']}' "
+                                                f"to assign to LAN Uplink Port {lan_uplink_port['slot_id']}/"
+                                                f"{lan_uplink_port['port_id']}/{lan_uplink_port['aggr_id']}")
                         else:
                             self.logger(level="warning",
-                                        message="Could not find unique Flow Control Policy '" +
-                                                lan_uplink_port["flow_control_policy"] +
-                                                "' to assign to LAN Uplink Port " +
-                                                str(lan_uplink_port["slot_id"]) +
-                                                "/" + str(lan_uplink_port["port_id"]))
+                                        message=f"Could not find unique Flow Control Policy "
+                                                f"'{lan_uplink_port['flow_control_policy']}' "
+                                                f"to assign to LAN Uplink Port {lan_uplink_port['slot_id']}/"
+                                                f"{lan_uplink_port['port_id']}")
                         self._config.push_summary_manager.add_object_status(
                             obj=self, obj_detail=f"Attaching Flow Control Policy "
                                                  f"'{lan_uplink_port['flow_control_policy']}'",
@@ -1787,25 +2049,51 @@ class IntersightFabricPortPolicy(IntersightConfigObject):
                     else:
                         if lan_uplink_port["aggr_id"]:
                             self.logger(level="warning",
-                                        message="Could not find unique Link Control Policy '" +
-                                                lan_uplink_port["link_control_policy"] +
-                                                "' to assign to LAN Uplink Port " +
-                                                str(lan_uplink_port["slot_id"]) +
-                                                "/" + str(lan_uplink_port["port_id"]) + "/" +
-                                                str(lan_uplink_port["aggr_id"]))
+                                        message=f"Could not find unique Link Control Policy "
+                                                f"'{lan_uplink_port['link_control_policy']}' "
+                                                f"to assign to LAN Uplink Port {lan_uplink_port['slot_id']}/"
+                                                f"{lan_uplink_port['port_id']}/{lan_uplink_port['aggr_id']}")
                         else:
                             self.logger(level="warning",
-                                        message="Could not find unique Link Control Policy '" +
-                                                lan_uplink_port["link_control_policy"] +
-                                                "' to assign to LAN Uplink Port " +
-                                                str(lan_uplink_port["slot_id"]) +
-                                                "/" + str(lan_uplink_port["port_id"]))
+                                        message=f"Could not find unique Link Control Policy "
+                                                f"'{lan_uplink_port['link_control_policy']}' "
+                                                f"to assign to LAN Uplink Port {lan_uplink_port['slot_id']}/"
+                                                f"{lan_uplink_port['port_id']}")
                         self._config.push_summary_manager.add_object_status(
                             obj=self, obj_detail=f"Attaching Link Control Policy "
                                                  f"'{lan_uplink_port['link_control_policy']}'",
                             obj_type=self._INTERSIGHT_SDK_OBJECT_NAME, status="failed",
                             message=f"Failed to find Link Control Policy "
                                     f"'{lan_uplink_port['link_control_policy']}'"
+                        )
+
+                if lan_uplink_port["macsec_policy"] is not None:
+                    # We first need to identify the MACsec Policy object reference
+                    macsec_policy = self.get_live_object(
+                        object_name=lan_uplink_port["macsec_policy"],
+                        object_type="fabric.MacSecPolicy"
+                    )
+                    if macsec_policy:
+                        kwargs["mac_sec_policy"] = macsec_policy
+                    else:
+                        if lan_uplink_port["aggr_id"]:
+                            self.logger(level="warning",
+                                        message=f"Could not find unique MACsec Policy "
+                                                f"'{lan_uplink_port['macsec_policy']}' "
+                                                f"to assign to LAN Uplink Port {lan_uplink_port['slot_id']}/"
+                                                f"{lan_uplink_port['port_id']}/{lan_uplink_port['aggr_id']}")
+                        else:
+                            self.logger(level="warning",
+                                        message=f"Could not find unique MACsec Policy "
+                                                f"'{lan_uplink_port['macsec_policy']}' "
+                                                f"to assign to LAN Uplink Port {lan_uplink_port['slot_id']}/"
+                                                f"{lan_uplink_port['port_id']}")
+                        self._config.push_summary_manager.add_object_status(
+                            obj=self, obj_detail=f"Attaching MACsec Policy "
+                                                 f"'{lan_uplink_port['macsec_policy']}'",
+                            obj_type=self._INTERSIGHT_SDK_OBJECT_NAME, status="failed",
+                            message=f"Failed to find MACsec Policy "
+                                    f"'{lan_uplink_port['macsec_policy']}'"
                         )
 
                 fabric_uplink_role = FabricUplinkRole(**kwargs)
@@ -2005,17 +2293,14 @@ class IntersightFabricPortPolicy(IntersightConfigObject):
                     else:
                         if lan_pin_group["aggr_id"]:
                             self.logger(level="warning",
-                                        message="Could not find unique LAN Uplink Port " +
-                                                str(lan_pin_group["slot_id"]) +
-                                                "/" + str(lan_pin_group["port_id"]) + "/" +
-                                                str(lan_pin_group["aggr_id"]) + " to map to LAN Pin Group '" +
-                                                str(lan_pin_group["name"]) + "'")
+                                        message=f"Could not find unique LAN Uplink Port {lan_pin_group['slot_id']}/"
+                                                f"{lan_pin_group['port_id']}/{lan_pin_group['aggr_id']} "
+                                                f"to map to LAN Pin Group '{lan_pin_group['name']}'")
                         else:
                             self.logger(level="warning",
-                                        message="Could not find unique LAN Uplink Port " +
-                                                str(lan_pin_group["slot_id"]) +
-                                                "/" + str(lan_pin_group["port_id"]) + " to map to LAN Pin Group '" +
-                                                str(lan_pin_group["name"]) + "'")
+                                        message=f"Could not find unique LAN Uplink Port {lan_pin_group['slot_id']}/"
+                                                f"{lan_pin_group['port_id']} to map to LAN Pin Group "
+                                                f"'{lan_pin_group['name']}'")
 
                 elif lan_pin_group["pc_id"] is not None:
                     # We need to identify the LAN Port-Channel object reference
@@ -2028,9 +2313,9 @@ class IntersightFabricPortPolicy(IntersightConfigObject):
                         kwargs["pin_target_interface_role"] = pin_target_interface_role
                     else:
                         self.logger(level="warning",
-                                    message="Could not find unique LAN Port-Channel PC-" +
-                                            str(lan_pin_group["pc_id"]) + " to map to LAN Pin Group '" +
-                                            str(lan_pin_group["name"]) + "'")
+                                    message=f"Could not find unique LAN Port-Channel PC-"
+                                            f"{lan_pin_group['pc_id']} to map to LAN Pin Group "
+                                            f"'{lan_pin_group['name']}'")
 
                 fabric_lan_pin_group = FabricLanPinGroup(**kwargs)
 
@@ -2086,17 +2371,16 @@ class IntersightFabricPortPolicy(IntersightConfigObject):
                             port_type = "SAN"
                         if san_pin_group["aggr_id"]:
                             self.logger(level="warning",
-                                        message="Could not find unique " + port_type + " Uplink Port " +
-                                                str(san_pin_group["slot_id"]) +
-                                                "/" + str(san_pin_group["port_id"]) + "/" +
-                                                str(san_pin_group["aggr_id"]) + " to map to SAN Pin Group '" +
-                                                str(san_pin_group["name"]) + "'")
+                                        message=f"Could not find unique {port_type} Uplink Port "
+                                                f"{san_pin_group['slot_id']}/"
+                                                f"{san_pin_group['port_id']}/{san_pin_group['aggr_id']} "
+                                                f"to map to SAN Pin Group '{san_pin_group['name']}'")
                         else:
                             self.logger(level="warning",
-                                        message="Could not find unique " + port_type + " Uplink Port " +
-                                                str(san_pin_group["slot_id"]) +
-                                                "/" + str(san_pin_group["port_id"]) + " to map to SAN Pin Group '" +
-                                                str(san_pin_group["name"]) + "'")
+                                        message=f"Could not find unique {port_type} Uplink Port "
+                                                f"{san_pin_group['slot_id']}/"
+                                                f"{san_pin_group['port_id']} to map to SAN Pin Group "
+                                                f"'{san_pin_group['name']}'")
 
                 elif san_pin_group["pc_id"] is not None:
                     # We need to identify the SAN Port-Channel object reference
@@ -2117,9 +2401,9 @@ class IntersightFabricPortPolicy(IntersightConfigObject):
                         else:
                             port_type = "SAN"
                         self.logger(level="warning",
-                                    message="Could not find unique " + port_type + " Port-Channel PC-" +
-                                            str(san_pin_group["pc_id"]) + " to map to SAN Pin Group '" +
-                                            str(san_pin_group["name"]) + "'")
+                                    message=f"Could not find unique {port_type} Port-Channel "
+                                            f"PC-{san_pin_group['pc_id']} "
+                                            f"to map to SAN Pin Group '{san_pin_group['name']}'")
 
                 fabric_san_pin_group = FabricSanPinGroup(**kwargs)
 
@@ -2154,6 +2438,8 @@ class IntersightFabricSwitchControlPolicy(IntersightConfigObject):
 
         self.descr = self.get_attribute(attribute_name="description", attribute_secondary_name="descr")
         self.fabric_port_channel_vhba_reset = None
+        self.enable_aes_encryption_key = None
+        self.aes_encryption_key = None
         self.link_control_global_settings = None
         self.mac_address_table_aging = None
         self.mac_aging_time = None
@@ -2184,18 +2470,44 @@ class IntersightFabricSwitchControlPolicy(IntersightConfigObject):
             if hasattr(self._object, "ethernet_switching_mode"):
                 if self._object.ethernet_switching_mode:
                     self.switching_mode["ethernet"] = self._object.ethernet_switching_mode
+            self.enable_aes_encryption_key = False
+            if hasattr(self._object, "is_aes_primary_key_set") and self._object.is_aes_primary_key_set:
+                self.enable_aes_encryption_key = True
+                if self._object.is_aes_primary_key_set:
+                    self.logger(level="warning",
+                                message="AES Encryption Key of " + self._CONFIG_NAME + " '" + self.name +
+                                        "' can't be exported")
             if hasattr(self._object, "fc_switching_mode"):
                 if self._object.fc_switching_mode:
                     self.switching_mode["fc"] = self._object.fc_switching_mode
 
         elif self._config.load_from == "file":
-            for attribute in ["fabric_port_channel_vhba_reset", "link_control_global_settings",
-                              "mac_address_table_aging", "mac_aging_time", "switching_mode"]:
+            for attribute in ["aes_encryption_key", "enable_aes_encryption_key", "fabric_port_channel_vhba_reset",
+                              "link_control_global_settings", "mac_address_table_aging", "mac_aging_time",
+                              "switching_mode"]:
                 setattr(self, attribute, None)
                 if attribute in self._object:
                     setattr(self, attribute, self.get_attribute(attribute_name=attribute))
 
         self.clean_object()
+
+    def is_valid_aes_primary_key(self, key_value=None):
+        """
+        Validates whether the provided value is suitable for 'aes_primary_key' based on its pattern:
+        - Empty string is allowed
+        - Otherwise, must be 16 to 64 characters with no spaces or double quotes.
+
+        :param key_value: String to validate as 'aes_primary_key'
+        :return: True if valid, False otherwise
+        """
+        import re
+        if key_value is None:
+            return False
+
+        pattern = r'^$|^[^"\s]{16,64}$'
+        if re.match(pattern, key_value):
+            return True
+        return False
 
     def clean_object(self):
         # We use this to make sure all options of Link Control Global Settings are set to None if not present
@@ -2232,11 +2544,27 @@ class IntersightFabricSwitchControlPolicy(IntersightConfigObject):
                 kwargs["fabric_pc_vhba_reset"] = "Enabled"
             elif self.fabric_port_channel_vhba_reset is False:
                 kwargs["fabric_pc_vhba_reset"] = "Disabled"
+        if self.enable_aes_encryption_key:
+            random_password = password_generator(password_length=16)
+            if self.aes_encryption_key is not None:
+                kwargs["aes_primary_key"] = self.aes_encryption_key
+            elif random_password:
+                kwargs["aes_primary_key"] = random_password
+                self.logger(
+                    level="debug",
+                    message="Using randomly generated password for field 'aes_primary_key' of "
+                            "object fabric.SwitchControlPolicy"
+                )
+            else:
+                self.logger(
+                    level="warning",
+                    message="No aes_primary_key provided for field 'aes_primary_key' of object "
+                            "fabric.SwitchControlPolicy"
+                )
         if self.reserved_vlan_start_id is not None:
             kwargs["reserved_vlan_start_id"] = self.reserved_vlan_start_id
         if self.vlan_port_count_optimization is not None:
             kwargs["vlan_port_optimization_enabled"] = self.vlan_port_count_optimization
-
         if self.mac_address_table_aging is not None:
             from intersight.model.fabric_mac_aging_settings import FabricMacAgingSettings
 

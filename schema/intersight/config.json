@@ -27,6 +27,16 @@
          "minItems": 1,
          "maxItems": 1
       },
+      "ldap": {
+         "description": "EasyUCS config/ldap section",
+         "type": "array",
+         "items": {
+            "description": "EasyUCS config/ldap element",
+            "type": "object",
+            "$ref": "config/ldap.json"
+         },
+         "minItems": 1
+      },
       "orgs": {
          "description": "EasyUCS config/orgs section",
          "type": "array",

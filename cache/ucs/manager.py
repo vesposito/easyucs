@@ -1,12 +1,10 @@
 from cache.manager import GenericCacheManager
-from cache.ucs.cache import UcsSystemCache
+from cache.ucs.cache import UcsCentralCache, UcsSystemCache
 
 
-class UcsSystemCacheManager(GenericCacheManager):
+class GenericUcsCacheManager(GenericCacheManager):
     def __init__(self, parent=None):
         GenericCacheManager.__init__(self, parent=parent)
-        self.cache = UcsSystemCache(parent=self)
-        self._fill_cache_from_json()
 
     def fetch_cache(self):
         """
@@ -18,11 +16,28 @@ class UcsSystemCacheManager(GenericCacheManager):
 
         # Fetch server details from the connected UCS device
         server_details_status = self.cache.fetch_server_details()
-
-        # If fetching server details fails, return None.
         if server_details_status:
-            self.logger(level="debug", message="Successfully updated cache with server details")
+            self.logger(level="debug", message="Successfully updated " + self.parent.metadata.device_type_long +
+                                               " cache with server details")
 
-        # TODO: Fetch additional data such as Organizations and OS Firmware Data in future steps.
+        # Fetch orgs from the connected UCS device
+        orgs_status = self.cache.fetch_orgs()
+        if orgs_status:
+            self.logger(level="debug", message="Successfully updated " + self.parent.metadata.device_type_long +
+                                               " cache with orgs")
 
         return self.cache
+
+
+class UcsSystemCacheManager(GenericUcsCacheManager):
+    def __init__(self, parent=None):
+        GenericUcsCacheManager.__init__(self, parent=parent)
+        self.cache = UcsSystemCache(parent=self)
+        self._fill_cache_from_json()
+
+
+class UcsCentralCacheManager(GenericUcsCacheManager):
+    def __init__(self, parent=None):
+        GenericUcsCacheManager.__init__(self, parent=parent)
+        self.cache = UcsCentralCache(parent=self)
+        self._fill_cache_from_json()

@@ -360,6 +360,16 @@
          },
          "minItems": 1
       },
+      "macsec_policies": {
+         "description": "EasyUCS config/orgs/macsec_policies section",
+         "type": "array",
+         "items": {
+            "description:": "EasyUCS config/orgs/macsec_policies element",
+            "type": "object",
+            "$ref": "orgs/macsec_policies.json"
+         },
+         "minItems": 1
+      },
       "memory_policies": {
          "description": "EasyUCS config/orgs/memory_policies section",
          "type": "array",

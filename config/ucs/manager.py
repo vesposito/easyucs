@@ -30,8 +30,9 @@ from config.device_connector import DeviceConnector
 from config.ucs.ucsc.domain_groups import UcsCentralDomainGroup
 from config.ucs.ucsc.orgs import UcsCentralOrg
 from config.ucs.ucsc.system import (
-    UcsCentralDateTimeMgmt, UcsCentralDns, UcsCentralLocalUser, UcsCentralLocale, UcsCentralManagementInterface,
-    UcsCentralPasswordProfile, UcsCentralRole, UcsCentralSnmp, UcsCentralSyslog, UcsCentralSystem
+    UcsCentralAuthentication, UcsCentralDateTimeMgmt, UcsCentralDns, UcsCentralLdap, UcsCentralLocalUser,
+    UcsCentralLocale, UcsCentralManagementInterface, UcsCentralPasswordProfile, UcsCentralRole, UcsCentralSnmp,
+    UcsCentralSyslog, UcsCentralSystem
 )
 from config.ucs.ucsm.admin import (
     UcsSystemAuthentication, UcsSystemBackupExportPolicy, UcsSystemCallHome, UcsSystemUcsCentral,
@@ -287,8 +288,8 @@ class UcsSystemConfigManager(GenericUcsConfigManager):
                     else:
                         config.local_users.append(UcsSystemLocalUser(parent=config, aaa_user=aaa_user))
 
-        for qos_class in list(config.sdk_objects["qosclassEthClassified"] + config.sdk_objects["qosclassFc"] +
-                              config.sdk_objects["qosclassEthBE"]):
+        for qos_class in list(config.sdk_objects.get("qosclassEthClassified", []) +
+                              config.sdk_objects.get("qosclassFc", []) + config.sdk_objects.get("qosclassEthBE", [])):
             config.qos_system_class.append(UcsSystemQosSystemClass(parent=config, qos_class=qos_class))
 
         if "fabricFcZoneProfile" in config.sdk_objects:
@@ -1829,6 +1830,12 @@ class UcsCentralConfigManager(GenericUcsConfigManager):
         config.syslog.append(UcsCentralSyslog(parent=config))
         config.snmp.append(UcsCentralSnmp(parent=config))
         config.password_profile.append(UcsCentralPasswordProfile(parent=config))
+        config.authentication.append(UcsCentralAuthentication(parent=config))
+
+        if "aaaLdapEp" in config.sdk_objects:
+            for aaa_ldap_ep in config.sdk_objects["aaaLdapEp"]:
+                if "org-root/deviceprofile-default" in aaa_ldap_ep.dn:
+                    config.ldap.append(UcsCentralLdap(parent=config, aaa_ldap_ep=aaa_ldap_ep))
 
         if "aaaLocale" in config.sdk_objects:
             for aaa_locale in config.sdk_objects['aaaLocale']:
@@ -1907,6 +1914,10 @@ class UcsCentralConfigManager(GenericUcsConfigManager):
                 is_pushed = snmp.push_object() and is_pushed
             if config.password_profile:
                 is_pushed = config.password_profile[0].push_object() and is_pushed
+            if config.ldap:
+                is_pushed = config.ldap[0].push_object() and is_pushed
+            if config.authentication:
+                is_pushed = config.authentication[0].push_object() and is_pushed
             for locale in config.locales:
                 is_pushed = locale.push_object() and is_pushed
             for role in config.roles:
@@ -1950,6 +1961,9 @@ class UcsCentralConfigManager(GenericUcsConfigManager):
             return False
 
         # Put in order the items to append
+        if "authentication" in config_json:
+            for authentication in config_json["authentication"]:
+                config.authentication.append(UcsCentralAuthentication(parent=config, json_content=authentication))
         if "system" in config_json:
             config.system.append(UcsCentralSystem(parent=config, json_content=config_json["system"][0]))
         if "management_interfaces" in config_json:
@@ -1971,6 +1985,9 @@ class UcsCentralConfigManager(GenericUcsConfigManager):
         if "password_profile" in config_json:
             for password_profile in config_json["password_profile"]:
                 config.password_profile.append(UcsCentralPasswordProfile(parent=config, json_content=password_profile))
+        if "ldap" in config_json:
+            for ldap in config_json["ldap"]:
+                config.ldap.append(UcsCentralLdap(parent=config, json_content=ldap))
         if "locales" in config_json:
             for locale in config_json["locales"]:
                 config.locales.append(UcsCentralLocale(parent=config, json_content=locale))

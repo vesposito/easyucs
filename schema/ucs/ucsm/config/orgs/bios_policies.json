@@ -85,6 +85,19 @@
             "platform-default"
          ]
       },
+      "acpi_srat_special_purpose_memory_flag": {
+         "description": "BIOS Policy - ACPI Special Flag - ACPI SRAT Special Purpose Memory Flag",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "Disabled",
+            "Enabled",
+            "Platform Default",
+            "disabled",
+            "enabled",
+            "platform-default"
+         ]
+      },
       "acs_control_gpu_1": {
          "description": "BIOS Policy - Access Control Services - ACS Control GPU-1",
          "type": "string",
@@ -614,6 +627,10 @@
          "enum": [
             "10-CCDs",
             "10-ccds",
+            "12-CCDs",
+            "12-ccds",
+            "14-CCDs",
+            "14-ccds",
             "2-CCDs",
             "2-ccds",
             "3-CCDs",
@@ -830,8 +847,30 @@
             "62",
             "63",
             "64",
+            "65",
+            "66",
+            "67",
+            "68",
+            "69",
             "7",
+            "70",
+            "71",
+            "72",
+            "73",
+            "74",
+            "75",
+            "76",
+            "77",
+            "78",
+            "79",
             "8",
+            "80",
+            "81",
+            "82",
+            "83",
+            "84",
+            "85",
+            "86",
             "9",
             "All",
             "Platform Default",
@@ -913,22 +952,38 @@
          "default": "platform-default",
          "enum": [
             "Auto",
+            "EIGHT--8---0-",
+            "ELEVEN--11---0-",
+            "FIFTEEN--15---0-",
             "FIVE--5---0-",
             "FOUR--4---0-",
+            "FOURTEEN--14---0-",
+            "NINE--9---0-",
             "ONE--1---0-",
             "Platform Default",
             "SEVEN--7---0-",
             "SIX--6---0-",
+            "TEN--10---0-",
+            "THIRTEEN--13---0-",
             "THREE--3---0-",
+            "TWELVE--12---0-",
             "TWO--2---0-",
             "auto",
+            "eight--8---0-",
+            "eleven--11---0-",
+            "fifteen--15---0-",
             "five--5---0-",
             "four--4---0-",
+            "fourteen--14---0-",
+            "nine--9---0-",
             "one--1---0-",
             "platform-default",
             "seven--7---0-",
             "six--6---0-",
+            "ten--10---0-",
+            "thirteen--13---0-",
             "three--3---0-",
+            "twelve--12---0-",
             "two--2---0-"
          ]
       },
@@ -1077,9 +1132,11 @@
          "type": "string",
          "default": "platform-default",
          "enum": [
+            "Auto",
             "Disabled",
             "Enabled",
             "Platform Default",
+            "auto",
             "disabled",
             "enabled",
             "platform-default"
@@ -1507,11 +1564,19 @@
          "type": "string",
          "default": "platform-default",
          "enum": [
+            "0P3_Percent",
+            "0P5_Percent",
+            "0p3_percent",
+            "0p5_percent",
             "Disabled",
             "Enabled",
+            "Hardware",
+            "Off",
             "Platform Default",
             "disabled",
             "enabled",
+            "hardware",
+            "off",
             "platform-default"
          ]
       },
@@ -1917,6 +1982,131 @@
             "platform-default"
          ]
       },
+      "front_nvme25_link_speed": {
+         "description": "BIOS Policy - PCI Slot LINK Speed - Front NVME25 Link Speed",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "Auto",
+            "Disabled",
+            "Enabled",
+            "GEN1",
+            "GEN2",
+            "GEN3",
+            "GEN4",
+            "GEN5",
+            "Platform Default",
+            "auto",
+            "disabled",
+            "enabled",
+            "gen1",
+            "gen2",
+            "gen3",
+            "gen4",
+            "gen5",
+            "platform-default"
+         ]
+      },
+      "front_nvme26_link_speed": {
+         "description": "BIOS Policy - PCI Slot LINK Speed - Front NVME26 Link Speed",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "Auto",
+            "Disabled",
+            "Enabled",
+            "GEN1",
+            "GEN2",
+            "GEN3",
+            "GEN4",
+            "GEN5",
+            "Platform Default",
+            "auto",
+            "disabled",
+            "enabled",
+            "gen1",
+            "gen2",
+            "gen3",
+            "gen4",
+            "gen5",
+            "platform-default"
+         ]
+      },
+      "front_nvme27_link_speed": {
+         "description": "BIOS Policy - PCI Slot LINK Speed - Front NVME27 Link Speed",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "Auto",
+            "Disabled",
+            "Enabled",
+            "GEN1",
+            "GEN2",
+            "GEN3",
+            "GEN4",
+            "GEN5",
+            "Platform Default",
+            "auto",
+            "disabled",
+            "enabled",
+            "gen1",
+            "gen2",
+            "gen3",
+            "gen4",
+            "gen5",
+            "platform-default"
+         ]
+      },
+      "front_nvme28_link_speed": {
+         "description": "BIOS Policy - PCI Slot LINK Speed - Front NVME28 Link Speed",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "Auto",
+            "Disabled",
+            "Enabled",
+            "GEN1",
+            "GEN2",
+            "GEN3",
+            "GEN4",
+            "GEN5",
+            "Platform Default",
+            "auto",
+            "disabled",
+            "enabled",
+            "gen1",
+            "gen2",
+            "gen3",
+            "gen4",
+            "gen5",
+            "platform-default"
+         ]
+      },
+      "front_nvme29_link_speed": {
+         "description": "BIOS Policy - PCI Slot LINK Speed - Front NVME29 Link Speed",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "Auto",
+            "Disabled",
+            "Enabled",
+            "GEN1",
+            "GEN2",
+            "GEN3",
+            "GEN4",
+            "GEN5",
+            "Platform Default",
+            "auto",
+            "disabled",
+            "enabled",
+            "gen1",
+            "gen2",
+            "gen3",
+            "gen4",
+            "gen5",
+            "platform-default"
+         ]
+      },
       "front_nvme2_link_speed": {
          "description": "BIOS Policy - PCI Slot LINK Speed - Front NVME2 Link Speed",
          "type": "string",
@@ -1937,6 +2127,81 @@
             "gen2",
             "gen3",
             "gen4",
+            "platform-default"
+         ]
+      },
+      "front_nvme30_link_speed": {
+         "description": "BIOS Policy - PCI Slot LINK Speed - Front NVME30 Link Speed",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "Auto",
+            "Disabled",
+            "Enabled",
+            "GEN1",
+            "GEN2",
+            "GEN3",
+            "GEN4",
+            "GEN5",
+            "Platform Default",
+            "auto",
+            "disabled",
+            "enabled",
+            "gen1",
+            "gen2",
+            "gen3",
+            "gen4",
+            "gen5",
+            "platform-default"
+         ]
+      },
+      "front_nvme31_link_speed": {
+         "description": "BIOS Policy - PCI Slot LINK Speed - Front NVME31 Link Speed",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "Auto",
+            "Disabled",
+            "Enabled",
+            "GEN1",
+            "GEN2",
+            "GEN3",
+            "GEN4",
+            "GEN5",
+            "Platform Default",
+            "auto",
+            "disabled",
+            "enabled",
+            "gen1",
+            "gen2",
+            "gen3",
+            "gen4",
+            "gen5",
+            "platform-default"
+         ]
+      },
+      "front_nvme32_link_speed": {
+         "description": "BIOS Policy - PCI Slot LINK Speed - Front NVME32 Link Speed",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "Auto",
+            "Disabled",
+            "Enabled",
+            "GEN1",
+            "GEN2",
+            "GEN3",
+            "GEN4",
+            "GEN5",
+            "Platform Default",
+            "auto",
+            "disabled",
+            "enabled",
+            "gen1",
+            "gen2",
+            "gen3",
+            "gen4",
+            "gen5",
             "platform-default"
          ]
       },
@@ -2295,8 +2560,112 @@
             "platform-default"
          ]
       },
+      "front_nvme_25_optionrom": {
+         "description": "BIOS Policy - PCI Slot OptionROM Enable - Front Nvme-25 OptionRom",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "Disabled",
+            "Enabled",
+            "Platform Default",
+            "disabled",
+            "enabled",
+            "platform-default"
+         ]
+      },
+      "front_nvme_26_optionrom": {
+         "description": "BIOS Policy - PCI Slot OptionROM Enable - Front Nvme-26 OptionRom",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "Disabled",
+            "Enabled",
+            "Platform Default",
+            "disabled",
+            "enabled",
+            "platform-default"
+         ]
+      },
+      "front_nvme_27_optionrom": {
+         "description": "BIOS Policy - PCI Slot OptionROM Enable - Front Nvme-27 OptionRom",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "Disabled",
+            "Enabled",
+            "Platform Default",
+            "disabled",
+            "enabled",
+            "platform-default"
+         ]
+      },
+      "front_nvme_28_optionrom": {
+         "description": "BIOS Policy - PCI Slot OptionROM Enable - Front Nvme-28 OptionRom",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "Disabled",
+            "Enabled",
+            "Platform Default",
+            "disabled",
+            "enabled",
+            "platform-default"
+         ]
+      },
+      "front_nvme_29_optionrom": {
+         "description": "BIOS Policy - PCI Slot OptionROM Enable - Front Nvme-29 OptionRom",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "Disabled",
+            "Enabled",
+            "Platform Default",
+            "disabled",
+            "enabled",
+            "platform-default"
+         ]
+      },
       "front_nvme_2_optionrom": {
          "description": "BIOS Policy - PCI Slot OptionROM Enable - Front Nvme-2 OptionRom",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "Disabled",
+            "Enabled",
+            "Platform Default",
+            "disabled",
+            "enabled",
+            "platform-default"
+         ]
+      },
+      "front_nvme_30_optionrom": {
+         "description": "BIOS Policy - PCI Slot OptionROM Enable - Front Nvme-30 OptionRom",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "Disabled",
+            "Enabled",
+            "Platform Default",
+            "disabled",
+            "enabled",
+            "platform-default"
+         ]
+      },
+      "front_nvme_31_optionrom": {
+         "description": "BIOS Policy - PCI Slot OptionROM Enable - Front Nvme-31 OptionRom",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "Disabled",
+            "Enabled",
+            "Platform Default",
+            "disabled",
+            "enabled",
+            "platform-default"
+         ]
+      },
+      "front_nvme_32_optionrom": {
+         "description": "BIOS Policy - PCI Slot OptionROM Enable - Front Nvme-32 OptionRom",
          "type": "string",
          "default": "platform-default",
          "enum": [
@@ -2554,17 +2923,29 @@
          "type": "string",
          "default": "platform-default",
          "enum": [
+            "Auto",
             "Base",
             "Config-1",
             "Config-2",
             "Config-3",
             "Config-4",
+            "Level-0",
+            "Level-1",
+            "Level-2",
+            "Level-3",
+            "Level-4",
             "Platform Default",
+            "auto",
             "base",
             "config-1",
             "config-2",
             "config-3",
             "config-4",
+            "level-0",
+            "level-1",
+            "level-2",
+            "level-3",
+            "level-4",
             "platform-default"
          ]
       },
@@ -2944,6 +3325,19 @@
             "Enabled",
             "Platform Default",
             "auto",
+            "disabled",
+            "enabled",
+            "platform-default"
+         ]
+      },
+      "latency_optimized_mode": {
+         "description": "BIOS Policy - Latency Optimized Mode - Latency Optimized Mode",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "Disabled",
+            "Enabled",
+            "Platform Default",
             "disabled",
             "enabled",
             "platform-default"
@@ -3358,7 +3752,9 @@
             "512g",
             "56T",
             "56t",
+            "Auto",
             "Platform Default",
+            "auto",
             "platform-default"
          ]
       },
@@ -3375,11 +3771,15 @@
             "1g",
             "256G",
             "256g",
+            "32G",
+            "32g",
             "4G",
             "4g",
             "64G",
             "64g",
+            "Auto",
             "Platform Default",
+            "auto",
             "platform-default"
          ]
       },
@@ -5227,11 +5627,17 @@
          "type": "string",
          "default": "platform-default",
          "enum": [
+            "Auto",
+            "Balanced-Core-Memory-Performance-Mode",
+            "Balanced-Core-Performance-Mode",
             "Balanced-Memory-Performance-Mode",
             "Efficiency-Mode",
             "High-Performance-Mode",
             "Maximum-IO-Performance-Mode",
             "Platform Default",
+            "auto",
+            "balanced-core-memory-performance-mode",
+            "balanced-core-performance-mode",
             "balanced-memory-performance-mode",
             "efficiency-mode",
             "high-performance-mode",
@@ -5253,6 +5659,19 @@
             "disabled",
             "energy-efficient",
             "performance",
+            "platform-default"
+         ]
+      },
+      "preboot_dma_protection": {
+         "description": "BIOS Policy - PreBoot DMA Protection - PreBoot DMA Protection",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "Disabled",
+            "Enabled",
+            "Platform Default",
+            "disabled",
+            "enabled",
             "platform-default"
          ]
       },
@@ -5356,9 +5775,11 @@
          "type": "string",
          "default": "platform-default",
          "enum": [
+            "Auto",
             "Disabled",
             "Enabled",
             "Platform Default",
+            "auto",
             "disabled",
             "enabled",
             "platform-default"
@@ -5957,10 +6378,12 @@
             "Manual-User-Defined-Owner-EPOCHs",
             "Platform Default",
             "SGX-Owner-EPOCH-activated",
+            "SGX-Owner-EPOCH-deactivated",
             "change-to-new-random-owner-epochs",
             "manual-user-defined-owner-epochs",
             "platform-default",
-            "sgx-owner-epoch-activated"
+            "sgx-owner-epoch-activated",
+            "sgx-owner-epoch-deactivated"
          ]
       },
       "select_ppr_type_configuration": {
@@ -6826,6 +7249,19 @@
             "platform-default"
          ]
       },
+      "uefi_memory_map_special_purpose_memory_flag": {
+         "description": "BIOS Policy - Mem Special Flag - UEFI Memory Map Special Purpose Memory Flag",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "Disabled",
+            "Enabled",
+            "Platform Default",
+            "disabled",
+            "enabled",
+            "platform-default"
+         ]
+      },
       "uefi_os_use_legacy_video": {
          "description": "BIOS Policy - UEFI OS use legacy video - UEFI OS use legacy video",
          "type": "string",
@@ -6861,9 +7297,13 @@
          "enum": [
             "Disabled",
             "Enabled",
+            "Mode-0",
+            "Mode-1",
             "Platform Default",
             "disabled",
             "enabled",
+            "mode-0",
+            "mode-1",
             "platform-default"
          ]
       },
@@ -6898,6 +7338,8 @@
             "16.0gt-s",
             "20.0GT-s",
             "20.0gt-s",
+            "24.0GT-s",
+            "24.0gt-s",
             "9.6GT-s",
             "9.6gt-s",
             "Auto",

@@ -323,6 +323,25 @@ class DeviceManager:
         else:
             return device_list[0]
 
+    def find_devices_by_endpoint_id(self, endpoint_id=None):
+        """
+        Find devices from the device list given a specific endpoint_id
+        :param endpoint_id: endpoint_id of the device(s) to find
+        :return: list of devices if found, Empty list otherwise
+        """
+        if endpoint_id is None:
+            self.logger(level="error", message="No device endpoint_id specified in find device request.")
+            return []
+
+        device_list = [device for device in self.device_list if str(device.metadata.device_endpoint_id) == str(endpoint_id)]
+        if device_list:
+            if len(device_list) > 1:
+                self.logger(level="debug", message=f"Found " + str(len(device_list)) + " devices with endpoint_id " +
+                                                   str(endpoint_id))
+            return device_list
+
+        return []
+
     def get_latest_device(self):
         """
         Returns the most recent device from the device list

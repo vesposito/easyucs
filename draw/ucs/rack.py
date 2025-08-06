@@ -96,7 +96,7 @@ class GenericDrawRackFront(GenericUcsDrawObject):
         disk_list = []
         for disk in self._parent.nvme_drives:
             # Prevent potential disk with ID 0 to be used in Draw (happens sometimes with B200 M2)
-            if disk.id != "0" and disk.slot_type == "sff-nvme":
+            if disk.id != "0" and disk.slot_type in ["sff-nvme", "e3s-nvme"]:
                 if disk.id in [str(i["id"]) for i in self.json_file["disks_slots"]]:
                     disk_list.append(UcsStorageLocalDiskDraw(parent=disk, parent_draw=self))
                     self.disk_slots_used.append(int(disk.id))
@@ -250,6 +250,20 @@ class GenericDrawRackRear(GenericUcsDrawObject):
                                         {"id": "2", "sku": "UCSC-RIS2A-225M8"},
                                         {"id": "3", "sku": "UCSC-RIS3A-225M8"}]
 
+        elif self._parent.model in ["UCSC-C220-M8S", "UCSC-C220-M8E3S"]:
+            # Since we don't have any object that gives us which PCIe risers are available, we have to force a default
+            # We do this for C220 M7, since it is mandatory for the draw operation
+            self._parent_pcie_risers = [{"id": "1", "sku": "UCSC-RIS1A-220M8"},
+                                        {"id": "2", "sku": "UCSC-RIS2A-220M8"},
+                                        {"id": "3", "sku": "UCSC-RIS3A-220M8"}]
+
+        elif self._parent.model in ["UCSC-C240-M8SX", "UCSC-C240-M8E3S", "UCSC-C240-M8L"]:
+            # Since we don't have any object that gives us which PCIe risers are available, we have to force a default
+            # We do this for C240 M8, since it is mandatory for the draw operation
+            self._parent_pcie_risers = [{"id": "1", "sku": "UCSC-RIS1A-240M8"},
+                                        {"id": "2", "sku": "UCSC-RIS2A-240M8"},
+                                        {"id": "3", "sku": "UCSC-RIS3A-240M8"}]
+
         else:
             return pcie_riser_list
 
@@ -282,7 +296,7 @@ class GenericDrawRackRear(GenericUcsDrawObject):
         disk_list = []
         for disk in self._parent.nvme_drives:
             # Prevent potential disk with ID 0 to be used in Draw (happens sometimes with B200 M2)
-            if disk.id != "0" and disk.slot_type == "sff-nvme":
+            if disk.id != "0" and disk.slot_type in ["sff-nvme", "e3s-nvme"]:
                 if disk.id in [str(i["id"]) for i in self.json_file["disks_slots_rear"]]:
                     disk_list.append(UcsStorageLocalDiskDraw(parent=disk, parent_draw=self))
                     self.disk_slots_used.append(int(disk.id))
@@ -411,6 +425,15 @@ class GenericDrawRackRear(GenericUcsDrawObject):
                 a = list(set(potential_slot) - set(used_slot))
                 for blank_id in set(potential_slot) - set(used_slot):
                     unused_slot.append(blank_id)
+
+                # Don't show a blank PCIe riser in slot 2 for C220 M7/M8 servers if FHFL risers are in use
+                if unused_slot == [2] and any(x in self._parent.model for x in ["UCSC-C220-M7", "UCSC-C220-M8"]):
+                    for parent_pcie_riser in self._parent_pcie_risers:
+                        if parent_pcie_riser["id"] == "1" and \
+                                parent_pcie_riser["sku"] in ["UCSC-RIS1C-22XM7", "UCSC-RIS1B-220M8"]:
+                            unused_slot = []
+                            break
+
                 for slot_id in unused_slot:
                     for expansion in self.json_file["pcie_riser_models"]:
                         if "type" in expansion:
@@ -431,41 +454,40 @@ class GenericDrawRackRear(GenericUcsDrawObject):
                                 coord_offset = self.picture_offset[0] + coord[0], self.picture_offset[1] + coord[1]
                                 self.paste_layer(img, coord_offset)
 
-        if not self.storage_controller_list:
-            if "disks_slots_rear" in self.json_file:
-                # Fill blank for disks slots
-                if len(self.disk_slots_used) < len(self.json_file["disks_slots_rear"]):
-                    used_slot = []
-                    potential_slot = []
-                    unused_slot = []
-                    for disk_used in self.disk_slots_used:
-                        used_slot.append(disk_used)
-                    for disk in self.json_file["disks_slots_rear"]:
-                        potential_slot.append(disk["id"])
-                    for blank_id in set(potential_slot) - set(used_slot):
-                        unused_slot.append(blank_id)
-                    for slot_id in unused_slot:
-                        blank_name = None
-                        orientation = "horizontal"
-                        disk_format = None
-                        for disk_slot in self.json_file['disks_slots_rear']:
-                            if disk_slot['id'] == slot_id:
-                                orientation = disk_slot['orientation']
-                                disk_format = disk_slot['format']
-                        for model in self.json_file["disks_models"]:
-                            if "type" in model and not blank_name:
-                                if model["type"] == "blank" and model["format"] == disk_format:
-                                    blank_name = model["name"]
-                                    img = Image.open("catalog/drives/img/" + blank_name + ".png", 'r')
-                                    if orientation == "vertical":
-                                        img = GenericUcsDrawEquipment.rotate_object(picture=img)
+        if "disks_slots_rear" in self.json_file:
+            # Fill blank for disks slots
+            if len(self.disk_slots_used) < len(self.json_file["disks_slots_rear"]):
+                used_slot = []
+                potential_slot = []
+                unused_slot = []
+                for disk_used in self.disk_slots_used:
+                    used_slot.append(disk_used)
+                for disk in self.json_file["disks_slots_rear"]:
+                    potential_slot.append(disk["id"])
+                for blank_id in set(potential_slot) - set(used_slot):
+                    unused_slot.append(blank_id)
+                for slot_id in unused_slot:
+                    blank_name = None
+                    orientation = "horizontal"
+                    disk_format = None
+                    for disk_slot in self.json_file['disks_slots_rear']:
+                        if disk_slot['id'] == slot_id:
+                            orientation = disk_slot['orientation']
+                            disk_format = disk_slot['format']
+                    for model in self.json_file["disks_models"]:
+                        if "type" in model and not blank_name:
+                            if model["type"] == "blank" and model["format"] == disk_format:
+                                blank_name = model["name"]
+                                img = Image.open("catalog/drives/img/" + blank_name + ".png", 'r')
+                                if orientation == "vertical":
+                                    img = GenericUcsDrawEquipment.rotate_object(picture=img)
 
-                        if blank_name:
-                            for slot in self.json_file["disks_slots_rear"]:
-                                if slot["id"] == int(slot_id):
-                                    coord = slot["coord"]
-                            coord_offset = self.picture_offset[0] + coord[0], self.picture_offset[1] + coord[1]
-                            self.paste_layer(img, coord_offset)
+                    if blank_name:
+                        for slot in self.json_file["disks_slots_rear"]:
+                            if slot["id"] == int(slot_id):
+                                coord = slot["coord"]
+                        coord_offset = self.picture_offset[0] + coord[0], self.picture_offset[1] + coord[1]
+                        self.paste_layer(img, coord_offset)
 
 
 class UcsRackDrawRear(GenericDrawRackRear, GenericUcsDrawEquipment):

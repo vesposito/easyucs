@@ -38,8 +38,13 @@ class GenericStorageLocalDisk(GenericInventoryObject):
                 self.size_marketing = res.group(0).replace(" ", "")
 
     def _determine_nvme_slot_type(self):
-        if getattr(self, "id") and "FRONT-NVME-" in self.id:
-            self.slot_type = "sff-nvme"
+        if getattr(self, "id") and any(x in self.id for x in ["FRONT-NVME-", "REAR-NVME-"]):
+            if self._parent.__class__.__name__ in ["IntersightComputeBlade", "UcsSystemBlade",
+                                                     "IntersightComputeRackUnit", "UcsSystemRack"] \
+                 and self._parent.model and self._parent.model.endswith("E3S"):
+                self.slot_type = "e3s-nvme"
+            else:
+                self.slot_type = "sff-nvme"
             regex = r"\d+"
             res = re.search(regex, self.id)
             if res is not None:
@@ -51,9 +56,13 @@ class GenericStorageLocalDisk(GenericInventoryObject):
         if not self.slot_type:
             if getattr(self, "pci_slot") and self.pci_slot:
                 if any(x in self.pci_slot for x in ["FRONT", "REAR", "U.2", "U.3"]):
-                    if self._parent.__class__.__name__ in ["IntersightBlade", "UcsSystemBlade"] and \
+                    if self._parent.__class__.__name__ in ["IntersightComputeBlade", "UcsSystemBlade"] and \
                             self._parent.model in ["UCSB-B200-M6"]:
                         self.slot_type = "sff-7mm-m6-nvme"
+                    elif self._parent.__class__.__name__ in ["IntersightComputeBlade", "UcsSystemBlade",
+                                                             "IntersightComputeRackUnit", "UcsSystemRack"] \
+                            and "-E3S" in self._parent.model:
+                        self.slot_type = "e3s-nvme"
                     else:
                         self.slot_type = "sff-nvme"
                 else:

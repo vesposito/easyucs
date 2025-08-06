@@ -1,0 +1,60 @@
+{
+   "easyucs": {
+      "metadata": [
+         {
+            "file_type": "config",
+            "device_type": "intersight",
+            "category": "best-practices",
+            "subcategory": "BIOS",
+            "name": "Intersight BIOS Policy for AI/ML and HPC on Cisco UCS M8 Intel Servers",
+            "url": "https://www.cisco.com/c/en/us/products/collateral/servers-unified-computing/ucs-c-series-rack-servers/bios-tuning-guide-ucs-m8-intel-xeon-wp.html",
+            "easyucs_version": "1.0.3",
+            "revision": "1.0"
+         }
+      ]
+   },
+   "config": {
+      "orgs": [
+         {
+            "name": "default",
+            "bios_policies": [
+               {
+                  "name": "HPC-M8-Intel",
+                  "descr": "BIOS Policy for AI/ML and HPC on Cisco UCS M8 Intel Servers",
+                  "intel_hyper_threading_tech": "disabled",
+                  "cpu_performance": "hpc",
+                  "hardware_prefetch": "platform-default",
+                  "adjacent_cache_line_prefetch": "platform-default",
+                  "ip_prefetch": "platform-default",
+                  "streamer_prefetch": "platform-default",
+                  "llc_prefetch": "platform-default",
+                  "intel_virtualization_technology": "disabled",
+                  "upi_link_enablement": "platform-default",
+                  "upi_power_management": "platform-default",
+                  "qpi_link_speed": "platform-default",
+                  "xpt_remote_prefetch": "platform-default",
+                  "kti_prefetch": "platform-default",
+                  "xpt_prefetch": "platform-default",
+                  "snc": "platform-default",
+                  "llc_alloc": "disabled",
+                  "numa_optimized": "platform-default",
+                  "virtual_numa": "platform-default",
+                  "select_memory_ras_configuration":"platform-default",
+                  "patrol_scrub": "platform-default",
+                  "intel_vt_for_directed_io": "disabled",
+                  "cpu_perf_enhancement": "Auto",
+                  "energy_efficient_turbo": "platform-default",
+                  "intel_turbo_boost_tech": "platform-default",
+                  "processor_c6report": "platform-default",
+                  "processor_c1e": "platform-default",
+                  "package_cstate_limit": "platform-default",
+                  "pwr_perf_tuning": "bios",
+                  "epp_profile": "Performance",
+                  "latency_optimized_mode": "enabled",
+                  "work_load_config": "platform-default"
+               }
+            ]
+         }
+      ]
+   }
+}

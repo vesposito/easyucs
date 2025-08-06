@@ -35,6 +35,8 @@ class GenericCpu(GenericInventoryObject):
                         self.family_name = "3rd Gen AMD EPYC 7003 Series Processors"
                     elif self.model_short_name[-1] == "4":
                         self.family_name = "4th Gen AMD EPYC 9004 Series Processors"
+                    elif self.model_short_name[-1] == "5":
+                        self.family_name = "5th Gen AMD EPYC 9005 Series Processors"
 
                 else:
                     # We have an Intel processor. Getting its model short name
@@ -144,3 +146,12 @@ class GenericCpu(GenericInventoryObject):
                                     self.model_short_name = res3.group(1)
                                     if self.model_short_name[1:2] == "5":
                                         self.family_name = "5th Gen Intel Xeon Processor Scalable Family"
+
+                                else:
+                                    # We might have an M8 Intel Xeon 6 CPU
+                                    regex4 = r"Intel\(R\) Xeon\(R\) (\d*[EP])"
+                                    res4 = re.search(regex4, self.model)
+                                    if res4 is not None:
+                                        self.model_short_name = res4.group(1)
+                                        if self.model_short_name[-1] == "P":
+                                            self.family_name = "Intel Xeon 6"

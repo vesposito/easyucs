@@ -1,0 +1,12 @@
+{
+   "model_short_name": "3C",
+   "rear_file_name": "UCSC-RIS3C-22XM7.png",
+   "rear_file_size": [455, 136],
+   "pcie_slots": [
+      {
+         "id": 3,
+         "width": "full",
+         "coord": [-122, 10]
+      }
+   ]
+}

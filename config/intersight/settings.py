@@ -26,6 +26,7 @@ from config.intersight.fabric_policies import (
     IntersightFabricFlowControlPolicy,
     IntersightFabricLinkAggregationPolicy,
     IntersightFabricLinkControlPolicy,
+    IntersightMacSecPolicy,
     IntersightFabricMulticastPolicy,
     IntersightFabricPortPolicy,
     IntersightFabricSwitchControlPolicy,
@@ -337,6 +338,7 @@ class IntersightOrganization(IntersightConfigObject):
         "link_control_policies": "Link Control Policies",
         "local_user_policies": "Local User Policies",
         "mac_pools": "MAC Pools",
+        "macsec_policies": "MACsec Policies",
         "memory_policies": "Memory Policy",
         "multicast_policies": "Multicast Policies",
         "network_connectivity_policies": "Network Connectivity Policies",
@@ -447,6 +449,11 @@ class IntersightOrganization(IntersightConfigObject):
             json_content=organization_organization,
             object_class=IntersightFabricLinkControlPolicy,
             name_to_fetch="link_control_policies",
+        )
+        self.macsec_policies = self._get_generic_element(
+            json_content=organization_organization,
+            object_class=IntersightMacSecPolicy,
+            name_to_fetch="macsec_policies",
         )
         self.port_policies = self._get_generic_element(
             json_content=organization_organization,
@@ -799,6 +806,32 @@ class IntersightOrganization(IntersightConfigObject):
         # when below 2nd condition is true.
         modify_present = False
 
+
+        # Intersight does not allow shared organizations to have resource groups.
+        # so, if Organization to be pushed already exists in intersight and has resource group attached
+        # we will delete the resource groups from the organization by setting modify present to true.
+        has_resource_group = False
+
+        if self.shared_with_orgs and delete_existing_resource_group_memberships_for_intersight_shared_orgs:
+            fetched_orgs = self._device.query(
+                object_type="organization.Organization",
+                filter=f"Name eq '{self.name}'"
+            )
+
+            if fetched_orgs and len(fetched_orgs) == 1:
+                existing_org = fetched_orgs[0]
+                if hasattr(existing_org, "resource_groups") and existing_org.resource_groups:
+                    has_resource_group = True
+
+            if has_resource_group:
+                modify_present = True
+                self.logger(
+                    level="info",
+                    message=f"Target org '{self.name}' currently has Resource Groups assigned, and org to be pushed "
+                            f"is shared. Proceeding to delete RG memberships as shared orgs cannot be attached to "
+                            f"resource groups"
+                )
+
         # Determining the list of Resource Groups we assign to our organization
         # Intersight does not allow shared organizations to have resource groups. So, to manage
         # organization + resource group "push" we have the following scenario:
@@ -822,7 +855,12 @@ class IntersightOrganization(IntersightConfigObject):
                                         message="Could not find unique Resource Group '" + resource_group +
                                                 "' to assign to Organization '" + self.name + "'")
                         else:
-                            resource_group_list.append(self.create_relationship_equivalent(sdk_object=rg_list[0]))
+                            # Check if the resource group is already present in resource_group_list.
+                            # This prevents duplicate attachments, which can occur if the organization has entries
+                            # like ["A", "B", "A"]. Without this check, reattaching the same resource may raise:
+                            # "Cannot modify the relationship 'ResourceGroups'... the ID already exists."
+                            if rg_list[0].moid not in [resource_group.moid for resource_group in resource_group_list]:
+                                resource_group_list.append(self.create_relationship_equivalent(sdk_object=rg_list[0]))
 
                     else:
                         self.logger(level="warning",
@@ -879,6 +917,50 @@ class IntersightOrganization(IntersightConfigObject):
             requests = []
 
             for shared_with_org in self.shared_with_orgs:
+                try:
+                    # - When pushing SharingRules from config, if a rule already exists in Intersight,
+                    #   the API throws a conflict error.
+                    # - To avoid this, we first check whether the rule (from_org → to_org) already exists.
+                    # - But querying for existing rules only makes sense when both source and target
+                    #   organizations are already present in the live Intersight account.
+                    fetched_org = self._device.query(
+                        object_type="organization.Organization",
+                        filter=f"Name eq '{self.name}'"
+                    )
+                    shared_with_fetched_org = self._device.query(
+                        object_type="organization.Organization",
+                        filter=f"Name eq '{shared_with_org}'"
+                    )
+                    # if both orgs already exist in the device, use their moids to query whether
+                    # this SharingRule also exists
+                    if fetched_org and shared_with_fetched_org:
+                        fetched_org_moid = fetched_org[0].get("moid")
+                        shared_with_fetched_org_moid = shared_with_fetched_org[0].get("moid")
+                        filter_str = (
+                            f"SharedResource.Moid eq '{fetched_org_moid}' and "
+                            f"SharedWithResource.Moid eq '{shared_with_fetched_org_moid}'"
+                        )
+                        existing_rules = self._device.query(
+                            object_type="iam.SharingRule",
+                            filter=filter_str
+                        )
+                        if existing_rules:
+                            self.logger(
+                                level="info",
+                                message=f"Skipping SharingRule creation from '{self.name}' to '{shared_with_org}' as it already exists."
+                            )
+                            continue
+                    # Handling corner case where the recipient org is not found (can happen if the org failed to be created).
+                    elif not shared_with_fetched_org:
+                        self.logger(level="error", message=f"Sharing relationship failed as '{shared_with_org}' not found: "
+                                     f"Organization '{fetched_org[0].name}' could not be shared with '{shared_with_org}'.")
+                        continue
+                except Exception as e:
+                    self.logger(
+                        level="warning",
+                        message=f"Failed to check SharingRule from '{self.name}' to '{shared_with_org}': {str(e)}"
+                    )
+
                 body_kwargs = {
                     "object_type": "iam.SharingRule",
                     "class_id": "iam.SharingRule",
@@ -920,14 +1002,13 @@ class IntersightOrganization(IntersightConfigObject):
             'ethernet_network_policies', 'ethernet_qos_policies', 'fc_zone_policies', 'fibre_channel_adapter_policies',
             'fibre_channel_network_policies', 'fibre_channel_qos_policies', 'firmware_policies', 'imc_access_policies',
             'ipmi_over_lan_policies', 'iscsi_adapter_policies', 'iscsi_static_target_policies', 'iscsi_boot_policies',
-            'ldap_policies', 'memory_policies', 'network_connectivity_policies', 'ntp_policies',
+            'ldap_policies', 'macsec_policies', 'memory_policies', 'network_connectivity_policies', 'ntp_policies',
             'persistent_memory_policies', 'power_policies', 'scrub_policies', 'sd_card_policies',
-            'serial_over_lan_policies', 'smtp_policies', 'snmp_policies',
-            'ssh_policies', 'storage_policies', 'syslog_policies', 'thermal_policies', 'virtual_kvm_policies',
-            'virtual_media_policies', 'vnic_templates', 'lan_connectivity_policies', 'vhba_templates',
-            'san_connectivity_policies', 'port_policies', 'ucs_domain_profile_templates', 'ucs_domain_profiles',
-            'ucs_chassis_profile_templates', 'ucs_chassis_profiles', 'ucs_server_profile_templates',
-            'ucs_server_profiles']
+            'serial_over_lan_policies', 'smtp_policies', 'snmp_policies', 'ssh_policies', 'storage_policies',
+            'syslog_policies', 'thermal_policies', 'virtual_kvm_policies', 'virtual_media_policies', 'vnic_templates',
+            'lan_connectivity_policies', 'vhba_templates', 'san_connectivity_policies', 'port_policies',
+            'ucs_domain_profile_templates', 'ucs_domain_profiles', 'ucs_chassis_profile_templates',
+            'ucs_chassis_profiles', 'ucs_server_profile_templates', 'ucs_server_profiles']
 
         is_pushed = True
         for config_object_type in objects_to_push_in_order:
@@ -1092,8 +1173,9 @@ class IntersightResourceGroup(IntersightConfigObject):
 
         if moid_list or blade_server_list or rack_server_list:
             if self.memberships == "custom":
-                info_message = f"The target must be claimed first to include the entire domain or individual servers" + \
-                            f" in the resource group '{self.name}'; otherwise, an empty resource group is created with 'custom' membership."
+                info_message = f"The target must be claimed first to include the entire domain or individual " + \
+                               f"servers in the Resource Group '{self.name}'; otherwise, an empty Resource Group " + \
+                               f"is created with 'custom' membership."
                 self.logger(level="info", message=info_message)
                 if moid_list:
                     resource_selector_list.append(create_resource_selector_object("/api/v1/asset/DeviceRegistrations",

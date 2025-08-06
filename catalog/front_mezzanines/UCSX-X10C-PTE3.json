@@ -1,0 +1,78 @@
+{
+   "model_short_name": "PT E3.S",
+   "front_file_name": "UCSX-X10C-PTE3.png",
+   "front_file_size": [226,1681],
+   "disks_slots": [
+      {
+         "id": 1,
+         "format": "e3s",
+         "orientation": "vertical",
+         "coord": [43,132],
+         "size": [437,97]
+      },
+      {
+         "id": 2,
+         "format": "e3s",
+         "orientation": "vertical",
+         "coord": [111,132],
+         "size": [437,97]
+      },
+      {
+         "id": 3,
+         "format": "e3s",
+         "orientation": "vertical",
+         "coord": [174,132],
+         "size": [437,97]
+      },
+      {
+         "id": 4,
+         "format": "e3s",
+         "orientation": "vertical",
+         "coord": [43,620],
+         "size": [437,97]
+      },
+      {
+         "id": 5,
+         "format": "e3s",
+         "orientation": "vertical",
+         "coord": [111,620],
+         "size": [437,97]
+      },
+      {
+         "id": 6,
+         "format": "e3s",
+         "orientation": "vertical",
+         "coord": [174,620],
+         "size": [437,97]
+      },
+      {
+         "id": 7,
+         "format": "e3s",
+         "orientation": "vertical",
+         "coord": [43,1104],
+         "size": [437,97]
+      },
+      {
+         "id": 8,
+         "format": "e3s",
+         "orientation": "vertical",
+         "coord": [111,1104],
+         "size": [437,97]
+      },
+      {
+         "id": 9,
+         "format": "e3s",
+         "orientation": "vertical",
+         "coord": [174,1104],
+         "size": [437,97]
+      }
+   ],
+   "disks_models": [
+      {
+         "name": "UCSC-E3S1T-F",
+         "type": "blank",
+         "format": "e3s",
+         "description": "UCS C-Series E3.S 1T Drive Filler"
+      }
+   ]
+}

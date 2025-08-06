@@ -12,8 +12,8 @@ from config.ucs.ucsc.policies import UcsCentralBiosPolicy, UcsCentralBootPolicy,
     UcsCentralLanConnectivityPolicy, UcsCentralLocalDiskConfPolicy, UcsCentralMaintenancePolicy, \
     UcsCentralNetworkControlPolicy, UcsCentralPowerControlPolicy, UcsCentralPowerSyncPolicy, UcsCentralQosPolicy, \
     UcsCentralSanConnectivityPolicy, UcsCentralScrubPolicy, UcsCentralSerialOverLanPolicy, \
-    UcsCentralStorageConnectionPolicy, UcsCentralStorageProfile, UcsCentralThresholdPolicy, \
-    UcsCentralUsnicConnectionPolicy, UcsCentralVmediaPolicy, UcsCentralVmqConnectionPolicy
+    UcsCentralSriovHpnConnectionPolicy, UcsCentralStorageConnectionPolicy, UcsCentralStorageProfile, \
+    UcsCentralThresholdPolicy, UcsCentralUsnicConnectionPolicy, UcsCentralVmediaPolicy, UcsCentralVmqConnectionPolicy
 
 from config.ucs.ucsc.pools import UcsCentralIpPool, UcsCentralIqnPool, UcsCentralMacPool, \
     UcsCentralServerPool, UcsCentralUuidPool, UcsCentralWwnnPool, UcsCentralWwpnPool
@@ -48,6 +48,7 @@ from ucscsdk.mometa.vnic.VnicIpV6MgmtPooledAddr import VnicIpV6MgmtPooledAddr
 from ucscsdk.mometa.vnic.VnicIScsi import VnicIScsi
 from ucscsdk.mometa.vnic.VnicIScsiNode import VnicIScsiNode
 from ucscsdk.mometa.vnic.VnicMgmtIf import VnicMgmtIf
+from ucscsdk.mometa.vnic.VnicSriovHpnConPolicyRef import VnicSriovHpnConPolicyRef
 from ucscsdk.mometa.vnic.VnicUsnicConPolicyRef import VnicUsnicConPolicyRef
 from ucscsdk.mometa.vnic.VnicVlan import VnicVlan
 from ucscsdk.mometa.vnic.VnicVmqConPolicyRef import VnicVmqConPolicyRef
@@ -329,6 +330,7 @@ class UcsCentralServiceProfile(UcsCentralConfigObject):
                 "mac_address_pool": UcsCentralMacPool,
                 "network_control_policy": UcsCentralNetworkControlPolicy,
                 "qos_policy": UcsCentralQosPolicy,
+                "sriov_hpn_connection_policy": UcsCentralSriovHpnConnectionPolicy,
                 "stats_threshold_policy": UcsCentralThresholdPolicy,
                 "usnic_connection_policy": UcsCentralUsnicConnectionPolicy,
                 "vmq_connection_policy": UcsCentralVmqConnectionPolicy,
@@ -703,6 +705,19 @@ class UcsCentralServiceProfile(UcsCentralConfigObject):
                                                         policy_dn=vnic_policy.oper_con_policy_name,
                                                         separator="/vmq-con-",
                                                         policy_name="vmq_connection_policy"
+                                                    )
+                                                )
+                                    if "vnicSriovHpnConPolicyRef" in self._parent._config.sdk_objects:
+                                        for vnic_policy in self._config.sdk_objects["vnicSriovHpnConPolicyRef"]:
+                                            if self._parent._dn + "/ls-" + self.name + "/" + "ether-" + \
+                                                    vnic['name'] + "/" in vnic_policy.dn:
+                                                vnic.update(
+                                                    {"sriov_hpn_connection_policy": vnic_policy.con_policy_name})
+                                                oper_state.update(
+                                                    self.get_operational_state(
+                                                        policy_dn=vnic_policy.oper_con_policy_name,
+                                                        separator="/sriov-hpn-con-",
+                                                        policy_name="sriov_hpn_connection_policy"
                                                     )
                                                 )
                                     if "vnicEtherIf" in self._config.sdk_objects:
@@ -1288,8 +1303,8 @@ class UcsCentralServiceProfile(UcsCentralConfigObject):
         for element in self.vnics:
             for value in ["vlans", "vnic_template", "adapter_policy", "name", "cdn_source", "cdn_name",
                           "vlan_native", "order", "fabric", "mac_address_pool", "mtu", "pin_group",
-                          "qos_policy", "network_control_policy", "dynamic_vnic", "stats_threshold_policy",
-                          "mac_address", "vlan_groups", "operational_state", "redundancy_pair",
+                          "qos_policy", "network_control_policy", "dynamic_vnic", "sriov_hpn_connection_policy",
+                          "stats_threshold_policy", "mac_address", "vlan_groups", "operational_state", "redundancy_pair",
                           "usnic_connection_policy", "vmq_connection_policy"]:
                 if value not in element:
                     element[value] = None
@@ -1299,7 +1314,7 @@ class UcsCentralServiceProfile(UcsCentralConfigObject):
 
             if element["operational_state"]:
                 for policy in ["adapter_policy", "mac_address_pool", "network_control_policy",
-                               "qos_policy", "stats_threshold_policy", "usnic_connection_policy",
+                               "qos_policy", "sriov_hpn_connection_policy", "stats_threshold_policy", "usnic_connection_policy",
                                "vmq_connection_policy", "vnic_template"]:
                     if policy not in element["operational_state"]:
                         element["operational_state"][policy] = None
@@ -1506,6 +1521,9 @@ class UcsCentralServiceProfile(UcsCentralConfigObject):
 
             if vnic['dynamic_vnic']:
                 VnicDynamicConPolicyRef(parent_mo_or_dn=mo_vnic_ether, con_policy_name=vnic['dynamic_vnic'])
+            elif vnic['sriov_hpn_connection_policy']:
+                VnicSriovHpnConPolicyRef(parent_mo_or_dn=mo_vnic_ether,
+                                         con_policy_name=vnic['sriov_hpn_connection_policy'])
             elif vnic['usnic_connection_policy']:
                 VnicUsnicConPolicyRef(parent_mo_or_dn=mo_vnic_ether, con_policy_name=vnic['usnic_connection_policy'])
             elif vnic['vmq_connection_policy']:

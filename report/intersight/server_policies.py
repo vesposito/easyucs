@@ -1815,7 +1815,8 @@ class IntersightLanConnectivityPolicyReportSection(UcsReportSection):
         if hasattr(lan_connectivity_policy, "vnics") and lan_connectivity_policy.vnics:
             # Sorting the vNICs based on Slot ID and PCI Order
             lan_connectivity_policy.vnics = sorted(
-                lan_connectivity_policy.vnics, key=lambda vif: (vif.get("slot_id"), vif.get("pci_order")))
+                lan_connectivity_policy.vnics, key=lambda vif: (vif.get("slot_id") if vif.get("slot_id") else "",
+                                                                vif.get("pci_order")))
             for vnic in lan_connectivity_policy.vnics:
                 self.content_list.append(
                     GenericReportText(
@@ -2759,7 +2760,7 @@ class IntersightServerPoolQualificationPoliciesReportSection(UcsReportSection):
         config = self.report.config
 
         server_pool_qualification_policies_list = []
-        # Searching for all Ethernet Adapter Policies
+        # Searching for all Server Pool Qualification Policies
         for org in config.orgs:
             self.parse_org(org, server_pool_qualification_policies_list,
                            element_to_parse="server_pool_qualification_policies")

@@ -732,11 +732,13 @@ class UcsSystemLanPortChannel(UcsSystemConfigObject):
                             interface["admin_state"] = None
                             interface["link_profile"] = None
                             interface["user_label"] = None
+                            interface["macsec_interface_configuration"] = None
 
                             interface.update({"slot_id": interface_pc_ep.slot_id})
                             interface.update({"admin_state": interface_pc_ep.admin_state})
                             interface.update({"link_profile": interface_pc_ep.eth_link_profile_name})
                             interface.update({"user_label": interface_pc_ep.usr_lbl})
+                            interface.update({"macsec_interface_configuration": interface_pc_ep.mac_sec_if_config_name})
                             if interface_pc_ep.aggr_port_id:
                                 interface["aggr_id"] =\
                                     interface_pc_ep.aggr_port_id if int(interface_pc_ep.aggr_port_id) else None
@@ -762,7 +764,8 @@ class UcsSystemLanPortChannel(UcsSystemConfigObject):
 
         # We need to set all values that are not present in the config file to None
         for element in self.interfaces:
-            for value in ["aggr_id", "slot_id", "port_id", "admin_state", "link_profile", "user_label"]:
+            for value in ["aggr_id", "slot_id", "port_id", "admin_state", "link_profile",
+                          "macsec_interface_configuration", "user_label"]:
                 if value not in element:
                     element[value] = None
 
@@ -795,12 +798,14 @@ class UcsSystemLanPortChannel(UcsSystemConfigObject):
                                                          slot_id=interface['slot_id'])
                     FabricEthLanPcEp(parent_mo_or_dn=mo_fabric_sub_group, port_id=interface['aggr_id'],
                                      eth_link_profile_name=interface['link_profile'], usr_lbl=interface['user_label'],
-                                     slot_id=interface['slot_id'], admin_state=interface['admin_state'])
+                                     slot_id=interface['slot_id'], admin_state=interface['admin_state'],
+                                     mac_sec_if_config_name=interface['macsec_interface_configuration'])
                     detail = interface['slot_id'] + "/" + interface['port_id'] + "/" + interface['aggr_id']
                 else:
                     FabricEthLanPcEp(parent_mo_or_dn=mo_fabric_eth_lan_pc, slot_id=interface['slot_id'],
                                      port_id=interface['port_id'], eth_link_profile_name=interface['link_profile'],
-                                     usr_lbl=interface['user_label'], admin_state=interface['admin_state'])
+                                     usr_lbl=interface['user_label'], admin_state=interface['admin_state'],
+                                     mac_sec_if_config_name=interface['macsec_interface_configuration'])
                     detail = interface['slot_id'] + "/" + interface['port_id']
 
                 self._handle.add_mo(mo=mo_fabric_eth_lan_pc, modify_present=True)
@@ -827,6 +832,7 @@ class UcsSystemLanUplinkPort(UcsSystemConfigObject):
         self.admin_speed = None
         self.admin_state = None
         self.fec = None
+        self.macsec_interface_configuration = None
 
         if self._config.load_from == "live":
             if fabric_eth_lan_ep is not None:
@@ -847,6 +853,7 @@ class UcsSystemLanUplinkPort(UcsSystemConfigObject):
                 self.admin_speed = fabric_eth_lan_ep.admin_speed
                 self.admin_state = fabric_eth_lan_ep.admin_state
                 self.fec = fabric_eth_lan_ep.fec
+                self.macsec_interface_configuration = fabric_eth_lan_ep.mac_sec_if_config_name
 
         elif self._config.load_from == "file":
             if json_content is not None:
@@ -875,7 +882,7 @@ class UcsSystemLanUplinkPort(UcsSystemConfigObject):
             FabricEthLanEp(parent_mo_or_dn=mo_fabric_sub_group, slot_id=self.slot_id, port_id=self.aggr_id,
                            usr_lbl=self.user_label, flow_ctrl_policy=self.flow_control_policy,
                            eth_link_profile_name=self.link_profile,
-                           admin_state=self.admin_state)
+                           mac_sec_if_config_name=self.macsec_interface_configuration, admin_state=self.admin_state)
             self._handle.add_mo(mo=mo_fabric_sub_group, modify_present=True)
 
         else:
@@ -883,7 +890,8 @@ class UcsSystemLanUplinkPort(UcsSystemConfigObject):
             mo_fabric_eth_lan_ep = FabricEthLanEp(parent_mo_or_dn=parent_mo, slot_id=self.slot_id, port_id=self.port_id,
                                                   usr_lbl=self.user_label, flow_ctrl_policy=self.flow_control_policy,
                                                   eth_link_profile_name=self.link_profile, admin_speed=self.admin_speed,
-                                                  admin_state=self.admin_state, fec=self.fec)
+                                                  admin_state=self.admin_state, fec=self.fec,
+                                                  mac_sec_if_config_name=self.macsec_interface_configuration)
 
             self._handle.add_mo(mo=mo_fabric_eth_lan_ep, modify_present=True)
 

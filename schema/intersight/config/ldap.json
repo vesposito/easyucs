@@ -1,0 +1,128 @@
+{
+   "id": "intersight_config_ldap#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS intersight config ldap section",
+   "description": "EasyUCS intersight config ldap section JSON schema",
+   "type": "object",
+   "properties": {
+      "comment": {
+         "description": "LDAP/AD Comments",
+         "type": "string",
+         "default": ""
+      },
+      "name": {
+         "description": "LDAP/AD Name",
+         "type": "string",
+         "default": "",
+         "pattern": "^[a-zA-Z0-9_.:-]{1,64}$"
+      },
+      "tags": {
+         "description": "LDAP/AD Tags",
+         "type": "array",
+         "items": {
+            "description": "LDAP/AD Tags",
+            "type": "object",
+            "properties": {
+               "key": {
+                  "description": "LDAP/AD Tag Key",
+                  "type": "string",
+                  "default": "",
+                  "minLength": 1,
+                  "maxLength": 128
+               },
+               "value": {
+                  "description": "LDAP/AD Tag Value",
+                  "type": "string",
+                  "default": "",
+                  "minLength": 0,
+                  "maxLength": 256
+               }
+            },
+            "additionalProperties": false,
+            "required": [
+               "key",
+               "value"
+            ]
+         },
+         "minItems": 1
+      },
+      "enable_ldap": {
+         "description": "LDAP/AD - Enable LDAP",
+         "type": "boolean",
+         "default": true
+      },
+      "base_properties": {
+         "description": "Base Settings/Properties of LDAP/AD",
+         "type": "object",
+         "properties": {
+            "base_dn": {
+               "description": "Base Distinguished Name (DN). Starting point from where server will search for users and groups.",
+               "type": "string",
+               "default": "",
+               "max_length": 254
+            },
+            "enable_encryption": {
+               "description": "If enabled, the endpoint encrypts all information it sends to the LDAP server.",
+               "type": "boolean",
+               "default": false
+            },
+            "bind_dn": {
+               "description": "Distinguished Name (DN) of the user, that is used to authenticate against LDAP servers.",
+               "type": "string",
+               "pattern": "",
+               "min_length": 0,
+               "max_length": 254
+            },
+            "bind_method": {
+               "description": "Authentication method to access LDAP servers.",
+               "type": "string",
+               "default": "LoginCredentials",
+               "enum": [
+                  "LoginCredentials",
+                  "Anonymous",
+                  "ConfiguredCredentials"
+               ]
+            },
+            "bind_password": {
+               "description": "The password of the user for initial bind process",
+               "type": "string",
+               "pattern": "^[\\S+]{0,254}$",
+               "max_length": 254
+            },
+            "group_attribute": {
+               "description": "Groups to which an LDAP entry belongs.",
+               "type": "string",
+               "default": "",
+               "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_#@$%&\\-\\^]*[a-zA-Z0-9\\-]$"
+            },
+            "enable_nested_group_search": {
+               "description": "Enable or disable nested group search in LDAP.",
+               "type": "boolean",
+               "default": false
+            }
+         }
+      },
+      "providers": {
+         "description": "Details of LDAP servers - IP Address and Port",
+         "type": "array",
+         "properties": {
+            "ldap_server": {
+               "description": "LDAP Server Address, can be IP address or hostname.",
+               "type": "string",
+               "default": ""
+            },
+            "ldap_server_port": {
+               "description": "LDAP Server Port for connection establishment.",
+               "type": "integer",
+               "default": 389,
+               "minimum": 1,
+               "maximum": 65535
+            }
+         }
+      }
+   },
+   "additionalProperties": false,
+   "required": [
+      "name"
+   ]
+}

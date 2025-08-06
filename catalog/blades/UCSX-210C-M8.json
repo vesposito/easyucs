@@ -1,0 +1,57 @@
+{
+   "model_short_name": "X210c M8",
+   "front_file_name": "UCSX-210C-M8.png",
+   "front_file_size": [289,1755],
+   "front_mezzanine_slots": [
+      {
+         "id": 1,
+         "coord": [0,40],
+         "size": [226,1681]
+      }
+   ],
+   "front_mezzanine_models": [
+      {
+         "name": "UCSX-X10C-FMBK",
+         "type": "blank",
+         "description": "Blanking Panel"
+      }
+   ],
+   "imm_compatible": true,
+   "imm_min_required_version": "4.3(6a)",
+   "spec_sheet_url": "https://www.cisco.com/c/dam/en/us/products/collateral/servers-unified-computing/ucs-x-series-modular-system/x210cm8-specsheet.pdf",
+   "data_sheet_url": "https://www.cisco.com/c/en/us/products/collateral/servers-unified-computing/ucs-x-series-modular-system/ucs-x210c-m8-compute-node-ds.html",
+   "specs": {
+      "form_factor": "1-slot",
+      "chipset": null,
+      "cpu": {
+         "sockets": 2,
+         "family_name": {
+            "granite_rapids": "Intel Xeon 6"
+         }
+      },
+      "memory": {
+         "dimm_type": "DDR5",
+         "dimm_slots": 32,
+         "max_speed": 8000,
+         "max_capacity": 8388608,
+         "dcpmm_support": false
+      },
+      "dimensions": {
+         "centimeters": {
+            "height": 45.7,
+            "width": 28.65,
+            "depth": 60.2
+         },
+         "inches": {
+            "height": 1.8,
+            "width": 11.28,
+            "depth": 23.7
+         },
+         "rack_units": 0
+      },
+      "weight": {
+         "lb": 25.1,
+         "kg": 11.39
+      }
+   }
+}

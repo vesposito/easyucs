@@ -431,6 +431,32 @@
          }
       ]
    },
+   "FetchCacheUcsCentral": {
+      "description": "Fetch cache from UCS Central",
+      "device_type": "ucsm",
+      "steps": [
+         {
+            "name": "ConnectUcsCentralDevice",
+            "order": 1,
+            "weight": 1
+         },
+         {
+            "name": "FetchServerDetails",
+            "order": 2,
+            "weight": 1
+         },
+          {
+            "name": "FetchOrgs",
+            "order": 3,
+            "weight": 1
+         },
+         {
+            "name": "DisconnectUcsCentralDevice",
+            "order": 4,
+            "weight": 1
+         }
+      ]
+   },
    "FetchCacheUcsSystem": {
       "description": "Fetch cache from UCS System",
       "device_type": "ucsm",
@@ -445,9 +471,14 @@
             "order": 2,
             "weight": 1
          },
+          {
+            "name": "FetchOrgs",
+            "order": 3,
+            "weight": 1
+         },
          {
             "name": "DisconnectUcsSystemDevice",
-            "order": 3,
+            "order": 4,
             "weight": 1
          }
       ]

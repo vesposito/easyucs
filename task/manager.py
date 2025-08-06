@@ -85,6 +85,11 @@ class TaskManager:
         task = Task(parent=self, uuid=uuid, name=name, description=description)
         task.metadata.easyucs_version = __version__
 
+        # Retrieve device_endpoint_id using device_uuid and update task metadata
+        device = self.parent.device_manager.find_device_by_uuid(uuid=device_uuid)
+        if device and device.metadata.device_endpoint_id:
+            task.metadata.device_endpoint_id = device.metadata.device_endpoint_id
+
         for attribute in ["config_uuid", "device_name", "device_uuid", "inventory_uuid", "repo_file_path",
                           "repo_file_uuid", "report_uuid", "target_device_uuid"]:
             if eval(attribute):
@@ -128,18 +133,44 @@ class TaskManager:
             self.logger(level="error", message="The task that needs to be added to the Queue could not be found")
             return False
 
+        # Flag to track if multiple devices with same endpoint ID exist AND one of them has an active task
+        active_task_on_endpoint_id = False
+
         if task.metadata.device_uuid:
             obj = self.parent.device_manager.find_device_by_uuid(uuid=task.metadata.device_uuid)
+
+            # Find all devices with the same endpoint ID (may exist with different API keys/credentials)
+            devices = self.parent.device_manager.find_devices_by_endpoint_id(
+                endpoint_id=task.metadata.device_endpoint_id
+            )
+            # If multiple devices point to same endpoint ID, check if any of them is currently running a task
+            if devices and len(devices) > 1:
+                # If a task is running on any device with same endpoint ID, set flag
+                for device in devices:
+                    if device.task is not None:
+                        active_task_on_endpoint_id = True
+                        break
         else:
             obj = self.parent.repository_manager.repo
         if obj:
-            if obj.task is not None:
+            # Check if a task is already running on this device OR on another device with the same endpoint ID
+            if obj.task is not None or active_task_on_endpoint_id:
+
                 # Device/Repo is already busy. We put the task in the device's/repo's queued tasks queue.
-                self.logger(
-                    level="info",
-                    message=f"{'Device ' + str(obj.uuid) if hasattr(obj, 'uuid') else 'Repo'} already has a task "
-                            f"running: {obj.task.uuid}. Waiting for device to be available for task {str(task.uuid)}."
-                )
+                if not active_task_on_endpoint_id:
+                    self.logger(
+                        level="info",
+                        message=f"{'Device ' + str(obj.uuid) if hasattr(obj, 'uuid') else 'Repo'} already has a task "
+                                f"running: {obj.task.uuid}. Waiting for device to be available for task {str(task.uuid)}."
+                    )
+                else:
+                    self.logger(
+                        level="info",
+                        message=f"Device {task.metadata.device_uuid} is already running a task using a different "
+                                f"credential/API key. Waiting for the device to become available to run task "
+                                f"{str(task.uuid)}."
+                    )
+
                 if not obj.queued_tasks.full():
                     # Adding task to the device's tasks queue
                     obj.queued_tasks.put(pending_task_dict, timeout=10)

@@ -6,8 +6,18 @@
 import hashlib
 
 from config.ucs.object import UcsCentralConfigObject
-
+from ucscsdk.mometa.aaa.AaaAuthRealm import AaaAuthRealm
+from ucscsdk.mometa.aaa.AaaConsoleAuth import AaaConsoleAuth
+from ucscsdk.mometa.aaa.AaaDefaultAuth import AaaDefaultAuth
+from ucscsdk.mometa.aaa.AaaDomain import AaaDomain
+from ucscsdk.mometa.aaa.AaaDomainAuth import AaaDomainAuth
 from ucscsdk.mometa.aaa.AaaDomainGroup import AaaDomainGroup
+from ucscsdk.mometa.aaa.AaaLdapEp import AaaLdapEp
+from ucscsdk.mometa.aaa.AaaLdapGroup import AaaLdapGroup
+from ucscsdk.mometa.aaa.AaaLdapGroupRule import AaaLdapGroupRule
+from ucscsdk.mometa.aaa.AaaLdapProvider import AaaLdapProvider
+from ucscsdk.mometa.aaa.AaaProviderGroup import AaaProviderGroup
+from ucscsdk.mometa.aaa.AaaProviderRef import AaaProviderRef
 from ucscsdk.mometa.aaa.AaaLocale import AaaLocale
 from ucscsdk.mometa.aaa.AaaOrg import AaaOrg
 from ucscsdk.mometa.aaa.AaaPwdProfile import AaaPwdProfile
@@ -165,6 +175,319 @@ class UcsCentralDns(UcsCentralConfigObject):
 
         mo_comm_dns = CommDns(parent_mo_or_dn=parent_mo, domain=self.domain_name)
         self._handle.add_mo(mo=mo_comm_dns, modify_present=True)
+
+        if commit:
+            if self.commit() != True:
+                return False
+        return True
+
+
+class UcsCentralLdap(UcsCentralConfigObject):
+    _CONFIG_NAME = "LDAP"
+    _CONFIG_SECTION_NAME = "ldap"
+
+    def __init__(self, parent=None, json_content=None, aaa_ldap_ep=None):
+        UcsCentralConfigObject.__init__(self, parent=parent, ucs_sdk_object=aaa_ldap_ep)
+        self.timeout = None
+        self.attribute = None
+        self.filter = None
+        self.base_dn = None
+        self.providers = []
+        self.provider_groups = []
+        self.group_maps = []
+
+        if aaa_ldap_ep:
+            mo = aaa_ldap_ep.dn
+        else:
+            mo = "org-root/deviceprofile-default/ldap-ext"
+
+        if self._config.load_from == "live":
+            self.timeout = aaa_ldap_ep.timeout
+            self.base_dn = aaa_ldap_ep.basedn
+            self.filter = aaa_ldap_ep.filter
+            self.attribute = aaa_ldap_ep.attribute
+
+            if "aaaProviderGroup" in self._config.sdk_objects:
+                for aaa_provider_group in [aaa_provider_group for aaa_provider_group in
+                                           self._config.sdk_objects["aaaProviderGroup"]
+                                           if mo in aaa_provider_group.dn]:
+                    provider_group = {}
+                    provider_group.update({"name": aaa_provider_group.name})
+
+                    provider_ref = [] 
+                    if "aaaProviderRef" in self._config.sdk_objects:
+                        for aaa_provider_ref in [aaa_provider_ref for aaa_provider_ref in
+                                                 self._config.sdk_objects["aaaProviderRef"]
+                                                 if mo + "/providergroup-" + \
+                                                    aaa_provider_group.name in aaa_provider_ref.dn]:
+                            provider_ref.append(aaa_provider_ref.name)
+                    provider_group["included_providers"] = provider_ref
+                    self.provider_groups.append(provider_group)
+
+            if "aaaLdapProvider" in self._config.sdk_objects:
+                for ldap_group in self._config.sdk_objects["aaaLdapProvider"]:
+                    provider = {}
+                    provider.update({"bind_dn": ldap_group.rootdn})
+                    provider.update({"vendor": ldap_group.vendor})
+                    provider.update({"password": ldap_group.key})
+                    provider.update({"port": ldap_group.port})
+                    provider.update({"attribute": ldap_group.attribute})
+                    provider.update({"timeout": ldap_group.timeout})
+                    provider.update({"hostname": ldap_group.name})
+                    provider.update({"base_dn": ldap_group.basedn})
+                    provider.update({"ssl": ldap_group.enable_ssl})
+                    provider.update({"filter": ldap_group.filter})
+                    provider.update({"order": ldap_group.order})
+                    if "aaaLdapGroupRule" in self._config.sdk_objects:
+                        for group_rule in [group_rule for group_rule in self._config.sdk_objects["aaaLdapGroupRule"]
+                                           if mo + "/provider-" + ldap_group.name in group_rule.dn]:
+                            provider.update({"target_attribute": group_rule.target_attr})
+                            # use_primary_group is not supported in UCS Central
+                            # provider.update({"use_primary_group": group_rule.use_primary_group})
+                            provider.update({"group_authorization": group_rule.authorization})
+                            provider.update({"group_recursion": group_rule.traversal})
+                    self.providers.append(provider)
+
+            if "aaaLdapGroup" in self._config.sdk_objects:
+                for ldap_group in self._config.sdk_objects["aaaLdapGroup"]:
+                    group_map = {}
+                    group_map.update({"group_dn": ldap_group.name})
+                    if "aaaUserRole" in self._config.sdk_objects:
+                        group_map["roles"] = []
+                        for role in [role for role in self._config.sdk_objects["aaaUserRole"]
+                                     if mo + "/ldapgroup-" + ldap_group.name in role.dn]:
+                            group_map["roles"].append(role.name)
+
+                    if "aaaUserLocale" in self._config.sdk_objects:
+                        group_map["locales"] = []
+                        for role in [role for role in self._config.sdk_objects["aaaUserLocale"]
+                                     if mo + "/ldapgroup-" + ldap_group.name in role.dn]:
+                            group_map["locales"].append(role.name)
+
+                    self.group_maps.append(group_map)
+
+        elif self._config.load_from == "file":
+            if json_content is not None:
+                if not self.get_attributes_from_json(json_content=json_content):
+                    self.logger(level="error",
+                                message="Unable to get attributes from JSON content for " + self._CONFIG_NAME)
+
+        self.clean_object()
+
+    def clean_object(self):
+        UcsCentralConfigObject.clean_object(self)
+        for element in self.providers:
+            for value in ["bind_dn", "vendor", "password", "port", "attribute", "timeout", "hostname",
+                          "base_dn", "ssl", "filter", "order", "group_authorization", "group_recursion",
+                          "target_attribute"]:
+                if value not in element:
+                    element[value] = None
+        for element in self.provider_groups:
+            for value in ["name", "included_providers"]:
+                if value not in element:
+                    element[value] = None
+        for element in self.group_maps:
+            for value in ["group_dn", "roles", "locales"]:
+                if value not in element:
+                    element[value] = None
+
+    def push_object(self, commit=True):
+        if commit:
+            self.logger(message="Pushing " + self._CONFIG_NAME)
+        else:
+            self.logger(message="Adding to the handle " + self._CONFIG_NAME + " configuration" +
+                                ", waiting for a commit")
+
+        mo_org = "org-root/deviceprofile-default"
+        mo_aaa_ldap_ep = AaaLdapEp(parent_mo_or_dn=mo_org, timeout=self.timeout)
+        if self.providers:
+            for provider in self.providers:
+                mo_ldap_provider = AaaLdapProvider(parent_mo_or_dn=mo_aaa_ldap_ep, rootdn=provider["bind_dn"],
+                                                   vendor=provider["vendor"], key=provider["password"],
+                                                   port=provider["port"], attribute=provider["attribute"],
+                                                   timeout=provider["timeout"], name=provider["hostname"],
+                                                   basedn=provider["base_dn"], enable_ssl=provider["ssl"],
+                                                   order=provider["order"], filter=provider["filter"])
+                AaaLdapGroupRule(parent_mo_or_dn=mo_ldap_provider, target_attr=provider["target_attribute"],
+                                 authorization=provider["group_authorization"], traversal=provider["group_recursion"])
+        if self.provider_groups:
+            for group in self.provider_groups:
+                mo_aaa_provider_group = AaaProviderGroup(parent_mo_or_dn=mo_aaa_ldap_ep, name=group["name"])
+                if "included_providers" in group:
+                    for provider in group["included_providers"]:
+                        AaaProviderRef(parent_mo_or_dn=mo_aaa_provider_group, name=provider)
+
+        if self.group_maps:
+            for group_map in self.group_maps:
+                mo_ldap_group = AaaLdapGroup(parent_mo_or_dn=mo_aaa_ldap_ep, name=group_map["group_dn"])
+                if 'roles' in group_map:
+                    if group_map['roles']:
+                        for role in group_map['roles']:
+                            AaaUserRole(parent_mo_or_dn=mo_ldap_group, name=role, descr="")
+                if 'locales' in group_map:
+                    if group_map['locales']:
+                        for locale in group_map['locales']:
+                            AaaUserLocale(parent_mo_or_dn=mo_ldap_group, name=locale, descr="")
+
+        self._handle.add_mo(mo_aaa_ldap_ep, modify_present=True)
+
+        if commit:
+            if self.commit() != True:
+                return False
+        return True
+
+
+class UcsCentralAuthentication(UcsCentralConfigObject):
+    _CONFIG_NAME = "Authentication"
+    _CONFIG_SECTION_NAME = "authentication"
+
+    def __init__(self, parent=None, json_content=None):
+        UcsCentralConfigObject.__init__(self, parent=parent)
+        self.native_authentication = []
+        self.console_authentication = []
+        self.authentication_domains = []
+
+        if self._config.load_from == "live":
+            # Role Policy for Remote Users
+            role_policy_for_remote_users = None
+            if "aaaAuthRealm" in self._config.sdk_objects:
+                auth_realm_list = [auth_realm for auth_realm in self._config.sdk_objects["aaaAuthRealm"]
+                                   if auth_realm.dn == "org-root/deviceprofile-default/auth-realm"]
+                if len(auth_realm_list) == 1:
+                    role_policy_for_remote_users = auth_realm_list[0].def_role_policy
+
+            # Native Authentication
+            # Default Authentication
+            if "aaaDefaultAuth" in self._config.sdk_objects:
+                default_auth_list = [default_auth for default_auth in self._config.sdk_objects["aaaDefaultAuth"] if
+                                     "org-root/deviceprofile-default/auth-realm" in default_auth.dn]
+                if len(default_auth_list) == 1:
+                    provider_group = None
+                    if default_auth_list[0].realm in ["radius", "tacacs", "ldap"]:
+                        provider_group = default_auth_list[0].provider_group
+                    self.native_authentication.append(
+                        {
+                            "realm": default_auth_list[0].realm,
+                            "provider_group": provider_group,
+                            "web_session_refresh_period": default_auth_list[0].refresh_period,
+                            "web_session_timeout": default_auth_list[0].session_timeout,
+                            "role_policy_for_remote_users": role_policy_for_remote_users
+                        }
+                    )
+
+            # Console Authentication
+            if "aaaConsoleAuth" in self._config.sdk_objects:
+                console_auth_list = [console_auth for console_auth in self._config.sdk_objects["aaaConsoleAuth"]
+                                     if "org-root/deviceprofile-default/auth-realm" in console_auth.dn]
+                if len(console_auth_list) == 1:
+                    provider_group = None
+                    if console_auth_list[0].realm in ["radius", "tacacs", "ldap"]:
+                        provider_group = console_auth_list[0].provider_group
+                    self.console_authentication.append(
+                        {
+                            "realm": console_auth_list[0].realm,
+                            "provider_group": provider_group
+                        }
+                    )
+
+            # Authentication Domains
+            if "aaaDomain" in self._config.sdk_objects:
+                domain_list = [domain for domain in self._config.sdk_objects["aaaDomain"]
+                               if "org-root/deviceprofile-default/auth-realm/domain-" in domain.dn]
+                for aaa_domain in domain_list:
+                    name = aaa_domain.name
+                    realm = None
+                    provider_group = None
+
+                    # We now need to find the corresponding aaaDomainAuth object
+                    if "aaaDomainAuth" in self._config.sdk_objects:
+                        domain_auth_list = [domain_auth for domain_auth in self._config.sdk_objects["aaaDomainAuth"]
+                                            if domain_auth.dn == "org-root/deviceprofile-default/auth-realm/domain-" + name + "/domain-auth"]
+                        if len(domain_auth_list) == 1:
+                            realm = domain_auth_list[0].realm
+                            if domain_auth_list[0].realm in ["radius", "tacacs", "ldap"]:
+                                provider_group = domain_auth_list[0].provider_group
+
+                    self.authentication_domains.append(
+                        {"name": name,
+                         "realm": realm,
+                         "web_session_refresh_period": aaa_domain.refresh_period,
+                         "web_session_timeout": aaa_domain.session_timeout,
+                         "provider_group": provider_group})
+
+        elif self._config.load_from == "file":
+            if json_content is not None:
+                if not self.get_attributes_from_json(json_content=json_content):
+                    self.logger(level="error",
+                                message="Unable to get attributes from JSON content for " + self._CONFIG_NAME)
+
+        self.clean_object()
+
+    def clean_object(self):
+        UcsCentralConfigObject.clean_object(self)
+
+        for element in self.native_authentication:
+            for value in ["realm", "role_policy_for_remote_users", "provider_group", "web_session_refresh_period",
+                          "web_session_timeout"]:
+                if value not in element:
+                    element[value] = None
+
+        for element in self.console_authentication:
+            for value in ["realm", "provider_group"]:
+                if value not in element:
+                    element[value] = None
+
+        for element in self.authentication_domains:
+            for value in ["name", "realm", "provider_group", "web_session_timeout", "web_session_refresh_period"]:
+                if value not in element:
+                    element[value] = None
+
+    def push_object(self, commit=True):
+        if commit:
+            self.logger(message="Pushing " + self._CONFIG_NAME)
+        else:
+            self.logger(message="Adding to the handle " + self._CONFIG_NAME + " configuration" +
+                                ", waiting for a commit")
+
+        parent_mo = "org-root/deviceprofile-default/auth-realm"
+
+        # Native Authentication
+        if self.native_authentication:
+            native_auth = self.native_authentication[0]
+            mo_aaa_default_auth = \
+                AaaDefaultAuth(parent_mo_or_dn=parent_mo,
+                               realm=native_auth["realm"],
+                               provider_group=native_auth["provider_group"],
+                               refresh_period=native_auth["web_session_refresh_period"],
+                               session_timeout=native_auth["web_session_timeout"])
+            self._handle.add_mo(mo_aaa_default_auth, modify_present=True)
+
+            if "role_policy_for_remote_users" in native_auth:
+                if native_auth["role_policy_for_remote_users"]:
+                    mo_aaa_auth_realm = AaaAuthRealm(parent_mo_or_dn=parent_mo,
+                                                     def_role_policy=native_auth["role_policy_for_remote_users"])
+                    self._handle.add_mo(mo_aaa_auth_realm, modify_present=True)
+
+        # Console Authentication
+        if self.console_authentication:
+            console_auth = self.console_authentication[0]
+            mo_aaa_console_auth = \
+                AaaConsoleAuth(parent_mo_or_dn=parent_mo,
+                               realm=console_auth["realm"],
+                               provider_group=console_auth["provider_group"])
+            self._handle.add_mo(mo_aaa_console_auth, modify_present=True)
+
+        # Authentication Domains
+        for auth_domain in self.authentication_domains:
+            mo_aaa_domain = AaaDomain(parent_mo_or_dn=parent_mo,
+                                      name=auth_domain["name"],
+                                      refresh_period=auth_domain["web_session_refresh_period"],
+                                      session_timeout=auth_domain["web_session_timeout"])
+            self._handle.add_mo(mo_aaa_domain, modify_present=True)
+
+            mo_aaa_domain_auth = AaaDomainAuth(parent_mo_or_dn=mo_aaa_domain, realm=auth_domain["realm"],
+                                               provider_group=auth_domain["provider_group"])
+            self._handle.add_mo(mo_aaa_domain_auth, modify_present=True)
 
         if commit:
             if self.commit() != True:

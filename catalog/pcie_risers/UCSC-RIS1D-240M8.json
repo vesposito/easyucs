@@ -1,0 +1,21 @@
+{
+   "model_short_name": "",
+   "rear_file_name": "UCSC-RIS1D-240M8.png",
+   "rear_file_size": [651,393],
+   "disks_slots": [
+      {
+         "id": 101,
+         "format": "e3s",
+         "orientation": "horizontal",
+         "coord": [158, 70],
+         "size": [455,50]
+      },
+      {
+         "id": 102,
+         "format": "e3s",
+         "orientation": "horizontal",
+         "coord": [158, 186],
+         "size": [455,50]
+      }
+   ]
+}

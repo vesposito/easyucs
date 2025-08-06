@@ -168,6 +168,8 @@ from ucscsdk.mometa.vnic.VnicIScsiTargetParams import VnicIScsiTargetParams
 from ucscsdk.mometa.vnic.VnicLanConnPolicy import VnicLanConnPolicy
 from ucscsdk.mometa.vnic.VnicLun import VnicLun
 from ucscsdk.mometa.vnic.VnicSanConnPolicy import VnicSanConnPolicy
+from ucscsdk.mometa.vnic.VnicSriovHpnConPolicy import VnicSriovHpnConPolicy
+from ucscsdk.mometa.vnic.VnicSriovHpnConPolicyRef import VnicSriovHpnConPolicyRef
 from ucscsdk.mometa.vnic.VnicUsnicConPolicy import VnicUsnicConPolicy
 from ucscsdk.mometa.vnic.VnicUsnicConPolicyRef import VnicUsnicConPolicyRef
 from ucscsdk.mometa.vnic.VnicVlan import VnicVlan
@@ -3330,6 +3332,67 @@ class UcsCentralSerialOverLanPolicy(UcsCentralConfigObject):
         return True
 
 
+class UcsCentralSriovHpnConnectionPolicy(UcsCentralConfigObject):
+    _CONFIG_NAME = "SRIOV HPN Connection Policy"
+    _CONFIG_SECTION_NAME = "sriov_hpn_connection_policies"
+    _UCS_SDK_OBJECT_NAME = "vnicSriovHpnConPolicy"
+
+    def __init__(self, parent=None, json_content=None, vnic_sriov_hpn_con_policy=None):
+        UcsCentralConfigObject.__init__(self, parent=parent, ucs_sdk_object=vnic_sriov_hpn_con_policy)
+
+        self.name = None
+        self.descr = None
+        self.number_of_sriov_hpn_vnics = None
+        self.transmit_queues = None
+        self.receive_queues = None
+        self.completion_queues = None
+        self.interrupt_count = None
+
+        if self._config.load_from == "live":
+            if vnic_sriov_hpn_con_policy is not None:
+                self.name = vnic_sriov_hpn_con_policy.name
+                self.descr = vnic_sriov_hpn_con_policy.descr
+                self.number_of_sriov_hpn_vnics = vnic_sriov_hpn_con_policy.sriovhpn_count
+                self.transmit_queues = vnic_sriov_hpn_con_policy.transmit_queue_count
+                self.receive_queues = vnic_sriov_hpn_con_policy.receive_queue_count
+                self.completion_queues = vnic_sriov_hpn_con_policy.completion_queue_count
+                self.interrupt_count = vnic_sriov_hpn_con_policy.interrupt_count
+
+        elif self._config.load_from == "file":
+            if json_content is not None:
+                if not self.get_attributes_from_json(json_content=json_content):
+                    self.logger(level="error",
+                                message="Unable to get attributes from JSON content for " + self._CONFIG_NAME)
+
+        self.clean_object()
+
+    def push_object(self, commit=True):
+        if commit:
+            self.logger(message="Pushing " + self._CONFIG_NAME + " configuration: " + str(self.name))
+        else:
+            self.logger(message="Adding to the handle " + self._CONFIG_NAME + " configuration: " + str(self.name) +
+                                ", waiting for a commit")
+
+        if hasattr(self._parent, '_dn'):
+            parent_mo = self._parent._dn
+        else:
+            self.logger(level="error",
+                        message="Impossible to find the parent dn of " + self._CONFIG_NAME + " : " + self.name)
+            return False
+
+        mo_vnic_sriov_hpn_con_policy = VnicSriovHpnConPolicy(parent_mo_or_dn=parent_mo, descr=self.descr,
+                                                             name=self.name,
+                                                             sriovhpn_count=self.number_of_sriov_hpn_vnics,
+                                                             transmit_queue_count=self.transmit_queues,
+                                                             receive_queue_count=self.receive_queues,
+                                                             completion_queue_count=self.completion_queues,
+                                                             interrupt_count=self.interrupt_count)
+
+        self._handle.add_mo(mo=mo_vnic_sriov_hpn_con_policy, modify_present=True)
+        if commit:
+            if self.commit(detail=self.name) != True:
+                return False
+
 class UcsCentralStorageConnectionPolicy(UcsCentralConfigObject):
     _CONFIG_NAME = "Storage Connection Policy"
     _CONFIG_SECTION_NAME = "storage_connection_policies"
@@ -4277,6 +4340,7 @@ class UcsCentralLanConnectivityPolicy(UcsCentralConfigObject):
                                     vnic.update({"dynamic_vnic_connection_policy": None})
                                     vnic.update({"usnic_connection_policy": None})
                                     vnic.update({"vmq_connection_policy": None})
+                                    vnic.update({"sriov_hpn_connection_policy": None})
                                     if "vnicDynamicConPolicyRef" in self._parent._config.sdk_objects:
                                         for conn_policy in self._config.sdk_objects["vnicDynamicConPolicyRef"]:
 
@@ -4323,7 +4387,20 @@ class UcsCentralLanConnectivityPolicy(UcsCentralConfigObject):
                                                     )
                                                 )
                                                 break
-
+                                    if "vnicSriovHpnConPolicyRef" in self._parent._config.sdk_objects:
+                                        for vnic_policy in self._config.sdk_objects["vnicSriovHpnConPolicyRef"]:
+                                            if self._parent._dn + "/lan-conn-pol-" + self.name + "/" + "ether-" + \
+                                                    vnic['name'] + "/" in vnic_policy.dn:
+                                                vnic.update(
+                                                    {"sriov_hpn_connection_policy": vnic_policy.con_policy_name})
+                                                oper_state.update(
+                                                    self.get_operational_state(
+                                                        policy_dn=vnic_policy.oper_con_policy_name,
+                                                        separator="/sriov-hpn-con-",
+                                                        policy_name="sriov_hpn_connection_policy"
+                                                    )
+                                                )
+                                                break
                                     if "vnicEtherIf" in self._parent._config.sdk_objects:
                                         vnic.update({"vlans": []})
                                         for vnic_ether_if in self._config.sdk_objects["vnicEtherIf"]:
@@ -4457,8 +4534,8 @@ class UcsCentralLanConnectivityPolicy(UcsCentralConfigObject):
             for value in ["adapter_policy", "cdn_name", "cdn_source", "dynamic_vnic_connection_policy",
                           "fabric", "mac_address", "mac_address_pool", "mtu", "name", "network_control_policy",
                           "order", "operational_state", "pin_group", "qos_policy", "redundancy_pair",
-                          "stats_threshold_policy", "usnic_connection_policy", "vlans", "vlan_groups",
-                          "vlan_native", "vmq_connection_policy", "vnic_template"]:
+                          "sriov_hpn_connection_policy", "stats_threshold_policy", "usnic_connection_policy",
+                          "vlans", "vlan_groups", "vlan_native", "vmq_connection_policy", "vnic_template"]:
                 if value not in element:
                     element[value] = None
 
@@ -4559,6 +4636,10 @@ class UcsCentralLanConnectivityPolicy(UcsCentralConfigObject):
                         # connection_policy = "SRIOV-VMFEX"
                         VnicDynamicConPolicyRef(parent_mo_or_dn=mo_vnic_ether,
                                                 con_policy_name=vnic["dynamic_vnic_connection_policy"])
+                    elif vnic["sriov_hpn_connection_policy"]:
+                        # connection_policy = "SRIOV-HPN"
+                        VnicSriovHpnConPolicyRef(parent_mo_or_dn=mo_vnic_ether,
+                                                 con_policy_name=vnic["sriov_hpn_connection_policy"])
                     elif vnic["usnic_connection_policy"]:
                         # connection_policy = "SRIOV-USNIC"
                         VnicUsnicConPolicyRef(parent_mo_or_dn=mo_vnic_ether,

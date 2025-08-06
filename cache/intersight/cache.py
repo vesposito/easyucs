@@ -33,8 +33,11 @@ class IntersightCache(GenericCache):
         Fetches the Intersight Organizations
         :return: Org list if successful, None otherwise
         """
-        if self.device.task is not None:
-            self.device.task.taskstep_manager.start_taskstep(name="FetchOrgs",
+        task_step_name = "FetchOrgs"
+        # Start the "FetchOrgs" task step only if it exists in the current task's taskstep list.
+        # If the device has no task or "FetchOrgs" is not part of the task steps, skip starting the task step.
+        if self.device.task is not None and task_step_name in self.device.task.taskstep_manager.taskstep_list:
+            self.device.task.taskstep_manager.start_taskstep(name=task_step_name,
                                                              description="Fetching Intersight Organizations")
 
         cached_orgs = {}
@@ -51,18 +54,18 @@ class IntersightCache(GenericCache):
             except OpenApiException as err:
                 message_str = f"Unable to get the list of Orgs: {err}"
                 self.logger(level="error", message=message_str)
-                if self.device.task is not None:
+                if self.device.task is not None and task_step_name in self.device.task.taskstep_manager.taskstep_list:
                     self.device.task.taskstep_manager.stop_taskstep(
-                        name="FetchOrgs", status="failed",
+                        name=task_step_name, status="failed",
                         status_message=message_str[:255])
                 return None
 
         if not orgs.results:
             message_str = "No org found"
             self.logger(level="error", message=message_str)
-            if self.device.task is not None:
+            if self.device.task is not None and task_step_name in self.device.task.taskstep_manager.taskstep_list:
                 self.device.task.taskstep_manager.stop_taskstep(
-                    name="FetchOrgs", status="failed",
+                    name=task_step_name, status="failed",
                     status_message=message_str[:255])
             return None
 
@@ -87,9 +90,9 @@ class IntersightCache(GenericCache):
                 if cached_orgs[result.name]["shared_with_orgs"]:
                     cached_orgs[result.name]["is_shared"] = True
 
-        if self.device.task is not None:
+        if self.device.task is not None and task_step_name in self.device.task.taskstep_manager.taskstep_list:
             self.device.task.taskstep_manager.stop_taskstep(
-                name="FetchOrgs", status="successful",
+                name=task_step_name, status="successful",
                 status_message="Successfully fetched Organizations from Intersight")
         orgs_info = {
             "timestamp": datetime.datetime.now().isoformat()[:-3] + 'Z',

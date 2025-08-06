@@ -69,6 +69,7 @@ class DeviceRecord(Base):
     device_name = Column(String(100))
     device_uuid = Column(String(36))
     device_version = Column(String(100))
+    device_endpoint_id = Column(String(36))
     easyucs_version = Column(String(100))
     file_path = Column(String(256))
     file_type = Column(String(16))
@@ -171,6 +172,7 @@ class TaskRecord(Base):
     uuid = Column(String(36), nullable=False, primary_key=True)
 
     config_uuid = Column(String(36))
+    device_endpoint_id = Column(String(36))
     device_name = Column(String(100))
     device_uuid = Column(String(36))
     inventory_uuid = Column(String(36))

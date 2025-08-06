@@ -35,7 +35,7 @@ from ucsmsdk.ucsmeta import version as ucsmsdk_ucs_version
 
 import common
 from backup.ucs.manager import UcsCentralBackupManager, UcsImcBackupManager, UcsSystemBackupManager
-from cache.ucs.manager import UcsSystemCacheManager
+from cache.ucs.manager import UcsSystemCacheManager, UcsCentralCacheManager
 from config.ucs.manager import UcsImcConfigManager, UcsSystemConfigManager, UcsCentralConfigManager
 from device.device import GenericDevice
 from device.device_connector import DeviceConnector
@@ -159,6 +159,12 @@ class GenericUcsDevice(GenericDevice, DeviceConnector):
                         name=task_name, status="successful",
                         status_message="Successfully connected to " + self.metadata.device_type_long + " device " +
                                        str(self.name))
+
+                # Fetch organizations after a successful connection
+                if self.metadata.device_type in ["ucsc", "ucsm"]:
+                    if self.cache_manager.cache.fetch_orgs():
+                        self.cache_manager.save_to_cache(cache_key="orgs")
+
                 return True
 
             except urllib.error.URLError as err:
@@ -3886,6 +3892,7 @@ class UcsCentral(GenericUcsDevice):
         self.version_sdk = str(ucscsdk_sdk_version)
         self.backup_manager = UcsCentralBackupManager(parent=self)
         self.config_manager = UcsCentralConfigManager(parent=self)
+        self.cache_manager = UcsCentralCacheManager(parent=self)
         self.inventory_manager = UcsCentralInventoryManager(parent=self)
         self.report_manager = UcsCentralReportManager(parent=self)
         self._set_sdk_version()

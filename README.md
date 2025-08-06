@@ -154,6 +154,18 @@ python easyucs.py device reset_device_connector -t ucsm -i 192.168.0.1 -u admin 
 
 ## Versioning
 
+### 1.0.3
+* Add support for UCS C240 M8, C220 M8 and X210c M8 in catalog
+* Add support for X-Series front mezzanine adapters in inventory & draw
+* Add support for MACsec in UCSM config
+* Add support for NetFlow in UCSM config
+* Add support for MACsec Policies in Intersight config
+* Add support for LDAP configuration of Intersight Appliance
+* Add support for LDAP configuration of UCS Central
+* Add support for UCS Manager 4.3(6) and UCS Central 2.1(1)
+* Bump up minimum Intersight Appliance required version to 1.1.3-0
+* Miscellaneous bug fixes and improvements
+
 ### 1.0.2
 * Add support for Memory Policies in Intersight config
 * Add support for Server Pool Qualification Policies in Intersight config

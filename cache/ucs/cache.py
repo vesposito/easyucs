@@ -1,13 +1,81 @@
-
-from cache.cache import GenericCache
 import datetime
 
+from cache.cache import GenericCache
 
-class UcsSystemCache(GenericCache):
+
+class GenericUcsCache(GenericCache):
     def __init__(self, parent=None):
         GenericCache.__init__(self, parent=parent)
-
+        self.orgs = {"orgs": {"root": {"description": ""}}}
         self.server_details = []
+
+    def fetch_orgs(self):
+        """
+        Fetches the UCS Organizations
+        :return: List of Orgs if successful, None otherwise
+        """
+        task_step_name = "FetchOrgs"
+        # Start the "FetchOrgs" task step only if it exists in the current task's taskstep list.
+        # If the device has no task or "FetchOrgs" is not part of the task steps, skip starting the task step.
+        if self.device.task is not None and task_step_name in self.device.task.taskstep_manager.taskstep_list:
+            self.device.task.taskstep_manager.start_taskstep(
+                name=task_step_name,
+                description=f"Fetching {self.device.metadata.device_type_long} Organizations"
+            )
+        try:
+            orgs = self.device.handle.query_classid("OrgOrg")
+            org_tree = {
+                "orgs": {
+                    "root": {
+                        "description": ""
+                    }
+                }
+            }
+
+            for org in orgs:
+                dn = org.dn
+                if dn == "org-root":
+                    org_tree["orgs"]["root"]["description"] = getattr(org, "descr", "")
+                    continue
+
+                parts = dn.split("/")[1:]
+                current = org_tree["orgs"]["root"]
+                for i, part in enumerate(parts):
+                    org_key = part.replace("org-", "")
+                    if "orgs" not in current:
+                        current["orgs"] = {}
+                    if org_key not in current["orgs"]:
+                        current["orgs"][org_key] = {
+                            "description": getattr(org, "descr", "") if i == len(parts) - 1 else ""
+                        }
+                    current = current["orgs"][org_key]
+
+            orgs_info = {
+                "timestamp": datetime.datetime.now().isoformat()[:-3] + 'Z',
+                "orgs": org_tree["orgs"]
+            }
+
+            self.orgs = orgs_info
+
+            if self.device.task is not None and task_step_name in self.device.task.taskstep_manager.taskstep_list:
+                self.device.task.taskstep_manager.stop_taskstep(
+                    name=task_step_name,
+                    status="successful",
+                    status_message=f"Successfully fetched {self.device.metadata.device_type_long} Organizations"
+                )
+
+            return orgs_info
+
+        except Exception as err:
+            message_str = f"Failed to fetch {self.device.metadata.device_type_long} Organizations: {err}"
+            self.logger(level="error", message=message_str)
+            if self.device.task is not None and task_step_name in self.device.task.taskstep_manager.taskstep_list:
+                self.device.task.taskstep_manager.stop_taskstep(
+                    name=task_step_name,
+                    status="failed",
+                    status_message=message_str[:255]
+                )
+            return None
 
     def fetch_server_details(self):
         """
@@ -72,10 +140,25 @@ class UcsSystemCache(GenericCache):
         self.server_details = servers_info
         return servers_info
 
+    def get_orgs(self):
+        """
+        Returns the cached orgs dictionary.
+        """
+        return self.orgs
+
     def get_server_details(self):
         """
         Function to server details from the device
         :return: A list containing information about the servers.
         """
-
         return self.server_details
+
+
+class UcsSystemCache(GenericUcsCache):
+    def __init__(self, parent=None):
+        GenericUcsCache.__init__(self, parent=parent)
+
+
+class UcsCentralCache(GenericUcsCache):
+    def __init__(self, parent=None):
+        GenericUcsCache.__init__(self, parent=parent)

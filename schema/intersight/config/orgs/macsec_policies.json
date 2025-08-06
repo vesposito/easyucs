@@ -1,0 +1,340 @@
+{
+   "id": "intersight_config_orgs_macsec_policies#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS intersight config orgs macsec_policies section",
+   "description": "EasyUCS intersight config orgs macsec_policies section JSON schema",
+   "type": "object",
+   "properties": {
+      "comment": {
+         "description": "MACsec Policy Comments",
+         "type": "string",
+         "default": ""
+      },
+      "descr": {
+         "description": "MACsec Policy Description",
+         "type": "string",
+         "default": "",
+         "pattern": "^$|^[a-zA-Z0-9]+[\\x00-\\xFF]*$",
+         "maxLength": 1024
+      },
+      "name": {
+         "description": "MACsec Policy Name",
+         "type": "string",
+         "default": "",
+         "pattern": "^[a-zA-Z0-9_.:-]{1,64}$"
+      },
+      "tags": {
+         "description": "MACsec Policy Tags",
+         "type": "array",
+         "items": {
+            "description": "MACsec Policy Tag",
+            "type": "object",
+            "properties": {
+               "key": {
+                  "description": "MACsec Policy Tag Key",
+                  "type": "string",
+                  "default": "",
+                  "minLength": 1,
+                  "maxLength": 128
+               },
+               "value": {
+                  "description": "MACsec Policy Tag Value",
+                  "type": "string",
+                  "default": "",
+                  "minLength": 0,
+                  "maxLength": 256
+               }
+            },
+            "additionalProperties": false,
+            "required": [
+               "key",
+               "value"
+            ]
+         },
+         "minItems": 1
+      },
+      "cipher_suite": {
+         "description": "Cipher Suite to be Used For MACsec Encryption",
+         "type": "string",
+         "default": "GCM-AES-XPN-256",
+         "enum": [
+            "GCM-AES-XPN-256",
+            "GCM-AES-128",
+            "GCM-AES-256",
+            "GCM-AES-XPN-128"
+         ]
+      },
+      "confidentiality_offset": {
+         "description": "MACsec Confidentiality Offset specifies the number of bytes starting from the frame header",
+         "type": "string",
+         "default": "GCM-AES-XPN-256",
+         "enum": [
+            "CONF-OFFSET-0",
+            "CONF-OFFSET-30",
+            "CONF-OFFSET-50"
+         ]
+
+      },
+      "eapol_configurations": {
+         "type": "object",
+         "properties": {
+            "ether_type": {
+               "description": "Ethertype to use in extensible authentication protocol over LAN (EAPoL) frames for MACsec key agreement (MKA) protocol data units (PDUs)",
+               "type": "string",
+               "pattern": "^0x([6-9A-Fa-f][0-9A-Fa-f]{2}|[A-Fa-f0-9][0-9A-Fa-f]{3})$"
+            },
+            "mac_address": {
+               "description": "MAC address to use in extensible authentication protocol over LAN (EAPoL) for MACsec key agreement (MKA) protocol data units (PDUs)",
+               "type": "string",
+               "pattern": "^[0-9A-Fa-f]{4}\\.[0-9A-Fa-f]{4}\\.[0-9A-Fa-f]{4}$"
+            }
+         },
+         "required": [
+            "ether_type",
+            "mac_address"
+         ],
+         "additionalProperties": false
+      },
+      "fallback_keychain": {
+         "type": "object",
+         "properties": {
+            "keychain_name": {
+               "description": "MACsec Keychain Name",
+               "type": "string",
+               "maximum": 63,
+               "minimum": 0
+            },
+            "keys": {
+               "description": "List of Keys",
+               "type": "array",
+               "items": {
+                  "type": "object",
+                  "properties": {
+                     "id": {
+                        "description": "The Connectivity Association Key Name (CKN) which is used to establish the MACSec MKA session",
+                        "type": "string",
+                        "pattern": "^[0-9A-Fa-f]{2}([0-9A-Fa-f]{2}){0,31}$",
+                        "minimum": 2,
+                        "maximum": 64
+                     },
+                     "cryptographic_algorithm": {
+                        "description": "The Cryptographic Algorithm that employs the cipher-based message authentication code (CMAC) mode of operation with advanced encryption standard (AES)",
+                        "type": "string",
+                        "enum": [
+                           "AES_256_CMAC",
+                           "AES_128_CMAC"
+                        ]
+                     },
+                     "key_type": {
+                        "description": "The type of encryption used for the specified key",
+                        "type": "string",
+                        "enum": [
+                           "Type-0",
+                           "Type-6",
+                           "Type-7"
+                        ]
+                     },
+                     "secret_key": {
+                        "description": "The key octet string is a shared secret used in cryptographic operations",
+                        "type": "string",
+                        "default": ""
+                     },
+                     "lifetime": {
+                        "type": "object",
+                        "properties": {
+                           "infinite_lifetime": {
+                              "description": "Indicates that the key remains active indefinitely after the specified start time",
+                              "type": "boolean",
+                              "default": false
+                           },
+                           "always_active": {
+                              "description": "Indicates that the key is always active",
+                              "type": "boolean",
+                              "default": true
+                           },
+                           "start_time": {
+                              "description": "The time of day and date when the key becomes active",
+                              "type": "string"
+                           },
+                           "end_time": {
+                              "description": "The time of day and date when the key becomes inactive",
+                              "type": "string"
+                           },
+                           "duration": {
+                              "description": "The key lifetime duration in seconds after the start time",
+                              "type": "integer",
+                              "maximum": 2147483646,
+                              "minimum": 0
+                           },
+                           "timezone": {
+                              "description": "The time zone used for key lifetime configurations",
+                              "type": "string",
+                              "enum": [
+                                 "UTC",
+                                 "Local"
+                              ]
+                           }
+                        },
+                        "required": [
+                           "always_active"
+                        ],
+                        "additionalProperties": false
+                     }
+                  },
+                  "required": [
+                     "id",
+                     "key_type",
+                     "cryptographic_algorithm",
+                     "lifetime"
+                  ],
+                  "additionalProperties": false
+               },
+               "maxItems": 64
+            }
+         },
+         "required": [
+            "keychain_name"
+         ],
+         "additionalProperties": false
+      },
+      "primary_keychain": {
+         "type": "object",
+         "properties": {
+            "keychain_name": {
+               "description": "MACsec Keychain Name",
+               "type": "string",
+               "maximum": 63,
+               "minimum": 0
+            },
+            "keys": {
+               "description": "List of Keys",
+               "type": "array",
+               "items": {
+                  "type": "object",
+                  "properties": {
+                     "id": {
+                        "description": "The Connectivity Association Key Name (CKN) which is used to establish the MACSec MKA session",
+                        "type": "string",
+                        "pattern": "^[0-9A-Fa-f]{2}([0-9A-Fa-f]{2}){0,31}$",
+                        "minimum": 2,
+                        "maximum": 64
+                     },
+                     "cryptographic_algorithm": {
+                        "description": "The cryptographic algorithm that employs the cipher-based message authentication code (CMAC) mode of operation with advanced encryption standard (AES)",
+                        "type": "string",
+                        "enum": [
+                           "AES_256_CMAC",
+                           "AES_128_CMAC"
+                        ]
+                     },
+                     "key_type": {
+                        "description": "The type of encryption used for the specified key",
+                        "type": "string",
+                        "default": "Type-6",
+                        "enum": [
+                           "Type-6"
+                        ]
+                     },
+                     "secret_key": {
+                        "description": "The key octet string is a shared secret used in cryptographic operations",
+                        "type": "string",
+                        "default": ""
+                     },
+                     "lifetime": {
+                        "type": "object",
+                        "properties": {
+                           "infinite_lifetime": {
+                              "description": "Indicates that the key remains active indefinitely after the specified start time",
+                              "type": "boolean",
+                              "default": false
+                           },
+                           "always_active": {
+                              "description": "Indicates that the key is always active",
+                              "type": "boolean",
+                              "default": true
+                           },
+                           "start_time": {
+                              "description": "The time of day and date when the key becomes active",
+                              "type": "string"
+                           },
+                           "end_time": {
+                              "description": "The time of day and date when the key becomes inactive",
+                              "type": "string"
+                           },
+                           "duration": {
+                              "description": "The key lifetime duration in seconds after the start time",
+                              "type": "integer",
+                              "maximum": 2147483646,
+                              "minimum": 0
+                           },
+                           "timezone": {
+                              "description": "The time zone used for key lifetime configurations",
+                              "type": "string",
+                              "enum": [
+                                 "UTC",
+                                 "Local"
+                              ]
+                           }
+                        },
+                        "required": [
+                           "always_active"
+                        ],
+                        "additionalProperties": false
+                     }
+                  },
+                  "required": [
+                     "id",
+                     "cryptographic_algorithm",
+                     "key_type",
+                     "lifetime"
+                  ],
+                  "additionalProperties": false
+               },
+               "maxItems": 64
+            }
+         },
+         "required": [
+            "keychain_name"
+         ],
+         "additionalProperties": false
+      },
+      "include_icv_indicator": {
+         "description": "Includes optional ICV indicator in the transmitted MACsec key agreement PD",
+         "type": "boolean",
+         "default": false
+      },
+      "key_server_priority": {
+         "description": "Determines key server selection during MACsec key agreement (MKA)",
+         "type": "integer",
+         "default": 16,
+         "minimum": 0,
+         "maximum": 255
+      },
+      "replay_window_size": {
+         "description": "Defines the size of the replay protection window",
+         "type": "integer",
+         "default": 148809600,
+         "minimum": 0,
+         "maximum": 596000000
+      },
+      "sak_expiry_time": {
+         "description": "Time in seconds to force secure association key (SAK) rekey.",
+         "type": "integer",
+         "minimum": 0,
+         "maximum": 2592000
+      },
+      "security_policy": {
+         "description": "The security policy specifies the level of MACsec enforcement on network traffic passing through a given interface",
+         "type": "string",
+         "default": "Should-secure",
+         "enum": [
+            "Should-secure",
+            "Must-secure"
+         ]
+      }
+   },
+   "additionalProperties": false,
+   "required": [
+      "name"
+   ]
+}
