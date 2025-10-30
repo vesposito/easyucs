@@ -262,6 +262,125 @@
          ],
          "minItems": 1,
          "maxItems": 5
+      },
+      "ports": {
+         "type": "object",
+         "properties": {
+            "ethernet_ports": {
+               "type": "array",
+               "items": {
+                  "type": "object",
+                  "properties": {
+                     "slot_id": {
+                        "description": "Ethernet Port - Slot ID",
+                        "type": "integer",
+                        "default": 1,
+                        "minimum": 1,
+                        "maximum": 1
+                     },
+                     "port_id": {
+                        "description": "Ethernet Port - Port ID",
+                        "type": "integer",
+                        "default": 1,
+                        "minimum": 1,
+                        "maximum": 108
+                     },
+                     "aggr_id": {
+                        "description": "Ethernet Port - Aggregate ID",
+                        "type": "integer",
+                        "default": 0,
+                        "minimum": 0,
+                        "maximum": 4
+                     },
+                     "user_label": {
+                        "description": "Ethernet Port - User Label",
+                        "type": "string",
+                        "minLength": 0,
+                        "maxLength": 128,
+                        "pattern": "^[!#%\\s+&()\\*+,\\-\\./:;\\?@\\[\\]_{|}~a-zA-Z0-9]*$"
+                     }
+                  }
+               }
+            },
+            "fc_ports": {
+               "type": "array",
+               "items": {
+                  "type": "object",
+                  "properties": {
+                     "slot_id": {
+                        "description": "FC Port - Slot ID",
+                        "type": "integer",
+                        "default": 1,
+                        "minimum": 1,
+                        "maximum": 1
+                     },
+                     "port_id": {
+                        "description": "FC Port - Port ID",
+                        "type": "integer",
+                        "default": 1,
+                        "minimum": 1,
+                        "maximum": 108
+                     },
+                     "aggr_id": {
+                        "description": "FC Port - Aggregate ID",
+                        "type": "integer",
+                        "default": 0,
+                        "minimum": 0,
+                        "maximum": 4
+                     },
+                     "user_label": {
+                        "description": "FC Port - User Label",
+                        "type": "string",
+                        "minLength": 0,
+                        "maxLength": 128,
+                        "pattern": "^[!#%\\s+&()\\*+,\\-\\./:;\\?@\\[\\]_{|}~a-zA-Z0-9]*$"
+                     }
+                  }
+               }
+            },
+            "ethernet_port_channels": {
+               "type": "array",
+               "items": {
+                  "type": "object",
+                  "properties": {
+                     "id": {
+                        "description": "Ethernet Port Channel ID",
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 256
+                     },
+                     "user_label": {
+                        "description": "Ethernet Port Channel User Label",
+                        "type": "string",
+                        "minLength": 0,
+                        "maxLength": 128,
+                        "pattern": "^[!#%\\s+&()\\*+,\\-\\./:;\\?@\\[\\]_{|}~a-zA-Z0-9]*$"
+                     }
+                  }
+               }
+            },
+            "fc_port_channels": {
+               "type": "array",
+               "items": {
+                  "type": "object",
+                  "properties": {
+                     "id": {
+                        "description": "FC Port Channel ID",
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 256
+                     },
+                     "user_label": {
+                        "description": "FC Port Channel User Label",
+                        "type": "string",
+                        "minLength": 0,
+                        "maxLength": 128,
+                        "pattern": "^[!#%\\s+&()\\*+,\\-\\./:;\\?@\\[\\]_{|}~a-zA-Z0-9]*$"
+                     }
+                  }
+               }
+            }
+         }
       }
    },
    "additionalProperties": false,

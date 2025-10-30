@@ -110,6 +110,7 @@
    "SFP-10G-ER/ER-S": {"length": "<=40km"},
 
    "SFP-25G-SR-S": {"length": "<=100m"},
+   "SFP-10/25G-CSR-S": {"length": "<=400m"},
    "SFP-10/25G-LR-S": {"length": "<=10km"},
    "SFP-25G-SL": {"length": "<=30m"},
 
@@ -132,9 +133,11 @@
    "QSFP-100G-SR1.2": {"length": "<=100m"},
    "QSFP-100G-SR4-S": {"length": "<=100m"},
    "QSFP-100G-LR4-S": {"length": "<=10km"},
+   "QSFP-100G-LR-S": {"length": "<=10km"},
    "QSFP-100G-DR-S": {"length": "<=500m"},
    "QSFP-100G-FR-S": {"length": "<=2km"},
    "QSFP-100G-PSM4-S": {"length": "<=500m"},
+   "QSFP-100G-ER4L-S": {"length": "<=40km"},
 
    "DS-SFP-FC2G-SW": {"length": "<=300m"},
    "DS-SFP-FC2G-LW": {"length": "<=10km"},

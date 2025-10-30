@@ -2,8 +2,9 @@
 # !/usr/bin/env python
 
 """ equipment.py: Easy UCS Deployment Tool """
-
+import re
 from config.intersight.object import IntersightConfigObject
+
 
 class IntersightEquipment(IntersightConfigObject):
     _CONFIG_NAME = "Equipment"
@@ -186,13 +187,15 @@ class IntersightFabricInterconnect(IntersightConfigObject):
         self.switch_id = self.get_attribute(attribute_name="switch_id")
         self.serial = self.get_attribute(attribute_name="serial")
         self.traffic_mirroring_sessions = None
+        self.ports = None
 
         if self._config.load_from == "live":
             self._get_device_host_name()
             self.traffic_mirroring_sessions = self._get_traffic_mirroring_sessions()
+            self.ports = self._get_ports()
 
         elif self._config.load_from == "file":
-            for attribute in ["name", "traffic_mirroring_sessions"]:
+            for attribute in ["name", "ports", "traffic_mirroring_sessions"]:
                 setattr(self, attribute, None)
                 if attribute in self._object:
                     setattr(self, attribute, self.get_attribute(attribute_name=attribute))
@@ -299,6 +302,94 @@ class IntersightFabricInterconnect(IntersightConfigObject):
             return source_eth_port_channels
         return None
 
+    @staticmethod
+    def _get_action_based_user_label(user_label=None):
+        """
+        Extracts only action-based user labels from a Fabric Interconnect (FI) user label.
+
+        On Fabric Interconnects (FIs), user labels can be of two types:
+        1. Port policy user labels – labels set via port policy, no actions triggered.
+        2. Action-based user labels – labels set directly on the FI using "Set User Label" action, always inside < >.
+
+        This function fetches only the action-based labels (inside < >).
+
+        Args:
+            user_label (str): The input string containing the user label.
+
+        Returns:
+            str: The action-based label found inside < >. Returns None if no action-based label is found
+        """
+
+        match = re.search(r"<\s*(.*?)\s*>", user_label)
+        if match:
+            value = match.group(1)
+            return value
+        return None
+
+    def _get_ports(self):
+        # Determines the details of the source Ethernet and FC ports/port-channels.
+        source_eth_ports = []
+        source_fc_ports = []
+        source_eth_port_channels = []
+        source_fc_port_channels = []
+
+        if "ether_physical_port" in self._config.sdk_objects:
+            for source_eth_port in self._config.sdk_objects["ether_physical_port"]:
+                if any(item.get("moid") == self._moid for item in source_eth_port.ancestors):
+                    if source_eth_port.user_label:
+                        source_eth_ports.append({
+                            "aggr_id": source_eth_port.port_id if source_eth_port.aggregate_port_id != 0 else None,
+                            "slot_id": source_eth_port.slot_id,
+                            "port_id": source_eth_port.aggregate_port_id
+                            if source_eth_port.aggregate_port_id != 0 else source_eth_port.port_id,
+                            "user_label": self._get_action_based_user_label(user_label=source_eth_port.user_label)
+                        })
+
+        if "fc_physical_port" in self._config.sdk_objects:
+            for source_fc_port in self._config.sdk_objects["fc_physical_port"]:
+                if any(item.get("moid") == self._moid for item in source_fc_port.ancestors):
+                    if source_fc_port.user_label:
+                        source_fc_ports.append({
+                            "aggr_id": source_fc_port.port_id if source_fc_port.aggregate_port_id != 0 else None,
+                            "slot_id": source_fc_port.slot_id,
+                            "port_id": source_fc_port.aggregate_port_id
+                            if source_fc_port.aggregate_port_id != 0 else source_fc_port.port_id,
+                            "user_label": self._get_action_based_user_label(user_label=source_fc_port.user_label)
+                        })
+
+        if "ether_port_channel" in self._config.sdk_objects:
+            for source_eth_port_channel in self._config.sdk_objects["ether_port_channel"]:
+                if (any(item.get("moid") == self._moid for item in source_eth_port_channel.ancestors) and
+                        source_eth_port_channel.role in ['HostPC', 'unknown']):
+                    if source_eth_port_channel.user_label:
+                        source_eth_port_channels.append({
+                            "id": source_eth_port_channel.port_channel_id,
+                            "user_label": self._get_action_based_user_label(
+                                user_label=source_eth_port_channel.user_label)
+                        })
+
+        if "fc_port_channel" in self._config.sdk_objects:
+            for source_fc_port_channel in self._config.sdk_objects["fc_port_channel"]:
+                if any(item.get("moid") == self._moid for item in source_fc_port_channel.ancestors):
+                    if source_fc_port_channel.user_label:
+                        source_fc_port_channels.append({
+                            "id": source_fc_port_channel.port_channel_id,
+                            "user_label": self._get_action_based_user_label(
+                                user_label=source_fc_port_channel.user_label)
+                        })
+
+        ports = {}
+        if source_eth_ports:
+            ports.update({"ethernet_ports": source_eth_ports})
+        if source_fc_ports:
+            ports.update({"fc_ports": source_fc_ports})
+        if source_eth_port_channels:
+            ports.update({"ethernet_port_channels": source_eth_port_channels})
+        if source_fc_port_channels:
+            ports.update({"fc_port_channels": source_fc_port_channels})
+
+        return ports if ports else None
+
     def _get_vlans(self, fabric_span_session):
         # Determines the details of the source VLANs.
         if "fabric_span_source_vlan" in self._config.sdk_objects:
@@ -378,7 +469,8 @@ class IntersightFabricInterconnect(IntersightConfigObject):
                 modify_present=True)
 
         if self.serial and self.traffic_mirroring_sessions:
-            info_message = f"The domain '{self.name}' must be claimed first in order to include the traffic mirroring sessions."
+            info_message = (f"The domain '{self.name}' must be claimed first in order to include the traffic mirroring "
+                            f"sessions.")
             self.logger(level="info", message=info_message)
             for traffic_mirroring_session in self.traffic_mirroring_sessions:
                 self.logger(message=f"Pushing {self._CONFIG_NAME} Traffic Mirroring Session configuration: " \
@@ -612,6 +704,243 @@ class IntersightFabricInterconnect(IntersightConfigObject):
                                 payload=fabric_span_source_vnic, 
                                 detail=f"Traffic Mirroring Session: {traffic_mirroring_session['name']} - vNIC {vnic_name}"
                             )
+
+        if self.serial and self.ports:
+            from intersight.model.fabric_port_operation import FabricPortOperation
+            from intersight.model.fabric_pc_operation import FabricPcOperation
+
+            # Check if the domain exists before setting user labels on the ports:
+            # - If the domain is present, proceed with setting user labels on the ports.
+            # - If the domain is not found, log an error message.
+
+            device_filter = (f"ConnectionStatus eq Connected and "
+                             f"DeviceHostname in ('{self.name}')")
+            registered_device = self._device.query(object_type="asset.DeviceRegistration", filter=device_filter)
+            if not registered_device:
+                self.logger(
+                    level="error",
+                    message=(
+                        f"Cannot set user labels on the ports: Unable to fetch the target domain '{self.name}'. "
+                        f"Please verify the domain and ensure it is correctly registered and connected."
+                    )
+                )
+                return False
+
+            for eth_port in self.ports.get("ethernet_ports", []):
+                if eth_port.get("user_label"):
+                    ethernet_port_kwargs = {
+                        "object_type": "fabric.PortOperation",
+                        "class_id": "fabric.PortOperation",
+                        "admin_action": "SetUserLabel"
+                    }
+
+                    port_info = ""
+                    if eth_port["slot_id"] is not None:
+                        ethernet_port_kwargs["slot_id"] = eth_port["slot_id"]
+                        port_info = f"{eth_port['slot_id']}"
+                    if eth_port.get("aggr_id") not in [None, 0]:  # We have a breakout port
+                        ethernet_port_kwargs["port_id"] = eth_port["aggr_id"]
+                        ethernet_port_kwargs["aggregate_port_id"] = eth_port["port_id"]
+                        port_info = f"{port_info}/{eth_port['aggr_id']}/{eth_port['port_id']}"
+                    else:
+                        ethernet_port_kwargs["port_id"] = eth_port["port_id"]
+                        ethernet_port_kwargs["aggregate_port_id"] = 0
+                        port_info = f"{port_info}/{eth_port['port_id']}"
+
+                    ethernet_port_kwargs["user_label"] = eth_port["user_label"]
+
+                    if network_element_list:
+                        if len(network_element_list) != 1:
+                            err_message = (
+                                f"Could not find Fabric Interconnect '{self.name}-{self.switch_id}' "
+                                f"to set User Label '{eth_port['user_label']}' "
+                                f"on Ethernet Port {port_info}."
+                            )
+                            self.logger(level="error", message=err_message)
+                            return False
+                        else:
+                            ethernet_port_kwargs["network_element"] = self.create_relationship_equivalent(
+                                sdk_object=network_element_list[0])
+                    else:
+                        err_message = (
+                            f"Could not find Fabric Interconnect '{self.name}-{self.switch_id}' "
+                            f"to set User Label '{eth_port['user_label']}' "
+                            f"on Ethernet Port {port_info}."
+                        )
+                        self.logger(level="error", message=err_message)
+                        self._config.push_summary_manager.add_object_status(
+                            obj=self,
+                            obj_detail=f"Fabric Interconnect '{self.name}-{self.switch_id}' "
+                                       f"with User Label '{eth_port['user_label']}' on Ethernet Port {port_info}",
+                            obj_type="fabric.PortOperation",
+                            status="failed",
+                            message=err_message
+                        )
+                        return False
+
+                    ethernet_port = FabricPortOperation(**ethernet_port_kwargs)
+
+                    self.commit(object_type="fabric.PortOperation", payload=ethernet_port,
+                                key_attributes=["network_element"],
+                                detail=f"Ethernet Port {port_info} with User Label : "
+                                       f"{eth_port['user_label']}",
+                                modify_present=True)
+
+            for fc_port in self.ports.get("fc_ports", []):
+                if fc_port.get("user_label"):
+                    fc_port_kwargs = {
+                        "object_type": "fabric.PortOperation",
+                        "class_id": "fabric.PortOperation",
+                        "admin_action": "SetUserLabel"
+                    }
+
+                    port_info = ""
+                    if fc_port["slot_id"] is not None:
+                        fc_port_kwargs["slot_id"] = fc_port["slot_id"]
+                        port_info = f"{fc_port['slot_id']}"
+                    if fc_port.get("aggr_id") not in [None, 0]:  # We have a breakout port
+                        fc_port_kwargs["port_id"] = fc_port["aggr_id"]
+                        fc_port_kwargs["aggregate_port_id"] = fc_port["port_id"]
+                        port_info = f"{port_info}/{fc_port['aggr_id']}/{fc_port['port_id']}"
+                    else:
+                        fc_port_kwargs["port_id"] = fc_port["port_id"]
+                        fc_port_kwargs["aggregate_port_id"] = 0
+                        port_info = f"{port_info}/{fc_port['port_id']}"
+
+                    fc_port_kwargs["user_label"] = fc_port["user_label"]
+                    if network_element_list:
+                        if len(network_element_list) != 1:
+                            err_message = (
+                                f"Could not find Fabric Interconnect '{self.name}-{self.switch_id}' "
+                                f"to set User Label '{fc_port['user_label']}' "
+                                f"on FC Port {port_info}."
+                            )
+                            self.logger(level="error", message=err_message)
+                            return False
+                        else:
+                            fc_port_kwargs["network_element"] = self.create_relationship_equivalent(
+                                sdk_object=network_element_list[0])
+                    else:
+                        err_message = (
+                            f"Could not find Fabric Interconnect '{self.name}-{self.switch_id}' "
+                            f"to set User Label '{fc_port['user_label']}' "
+                            f"on FC Port {port_info}."
+                        )
+                        self.logger(level="error", message=err_message)
+                        self._config.push_summary_manager.add_object_status(
+                            obj=self,
+                            obj_detail=f"Fabric Interconnect '{self.name}-{self.switch_id}' "
+                                       f"with User Label '{fc_port['user_label']}' on FC Port {port_info}",
+                            obj_type="fabric.PortOperation",
+                            status="failed",
+                            message=err_message
+                        )
+                        return False
+
+                    fc_port_op = FabricPortOperation(**fc_port_kwargs)
+
+                    self.commit(object_type="fabric.PortOperation", payload=fc_port_op,
+                                key_attributes=["network_element"],
+                                detail=f"FC Port with User Label : {fc_port_op['user_label']}",
+                                modify_present=True)
+
+            for eth_port_channel in self.ports.get("ethernet_port_channels", []):
+                if eth_port_channel.get("user_label"):
+                    ethernet_port_channel_kwargs = {
+                        "object_type": "fabric.PcOperation",
+                        "class_id": "fabric.PcOperation",
+                        "admin_action": "SetUserLabel"
+                    }
+
+                    if eth_port_channel["id"] is not None:
+                        ethernet_port_channel_kwargs["pc_id"] = eth_port_channel["id"]
+                    if eth_port_channel["user_label"] is not None:
+                        ethernet_port_channel_kwargs["user_label"] = eth_port_channel["user_label"]
+                    if network_element_list:
+                        if len(network_element_list) != 1:
+                            err_message = (
+                                f"Could not find Fabric Interconnect '{self.name}-{self.switch_id}' "
+                                f"to set User Label '{eth_port_channel['user_label']}' "
+                                f"on Ethernet Port Channel {eth_port_channel['id']}."
+                            )
+                            self.logger(level="error", message=err_message)
+                            return False
+                        else:
+                            ethernet_port_channel_kwargs["network_element"] = self.create_relationship_equivalent(
+                                sdk_object=network_element_list[0])
+                    else:
+                        err_message = (
+                            f"Could not find Fabric Interconnect '{self.name}-{self.switch_id}' "
+                            f"to set User Label '{eth_port_channel['user_label']}' "
+                            f"on Ethernet Port Channel {eth_port_channel['id']}."
+                        )
+                        self.logger(level="error", message=err_message)
+                        self._config.push_summary_manager.add_object_status(
+                            obj=self,
+                            obj_detail=f"Fabric Interconnect '{self.name}-{self.switch_id}' "
+                                       f"with User Label '{eth_port_channel['user_label']}' on "
+                                       f"Ethernet Port Channel {eth_port_channel['id']}",
+                            obj_type="fabric.PortOperation",
+                            status="failed",
+                            message=err_message
+                        )
+                        return False
+
+                    ethernet_port_channel = FabricPcOperation(**ethernet_port_channel_kwargs)
+
+                    self.commit(object_type="fabric.PcOperation",
+                                key_attributes=["network_element"], payload=ethernet_port_channel,
+                                detail=f"Ethernet Port Channel with User Label : {eth_port_channel['user_label']}",
+                                modify_present=True)
+
+            for fc_port_channel in self.ports.get("fc_port_channels", []):
+                if fc_port_channel.get("user_label"):
+                    fc_port_channel_kwargs = {
+                        "object_type": "fabric.PcOperation",
+                        "class_id": "fabric.PcOperation",
+                        "admin_action": "SetUserLabel"
+                    }
+
+                    if fc_port_channel["id"] is not None:
+                        fc_port_channel_kwargs["pc_id"] = fc_port_channel["id"]
+                    if fc_port_channel["user_label"] is not None:
+                        fc_port_channel_kwargs["user_label"] = fc_port_channel["user_label"]
+                    if network_element_list:
+                        if len(network_element_list) != 1:
+                            err_message = (
+                                f"Could not find Fabric Interconnect '{self.name}-{self.switch_id}' "
+                                f"to set User Label '{fc_port_channel['user_label']}' "
+                                f"on FC Port Channel {fc_port_channel['id']}."
+                            )
+                            self.logger(level="error", message=err_message)
+                            return False
+                        else:
+                            fc_port_channel_kwargs["network_element"] = self.create_relationship_equivalent(
+                                sdk_object=network_element_list[0])
+                    else:
+                        err_message = (
+                            f"Could not find Fabric Interconnect '{self.name}-{self.switch_id}' "
+                            f"to set User Label '{fc_port_channel['user_label']}' "
+                            f"on FC Port Channel {fc_port_channel['id']}."
+                        )
+                        self.logger(level="error", message=err_message)
+                        self._config.push_summary_manager.add_object_status(
+                            obj=self,
+                            obj_detail=f"Fabric Interconnect '{self.name}-{self.switch_id}' "
+                                       f"with User Label '{fc_port_channel['user_label']}' on "
+                                       f"FC Port Channel {fc_port_channel['id']}",
+                            obj_type="fabric.PortOperation",
+                            status="failed",
+                            message=err_message
+                        )
+                        return False
+
+                    fc_port_channel_op = FabricPcOperation(**fc_port_channel_kwargs)
+
+                    self.commit(object_type="fabric.PcOperation",
+                                key_attributes=["network_element"], payload=fc_port_channel_op,
+                                detail=f"FC Port Channel with User Label : {fc_port_channel['user_label']}",
+                                modify_present=True)
 
         return True
 

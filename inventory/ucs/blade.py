@@ -28,6 +28,7 @@ class UcsBlade(GenericBlade, GenericUcsInventoryObject):
         self.slot_id = self.get_attribute(ucs_sdk_object=compute_blade, attribute_name="slot_id")
         self.user_label = self.get_attribute(ucs_sdk_object=compute_blade, attribute_name="usr_lbl",
                                              attribute_secondary_name="user_label")
+        self.asset_tag = self.get_attribute(ucs_sdk_object=compute_blade, attribute_name="asset_tag")
         self.vendor = self.get_attribute(ucs_sdk_object=compute_blade, attribute_name="vendor")
 
         self.adaptors = self._get_adaptors()

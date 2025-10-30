@@ -97,7 +97,9 @@
    "10gbaseer": {"sku": "SFP-10G-ER/ER-S"},
 
    "h25gsrs": {"sku": "SFP-25G-SR-S"},
+   "10/25Gbasecsrs": {"sku": "SFP-10/25G-CSR-S"},
    "h25glrs": {"sku": "SFP-10/25G-LR-S"},
+   "10/25Gbaselrs": {"sku": "SFP-10/25G-LR-S"},
    "sfp25gsl": {"sku": "SFP-25G-SL"},
 
    "qsfpqsa": {"sku": "CVR-QSFP-SFP10G"},
@@ -107,7 +109,9 @@
    "qsfp40ger4": {"sku": "QSFP-40G-ER4"},
 
    "qsfp40gsr4": {"sku": "QSFP-40G-SR4/SR4-S"},
+   "qsfp40gsr4s": {"sku": "QSFP-40G-SR4-S"},
    "qsfp40glr4": {"sku": "QSFP-40G-LR4/LR4-S"},
+   "qsfp40glr4s": {"sku": "QSFP-40G-LR4-S"},
 
    "qsfp100gsl4": {"sku": "QSFP-100G-SL4"},
    "qsfp100g40gbidi": {"sku": "QSFP-40/100-SRBD"},
@@ -117,7 +121,19 @@
    "qsfp100gsr4": {"sku": "QSFP-100G-SR4-S"},
    "qsfp100gsr4s": {"sku": "QSFP-100G-SR4-S"},
    "qsfp100glr4s": {"sku": "QSFP-100G-LR4-S"},
+   "qsfp100glrs": {"sku": "QSFP-100G-LR-S"},
+   "qsfp100ger4ls": {"sku": "QSFP-100G-ER4L-S"},
    "qsfp100gdr": {"sku": "QSFP-100G-DR-S"},
+   "qsfp100gdrs": {"sku": "QSFP-100G-DR-S"},
    "qsfp100gfr": {"sku": "QSFP-100G-FR-S"},
-   "qsfp100gpsm4s": {"sku": "QSFP-100G-PSM4-S"}
+   "qsfp100gfrs": {"sku": "QSFP-100G-FR-S"},
+   "qsfp100gpsm4": {"sku": "QSFP-100G-PSM4-S"},
+   "qsfp100gpsm4s": {"sku": "QSFP-100G-PSM4-S"},
+
+   "dssfpfc16gsw": {"sku": "DS-SFP-FC16G-SW"},
+   "dssfpfc16glw": {"sku": "DS-SFP-FC16G-LW"},
+   "dssfpfc32gsw": {"sku": "DS-SFP-FC32G-SW"},
+   "dssfpfc32glw": {"sku": "DS-SFP-FC32G-LW"},
+   "dssfpfc64gsw": {"sku": "DS-SFP-FC64G-SW"},
+   "dssfpfc64glw": {"sku": "DS-SFP-FC64G-LW"}
 }

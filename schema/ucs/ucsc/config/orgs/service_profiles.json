@@ -497,6 +497,11 @@
                   "description": "Service Profile - vNIC - Operational State of the vNIC",
                   "type": "object",
                   "properties": {
+                     "adaptor_id": {
+                        "description": "Service Profile - vNIC - Operational State - Adaptor ID (e.g. '1' from adaptor-1 in equipmentDn)",
+                        "type": "string",
+                        "default": ""
+                     },
                      "adapter_policy": {
                         "description": "Service Profile - vNIC - Operational State - Adapter Policy",
                         "type": "object",
@@ -969,6 +974,11 @@
                   "description": "Service Profile - vHBA - Operational State of the vHBA",
                   "type": "object",
                   "properties": {
+                     "adaptor_id": {
+                        "description": "Service Profile - vHBA - Operational State - Adaptor ID (e.g. '1' from adaptor-1 in equipmentDn)",
+                        "type": "string",
+                        "default": ""
+                     },
                      "adapter_policy": {
                         "description": "Service Profile - vHBA - Operational State - Adapter Policy",
                         "type": "object",

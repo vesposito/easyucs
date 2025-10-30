@@ -145,6 +145,7 @@
                "default": "unspecified",
                "enum": [
                   "HDD",
+                  "NVME-SSD",
                   "SSD",
                   "unspecified"
                ]

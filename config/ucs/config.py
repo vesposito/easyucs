@@ -914,12 +914,12 @@ class UcsSystemConfig(GenericUcsConfig):
             'topInfoSyncPolicy', 'uuidpoolBlock', 'uuidpoolPool', 'vnicConnDef', 'vnicDynamicCon',
             'vnicDynamicConPolicy', 'vnicDynamicConPolicyRef', 'vnicEther', 'vnicEtherIf', 'vnicFc', 'vnicFcGroupDef',
             'vnicFcIf', 'vnicFcNode', 'vnicIPv4Dhcp', 'vnicIPv4If', 'vnicIPv4IscsiAddr', 'vnicIpV4PooledAddr',
-            'vnicIPv4PooledIscsiAddr', 'vnicIpV4StaticAddr', 'vnicIpV6StaticAddr', 'vnicIScsi', 'vnicIScsiAutoTargetIf',
-            'vnicIScsiBootParams', 'vnicIScsiBootVnic', 'vnicIScsiLCP', 'vnicIScsiNode', 'vnicIScsiStaticTargetIf',
-            'vnicIpV4MgmtPooledAddr', 'vnicIpV6MgmtPooledAddr', 'vnicLanConnPolicy', 'vnicLanConnTempl', 'vnicLun',
-            'vnicSanConnPolicy', 'vnicSanConnTempl', 'vnicSriovHpnConPolicy', 'vnicSriovHpnConPolicyRef',
-            'vnicUsnicConPolicy', 'vnicUsnicConPolicyRef', 'vnicVhbaBehPolicy', 'vnicVlan', 'vnicVmqConPolicy',
-            'vnicVmqConPolicyRef', 'vnicVnicBehPolicy'] + bios_sdk_objects_to_fetch
+            'vnicIPv4PooledIscsiAddr', 'vnicIpV4StaticAddr', 'vnicIPv6IscsiAddr', 'vnicIPv6PooledIscsiAddr', 'vnicIpV6StaticAddr',
+            'vnicIScsi', 'vnicIScsiAutoTargetIf', 'vnicIScsiBootParams', 'vnicIScsiBootVnic', 'vnicIScsiLCP', 'vnicIScsiNode',
+            'vnicIPv6IScsiStaticTargetIf', 'vnicIScsiStaticTargetIf', 'vnicIpV4MgmtPooledAddr', 'vnicIpV6MgmtPooledAddr',
+            'vnicLanConnPolicy', 'vnicLanConnTempl', 'vnicLun', 'vnicSanConnPolicy', 'vnicSanConnTempl', 'vnicSriovHpnConPolicy',
+            'vnicSriovHpnConPolicyRef', 'vnicUsnicConPolicy', 'vnicUsnicConPolicyRef', 'vnicVhbaBehPolicy',
+            'vnicVlan', 'vnicVmqConPolicy', 'vnicVmqConPolicyRef', 'vnicVnicBehPolicy'] + bios_sdk_objects_to_fetch
 
         self.logger(level="debug",
                     message="Fetching " + self.device.metadata.device_type_long + " SDK objects for config")

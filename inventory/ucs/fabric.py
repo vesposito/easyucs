@@ -24,6 +24,8 @@ class UcsFex(GenericFex, GenericUcsInventoryObject):
         self.serial = self.get_attribute(ucs_sdk_object=equipment_fex, attribute_name="serial")
         self.switch_id = self.get_attribute(ucs_sdk_object=equipment_fex, attribute_name="switch_id")
         self.vendor = self.get_attribute(ucs_sdk_object=equipment_fex, attribute_name="vendor")
+        self.user_label = self.get_attribute(ucs_sdk_object=equipment_fex, attribute_name="usr_lbl",
+                                             attribute_secondary_name="user_label")
 
         self.fabric_ports = self._get_fabric_ports()
         self.host_ports = self._get_host_ports()

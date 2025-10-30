@@ -1212,7 +1212,7 @@ class UcsSystemVhbaTemplate(UcsSystemConfigObject):
                             self.vsan = vsans[0].name
                         elif len(vsans) == 0:
                             self.logger(level="error",
-                                        message=f"Missing at-least one VSAN in {self._CONFIG_NAME}: {str(self.name)}")
+                                        message=f"Missing at least one VSAN in {self._CONFIG_NAME}: {str(self.name)}")
                         else:
                             self.logger(level="error",
                                         message=f"More than one VSAN can be found in {self._CONFIG_NAME}: "

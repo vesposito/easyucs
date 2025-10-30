@@ -75,7 +75,7 @@ urllib3.disable_warnings()
 
 
 class IntersightDevice(GenericDevice):
-    INTERSIGHT_APPLIANCE_MIN_REQUIRED_VERSION = "1.1.3-0"
+    INTERSIGHT_APPLIANCE_MIN_REQUIRED_VERSION = "1.1.4-0"
 
     def __init__(self, parent=None, uuid=None, target="us-east-1.intersight.com", key_id="", private_key_path="",
                  is_hidden=False, is_system=False, system_usage=None, proxy=None, proxy_user=None, proxy_password=None,
@@ -1816,6 +1816,10 @@ class IntersightDevice(GenericDevice):
                             f"registered device '{imm_domain_name}'."
                 )
                 return False
+
+            # Sort network elements by 'switch_id' to ensure port policies are applied
+            # to the correct Fabric Interconnects.
+            network_elements = sorted(network_elements, key=lambda item: item['switch_id'])
 
             # Deploy the domain profile if the assignment is completed successfully.
             if self._assign_domain_profile(imm_domain_name, switch_cluster_profile[0], network_elements):

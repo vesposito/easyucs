@@ -66,7 +66,7 @@ class UcsSystemDiskGroupPolicy(UcsSystemConfigObject):
                             if self._parent._dn + "/disk-group-config-" + self.name + "/" \
                                     in lstorage_virtual_drive_def.dn:
                                 self.write_cache_policy = lstorage_virtual_drive_def.write_cache_policy
-                                self.io_policy = lstorage_virtual_drive_def.io_policy
+                                self.io_policy = getattr(lstorage_virtual_drive_def, "io_policy", None)
                                 self.security = lstorage_virtual_drive_def.security
                                 self.read_policy = lstorage_virtual_drive_def.read_policy
                                 self.strip_size = lstorage_virtual_drive_def.strip_size
@@ -134,10 +134,16 @@ class UcsSystemDiskGroupPolicy(UcsSystemConfigObject):
         mo_lstorage_disk_group_config_policy = LstorageDiskGroupConfigPolicy(parent_mo_or_dn=parent_mo, name=self.name,
                                                                              raid_level=self.raid_level,
                                                                              descr=self.descr)
-        LstorageVirtualDriveDef(parent_mo_or_dn=mo_lstorage_disk_group_config_policy,
-                                write_cache_policy=self.write_cache_policy, io_policy=self.io_policy,
-                                security=self.security, read_policy=self.read_policy, strip_size=self.strip_size,
-                                access_policy=self.access_policy, drive_cache=self.drive_cache)
+        if self.io_policy:
+            LstorageVirtualDriveDef(parent_mo_or_dn=mo_lstorage_disk_group_config_policy,
+                                    write_cache_policy=self.write_cache_policy, io_policy=self.io_policy,
+                                    security=self.security, read_policy=self.read_policy, strip_size=self.strip_size,
+                                    access_policy=self.access_policy, drive_cache=self.drive_cache)
+        else:
+            LstorageVirtualDriveDef(parent_mo_or_dn=mo_lstorage_disk_group_config_policy,
+                                    write_cache_policy=self.write_cache_policy,
+                                    security=self.security, read_policy=self.read_policy, strip_size=self.strip_size,
+                                    access_policy=self.access_policy, drive_cache=self.drive_cache)
 
         if len(self.manual_disk_group_configuration):
             for disk in self.manual_disk_group_configuration:
@@ -288,7 +294,7 @@ class UcsSystemStorageProfile(UcsSystemConfigObject):
                                             lun_set.update({"access_policy": lsstorage.access_policy})
                                             lun_set.update({"read_policy": lsstorage.read_policy})
                                             lun_set.update({"write_cache_policy": lsstorage.write_cache_policy})
-                                            lun_set.update({"io_policy": lsstorage.io_policy})
+                                            lun_set.update({"io_policy": getattr(lsstorage, "io_policy", None)})
                                             lun_set.update({"drive_cache": lsstorage.drive_cache})
                                             lun_set.update({"security": lsstorage.security})
                                             break
@@ -417,14 +423,23 @@ class UcsSystemStorageProfile(UcsSystemConfigObject):
                 mo_ls_storage_lun_set_config = LstorageLunSetConfig(parent_mo_or_dn=mo_lstorage_profile,
                                                                     disk_slot_range=lun_set['disk_slot_range'],
                                                                     name=lun_set['name'])
-                LstorageVirtualDriveDef(parent_mo_or_dn=mo_ls_storage_lun_set_config,
-                                        access_policy=lun_set['access_policy'],
-                                        drive_cache=lun_set['drive_cache'],
-                                        io_policy=lun_set['io_policy'],
-                                        read_policy=lun_set['read_policy'],
-                                        security=lun_set['security'],
-                                        strip_size=lun_set['strip_size'],
-                                        write_cache_policy=lun_set['write_cache_policy'])
+                if lun_set.get("io_policy", None):
+                    LstorageVirtualDriveDef(parent_mo_or_dn=mo_ls_storage_lun_set_config,
+                                            access_policy=lun_set['access_policy'],
+                                            drive_cache=lun_set['drive_cache'],
+                                            io_policy=lun_set['io_policy'],
+                                            read_policy=lun_set['read_policy'],
+                                            security=lun_set['security'],
+                                            strip_size=lun_set['strip_size'],
+                                            write_cache_policy=lun_set['write_cache_policy'])
+                else:
+                    LstorageVirtualDriveDef(parent_mo_or_dn=mo_ls_storage_lun_set_config,
+                                            access_policy=lun_set['access_policy'],
+                                            drive_cache=lun_set['drive_cache'],
+                                            read_policy=lun_set['read_policy'],
+                                            security=lun_set['security'],
+                                            strip_size=lun_set['strip_size'],
+                                            write_cache_policy=lun_set['write_cache_policy'])
 
         if self.hybrid_slot_configuration:
             for policy in self.hybrid_slot_configuration:

@@ -2,7 +2,7 @@
 # !/usr/bin/env python
 
 """ profiles.py: Easy UCS Deployment Tool """
-
+import re
 import urllib
 
 from ucscsdk.mometa.vnic.VnicIPv4IscsiAddr import VnicIPv4IscsiAddr
@@ -48,6 +48,7 @@ from ucsmsdk.ucsexception import UcsException
 from ucsmsdk.ucsmethodfactory import ls_instantiate_n_named_template, ls_instantiate_template
 
 from config.ucs.object import UcsSystemConfigObject
+from config.ucs.profiles import GenericUcsServiceProfile
 from config.ucs.ucsm.lan import UcsSystemDynamicVnicConnectionPolicy, UcsSystemIpPool, UcsSystemLanConnectivityPolicy, \
     UcsSystemLanPinGroup, UcsSystemMacPool, UcsSystemNetworkControlPolicy, UcsSystemQosPolicy, \
     UcsSystemSriovHpnConnectionPolicy, UcsSystemUsnicConnectionPolicy, UcsSystemVmqConnectionPolicy, \
@@ -64,7 +65,7 @@ from config.ucs.ucsm.servers import UcsSystemBiosPolicy, UcsSystemBootPolicy, Uc
 from config.ucs.ucsm.storage import UcsSystemStorageProfile
 
 
-class UcsSystemServiceProfile(UcsSystemConfigObject):
+class UcsSystemServiceProfile(UcsSystemConfigObject, GenericUcsServiceProfile):
     _CONFIG_NAME = "Service Profile"
     _CONFIG_SECTION_NAME = "service_profiles"
     _UCS_SDK_OBJECT_NAME = "lsServer"
@@ -684,6 +685,14 @@ class UcsSystemServiceProfile(UcsSystemConfigObject):
                                             policy_name="vnic_template"
                                         )
                                     )
+                                    equipment_dn = vnic_ether.equipment_dn
+                                    # Extract adaptor ID
+                                    adaptor_match = re.search(r'adaptor-(\d+)', equipment_dn)
+                                    adaptor_id = adaptor_match.group(1) if adaptor_match else None
+
+                                    # Add adaptor_id
+                                    if adaptor_id is not None:
+                                        oper_state.update({"adaptor_id": adaptor_id})
                                     if vnic_ether.oper_host_port in ["ANY"]:
                                         oper_state.update({"host_port": "any"})
                                     elif vnic_ether.oper_host_port not in ["", "NONE"]:
@@ -827,6 +836,14 @@ class UcsSystemServiceProfile(UcsSystemConfigObject):
                                             policy_name="wwpn_pool"
                                         )
                                     )
+                                    equipment_dn = vnic_fc.equipment_dn
+                                    # Extract adaptor ID
+                                    adaptor_match = re.search(r'adaptor-(\d+)', equipment_dn)
+                                    adaptor_id = adaptor_match.group(1) if adaptor_match else None
+
+                                    # Add adaptor_id
+                                    if adaptor_id is not None:
+                                        oper_state.update({"adaptor_id": adaptor_id})
                                     if vnic_fc.oper_host_port in ["ANY"]:
                                         oper_state.update({"host_port": "any"})
                                     elif vnic_fc.oper_host_port not in ["", "NONE"]:
@@ -938,30 +955,52 @@ class UcsSystemServiceProfile(UcsSystemConfigObject):
                                 boot_param.update({"iscsi_vnic_name": mo.name})
                                 boot_param.update({"authentication_profile": mo.auth_profile_name})
                                 boot_param.update({"iqn_pool": mo.iqn_ident_pool_name})
+                                boot_param.update({"ip_type": mo.ip_type})
                                 # Setting iSCSI Target Interface Type as "Static" by default. This
                                 # will be overwritten for vNICs which has vnicIScsiAutoTargetIf Property
                                 boot_param.update({"iscsi_target_interface": "Static"})
                                 if mo.initiator_name != "derived":
                                     boot_param.update({"iqn": mo.initiator_name})
-                                if "vnicIPv4PooledIscsiAddr" in self._parent._config.sdk_objects:
-                                    for mo_ip_pool in self._config.sdk_objects["vnicIPv4PooledIscsiAddr"]:
-                                        if mo.dn in mo_ip_pool.dn:
-                                            boot_param.update({
-                                                "initiator_ip_address_policy": mo_ip_pool.ident_pool_name,
-                                                "ipv4_address": mo_ip_pool.addr,
-                                                "subnet_mask": mo_ip_pool.subnet,
-                                                "default_gateway": mo_ip_pool.def_gw,
-                                                "primary_dns": mo_ip_pool.prim_dns,
-                                                "secondary_dns": mo_ip_pool.sec_dns})
-                                if "vnicIPv4IscsiAddr" in self._parent._config.sdk_objects:
-                                    for mo_ipv4_iscsi_addr in self._config.sdk_objects["vnicIPv4IscsiAddr"]:
-                                        if mo.dn in mo_ipv4_iscsi_addr.dn:
-                                            boot_param.update({
-                                                "ipv4_address": mo_ipv4_iscsi_addr.addr,
-                                                "subnet_mask": mo_ipv4_iscsi_addr.subnet,
-                                                "default_gateway": mo_ipv4_iscsi_addr.def_gw,
-                                                "primary_dns": mo_ipv4_iscsi_addr.prim_dns,
-                                                "secondary_dns": mo_ipv4_iscsi_addr.sec_dns})
+                                if not mo.ip_type or mo.ip_type == "ipv4":
+                                    if "vnicIPv4PooledIscsiAddr" in self._parent._config.sdk_objects:
+                                        for mo_ip_pool in self._config.sdk_objects["vnicIPv4PooledIscsiAddr"]:
+                                            if mo.dn in mo_ip_pool.dn:
+                                                boot_param.update({
+                                                    "initiator_ip_address_policy": mo_ip_pool.ident_pool_name,
+                                                    "ipv4_address": mo_ip_pool.addr,
+                                                    "subnet_mask": mo_ip_pool.subnet,
+                                                    "default_gateway": mo_ip_pool.def_gw,
+                                                    "primary_dns": mo_ip_pool.prim_dns,
+                                                    "secondary_dns": mo_ip_pool.sec_dns})
+                                    if "vnicIPv4IscsiAddr" in self._parent._config.sdk_objects:
+                                        for mo_ipv4_iscsi_addr in self._config.sdk_objects["vnicIPv4IscsiAddr"]:
+                                            if mo.dn in mo_ipv4_iscsi_addr.dn:
+                                                boot_param.update({
+                                                    "ipv4_address": mo_ipv4_iscsi_addr.addr,
+                                                    "subnet_mask": mo_ipv4_iscsi_addr.subnet,
+                                                    "default_gateway": mo_ipv4_iscsi_addr.def_gw,
+                                                    "primary_dns": mo_ipv4_iscsi_addr.prim_dns,
+                                                    "secondary_dns": mo_ipv4_iscsi_addr.sec_dns})
+                                elif mo.ip_type == "ipv6":
+                                    if "vnicIPv6PooledIscsiAddr" in self._parent._config.sdk_objects:
+                                        for mo_ip_pool in self._config.sdk_objects["vnicIPv6PooledIscsiAddr"]:
+                                            if mo.dn in mo_ip_pool.dn:
+                                                boot_param.update({
+                                                    "initiator_ip_address_policy": mo_ip_pool.ident_pool_name,
+                                                    "ipv6_address": mo_ip_pool.addr,
+                                                    "prefix_length": mo_ip_pool.prefix,
+                                                    "default_gateway": mo_ip_pool.def_gw,
+                                                    "primary_dns": mo_ip_pool.prim_dns,
+                                                    "secondary_dns": mo_ip_pool.sec_dns})
+                                    if "vnicIPv6IscsiAddr" in self._parent._config.sdk_objects:
+                                        for mo_ipv4_iscsi_addr in self._config.sdk_objects["vnicIPv6IscsiAddr"]:
+                                            if mo.dn in mo_ipv4_iscsi_addr.dn:
+                                                boot_param.update({
+                                                    "ipv6_address": mo_ipv4_iscsi_addr.addr,
+                                                    "prefix_length": mo_ipv4_iscsi_addr.prefix,
+                                                    "default_gateway": mo_ipv4_iscsi_addr.def_gw,
+                                                    "primary_dns": mo_ipv4_iscsi_addr.prim_dns,
+                                                    "secondary_dns": mo_ipv4_iscsi_addr.sec_dns})
                                 if "vnicIScsiAutoTargetIf" in self._parent._config.sdk_objects:
                                     for mo_if_auto in self._config.sdk_objects["vnicIScsiAutoTargetIf"]:
                                         if mo.dn in mo_if_auto.dn:
@@ -972,41 +1011,78 @@ class UcsSystemServiceProfile(UcsSystemConfigObject):
                                             if "iqn_pool" in boot_param:
                                                 boot_param.pop("iqn_pool")
                                 boot_param.update({"iscsi_static_targets": []})
-                                if "vnicIScsiStaticTargetIf" in self._parent._config.sdk_objects:
-                                    for mo_if in self._config.sdk_objects["vnicIScsiStaticTargetIf"]:
-                                        if mo.dn in mo_if.dn:
-                                            interface = {}
-                                            interface.update({"name": mo_if.name})
-                                            interface.update({"port": mo_if.port})
-                                            interface.update({"authentication_profile": mo_if.auth_profile_name})
-                                            interface.update({"ip_address": mo_if.ip_address})
-                                            interface.update({"priority": mo_if.priority})
-                                            if "vnicLun" in self._parent._config.sdk_objects:
-                                                for mo_lun in self._config.sdk_objects["vnicLun"]:
-                                                    if mo_if.dn in mo_lun.dn:
-                                                        interface.update({"lun_id": mo_lun.id})
-                                            # Fetching the operational state of the referenced policies
-                                            authentication_profile = self.get_operational_state(
-                                                policy_dn=mo_if.oper_auth_profile_name,
-                                                separator="/iscsi-auth-profile-",
-                                                policy_name="authentication_profile"
-                                            )
-                                            if mo_if.auth_profile_name:
-                                                if not authentication_profile:
-                                                    for mo_if_if in self._config.sdk_objects["vnicIScsiStaticTargetIf"]:
-                                                        if self._parent._dn + "/ls-" + self.name + "/iscsi-" + \
-                                                                mo.name + "/vlan" in mo_if_if.dn:
-                                                            authentication_profile = self.get_operational_state(
-                                                                policy_dn=mo_if_if.oper_auth_profile_name,
-                                                                separator="/iscsi-auth-profile-",
-                                                                policy_name="authentication_profile"
-                                                            )
-                                                            break
-                                            operational_state = {}
-                                            operational_state.update(authentication_profile)
-                                            interface.update({"operational_state":
-                                                              operational_state})
-                                            boot_param["iscsi_static_targets"].append(interface)
+                                if not mo.ip_type or mo.ip_type == "ipv4":
+                                    if "vnicIScsiStaticTargetIf" in self._parent._config.sdk_objects:
+                                        for mo_if in self._config.sdk_objects["vnicIScsiStaticTargetIf"]:
+                                            if mo.dn in mo_if.dn:
+                                                interface = {}
+                                                interface.update({"name": mo_if.name})
+                                                interface.update({"port": mo_if.port})
+                                                interface.update({"authentication_profile": mo_if.auth_profile_name})
+                                                interface.update({"ip_address": mo_if.ip_address})
+                                                interface.update({"priority": mo_if.priority})
+                                                if "vnicLun" in self._parent._config.sdk_objects:
+                                                    for mo_lun in self._config.sdk_objects["vnicLun"]:
+                                                        if mo_if.dn in mo_lun.dn:
+                                                            interface.update({"lun_id": mo_lun.id})
+                                                # Fetching the operational state of the referenced policies
+                                                authentication_profile = self.get_operational_state(
+                                                    policy_dn=mo_if.oper_auth_profile_name,
+                                                    separator="/iscsi-auth-profile-",
+                                                    policy_name="authentication_profile"
+                                                )
+                                                if mo_if.auth_profile_name:
+                                                    if not authentication_profile:
+                                                        for mo_if_if in self._config.sdk_objects["vnicIScsiStaticTargetIf"]:
+                                                            if self._parent._dn + "/ls-" + self.name + "/iscsi-" + \
+                                                                    mo.name + "/vlan" in mo_if_if.dn:
+                                                                authentication_profile = self.get_operational_state(
+                                                                    policy_dn=mo_if_if.oper_auth_profile_name,
+                                                                    separator="/iscsi-auth-profile-",
+                                                                    policy_name="authentication_profile"
+                                                                )
+                                                                break
+                                                operational_state = {}
+                                                operational_state.update(authentication_profile)
+                                                interface.update({"operational_state":
+                                                                operational_state})
+                                                boot_param["iscsi_static_targets"].append(interface)
+                                elif mo.ip_type == "ipv6":
+                                    if "vnicIPv6IScsiStaticTargetIf" in self._parent._config.sdk_objects:
+                                        for mo_if in self._config.sdk_objects["vnicIPv6IScsiStaticTargetIf"]:
+                                            if mo.dn in mo_if.dn:
+                                                interface = {}
+                                                interface.update({"name": mo_if.name})
+                                                interface.update({"port": mo_if.port})
+                                                interface.update({"authentication_profile": mo_if.auth_profile_name})
+                                                interface.update({"ip_address": mo_if.ip_address})
+                                                interface.update({"priority": mo_if.priority})
+                                                if "vnicLun" in self._parent._config.sdk_objects:
+                                                    for mo_lun in self._config.sdk_objects["vnicLun"]:
+                                                        if mo_if.dn in mo_lun.dn:
+                                                            interface.update({"lun_id": mo_lun.id})
+                                                # Fetching the operational state of the referenced policies
+                                                authentication_profile = self.get_operational_state(
+                                                    policy_dn=mo_if.oper_auth_profile_name,
+                                                    separator="/iscsi-auth-profile-",
+                                                    policy_name="authentication_profile"
+                                                )
+                                                if mo_if.auth_profile_name:
+                                                    if not authentication_profile:
+                                                        for mo_if_if in self._config.sdk_objects["vnicIPv6IScsiStaticTargetIf"]:
+                                                            if self._parent._dn + "/ls-" + self.name + "/iscsi-" + \
+                                                                    mo.name + "/vlan" in mo_if_if.dn:
+                                                                authentication_profile = self.get_operational_state(
+                                                                    policy_dn=mo_if_if.oper_auth_profile_name,
+                                                                    separator="/iscsi-auth-profile-",
+                                                                    policy_name="authentication_profile"
+                                                                )
+                                                                break
+                                                operational_state = {}
+                                                operational_state.update(authentication_profile)
+                                                interface.update({"operational_state":
+                                                                operational_state})
+                                                boot_param["iscsi_static_targets"].append(interface)
 
                                 self.iscsi_boot_parameters.append(boot_param)
 

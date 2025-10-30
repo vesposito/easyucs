@@ -313,7 +313,7 @@ class IntersightIpPool(IntersightConfigObject):
         if not self.reservations:
             return True
 
-        # Get the all the IP Pool reservations
+        # Get all the IP Pool reservations
         ip_reservations = self._device.query(object_type="ippool.Reservation", expand="Organization")
 
         # Find overlapping, non overlapping and used reservations between ip_reservations and self.reservations

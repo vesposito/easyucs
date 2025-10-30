@@ -6,10 +6,10 @@
    "type": "object",
    "properties": {
       "delete_existing_resource_group_memberships_for_intersight_shared_orgs": {
-               "description": "Flag to delete resource group memberships of shared organizations",
-               "type": "boolean",
-               "default": false
-            },
+         "description": "Flag to delete resource group memberships of shared organizations",
+         "type": "boolean",
+         "default": false
+      },
       "update_existing_intersight_objects": {
          "description": "Use update existing objects info for determining whether to overwrite existing objects in IMM. If set to true, the commits should overwrite existing object attributes in IMM",
          "type": "boolean",

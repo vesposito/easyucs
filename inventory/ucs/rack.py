@@ -44,6 +44,7 @@ class UcsRack(GenericRack, GenericUcsInventoryObject):
             self.slot_id = self.get_attribute(ucs_sdk_object=compute_rack_unit, attribute_name="slot_id")
         self.user_label = self.get_attribute(ucs_sdk_object=compute_rack_unit, attribute_name="usr_lbl",
                                              attribute_secondary_name="user_label")
+        self.asset_tag = self.get_attribute(ucs_sdk_object=compute_rack_unit, attribute_name="asset_tag")
         self.vendor = self.get_attribute(ucs_sdk_object=compute_rack_unit, attribute_name="vendor")
 
         # Adding a human-readable attribute for memory capacity

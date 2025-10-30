@@ -102,6 +102,19 @@ class IntersightGenericUcsServerProfile(IntersightConfigObject):
         "wwnn_pool": IntersightWwnnPool,
         "wwpn_pool": IntersightWwpnPool
     }
+    C_SERIES_VIC_MLOM_MODELS = {
+        "UCSC-M-V5D200G",
+        "UCSC-M-V5D200GV2",
+        "UCSC-M-V5Q50G",
+        "UCSC-M-V5Q50GV2",
+        "UCSC-M-V25-04",
+        "UCSC-M-V100-04",
+        "UCSC-MLOM-C100-04",
+        "UCSC-MLOM-C25Q-04",
+        "UCSC-MLOM-C40Q-03",
+        "UCSC-MLOM-C10T-02",
+        "UCSC-MLOM-CSC-02",
+    }
 
     def __init__(self, parent, sdk_object):
         IntersightConfigObject.__init__(self, parent=parent, sdk_object=sdk_object)
@@ -153,6 +166,9 @@ class IntersightGenericUcsServerProfile(IntersightConfigObject):
         else:
             # We return the name attribute of the matching Policy
             return policy_list[0].name
+
+        self._server_has_multiple_vic = None
+        self._server_has_vic_1300 = None
 
 
 class IntersightUcsServerProfile(IntersightGenericUcsServerProfile):

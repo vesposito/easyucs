@@ -17,7 +17,9 @@ from intersight.api.compute_api import ComputeApi
 from intersight.api.chassis_api import ChassisApi
 from intersight.api.deviceconnector_api import DeviceconnectorApi
 from intersight.api.equipment_api import EquipmentApi
+from intersight.api.ether_api import EtherApi
 from intersight.api.fabric_api import FabricApi
+from intersight.api.fc_api import FcApi
 from intersight.api.fcpool_api import FcpoolApi
 from intersight.api.firmware_api import FirmwareApi
 from intersight.api.iam_api import IamApi
@@ -106,6 +108,7 @@ class IntersightConfig(GenericConfig):
                                               "compute_server_setting"]},
                                 {DeviceconnectorApi: ["deviceconnector_policy"]},
                                 {EquipmentApi: ["equipment_chassis", "equipment_fex"]},
+                                {EtherApi: ["ether_physical_port", "ether_port_channel"]},
                                 {FabricApi: ["fabric_appliance_pc_role", "fabric_appliance_role",
                                              "fabric_eth_network_control_policy", "fabric_eth_network_group_policy",
                                              "fabric_eth_network_policy", "fabric_fc_network_policy",
@@ -123,6 +126,7 @@ class IntersightConfig(GenericConfig):
                                              "fabric_switch_control_policy", "fabric_switch_profile",
                                              "fabric_switch_profile_template", "fabric_system_qos_policy", "fabric_vlan",
                                              "fabric_vsan", "fabric_uplink_pc_role", "fabric_uplink_role"]},
+                                {FcApi: ["fc_physical_port", "fc_port_channel"]},
                                 {FcpoolApi: ["fcpool_pool", "fcpool_reservation", "fcpool_lease"]},
                                 {FirmwareApi: ["firmware_policy"]},
                                 {IamApi: ["iam_account", "iam_end_point_role", "iam_end_point_user",

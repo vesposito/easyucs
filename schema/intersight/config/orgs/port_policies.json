@@ -61,6 +61,7 @@
             "UCS-FI-6454",
             "UCS-FI-64108",
             "UCS-FI-6536",
+            "UCS-FI-6664",
             "UCSX-S9108-100G",
             "unknown"
          ]
@@ -176,6 +177,12 @@
                      ]
                   },
                   "minItems": 1
+               },
+               "user_label": {
+                  "type": "string",
+                  "minLength": 0,
+                  "maxLength": 128,
+                  "pattern": "^[!#%\\s+&()\\*+,\\-\\./:;\\?@\\[\\]_{|}~a-zA-Z0-9]*$"
                }
             },
             "additionalProperties": false,
@@ -275,6 +282,12 @@
                "ethernet_network_group_policy": {
                   "description": "Port Policy - Appliance Port - Ethernet Network Group Policy",
                   "type": "string"
+               },
+               "user_label": {
+                  "type": "string",
+                  "minLength": 0,
+                  "maxLength": 128,
+                  "pattern": "^[!#%\\s+&()\\*+,\\-\\./:;\\?@\\[\\]_{|}~a-zA-Z0-9]*$"
                }
             },
             "additionalProperties": false,
@@ -369,6 +382,7 @@
                "pc_id": {
                   "description": "Port Policy - FCoE Port Channel - Port Channel ID",
                   "type": "integer",
+                  "default": 1,
                   "minimum": 1,
                   "maximum": 256
                },
@@ -416,6 +430,12 @@
                      ]
                   },
                   "minItems": 1
+               },
+               "user_label": {
+                  "type": "string",
+                  "minLength": 0,
+                  "maxLength": 128,
+                  "pattern": "^[!#%\\s+&()\\*+,\\-\\./:;\\?@\\[\\]_{|}~a-zA-Z0-9]*$"
                }
             },
             "additionalProperties": false,
@@ -487,6 +507,12 @@
                "link_control_policy": {
                   "description": "Port Policy - FCoE Uplink Port - Link Control Policy",
                   "type": "string"
+               },
+               "user_label": {
+                  "type": "string",
+                  "minLength": 0,
+                  "maxLength": 128,
+                  "pattern": "^[!#%\\s+&()\\*+,\\-\\./:;\\?@\\[\\]_{|}~a-zA-Z0-9]*$"
                }
             },
             "additionalProperties": false,
@@ -692,6 +718,12 @@
                   "description": "Port Policy - LAN Port Channel - MACsec Policy",
                   "type": "string",
                   "pattern": "^[a-zA-Z0-9_.:-]{1,64}$"
+               },
+               "user_label": {
+                  "type": "string",
+                  "minLength": 0,
+                  "maxLength": 128,
+                  "pattern": "^[!#%\\s+&()\\*+,\\-\\./:;\\?@\\[\\]_{|}~a-zA-Z0-9]*$"
                }
             },
             "additionalProperties": false,
@@ -788,6 +820,12 @@
                   "description": "Port Policy - LAN Uplink Port - MACsec Policy",
                   "type": "string",
                   "pattern": "^[a-zA-Z0-9_.:-]{1,64}$"
+               },
+               "user_label": {
+                  "type": "string",
+                  "minLength": 0,
+                  "maxLength": 128,
+                  "pattern": "^[!#%\\s+&()\\*+,\\-\\./:;\\?@\\[\\]_{|}~a-zA-Z0-9]*$"
                }
             },
             "additionalProperties": false,
@@ -911,7 +949,8 @@
                      "Auto",
                      "8Gbps",
                      "16Gbps",
-                     "32Gbps"
+                     "32Gbps",
+                     "64Gbps"
                   ]
                },
                "pc_id": {
@@ -973,6 +1012,12 @@
                      ]
                   },
                   "minItems": 1
+               },
+               "user_label": {
+                  "type": "string",
+                  "minLength": 0,
+                  "maxLength": 128,
+                  "pattern": "^[!#%\\s+&()\\*+,\\-\\./:;\\?@\\[\\]_{|}~a-zA-Z0-9]*$"
                }
             },
             "additionalProperties": false,
@@ -1019,7 +1064,8 @@
                      "Auto",
                      "8Gbps",
                      "16Gbps",
-                     "32Gbps"
+                     "32Gbps",
+                     "64Gbps"
                   ]
                },
                "vsan_id": {
@@ -1028,6 +1074,12 @@
                   "default": 1,
                   "minimum": 1,
                   "maximum": 4093
+               },
+               "user_label": {
+                  "type": "string",
+                  "minLength": 0,
+                  "maxLength": 128,
+                  "pattern": "^[!#%\\s+&()\\*+,\\-\\./:;\\?@\\[\\]_{|}~a-zA-Z0-9]*$"
                }
             },
             "additionalProperties": false,
@@ -1055,14 +1107,14 @@
                "type": "integer",
                "default": 1,
                "minimum": 1,
-               "maximum": 36
+               "maximum": 40
             },
             "port_id_end": {
                "description": "Port Policy - SAN Unified Ports - Port ID End of Range",
                "type": "integer",
                "default": 1,
                "minimum": 1,
-               "maximum": 36
+               "maximum": 40
             }
          },
          "additionalProperties": false,
@@ -1108,7 +1160,8 @@
                      "Auto",
                      "8Gbps",
                      "16Gbps",
-                     "32Gbps"
+                     "32Gbps",
+                     "64Gbps"
                   ]
                },
                "vsan_id": {
@@ -1126,6 +1179,12 @@
                      "Arbff",
                      "Idle"
                   ]
+               },
+               "user_label": {
+                  "type": "string",
+                  "minLength": 0,
+                  "maxLength": 128,
+                  "pattern": "^[!#%\\s+&()\\*+,\\-\\./:;\\?@\\[\\]_{|}~a-zA-Z0-9]*$"
                }
             },
             "additionalProperties": false,
@@ -1194,6 +1253,12 @@
                      "rs-cons16",
                      "rs-ieee"
                   ]
+               },
+               "user_label": {
+                  "type": "string",
+                  "minLength": 0,
+                  "maxLength": 128,
+                  "pattern": "^[!#%\\s+&()\\*+,\\-\\./:;\\?@\\[\\]_{|}~a-zA-Z0-9]*$"
                }
             },
             "additionalProperties": false,

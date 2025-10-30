@@ -2,7 +2,8 @@
 # !/usr/bin/env python
 
 """ server_policies.py: Easy UCS Deployment Tool """
-from common import generate_self_signed_cert, get_decoded_pem_certificate, get_encoded_pem_certificate, read_json_file
+from common import format_descr, generate_self_signed_cert, get_decoded_pem_certificate, \
+    get_encoded_pem_certificate, is_ipv4_address_valid, is_ipv6_address_valid, read_json_file
 from config.intersight.object import IntersightConfigObject
 from config.intersight.pools import IntersightIpPool, IntersightIqnPool, \
     IntersightMacPool, IntersightWwnnPool, IntersightWwpnPool
@@ -2599,7 +2600,16 @@ class IntersightIscsiStaticTargetPolicy(IntersightConfigObject):
         self.descr = self.get_attribute(attribute_name="description", attribute_secondary_name="descr")
         self.target_name = self.get_attribute(attribute_name="target_name")
         self.port = self.get_attribute(attribute_name="port")
-        self.ip_address = self.get_attribute(attribute_name="ip_address")
+        self.ipv4_address = None
+        self.ipv6_address = None
+        # We keep this for compatibility purposes, but "ip_address" attribute
+        # is deprecated starting with EasyUCS 1.0.4 (replaced by "ipv4_address")
+        self.ip_address = None
+        self.ipv4_address = self.get_attribute(attribute_name="ip_address", attribute_secondary_name="ipv4_address")
+        if not self.ipv4_address or not is_ipv4_address_valid(self.ipv4_address):
+            self.ipv4_address = None
+            self.ipv6_address = self.get_attribute(attribute_name="ip_address", attribute_secondary_name="ipv6_address")
+        self.ip_protocol = self.get_attribute(attribute_name="iscsi_ip_type", attribute_secondary_name="ip_protocol")
         self.name = self.get_attribute(attribute_name="name")
         self.lun = None
 
@@ -2645,8 +2655,12 @@ class IntersightIscsiStaticTargetPolicy(IntersightConfigObject):
             kwargs["target_name"] = self.target_name
         if self.port is not None:
             kwargs["port"] = self.port
-        if self.ip_address is not None:
-            kwargs["ip_address"] = self.ip_address
+        if self.ipv4_address is not None:
+            kwargs["ip_address"] = self.ipv4_address
+            kwargs["iscsi_ip_type"] = "IPv4"
+        elif self.ipv6_address is not None:
+            kwargs["ip_address"] = self.ipv6_address
+            kwargs["iscsi_ip_type"] = "IPv6"
         if self.lun is not None:
             from intersight.model.vnic_lun import VnicLun
 
@@ -2694,8 +2708,19 @@ class IntersightIscsiBootPolicy(IntersightConfigObject):
                                                      attribute_secondary_name="dhcp_vendor_id_iqn")
         self.initiator_ip_source = self.get_attribute(attribute_name="initiator_ip_source")
         self.initiator_static_ip_v4_config = None
-        self.ip_address = self.get_attribute(attribute_name="initiator_static_ip_v4_address",
-                                             attribute_secondary_name="ip_address")
+        self.initiator_static_ip_v6_config = None
+        # We keep this for compatibility purposes, but "ip_address" attribute
+        # is deprecated starting with EasyUCS 1.0.4 (replaced by "ipv4_address")
+        self.ip_address = None
+        self.ip_protocol = self.get_attribute(attribute_name="iscsi_ip_type",
+                                              attribute_secondary_name="ip_protocol")
+        self.ipv4_address = self.get_attribute(attribute_name="initiator_static_ip_v4_address",
+                                            attribute_secondary_name="ipv4_address")
+        if not self.ipv4_address:
+            self.ipv4_address = self.get_attribute(attribute_name="initiator_static_ip_v4_address",
+                                                attribute_secondary_name="ip_address")
+        self.ipv6_address = self.get_attribute(attribute_name="initiator_static_ip_v6_address",
+                                              attribute_secondary_name="ipv6_address")
         self.ip_pool = None
         self.iscsi_adapter_policy = None
         self.name = self.get_attribute(attribute_name="name")
@@ -2734,7 +2759,7 @@ class IntersightIscsiBootPolicy(IntersightConfigObject):
                     # self._object.mutual_chap.password
 
             if self.target_source_type == "Static" and self.initiator_ip_source == "Static" and \
-                    hasattr(self._object, "initiator_static_ip_v4_config"):
+                    hasattr(self._object, "initiator_static_ip_v4_config") and self.ip_protocol == "IPv4":
                 if self._object.initiator_static_ip_v4_config:
                     self.initiator_static_ip_v4_config = {}
                     self.initiator_static_ip_v4_config["default_gateway"] = \
@@ -2745,10 +2770,22 @@ class IntersightIscsiBootPolicy(IntersightConfigObject):
                         getattr(self._object.initiator_static_ip_v4_config, "primary_dns", None)
                     self.initiator_static_ip_v4_config["secondary_dns"] = \
                         getattr(self._object.initiator_static_ip_v4_config, "secondary_dns", None)
+            elif self.target_source_type == "Static" and self.initiator_ip_source == "Static" and \
+                    hasattr(self._object, "initiator_static_ip_v6_config") and self.ip_protocol == "IPv6":
+                if self._object.initiator_static_ip_v6_config:
+                    self.initiator_static_ip_v6_config = {}
+                    self.initiator_static_ip_v6_config["default_gateway"] = \
+                        getattr(self._object.initiator_static_ip_v6_config, "gateway", None)
+                    self.initiator_static_ip_v6_config["prefix"] = \
+                        getattr(self._object.initiator_static_ip_v6_config, "prefix", None)
+                    self.initiator_static_ip_v6_config["primary_dns"] = \
+                        getattr(self._object.initiator_static_ip_v6_config, "primary_dns", None)
+                    self.initiator_static_ip_v6_config["secondary_dns"] = \
+                        getattr(self._object.initiator_static_ip_v6_config, "secondary_dns", None)
 
         elif self._config.load_from == "file":
-            for attribute in ["chap", "initiator_static_ip_v4_config", "ip_pool", "iscsi_adapter_policy",
-                              "mutual_chap", "primary_target_policy", "secondary_target_policy"]:
+            for attribute in ["chap", "initiator_static_ip_v4_config", "initiator_static_ip_v6_config", "ip_pool",
+                              "iscsi_adapter_policy", "mutual_chap", "primary_target_policy", "secondary_target_policy"]:
                 setattr(self, attribute, None)
                 if attribute in self._object:
                     setattr(self, attribute, self.get_attribute(attribute_name=attribute))
@@ -2802,6 +2839,13 @@ class IntersightIscsiBootPolicy(IntersightConfigObject):
             for attribute in ["default_gateway", "subnet_mask", "primary_dns", "secondary_dns"]:
                 if attribute not in self.initiator_static_ip_v4_config:
                     self.initiator_static_ip_v4_config[attribute] = None
+
+        # We use this to make sure all attributes of Initiator
+        # Static IPv6 Config are set to None if they are not present
+        if self.initiator_static_ip_v6_config:
+            for attribute in ["default_gateway", "prefix", "primary_dns", "secondary_dns"]:
+                if attribute not in self.initiator_static_ip_v6_config:
+                    self.initiator_static_ip_v6_config[attribute] = None
 
     @IntersightConfigObject.update_taskstep_description()
     def push_object(self):
@@ -2929,9 +2973,9 @@ class IntersightIscsiBootPolicy(IntersightConfigObject):
                             message=f"Failed to find IP Pool '{self.ip_pool}'"
                         )
 
-            elif self.initiator_ip_source == "Static":
-                if self.ip_address is not None:
-                    kwargs["initiator_static_ip_v4_address"] = self.ip_address
+            elif self.initiator_ip_source == "Static" and self.ipv4_address is not None:
+                kwargs["initiator_static_ip_v4_address"] = self.ipv4_address
+                kwargs["iscsi_ip_type"] = "IPv4"
                 if self.initiator_static_ip_v4_config is not None:
                     from intersight.model.ippool_ip_v4_config import IppoolIpV4Config
 
@@ -2952,6 +2996,30 @@ class IntersightIscsiBootPolicy(IntersightConfigObject):
                         initiator_static_ip_v4_config_kwargs["secondary_dns"] = \
                             self.initiator_static_ip_v4_config["secondary_dns"]
                     kwargs["initiator_static_ip_v4_config"] = IppoolIpV4Config(**initiator_static_ip_v4_config_kwargs)
+                
+            elif self.initiator_ip_source == "Static" and self.ipv6_address is not None:
+                kwargs["initiator_static_ip_v6_address"] = self.ipv6_address
+                kwargs["iscsi_ip_type"] = "IPv6"
+                if self.initiator_static_ip_v6_config is not None:
+                    from intersight.model.ippool_ip_v6_config import IppoolIpV6Config
+
+                    initiator_static_ip_v6_config_kwargs = {
+                        "object_type": "ippool.IpV6Config",
+                        "class_id": "ippool.IpV6Config"
+                    }
+                    if self.initiator_static_ip_v6_config["default_gateway"] is not None:
+                        initiator_static_ip_v6_config_kwargs["gateway"] = \
+                            self.initiator_static_ip_v6_config["default_gateway"]
+                    if self.initiator_static_ip_v6_config["prefix"] is not None:
+                        initiator_static_ip_v6_config_kwargs["prefix"] = \
+                            self.initiator_static_ip_v6_config["prefix"]
+                    if self.initiator_static_ip_v6_config["primary_dns"] is not None:
+                        initiator_static_ip_v6_config_kwargs["primary_dns"] = \
+                            self.initiator_static_ip_v6_config["primary_dns"]
+                    if self.initiator_static_ip_v6_config["secondary_dns"] is not None:
+                        initiator_static_ip_v6_config_kwargs["secondary_dns"] = \
+                            self.initiator_static_ip_v6_config["secondary_dns"]
+                    kwargs["initiator_static_ip_v6_config"] = IppoolIpV6Config(**initiator_static_ip_v6_config_kwargs)
 
         iscsi_boot_policy = VnicIscsiBootPolicy(**kwargs)
 
@@ -6776,6 +6844,7 @@ class IntersightThermalPolicy(IntersightConfigObject):
             "Balanced": "Balanced",
             "LowPower": "Low Power",
             "HighPower": "High Power",
+            "MaximumCooling": "Maximum Cooling",
             "MaximumPower": "Maximum Power",
             "Acoustic": "Acoustic"
         }

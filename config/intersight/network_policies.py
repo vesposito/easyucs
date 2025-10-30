@@ -24,7 +24,7 @@ class IntersightGenericVnic:
         # IQN Pool from Individual iSCSI vNIC
         "iqn_pool": IntersightIqnPool
     }
-
+    MAX_ENGPS_PER_VNIC = 8
 
 class IntersightVnic(dict, IntersightGenericVnic):
     def __init__(self, *args, **kwargs):
@@ -457,8 +457,7 @@ class IntersightVnicTemplate(IntersightConfigObject, IntersightGenericVnic):
         vnic_template_payload = VnicVnicTemplate(**kwargs)
 
         if not self.commit(object_type="vnic.VnicTemplate", payload=vnic_template_payload,
-                           detail=self.name + " - vNIC Template" + str(self.name),
-                           key_attributes=["name"]):
+                           detail=self.name, key_attributes=["name"]):
             return False
         return True
 
@@ -677,8 +676,7 @@ class IntersightVhbaTemplate(IntersightConfigObject, IntersightGenericVhba):
 
         vhba_template_payload = VnicVhbaTemplate(**kwargs)
         if not self.commit(object_type="vnic.VhbaTemplate", payload=vhba_template_payload,
-                           detail=self.name + " - vHBA Template" + str(self.name),
-                           key_attributes=["name"]):
+                           detail=self.name, key_attributes=["name"]):
             return False
         return True
 

@@ -55,7 +55,11 @@
       },
       "user_label": {
          "description": "Chassis User Label",
-         "type": "string"
+         "type": "string",
+         "minLength": 0,
+         "maxLength": 64,
+         "pattern": "^[ !#$%&\\(\\)\\*\\+,\\-\\.\\/:;\\?@\\[\\]_\\{\\|\\}~a-zA-Z0-9]*$"
+
       },
       "blades": {
          "description": "Chassis - Blades",
@@ -66,7 +70,10 @@
             "properties": {
                "asset_tag": {
                   "description": "Chassis - Blade - Asset Tag",
-                  "type": "string"
+                  "type": "string",
+                  "minLength": 0,
+                  "maxLength": 32,
+                  "pattern": "^[ #$%\\(\\)\\*\\+,\\-\\.\\/:\\?@\\[\\]_\\{\\}\\^\\`\\>\\<~a-zA-Z0-9]*$"
                },
                "name": {
                   "description": "Chassis - Blade - Name",
@@ -112,7 +119,11 @@
                },
                "user_label": {
                   "description": "Chassis - Blade - User Label",
-                  "type": "string"
+                  "type": "string",
+                  "minLength": 0,
+                  "maxLength": 64,
+                  "pattern": "^[ !#$%&\\(\\)\\*\\+,\\-\\.\\/:\\?@\\[\\]_\\{\\}~a-zA-Z0-9]*$"
+
                }
             }
          }

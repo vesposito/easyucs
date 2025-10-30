@@ -16,7 +16,7 @@
       },
       "id": {
          "description": "Rack Unit Server ID",
-         "type": "string"
+         "type": "integer"
       },
       "name": {
          "description": "Rack Unit Name",

@@ -28,6 +28,7 @@ class UcsChassis(GenericChassis, GenericUcsInventoryObject):
         self.serial = self.get_attribute(ucs_sdk_object=equipment_chassis, attribute_name="serial")
         self.user_label = self.get_attribute(ucs_sdk_object=equipment_chassis, attribute_name="usr_lbl",
                                              attribute_secondary_name="user_label")
+        self.asset_tag = self.get_attribute(ucs_sdk_object=equipment_chassis, attribute_name="asset_tag")
 
         self.power_supplies = self._get_power_supplies()
         self.system_io_controllers = self._get_system_io_controllers()

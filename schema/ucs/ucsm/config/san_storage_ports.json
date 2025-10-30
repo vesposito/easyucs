@@ -82,6 +82,7 @@
             "8gbps",
             "16gbps",
             "32gbps",
+            "64gbps",
             "auto"
          ]
       }

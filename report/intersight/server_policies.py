@@ -1620,28 +1620,50 @@ class IntersightIscsiBootPolicyReportTable(UcsReportTable):
             rows.append(["Initiator IP Source", iscsi_boot_policy.initiator_ip_source])
         if hasattr(iscsi_boot_policy, "ip_pool"):
             rows.append(["IP Pool", iscsi_boot_policy.ip_pool])
-        if hasattr(iscsi_boot_policy, "ip_address"):
-            rows.append(["IP Address", iscsi_boot_policy.ip_address])
-        if (
-            getattr(iscsi_boot_policy, "initiator_static_ip_v4_config", None)
-            and iscsi_boot_policy.initiator_static_ip_v4_config.get("default_gateway")
-        ):
-            rows.append(["Default Gateway", iscsi_boot_policy.initiator_static_ip_v4_config["default_gateway"]])
-        if (
-            getattr(iscsi_boot_policy, "initiator_static_ip_v4_config", None)
-            and iscsi_boot_policy.initiator_static_ip_v4_config.get("subnet_mask")
-        ):
-            rows.append(["Subnet Mask", iscsi_boot_policy.initiator_static_ip_v4_config["subnet_mask"]])
-        if (
-            getattr(iscsi_boot_policy, "initiator_static_ip_v4_config", None)
-            and iscsi_boot_policy.initiator_static_ip_v4_config.get("primary_dns")
-        ):
-            rows.append(["Primary DNS", iscsi_boot_policy.initiator_static_ip_v4_config["primary_dns"]])
-        if (
-            getattr(iscsi_boot_policy, "initiator_static_ip_v4_config", None)
-            and iscsi_boot_policy.initiator_static_ip_v4_config.get("secondary_dns")
-        ):
-            rows.append(["Secondary DNS", iscsi_boot_policy.initiator_static_ip_v4_config["secondary_dns"]])
+        if hasattr(iscsi_boot_policy, "ipv4_address") and getattr(iscsi_boot_policy, "ipv4_address", None):
+            rows.append(["IPv4 Address", iscsi_boot_policy.ipv4_address])
+            if (
+                getattr(iscsi_boot_policy, "initiator_static_ip_v4_config", None)
+                and iscsi_boot_policy.initiator_static_ip_v4_config.get("default_gateway")
+            ):
+                rows.append(["Default Gateway", iscsi_boot_policy.initiator_static_ip_v4_config["default_gateway"]])
+            if (
+                getattr(iscsi_boot_policy, "initiator_static_ip_v4_config", None)
+                and iscsi_boot_policy.initiator_static_ip_v4_config.get("subnet_mask")
+            ):
+                rows.append(["Subnet Mask", iscsi_boot_policy.initiator_static_ip_v4_config["subnet_mask"]])
+            if (
+                getattr(iscsi_boot_policy, "initiator_static_ip_v4_config", None)
+                and iscsi_boot_policy.initiator_static_ip_v4_config.get("primary_dns")
+            ):
+                rows.append(["Primary DNS", iscsi_boot_policy.initiator_static_ip_v4_config["primary_dns"]])
+            if (
+                getattr(iscsi_boot_policy, "initiator_static_ip_v4_config", None)
+                and iscsi_boot_policy.initiator_static_ip_v4_config.get("secondary_dns")
+            ):
+                rows.append(["Secondary DNS", iscsi_boot_policy.initiator_static_ip_v4_config["secondary_dns"]])
+        elif hasattr(iscsi_boot_policy, "ipv6_address") and getattr(iscsi_boot_policy, "ipv6_address", None):
+            rows.append(["IPv6 Address", iscsi_boot_policy.ipv6_address])
+            if (
+                getattr(iscsi_boot_policy, "initiator_static_ip_v6_config", None)
+                and iscsi_boot_policy.initiator_static_ip_v6_config.get("default_gateway")
+            ):
+                rows.append(["Default Gateway", iscsi_boot_policy.initiator_static_ip_v6_config["default_gateway"]])
+            if (
+                getattr(iscsi_boot_policy, "initiator_static_ip_v6_config", None)
+                and iscsi_boot_policy.initiator_static_ip_v6_config.get("prefix")
+            ):
+                rows.append(["Prefix", iscsi_boot_policy.initiator_static_ip_v6_config["prefix"]])
+            if (
+                getattr(iscsi_boot_policy, "initiator_static_ip_v6_config", None)
+                and iscsi_boot_policy.initiator_static_ip_v6_config.get("primary_dns")
+            ):
+                rows.append(["Primary DNS", iscsi_boot_policy.initiator_static_ip_v6_config["primary_dns"]])
+            if (
+                getattr(iscsi_boot_policy, "initiator_static_ip_v6_config", None)
+                and iscsi_boot_policy.initiator_static_ip_v6_config.get("secondary_dns")
+            ):
+                rows.append(["Secondary DNS", iscsi_boot_policy.initiator_static_ip_v6_config["secondary_dns"]])
 
         UcsReportTable.__init__(
             self,
@@ -1751,10 +1773,13 @@ class IntersightIscsiStaticTargetPolicyReportTable(UcsReportTable):
             ["Description", iscsi_static_target_policy.descr],
             ["Organization", iscsi_static_target_policy._parent.name],
             ["Target Name", iscsi_static_target_policy.target_name],
-            ["IP Address", iscsi_static_target_policy.ip_address],
             ["Port", iscsi_static_target_policy.port],
             ["Lun ID", iscsi_static_target_policy.lun["lun_id"]],
         ]
+        if hasattr(iscsi_static_target_policy, "ipv4_address") and getattr(iscsi_static_target_policy, "ipv4_address", None):
+            rows.append(["IPv4 Address", iscsi_static_target_policy.ipv4_address])
+        elif hasattr(iscsi_static_target_policy, "ipv6_address") and getattr(iscsi_static_target_policy, "ipv6_address", None):
+            rows.append(["IPv6 Address", iscsi_static_target_policy.ipv6_address])
 
         UcsReportTable.__init__(
             self,

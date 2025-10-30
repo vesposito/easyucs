@@ -103,6 +103,7 @@
          "type": "string",
          "default": "auto",
          "enum": [
+            "64gbps",
             "32gbps",
             "16gbps",
             "1gbps",

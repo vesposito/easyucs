@@ -2,8 +2,10 @@
 # !/usr/bin/env python
 
 """ templates.py: Easy UCS Central Policies objects """
+import re
 
 from config.ucs.object import UcsCentralConfigObject
+from config.ucs.profiles import GenericUcsServiceProfile
 
 from config.ucs.ucsc.policies import UcsCentralBiosPolicy, UcsCentralBootPolicy, \
     UcsCentralDynamicVnicConnectionPolicy, UcsCentralEthernetAdapterPolicy, UcsCentralFibreChannelAdapterPolicy, \
@@ -285,7 +287,7 @@ class UcsCentralChassisProfile(UcsCentralConfigObject):
                                     self.chassis_profile_template))
 
 
-class UcsCentralServiceProfile(UcsCentralConfigObject):
+class UcsCentralServiceProfile(UcsCentralConfigObject, GenericUcsServiceProfile):
     _CONFIG_NAME = "Service Profile"
     _CONFIG_SECTION_NAME = "service_profiles"
     _UCS_SDK_OBJECT_NAME = "lsServer"
@@ -780,6 +782,14 @@ class UcsCentralServiceProfile(UcsCentralConfigObject):
                                             policy_name="vnic_template"
                                         )
                                     )
+                                    equipment_dn = vnic_ether.equipment_dn
+                                    # Extract adaptor ID
+                                    adaptor_match = re.search(r'adaptor-(\d+)', equipment_dn)
+                                    adaptor_id = adaptor_match.group(1) if adaptor_match else None
+
+                                    # Add adaptor_id
+                                    if adaptor_id is not None:
+                                        oper_state.update({"adaptor_id": adaptor_id})
                                     if vnic_ether.oper_host_port in ["ANY"]:
                                         oper_state.update({"host_port": "any"})
                                     elif vnic_ether.oper_host_port not in ["", "NONE"]:
@@ -929,6 +939,14 @@ class UcsCentralServiceProfile(UcsCentralConfigObject):
                                             policy_name="wwpn_pool"
                                         )
                                     )
+                                    equipment_dn = vnic_fc.equipment_dn
+                                    # Extract adaptor ID
+                                    adaptor_match = re.search(r'adaptor-(\d+)', equipment_dn)
+                                    adaptor_id = adaptor_match.group(1) if adaptor_match else None
+
+                                    # Add adaptor_id
+                                    if adaptor_id is not None:
+                                        oper_state.update({"adaptor_id": adaptor_id})
                                     if vnic_fc.oper_host_port in ["ANY"]:
                                         oper_state.update({"host_port": "any"})
                                     elif vnic_fc.oper_host_port not in ["", "NONE"]:

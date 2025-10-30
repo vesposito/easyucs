@@ -1,0 +1,385 @@
+{
+  "model_short_name": "6664",
+  "name": "Cisco UCS 6664 Fabric Interconnect",
+  "rear_file_name": "UCS-FI-6664_rear.png",
+  "front_file_name": "UCS-FI-6664_front.png",
+  "rear_file_size": [2925,545],
+  "front_file_size": [2925,535],
+  "expansion_modules_slots": [],
+  "expansion_modules_models": [],
+  "psus_slots": [
+    {
+      "id": 1,
+      "coord": [2307,26]
+    },
+    {
+      "id": 2,
+      "coord": [2307,283]
+    }
+  ],
+  "psus_models": [
+    {
+      "name": "UCS-PSU-6600-AC",
+      "description": "UCS 6600 platinum power supply/100-240VAC (1400 W)"
+    },
+    {
+      "name": "UCS-PSU-6600-BLK",
+      "type": "blank",
+      "description": "Power supply blanking panel/filler"
+    }
+  ],
+  "rear_ports": {
+    "1": {
+      "port_coord": [371, 76],
+      "port_type": "qsfp28",
+      "port_size": [111,49]
+    },
+    "2": {
+      "port_coord": [371, 178],
+      "port_type": "qsfp28",
+      "port_size": [111,49]
+    },
+    "3": {
+      "port_coord": [371, 259],
+      "port_type": "qsfp28",
+      "port_size": [111,49]
+    },
+    "4": {
+      "port_coord": [371, 360],
+      "port_type": "qsfp28",
+      "port_size": [111,49]
+    },
+    "5": {
+      "port_coord": [520, 76],
+      "port_type": "qsfp28",
+      "port_size": [111,49]
+    },
+    "6": {
+      "port_coord": [520, 178],
+      "port_type": "qsfp28",
+      "port_size": [111,49]
+    },
+    "7": {
+      "port_coord": [520, 259],
+      "port_type": "qsfp28",
+      "port_size": [111,49]
+    },
+    "8": {
+      "port_coord": [520, 360],
+      "port_type": "qsfp28",
+      "port_size": [111,49]
+    },
+    "9": {
+      "port_coord": [669, 76],
+      "port_type": "qsfp28",
+      "port_size": [111,49]
+    },
+    "10": {
+      "port_coord": [669, 178],
+      "port_type": "qsfp28",
+      "port_size": [111,49]
+    },
+    "11": {
+      "port_coord": [669, 259],
+      "port_type": "qsfp28",
+      "port_size": [111,49]
+    },
+    "12": {
+      "port_coord": [669, 360],
+      "port_type": "qsfp28",
+      "port_size": [111,49]
+    },
+    "13": {
+      "port_coord": [819, 76],
+      "port_type": "qsfp28",
+      "port_size": [111,49]
+    },
+    "14": {
+      "port_coord": [819, 178],
+      "port_type": "qsfp28",
+      "port_size": [111,49]
+    },
+    "15": {
+      "port_coord": [819, 259],
+      "port_type": "qsfp28",
+      "port_size": [111,49]
+    },
+    "16": {
+      "port_coord": [819, 360],
+      "port_type": "qsfp28",
+      "port_size": [111,49]
+    },
+    "17": {
+      "port_coord": [968, 76],
+      "port_type": "qsfp28",
+      "port_size": [111,49]
+    },
+    "18": {
+      "port_coord": [968, 178],
+      "port_type": "qsfp28",
+      "port_size": [111,49]
+    },
+    "19": {
+      "port_coord": [968, 259],
+      "port_type": "qsfp28",
+      "port_size": [111,49]
+    },
+    "20": {
+      "port_coord": [968, 360],
+      "port_type": "qsfp28",
+      "port_size": [111,49]
+    },
+    "21": {
+      "port_coord": [1117, 76],
+      "port_type": "qsfp28",
+      "port_size": [111,49]
+    },
+    "22": {
+      "port_coord": [1117, 178],
+      "port_type": "qsfp28",
+      "port_size": [111,49]
+    },
+    "23": {
+      "port_coord": [1117, 259],
+      "port_type": "qsfp28",
+      "port_size": [111,49]
+    },
+    "24": {
+      "port_coord": [1117, 360],
+      "port_type": "qsfp28",
+      "port_size": [111,49]
+    },
+    "25": {
+      "port_coord": [1320, 79],
+      "port_type": "sfp56",
+      "port_size": [83,54]
+    },
+    "26": {
+      "port_coord": [1320, 172],
+      "port_type": "sfp56",
+      "port_size": [83,54]
+    },
+    "27": {
+      "port_coord": [1320, 260],
+      "port_type": "sfp56",
+      "port_size": [83,54]
+    },
+    "28": {
+      "port_coord": [1320, 353],
+      "port_type": "sfp56",
+      "port_size": [83,54]
+    },
+    "29": {
+      "port_coord": [1440, 79],
+      "port_type": "sfp56",
+      "port_size": [83,54]
+    },
+    "30": {
+      "port_coord": [1440, 172],
+      "port_type": "sfp56",
+      "port_size": [83,54]
+    },
+    "31": {
+      "port_coord": [1440, 260],
+      "port_type": "sfp56",
+      "port_size": [83,54]
+    },
+    "32": {
+      "port_coord": [1440, 353],
+      "port_type": "sfp56",
+      "port_size": [83,54]
+    },
+    "33": {
+      "port_coord": [1561, 79],
+      "port_type": "sfp56",
+      "port_size": [83,54]
+    },
+    "34": {
+      "port_coord": [1561, 172],
+      "port_type": "sfp56",
+      "port_size": [83,54]
+    },
+    "35": {
+      "port_coord": [1561, 260],
+      "port_type": "sfp56",
+      "port_size": [83,54]
+    },
+    "36": {
+      "port_coord": [1561, 353],
+      "port_type": "sfp56",
+      "port_size": [83,54]
+    },
+    "37": {
+      "port_coord": [1681, 79],
+      "port_type": "sfp56",
+      "port_size": [83,54]
+    },
+    "38": {
+      "port_coord": [1681, 172],
+      "port_type": "sfp56",
+      "port_size": [83,54]
+    },
+    "39": {
+      "port_coord": [1681, 260],
+      "port_type": "sfp56",
+      "port_size": [83,54]
+    },
+    "40": {
+      "port_coord": [1681, 353],
+      "port_type": "sfp56",
+      "port_size": [83,54]
+    },
+    "41": {
+      "port_coord": [1855, 76],
+      "port_type": "qsfp28",
+      "port_size": [111,49]
+    },
+    "42": {
+      "port_coord": [1855, 178],
+      "port_type": "qsfp28",
+      "port_size": [111,49]
+    },
+    "43": {
+      "port_coord": [1855, 259],
+      "port_type": "qsfp28",
+      "port_size": [111,49]
+    },
+    "44": {
+      "port_coord": [1855, 360],
+      "port_type": "qsfp28",
+      "port_size": [111,49]
+    },
+    "45": {
+      "port_coord": [2003, 76],
+      "port_type": "qsfp28",
+      "port_size": [111,49]
+    },
+    "46": {
+      "port_coord": [2003, 178],
+      "port_type": "qsfp28",
+      "port_size": [111,49]
+    },
+    "47": {
+      "port_coord": [2003, 259],
+      "port_type": "qsfp28",
+      "port_size": [111,49]
+    },
+    "48": {
+      "port_coord": [2003, 360],
+      "port_type": "qsfp28",
+      "port_size": [111,49]
+    },
+    "49": {
+      "port_coord": [2151, 76],
+      "port_type": "qsfp28",
+      "port_size": [111,49]
+    },
+    "50": {
+      "port_coord": [2151, 178],
+      "port_type": "qsfp28",
+      "port_size": [111,49]
+    },
+    "51": {
+      "port_coord": [2151, 259],
+      "port_type": "qsfp28",
+      "port_size": [111,49]
+    },
+    "52": {
+      "port_coord": [2151, 360],
+      "port_type": "qsfp28",
+      "port_size": [111,49]
+    },
+    "53": {
+      "port_coord": [2299, 76],
+      "port_type": "qsfp28",
+      "port_size": [111,49]
+    },
+    "54": {
+      "port_coord": [2299, 178],
+      "port_type": "qsfp28",
+      "port_size": [111,49]
+    },
+    "55": {
+      "port_coord": [2299, 259],
+      "port_type": "qsfp28",
+      "port_size": [111,49]
+    },
+    "56": {
+      "port_coord": [2299, 360],
+      "port_type": "qsfp28",
+      "port_size": [111,49]
+    },
+    "57": {
+      "port_coord": [2447, 76],
+      "port_type": "qsfp28",
+      "port_size": [111,49]
+    },
+    "58": {
+      "port_coord": [2447, 178],
+      "port_type": "qsfp28",
+      "port_size": [111,49]
+    },
+    "59": {
+      "port_coord": [2447, 259],
+      "port_type": "qsfp28",
+      "port_size": [111,49]
+    },
+    "60": {
+      "port_coord": [2447, 360],
+      "port_type": "qsfp28",
+      "port_size": [111,49]
+    },
+    "61": {
+      "port_coord": [2595, 76],
+      "port_type": "qsfp28",
+      "port_size": [111,49]
+    },
+    "62": {
+      "port_coord": [2595, 178],
+      "port_type": "qsfp28",
+      "port_size": [111,49]
+    },
+    "63": {
+      "port_coord": [2595, 259],
+      "port_type": "qsfp28",
+      "port_size": [111,49]
+    },
+    "64": {
+      "port_coord": [2595, 360],
+      "port_type": "qsfp28",
+      "port_size": [111,49]
+    }
+  },
+  "imm_compatible": true,
+  "imm_min_required_version": "6.0(1b)",
+  "spec_sheet_url": "https://www.cisco.com/c/dam/en/us/products/collateral/servers-unified-computing/ucs-x-series-modular-system/ucs-6600-series-fabric-interconnect-specsheet.pdf",
+  "data_sheet_url": "https://www.cisco.com/c/en/us/products/collateral/servers-unified-computing/ucs-6600-series-fabric-interconnect-ds.html",
+  "specs": {
+    "descr": "The Cisco UCS 6664 64-Port Fabric Interconnect is a Two-Rack-Units (2RU) 10/25/40/100 Gigabit Ethernet, FCoE and Fibre Channel switch offering up to 11.65 Tbps throughput and up to 64 ports. The switch has 16 unified ports (port numbers 25-40) that can support 10/25/50-Gbps SFP Ethernet ports or 16/32/64-Gbps Fibre Channel ports, 48 40/100-Gbps Ethernet QSFP ports (port numbers 1-24 and 41-64). All Ethernet ports are capable of supporting FCoE.",
+    "form_factor": "2RU",
+    "throughput": {
+      "gbps": 11650,
+      "mpps": 2400
+    },
+    "latency": "<1 µs",
+    "power_typical": 605,
+    "power_maximum": 1100,
+    "dimensions": {
+      "centimeters": {
+        "height": 8.6,
+        "width": 44.2,
+        "depth": 56.6
+      },
+      "inches": {
+        "height": 3.39,
+        "width": 17.41,
+        "depth": 22.28
+      },
+      "rack_units": 2
+    },
+    "weight": {
+      "lb": 44,
+      "kg": 20
+    }
+  }
+}

@@ -7,7 +7,10 @@
    "properties": {
       "asset_tag": {
          "description": "Rack Unit Asset Tag",
-         "type": "string"
+         "type": "string",
+         "minLength": 0,
+         "maxLength": 32,
+         "pattern": "^[ #$%\\(\\)\\*\\+,\\-\\.\\/:\\?@\\[\\]_\\{\\}\\^\\`\\>\\<~a-zA-Z0-9]*$"
       },
       "comment": {
          "description": "Rack Unit Comments",
@@ -59,7 +62,10 @@
       },
       "user_label": {
          "description": "Rack Unit User Label",
-         "type": "string"
+         "type": "string",
+         "minLength": 0,
+         "maxLength": 64,
+         "pattern": "^[ !#$%&\\(\\)\\*\\+,\\-\\.\\/:\\?@\\[\\]_\\{\\}~a-zA-Z0-9]*$"
       }
    },
    "additionalProperties": false,

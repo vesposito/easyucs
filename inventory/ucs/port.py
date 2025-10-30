@@ -2,7 +2,7 @@
 # !/usr/bin/env python
 
 """ port.py: Easy UCS Deployment Tool """
-
+import re
 from inventory.ucs.neighbor import UcsSystemLanNeighborEntry, UcsSystemSanNeighborEntry
 from inventory.ucs.object import GenericUcsInventoryObject, UcsImcInventoryObject, UcsSystemInventoryObject
 from inventory.ucs.transceiver import UcsImcTransceiver, UcsSystemTransceiver
@@ -138,7 +138,9 @@ class UcsSystemAdaptorPort(UcsAdaptorPort, UcsSystemInventoryObject):
 
             if adaptor_ext_eth_if.ep_dn != "":
                 self.is_port_channel_member = True
-                self.pc_id = adaptor_ext_eth_if.ep_dn.split("/")[4].split("-")[1]
+                match = re.search(r'pc-(\d+)', adaptor_ext_eth_if.ep_dn)
+                if match:
+                    self.pc_id = match.group(1)
 
         elif self._inventory.load_from == "file":
             for attribute in ["aggr_port_id", "is_breakout", "is_port_channel_member", "pc_id", "peer"]:
@@ -338,6 +340,8 @@ class UcsSystemFiPort(UcsPort):
         self.transport = self.get_attribute(ucs_sdk_object=port, attribute_name="transport")
         self.type = self.get_attribute(ucs_sdk_object=port, attribute_name="type")
         self.xcvr_type = self.get_attribute(ucs_sdk_object=port, attribute_name="xcvr_type")
+        self.user_label = self.get_attribute(ucs_sdk_object=port, attribute_name="usr_lbl",
+                                             attribute_secondary_name="user_label")
 
         if self.is_breakout_xcvr in ["no", "false"]:
             self.is_breakout_xcvr = False

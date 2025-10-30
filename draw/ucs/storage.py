@@ -262,7 +262,8 @@ class UcsStorageLocalDiskDraw(GenericUcsDrawEquipment):
                             self.id = self.id - 2
                             return self._get_disk_info()
 
-            elif "DrawChassisRear" in self.parent_draw.parent_draw.__class__.__name__:
+            elif any(x in self.parent_draw.parent_draw.__class__.__name__ for x in ["ChassisDrawRear",
+                                                                                    "DrawChassisRear"]):
                 if self.parent_draw.parent_draw._parent.sku in ["UCSS-S3260", "UCSC-C3X60"]:
                     if self.id > 200:
                         self.id = self.id - 200

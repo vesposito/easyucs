@@ -498,6 +498,11 @@
                   "description": "Service Profile - vNIC - Operational State of the vNIC",
                   "type": "object",
                   "properties": {
+                     "adaptor_id": {
+                        "description": "Service Profile - vNIC - Operational State - Adaptor ID (e.g. '1' from adaptor-1 in equipmentDn)",
+                        "type": "string",
+                        "default": ""
+                     },
                      "adapter_policy": {
                         "description": "Service Profile - vNIC - Operational State - Adapter Policy",
                         "type": "object",
@@ -954,6 +959,11 @@
                   "description": "Service Profile - vHBA - Operational State of the vHBA",
                   "type": "object",
                   "properties": {
+                     "adaptor_id": {
+                        "description": "Service Profile - vHBA - Operational State - Adaptor ID (e.g. '1' from adaptor-1 in equipmentDn)",
+                        "type": "string",
+                        "default": ""
+                     },
                      "adapter_policy": {
                         "description": "Service Profile - vHBA - Operational State - Adapter Policy",
                         "type": "object",
@@ -1327,11 +1337,25 @@
                         "description": "Service Profile - iSCSI Boot Parameter - Initiator IP Address Policy",
                         "type": "string"
                      },
+                     "ip_type": {
+                        "description": "Service Profile - iSCSI Boot Parameter - IP Type",
+                        "type": "string",
+                        "enum": [
+                           "ipv4",
+                           "ipv6"
+                        ]
+                     },
                      "ipv4_address": {
-                        "description": "Service Profile - iSCSI Boot Parameter - iSCSI Initiator - IP Address",
+                        "description": "Service Profile - iSCSI Boot Parameter - iSCSI Initiator - IPv4 Address",
                         "type": "string",
                         "default": "0.0.0.0",
                         "format": "ipv4"
+                     },
+                     "ipv6_address": {
+                        "description": "Service Profile - iSCSI Boot Parameter - iSCSI Initiator - IPv6 Address",
+                        "type": "string",
+                        "default": "::",
+                        "format": "ipv6"
                      },
                      "subnet_mask": {
                         "description": "Service Profile - iSCSI Boot Parameter - iSCSI Initiator - Subnet Mask",
@@ -1342,20 +1366,43 @@
                      "default_gateway": {
                         "description": "Service Profile - iSCSI Boot Parameter - iSCSI Initiator - Default Gateway",
                         "type": "string",
-                        "default": "0.0.0.0",
-                        "format": "ipv4"
+                        "oneOf": [
+                           {
+                              "format": "ipv4"
+                           },
+                           {
+                              "format": "ipv6"
+                           }
+                        ]    
+                     },
+                     "prefix_length": {
+                        "description": "Service Profile - iSCSI Boot Parameter - iSCSI Initiator - Prefix Length",
+                        "type": "string",
+                        "default": "64"                                                      
                      },
                      "primary_dns": {
                         "description": "Service Profile - iSCSI Boot Parameter - iSCSI Initiator - Primary DNS IP Address",
                         "type": "string",
-                        "default": "0.0.0.0",
-                        "format": "ipv4"
+                        "oneOf": [
+                           {
+                              "format": "ipv4"
+                           },
+                           {
+                              "format": "ipv6"
+                           }
+                        ]
                      },
                      "secondary_dns": {
                         "description": "Service Profile - iSCSI Boot Parameter - iSCSI Initiator - Secondary DNS IP Address",
                         "type": "string",
-                        "default": "0.0.0.0",
-                        "format": "ipv4"
+                        "oneOf": [
+                           {
+                              "format": "ipv4"
+                           },
+                           {
+                              "format": "ipv6"
+                           }
+                        ]
                      },
                      "iscsi_static_targets": {
                         "type": "array",
@@ -1379,10 +1426,16 @@
                                  "type": "string"
                               },
                               "ip_address": {
-                                 "description": "Service Profile - iSCSI Boot Parameter - iSCSI Static Target - IP Address",
+                                 "description": "Service Profile - iSCSI Boot Parameter - iSCSI Static Target - IPv4/IPv6 Address",
                                  "type": "string",
-                                 "default": "0.0.0.0",
-                                 "format": "ipv4"
+                                 "oneOf": [
+                                    {
+                                       "format": "ipv4"
+                                    },
+                                    {
+                                       "format": "ipv6"
+                                    }
+                                 ]
                               },
                               "priority": {
                                  "description": "Service Profile - iSCSI Boot Parameter - iSCSI Static Target - Priority",

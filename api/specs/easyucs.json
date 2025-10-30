@@ -12,6 +12,23 @@
   ],
   "components": {
     "schemas": {
+      "assigned_server": {
+        "type": "object",
+        "properties": {
+          "server_id": {
+            "type": "string",
+            "description": "Assigned Rack Server ID"
+          },
+          "chassis_id": {
+            "type": "string",
+            "description": "Assigned Chassis ID"
+          },
+          "slot_id": {
+            "type": "string",
+            "description": "Assigned Slot ID"
+          }
+        }
+      },
       "available_disk": {
         "type": "string",
         "description": "Size of the available disk (in Giga bytes)"

@@ -1494,6 +1494,16 @@ class UcsSystemSanUnifiedPort(UcsSystemConfigObject):
                     self.logger("error", "Incorrect values for port_id start or end in fabric " + self.fabric)
                     return False
 
+            elif self._device.fi_a_model == "UCS-FI-6664":
+                self.logger("debug", "Trying to set Unified Ports on FI model " + self._device.fi_a_model)
+                if self.slot_id != "1":
+                    self.logger("error", "Incorrect values for slot_id in fabric " + self.fabric)
+                    return False
+                if self.port_id_start != "25" or self.port_id_end not in ["28", "32", "36", "40"]\
+                        or int(self.port_id_start) >= int(self.port_id_end):
+                    self.logger("error", "Incorrect values for port_id start or end in fabric " + self.fabric)
+                    return False
+
             elif self._device.fi_a_model == "UCS-FI-M-6324":
                 self.logger("debug", "Trying to set Unified Ports on FI model " + self._device.fi_a_model)
                 if self.slot_id != "1":
