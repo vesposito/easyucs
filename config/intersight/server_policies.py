@@ -2277,7 +2277,7 @@ class IntersightFirmwarePolicy(IntersightConfigObject):
                                             "firmware_version": models.get("bundle_version")})
 
         elif self._config.load_from == "file":
-            for attribute in ["excluded_components", "models", "target_platform"]:
+            for attribute in ["excluded_components", "models"]:
                 setattr(self, attribute, None)
                 if attribute in self._object:
                     setattr(self, attribute, self.get_attribute(attribute_name=attribute))

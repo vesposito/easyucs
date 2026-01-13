@@ -707,7 +707,19 @@ class UcsCentralBootPolicy(UcsCentralConfigObject):
                                                     if boot_policy_dn + "san/sanimg-" + vhba.type in target.dn:
                                                         image_path = {}
                                                         image_path.update({"type": target.type})
-                                                        image_path.update({"lun": target.lun})
+                                                        lun = target.lun
+                                                        if lun.lower() == "unspecified":
+                                                            lun = "0"
+                                                            self.logger(
+                                                                level="warning",
+                                                                message=(
+                                                                    f"Detected SAN boot target with LUN='unspecified' "
+                                                                    f"in {self._CONFIG_NAME} '{self.name}' for vHBA "
+                                                                    f"'{vhba.vnic_name}'. Converting LUN to 0 as UCS "
+                                                                    f"Central does not accept this value at runtime."
+                                                                )
+                                                            )
+                                                        image_path.update({"lun": lun})
                                                         image_path.update({"wwpn": target.wwn})
                                                         image_path.update({"boot_loader_name": None})
                                                         image_path.update({"boot_loader_path": None})

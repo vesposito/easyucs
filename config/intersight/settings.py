@@ -1075,7 +1075,8 @@ class IntersightResourceGroup(IntersightConfigObject):
                             if len(asset_device_registration_list) != 1:
                                 self.logger(level="debug",
                                             message="Could not find the appropriate asset.DeviceRegistration " +
-                                                    "for Resource Group '" + self.name + "'")
+                                                    "with MOID " + str(device_moid) + " for Resource Group '" +
+                                                    self.name + "'")
                             else:
                                 device_name = asset_device_registration_list[0].device_hostname[0]
                                 device_list.append({"moid": device_moid, "name": device_name})

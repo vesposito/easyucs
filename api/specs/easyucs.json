@@ -544,11 +544,6 @@
       },
       "push_equipment": {
         "type": "boolean",
-        "description": "Whether the equipment section of the configuration should be pushed alongside the rest of the configuration",
-        "example": false
-      },
-      "push_equipment_only": {
-        "type": "boolean",
         "description": "Whether only equipment section of the configuration should be pushed",
         "example": false
       },
@@ -1201,9 +1196,6 @@
           },
           "push_equipment": {
             "$ref": "#/components/schemas/push_equipment"
-          },
-          "push_equipment_only": {
-            "$ref": "#/components/schemas/push_equipment_only"
           }
         },
         "additionalProperties": false

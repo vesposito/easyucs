@@ -47,8 +47,7 @@
         },
         "additionalProperties": false,
         "required": [
-          "key",
-          "value"
+          "key"
         ]
       },
       "minItems": 1

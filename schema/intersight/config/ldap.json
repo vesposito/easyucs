@@ -20,7 +20,7 @@
          "description": "LDAP/AD Tags",
          "type": "array",
          "items": {
-            "description": "LDAP/AD Tags",
+            "description": "LDAP/AD Tag",
             "type": "object",
             "properties": {
                "key": {

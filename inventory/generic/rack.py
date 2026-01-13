@@ -67,3 +67,17 @@ class GenericRack(GenericInventoryObject):
                     return rack_catalog["model_short_name"]
 
         return None
+    
+    def _get_model_series(self):
+        """
+        Returns rack server model series from EasyUCS catalog files
+        """
+        if self.sku is not None:
+            # We use the catalog file to get the rack model series
+            rack_catalog = read_json_file(file_path="catalog/racks/" + self.sku + ".json", logger=self)
+            if rack_catalog:
+                if "model_series" in rack_catalog:
+                    return rack_catalog["model_series"]
+
+        return None
+

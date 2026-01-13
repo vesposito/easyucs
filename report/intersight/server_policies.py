@@ -1299,6 +1299,105 @@ class IntersightFcZonePolicyTargetsReportTable(UcsReportTable):
         )
 
 
+class IntersightFirmwarePoliciesReportSection(UcsReportSection):
+    def __init__(self, order_id, parent, title="Firmware Policies"):
+        UcsReportSection.__init__(self, order_id=order_id, parent=parent, title=title)
+        config = self.report.config
+
+        firmware_policies_list = []
+        # Searching for all Firmware Policies
+        for org in config.orgs:
+            self.parse_org(org, firmware_policies_list, element_to_parse="firmware_policies")
+
+        if firmware_policies_list:
+            for firmware_policy in firmware_policies_list:
+                self.content_list.append(
+                    IntersightFirmwarePolicyReportSection(
+                        order_id=self.report.get_current_order_id(),
+                        parent=self,
+                        firmware_policy=firmware_policy,
+                        title="Firmware Policy " + firmware_policy.name,
+                    )
+                )
+        else:
+            text = "No Firmware Policies found."
+            self.content_list.append(
+                GenericReportText(
+                    order_id=self.report.get_current_order_id(),
+                    parent=self,
+                    string=text,
+                    italicized=True,
+                )
+            )
+
+
+class IntersightFirmwarePolicyReportSection(UcsReportSection):
+    def __init__(self, order_id, parent, firmware_policy, title=""):
+        UcsReportSection.__init__(self, order_id=order_id, parent=parent, title=title)
+
+        self.content_list.append(
+            IntersightFirmwarePolicyReportTable(
+                order_id=self.report.get_current_order_id(),
+                parent=self,
+                centered=True,
+                firmware_policy=firmware_policy,
+            )
+        )
+        if getattr(firmware_policy, "models", None):
+            self.content_list.append(
+                IntersightFirmwarePolicyServerFirmwareReportTable(
+                    order_id=self.report.get_current_order_id(),
+                    parent=self,
+                    centered=True,
+                    models=firmware_policy.models,
+                )
+            )
+
+
+class IntersightFirmwarePolicyReportTable(UcsReportTable):
+    def __init__(self, order_id, parent, firmware_policy, centered=False):
+
+        rows = [
+            ["Description", "Value"],
+            ["Name", firmware_policy.name],
+            ["Description", firmware_policy.descr],
+            ["Organization", firmware_policy._parent.name]
+        ]
+
+        if getattr(firmware_policy, "excluded_components", None):
+            rows.append(["Excluded Component(s)", ", ".join([excluded_component for excluded_component in firmware_policy.excluded_components])])
+
+        UcsReportTable.__init__(
+            self,
+            order_id=order_id,
+            parent=parent,
+            row_number=len(rows),
+            column_number=len(rows[1]),
+            centered=centered,
+            cells_list=rows,
+        )
+
+
+class IntersightFirmwarePolicyServerFirmwareReportTable(UcsReportTable):
+    def __init__(self, order_id, parent, models, centered=False):
+
+        rows = [
+            ["Server Model", "Firmware Version"]
+        ]
+        for model in models:
+            rows.append([model["server_model"], model["firmware_version"]])
+
+        UcsReportTable.__init__(
+            self,
+            order_id=order_id,
+            parent=parent,
+            row_number=len(rows),
+            column_number=len(rows[1]),
+            centered=centered,
+            cells_list=rows,
+        )
+
+
 class IntersightImcAccessPoliciesReportSection(UcsReportSection):
     def __init__(self, order_id, parent, title="IMC Access Policies"):
         UcsReportSection.__init__(self, order_id=order_id, parent=parent, title=title)

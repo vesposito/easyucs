@@ -25,7 +25,7 @@ class IntersightInventoryObject(GenericInventoryObject):
                 self.tags = []
                 for tag in self._object.tags:
                     if not tag.get("key", "").startswith("cisco.meta"):  # Ignoring system defined tags
-                        self.tags.append({"key": tag["key"], "value": tag["value"]})
+                        self.tags.append({"key": tag.get("key"), "value": tag.get("value")})
 
         elif self._inventory.load_from == "file":
             for attribute in ["tags"]:

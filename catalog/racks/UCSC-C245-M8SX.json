@@ -1,4 +1,5 @@
 {
+   "model_series": "UCSC-C245-M8",
    "model_short_name": "C245 M8SX",
    "rear_file_name": "UCSC-C245-M8_rear.png",
    "front_file_name": "UCSC-C245-M8SX_front.png",
@@ -295,13 +296,14 @@
       "cpu": {
          "sockets": 2,
          "family_name": {
-            "genoa": "AMD EPYC 4th Gen Processors"
+            "genoa": "AMD EPYC 4th Gen Processors",
+            "turin": "AMD EPYC 5th Gen Processors"
          }
       },
       "memory": {
          "dimm_type": "DDR5",
          "dimm_slots": 24,
-         "max_speed": 4800,
+         "max_speed": 6400,
          "max_capacity": 6291456,
          "dcpmm_support": false
       },

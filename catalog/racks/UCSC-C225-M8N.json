@@ -1,4 +1,5 @@
 {
+   "model_series": "UCSC-C225-M8",
    "model_short_name": "C225 M8N",
    "rear_file_name": "UCSC-C225-M8_rear.png",
    "front_file_name": "UCSC-C225-M8N_front.png",
@@ -181,13 +182,14 @@
       "cpu": {
          "sockets": 2,
          "family_name": {
-            "genoa": "AMD EPYC 4th Gen Processors"
+            "genoa": "AMD EPYC 4th Gen Processors",
+            "turin": "AMD EPYC 5th Gen Processors"
          }
       },
       "memory": {
          "dimm_type": "DDR5",
          "dimm_slots": 32,
-         "max_speed": 4800,
+         "max_speed": 6400,
          "max_capacity": 4194304,
          "dcpmm_support": false
       },

@@ -911,7 +911,7 @@ class UcsSystemConfig(GenericUcsConfig):
             'statsThresholdClass', 'statsThresholdPolicy', 'storageConnectionPolicy', 'storageFcTargetEp',
             'storageIniGroup', 'storageInitiator', 'storageLocalDiskConfigDef', 'storageLocalDiskConfigPolicy',
             'storageQual', 'storageVsanRef', 'sysdebugBackupBehavior', 'sysdebugMEpLogPolicy', 'topInfoPolicy',
-            'topInfoSyncPolicy', 'uuidpoolBlock', 'uuidpoolPool', 'vnicConnDef', 'vnicDynamicCon',
+            'topInfoSyncPolicy', 'uuidpoolBlock', 'uuidpoolPool', 'uuidpoolPooled', 'vnicConnDef', 'vnicDynamicCon',
             'vnicDynamicConPolicy', 'vnicDynamicConPolicyRef', 'vnicEther', 'vnicEtherIf', 'vnicFc', 'vnicFcGroupDef',
             'vnicFcIf', 'vnicFcNode', 'vnicIPv4Dhcp', 'vnicIPv4If', 'vnicIPv4IscsiAddr', 'vnicIpV4PooledAddr',
             'vnicIPv4PooledIscsiAddr', 'vnicIpV4StaticAddr', 'vnicIPv6IscsiAddr', 'vnicIPv6PooledIscsiAddr', 'vnicIpV6StaticAddr',

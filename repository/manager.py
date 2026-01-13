@@ -1064,11 +1064,6 @@ class RepositoryManager:
                 file_contents[field] = fields_to_value_mapping[field]
                 file_changed = True
 
-        if Version(backup_version) < Version("1.0.4"):
-            file_contents["convert_settings"]["allow_template_unbind"] = False
-            file_contents["convert_settings"]["auto_vcon_mapping"] = True
-            file_changed = True
-
         if file_changed:
             full_path = os.path.abspath(os.path.join(EASYUCS_ROOT, self.SETTINGS_FILE_NAME))
             with open(full_path, 'w') as file:

@@ -101,6 +101,7 @@ class GenericUcsDevice(GenericDevice, DeviceConnector):
             try:
                 self.handle.login(auto_refresh=auto_refresh, force=force)
                 self._set_device_name_and_version()
+                self._set_device_endpoint_id()
                 self.metadata.timestamp_last_connected = datetime.datetime.now()
                 self.metadata.is_reachable = True
                 if self.metadata.device_type in ["cimc", "ucsm"]:
@@ -295,6 +296,9 @@ class GenericUcsDevice(GenericDevice, DeviceConnector):
     def _set_device_name_and_version(self):
         pass
 
+    def _set_device_endpoint_id(self):
+        pass
+
 
 class UcsSystem(GenericUcsDevice):
     UCS_SYSTEM_MIN_REQUIRED_VERSION = "3.1(3a)"
@@ -323,9 +327,35 @@ class UcsSystem(GenericUcsDevice):
         self.report_manager = UcsSystemReportManager(parent=self)
         self.timeout = 120
         self._set_device_name_and_version()
+        self.blade_server_models = []
+        self.rack_server_models = []
 
         self.metadata.device_type = "ucsm"
         self.metadata.device_type_long = "UCS System"
+
+    def _get_blade_server_models(self, source_inventory=None):
+        # Get the Blade server models from source inventory
+        if getattr(source_inventory, "chassis", None) is not None:
+            for chassis in source_inventory.chassis:
+                if getattr(chassis, "blades", None) is not None:
+                    for blade in chassis.blades:
+                        if getattr(blade, "model", None) is not None:
+                            if blade.model not in self.blade_server_models:
+                                self.blade_server_models.append(blade.model)
+    
+    def _get_rack_server_models(self, source_inventory=None):
+        # Get the Rack server models from source inventory
+        if getattr(source_inventory, "rack_units", None) is not None:
+            models = []
+            for rack_unit in source_inventory.rack_units:
+                if getattr(rack_unit, "model", None) is not None:
+                    model_series = None
+                    if rack_unit.model not in models:
+                        models.append(rack_unit.model)
+                        model_series = rack_unit._get_model_series()
+                        model = model_series if model_series else rack_unit.model
+                        if model not in self.rack_server_models:
+                            self.rack_server_models.append(model)          
 
     def change_mode(self, reset_device_connector=False, clear_sel_logs=False, decommission_rack_servers=False,
                     decommission_chassis=False, decommission_blade_servers=False, erase_flexflash=False,
@@ -2655,6 +2685,26 @@ class UcsSystem(GenericUcsDevice):
                                                      ". Using version " + version + " as version number instead.")
                 self.version = UcsVersion(version)
 
+    def _set_device_endpoint_id(self):
+        """
+        Sets the device endpoint ID from Fabric Interconnect serial numbers.
+        """
+        fi_serial_numbers = []
+
+        if self.handle.session_id:  # Ensure we've connected at least once
+            if self.handle.is_valid():  # Ensure session is still valid
+                try:
+                    network_elements = self.handle.query_classid(class_id="networkElement")
+                    fi_serial_numbers = [ne.serial for ne in network_elements]
+                except UcsException as err:
+                    self.logger(
+                        level="error",
+                        message=f"Unable to get the FI serial number(s): {err.error_descr}"
+                    )
+
+        if fi_serial_numbers:
+            self.metadata.device_endpoint_id = "&".join(fi_serial_numbers)
+
 
 class UcsImc(GenericUcsDevice):
     UCS_IMC_MIN_REQUIRED_VERSION = "3.0(1c)"
@@ -3897,9 +3947,39 @@ class UcsCentral(GenericUcsDevice):
         self.report_manager = UcsCentralReportManager(parent=self)
         self._set_sdk_version()
         self._set_device_name_and_version()
+        self.blade_server_models = []
+        self.rack_server_models = []
 
         self.metadata.device_type = "ucsc"
         self.metadata.device_type_long = "UCS Central"
+    
+    def _get_blade_server_models(self, source_inventory=None):
+        # Get the Blade server models from source inventory
+        if getattr(source_inventory, "domains", None) is not None:
+            for domain in source_inventory.domains:
+                if getattr(domain, "chassis", None) is not None:
+                    for chassis in domain.chassis:
+                        if getattr(chassis, "blades", None) is not None:
+                            for blade in chassis.blades:
+                                if getattr(blade, "model", None) is not None:
+                                    if blade.model not in self.blade_server_models:
+                                        self.blade_server_models.append(blade.model)
+    
+    def _get_rack_server_models(self, source_inventory=None):
+        # Get the Rack server models from source inventory
+        if getattr(source_inventory, "domains", None) is not None:
+            models = []
+            for domain in source_inventory.domains:
+                if getattr(domain, "rack_units", None) is not None:
+                    for rack_unit in domain.rack_units:
+                        if getattr(rack_unit, "model", None) is not None:
+                            model_series = None
+                            if rack_unit.model not in models:
+                                models.append(rack_unit.model)
+                                model_series = rack_unit._get_model_series()
+                                model = model_series if model_series else rack_unit.model
+                                if model not in self.rack_server_models:
+                                    self.rack_server_models.append(model)
 
     def clear_user_sessions(self):
         """

@@ -43,7 +43,7 @@ displayLogsBool = False
 timeout_values = {
     "add_device": 360,
     "calculate_checksums": 300,
-    "change_mode": 1800,
+    "change_mode": 3600,
     "claim_to_intersight": 600,
     "clear_config": 3600,
     "clear_sel_logs": 300,
@@ -55,7 +55,7 @@ timeout_values = {
     "fetch_config": 3600,
     "fetch_config_inventory": 7200,
     "fetch_inventory": 3600,
-    "fetch_os_firmware_data": 900,
+    "fetch_os_firmware_data": 1800,
     "generate_report": 600,
     "initial_setup": 3000,
     "push_config": 10800,
@@ -3292,7 +3292,6 @@ def device_uuid_config_uuid_actions_push(device_uuid, config_uuid):
                         )
                     elif device.metadata.device_type in ["intersight"]:
                         action_kwargs["push_equipment"] = payload.get("push_equipment", False)
-                        action_kwargs["push_equipment_only"] = payload.get("push_equipment_only", False)
                         task_uuid = easyucs.task_manager.add_task(
                             name="PushConfigIntersight", device_name=str(device.name), device_uuid=str(device.uuid),
                             config_uuid=str(config.uuid)
@@ -5363,7 +5362,7 @@ def repo_files(file_path=None):
                     recursive = request.args.get("recursive", False, type=lambda v: v.lower() == 'true')
 
                     def travel_folder(folder_path, result):
-                        file_list = os.listdir(folder_path)
+                        file_list = sorted(os.listdir(folder_path))
                         if file_list:
                             for file_name in file_list:
                                 sub_file_path = os.path.join(folder_path, file_name)

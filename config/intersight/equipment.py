@@ -967,7 +967,7 @@ class IntersightChassis(IntersightConfigObject):
                 setattr(self, attribute, None)
                 if attribute in self._object:
                     setattr(self, attribute, self.get_attribute(attribute_name=attribute))
-            self.clean_object()
+        self.clean_object()
 
     def clean_object(self):
         # We use this to make sure all options of blades are set to None if they are not present
@@ -993,7 +993,7 @@ class IntersightChassis(IntersightConfigObject):
                         blade["tags"] = []
                         for tag in compute_blade.tags:
                             if not tag.get("key", "").endswith("LicenseTier"):  # Ignoring system defined tags
-                                blade["tags"].append({"key": tag["key"], "value": tag["value"]})
+                                blade["tags"].append({"key": tag.get("key"), "value": tag.get("value")})
                     for compute_server_setting in self._config.sdk_objects["compute_server_setting"]:
                         if compute_server_setting.server.moid == compute_blade.moid:
                                 blade.update({"asset_tag": compute_server_setting.server_config.asset_tag 
@@ -1061,7 +1061,7 @@ class IntersightChassis(IntersightConfigObject):
                         "object_type": "compute.Blade",
                         "class_id": "compute.Blade"
                     }
-                    if blade.get("tags", []) is not None:
+                    if blade.get("tags") is not None:
                         # Ensuring the blade server's LicenseTier tag is retained while adding other tags
                         with_license_tier_tag = [{"key": blade_tag.get("key"), "value": blade_tag.get("value")} \
                             for blade_tag in compute_blade_list[0].tags if blade_tag.get("key", "") == "Intersight.LicenseTier"]

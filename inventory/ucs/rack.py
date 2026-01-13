@@ -177,7 +177,8 @@ class UcsSystemRack(UcsRack, UcsSystemInventoryObject):
                               "os_kernel_version", "os_patch_version", "os_release_version", "os_type",
                               "os_ucs_tool_version", "os_update_version", "os_vendor", "pcie_risers",
                               "service_profile_org", "service_profile_name", "service_profile_template",
-                              "service_profile_template_org", "service_profile_template_name", "short_name"]:
+                              "service_profile_template_org", "service_profile_template_name", "short_name"
+                              ]:
                 setattr(self, attribute, None)
                 if attribute in compute_rack_unit:
                     setattr(self, attribute, self.get_attribute(ucs_sdk_object=compute_rack_unit,

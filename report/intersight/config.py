@@ -16,6 +16,7 @@ from report.intersight.server_policies import (
     IntersightFcNetworkPoliciesReportSection,
     IntersightFcQosPoliciesReportSection,
     IntersightFcZonePoliciesReportSection,
+    IntersightFirmwarePoliciesReportSection,
     IntersightImcAccessPoliciesReportSection,
     IntersightIpmiOverLanPoliciesReportSection,
     IntersightIscsiAdapterPoliciesReportSection,
@@ -116,6 +117,8 @@ class IntersightPoliciesReportSection(UcsReportSection):
             IntersightFcQosPoliciesReportSection(order_id=self.report.get_current_order_id(), parent=self))
         self.content_list.append(
             IntersightFcZonePoliciesReportSection(order_id=self.report.get_current_order_id(), parent=self))
+        self.content_list.append(
+            IntersightFirmwarePoliciesReportSection(order_id=self.report.get_current_order_id(), parent=self))
         self.content_list.append(
             IntersightImcAccessPoliciesReportSection(order_id=self.report.get_current_order_id(), parent=self))
         self.content_list.append(

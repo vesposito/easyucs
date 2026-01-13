@@ -159,7 +159,7 @@ class GenericReportTable(GenericReportContent):
 
         for i in range(len(self.cells_list)):
             row = self.cells_list[i]
-            row = list(filter(None.__ne__, row))  # Remove None values
+            row = [item for item in row if item is not None]  # Remove None values
             # Replace True with Unicode check mark and False with Unicode cross mark
             # row = ["\U00002705" if e is True else "\U0000274C" if e is False else e for e in row]
             row_cells = table.rows[i].cells

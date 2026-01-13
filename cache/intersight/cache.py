@@ -115,9 +115,13 @@ class IntersightCache(GenericCache):
             "os": {},
             "firmware": []
         }
+        self.logger(level="debug", message="Fetching hcl.OperatingSystemVendor objects")
         operating_system_vendors = self.device.query(object_type="hcl.OperatingSystemVendor")
+        self.logger(level="debug", message="Fetching hcl.OperatingSystem objects")
         operating_systems = self.device.query(object_type="hcl.OperatingSystem")
+        self.logger(level="debug", message="Fetching os.Distribution objects")
         operating_system_distributions = self.device.query(object_type="os.Distribution")
+        self.logger(level="debug", message="Fetching firmware.Distributable objects")
         firmware_distributables = self.device.query(object_type="firmware.Distributable", filter="Origin eq System")
 
         if not all([True if obj else False for obj in [operating_system_vendors, operating_systems,
@@ -128,8 +132,8 @@ class IntersightCache(GenericCache):
                     status_message="Error while fetching OS and Firmware Objects from Intersight")
             return None
 
-        if not hasattr(operating_system_distributions[0], "vendor") or not hasattr(operating_system_distributions[0],
-                                                                                   "label"):
+        if not hasattr(operating_system_distributions[0], "vendor") or \
+                not hasattr(operating_system_distributions[0], "label"):
             use_hcl_os = True
         else:
             use_hcl_os = False

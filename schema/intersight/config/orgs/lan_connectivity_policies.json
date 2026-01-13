@@ -47,8 +47,7 @@
             },
             "additionalProperties": false,
             "required": [
-               "key",
-               "value"
+               "key"
             ]
          },
          "minItems": 1
@@ -314,8 +313,7 @@
                            },
                            "additionalProperties": false,
                            "required": [
-                              "key",
-                              "value"
+                              "key"
                            ]
                         },
                         "minItems": 1
@@ -1007,8 +1005,7 @@
                            },
                            "additionalProperties": false,
                            "required": [
-                              "key",
-                              "value"
+                              "key"
                            ]
                         },
                         "minItems": 1

@@ -290,34 +290,78 @@ class GenericReportAdmonition(GenericReportContent):
     def add_in_pdf_report(self):
         # self.report.pdf_element_list.append(Paragraph("<br/><br/>"))
         self.report.pdf_element_list.append(Spacer(1, 10))
-        pic = "report/icons/" + self.level + ".png"
-        data = []
-        table = []
-        image = img(pic, 1 * cm, 1 * cm)
-        data.append(image)
-        texts = '<font size="9" fontname = "Helvetica-Bold">' + self.string1+'</font><br/>'
-        if self.string2:
-            texts = texts + '<font size = "9">' + self.string2 + '</font>'
-        paragraph = Paragraph(texts)
-        data.append(paragraph)
-        table.append(data)
-        tables = Table(table, colWidths=(1.5*cm, 12*cm))
-        table_style = TableStyle([("ALIGN", (0, 0), (1, 1), "LEFT"),
-                                  ("VALIGN", (0, 0), (1, 1), "MIDDLE")])
-        if self.level == "ok":
-            table_style.add("BACKGROUND", (0, 0), (1, 1), "#eaf1dd")
-            table_style.add("BOX", (0, 0), (-1, -1), 0.10, "#30cb6b")
-        if self.level == "info":
-            table_style.add("BACKGROUND", (0, 0), (1, 1), "#dbe5f1")
-            table_style.add("BOX", (0, 0), (-1, -1), 0.10, "#4b81c0")
-        if self.level == "warning":
-            table_style.add("BACKGROUND", (0, 0), (1, 1), "#fce9da")
-            table_style.add("BOX", (0, 0), (-1, -1), 0.10, "#edc41d")
-        if self.level == "error":
-            table_style.add("BACKGROUND", (0, 0), (1, 1), "#f1dcdb")
-            table_style.add("BOX", (0, 0), (-1, -1), 0.10, "#de4a39")
-        tables.setStyle(table_style)
-        self.report.pdf_element_list.append(KeepTogether(tables))
+        
+        # Helper function to create styled admonition table
+        def create_admonition_table(text_content):
+            pic = "report/icons/" + self.level + ".png"
+            data = []
+            table = []
+            image = img(pic, 1 * cm, 1 * cm)
+            data.append(image)
+            
+            paragraph = Paragraph(text_content)
+            data.append(paragraph)
+            table.append(data)
+            tables = Table(table, colWidths=(1.5*cm, 12*cm))
+            table_style = TableStyle([("ALIGN", (0, 0), (1, 1), "LEFT"),
+                                      ("VALIGN", (0, 0), (1, 1), "MIDDLE")])
+            
+            # Apply level-specific styling
+            if self.level == "ok":
+                table_style.add("BACKGROUND", (0, 0), (1, 1), "#eaf1dd")
+                table_style.add("BOX", (0, 0), (-1, -1), 0.10, "#30cb6b")
+            if self.level == "info":
+                table_style.add("BACKGROUND", (0, 0), (1, 1), "#dbe5f1")
+                table_style.add("BOX", (0, 0), (-1, -1), 0.10, "#4b81c0")
+            if self.level == "warning":
+                table_style.add("BACKGROUND", (0, 0), (1, 1), "#fce9da")
+                table_style.add("BOX", (0, 0), (-1, -1), 0.10, "#edc41d")
+            if self.level == "error":
+                table_style.add("BACKGROUND", (0, 0), (1, 1), "#f1dcdb")
+                table_style.add("BOX", (0, 0), (-1, -1), 0.10, "#de4a39")
+            
+            tables.setStyle(table_style)
+            return tables
+        
+        # Calculate content length to determine rendering strategy
+        content_length = len(self.string1) + len(self.string2 if self.string2 else "")
+        VERY_LARGE_CONTENT_THRESHOLD = 10000
+        CHUNK_SIZE = 2000
+        
+        if content_length > VERY_LARGE_CONTENT_THRESHOLD:
+            # Split large content into multiple tables
+            import textwrap
+            full_content = self.string2 if self.string2 else ""
+            chunks = textwrap.wrap(full_content, CHUNK_SIZE, break_long_words=False, break_on_hyphens=False)
+            
+            for idx, chunk in enumerate(chunks):
+                # First chunk includes heading, subsequent chunks only content
+                if idx == 0:
+                    texts = '<font size="9" fontname="Helvetica-Bold">' + self.string1 + '</font><br/>'
+                    texts += '<font size="9">' + chunk + '</font>'
+                else:
+                    texts = '<font size="9">' + chunk + '</font>'
+                
+                tables = create_admonition_table(texts)
+                self.report.pdf_element_list.append(tables)
+                
+                # Add spacer between chunks
+                if idx < len(chunks) - 1:
+                    self.report.pdf_element_list.append(Spacer(1, 5))
+        else:
+            # Normal-sized content - single table
+            texts = '<font size="9" fontname="Helvetica-Bold">' + self.string1 + '</font><br/>'
+            if self.string2:
+                texts += '<font size="9">' + self.string2 + '</font>'
+            
+            tables = create_admonition_table(texts)
+            
+            # For moderately large content, avoid KeepTogether to allow page breaks
+            MAX_CONTENT_LENGTH_FOR_KEEP_TOGETHER = 2000
+            if content_length > MAX_CONTENT_LENGTH_FOR_KEEP_TOGETHER:
+                self.report.pdf_element_list.append(tables)
+            else:
+                self.report.pdf_element_list.append(KeepTogether(tables))
 
 
 class GenericReportAdmonitionSummary(GenericReportContent):

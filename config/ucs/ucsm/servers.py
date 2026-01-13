@@ -3,6 +3,7 @@
 
 """ servers.py: Easy UCS Deployment Tool """
 
+import re
 import urllib
 
 from ucsmsdk.mometa.aaa.AaaEpAuthProfile import AaaEpAuthProfile
@@ -228,7 +229,7 @@ class UcsSystemUuidPool(UcsSystemConfigObject):
             if uuidpool_pool is not None:
                 self.name = uuidpool_pool.name
                 self.descr = uuidpool_pool.descr
-                self.prefix = uuidpool_pool.prefix
+                self.prefix = uuidpool_pool.prefix if uuidpool_pool.prefix != "derived" else None
                 self.order = uuidpool_pool.assignment_order
                 self.operational_state = {
                     "size": uuidpool_pool.size,
@@ -244,6 +245,64 @@ class UcsSystemUuidPool(UcsSystemConfigObject):
                                 block.update({"from": pool_block.r_from})
                                 block.update({"size": None})
                                 self.uuid_blocks.append(block)
+
+                # Handle "derived" prefix case (EASYUCS-1736)
+                # When the prefix is set to "Other" and left as 00000000-0000-0000 in the GUI,
+                # UCSM marks it internally as "derived".
+                # → As a result, service profile attachments produce identities like:
+                #   00000000-0000-0000-fc01-00000000004f (zero-prefix + suffix)
+                #
+                # When the prefix is marked as "derived", UCSM does not expose a concrete prefix value.
+                # Therefore, we inspect the UUIDs already assigned to service profiles (pooled DNs)
+                # to infer the actual prefix pattern UCSM is using.
+                #
+                # If the pool is not attached to any service profile (i.e., no pooled DNs exist),
+                # or if the prefix cannot be uniquely determined, we fall back to the default
+                # zero-prefix: 00000000-0000-0000.
+
+                if uuidpool_pool.prefix == "derived":
+                    self.logger(
+                        level="debug",
+                        message=f"Prefix marked as 'derived' for pool '{self.name}'. Scanning pooled identities to "
+                                f"determine actual prefix value."
+                    )
+                    if "uuidpoolPooled" in self._parent._config.sdk_objects:
+                        prefixes = set()
+
+                        for pool in self._config.sdk_objects["uuidpoolPooled"]:
+                            if self._parent._dn and f"{self._parent._dn}/uuid-pool-{self.name}/" in pool.dn:
+
+                                pattern = r"(([0-9a-fA-F]{8})-([0-9a-fA-F]{4})-([0-9a-fA-F]{4}))"
+                                poolable_dn = pool.poolable_dn
+
+                                match = re.search(pattern, poolable_dn)
+                                prefix = match.group(1) if match else None
+
+                                if prefix:
+                                    prefixes.add(prefix)
+
+                        # If all found prefixes are the same → use that prefix
+                        # else fallback to 00000000-0000-0000 as the safe prefix
+                        # This ensures correctness when profiles derived identity from zero-prefix.
+                        if len(prefixes) == 1:
+                            self.prefix = next(iter(prefixes))
+                            self.logger(
+                                level="info",
+                                message=(
+                                    f"Derived prefix detected for pool '{self.name}': {self.prefix}"
+                                )
+                            )
+
+                    # Final fallback when prefix cannot be determined
+                    if self.prefix is None:
+                        self.prefix = "00000000-0000-0000"
+                        self.logger(
+                            level="debug",
+                            message=(
+                                f"Unable to determine the derived prefix for pool '{self.name}'. "
+                                f"Using fallback default zero-prefix: {self.prefix}."
+                            )
+                        )
 
         elif self._config.load_from == "file":
             if json_content is not None:

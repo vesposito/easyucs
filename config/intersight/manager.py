@@ -212,7 +212,7 @@ class IntersightConfigManager(GenericConfigManager):
         self._get_profiles(config.orgs, profiles)
         return profiles
 
-    def push_config(self, uuid=None, reset=False, bypass_version_checks=False, force=False, push_equipment=False, push_equipment_only=False):
+    def push_config(self, uuid=None, reset=False, bypass_version_checks=False, force=False, push_equipment=False):
         """
         Push the specified config to the live system
         :param uuid: The UUID of the config to be pushed. If not specified, the most recent config will be used
@@ -221,8 +221,7 @@ class IntersightConfigManager(GenericConfigManager):
         :param force: Force the push to proceed even in-case of critical errors. Eg: If we fail to push a source
         shared org then we will continue pushing target orgs (orgs with which the source org is shared)
         if and only if force is true, otherwise we will skip the push of the target orgs.
-        :param push_equipment: Whether the equipment section of the configuration should be pushed alongside the rest of the configuration.
-        :param push_equipment_only: Only the equipment section of the configuration should be pushed.
+        :param push_equipment: Only the equipment section of the configuration should be pushed.
         that the domain or server profile deployment has been successfully completed.
         :return: True if config push was successful, False otherwise
         """
@@ -255,7 +254,7 @@ class IntersightConfigManager(GenericConfigManager):
             self.logger(message="Pushing configuration " + str(config.uuid) + " to " + self.parent.target)
 
             is_pushed = True
-            if not push_equipment_only:
+            if not push_equipment:
                 if self.parent.task is not None:
                     self.parent.task.taskstep_manager.start_taskstep(
                         name="PushOrgsSectionIntersight", description="Pushing Orgs section of config")
@@ -326,26 +325,25 @@ class IntersightConfigManager(GenericConfigManager):
                     self.parent.task.taskstep_manager.stop_taskstep(
                         name="PushAdminSectionIntersight", status="successful",
                         status_message="Successfully pushed Admin section of config")
-                if not push_equipment:
-                    if self.parent.task is not None:
-                        self.parent.task.taskstep_manager.skip_taskstep(
-                            name="PushEquipmentSectionIntersight",
-                            status_message="Skipped pushing equipment section of config"
-                        )
+
+                if self.parent.task is not None:
+                    self.parent.task.taskstep_manager.skip_taskstep(
+                        name="PushEquipmentSectionIntersight",
+                        status_message="Skipped pushing equipment section of config"
+                    )
 
                 self.parent.set_task_progression(85)
 
-            if push_equipment_only or push_equipment:
-                if push_equipment_only:
-                    if self.parent.task is not None:
-                        self.parent.task.taskstep_manager.skip_taskstep(
-                            name="PushOrgsSectionIntersight",
-                            status_message="Skipped pushing org section of config"
-                        )
-                        self.parent.task.taskstep_manager.skip_taskstep(
-                            name="PushAdminSectionIntersight",
-                            status_message="Skipped pushing admin section of config"
-                        )
+            if push_equipment:
+                if self.parent.task is not None:
+                    self.parent.task.taskstep_manager.skip_taskstep(
+                        name="PushOrgsSectionIntersight",
+                        status_message="Skipped pushing org section of config"
+                    )
+                    self.parent.task.taskstep_manager.skip_taskstep(
+                        name="PushAdminSectionIntersight",
+                        status_message="Skipped pushing admin section of config"
+                    )
                 if config.equipment:
                     if self.parent.task is not None:
                         self.parent.task.taskstep_manager.start_taskstep(

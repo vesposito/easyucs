@@ -1,9 +1,9 @@
 # __init__.py
 
 __author__ = "Marc Abu El Ghait, Franck Bonneau and Vincent Esposito"
-__copyright__ = "Copyright 2016-2025, Cisco"
+__copyright__ = "Copyright 2016-2026, Cisco"
 
-__version__ = "1.0.4"
+__version__ = "1.0.5"
 __status__ = "Development"
 
 # https://realpython.com/pypi-publish-python-package/

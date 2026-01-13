@@ -75,7 +75,7 @@ urllib3.disable_warnings()
 
 
 class IntersightDevice(GenericDevice):
-    INTERSIGHT_APPLIANCE_MIN_REQUIRED_VERSION = "1.1.4-0"
+    INTERSIGHT_APPLIANCE_MIN_REQUIRED_VERSION = "1.1.5-0"
 
     def __init__(self, parent=None, uuid=None, target="us-east-1.intersight.com", key_id="", private_key_path="",
                  is_hidden=False, is_system=False, system_usage=None, proxy=None, proxy_user=None, proxy_password=None,
@@ -561,9 +561,10 @@ class IntersightDevice(GenericDevice):
                                 # name to "default". This is done to deliver a factory reset environment to the user.
                                 org_objects = self.query(api_class=OrganizationApi,
                                                          sdk_object_type="organization_organization")
-                                if (len(org_objects) == 1) or (len(org_objects) == 2 and self.is_appliance and
-                                        getattr(obj, "name", None) != "private-catalog" and
-                                        any(getattr(x, "name", None) == "private-catalog" for x in org_objects)):
+                                # ignore the private-catalog org during org clearing when an Appliance device is used.
+                                if self.is_appliance:
+                                    org_objects = [org for org in org_objects if org.name != "private-catalog"]
+                                if len(org_objects) == 1:
                                     # "obj" is the last organization which is being deleted
                                     last_organization = obj
                                     if org_objects[0].name != "default":

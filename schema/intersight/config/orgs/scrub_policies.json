@@ -27,7 +27,7 @@
          "description": "Scrub Policy Tags",
          "type": "array",
          "items": {
-            "description": "Scrub Policy Tags",
+            "description": "Scrub Policy Tag",
             "type": "object",
             "properties": {
                "key": {
@@ -46,7 +46,9 @@
                }
             },
             "additionalProperties": false,
-            "required": ["key", "value"]
+            "required": [
+               "key"
+            ]
          },
          "default": []
       },

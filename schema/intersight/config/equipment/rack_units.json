@@ -16,7 +16,7 @@
       },
       "id": {
          "description": "Rack Unit Server ID",
-         "type": "integer"
+         "type": "string"
       },
       "name": {
          "description": "Rack Unit Name",
@@ -51,8 +51,7 @@
             },
             "additionalProperties": false,
             "required": [
-               "key",
-               "value"
+               "key"
             ]
          },
          "minItems": 1

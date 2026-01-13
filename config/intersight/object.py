@@ -38,7 +38,7 @@ class IntersightConfigObject(GenericConfigObject):
                 for tag in self._object.tags:
                     if not tag.get("key", "").startswith("cisco.meta") \
                         and not tag.get("key", "").endswith("LicenseTier"):  # Ignoring system defined tags
-                        self.tags.append({"key": tag["key"], "value": tag["value"]})
+                        self.tags.append({"key": tag.get("key"), "value": tag.get("value")})
 
         elif self._config.load_from == "file":
             for attribute in ["tags"]:
