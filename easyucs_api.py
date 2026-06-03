@@ -42,7 +42,7 @@ class Easyucs:
 
         # We create an object of werkzeug.local.Local. This helps us use context-local variables. A context local is
         # defined/imported globally, but the data it contains is specific to the current thread, asyncio task, or
-        # greenlet. You won’t accidentally get or overwrite another worker’s data.
+        # greenlet. You won't accidentally get or overwrite another worker's data.
         # Refer: https://werkzeug.palletsprojects.com/en/2.2.x/local/
         self._thread_local = Local()
 
@@ -264,12 +264,56 @@ class Easyucs:
         return str(vars(self))
 
 
+def get_server_ip():
+    """
+    Prompt the user to enter the IP address of the EasyUCS server
+    :return: (str) IP address entered by the user
+    """
+    while True:
+        ip_input = input("Enter the EasyUCS server IP address (default: localhost): ").strip()
+        
+        if not ip_input:
+            print("Using the default address: localhost")
+            return "localhost"
+        
+        # Basic IP address validation
+        if is_valid_ip(ip_input):
+            return ip_input
+        else:
+            print(f"'{ip_input}' is not a valid IP address. Please try again.")
+
+
+def is_valid_ip(ip_string):
+    """
+    Validates an IP address or hostname
+    :param ip_string: (str) the string to validate
+    :return: (bool) True if true, False otherwise
+    """
+    # Accepts hostnames and IP addresses
+    import re
+    
+    # Pattern for an IPv4 address
+    ipv4_pattern = r'^(\d{1,3}\.){3}\d{1,3}$'
+    if re.match(ipv4_pattern, ip_string):
+        parts = ip_string.split('.')
+        return all(0 <= int(part) <= 255 for part in parts)
+    
+    # Valid hostname pattern
+    hostname_pattern = r'^[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$'
+    return bool(re.match(hostname_pattern, ip_string))
+
+
 def main():
     easyucs = Easyucs(logger_handle_log_level="debug")
     repo_start(easyucs_object=easyucs)
     start(easyucs_object=easyucs)
+    
+    # Ask the user for their IP address
+    server_ip = get_server_ip()
+    
+    # Start the server using the provided IP address
+    run_simple(server_ip, 5001, application, use_debugger=False, use_reloader=False, threaded=True)
 
 
 if __name__ == '__main__':
     main()
-    run_simple('localhost', 5001, application, use_debugger=False, use_reloader=False, threaded=True)
