@@ -420,6 +420,8 @@ To find the list of all the required items and all possible values for each feat
 
 - slow_drain_timers
 
+- watchdog_timers
+
 - switching_mode
 
 ### Features inside an organization

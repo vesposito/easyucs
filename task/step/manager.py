@@ -222,8 +222,9 @@ class TaskStepManager:
             return None
 
         # We check if there is already another task step running
+        # block only on other steps in progress (you can skip your own in-progress step)
         for taskstep in self.taskstep_list:
-            if taskstep.metadata.status in ["in_progress"]:
+            if taskstep.metadata.status in ["in_progress"] and taskstep.name != name:
                 self.logger(level="error", message="Task step " + str(taskstep.name) + " is already running")
                 return None
 

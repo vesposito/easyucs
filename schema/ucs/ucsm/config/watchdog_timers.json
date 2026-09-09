@@ -1,0 +1,36 @@
+{
+   "id": "ucs_system_config_watchdog_timers#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS ucs system config watchdog_timers section",
+   "description": "EasyUCS ucs system config watchdog_timers section JSON schema",
+   "type": "object",
+   "properties": {
+      "comment": {
+         "description": "Watchdog Timers Comments",
+         "type": "string",
+         "default": ""
+      },
+      "wd_admin_state": {
+         "description": "Watchdog Timers - Admin State",
+         "type": "string",
+         "default": "off",
+         "enum": [
+            "off",
+            "on"
+         ]
+      },
+      "wd_interval": {
+         "description": "Watchdog Timers - Watch Dog Interval (ms)",
+         "type": "integer",
+         "minimum": 100,
+         "maximum": 1000
+      },
+      "wd_shutdown_multiplier": {
+         "description": "Watchdog Timers - Shutdown Multiplier",
+         "type": "integer",
+         "minimum": 1,
+         "maximum": 10
+      }
+   },
+   "additionalProperties": false
+}

@@ -12,6 +12,8 @@ class UcsReportSection(GenericReportSection):
         GenericReportSection.__init__(self, order_id=order_id, parent=parent, title=title)
 
     def parse_org(self, org, element_list, element_to_parse):
+        if not hasattr(org, element_to_parse):
+            return
         if eval("org." + element_to_parse) is not None:
             for element in eval("org." + element_to_parse):
                 element_list.append(element)

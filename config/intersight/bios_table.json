@@ -6664,6 +6664,38 @@
          "disabled"
       ]
    },
+   "gpu_direct_cpu1": {
+      "type": "enum",
+      "values": [
+         "platform-default",
+         "enabled",
+         "disabled"
+      ]
+   },
+   "gpu_direct_cpu2": {
+      "type": "enum",
+      "values": [
+         "platform-default",
+         "enabled",
+         "disabled"
+      ]
+   },
+   "gpu_direct_cpu3": {
+      "type": "enum",
+      "values": [
+         "platform-default",
+         "enabled",
+         "disabled"
+      ]
+   },
+   "gpu_direct_cpu4": {
+      "type": "enum",
+      "values": [
+         "platform-default",
+         "enabled",
+         "disabled"
+      ]
+   },
    "hardware_prefetch": {
       "type": "enum",
       "ucsc_token_map": {
@@ -8231,6 +8263,7 @@
             "2T",
             "2t"
          ],
+         "30T": [],
          "32T": [
             "32T",
             "32t"
@@ -8251,6 +8284,7 @@
             "56T",
             "56t"
          ],
+         "60T": [],
          "Auto": [],
          "platform-default": [
             "Platform Default",
@@ -8274,6 +8308,7 @@
             "2T",
             "2t"
          ],
+         "30T": [],
          "32T": [
             "32T",
             "32t"
@@ -8294,6 +8329,7 @@
             "56T",
             "56t"
          ],
+         "60T": [],
          "Auto": [
             "Auto",
             "auto"
@@ -8312,9 +8348,11 @@
          "4T",
          "16T",
          "24T",
+         "30T",
          "32T",
          "40T",
          "56T",
+         "60T",
          "Auto"
       ]
    },
@@ -20189,6 +20227,36 @@
          "platform-default",
          "disabled",
          "enabled",
+         "Mode 0",
+         "Mode 1"
+      ]
+   },
+   "ufs_disable_io": {
+      "type": "enum",
+      "ucsc_token_map": {
+         "Mode 0": [],
+         "Mode 1": [],
+         "platform-default": [
+            "Platform Default"
+         ]
+      },
+      "ucsm_token_map": {
+         "Mode 0": [
+            "Mode-0",
+            "mode-0"
+         ],
+         "Mode 1": [
+            "Mode-1",
+            "mode-1"
+         ],
+         "platform-default": [
+            "Platform Default",
+            "platform-default"
+         ]
+      },
+      "ucsm_token_name": "uncore_frequency_scaling_io",
+      "values": [
+         "platform-default",
          "Mode 0",
          "Mode 1"
       ]

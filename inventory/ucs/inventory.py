@@ -6,10 +6,15 @@
 import re
 import urllib
 import xml
+import xml.etree.ElementTree as ET
 
 from imcsdk.imcexception import ImcException
 from ucscsdk.ucscexception import UcscException
+from ucsmsdk.ucscoremeta import UcsVersion
 from ucsmsdk.ucsexception import UcsException
+from ucsmsdk import ucscoreutils
+
+from config.ucs.config import _load_mo_from_xml_element
 
 from inventory.inventory import GenericInventory
 from inventory.ucs.adaptor import UcsImcHbaAdapter
@@ -22,6 +27,15 @@ from inventory.ucs.storage import UcsSystemStorageController, UcsImcStorageContr
 
 
 class GenericUcsInventory(GenericInventory):
+    # List of SDK objects to fetch that are common to UCS System, IMC & UCS Central
+    _COMMON_SDK_OBJECTS_TO_FETCH = [
+        "adaptorExtEthIf", "adaptorHostEthIf", "adaptorUnit", "computeRackUnit",
+        "equipmentChassis", "equipmentLocatorLed", "equipmentPsu",
+        "equipmentSystemIOController", "memoryArray", "memoryUnit", "mgmtController", "mgmtIf",
+        "processorUnit", "storageController", "storageEnclosure", "storageFlexFlashController",
+        "storageLocalDisk", "storageRaidBattery",
+    ]
+
     def __init__(self, parent=None):
         GenericInventory.__init__(self, parent=parent)
         self.export_list = None
@@ -30,12 +44,7 @@ class GenericUcsInventory(GenericInventory):
         self.sdk_objects = {}
 
     def _fetch_sdk_objects(self, force=False):
-        # List of SDK objects to fetch that are common to UCS System, IMC & UCS Central
-        sdk_objects_to_fetch = ["adaptorExtEthIf", "adaptorHostEthIf", "adaptorUnit", "computeRackUnit",
-                                "equipmentChassis", "equipmentLocatorLed", "equipmentPsu",
-                                "equipmentSystemIOController", "memoryArray", "memoryUnit", "mgmtController", "mgmtIf",
-                                "processorUnit", "storageController", "storageEnclosure", "storageFlexFlashController",
-                                "storageLocalDisk", "storageRaidBattery"]
+        sdk_objects_to_fetch = self._COMMON_SDK_OBJECTS_TO_FETCH
         self.logger(level="debug", message="Fetching common UCS SDK objects for inventory")
 
         if self.device.task is not None:
@@ -137,7 +146,23 @@ class GenericUcsInventory(GenericInventory):
                             if dn + "/" in sdk_object.dn:
                                 # Also filter objects that have a "presence" attribute set as "missing"
                                 if hasattr(sdk_object, "presence") and sdk_object.presence == "missing":
-                                    continue
+                                    # Keep physically removed servers in inventory for pre-assignment validation
+                                    if object_class._UCS_SDK_OBJECT_NAME in \
+                                            ["computeBlade", "computeRackUnit", "computeServerNode"]:
+                                        # Log if server is physically removed from the UCSM domain
+                                        if hasattr(sdk_object, "oper_state") and \
+                                                sdk_object.oper_state == "removed":
+                                            self.logger(
+                                                level="info",
+                                                message="Found server with serial number '" +
+                                                        str(getattr(sdk_object, "serial", "N/A")) +
+                                                        "' that is physically removed from the UCSM domain"
+                                            )
+                                            # Fall through: keep this removed server in the inventory
+                                        else:
+                                            continue  # Missing for other reasons — retain original filter
+                                    else:
+                                        continue
                                 # Also filter absent adaptorConnectorInfo on standalone servers
                                 if hasattr(sdk_object, "present") and sdk_object.present in ["N/A", "NO", "No"]:
                                     continue
@@ -220,14 +245,51 @@ class GenericUcsInventory(GenericInventory):
                         easyucs_objects_list = []
                         for sdk_object in sorted(filtered_sdk_objects_list,
                                                  key=lambda sdk_obj: [int(t) if t.isdigit() else t.lower()
-                                                                      for t in re.split('(\d+)', sdk_obj.dn)]):
+                                                                      for t in re.split(r'(\d+)', sdk_obj.dn)]):
                             # We instantiate an Inventory Object for each corresponding SDK object
                             easyucs_objects_list.append(object_class(parent, sdk_object))
                         return easyucs_objects_list
         return []
 
+    def find_server_from_serial(self, serial):
+        """
+        Searches for a server (blade / rack unit / server node) in the inventory by serial number.
+        For UcsCentralInventory, servers are nested inside domains so each domain is searched in turn.
+        For UcsSystemInventory / UcsImcInventory, chassis, rack_units and rack_enclosures sit directly on self.
+        :param serial: The serial number to look up.
+        :return: The matching inventory server object if found, None otherwise.
+        """
+        if not serial:
+            return None
+        for container in (getattr(self, "domains", None) or [self]):
+            all_servers = (
+                [blade for chassis in getattr(container, "chassis", [])
+                 for blade in getattr(chassis, "blades", [])]
+                + list(getattr(container, "rack_units", []))
+                + [server_node for rack_enclosure in getattr(container, "rack_enclosures", [])
+                   for server_node in getattr(rack_enclosure, "server_nodes", [])]
+            )
+            result = next((server for server in all_servers if getattr(server, "serial", None) == serial), None)
+            if result:
+                return result
+        return None
+
 
 class UcsSystemInventory(GenericUcsInventory):
+    _UCSM_SPECIFIC_SDK_OBJECTS_TO_FETCH = [
+        "adaptorUnitExtn", "computeBlade", "computePersonality", "equipmentCrossFabricModule",
+        "equipmentFex", "equipmentFruVariant", "equipmentIOCard", "equipmentPcieNode",
+        "equipmentRackEnclosure", "equipmentSwitchCard", "equipmentSwitchIOCard",
+        "equipmentTpm", "equipmentXcvr", "etherPIo", "etherServerIntFIo", "etherSwitchIntFIo",
+        "fcPIo", "firmwareRunning", "firmwareStatus", "graphicsCard", "licenseFeature",
+        "licenseFile", "licenseInstance", "licenseServerHostId", "lsServer", "memoryErrorStats",
+        "mgmtConnection", "mgmtInterface", "mgmtVnet", "moInvKv", "networkElement",
+        "networkLanNeighborEntry", "networkLldpNeighborEntry", "networkSanNeighborEntry",
+        "storageEmbeddedStorage", "storageFlexFlashCard", "storageNvmeStats",
+        "storageSsdHealthStats", "swVlanPortNs", "topInfoPolicy", "vnicIpV4MgmtPooledAddr",
+        "vnicIpV4PooledAddr", "vnicIpV4StaticAddr", "vnicIpV6StaticAddr", "vnicIpV6MgmtPooledAddr",
+    ]
+
     def __init__(self, parent=None):
         self.chassis = []
         self.device_connector = []
@@ -295,17 +357,7 @@ class UcsSystemInventory(GenericUcsInventory):
             return False
 
         # List of SDK objects to fetch that are specific to UCS System
-        sdk_objects_to_fetch = ["adaptorUnitExtn", "computeBlade", "computePersonality", "equipmentCrossFabricModule",
-                                "equipmentFex", "equipmentFruVariant", "equipmentIOCard", "equipmentPcieNode",
-                                "equipmentRackEnclosure", "equipmentSwitchCard", "equipmentSwitchIOCard",
-                                "equipmentTpm", "equipmentXcvr", "etherPIo", "etherServerIntFIo", "etherSwitchIntFIo",
-                                "fcPIo", "firmwareRunning", "firmwareStatus", "graphicsCard", "licenseFeature",
-                                "licenseFile", "licenseInstance", "licenseServerHostId", "lsServer", "memoryErrorStats",
-                                "mgmtConnection", "mgmtInterface", "mgmtVnet", "moInvKv", "networkElement",
-                                "networkLanNeighborEntry", "networkLldpNeighborEntry", "networkSanNeighborEntry",
-                                "storageEmbeddedStorage", "storageFlexFlashCard", "storageNvmeStats",
-                                "storageSsdHealthStats", "swVlanPortNs", "vnicIpV4MgmtPooledAddr", "vnicIpV4PooledAddr",
-                                "vnicIpV4StaticAddr", "vnicIpV6StaticAddr", "vnicIpV6MgmtPooledAddr"]
+        sdk_objects_to_fetch = self._UCSM_SPECIFIC_SDK_OBJECTS_TO_FETCH
         self.logger(level="debug",
                     message="Fetching " + self.device.metadata.device_type_long + " SDK objects for inventory")
 
@@ -566,8 +618,183 @@ class UcsSystemInventory(GenericUcsInventory):
         self.logger(message="The list of SAN neighbors is: " + str(san_neighbors_fabric_nwwn_list))
         return san_neighbors_list
 
+    def _fetch_sdk_objects_from_xml(self, xml_file_path, force=False):
+        """
+        Alternative to _fetch_sdk_objects() that populates self.sdk_objects by
+        parsing a UCSM MIT XML dump file (e.g. mit.xml from a tech-support bundle)
+        instead of making live API calls via ucsmsdk.
+
+        :param xml_file_path: Path to the MIT XML file to parse.
+        :param force: If True, tolerate parse errors and continue. If False, any
+                      XML parse error causes the method to return False.
+        :return: True if successful, False otherwise.
+        """
+        # Full set of class names to extract — the union of the common base list,
+        # and all UCS System-specific inventory classes.
+        # Note: equipmentManufacturingDef and equipmentLocalDiskDef have DNs under
+        # capabilities/ in the MIT XML, so they are collected via the catalog path below.
+        sdk_objects_to_fetch = set(
+            self._COMMON_SDK_OBJECTS_TO_FETCH +
+            self._UCSM_SPECIFIC_SDK_OBJECTS_TO_FETCH
+        )
+
+        self.logger(level="debug",
+                    message="Fetching " + self.device.metadata.device_type_long + " SDK objects from XML file: " +
+                            str(xml_file_path))
+
+        if self.device.task is not None:
+            # The XML fetch reads all classes (common, UCSM-specific, and catalog)
+            # in a single pass, replacing the three live-fetch steps.  Skip the
+            # common and catalog steps so the sequence advances to the UCSM step.
+            self.device.task.taskstep_manager.skip_taskstep(
+                name="FetchInventoryUcsCommonSdkObjects",
+                status_message="Skipped - all inventory SDK objects are fetched together from XML file")
+            self.device.task.taskstep_manager.start_taskstep(
+                name="FetchInventoryUcsSystemSdkObjects",
+                description="Fetching " + self.device.metadata.device_type_long +
+                            " SDK Inventory Objects from XML file")
+
+        # Pre-build the class cache: only load SDK classes that are in our target
+        # set and are known to ucsmsdk. Classes absent from the SDK are skipped.
+        mo_class_cache = {}
+        for class_id in sdk_objects_to_fetch:
+            try:
+                mo_class_cache[class_id] = ucscoreutils.load_class(class_id)
+            except Exception:
+                self.logger(level="debug", message="No ucsmsdk class for " + class_id + ", skipping")
+
+        # Single-pass iterparse over the flat MIT XML structure.
+        parse_error = False
+        firmware_package_version = None
+        catalog_objects = []
+        catalog_class_cache = {}
+        try:
+            for event, elem in ET.iterparse(xml_file_path, events=('end',)):
+                if elem.tag == 'topRoot':
+                    elem.clear()
+                    continue
+                # Opportunistically capture the system firmware version.
+                # Primary source: firmwareRunning MO at dn="sys/mgmt/fw-system".
+                # Fallback: versionApplication MO at dn="sys/version/application".
+                if elem.tag == 'firmwareRunning' and elem.get('dn') == 'sys/mgmt/fw-system':
+                    firmware_package_version = elem.get('version')
+                elif (elem.tag == 'versionApplication' and elem.get('dn') == 'sys/version/application' and
+                      not firmware_package_version):
+                    firmware_package_version = elem.get('version')
+                # Collect capability provider objects (live equivalent: query_children(in_dn="capabilities"))
+                if (elem.get('dn') or '').startswith('capabilities/'):
+                    if elem.tag not in catalog_class_cache:
+                        try:
+                            catalog_class_cache[elem.tag] = ucscoreutils.load_class(elem.tag)
+                        except Exception:
+                            catalog_class_cache[elem.tag] = None
+                    mo_class = catalog_class_cache[elem.tag]
+                    if mo_class is not None:
+                        try:
+                            catalog_objects.append(_load_mo_from_xml_element(mo_class, elem))
+                        except Exception as err:
+                            self.logger(level="warning",
+                                        message="Error instantiating catalog MO " + elem.tag + " from XML: " + str(err))
+                elif elem.tag in mo_class_cache:
+                    try:
+                        mo = _load_mo_from_xml_element(mo_class_cache[elem.tag], elem)
+                        self.sdk_objects.setdefault(elem.tag, []).append(mo)
+                    except Exception as err:
+                        self.logger(level="warning",
+                                    message="Error instantiating " + elem.tag + " MO from XML: " + str(err))
+                elem.clear()
+        except ET.ParseError as err:
+            parse_error = True
+            self.logger(level="error",
+                        message="XML parse error while reading " + str(xml_file_path) + ": " + str(err))
+
+        # Classes absent from the XML are left out of sdk_objects entirely,
+        # mirroring live behaviour where absent classes are never inserted.
+        # Catalog objects (from capabilities/ DN subtree) are stored under a special key.
+        if catalog_objects:
+            self.sdk_objects["catalog"] = catalog_objects
+            self.logger(level="debug",
+                        message="Loaded " + str(len(catalog_objects)) + " catalog objects from XML capabilities/ subtree")
+            # _find_equipment_manufacturing_def() and _find_equipment_local_disk_def() look in
+            # their own sdk_objects keys (populated by query_classid() in the live path).
+            # Since these MOs live under capabilities/ in the XML they end up only in catalog_objects,
+            # so we must also expose them under their class-name keys.
+            mfg_defs = [o for o in catalog_objects if getattr(o, '_class_id', '') == 'EquipmentManufacturingDef']
+            if mfg_defs:
+                self.sdk_objects["equipmentManufacturingDef"] = mfg_defs
+            local_disk_defs = [o for o in catalog_objects if getattr(o, '_class_id', '') == 'EquipmentLocalDiskDef']
+            if local_disk_defs:
+                self.sdk_objects["equipmentLocalDiskDef"] = local_disk_defs
+        else:
+            self.logger(level="warning",
+                        message="No catalog objects found in XML; SKU/name lookup will fall back to model number")
+
+        # Set device version from the firmwareRunning MO at sys/mgmt/fw-system or
+        # versionApplication MO at sys/version/application so that version-gated
+        # logic (e.g. firmware version comparisons) works correctly without a live connection.
+        # The version attribute is already a clean string like "4.1(3c)" with no suffix stripping needed.
+        if firmware_package_version:
+            try:
+                self.device.version = UcsVersion(firmware_package_version)
+                if hasattr(self.device.version, 'version'):
+                    self.device.metadata.device_version = self.device.version.version
+                self.logger(level="debug",
+                            message="Set device version from XML: " + firmware_package_version)
+            except Exception as err:
+                self.logger(level="warning",
+                            message="Could not parse firmware version '" + firmware_package_version + "': " + str(err))
+        else:
+            self.logger(level="warning",
+                        message="Could not find firmwareRunning (sys/mgmt/fw-system) or versionApplication "
+                                "(sys/version/application) MO in XML; device version will not be set")
+
+        if parse_error and not force:
+            if self.device.task is not None:
+                self.device.task.taskstep_manager.stop_taskstep(
+                    name="FetchInventoryUcsSystemSdkObjects", status="failed",
+                    status_message="XML parse error while fetching " +
+                                   self.device.metadata.device_type_long + " SDK Inventory Objects")
+                if not self.device.task.taskstep_manager.is_taskstep_optional(
+                        name="FetchInventoryUcsSystemSdkObjects"):
+                    return False
+            return False
+
+        self.logger(level="debug",
+                    message="Finished reading XML file. Loaded " +
+                            str(sum(len(v) for v in self.sdk_objects.values())) +
+                            " SDK objects across " +
+                            str(sum(1 for v in self.sdk_objects.values() if v)) + " classes.")
+
+        if self.device.task is not None:
+            self.device.task.taskstep_manager.stop_taskstep(
+                name="FetchInventoryUcsSystemSdkObjects", status="successful",
+                status_message="Successfully fetched " + self.device.metadata.device_type_long +
+                               " SDK Inventory Objects from XML file")
+            # The XML pass also collects catalog objects in the same iteration, so
+            # skip the separate live-fetch step that would normally follow.
+            self.device.task.taskstep_manager.skip_taskstep(
+                name="FetchInventoryUcsSystemCatalogSdkObjects",
+                status_message="Skipped - catalog objects are collected together from XML file")
+
+        # Apply the same natural-sort-by-DN as the live fetch
+        for value in self.sdk_objects.values():
+            value.sort(key=lambda obj: [int(t) if t.isdigit() else t.lower()
+                                        for t in re.split(r'(\d+)', obj.dn or '')])
+
+        return True
+
 
 class UcsImcInventory(GenericUcsInventory):
+    _IMC_SPECIFIC_SDK_OBJECTS_TO_FETCH = [
+        "adaptorConnectorInfo", "computeServerNode", "equipmentRackEnclosure",
+        "equipmentSharedIOModule", "equipmentTpm", "gpuInventory",
+        "ioControllerNVMePhysicalDrive", "ioExpander", "networkAdapterEthIf",
+        "networkAdapterUnit", "pciAdapterFruInventory", "pciAdapterFruInventoryInfo",
+        "pciEquipSlot", "storageControllerNVMe", "storageEnclosureDisk",
+        "storageFlexFlashControllerProps", "storageFlexFlashPhysicalDrive",
+        "storageLocalDiskProps", "storageNVMePhysicalDrive", "systemBoardUnit"
+    ]
+
     def __init__(self, parent=None):
         self.chassis = []  # Used for chassis models like S3260
         self.device_connector = []
@@ -590,13 +817,7 @@ class UcsImcInventory(GenericUcsInventory):
             return False
 
         # List of SDK objects to fetch that are specific to IMC
-        sdk_objects_to_fetch = ["adaptorConnectorInfo", "computeServerNode", "equipmentRackEnclosure",
-                                "equipmentSharedIOModule", "equipmentTpm", "gpuInventory",
-                                "ioControllerNVMePhysicalDrive", "ioExpander", "networkAdapterEthIf",
-                                "networkAdapterUnit", "pciAdapterFruInventory", "pciAdapterFruInventoryInfo",
-                                "pciEquipSlot", "storageControllerNVMe", "storageEnclosureDisk",
-                                "storageFlexFlashControllerProps", "storageFlexFlashPhysicalDrive",
-                                "storageLocalDiskProps", "storageNVMePhysicalDrive", "systemBoardUnit"]
+        sdk_objects_to_fetch = self._IMC_SPECIFIC_SDK_OBJECTS_TO_FETCH
         self.logger(level="debug",
                     message="Fetching " + self.device.metadata.device_type_long + " SDK objects for inventory")
 
@@ -732,6 +953,17 @@ class UcsImcInventory(GenericUcsInventory):
 
 
 class UcsCentralInventory(GenericUcsInventory):
+    _CENTRAL_SPECIFIC_SDK_OBJECTS_TO_FETCH = [
+        "computeBlade", "computeSystem", "equipmentFex", "equipmentFruVariant",
+        "equipmentIOCard", "equipmentSwitchCard", "equipmentSwitchIOCard", "equipmentXcvr",
+        "etherPIo", "etherServerIntFIo", "etherSwitchIntFIo", "fcPIo", "firmwareRunning",
+        "firmwareStatus", "graphicsCard", "licenseFeature", "licenseFile", "licenseInstance",
+        "licenseServerHostId", "lsServer", "mgmtConnection", "mgmtInterface", "mgmtVnet",
+        "networkElement", "storageFlexFlashCard", "storageNvmeStats", "storageSsdHealthStats",
+        "vnicIpV4MgmtPooledAddr", "vnicIpV4PooledAddr", "vnicIpV4StaticAddr",
+        "vnicIpV6StaticAddr", "vnicIpV6MgmtPooledAddr"
+    ]
+
     def __init__(self, parent=None):
         self.domains = []
         GenericUcsInventory.__init__(self, parent=parent)
@@ -751,14 +983,7 @@ class UcsCentralInventory(GenericUcsInventory):
             return False
 
         # List of SDK objects to fetch that are specific to UCS Central
-        sdk_objects_to_fetch = ["computeBlade", "computeSystem", "equipmentFex", "equipmentFruVariant",
-                                "equipmentIOCard", "equipmentSwitchCard", "equipmentSwitchIOCard", "equipmentXcvr",
-                                "etherPIo", "etherServerIntFIo", "etherSwitchIntFIo", "fcPIo", "firmwareRunning",
-                                "firmwareStatus", "graphicsCard", "licenseFeature", "licenseFile", "licenseInstance",
-                                "licenseServerHostId", "lsServer", "mgmtConnection", "mgmtInterface", "mgmtVnet",
-                                "networkElement", "storageFlexFlashCard", "storageNvmeStats", "storageSsdHealthStats",
-                                "vnicIpV4MgmtPooledAddr", "vnicIpV4PooledAddr", "vnicIpV4StaticAddr",
-                                "vnicIpV6StaticAddr", "vnicIpV6MgmtPooledAddr"]
+        sdk_objects_to_fetch = self._CENTRAL_SPECIFIC_SDK_OBJECTS_TO_FETCH
         self.logger(level="debug",
                     message="Fetching " + self.device.metadata.device_type_long + " SDK objects for inventory")
 

@@ -181,6 +181,58 @@
     </div>
   </div>
 </div>
+
+<div class="modal fade" id="importTechSupportModal" tabindex="-1" role="dialog" aria-labelledby="importTechSupportModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="importTechSupportModalLabel">Import Tech-Support</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form id="importTechSupportForm">
+          <div class="form-group">
+            <label for="tech_support_file" class="col-form-label">Tech-support file:</label>
+            <input type="file" class="form-control-file" id="tech_support_file" accept=".tar,.gz,.tgz,.xml">
+            <small class="form-text text-muted">Accepted formats: full tech-support bundle (.tar, .tar.gz, .tgz), raw mit.xml or compressed mit.xml.gz. Max 2 GB.</small>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        <button id="importTechSupportSubmitButton" type="submit" class="btn btn-primary" onclick="importTechSupport()">Import</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="addDevicesFromCSVModal" tabindex="-1" role="dialog" aria-labelledby="addDevicesFromCSVModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="addDevicesFromCSVModalLabel">Add Devices from CSV</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form id="addDevicesFromCSVForm">
+          <div class="form-group">
+            <label for="devices_csv_file" class="col-form-label">CSV file:</label>
+            <input type="file" class="form-control-file" id="devices_csv_file" accept=".csv">
+            <small class="form-text text-muted">The CSV file must contain the following columns in order: <strong>Device Type</strong>, <strong>Target</strong>, <strong>Username</strong>, <strong>Password</strong>.</small>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        <button id="addDevicesFromCSVSubmitButton" type="submit" class="btn btn-primary" onclick="addDevicesFromCSV()">Add devices</button>
+      </div>
+    </div>
+  </div>
+</div>
 {% endblock %}
 {% block breadcrumbs %}
 <ol class="breadcrumb mb-0 p-0">
@@ -192,10 +244,18 @@
   <div class="container-fluid">
     <div class="row">
       <div class="col-sm-3">
-        <button id="modalBtn" class="btn btn-primary" onclick="toggleNewDeviceModal()">
-          <i class="fas fa-plus"></i>
-          Add device
-        </button>
+        <div class="btn-group">
+          <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            <i class="fas fa-plus"></i>
+            Add / Import
+          </button>
+          <div class="dropdown-menu">
+            <a class="dropdown-item" href="#" onclick="toggleNewDeviceModal()"><span class="mr-2" style="width: 20px; display: inline-block"><i class="fas fa-plus"></i></span>Add device</a>
+            <a class="dropdown-item" href="#" onclick="toggleAddDevicesFromCSVModal()"><span class="mr-2" style="width: 20px; display: inline-block"><i class="fas fa-file-csv"></i></span>Add devices from CSV</a>
+            <div class="dropdown-divider"></div>
+            <a class="dropdown-item" href="#" onclick="toggleImportTechSupportModal()"><span class="mr-2" style="width: 20px; display: inline-block"><i class="fas fa-file-import"></i></span>Import tech-support</a>
+          </div>
+        </div>
       </div>
       <div class="col-sm-6">
         <div id="deviceSearchContainer" class="input-group">

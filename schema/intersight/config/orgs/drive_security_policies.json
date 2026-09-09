@@ -17,6 +17,15 @@
          "pattern": "^$|^[a-zA-Z0-9]+[\\x00-\\xFF]*$",
          "maxLength": 1024
       },
+      "drive_security_configuration_type": {
+         "description": "Drive Security Method to be used for fetching the security key",
+         "type": "string",
+         "default": "Kmip",
+         "enum": [
+            "Kmip",
+            "Manual"
+         ]
+      },
       "name": {
          "description": "Drive Security Policy Name",
          "type": "string",
@@ -53,7 +62,7 @@
          "minItems": 1
       },
       "primary_kmip_server": {
-         "description": "Drive Security Policy Primary KMIP server",
+         "description": "DEPRECATED: Drive Security Policy Primary KMIP server",
          "type": "object",
          "properties": {
             "enable_drive_security": {
@@ -83,7 +92,7 @@
          }
       },
       "secondary_kmip_server": {
-         "description": "Drive Security Policy Secondary KMIP server",
+         "description": "DEPRECATED: Drive Security Policy Secondary KMIP server",
          "type": "object",
          "properties": {
             "enable_drive_security": {
@@ -113,12 +122,12 @@
          }
       },
       "server_public_root_ca_certificate": {
-         "description": "The certificate/ public key of the KMIP server. It is required for initiating secure communication with the server.",
+         "description": "DEPRECATED: The certificate/ public key of the KMIP server. It is required for initiating secure communication with the server.",
          "type": "string",
          "default": ""
       },
       "authentication_credentials": {
-         "description": "Drive Security Policy authentication credentials",
+         "description": "DEPRECATED: Drive Security Policy authentication credentials",
          "type": "object",
          "properties": {
             "enable_authentication": {
@@ -135,6 +144,130 @@
                "description": "The password for the KMIP server login.",
                "type": "string",
                "pattern": "[!'#%&\\'\\(\\)\\*\\+,\\-\\.\\/:;<>@\\[\\\\\\]\\^_`\\{\\|\\}~a-zA-Z0-9]{0,80}"
+            }
+         }
+      },
+      "drive_security_remote_key_configuration": {
+         "description": "Remote key configuration for Drive Security Policy",
+         "type": "object",
+         "properties": {
+            "primary_kmip_server": {
+               "description": "Drive Security Policy Primary KMIP server",
+               "type": "object",
+               "properties": {
+                  "enable_drive_security": {
+                     "description": "Enable the selected KMIP Server configuration for encryption. This flag just enables the drive security and only after remote key setting configured, the actual encryption will be done.",
+                     "type": "boolean",
+                     "default": true
+                  },
+                  "ip_address": {
+                     "description": "The IP address of the KMIP server. It could be an IPv4 address, an IPv6 address, or a hostname. Hostnames are valid only when Inband is configured for the CIMC address.",
+                     "type": "string",
+                     "default": ""
+                  },
+                  "port": {
+                     "description": "The port to which the KMIP client should connect.",
+                     "type": "integer",
+                     "default": 5696,
+                     "minimum": 1024,
+                     "maximum": 65535
+                  },
+                  "timeout": {
+                     "description": "The timeout before which the KMIP client should connect.",
+                     "type": "integer",
+                     "default": 60,
+                     "minimum": 1,
+                     "maximum": 65
+                  }
+               }
+            },
+            "secondary_kmip_server": {
+               "description": "Drive Security Policy Secondary KMIP server",
+               "type": "object",
+               "properties": {
+                  "enable_drive_security": {
+                     "description": "Enable the selected KMIP Server configuration for encryption. This flag just enables the drive security and only after remote key setting configured, the actual encryption will be done.",
+                     "type": "boolean",
+                     "default": true
+                  },
+                  "ip_address": {
+                     "description": "The IP address of the KMIP server. It could be an IPv4 address, an IPv6 address, or a hostname. Hostnames are valid only when Inband is configured for the CIMC address.",
+                     "type": "string",
+                     "default": ""
+                  },
+                  "port": {
+                     "description": "The port to which the KMIP client should connect.",
+                     "type": "integer",
+                     "default": 5696,
+                     "minimum": 1024,
+                     "maximum": 65535
+                  },
+                  "timeout": {
+                     "description": "The timeout before which the KMIP client should connect.",
+                     "type": "integer",
+                     "default": 60,
+                     "minimum": 1,
+                     "maximum": 65
+                  }
+               }
+            },
+            "server_public_root_ca_certificate": {
+               "description": "The certificate/ public key of the KMIP server. It is required for initiating secure communication with the server.",
+               "type": "string",
+               "default": ""
+            },
+            "authentication_credentials": {
+               "description": "Drive Security Policy authentication credentials",
+               "type": "object",
+               "properties": {
+                  "enable_authentication": {
+                     "description": "Enables/disables the authentication for communicating with KMIP server. This flag enables the authentication which makes authentication mandatory.",
+                     "type": "boolean",
+                     "default": false
+                  },
+                  "username": {
+                     "description": "The user name for the KMIP server login.",
+                     "type": "string",
+                     "pattern": "^$|[a-zA-Z][a-zA-Z0-9_.-]{0,31}"
+                  },
+                  "password": {
+                     "description": "The password for the KMIP server login.",
+                     "type": "string",
+                     "pattern": "[!'#%&\\'\\(\\)\\*\\+,\\-\\.\\/:;<>@\\[\\\\\\]\\^_`\\{\\|\\}~a-zA-Z0-9]{0,80}"
+                  }
+               }
+            },
+            "drive_security_enabled_with_manual_key": {
+               "description": "Indicates whether drive security is enabled using a manual security key passphrase",
+               "type": "boolean",
+               "default": false
+            },
+            "current_security_key_passphrase": {
+               "description": "Existing security key passphrase currently configured on the server",
+               "type": "string",
+               "maxLength": 32
+            }
+         }
+      },
+      "drive_security_manual_key_configuration": {
+         "description": "Manual key configuration for Drive Security Policy",
+         "type": "object",
+         "properties": {
+            "drive_security_enabled_with_manual_key": {
+               "description": "Indicates whether drive security is enabled using a manual security key passphrase",
+               "type": "boolean",
+               "default": false
+            },
+            "new_security_key_passphrase": {
+               "description": "New security key passphrase to be configured on the server",
+               "type": "string",
+               "minLength": 8,
+               "maxLength": 32
+            },
+            "current_security_key_passphrase": {
+               "description": "Existing security key passphrase currently configured on the server",
+               "type": "string",
+               "maxLength": 32
             }
          }
       }

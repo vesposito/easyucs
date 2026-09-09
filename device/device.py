@@ -407,6 +407,10 @@ class GenericDevice:
                                 message=f"Couldn't get the device connector information from the API {uri}, "
                                         f"response: {response}")
                     return None
+                elif not response.text:
+                    self.logger(level="error",
+                                message=f"Empty response from device connector API {uri}")
+                    return None
                 elif "InvalidRequest" in response.text:
                     self.logger(level="error", message=response.json()["message"])
                     return None

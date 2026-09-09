@@ -80,12 +80,12 @@ urllib3.disable_warnings()
 
 
 class IntersightDevice(GenericDevice):
-    INTERSIGHT_APPLIANCE_MIN_REQUIRED_VERSION = "1.1.6-0"
+    INTERSIGHT_APPLIANCE_MIN_REQUIRED_VERSION = "1.1.7-0"
 
     def __init__(self, parent=None, uuid=None, target="us-east-1.intersight.com", key_id="", private_key_path="",
                  is_hidden=False, is_system=False, system_usage=None, proxy=None, proxy_user=None, proxy_password=None,
                  logger_handle_log_level="info", log_file_path=None, bypass_connection_checks=False,
-                 bypass_version_checks=False, user_label=""):
+                 bypass_version_checks=False, ssl_ca_cert_file=None, user_label=""):
 
         self.key_id = key_id
         self.private_key_path = private_key_path
@@ -175,6 +175,10 @@ class IntersightDevice(GenericDevice):
             if not any(target.endswith(x) for x in ["intersight.com", "starshipcloud.com"]):
                 configuration.verify_ssl = False
 
+            # If the user provides a valid SSL certificate, configure the Intersight connection with it
+            if ssl_ca_cert_file:
+                configuration.ssl_ca_cert = ssl_ca_cert_file
+
             self.handle = ApiClient(configuration)
             self.handle.set_default_header('Content-Type', 'application/json')
 
@@ -185,6 +189,55 @@ class IntersightDevice(GenericDevice):
         self.inventory_manager = IntersightInventoryManager(parent=self)
         self.report_manager = IntersightReportManager(parent=self)
         self.delete_summary_manager = DeleteSummaryManager(parent=self)
+
+    def validate_orgs_for_clear_config(self, orgs=None):
+        """
+        Validate selected organizations before clear config.
+
+        Ensures a shared organization is deleted only when all its related (shared-with and sharing) organizations are selected.
+
+        Args:
+            orgs (list): Organizations selected for deletion.
+
+        Returns:
+            bool: True if validation passes, False otherwise.
+        """
+
+        # No orgs specified, implies full cleanup, so no validation required
+        if not orgs:
+            return True
+
+        orgs_set = set(orgs)
+
+        # Fetch all organizations
+        all_orgs = self.cache_manager.cache.get_orgs().get("orgs", {})
+
+        for org_name in orgs:
+            org_info = all_orgs.get(org_name, {})
+
+            # List of orgs this org is shared with
+            shared_with_orgs = org_info.get("shared_with_orgs", [])
+
+            # Identify orgs that are sharing with this org
+            sharing_orgs = [
+                org for org, info in all_orgs.items()
+                if org_name in info.get("shared_with_orgs", [])
+            ]
+
+            missing_orgs = [org for org in shared_with_orgs + sharing_orgs if org not in orgs_set]
+
+            if missing_orgs:
+                error_msg = (
+                    f"Cannot delete organization '{org_name}' as it is shared with "
+                    f"{', '.join(sorted(shared_with_orgs + sharing_orgs))}. Intersight does not allow deletion "
+                    f"until the shared relationship is removed. To proceed, either select all "
+                    f"shared organizations ({', '.join(sorted(missing_orgs))}) along with "
+                    f"'{org_name}' or remove the sharing relationship and retry."
+                )
+                self.logger(level="error", message=error_msg)
+                return False
+
+        return True
 
     def clear_config(self, orgs=None, delete_settings=False, bypass_version_checks=False, force=False,
                      delete_path_tags=False, delete_equipment_tags_and_labels=False):
@@ -284,7 +337,8 @@ class IntersightDevice(GenericDevice):
                          "fabric_system_qos_policy", "fabric_eth_network_policy",  "fabric_fc_network_policy",
                          "fabric_multicast_policy", "fabric_eth_network_group_policy",
                          "fabric_eth_network_control_policy", "fabric_fc_zone_policy",
-                         "fabric_port_operation", "fabric_pc_operation"]},
+                         "fabric_port_operation", "fabric_pc_operation", "fabric_net_flow_monitor",
+                         "fabric_net_flow_exporter", "fabric_net_flow_record", "fabric_net_flow_policy"]},
             {NtpApi: ["ntp_policy"]},
             {SnmpApi: ["snmp_policy"]},
             {SyslogApi: ["syslog_policy"]},
@@ -493,7 +547,7 @@ class IntersightDevice(GenericDevice):
                                 if result.moid in orgs_to_be_deleted:
                                     filtered_results.append(result)
                             else:
-                                if getattr(getattr(result, "organization"), "moid", "") in orgs_to_be_deleted:
+                                if getattr(getattr(result, "organization", None), "moid", "") in orgs_to_be_deleted:
                                     filtered_results.append(result)
                         else:
                             # If we do not restrict the deletion to a list of organizations, then we need to add all
@@ -558,6 +612,7 @@ class IntersightDevice(GenericDevice):
                                 self.delete_summary_manager.add_obj_status(obj=profile, status="failed", message=str(err))
 
                     for obj in filtered_results:
+                        user_defined = None
                         try:
                             if sdk_object in ["server_profile", "chassis_profile", "fabric_switch_cluster_profile"]:
                                 # Function call for Polling
@@ -709,6 +764,7 @@ class IntersightDevice(GenericDevice):
                                         port_info = f"{port_info}/{obj.aggregate_port_id}/{obj.port_id}"
                                     else:
                                         port_info = f"{port_info}/{obj.port_id}"
+                                    user_defined = port_info
                                     self.logger(level="info",
                                                 message=f"Deleting User label on Port {port_info} with "
                                                         f"(MOID {obj.moid})")
@@ -717,11 +773,12 @@ class IntersightDevice(GenericDevice):
                                                                                            "user_label":""})
                                     time.sleep(3)
                                     self.delete_summary_manager.add_obj_status(
-                                        obj=obj, status="success", obj_name=port_info,
+                                        obj=obj, status="success", obj_name=user_defined,
                                         message=f"User Label '{obj.user_label}' deleted from port '{port_info}'")
                                 continue
                             elif sdk_object == "fabric_pc_operation":
                                 if obj.user_label:
+                                    user_defined = obj.pc_id
                                     self.logger(level="info", message=f"Delete User label on Port Channel "
                                                                       f"{obj.pc_id} with (MOID {obj.moid})")
                                     api.patch_fabric_pc_operation(moid=obj.moid,
@@ -729,7 +786,7 @@ class IntersightDevice(GenericDevice):
                                                                                        "user_label": ""})
                                     time.sleep(3)
                                     self.delete_summary_manager.add_obj_status(
-                                        obj=obj, status="success", obj_name=obj.pc_id,
+                                        obj=obj, status="success", obj_name=user_defined,
                                         message=f"User Label '{obj.user_label}' deleted from port channel "
                                                 f"'{obj.pc_id}'")
                                 continue
@@ -756,6 +813,7 @@ class IntersightDevice(GenericDevice):
                                 continue
                             elif sdk_object == "network_element":
                                 if obj.user_label or obj.tags:
+                                    user_defined = f"{obj.serial}_{obj.switch_id}"
                                     self.logger(level="info", message=f"Deleting User label and Tags on "
                                                                       f"Fabric Interconnect with Serial Number "
                                                                       f"{obj.serial} (MOID {obj.moid})")
@@ -778,7 +836,7 @@ class IntersightDevice(GenericDevice):
                                     message += f"deleted from Fabric Interconnect '{obj.serial}'"
                                     self.delete_summary_manager.add_obj_status(obj=obj, status="success",
                                                                                message=message,
-                                                                               obj_name=f"{obj.serial}_{obj.switch_id}")
+                                                                               obj_name=user_defined)
                                 continue
                             elif sdk_object == "equipment_chassis":
                                 if obj.user_label or obj.tags:
@@ -806,6 +864,7 @@ class IntersightDevice(GenericDevice):
                                 continue
                             elif sdk_object == "equipment_fex":
                                 if obj.tags:
+                                    user_defined = f"{obj.serial}_{obj.connection_path}"
                                     self.logger(level="info", message=f"Deleting Tags on FEX with Serial Number"
                                                                       f"{obj.serial} (MOID {obj.moid})")
                                     api.patch_equipment_fex(moid=obj.moid, equipment_fex={"tags": []})
@@ -819,7 +878,7 @@ class IntersightDevice(GenericDevice):
                                     message = f"Tags ({','.join(tags_info)}) deleted from FEX '{obj.serial}'"
                                     self.delete_summary_manager.add_obj_status(
                                         obj=obj, status="success", message=message,
-                                        obj_name=f"{obj.serial}_{obj.connection_path}")
+                                        obj_name=user_defined)
                                 continue
                             elif sdk_object in ["compute_blade", "compute_rack_unit"]:
                                 if obj.tags:
@@ -862,9 +921,10 @@ class IntersightDevice(GenericDevice):
                                         )
                                 continue
                             elif sdk_object == "comm_tag_definition":
+                                user_defined = obj.key
                                 self.logger(level="info", message=f"Deleting Path Tags with (MOID {obj.moid})")
                                 api.delete_comm_tag_definition(moid=obj.moid)
-                                self.delete_summary_manager.add_obj_status(obj=obj, status="success", obj_name=obj.key,
+                                self.delete_summary_manager.add_obj_status(obj=obj, status="success", obj_name=user_defined,
                                                                            message=f"Deleted Path Tag '{obj.key}'")
                                 continue
 
@@ -886,13 +946,13 @@ class IntersightDevice(GenericDevice):
                                         self.logger(level="warning",
                                                     message="Skipped deleting unsupported objects of class " +
                                                             sdk_object)
-                                        self.delete_summary_manager.add_obj_status(obj=obj, status="skipped",
+                                        self.delete_summary_manager.add_obj_status(obj=obj, status="skipped", obj_name=user_defined,
                                                                                    message=err_body.get("message", str(err)))
                                     else:
                                         error_encountered = True
                                         self.logger(level="error", message="Failed to delete objects of class " +
                                                                            sdk_object + ": " + str(err))
-                                        self.delete_summary_manager.add_obj_status(obj=obj, status="failed",
+                                        self.delete_summary_manager.add_obj_status(obj=obj, status="failed", obj_name=user_defined,
                                                                                    message=err_body.get("message", str(err)))
                                 except json.decoder.JSONDecodeError:
                                     error_encountered = True
@@ -901,24 +961,24 @@ class IntersightDevice(GenericDevice):
                                     self.logger(level="error",
                                                 message="Failed to delete objects of class " + sdk_object + ": " +
                                                         str(err))
-                                    self.delete_summary_manager.add_obj_status(obj=obj, status="failed", message=str(err))
+                                    self.delete_summary_manager.add_obj_status(obj=obj, status="failed", obj_name=user_defined, message=str(err))
                             else:
                                 error_encountered = True
                                 self.logger(level="error",
                                             message="Failed to delete objects of class " + sdk_object + ": " +
                                                     str(err))
-                                self.delete_summary_manager.add_obj_status(obj=obj, status="failed", message=str(err))
+                                self.delete_summary_manager.add_obj_status(obj=obj, status="failed", obj_name=user_defined, message=str(err))
                         except AttributeError as attr_err:
                             error_encountered = True
                             self.logger(level="error",
                                         message="Failed to delete objects of class " + sdk_object + ": " +
                                                 str(attr_err))
-                            self.delete_summary_manager.add_obj_status(obj=obj, status="failed", message=str(attr_err))
+                            self.delete_summary_manager.add_obj_status(obj=obj, status="failed", obj_name=user_defined, message=str(attr_err))
                         except urllib3.exceptions.MaxRetryError as err:
                             error_encountered = True
                             self.logger(level="error",
                                         message="Failed to delete objects of class " + sdk_object + ": " + str(err))
-                            self.delete_summary_manager.add_obj_status(obj=obj, status="failed", message=str(err))
+                            self.delete_summary_manager.add_obj_status(obj=obj, status="failed", obj_name=user_defined, message=str(err))
 
         if last_organization and not last_organization.resource_groups:
             # If the last organization does not have a resource group attached, then we

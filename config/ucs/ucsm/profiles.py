@@ -1268,6 +1268,27 @@ class UcsSystemServiceProfile(UcsSystemConfigObject, GenericUcsServiceProfile):
 
                     self.operational_state.update({"assigned_server": assigned_server})
 
+                    # Store the actual VD sizes (in MiB) per LUN name for this service profile's
+                    # assigned server, using storageScsiLunRef to match LUNs to the service profile
+                    # and storageVirtualDrive to retrieve the size reported by the RAID controller.
+                    if ("storageScsiLunRef" in self._config.sdk_objects and
+                            "storageVirtualDrive" in self._config.sdk_objects):
+                        vd_sizes = {}
+                        for scsi_ref in self._config.sdk_objects["storageScsiLunRef"]:
+                            if (scsi_ref.ls_dn == ls_server.dn and
+                                    scsi_ref.pn_dn and scsi_ref.lun_name):
+                                for storage_vd in self._config.sdk_objects["storageVirtualDrive"]:
+                                    if (storage_vd.name == scsi_ref.lun_name and
+                                            storage_vd.pn_dn == scsi_ref.pn_dn and
+                                            storage_vd.size not in [None, "not-applicable"]):
+                                        try:
+                                            vd_sizes[scsi_ref.lun_name] = str(int(storage_vd.size))
+                                        except (ValueError, TypeError):
+                                            pass
+                                        break
+                        if vd_sizes:
+                            self.operational_state["storage_vd_actual_sizes"] = vd_sizes
+
                 if ls_server.oper_state:
                     self.operational_state.update({"profile_state": ls_server.oper_state})
 
@@ -1450,12 +1471,17 @@ class UcsSystemServiceProfile(UcsSystemConfigObject, GenericUcsServiceProfile):
         if "assigned_server" not in self.operational_state:
             self.operational_state["assigned_server"] = None
         elif self.operational_state["assigned_server"]:
-            for value in ["server_id", "chassis_id", "slot_id"]:
+            for value in ["server_id", "chassis_id", "slot_id", "serial_number"]:
                 if value not in self.operational_state["assigned_server"]:
                     self.operational_state["assigned_server"][value] = None
 
         if "profile_state" not in self.operational_state:
             self.operational_state["profile_state"] = None
+
+        # storage_vd_actual_sizes: dict of {lun_name: actual_size_mib} fetched from
+        # storageVirtualDrive on the assigned server.
+        if "storage_vd_actual_sizes" not in self.operational_state:
+            self.operational_state["storage_vd_actual_sizes"] = None
 
     def push_object(self, commit=True):
         if commit:

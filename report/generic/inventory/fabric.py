@@ -51,6 +51,8 @@ class UcsFiReportSection(UcsReportSection):
                     image = Image.open(path_rear).rotate(90, expand=True)
                     path_rear = self.report.img_path + "fi_" + fi.id + "_rear_clear_horizontal.png"
                     image.save(path_rear)
+                    # Close the rotated image after saving to release its C-level buffer.
+                    image.close()
             self.content_list.append(
                 GenericReportImage(order_id=self.report.get_current_order_id(), parent=self, path=path_rear,
                                    centered=True, spacing_after=2))

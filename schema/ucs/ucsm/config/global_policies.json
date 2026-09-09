@@ -182,6 +182,7 @@
             "balanced",
             "high-power",
             "low-power",
+            "max-cooling",
             "max-power",
             "performance"
          ]

@@ -79,6 +79,32 @@
          "default": "",
          "pattern": "^([a-zA-Z0-9_.:-]{1,64}/)?[a-zA-Z0-9_.:-]{1,64}$"
       },
+      "flow_monitors": {
+         "description": "vNIC Template - NetFlow Monitor Sessions",
+         "type": "array",
+         "items": {
+            "description": "vNIC Template - NetFlow Monitor Session",
+            "type": "object",
+            "properties": {
+               "monitor_name": {
+                  "description": "vNIC Template - NetFlow Monitor Name",
+                  "type": "string",
+                  "pattern": "^$|^[a-zA-Z0-9_.:-]{1,64}$"
+               },
+               "flow_direction": {
+                  "description": "vNIC Template - NetFlow Monitor Flow Direction",
+                  "type": "string",
+                  "enum": [
+                     "both",
+                     "rx",
+                     "tx"
+                  ]
+               }
+            },
+            "additionalProperties": false
+         },
+         "minItems": 1
+      },
       "iscsi_boot_policy": {
          "description": "vNIC Template - vNIC iSCSI Boot Policy",
          "type": "string",

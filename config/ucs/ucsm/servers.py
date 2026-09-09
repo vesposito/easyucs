@@ -2275,10 +2275,25 @@ class UcsSystemBiosPolicy(UcsSystemConfigObject):
         if self._config.load_from == "live":
 
             # We check what type of method is used to create the BIOS policy depending on the version of UCS Manager
-            # The BIOS Token method is the newest method
-            if self._device.version.__ge__(self._BIOS_TOKENS_MIN_REQUIRED_VERSION):
+            # The BIOS Token method is the newest method.
+            # If the device version is None (e.g. version MO was absent from the XML), default to the token
+            # method — it is the modern approach and safe to use as a fallback for unknown versions.
+            try:
+                if self._device.version.__ge__(self._BIOS_TOKENS_MIN_REQUIRED_VERSION):
+                    self._bios_token_method = True
+                    self.logger(level="debug",
+                                message=f"Enabled BIOS token method: device version {str(self._device.version)} "
+                                        f"meets the BIOS minimum required version "
+                                        f"{str(self._BIOS_TOKENS_MIN_REQUIRED_VERSION)}"
+                                )
+            except (AttributeError, TypeError):
+                # UcsVersion object is uninitialised (private __major not set); default to token method.
                 self._bios_token_method = True
 
+                self.logger(
+                    level="debug",
+                    message="Unable to determine device version; enabling BIOS token method by default"
+                )
             if bios_v_profile is not None:
                 self.name = bios_v_profile.name
                 self.reboot_on_bios_settings_change = bios_v_profile.reboot_on_update
@@ -2918,7 +2933,11 @@ class UcsSystemBiosPolicy(UcsSystemConfigObject):
         if not bios_table:
             self.logger(level="error", message="BIOS Table not imported.")
 
-        if self._device.version.__ge__(self._BIOS_TOKENS_MIN_REQUIRED_VERSION):
+        try:
+            if self._device.version.__ge__(self._BIOS_TOKENS_MIN_REQUIRED_VERSION):
+                self._bios_token_method = True
+        except (AttributeError, TypeError):
+            # UcsVersion object is uninitialised (private __major not set); default to token method.
             self._bios_token_method = True
 
         if commit:

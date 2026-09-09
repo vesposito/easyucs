@@ -17,7 +17,6 @@ var api_config_endpoint = '/configs';
 var api_inventory_endpoint = '/inventories';
 var api_report_endpoint = '/reports';
 var api_backup_endpoint = '/backups';
-var api_notification_endpoint = '/notifications';
 var api_log_endpoint = '/logs/session';
 var api_orgs_endpoint = '/cache/orgs';
 var repo_download_endpoint = window.location.origin + '/repo';
@@ -40,7 +39,6 @@ var selected_objects = {
 
 // Task related
 var displayed_tasks = [];
-var notifications = 0;
 var deviceTasksTable = null;
 
 var devices_tasks_counts = {};
@@ -77,7 +75,6 @@ var log_level = "debug";
 $(document).ready(function() {
     $("body").tooltip({ selector: '[data-toggle=tooltip]' });
 
-    // getFromDb(displayNotifications,"notification");
     getFromDb(processSavedSessionLogs, "log");
     getDevicesTypesInfo(function (device_types){
         saveDevicesTypesInfo(device_types);
@@ -121,34 +118,12 @@ function addLogs(data) {
 }
 
 /**
- * Adds 1 to the task notification counter, stores its value in the API, and updates the notification badge
- * @param  {JSON} data - The data returned when getting the element's logs from the API
- */
-function addTaskNotification(){
-    notifications += 1
-    target_api_endpoint = api_base_url + api_notification_endpoint;
-    payload = {
-        notifications: notifications,
-    }
-
-    // Sends a call to the API to update the notification counter
-    httpRequestAsync("POST", target_api_endpoint, sampleCallback, payload);
-
-    // Updates the notification badge with the notification counter
-    document.getElementById("new-task-badge").textContent = notifications;
-
-    // Updates the tasks display
-    getFromDb(displayTasks, "task");
-}
-
-/**
  * Creates an alert when an action is started
  * @param  {String} action_type_message - The message corresponding to the action
  */
 function alertActionStarted(action_type_message){
   displayAlert("Action started", action_type_message, "success");
   getTasksFromDb();
-//   addTaskNotification();
 }
 
 /**
@@ -157,7 +132,6 @@ function alertActionStarted(action_type_message){
  */
 function alertObjectFetched(object_type){
   displayAlert("Fetching task started", "Fetching "+ object_type, "success");
-//   addTaskNotification();
   getTasksFromDb();
 }
 
@@ -168,7 +142,6 @@ function alertObjectFetched(object_type){
 function alertObjectPushed(object_type){
   displayAlert("Pushing task started", "Pushing " + object_type + " file to device", "success");
   getTasksFromDb();
-//   addTaskNotification();
 }
 
 
@@ -224,24 +197,6 @@ function capitalizeFirstLetter(string) {
 function capitalizeWords(string) {
     string = string.replace(/[._-]/g, " ");
     return string.replace(/(^\w{1})|(\s+\w{1})/g, letter => letter.toUpperCase());
-}
-
-/**
- * Resets the task notification counter and removes the notification badge from UI
- */
-function cleanTaskNotification(){
-    notifications = 0;
-
-    // Removes the content of the notification badge
-    document.getElementById("new-task-badge").textContent = "";
-
-    target_api_endpoint = api_base_url + api_notification_endpoint;
-
-    payload = {
-        notifications: notifications,
-    }
-    // Sends a call to API to reset the notification counter
-    httpRequestAsync("POST", target_api_endpoint, sampleCallback, payload);
 }
 
 /**
@@ -519,27 +474,6 @@ function displayLogsToText(){
           log_textarea.scrollTop = log_textarea.scrollHeight;
     }
 }
-
-/**
- * Displays the notification badge
- * @param  {JSON} data - The data returned when getting the notification counter from the API
- */
-function displayNotifications(data){
-    if(!data){
-        console.error('No data to display!');
-        return
-    }
-    data = JSON.parse(data);
-    if(!data.notifications){
-        return
-    }
-
-    notifications = data.notifications;
-
-    // Updates the notification badge with the notification number
-    document.getElementById("new-task-badge").textContent = notifications;
-}
-
 
 function tableFromTasks(task_list, taskTable, device_column = true) {
     // For each task, we create the specific row in the DataTable
@@ -827,7 +761,7 @@ function download(object_type = null, device_uuid = null, uuid = null){
  * @param  {String} object_type - The type of object to fetch {backup/config/inventory}
  * @param  {String} device_uuid - The ID of the device to which the object belongs
  */
-function fetchLiveObject(callback = null, object_type = null, device_uuid = null){
+function fetchLiveObject(callback = null, object_type = null, device_uuid = null, force = false){
     if(!object_type){
         console.error("Impossible to fetch live object: no object_type specified");
         return
@@ -843,10 +777,10 @@ function fetchLiveObject(callback = null, object_type = null, device_uuid = null
     // Builds the API endpoint based on the object type
     if(object_type == "config"){
         target_api_endpoint+= api_config_endpoint;
-        payload = {"force": false};
+        payload = {"force": force};
     }else if(object_type == "inventory"){
         target_api_endpoint+= api_inventory_endpoint;
-        payload = {"force": false};
+        payload = {"force": force};
     }else if(object_type == "backup"){
         target_api_endpoint+= api_backup_endpoint;
         payload = {};
@@ -971,8 +905,6 @@ function getFromDb(callback = null, object_type = null, device_uuid = null, uuid
         }
     } else if(object_type == "task"){
         target_api_endpoint+= api_task_endpoint;
-    } else if (object_type == "notification"){
-        target_api_endpoint+= api_notification_endpoint;
     } else if (object_type == "log"){
         target_api_endpoint+= api_log_endpoint;
     } else if (object_type == "orgs"){

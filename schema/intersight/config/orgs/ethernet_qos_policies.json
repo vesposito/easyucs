@@ -76,7 +76,7 @@
          "type": "integer",
          "default": 1500,
          "minimum": 1500,
-         "maximum": 9000
+         "maximum": 9158
       },
       "priority": {
          "description": "Ethernet QoS Policy Priority",

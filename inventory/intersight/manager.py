@@ -243,6 +243,7 @@ class IntersightInventoryManager(GenericInventoryManager):
                 if hasattr(fi, "_draw_front"):
                     if fi._draw_front:
                         fi._draw_front.save_image(output_directory=directory, format=export_format)
+                        fi._draw_front = None
                 if hasattr(fi, "_draw_rear"):
                     if fi._draw_rear:
                         fi._draw_rear.save_image(output_directory=directory, format=export_format)
@@ -250,11 +251,13 @@ class IntersightInventoryManager(GenericInventoryManager):
                             if hasattr(fi._draw_rear, "clear_version"):
                                 fi._draw_rear.clear_version.save_image(output_directory=directory,
                                                                        format=export_format)
+                        fi._draw_rear = None
 
             for fex in ucs_domain.fabric_extenders:
                 if hasattr(fex, "_draw_front"):
                     if fex._draw_front:
                         fex._draw_front.save_image(output_directory=directory, format=export_format)
+                        fex._draw_front = None
                 if hasattr(fex, "_draw_rear"):
                     if fex._draw_rear:
                         fex._draw_rear.save_image(output_directory=directory, format=export_format)
@@ -262,11 +265,13 @@ class IntersightInventoryManager(GenericInventoryManager):
                             if hasattr(fex._draw_rear, "clear_version"):
                                 fex._draw_rear.clear_version.save_image(output_directory=directory,
                                                                         format=export_format)
+                        fex._draw_rear = None
 
             for chassis in ucs_domain.chassis:
                 if hasattr(chassis, "_draw_front"):
                     if chassis._draw_front:
                         chassis._draw_front.save_image(output_directory=directory, format=export_format)
+                        chassis._draw_front = None
                 if hasattr(chassis, "_draw_rear"):
                     if chassis._draw_rear:
                         chassis._draw_rear.save_image(output_directory=directory, format=export_format)
@@ -274,34 +279,41 @@ class IntersightInventoryManager(GenericInventoryManager):
                             if hasattr(chassis._draw_rear, "clear_version"):
                                 chassis._draw_rear.clear_version.save_image(output_directory=directory,
                                                                             format=export_format)
+                        chassis._draw_rear = None
                 if hasattr(chassis, "_draw_infra"):
                     if chassis._draw_infra:
                         chassis._draw_infra.save_image(output_directory=directory, format=export_format)
+                        chassis._draw_infra = None
 
             for rack in ucs_domain.rack_units:
                 if hasattr(rack, "_draw_front"):
                     if rack._draw_front:
                         rack._draw_front.save_image(output_directory=directory, format=export_format)
+                        rack._draw_front = None
                 if hasattr(rack, "_draw_rear"):
                     if rack._draw_rear:
                         rack._draw_rear.save_image(output_directory=directory, format=export_format)
                         if export_clear_pictures:
                             if hasattr(rack._draw_rear, "clear_version"):
                                 rack._draw_rear.clear_version.save_image(output_directory=directory, format=export_format)
+                        rack._draw_rear = None
                 if hasattr(rack, "_draw_infra"):
                     if rack._draw_infra:
                         rack._draw_infra.save_image(output_directory=directory, format=export_format)
+                        rack._draw_infra = None
 
         for rack in inventory.rack_units:
             if hasattr(rack, "_draw_front"):
                 if rack._draw_front:
                     rack._draw_front.save_image(output_directory=directory, format=export_format)
+                    rack._draw_front = None
             if hasattr(rack, "_draw_rear"):
                 if rack._draw_rear:
                     rack._draw_rear.save_image(output_directory=directory, format=export_format)
                     if export_clear_pictures:
                         if hasattr(rack._draw_rear, "clear_version"):
                             rack._draw_rear.clear_version.save_image(output_directory=directory, format=export_format)
+                    rack._draw_rear = None
 
         #
         # for rack_enclosure in inventory.rack_enclosures:

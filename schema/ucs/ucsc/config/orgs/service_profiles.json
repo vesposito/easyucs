@@ -1960,6 +1960,11 @@
                ],
                "additionalProperties": false
             },
+            "storage_vd_actual_sizes": {
+               "description": "Service Profile - Operational State - Actual VD sizes in MiB per LUN name as reported by the RAID controller on the assigned server (keys: LUN names, values: sizes in MiB)",
+               "type": "object",
+               "additionalProperties": {"type": "string"}
+            },
             "profile_state": {
                "description": "Service Profile - Operational State - Operational State of the Service Profile",
                "type": "string",

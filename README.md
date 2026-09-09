@@ -30,7 +30,7 @@ Minimum versions of UCS devices :
 * UCS Manager: ***3.2(1d)*** or above
 * UCS IMC: ***3.0(1c)*** or above
 * UCS Central: ***2.0(1a)*** or above
-* Intersight SaaS ***(no prerequisite)*** & Appliance: ***1.1.6-0*** or above
+* Intersight SaaS ***(no prerequisite)*** & Appliance: ***1.1.7-0*** or above
 
 This tool requires ***Python 3.9+*** to work. *Python 2.x* is not supported.
 
@@ -153,6 +153,16 @@ python easyucs.py device reset_device_connector -t ucsm -i 192.168.0.1 -u admin 
 
 
 ## Versioning
+
+### 1.0.7
+* Bump up minimum Intersight Appliance required version to 1.1.7-0
+* Added support for Fabric Interconnect 6652
+* Added support for UCS Manager 6.0(2)
+* Added support for importing config & inventory from a UCSM tech-support bundle
+* Added support for PFC Watchdog config in UCSM & Intersight
+* Added support for NetFlow configuration in Intersight
+* Ability to force fetch a config or inventory from a device in the GUI
+* Miscellaneous bug fixes and improvements
 
 ### 1.0.6
 * Bump up minimum Intersight Appliance required version to 1.1.6-0
@@ -409,16 +419,19 @@ Initial release
 * **Ananta Surendra Babu** - *UCS Central/Manager & Intersight support*
 * **Simon Mathai** - *UCS Central/Manager & Intersight support*
 * **Kistareddy Gari Sreelatha** - *UCS Central/Manager & Intersight support*
+* **Jayasree Vulavala** - *UCS Central/Manager & Intersight support*
+* **Sireesha Daggupati** - *UCS Central/Manager & Intersight support*
+* **Shruthi H R** - *UCS Central/Manager & Intersight support*
 * **Tony Frank** - *PDF reporting*
 * **Prabhu Ganesh** - *Various enhancements*
 * **Rushab Mohanlal Jain** - *Various enhancements*
 * **Abhinav Sinha** - *Various enhancements*
-* **Jayasree Vulavala** - *Various enhancements*
 * **Ivan Ivanov** - *GUI enhancements*
 * **Jyoti Chahal** - *QA & Testing*
 * **Alpana Kumari** - *QA & Testing*
 * **Alekya Gudise** - *QA & Testing*
 * **Varshitha GN** - *QA & Testing*
+* **Parul Mittal** - *QA & Testing*
 
 ## License
 

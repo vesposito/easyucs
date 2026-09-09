@@ -100,50 +100,6 @@ class IntersightUcsChassisProfile(IntersightGenericUcsChassisProfile):
                     if attribute not in self.operational_state["assigned_chassis"]:
                         self.operational_state["assigned_chassis"][attribute] = None
 
-    def deepcopy(self, new_parent=None):
-        """
-        Function creates a deep copy of a UCS Chassis Profile. This is done to handle UCS Chassis Profile Template
-        references inside a Chassis Profile.
-        :param new_parent: Parent of the new Intersight object
-        :returns: New Intersight UCS chassis profile object
-        """
-        new_profile = IntersightGenericUcsChassisProfile.deepcopy(self, new_parent=new_parent)
-
-        # If Chassis Profile is attached to a template then deepcopy the template too.
-        if self.ucs_chassis_profile_template:
-            source_template = self._config.get_object(name=self.ucs_chassis_profile_template,
-                                                      org_name=self._parent.name,
-                                                      object_type=IntersightUcsChassisProfileTemplate)
-
-            # If Template is already copied then return
-            target_template = new_parent._config.get_object(name=self.ucs_chassis_profile_template,
-                                                            org_name=new_parent.name,
-                                                            object_type=IntersightUcsChassisProfileTemplate,
-                                                            debug=False)
-            if target_template:
-                return new_profile
-
-            # If the Chassis Profile Template is an object of a shared organization, then we make sure that the
-            # copy of this Chassis Profile Template exists in the copy of the shared organization of the target config.
-            if "/" in self.ucs_chassis_profile_template:
-                new_parent = self.handle_shared_object_parent_creation(object_name=self.ucs_chassis_profile_template,
-                                                                       parent_object_type=self._parent.__class__,
-                                                                       target_config=new_parent._config)
-                if not new_parent:
-                    self.logger(level="error",
-                                message=f"Failed to clone '{self._CONFIG_NAME}' '{self.name}' as we "
-                                        f"failed to deepcopy its chassis profile template "
-                                        f"{self.ucs_chassis_profile_template} in shared org "
-                                        f"'{self.ucs_chassis_profile_template.split('/')[0]}'.")
-                    return None
-
-            new_template = source_template.deepcopy(new_parent=new_parent)
-            if not getattr(new_parent, new_template._CONFIG_SECTION_NAME, None):
-                setattr(new_parent, new_template._CONFIG_SECTION_NAME, [])
-            getattr(new_parent, new_template._CONFIG_SECTION_NAME).append(new_template)
-
-        return new_profile
-
     def _get_chassis(self, chassis_obj):
         chassis_obj_list = self.get_config_objects_from_ref(ref=chassis_obj)
         if (len(chassis_obj_list)) != 1:

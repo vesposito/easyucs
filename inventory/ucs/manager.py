@@ -252,6 +252,7 @@ class UcsSystemInventoryManager(GenericUcsInventoryManager):
             if hasattr(chassis, "_draw_front"):
                 if chassis._draw_front:
                     chassis._draw_front.save_image(output_directory=directory, format=export_format)
+                    chassis._draw_front = None
             if hasattr(chassis, "_draw_rear"):
                 if chassis._draw_rear:
                     chassis._draw_rear.save_image(output_directory=directory, format=export_format)
@@ -259,28 +260,34 @@ class UcsSystemInventoryManager(GenericUcsInventoryManager):
                         if hasattr(chassis._draw_rear, "clear_version"):
                             chassis._draw_rear.clear_version.save_image(output_directory=directory,
                                                                         format=export_format)
+                    chassis._draw_rear = None
             if hasattr(chassis, "_draw_infra"):
                 if chassis._draw_infra:
                     chassis._draw_infra.save_image(output_directory=directory, format=export_format)
+                    chassis._draw_infra = None
 
         for rack in inventory.rack_units:
             if hasattr(rack, "_draw_front"):
                 if rack._draw_front:
                     rack._draw_front.save_image(output_directory=directory, format=export_format)
+                    rack._draw_front = None
             if hasattr(rack, "_draw_rear"):
                 if rack._draw_rear:
                     rack._draw_rear.save_image(output_directory=directory, format=export_format)
                     if export_clear_pictures:
                         if hasattr(rack._draw_rear, "clear_version"):
                             rack._draw_rear.clear_version.save_image(output_directory=directory, format=export_format)
+                    rack._draw_rear = None
             if hasattr(rack, "_draw_infra"):
                 if rack._draw_infra:
                     rack._draw_infra.save_image(output_directory=directory, format=export_format)
+                    rack._draw_infra = None
 
         for rack_enclosure in inventory.rack_enclosures:
             if hasattr(rack_enclosure, "_draw_front"):
                 if rack_enclosure._draw_front:
                     rack_enclosure._draw_front.save_image(output_directory=directory, format=export_format)
+                    rack_enclosure._draw_front = None
             if hasattr(rack_enclosure, "_draw_rear"):
                 if rack_enclosure._draw_rear:
                     rack_enclosure._draw_rear.save_image(output_directory=directory, format=export_format)
@@ -288,59 +295,81 @@ class UcsSystemInventoryManager(GenericUcsInventoryManager):
                         if hasattr(rack_enclosure._draw_rear, "clear_version"):
                             rack_enclosure._draw_rear.clear_version.save_image(output_directory=directory,
                                                                                format=export_format)
+                    rack_enclosure._draw_rear = None
             if hasattr(rack_enclosure, "_draw_infra"):
                 if rack_enclosure._draw_infra:
                     rack_enclosure._draw_infra.save_image(output_directory=directory, format=export_format)
+                    rack_enclosure._draw_infra = None
 
         for fi in inventory.fabric_interconnects:
             if hasattr(fi, "_draw_front"):
                 if fi._draw_front:
                     fi._draw_front.save_image(output_directory=directory, format=export_format)
+                    fi._draw_front = None
             if hasattr(fi, "_draw_rear"):
                 if fi._draw_rear:
                     fi._draw_rear.save_image(output_directory=directory, format=export_format)
                     if export_clear_pictures:
                         if hasattr(fi._draw_rear, "clear_version"):
                             fi._draw_rear.clear_version.save_image(output_directory=directory, format=export_format)
+                    fi._draw_rear = None
 
         for fex in inventory.fabric_extenders:
             if hasattr(fex, "_draw_front"):
                 if fex._draw_front:
                     fex._draw_front.save_image(output_directory=directory, format=export_format)
+                    fex._draw_front = None
             if hasattr(fex, "_draw_rear"):
                 if fex._draw_rear:
                     fex._draw_rear.save_image(output_directory=directory, format=export_format)
                     if export_clear_pictures:
                         if hasattr(fex._draw_rear, "clear_version"):
                             fex._draw_rear.clear_version.save_image(output_directory=directory, format=export_format)
+                    fex._draw_rear = None
 
         if inventory._draw_infra_san_neighbors:
             inventory._draw_infra_san_neighbors.save_image(output_directory=directory, format=export_format)
+            inventory._draw_infra_san_neighbors = None
         if inventory._draw_infra_lan_neighbors:
             inventory._draw_infra_lan_neighbors.save_image(output_directory=directory, format=export_format)
+            inventory._draw_infra_lan_neighbors = None
         if inventory._draw_infra_rack_service_profiles:
             for infra in inventory._draw_infra_rack_service_profiles:
                 infra.save_image(output_directory=directory, format=export_format)
+            inventory._draw_infra_rack_service_profiles = []
         if inventory._draw_infra_chassis_service_profiles:
             for infra in inventory._draw_infra_chassis_service_profiles:
                 infra.save_image(output_directory=directory, format=export_format)
+            inventory._draw_infra_chassis_service_profiles = []
         if inventory._draw_infra_rack_enclosure_service_profiles:
             for infra in inventory._draw_infra_rack_enclosure_service_profiles:
                 infra.save_image(output_directory=directory, format=export_format)
+            inventory._draw_infra_rack_enclosure_service_profiles = []
 
         return True
 
-    def fetch_inventory(self, force=False):
+    def fetch_inventory(self, force=False, xml_file_path=None, tech_support_timestamp=None,
+                        tech_support_filename=None):
         """
         Fetches inventory from a live UCS System device
         :return: Inventory UUID if successful, None otherwise
         """
-        self.logger(message="Fetching inventory from live device (can take several minutes)")
+        if xml_file_path:
+            self.logger(message="Fetching inventory from XML file: " + str(xml_file_path))
+        else:
+            self.logger(message="Fetching inventory from live device (can take several minutes)")
         inventory = UcsSystemInventory(parent=self)
-        inventory.metadata.origin = "live"
+        inventory.metadata.origin = "import" if xml_file_path else "live"
         inventory.metadata.easyucs_version = __version__
         inventory.load_from = "live"
-        inventory._fetch_sdk_objects(force=force)
+        if xml_file_path:
+            if tech_support_filename:
+                inventory.metadata.name = "Imported from " + tech_support_filename
+                if tech_support_timestamp:
+                    inventory.metadata.name += " (captured " + tech_support_timestamp.strftime("%Y-%m-%d %H:%M") + ")"
+            inventory._fetch_sdk_objects_from_xml(xml_file_path=xml_file_path, force=force)
+        else:
+            inventory._fetch_sdk_objects(force=force)
 
         # If any of the mandatory tasksteps fails then return None
         from api.api_server import easyucs
@@ -354,7 +383,7 @@ class UcsSystemInventoryManager(GenericUcsInventoryManager):
 
         # Fetch device connector info.
         # We only do this if UCSM user has admin privileges as it is required for Device Connector API
-        if "admin" in self.parent.handle.priv.split(","):
+        if not xml_file_path and "admin" in self.parent.handle.priv.split(","):
             if self.parent.task is not None:
                 self.parent.task.taskstep_manager.start_taskstep(
                     name="FetchInventoryUcsSystemDeviceConnector",
@@ -375,7 +404,7 @@ class UcsSystemInventoryManager(GenericUcsInventoryManager):
                         name="FetchInventoryUcsSystemDeviceConnector", status="failed",
                         status_message="Error while fetching " + self.parent.metadata.device_type_long +
                                        " Device connector Inventory")
-        else:
+        elif not xml_file_path:
             self.logger(level="debug", message="Skipped fetching " + self.parent.metadata.device_type_long +
                                                " Device Connector Inventory as user " + self.parent.username +
                                                " does not have admin privileges")
@@ -385,6 +414,12 @@ class UcsSystemInventoryManager(GenericUcsInventoryManager):
                     status_message="Skipped fetching " + self.parent.metadata.device_type_long +
                                 " Device Connector Inventory as user " + self.parent.username +
                                 " does not have admin privileges")
+        else:
+            # XML import path - device connector is not available from a tech-support bundle
+            if self.parent.task is not None:
+                self.parent.task.taskstep_manager.skip_taskstep(
+                    name="FetchInventoryUcsSystemDeviceConnector",
+                    status_message="Skipped - Device Connector inventory is not available from XML file")
 
         if "networkElement" in inventory.sdk_objects.keys():
             for network_element in sorted(inventory.sdk_objects["networkElement"], key=lambda fi: fi.dn):
@@ -393,8 +428,16 @@ class UcsSystemInventoryManager(GenericUcsInventoryManager):
             # Verifying that Info Policy is enabled before trying to fetch neighbors
             self.logger(level="debug", message="Verifying that Info Policy is enabled")
             try:
-                info_policy = self.parent.handle.query_dn("sys/info-policy")
-                info_policy_state = info_policy.state
+                if xml_file_path:
+                    # When loading from XML, read the info policy state from sdk_objects
+                    info_policy_list = [o for o in inventory.sdk_objects.get("topInfoPolicy", [])
+                                        if o.dn == "sys/info-policy"]
+                    if not info_policy_list:
+                        raise Exception("topInfoPolicy MO with dn=sys/info-policy not found in XML")
+                    info_policy_state = info_policy_list[0].state
+                else:
+                    info_policy = self.parent.handle.query_dn("sys/info-policy")
+                    info_policy_state = info_policy.state
 
                 if info_policy_state == "disabled":
                     self.logger(level="warning", message="Info Policy is disabled. No neighbors can be found")
@@ -409,7 +452,7 @@ class UcsSystemInventoryManager(GenericUcsInventoryManager):
         if "equipmentChassis" in inventory.sdk_objects.keys():
             for equipment_chassis in sorted(inventory.sdk_objects["equipmentChassis"],
                                             key=lambda chassis: [int(t) if t.isdigit() else t.lower() for t in
-                                                                 re.split('(\d+)', chassis.id)]):
+                                                                 re.split(r'(\d+)', chassis.id)]):
                 # We filter out chassis that have "identity-unestablishable" in their presence attribute
                 if hasattr(equipment_chassis, "presence") and "identity-unestablishable" in equipment_chassis.presence:
                     continue
@@ -418,20 +461,20 @@ class UcsSystemInventoryManager(GenericUcsInventoryManager):
         if "equipmentFex" in inventory.sdk_objects.keys():
             for equipment_fex in sorted(inventory.sdk_objects["equipmentFex"],
                                         key=lambda fex: [int(t) if t.isdigit() else t.lower() for t in
-                                                         re.split('(\d+)', fex.id)]):
+                                                         re.split(r'(\d+)', fex.id)]):
                 inventory.fabric_extenders.append(UcsSystemFex(parent=inventory, equipment_fex=equipment_fex))
 
         if "equipmentRackEnclosure" in inventory.sdk_objects.keys():
             for equipment_rack_enclosure in sorted(inventory.sdk_objects["equipmentRackEnclosure"],
                                                    key=lambda enclosure: [int(t) if t.isdigit() else t.lower() for t in
-                                                                          re.split('(\d+)', enclosure.id)]):
+                                                                          re.split(r'(\d+)', enclosure.id)]):
                 inventory.rack_enclosures.append(
                     UcsSystemRackEnclosure(parent=inventory, equipment_rack_enclosure=equipment_rack_enclosure))
 
         if "computeRackUnit" in inventory.sdk_objects.keys():
             for compute_rack_unit in sorted(inventory.sdk_objects["computeRackUnit"],
                                             key=lambda rack: [int(t) if t.isdigit() else t.lower() for t in
-                                                              re.split('(\d+)', rack.id)]):
+                                                              re.split(r'(\d+)', rack.id)]):
                 # We filter out rack servers that have "identity-unestablishable" in their presence attribute
                 if hasattr(compute_rack_unit, "presence") and "identity-unestablishable" in compute_rack_unit.presence:
                     continue
@@ -661,25 +704,31 @@ class UcsImcInventoryManager(GenericUcsInventoryManager):
             if hasattr(chassis, "_draw_front"):
                 if chassis._draw_front:
                     chassis._draw_front.save_image(output_directory=directory, format=export_format)
+                    chassis._draw_front = None
             if hasattr(chassis, "_draw_rear"):
                 if chassis._draw_rear:
                     chassis._draw_rear.save_image(output_directory=directory, format=export_format)
+                    chassis._draw_rear = None
 
         for rack in inventory.rack_units:
             if hasattr(rack, "_draw_front"):
                 if rack._draw_front:
                     rack._draw_front.save_image(output_directory=directory, format=export_format)
+                    rack._draw_front = None
             if hasattr(rack, "_draw_rear"):
                 if rack._draw_rear:
                     rack._draw_rear.save_image(output_directory=directory, format=export_format)
+                    rack._draw_rear = None
 
         for rack_enclosure in inventory.rack_enclosures:
             if hasattr(rack_enclosure, "_draw_front"):
                 if rack_enclosure._draw_front:
                     rack_enclosure._draw_front.save_image(output_directory=directory, format=export_format)
+                    rack_enclosure._draw_front = None
             if hasattr(rack_enclosure, "_draw_rear"):
                 if rack_enclosure._draw_rear:
                     rack_enclosure._draw_rear.save_image(output_directory=directory, format=export_format)
+                    rack_enclosure._draw_rear = None
 
         return True
 
@@ -710,7 +759,7 @@ class UcsCentralInventoryManager(GenericUcsInventoryManager):
         if "computeSystem" in inventory.sdk_objects.keys():
             for compute_system in sorted(inventory.sdk_objects["computeSystem"],
                                          key=lambda domain: [int(t) if t.isdigit() else t.lower() for t in
-                                                             re.split('(\d+)', domain.id)]):
+                                                             re.split(r'(\d+)', domain.id)]):
                 inventory.domains.append(UcsCentralDomain(parent=inventory, compute_system=compute_system))
 
         # Removing the list of SDK objects fetched from the live UCS device

@@ -273,3 +273,9 @@ def main():
 if __name__ == '__main__':
     main()
     run_simple('localhost', 5001, application, use_debugger=False, use_reloader=False, threaded=True)
+else:
+    # When loaded by a WSGI server (e.g. gunicorn), __name__ is the module
+    # name, not '__main__', so the block above never runs.  Call main() here
+    # so the Easyucs object is created and start() is called before the first
+    # request arrives.
+    main()

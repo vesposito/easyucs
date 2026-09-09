@@ -61,6 +61,7 @@ from ucsmsdk.mometa.ippool.IppoolPool import IppoolPool
 from ucsmsdk.mometa.macpool.MacpoolBlock import MacpoolBlock
 from ucsmsdk.mometa.macpool.MacpoolPool import MacpoolPool
 from ucsmsdk.mometa.nwctrl.NwctrlDefinition import NwctrlDefinition
+from ucsmsdk.mometa.pfc.PfcWatchDog import PfcWatchDog
 from ucsmsdk.mometa.qosclass.QosclassEthBE import QosclassEthBE
 from ucsmsdk.mometa.qosclass.QosclassEthClassified import QosclassEthClassified
 from ucsmsdk.mometa.qosclass.QosclassFc import QosclassFc
@@ -821,6 +822,53 @@ class UcsSystemSlowDrainTimers(UcsSystemConfigObject):
             if self.commit() != True:
                 return False
         return True
+
+
+class UcsSystemWatchDogTimers(UcsSystemConfigObject):
+    _CONFIG_NAME = "Watchdog Timers"
+    _CONFIG_SECTION_NAME = "watchdog_timers"
+    _UCS_SDK_OBJECT_NAME = "pfcWatchDog"
+
+    def __init__(self, parent=None, json_content=None):
+        UcsSystemConfigObject.__init__(self, parent=parent)
+
+        self.wd_admin_state = None
+        self.wd_interval = None
+        self.wd_shutdown_multiplier = None
+
+        if self._config.load_from == "live":
+            # Locating SDK objects needed to initialize
+            if "pfcWatchDog" in self._config.sdk_objects:
+                pfc_watch_dog = [obj for obj in self._config.sdk_objects["pfcWatchDog"]]
+                if len(pfc_watch_dog):
+                    self.wd_admin_state = pfc_watch_dog[0].wd_admin_state
+                    self.wd_interval = int(pfc_watch_dog[0].wd_interval)
+                    self.wd_shutdown_multiplier = int(pfc_watch_dog[0].wd_shutdown_multiplier)
+
+        elif self._config.load_from == "file":
+            if json_content is not None:
+                if not self.get_attributes_from_json(json_content=json_content, allow_int=True):
+                    self.logger(level="error",
+                                message="Unable to get attributes from JSON content for " + self._CONFIG_NAME)
+
+        self.clean_object()
+
+    def push_object(self, commit=True):
+        if commit:
+            self.logger(message="Pushing " + self._CONFIG_NAME)
+        else:
+            self.logger(message="Adding to the handle " + self._CONFIG_NAME + " configuration" +
+                                ", waiting for a commit")
+
+        mo_pfc_watch_dog = PfcWatchDog(parent_mo_or_dn="fabric/lan",
+                                       wd_admin_state=self.wd_admin_state,
+                                       wd_interval=str(self.wd_interval),
+                                       wd_shutdown_multiplier=str(self.wd_shutdown_multiplier))
+        self._handle.add_mo(mo=mo_pfc_watch_dog, modify_present=True)
+        if commit:
+            if self.commit() != True:
+                return False
+            return True
 
 
 class UcsSystemIpPool(UcsSystemConfigObject):

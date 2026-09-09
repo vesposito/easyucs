@@ -36,6 +36,137 @@
          "enum": [
             "ucs-central"
          ]
+      },
+      "monitor":{
+         "description": "Fabric interconnects audit Monitor",
+         "type":"array",
+         "items": {
+            "type":"object",
+            "description": "Fabric interconnects audit logs - Monitor",
+            "properties": {
+               "all_the_rules":{
+                  "description": "Fabric interconnects audit logs - all the rules",
+                  "type":"string",
+                  "default": "disabled",
+                  "enum": [
+                     "enabled",
+                     "disabled"
+                  ]
+               },
+               "authlog_files":{
+                  "description": "Fabric interconnects audit logs - auth log files",
+                  "type":"string",
+                  "default":"disabled",
+                  "enum": [
+                     "enabled",
+                     "disabled"
+                  ]
+               },
+               "cron_files":{
+                  "description": "Fabric interconnects audit logs - Cron files",
+                  "type":"string",
+                  "default": "disabled",
+                  "enum": [
+                     "enabled",
+                     "disabled"
+                  ]
+               },
+               "dns_client_files":{
+                  "description": "Fabric interconnects audit logs - dns client files",
+                  "type":"string",
+                  "default":"disabled",
+                  "enum": [
+                     "enabled",
+                     "disabled"
+                  ]
+               },
+               "kernel_module_management":{
+                  "description": "Fabric interconnects audit logs - kernel module management",
+                  "type":"string",
+                  "default": "disabled",
+                  "enum": [
+                     "enabled",
+                     "disabled"
+                  ]
+               },
+               "lxc_containers":{
+                  "description": "Fabric interconnects audit logs - lxc containers",
+                  "type":"string",
+                  "default":"disabled",
+                  "enum": [
+                     "enabled",
+                     "disabled"
+                  ]
+               },
+               "process_audit":{
+                  "description": "Fabric interconnects audit logs - process audit",
+                  "type":"string",
+                  "default":"disabled",
+                  "enum": [
+                     "enabled",
+                     "disabled"
+                  ]
+               },
+               "system_log_files":{
+                  "description": "Fabric interconnects audit logs - system log files",
+                  "type":"string",
+                  "default":"disabled",
+                  "enum": [
+                     "enabled",
+                     "disabled"
+                  ]
+               },
+               "system_login_and_reboot":{
+                  "description": "Fabric interconnects audit logs - system login and reboot",
+                  "type":"string",
+                  "default":"disabled",
+                  "enum": [
+                     "enabled",
+                     "disabled"
+                  ]
+               },
+               "system_software":{
+                  "description": "Fabric interconnects audit logs - system software",
+                  "type":"string",
+                  "default":"disabled",
+                  "enum": [
+                     "enabled",
+                     "disabled"
+                  ]
+               },
+               "system_time_change":{
+                  "description": "Fabric interconnects audit logs - system time change",
+                  "type":"string",
+                  "default":"enabled",
+                  "enum": [
+                     "enabled",
+                     "disabled"
+                  ]
+               },
+               "user_group_config_files":{
+                  "description": "Fabric interconnects audit logs - user group config files",
+                  "type":"string",
+                  "default":"disabled",
+                  "enum": [
+                     "enabled",
+                     "disabled"
+                  ]
+               },
+               "user_privilege_management":{
+                  "description": "Fabric interconnects audit logs - user privilege management",
+                  "type":"string",
+                  "default":"disabled",
+                  "enum": [
+                     "enabled",
+                     "disabled"
+                  ]
+               }
+            },
+            "additionalProperties": false
+         },
+         "minItems": 1,
+         "maxItems": 1
+
       }
    },
    "additionalProperties": false,

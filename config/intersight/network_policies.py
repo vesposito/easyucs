@@ -67,6 +67,7 @@ class IntersightVnicTemplate(IntersightConfigObject, IntersightGenericVnic):
         self.ethernet_network_group_policies = None
         self.ethernet_network_group_policy = None
         self.ethernet_qos_policy = None
+        self.flow_monitors = None
         self.iscsi_boot_policy = None
         self.mac_address_pool = None
         self.name = self.get_attribute(attribute_name="name")
@@ -180,12 +181,21 @@ class IntersightVnicTemplate(IntersightConfigObject, IntersightGenericVnic):
                         "completion_queue_count_per_vf": self._object.sriov_settings.comp_count_per_vf,
                         "interrupt_count_per_vf": self._object.sriov_settings.int_count_per_vf
                     }
+            # Fetch NetFlow Monitor Sessions
+            if getattr(self._object, "net_flow_monitor_sessions", None):
+                self.flow_monitors = [
+                    {
+                        "monitor_name": nfms.monitor_name,
+                        "flow_direction": nfms.flow_direction
+                    }
+                    for nfms in self._object.net_flow_monitor_sessions
+                ]
 
         elif self._config.load_from == "file":
             for attribute in ["cdn_source", "cdn_value", "ethernet_adapter_policy", "ethernet_network_control_policy",
                               "ethernet_network_group_policies", "ethernet_network_group_policy",
-                              "ethernet_qos_policy", "iscsi_boot_policy", "mac_address_pool", "sriov_settings",
-                              "usnic_settings", "vmq_settings"]:
+                              "ethernet_qos_policy", "flow_monitors", "iscsi_boot_policy", "mac_address_pool",
+                              "sriov_settings", "usnic_settings", "vmq_settings"]:
                 setattr(self, attribute, None)
                 if attribute in self._object:
                     setattr(self, attribute, self.get_attribute(attribute_name=attribute))
@@ -453,6 +463,23 @@ class IntersightVnicTemplate(IntersightConfigObject, IntersightGenericVnic):
             if self.sriov_settings.get("interrupt_count_per_vf") is not None:
                 kwargs_sriov["int_count_per_vf"] = self.sriov_settings["interrupt_count_per_vf"]
             kwargs["sriov_settings"] = VnicSriovSettings(**kwargs_sriov)
+
+        # Handling the NetFlow Monitor Sessions of the vNIC Template
+        if self.flow_monitors is not None:
+            from intersight.model.vnic_net_flow_monitor_session import VnicNetFlowMonitorSession
+            net_flow_sessions = []
+            for fm in self.flow_monitors:
+                kwargs_nfms = {
+                    "object_type": "vnic.NetFlowMonitorSession",
+                    "class_id": "vnic.NetFlowMonitorSession"
+                }
+                if fm.get("monitor_name") is not None:
+                    kwargs_nfms["monitor_name"] = fm["monitor_name"]
+                if fm.get("flow_direction") is not None:
+                    kwargs_nfms["flow_direction"] = fm["flow_direction"]
+                net_flow_sessions.append(VnicNetFlowMonitorSession(**kwargs_nfms))
+            if net_flow_sessions:
+                kwargs["net_flow_monitor_sessions"] = net_flow_sessions
 
         vnic_template_payload = VnicVnicTemplate(**kwargs)
 

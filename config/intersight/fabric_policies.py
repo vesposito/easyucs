@@ -3,7 +3,8 @@
 
 """ fabric_policies.py: Easy UCS Deployment Tool """
 import datetime
-from common import password_generator
+from packaging.version import Version
+from common import is_mac_address_valid, password_generator
 from config.intersight.object import IntersightConfigObject
 from config.intersight.server_policies import IntersightNetworkConnectivityPolicy, IntersightNtpPolicy, \
     IntersightSnmpPolicy, IntersightSyslogPolicy, IntersightEthernetNetworkGroupPolicy, \
@@ -22,11 +23,14 @@ class IntersightAuditDPolicy(IntersightConfigObject):
         self.admin_state = self.get_attribute(attribute_name="admin_state")
         self.minimum_severity_to_report = self.get_attribute(
                 attribute_name="auditd_log_level", attribute_secondary_name="minimum_severity_to_report")
+        self.log_monitor = self.get_attribute(attribute_name="log_monitor")
 
         if self._config.load_from == "live":
             self.minimum_severity_to_report = self._get_log_level(self.get_attribute(
-                attribute_name="auditd_log_level"), mode="file")
-        
+                attribute_name="auditd_log_level"), mode="file")             
+            if self.log_monitor:
+                self.log_monitor = self._get_log_monitor(self.log_monitor, mode="live")
+
     def _get_log_level(self, level, mode="live"):
         log_levels = {
             "notifications": "Notification",
@@ -42,12 +46,64 @@ class IntersightAuditDPolicy(IntersightConfigObject):
             return next((live for live, file in log_levels.items() if file == level), "notifications")
         elif mode == "file":
             return log_levels.get(level)
-    
+
+    def _get_log_monitor(self, values, mode="file"):
+        log_monitor_fields = [
+            "all",
+            "auth_log_files",
+            "cron_files",
+            "dns_client_files",
+            "docker",
+            "kernel_module_mgmt",
+            "process_audit",
+            "system_log_files",
+            "system_login_reboot",
+            "system_software",
+            "system_time_change",
+            "user_group_config_files",
+            "user_privilege_mgmt"
+        ]
+
+        if mode == "file":
+            return {
+                field: values.get(field, "no")
+                for field in log_monitor_fields
+            }
+        elif mode == "live":
+            return {
+                field: getattr(values, field, "no")
+                for field in log_monitor_fields
+            }
+        return values
+
+    def _default_log_monitor(self):
+        return {
+            "all": "no",
+            "auth_log_files": "no",
+            "cron_files": "yes",
+            "dns_client_files": "no",
+            "docker": "no",
+            "kernel_module_mgmt": "no",
+            "process_audit": "no",
+            "system_log_files": "no",
+            "system_login_reboot": "no",
+            "system_software": "no",
+            "system_time_change": "no",
+            "user_group_config_files": "no",
+            "user_privilege_mgmt": "no"
+        }
+
     @IntersightConfigObject.update_taskstep_description()
     def push_object(self):
         from intersight.model.auditd_policy import AuditdPolicy
 
         self.logger(message=f"Pushing {self._CONFIG_NAME} configuration: {self.name}")
+
+        curr_version = None
+        if self._device.is_appliance and self._device.version:
+            parts = self._device.version.split("-")
+            if len(parts) >= 2:
+                curr_version = parts[0] + "-" + parts[1].split(".")[0]
 
         kwargs = {
             "object_type": self._INTERSIGHT_SDK_OBJECT_NAME,
@@ -64,6 +120,20 @@ class IntersightAuditDPolicy(IntersightConfigObject):
             kwargs["admin_state"] = self.admin_state
         if self.minimum_severity_to_report is not None:
             kwargs["auditd_log_level"] = self._get_log_level(self.minimum_severity_to_report)
+        if self.log_monitor is not None:    
+            if (self._device.is_appliance and curr_version is not None and Version(curr_version) < Version("1.1.8-0")):
+                self.logger(
+                    level="warning",
+                    message=(
+                        f"Skipping 'log_monitor' for AuditD Policy '{self.name}'. "
+                        f"Intersight Appliance version {self._device.version} "
+                        f"does not support this attribute."
+                    )
+                )
+            else:
+                kwargs["log_monitor"] = self._get_log_monitor(self.log_monitor)
+        elif not (self._device.is_appliance and curr_version is not None and Version(curr_version) < Version("1.1.8-0")):
+            kwargs["log_monitor"] = self._default_log_monitor()
 
         auditd_policy = AuditdPolicy(**kwargs)
 
@@ -637,17 +707,11 @@ class IntersightFabricPortPolicy(IntersightConfigObject):
                         ethernet_network_control_policy = None
                         ethernet_network_group_policy = None
                         if hasattr(fabric_appliance_pc_role, "eth_network_control_policy"):
-                            eth_network_control_policy = \
-                                self.get_config_objects_from_ref(fabric_appliance_pc_role.eth_network_control_policy)
-                            if eth_network_control_policy:
-                                if len(eth_network_control_policy) == 1:
-                                    ethernet_network_control_policy = eth_network_control_policy[0].name
+                            ethernet_network_control_policy = self._get_policy_name(
+                                fabric_appliance_pc_role.eth_network_control_policy)
                         if hasattr(fabric_appliance_pc_role, "eth_network_group_policy"):
-                            eth_network_group_policy = \
-                                self.get_config_objects_from_ref(fabric_appliance_pc_role.eth_network_group_policy)
-                            if eth_network_group_policy:
-                                if len(eth_network_group_policy) == 1:
-                                    ethernet_network_group_policy = eth_network_group_policy[0].name
+                            ethernet_network_group_policy = self._get_policy_name(
+                                fabric_appliance_pc_role.eth_network_group_policy)
 
                         admin_speed = None
                         enable_25g_auto_neg = None
@@ -687,17 +751,11 @@ class IntersightFabricPortPolicy(IntersightConfigObject):
                         ethernet_network_control_policy = None
                         ethernet_network_group_policy = None
                         if hasattr(fabric_appliance_role, "eth_network_control_policy"):
-                            eth_network_control_policy = \
-                                self.get_config_objects_from_ref(fabric_appliance_role.eth_network_control_policy)
-                            if eth_network_control_policy:
-                                if len(eth_network_control_policy) == 1:
-                                    ethernet_network_control_policy = eth_network_control_policy[0].name
+                            ethernet_network_control_policy = self._get_policy_name(
+                                fabric_appliance_role.eth_network_control_policy)
                         if hasattr(fabric_appliance_role, "eth_network_group_policy"):
-                            eth_network_group_policy = \
-                                self.get_config_objects_from_ref(fabric_appliance_role.eth_network_group_policy)
-                            if eth_network_group_policy:
-                                if len(eth_network_group_policy) == 1:
-                                    ethernet_network_group_policy = eth_network_group_policy[0].name
+                            ethernet_network_group_policy = self._get_policy_name(
+                                fabric_appliance_role.eth_network_group_policy)
 
                         admin_speed = None
                         enable_25g_auto_neg = None
@@ -816,19 +874,13 @@ class IntersightFabricPortPolicy(IntersightConfigObject):
 
                         link_aggregation_policy = None
                         if hasattr(fabric_fcoe_uplink_pc_role, "link_aggregation_policy"):
-                            fabric_link_aggregation_policy = \
-                                self.get_config_objects_from_ref(fabric_fcoe_uplink_pc_role.link_aggregation_policy)
-                            if fabric_link_aggregation_policy:
-                                if len(fabric_link_aggregation_policy) == 1:
-                                    link_aggregation_policy = fabric_link_aggregation_policy[0].name
+                            link_aggregation_policy = self._get_policy_name(
+                                fabric_fcoe_uplink_pc_role.link_aggregation_policy)
 
                         link_control_policy = None
                         if hasattr(fabric_fcoe_uplink_pc_role, "link_control_policy"):
-                            fabric_link_control_policy = \
-                                self.get_config_objects_from_ref(fabric_fcoe_uplink_pc_role.link_control_policy)
-                            if fabric_link_control_policy:
-                                if len(fabric_link_control_policy) == 1:
-                                    link_control_policy = fabric_link_control_policy[0].name
+                            link_control_policy = self._get_policy_name(
+                                fabric_fcoe_uplink_pc_role.link_control_policy)
 
                         admin_speed = None
                         enable_25g_auto_neg = None
@@ -865,11 +917,7 @@ class IntersightFabricPortPolicy(IntersightConfigObject):
                     if fabric_fcoe_uplink_role.port_policy.moid == self._moid:
                         link_control_policy = None
                         if hasattr(fabric_fcoe_uplink_role, "link_control_policy"):
-                            fabric_link_control_policy = \
-                                self.get_config_objects_from_ref(fabric_fcoe_uplink_role.link_control_policy)
-                            if fabric_link_control_policy:
-                                if len(fabric_link_control_policy) == 1:
-                                    link_control_policy = fabric_link_control_policy[0].name
+                            link_control_policy = self._get_policy_name(fabric_fcoe_uplink_role.link_control_policy)
 
                         admin_speed = None
                         enable_25g_auto_neg = None
@@ -959,45 +1007,34 @@ class IntersightFabricPortPolicy(IntersightConfigObject):
                                                        "aggr_id": None})
 
                         ethernet_network_group_policies = None
-                        if hasattr(fabric_uplink_pc_role, "eth_network_group_policy"):
-                            eth_network_group_policies = \
-                                self.get_config_objects_from_ref(fabric_uplink_pc_role.eth_network_group_policy)
-                            if eth_network_group_policies:
-                                ethernet_network_group_policies = []
-                                for eth_network_group_policy in eth_network_group_policies:
-                                    ethernet_network_group_policies.append(eth_network_group_policy.name)
+                        if hasattr(fabric_uplink_pc_role, "eth_network_group_policy") \
+                                and fabric_uplink_pc_role.eth_network_group_policy:
+                            ref = fabric_uplink_pc_role.eth_network_group_policy
+                            ref_list = ref if isinstance(ref, list) else [ref]
+                            ethernet_network_group_policies = []
+                            for ref_item in ref_list:
+                                policy_name = self._get_policy_name(ref_item)
+                                if policy_name:
+                                    ethernet_network_group_policies.append(policy_name)
+                            if not ethernet_network_group_policies:
+                                ethernet_network_group_policies = None
 
                         flow_control_policy = None
                         if hasattr(fabric_uplink_pc_role, "flow_control_policy"):
-                            fabric_flow_control_policy = \
-                                self.get_config_objects_from_ref(fabric_uplink_pc_role.flow_control_policy)
-                            if fabric_flow_control_policy:
-                                if len(fabric_flow_control_policy) == 1:
-                                    flow_control_policy = fabric_flow_control_policy[0].name
+                            flow_control_policy = self._get_policy_name(fabric_uplink_pc_role.flow_control_policy)
 
                         link_aggregation_policy = None
                         if hasattr(fabric_uplink_pc_role, "link_aggregation_policy"):
-                            fabric_link_aggregation_policy = \
-                                self.get_config_objects_from_ref(fabric_uplink_pc_role.link_aggregation_policy)
-                            if fabric_link_aggregation_policy:
-                                if len(fabric_link_aggregation_policy) == 1:
-                                    link_aggregation_policy = fabric_link_aggregation_policy[0].name
+                            link_aggregation_policy = self._get_policy_name(
+                                fabric_uplink_pc_role.link_aggregation_policy)
 
                         link_control_policy = None
                         if hasattr(fabric_uplink_pc_role, "link_control_policy"):
-                            fabric_link_control_policy = \
-                                self.get_config_objects_from_ref(fabric_uplink_pc_role.link_control_policy)
-                            if fabric_link_control_policy:
-                                if len(fabric_link_control_policy) == 1:
-                                    link_control_policy = fabric_link_control_policy[0].name
+                            link_control_policy = self._get_policy_name(fabric_uplink_pc_role.link_control_policy)
 
                         macsec_policy = None
                         if hasattr(fabric_uplink_pc_role, "mac_sec_policy"):
-                            fabric_macsec_policy = \
-                                self.get_config_objects_from_ref(fabric_uplink_pc_role.mac_sec_policy)
-                            if fabric_macsec_policy:
-                                if len(fabric_macsec_policy) == 1:
-                                    macsec_policy = fabric_macsec_policy[0].name
+                            macsec_policy = self._get_policy_name(fabric_uplink_pc_role.mac_sec_policy)
 
                         admin_speed = None
                         enable_25g_auto_neg = None
@@ -1037,36 +1074,28 @@ class IntersightFabricPortPolicy(IntersightConfigObject):
                     if fabric_uplink_role.port_policy.moid == self._moid:
                         flow_control_policy = None
                         if hasattr(fabric_uplink_role, "flow_control_policy"):
-                            fabric_flow_control_policy = \
-                                self.get_config_objects_from_ref(fabric_uplink_role.flow_control_policy)
-                            if fabric_flow_control_policy:
-                                if len(fabric_flow_control_policy) == 1:
-                                    flow_control_policy = fabric_flow_control_policy[0].name
+                            flow_control_policy = self._get_policy_name(fabric_uplink_role.flow_control_policy)
 
                         ethernet_network_group_policies = None
-                        if hasattr(fabric_uplink_role, "eth_network_group_policy"):
-                            eth_network_group_policies = \
-                                self.get_config_objects_from_ref(fabric_uplink_role.eth_network_group_policy)
-                            if eth_network_group_policies:
-                                ethernet_network_group_policies = []
-                                for eth_network_group_policy in eth_network_group_policies:
-                                    ethernet_network_group_policies.append(eth_network_group_policy.name)
+                        if hasattr(fabric_uplink_role, "eth_network_group_policy") \
+                                and fabric_uplink_role.eth_network_group_policy:
+                            ref = fabric_uplink_role.eth_network_group_policy
+                            ref_list = ref if isinstance(ref, list) else [ref]
+                            ethernet_network_group_policies = []
+                            for ref_item in ref_list:
+                                policy_name = self._get_policy_name(ref_item)
+                                if policy_name:
+                                    ethernet_network_group_policies.append(policy_name)
+                            if not ethernet_network_group_policies:
+                                ethernet_network_group_policies = None
 
                         link_control_policy = None
                         if hasattr(fabric_uplink_role, "link_control_policy"):
-                            fabric_link_control_policy = \
-                                self.get_config_objects_from_ref(fabric_uplink_role.link_control_policy)
-                            if fabric_link_control_policy:
-                                if len(fabric_link_control_policy) == 1:
-                                    link_control_policy = fabric_link_control_policy[0].name
+                            link_control_policy = self._get_policy_name(fabric_uplink_role.link_control_policy)
 
                         macsec_policy = None
                         if hasattr(fabric_uplink_role, "mac_sec_policy"):
-                            fabric_macsec_policy = \
-                                self.get_config_objects_from_ref(fabric_uplink_role.mac_sec_policy)
-                            if fabric_macsec_policy:
-                                if len(fabric_macsec_policy) == 1:
-                                    macsec_policy = fabric_macsec_policy[0].name
+                            macsec_policy = self._get_policy_name(fabric_uplink_role.mac_sec_policy)
 
                         admin_speed = None
                         enable_25g_auto_neg = None
@@ -2576,6 +2605,7 @@ class IntersightFabricSwitchControlPolicy(IntersightConfigObject):
         self.link_control_global_settings = None
         self.mac_address_table_aging = None
         self.mac_aging_time = None
+        self.disable_mac_address_learning_vlans = None
         self.name = self.get_attribute(attribute_name="name")
         self.reserved_vlan_start_id = self.get_attribute(attribute_name="reserved_vlan_start_id")
         self.switching_mode = None
@@ -2605,6 +2635,10 @@ class IntersightFabricSwitchControlPolicy(IntersightConfigObject):
             if hasattr(self._object, "ethernet_switching_mode"):
                 if self._object.ethernet_switching_mode:
                     self.switching_mode["ethernet"] = self._object.ethernet_switching_mode
+                    if self._object.ethernet_switching_mode == "switch":
+                        if hasattr(self._object, "mac_learning_settings"):
+                            if self._object.mac_learning_settings:
+                                self.disable_mac_address_learning_vlans = self._object.mac_learning_settings.disabled_vlans
             self.enable_aes_encryption_key = False
             if hasattr(self._object, "is_aes_primary_key_set") and self._object.is_aes_primary_key_set:
                 self.enable_aes_encryption_key = True
@@ -2619,9 +2653,9 @@ class IntersightFabricSwitchControlPolicy(IntersightConfigObject):
                 self.enable_jumbo_frames = self._object.enable_jumbo_frame
 
         elif self._config.load_from == "file":
-            for attribute in ["aes_encryption_key", "enable_aes_encryption_key", "enable_jumbo_frames",
-                              "fabric_port_channel_vhba_reset", "link_control_global_settings",
-                              "mac_address_table_aging", "mac_aging_time", "switching_mode"]:
+            for attribute in ["aes_encryption_key", "disable_mac_address_learning_vlans", "enable_aes_encryption_key",
+                              "enable_jumbo_frames","fabric_port_channel_vhba_reset", "link_control_global_settings",
+                              "mac_address_table_aging", "mac_aging_time","switching_mode"]:
                 setattr(self, attribute, None)
                 if attribute in self._object:
                     setattr(self, attribute, self.get_attribute(attribute_name=attribute))
@@ -2742,6 +2776,17 @@ class IntersightFabricSwitchControlPolicy(IntersightConfigObject):
             if self.switching_mode.get("fc"):
                 kwargs["fc_switching_mode"] = self.switching_mode["fc"]
 
+        if self.disable_mac_address_learning_vlans is not None:
+            if self.switching_mode.get("ethernet") == "switch":
+                from intersight.model.fabric_mac_learning_settings import FabricMacLearningSettings
+
+                kwargs_mac_learning_settings = {
+                    "object_type": "fabric.MacLearningSettings",
+                    "class_id": "fabric.MacLearningSettings",
+                    "disabled_vlans": self.disable_mac_address_learning_vlans
+                }
+                kwargs["mac_learning_settings"] = FabricMacLearningSettings(**kwargs_mac_learning_settings)
+
         fabric_switch_control_policy = FabricSwitchControlPolicy(**kwargs)
 
         if not self.commit(object_type=self._INTERSIGHT_SDK_OBJECT_NAME, payload=fabric_switch_control_policy,
@@ -2763,12 +2808,15 @@ class IntersightFabricSystemQosPolicy(IntersightConfigObject):
         self.name = self.get_attribute(attribute_name="name")
         self.target_platform = self.get_attribute(attribute_name="target_platform")
         self.classes = None
+        self.watchdog_enabled = None
+        self.pfc_watchdog_configuration = None
 
         if self._config.load_from == "live":
             self.classes = self._get_classes()
+            self.pfc_watchdog_configuration = self._get_pfc_watchdog()
 
         elif self._config.load_from == "file":
-            for attribute in ["classes"]:
+            for attribute in ["classes", "pfc_watchdog_configuration", "watchdog_enabled"]:
                 setattr(self, attribute, None)
                 if attribute in self._object:
                     setattr(self, attribute, self.get_attribute(attribute_name=attribute))
@@ -2781,6 +2829,15 @@ class IntersightFabricSystemQosPolicy(IntersightConfigObject):
                         if attribute not in qos_class:
                             qos_class[attribute] = None
 
+            # We use this to make sure all options of the pfc_watchdog_configuration are set to None if not present
+            if self.pfc_watchdog_configuration:
+                for attribute in ["shutdown_multiplier", "watchdog_interval"]:
+                    if attribute not in self.pfc_watchdog_configuration:
+                        self.pfc_watchdog_configuration[attribute] = None
+
+            if self.watchdog_enabled is not True:
+                self.pfc_watchdog_configuration = None
+
     def _get_classes(self):
         # Fetches the QoS Classes configuration of a System QoS Policy
         if hasattr(self._object, "classes"):
@@ -2792,6 +2849,21 @@ class IntersightFabricSystemQosPolicy(IntersightConfigObject):
                                 "multicast_optimized": fabric_qos_class.multicast_optimize})
 
             return classes
+
+        return None
+
+    def _get_pfc_watchdog(self):
+        # Fetches the PFC Watchdog configuration of a System QoS Policy
+        if hasattr(self._object, "pfc_watchdog") and self._object.pfc_watchdog:
+            pfc_watchdog = self._object.pfc_watchdog
+            self.watchdog_enabled = pfc_watchdog.is_watchdog_enabled
+            if self.watchdog_enabled:
+                pfc_watchdog_dict = {}
+                if hasattr(pfc_watchdog, "watchdog_interval"):
+                    pfc_watchdog_dict["watchdog_interval"] = pfc_watchdog.watchdog_interval
+                if hasattr(pfc_watchdog, "shutdown_multiplier"):
+                    pfc_watchdog_dict["shutdown_multiplier"] = pfc_watchdog.shutdown_multiplier
+                return pfc_watchdog_dict
 
         return None
 
@@ -2856,23 +2928,43 @@ class IntersightFabricSystemQosPolicy(IntersightConfigObject):
 
                 classes.append(FabricQosClass(**kwargs))
 
-        # We now assign the fabric.QosClass objects to the already created fabric.SystemQosPolicy object
-        if classes:
-            kwargs = {
-                "object_type": self._INTERSIGHT_SDK_OBJECT_NAME,
-                "class_id": self._INTERSIGHT_SDK_OBJECT_NAME,
-                "organization": self.get_parent_org_relationship(),
-                "moid": fsqp.moid,
-                "classes": classes
+        # Handling PFC Watchdog configuration if it is enabled
+        pfc_watchdog = None
+        if self.watchdog_enabled is not None:
+            from intersight.model.fabric_pfc_watch_dog import FabricPfcWatchDog
+            kwargs_pfc_watchdog = {
+                "class_id": "fabric.PfcWatchDog",
+                "object_type": "fabric.PfcWatchDog",
+                "is_watchdog_enabled": self.watchdog_enabled
             }
-            if self.name is not None:
-                kwargs["name"] = self.name
+            if self.watchdog_enabled and self.pfc_watchdog_configuration:
+                if "watchdog_interval" in self.pfc_watchdog_configuration:
+                    kwargs_pfc_watchdog["watchdog_interval"] = self.pfc_watchdog_configuration["watchdog_interval"]
+                if "shutdown_multiplier" in self.pfc_watchdog_configuration:
+                    kwargs_pfc_watchdog["shutdown_multiplier"] = self.pfc_watchdog_configuration[
+                        "shutdown_multiplier"]
 
-            fabric_system_qos_policy = FabricSystemQosPolicy(**kwargs)
+            pfc_watchdog = FabricPfcWatchDog(**kwargs_pfc_watchdog)
 
-            if not self.commit(object_type=self._INTERSIGHT_SDK_OBJECT_NAME, payload=fabric_system_qos_policy,
-                               detail=self.name + " - Classes", modify_present=True):
-                return False
+        # We now assign the fabric.QosClass/pfc_watchdog objects to the already created fabric.SystemQosPolicy object
+        kwargs = {
+            "object_type": self._INTERSIGHT_SDK_OBJECT_NAME,
+            "class_id": self._INTERSIGHT_SDK_OBJECT_NAME,
+            "organization": self.get_parent_org_relationship(),
+            "moid": fsqp.moid,
+        }
+        if self.name is not None:
+            kwargs["name"] = self.name
+        if classes:
+            kwargs["classes"] = classes
+        if pfc_watchdog:
+            kwargs["pfc_watchdog"] = pfc_watchdog
+
+        fabric_system_qos_policy = FabricSystemQosPolicy(**kwargs)
+
+        if not self.commit(object_type=self._INTERSIGHT_SDK_OBJECT_NAME, payload=fabric_system_qos_policy,
+                           detail=self.name, modify_present=True):
+            return False
 
         return True
 
@@ -3282,5 +3374,440 @@ class IntersightFabricVsanPolicy(IntersightConfigObject):
                 detail = self.name + " - VSAN " + str(vsan["name"])
                 self.commit(object_type="fabric.Vsan", payload=fabric_vsan, detail=detail,
                             key_attributes=["name", "vsan_id", "fc_network_policy"])
+
+        return True
+
+
+class IntersightNetFlowConfigurationPolicy(IntersightConfigObject):
+    _CONFIG_NAME = "NetFlow Configuration Policy"
+    _CONFIG_SECTION_NAME = "netflow_configuration_policies"
+    _INTERSIGHT_SDK_OBJECT_NAME = "fabric.NetFlowPolicy"
+
+    def __init__(self, parent=None, netflow_configuration_policy=None):
+        IntersightConfigObject.__init__(self, parent=parent, sdk_object=netflow_configuration_policy)
+
+        self.descr = self.get_attribute(attribute_name="description", attribute_secondary_name="descr")
+        self.name = self.get_attribute(attribute_name="name")
+        self.flow_definitions = None
+        self.flow_exporters = None
+        self.flow_monitors = None
+
+        if self._config.load_from == "live":
+            if "fabric_net_flow_record" in self._config.sdk_objects:
+                netflow_record_definitions = []
+                for netflow_record in self._config.sdk_objects["fabric_net_flow_record"]:
+                    if hasattr(netflow_record, "net_flow_policy"):
+                        records = {}
+                        if netflow_record.net_flow_policy.moid == self._moid:
+                            records["name"] = netflow_record.name
+                            records["record_type"] = netflow_record.record_type
+                            keys = []
+                            if netflow_record.record_type == "L2":
+                                if netflow_record.l2_flow_key.destination_mac:
+                                    keys.append("destination_mac_address")
+                                if netflow_record.l2_flow_key.ether_type:
+                                    keys.append("ether_type")
+                                if netflow_record.l2_flow_key.source_mac:
+                                    keys.append("source_mac_address")
+
+                            if netflow_record.record_type == "IPv4":
+                                if netflow_record.ipv4_flow_key.destination_ip_address:
+                                    keys.append("destination_ip_address")
+                                if netflow_record.ipv4_flow_key.destination_port:
+                                    keys.append("destination_port")
+                                if netflow_record.ipv4_flow_key.protocol:
+                                    keys.append("protocol")
+                                if netflow_record.ipv4_flow_key.source_ip_address:
+                                    keys.append("source_ip_address")
+                                if netflow_record.ipv4_flow_key.source_port:
+                                    keys.append("source_port")
+                                if netflow_record.ipv4_flow_key.tos:
+                                    keys.append("tos")
+
+                            if netflow_record.record_type == "IPv6":
+                                if netflow_record.ipv6_flow_key.destination_ip_address:
+                                    keys.append("destination_ip_address")
+                                if netflow_record.ipv6_flow_key.destination_port:
+                                    keys.append("destination_port")
+                                if netflow_record.ipv6_flow_key.protocol:
+                                    keys.append("protocol")
+                                if netflow_record.ipv6_flow_key.source_ip_address:
+                                    keys.append("source_ip_address")
+                                if netflow_record.ipv6_flow_key.source_port:
+                                    keys.append("source_port")
+
+                            if keys:
+                                records["keys"] = keys
+
+                            if netflow_record.flow_non_key:
+                                non_keys = []
+                                if netflow_record.flow_non_key.byte_counters:
+                                    non_keys.append("byte_counters")
+                                if netflow_record.flow_non_key.first_system_time:
+                                    non_keys.append("first_system_time")
+                                if netflow_record.flow_non_key.last_system_time:
+                                    non_keys.append("last_system_time")
+                                if netflow_record.flow_non_key.packet_counters:
+                                    non_keys.append("packet_counters")
+                                if non_keys:
+                                    records["non_keys"] = non_keys
+                        if records:
+                            netflow_record_definitions.append(records)
+                if netflow_record_definitions:
+                    self.flow_definitions = netflow_record_definitions
+
+            if "fabric_net_flow_exporter" in self._config.sdk_objects:
+                flow_exporters = []
+                for netflow_exporter in self._config.sdk_objects["fabric_net_flow_exporter"]:
+                    if hasattr(netflow_exporter, "net_flow_policy"):
+                        exporters = {}
+                        if netflow_exporter.net_flow_policy.moid == self._moid:
+                            exporters["name"] = netflow_exporter.name
+                            flow_collector = {}
+                            if netflow_exporter.destination:
+                                flow_collector["destination_ip_address"] = netflow_exporter.destination
+                            if netflow_exporter.udp_port:
+                                flow_collector["udp_port"] = netflow_exporter.udp_port
+                            if netflow_exporter.gateway_ip:
+                                flow_collector["gateway_ip_address"] = netflow_exporter.gateway_ip
+                            if netflow_exporter.dscp:
+                                flow_collector["dscp"] = netflow_exporter.dscp
+                            if flow_collector:
+                                exporters["flow_collector"] = flow_collector
+                            timeouts = {}
+                            if netflow_exporter.template_data_timeout:
+                                timeouts["template_data_timeout"] = netflow_exporter.template_data_timeout
+                            if netflow_exporter.option_exporter_stats_timeout:
+                                timeouts["option_exporter_stats_timeout"] = \
+                                    netflow_exporter.option_exporter_stats_timeout
+                            if netflow_exporter.option_interface_table_timeout:
+                                timeouts["option_interface_table_timeout"] = \
+                                    netflow_exporter.option_interface_table_timeout
+                            if timeouts:
+                                exporters["timeouts"] = timeouts
+                            if netflow_exporter.source_interface:
+                                exporter_interfaces = {}
+                                if netflow_exporter.source_interface.vlan_id:
+                                    exporter_interfaces["vlan_id"] = netflow_exporter.source_interface.vlan_id
+                                if netflow_exporter.source_interface.switch_aip:
+                                    exporter_interfaces["switch_a_ip"] = netflow_exporter.source_interface.switch_aip
+                                if netflow_exporter.source_interface.switch_asubnetmask:
+                                    exporter_interfaces["switch_a_subnet_mask"] = \
+                                        netflow_exporter.source_interface.switch_asubnetmask
+                                if netflow_exporter.source_interface.switch_bip:
+                                    exporter_interfaces["switch_b_ip"] = netflow_exporter.source_interface.switch_bip
+                                if netflow_exporter.source_interface.switch_bsubnetmask:
+                                    exporter_interfaces["switch_b_subnet_mask"] = \
+                                        netflow_exporter.source_interface.switch_bsubnetmask
+                                if exporter_interfaces:
+                                    exporters["exporter_interfaces"] = exporter_interfaces
+                        if exporters:
+                            flow_exporters.append(exporters)
+                if flow_exporters:
+                    self.flow_exporters = flow_exporters
+
+            if "fabric_net_flow_monitor" in self._config.sdk_objects:
+                flow_monitors = []
+                for netflow_monitor in self._config.sdk_objects["fabric_net_flow_monitor"]:
+                    if hasattr(netflow_monitor, "net_flow_policy"):
+                        monitors = {}
+                        if netflow_monitor.net_flow_policy.moid == self._moid:
+                            monitors["name"] = netflow_monitor.name
+                            if netflow_monitor.flow_record:
+                                record_moid = netflow_monitor.flow_record.moid
+                                record_name = next(
+                                    (r.name for r in self._config.sdk_objects.get("fabric_net_flow_record", [])
+                                     if r.moid == record_moid),
+                                    None
+                                )
+                                if record_name:
+                                    monitors["flow_record"] = record_name
+                            if netflow_monitor.flow_exporters:
+                                fes = []
+                                for fe in netflow_monitor.flow_exporters:
+                                    fe_moid = fe.moid
+                                    fe_name = next(
+                                        (f.name for f in self._config.sdk_objects.get("fabric_net_flow_exporter", [])
+                                         if f.moid == fe_moid),
+                                        None
+                                    )
+                                    if fe_name:
+                                        fes.append(fe_name)
+                                monitors["flow_exporters"] = fes
+                            if monitors:
+                                flow_monitors.append(monitors)
+                if flow_monitors:
+                    self.flow_monitors = flow_monitors
+
+        elif self._config.load_from == "file":
+            for attribute in ["flow_definitions", "flow_exporters", "flow_monitors"]:
+                setattr(self, attribute, None)
+                if attribute in self._object:
+                    setattr(self, attribute, self.get_attribute(attribute_name=attribute))
+
+            if self.flow_definitions:
+                for flow_def in self.flow_definitions:
+                    for attribute in ["name", "record_type", "keys", "non_keys"]:
+                        if attribute not in flow_def:
+                            flow_def[attribute] = None
+
+            if self.flow_exporters:
+                for exporter in self.flow_exporters:
+                    for attribute in ["name", "flow_collector", "timeouts", "exporter_interfaces"]:
+                        if attribute not in exporter:
+                            exporter[attribute] = None
+                    if exporter["flow_collector"]:
+                        for attribute in ["destination_ip_address", "udp_port", "gateway_ip_address", "dscp"]:
+                            if attribute not in exporter["flow_collector"]:
+                                exporter["flow_collector"][attribute] = None
+                    if exporter["timeouts"]:
+                        for attribute in ["template_data_timeout", "option_exporter_stats_timeout",
+                                          "option_interface_table_timeout"]:
+                            if attribute not in exporter["timeouts"]:
+                                exporter["timeouts"][attribute] = None
+                    if exporter["exporter_interfaces"]:
+                        for attribute in ["vlan_id", "switch_a_ip", "switch_a_subnet_mask",
+                                          "switch_b_ip", "switch_b_subnet_mask"]:
+                            if attribute not in exporter["exporter_interfaces"]:
+                                exporter["exporter_interfaces"][attribute] = None
+
+            if self.flow_monitors:
+                for monitor in self.flow_monitors:
+                    for attribute in ["name", "flow_record", "flow_exporters"]:
+                        if attribute not in monitor:
+                            monitor[attribute] = None
+
+    @IntersightConfigObject.update_taskstep_description()
+    def push_object(self):
+        from intersight.model.fabric_net_flow_policy import FabricNetFlowPolicy
+
+        self.logger(message=f"Pushing {self._CONFIG_NAME} configuration: {self.name}")
+
+        kwargs = {
+            "object_type": self._INTERSIGHT_SDK_OBJECT_NAME,
+            "class_id": self._INTERSIGHT_SDK_OBJECT_NAME,
+            "organization": self.get_parent_org_relationship()
+        }
+        if self.name is not None:
+            kwargs["name"] = self.name
+        if self.descr is not None:
+            kwargs["description"] = self.descr
+        if self.tags is not None:
+            kwargs["tags"] = self.create_tags()
+
+        fabric_net_flow_policy = FabricNetFlowPolicy(**kwargs)
+
+        nfp = self.commit(object_type=self._INTERSIGHT_SDK_OBJECT_NAME, payload=fabric_net_flow_policy,
+                          detail=self.name, return_relationship=True)
+        if not nfp:
+            return False
+
+        if self.flow_definitions:
+            from intersight.model.fabric_net_flow_record import FabricNetFlowRecord
+
+            for flow_def in self.flow_definitions:
+                record_kwargs = {
+                    "object_type": "fabric.NetFlowRecord",
+                    "class_id": "fabric.NetFlowRecord",
+                    "net_flow_policy": nfp
+                }
+                if flow_def["name"] is not None:
+                    record_kwargs["name"] = flow_def["name"]
+                if flow_def["record_type"] is not None:
+                    record_kwargs["record_type"] = flow_def["record_type"]
+
+                if flow_def.get("record_type") == "L2" and flow_def.get("keys"):
+                    from intersight.model.fabric_l2_flow_key import FabricL2FlowKey
+                    l2_kwargs = {
+                        "class_id": "fabric.L2FlowKey",
+                        "object_type": "fabric.L2FlowKey"
+                    }
+                    for key in flow_def["keys"]:
+                        if key == "destination_mac_address":
+                            l2_kwargs["destination_mac"] = True
+                        elif key == "ether_type":
+                            l2_kwargs["ether_type"] = True
+                        elif key == "source_mac_address":
+                            l2_kwargs["source_mac"] = True
+                    record_kwargs["l2_flow_key"] = FabricL2FlowKey(**l2_kwargs)
+
+                elif flow_def.get("record_type") == "IPv4" and flow_def.get("keys"):
+                    from intersight.model.fabric_ipv4_flow_key import FabricIpv4FlowKey
+                    ipv4_kwargs = {
+                        "class_id": "fabric.Ipv4FlowKey",
+                        "object_type": "fabric.Ipv4FlowKey"
+                    }
+                    for key in flow_def["keys"]:
+                        if key == "destination_ip_address":
+                            ipv4_kwargs["destination_ip_address"] = True
+                        elif key == "destination_port":
+                            ipv4_kwargs["destination_port"] = True
+                        elif key == "protocol":
+                            ipv4_kwargs["protocol"] = True
+                        elif key == "source_ip_address":
+                            ipv4_kwargs["source_ip_address"] = True
+                        elif key == "source_port":
+                            ipv4_kwargs["source_port"] = True
+                        elif key == "tos":
+                            ipv4_kwargs["tos"] = True
+                    record_kwargs["ipv4_flow_key"] = FabricIpv4FlowKey(**ipv4_kwargs)
+
+                elif flow_def.get("record_type") == "IPv6" and flow_def.get("keys"):
+                    from intersight.model.fabric_ipv6_flow_key import FabricIpv6FlowKey
+                    ipv6_kwargs = {
+                        "class_id": "fabric.Ipv6FlowKey",
+                        "object_type": "fabric.Ipv6FlowKey"
+                    }
+                    for key in flow_def["keys"]:
+                        if key == "destination_ip_address":
+                            ipv6_kwargs["destination_ip_address"] = True
+                        elif key == "destination_port":
+                            ipv6_kwargs["destination_port"] = True
+                        elif key == "protocol":
+                            ipv6_kwargs["protocol"] = True
+                        elif key == "source_ip_address":
+                            ipv6_kwargs["source_ip_address"] = True
+                        elif key == "source_port":
+                            ipv6_kwargs["source_port"] = True
+                    record_kwargs["ipv6_flow_key"] = FabricIpv6FlowKey(**ipv6_kwargs)
+
+                if flow_def.get("non_keys"):
+                    from intersight.model.fabric_flow_non_key import FabricFlowNonKey
+                    non_key_kwargs = {
+                        "class_id": "fabric.FlowNonKey",
+                        "object_type": "fabric.FlowNonKey"
+                    }
+                    for non_key in flow_def["non_keys"]:
+                        if non_key == "byte_counters":
+                            non_key_kwargs["byte_counters"] = True
+                        elif non_key == "first_system_time":
+                            non_key_kwargs["first_system_time"] = True
+                        elif non_key == "last_system_time":
+                            non_key_kwargs["last_system_time"] = True
+                        elif non_key == "packet_counters":
+                            non_key_kwargs["packet_counters"] = True
+                    record_kwargs["flow_non_key"] = FabricFlowNonKey(**non_key_kwargs)
+
+                fabric_net_flow_record = FabricNetFlowRecord(**record_kwargs)
+                detail = f"{self.name} - Flow Record '{flow_def['name']}'"
+                self.commit(object_type="fabric.NetFlowRecord", payload=fabric_net_flow_record,
+                            detail=detail, key_attributes=["name", "net_flow_policy"])
+
+        if self.flow_exporters:
+            from intersight.model.fabric_net_flow_exporter import FabricNetFlowExporter
+
+            for exporter in self.flow_exporters:
+                exporter_kwargs = {
+                    "object_type": "fabric.NetFlowExporter",
+                    "class_id": "fabric.NetFlowExporter",
+                    "net_flow_policy": nfp
+                }
+                if exporter["name"] is not None:
+                    exporter_kwargs["name"] = exporter["name"]
+
+                if exporter.get("flow_collector"):
+                    fc = exporter["flow_collector"]
+                    if fc.get("destination_ip_address") is not None:
+                        exporter_kwargs["destination"] = fc["destination_ip_address"]
+                    if fc.get("udp_port") is not None:
+                        exporter_kwargs["udp_port"] = fc["udp_port"]
+                    if fc.get("gateway_ip_address") is not None:
+                        exporter_kwargs["gateway_ip"] = fc["gateway_ip_address"]
+                    if fc.get("dscp") is not None:
+                        exporter_kwargs["dscp"] = fc["dscp"]
+
+                if exporter.get("timeouts"):
+                    t = exporter["timeouts"]
+                    if t.get("template_data_timeout") is not None:
+                        exporter_kwargs["template_data_timeout"] = t["template_data_timeout"]
+                    if t.get("option_exporter_stats_timeout") is not None:
+                        exporter_kwargs["option_exporter_stats_timeout"] = t["option_exporter_stats_timeout"]
+                    if t.get("option_interface_table_timeout") is not None:
+                        exporter_kwargs["option_interface_table_timeout"] = t["option_interface_table_timeout"]
+
+                if exporter.get("exporter_interfaces"):
+                    from intersight.model.fabric_vlan_export_interface import FabricVlanExportInterface
+                    ei = exporter["exporter_interfaces"]
+                    si_kwargs = {
+                        "class_id": "fabric.VlanExportInterface",
+                        "object_type": "fabric.VlanExportInterface"
+                    }
+                    if ei.get("vlan_id") is not None:
+                        si_kwargs["vlan_id"] = ei["vlan_id"]
+                    if ei.get("switch_a_ip") is not None:
+                        si_kwargs["switch_aip"] = ei["switch_a_ip"]
+                    if ei.get("switch_a_subnet_mask") is not None:
+                        si_kwargs["switch_asubnetmask"] = ei["switch_a_subnet_mask"]
+                    if ei.get("switch_b_ip") is not None:
+                        si_kwargs["switch_bip"] = ei["switch_b_ip"]
+                    if ei.get("switch_b_subnet_mask") is not None:
+                        si_kwargs["switch_bsubnetmask"] = ei["switch_b_subnet_mask"]
+                    exporter_kwargs["source_interface"] = FabricVlanExportInterface(**si_kwargs)
+
+                fabric_net_flow_exporter = FabricNetFlowExporter(**exporter_kwargs)
+                detail = f"{self.name} - Flow Exporter '{exporter['name']}'"
+                self.commit(object_type="fabric.NetFlowExporter", payload=fabric_net_flow_exporter,
+                            detail=detail, key_attributes=["name", "net_flow_policy"])
+
+        if self.flow_monitors:
+            from intersight.model.fabric_net_flow_monitor import FabricNetFlowMonitor
+
+            for monitor in self.flow_monitors:
+                monitor_kwargs = {
+                    "object_type": "fabric.NetFlowMonitor",
+                    "class_id": "fabric.NetFlowMonitor",
+                    "net_flow_policy": nfp
+                }
+                if monitor["name"] is not None:
+                    monitor_kwargs["name"] = monitor["name"]
+
+                if monitor.get("flow_record"):
+                    flow_record = self.get_live_object(
+                        object_name=monitor["flow_record"],
+                        object_type="fabric.NetFlowRecord",
+                        query_filter=f"NetFlowPolicy.Moid eq '{nfp.moid}' and Name eq '{monitor['flow_record']}'"
+                    )
+                    if flow_record:
+                        monitor_kwargs["flow_record"] = flow_record
+                    else:
+                        self.logger(level="warning",
+                                    message=f"Could not find Flow Record '{monitor['flow_record']}' "
+                                            f"for Flow Monitor '{monitor['name']}' in policy '{self.name}'")
+                        self._config.push_summary_manager.add_object_status(
+                            obj=self,
+                            obj_detail=f"Attaching Flow Record '{monitor['flow_record']}' to "
+                                       f"Flow Monitor '{monitor['name']}'",
+                            obj_type=self._INTERSIGHT_SDK_OBJECT_NAME, status="failed",
+                            message=f"Failed to find Flow Record '{monitor['flow_record']}'"
+                        )
+
+                if monitor.get("flow_exporters"):
+                    exporters = []
+                    for exporter_name in monitor["flow_exporters"]:
+                        flow_exporter = self.get_live_object(
+                            object_name=exporter_name,
+                            object_type="fabric.NetFlowExporter",
+                            query_filter=f"NetFlowPolicy.Moid eq '{nfp.moid}' and Name eq '{exporter_name}'"
+                        )
+                        if flow_exporter:
+                            exporters.append(flow_exporter)
+                        else:
+                            self.logger(level="warning",
+                                        message=f"Could not find Flow Exporter '{exporter_name}' "
+                                                f"for Flow Monitor '{monitor['name']}' in policy '{self.name}'")
+                            self._config.push_summary_manager.add_object_status(
+                                obj=self,
+                                obj_detail=f"Attaching Flow Exporter '{exporter_name}' to "
+                                           f"Flow Monitor '{monitor['name']}'",
+                                obj_type=self._INTERSIGHT_SDK_OBJECT_NAME, status="failed",
+                                message=f"Failed to find Flow Exporter '{exporter_name}'"
+                            )
+                    if exporters:
+                        monitor_kwargs["flow_exporters"] = exporters
+
+                fabric_net_flow_monitor = FabricNetFlowMonitor(**monitor_kwargs)
+                detail = f"{self.name} - Flow Monitor '{monitor['name']}'"
+                self.commit(object_type="fabric.NetFlowMonitor", payload=fabric_net_flow_monitor,
+                            detail=detail, key_attributes=["name", "net_flow_policy"])
 
         return True

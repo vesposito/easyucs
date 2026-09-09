@@ -268,8 +268,8 @@
       <div id="deviceButtonsContainer" class="dropright col-md-12 mb-3">
         <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Actions</button>
         <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-          <a class="dropdown-item" onclick="fetchLiveObjectFromDevice('config')"><span class="mr-2" style="width: 20px; display: inline-block"><i class="fa-solid fa-file-arrow-down"></i></span>Fetch Config</a>
-          <a class="dropdown-item" onclick="fetchLiveObjectFromDevice('inventory')"><span class="mr-2" style="width: 20px; display: inline-block"><i class="fa-solid fa-download"></i></span>Fetch Inventory</a>
+          <a class="dropdown-item d-flex justify-content-between align-items-center" onclick="fetchLiveObjectFromDevice('config', document.getElementById('force-fetch-config').checked)"><span><span class="mr-2" style="width: 20px; display: inline-block"><i class="fa-solid fa-file-arrow-down"></i></span>Fetch Config</span><span onclick="event.stopPropagation()" class="ml-3 d-inline-flex align-items-center text-nowrap"><small class="text-muted mr-1">Force</small><input type="checkbox" id="force-fetch-config"></span></a>
+          <a class="dropdown-item d-flex justify-content-between align-items-center" onclick="fetchLiveObjectFromDevice('inventory', document.getElementById('force-fetch-inventory').checked)"><span><span class="mr-2" style="width: 20px; display: inline-block"><i class="fa-solid fa-download"></i></span>Fetch Inventory</span><span onclick="event.stopPropagation()" class="ml-3 d-inline-flex align-items-center text-nowrap"><small class="text-muted mr-1">Force</small><input type="checkbox" id="force-fetch-inventory"></span></a>
           <a class="dropdown-item" onclick="fetchLiveObjectFromDevice('backup')"><span class="mr-2" style="width: 20px; display: inline-block"><i class="fa-solid fa-floppy-disk"></i></span>Fetch Backup</a>
           <div class="dropdown-divider"></div>
           <a class="dropdown-item dropdown-toggle" onclick="togglePushConfigModal(event)"><span class="mr-2" style="width: 20px; display: inline-block"><i class="fa-solid fa-file-arrow-up"></i></span>Push Config</a>
@@ -393,7 +393,7 @@
                     <tr>
                       <th><input type="checkbox" id="reportTable_selectAll" name="select_all" value="1" onclick = "handleSelectAll('report', this);"></th>
                       <th>Report name</th>
-                      <th>Origin</th>
+                      <th>Format</th>
                       <th>Import date</th>
                       <th>EasyUCS version</th>
                     </tr>

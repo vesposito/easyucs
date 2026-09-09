@@ -46,8 +46,8 @@ from config.ucs.ucsm.admin import (
 from config.ucs.ucsm.lan import (
     UcsSystemApplianceNetworkControlPolicy, UcsSystemApplianceVlan, UcsSystemLanPinGroup,
     UcsSystemLanTrafficMonitoringSession, UcsSystemLinkProfile, UcsSystemMacSec, UcsSystemNetflowMonitoring,
-    UcsSystemQosSystemClass, UcsSystemSlowDrainTimers, UcsSystemTrafficMonitoringConfiguration, UcsSystemUdldLinkPolicy,
-    UcsSystemVlan, UcsSystemVlanGroup
+    UcsSystemQosSystemClass, UcsSystemSlowDrainTimers, UcsSystemTrafficMonitoringConfiguration,UcsSystemUdldLinkPolicy,
+    UcsSystemVlan, UcsSystemVlanGroup, UcsSystemWatchDogTimers,
 )
 from config.ucs.ucsm.ports import (
     UcsSystemLanUplinkPort, UcsSystemAppliancePort, UcsSystemServerPort, UcsSystemLanPortChannel,
@@ -96,6 +96,22 @@ class GenericUcsConfigManager(GenericConfigManager):
                                                 dict_service_profile[field].pop(key)
                         elif hasattr(service_profile, field) and getattr(service_profile, field):
                             dict_service_profile[field] = getattr(service_profile, field)
+
+                    # If this Service Profile (instance) is bound to a Service Profile Template located in a
+                    # different org than the profile itself, we prefix the referenced template's name with its org
+                    # path (e.g. "root/jc_suborg/jc_vT_"). This is required for the UI to reliably resolve/select
+                    # the correct template across orgs, since a plain template name alone is ambiguous when templates
+                    # with the same name exist in different orgs. If the template is in the same org as the profile,
+                    # we keep just the plain name (no prefix). This mirrors the "OrgName/TemplateName" pattern already
+                    # used on the Intersight side (e.g. IntersightUcsServerProfile.ucs_server_profile_template).
+                    if dict_service_profile.get("service_profile_template"):
+                        operational_state = getattr(service_profile, "operational_state", {}) or {}
+                        template_ref = operational_state.get("service_profile_template")
+                        if template_ref and template_ref.get("org") and \
+                                template_ref["org"] != org.get_org_path():
+                            dict_service_profile["service_profile_template"] = \
+                                template_ref["org"] + "/" + dict_service_profile["service_profile_template"]
+
                     json_org["service_profiles"].append(dict_service_profile)
 
             output_json_orgs.append(json_org)
@@ -202,13 +218,43 @@ class UcsSystemConfigManager(GenericUcsConfigManager):
 
         return True
 
-    def fetch_config(self, force=False):
-        self.logger(message="Fetching config from live device (can take several minutes)")
+    def fetch_config(self, force=False, xml_file_path=None, tech_support_timestamp=None,
+                     tech_support_filename=None):
+        if xml_file_path:
+            self.logger(message="Fetching config from XML file: " + str(xml_file_path))
+        else:
+            self.logger(message="Fetching config from live device (can take several minutes)")
         config = UcsSystemConfig(parent=self)
-        config.metadata.origin = "live"
+        config.metadata.origin = "import" if xml_file_path else "live"
         config.metadata.easyucs_version = __version__
         config.load_from = "live"
-        config._fetch_sdk_objects(force=force)
+        if xml_file_path:
+            if tech_support_filename:
+                config.metadata.name = "Imported from " + tech_support_filename
+                if tech_support_timestamp:
+                    config.metadata.name += " (captured " + tech_support_timestamp.strftime("%Y-%m-%d %H:%M") + ")"
+            config._fetch_sdk_objects_from_xml(xml_file_path=xml_file_path, force=force)
+
+            # When loading from a tech-support XML bundle, the device's _set_device_name_and_version()
+            # has no live UCSM connection, so fi_a_model/fi_b_model stay as "".
+            # We populate them here from the networkElement SDK objects so that model-dependent logic
+            # (e.g. filtering internal backplane breakout ports on UCSX-S9108-100G X-Direct FIs)
+            # works correctly during tech-support bundle processing.
+            if "networkElement" in config.sdk_objects:
+                for network_element in config.sdk_objects["networkElement"]:
+                    if hasattr(network_element, "dn") and hasattr(network_element, "model"):
+                        if "switch-A" in (network_element.dn or ""):
+                            config.device.fi_a_model = network_element.model or ""
+                            self.logger(level="debug",
+                                        message="Set fi_a_model from XML networkElement: " +
+                                                str(network_element.model))
+                        elif "switch-B" in (network_element.dn or ""):
+                            config.device.fi_b_model = network_element.model or ""
+                            self.logger(level="debug",
+                                        message="Set fi_b_model from XML networkElement: " +
+                                                str(network_element.model))
+        else:
+            config._fetch_sdk_objects(force=force)
 
         # If any of the mandatory tasksteps fails then return None
         from api.api_server import easyucs
@@ -230,9 +276,10 @@ class UcsSystemConfigManager(GenericUcsConfigManager):
 
         config.switching_mode.append(UcsSystemSwitchingMode(parent=config))
         config.communication_services.append(UcsSystemCommunicationServices(parent=config))
-        device_connector = DeviceConnector(parent=config)
-        if device_connector.intersight_url:
-            config.device_connector.append(device_connector)
+        if not xml_file_path:
+            device_connector = DeviceConnector(parent=config)
+            if device_connector.intersight_url:
+                config.device_connector.append(device_connector)
         if "faultPolicy" in config.sdk_objects:
             config.global_fault_policy.append(
                 UcsSystemFaultPolicy(parent=config, fault_policy=config.sdk_objects["faultPolicy"][0]))
@@ -263,6 +310,10 @@ class UcsSystemConfigManager(GenericUcsConfigManager):
         if "qosclassSlowDrain" in config.sdk_objects:
             if config.sdk_objects["qosclassSlowDrain"]:
                 config.slow_drain_timers.append(UcsSystemSlowDrainTimers(parent=config))
+
+        if "pfcWatchDog" in config.sdk_objects:
+            if config.sdk_objects["pfcWatchDog"]:
+                config.watchdog_timers.append(UcsSystemWatchDogTimers(parent=config))
 
         if "policyControlEp" in config.sdk_objects:
             for ucs_central in config.sdk_objects['policyControlEp']:
@@ -348,10 +399,10 @@ class UcsSystemConfigManager(GenericUcsConfigManager):
                     config.lan_uplink_ports.remove(lan_uplink_port)
 
         # We also add server ports that are part of a port-channel (fabricDceSwSrvPcEp) since they are auto created
-        for fabric_dce_sw_srv_ep in sorted(config.sdk_objects["fabricDceSwSrvEp"] +
-                                           config.sdk_objects["fabricDceSwSrvPcEp"],
+        for fabric_dce_sw_srv_ep in sorted(config.sdk_objects.get("fabricDceSwSrvEp", []) +
+                                           config.sdk_objects.get("fabricDceSwSrvPcEp", []),
                                            key=lambda port: [int(t) if t.isdigit() else t.lower()
-                                                             for t in re.split('(\d+)', port.dn)]):
+                                                             for t in re.split(r'(\d+)', port.dn)]):
             config.server_ports.append(UcsSystemServerPort(parent=config, fabric_dce_sw_srv_ep=fabric_dce_sw_srv_ep))
 
         if "fabricEthEstcEp" in config.sdk_objects:
@@ -465,8 +516,8 @@ class UcsSystemConfigManager(GenericUcsConfigManager):
                 fabric = fabric_breakout.dn.split("/")[2]
                 if ((config.device.fi_a_model == "UCSX-S9108-100G" and fabric == "A" and
                      int(fabric_breakout.port_id) > 8) or
-                        (config.device.fi_b_model == "UCSX-S9108-100G") and fabric =="B" and
-                        int(fabric_breakout.port_id) > 8):
+                        (config.device.fi_b_model == "UCSX-S9108-100G" and fabric == "B" and
+                         int(fabric_breakout.port_id) > 8)):
                     self.logger(level="debug",
                                 message="Ignoring internal backplane breakout port " + str(fabric) + "/" +
                                         fabric_breakout.slot_id + "/" + fabric_breakout.port_id)
@@ -499,9 +550,13 @@ class UcsSystemConfigManager(GenericUcsConfigManager):
                         fi_b_fc_ports_presence = True
                 # We only add items to the list of unified ports if we have FC ports and we are not using 1st Gen FIs
                 if fi_a_fc_ports_presence and self.parent.fi_a_model not in ["N10-S6100", "N10-S6200"]:
-                    config.san_unified_ports.append(UcsSystemSanUnifiedPort(parent=config, fabric="A"))
+                    san_unified_port_a = UcsSystemSanUnifiedPort(parent=config, fabric="A")
+                    if san_unified_port_a.fabric is not None:
+                        config.san_unified_ports.append(san_unified_port_a)
                 if fi_b_fc_ports_presence and self.parent.fi_b_model not in ["N10-S6100", "N10-S6200"]:
-                    config.san_unified_ports.append(UcsSystemSanUnifiedPort(parent=config, fabric="B"))
+                    san_unified_port_b = UcsSystemSanUnifiedPort(parent=config, fabric="B")
+                    if san_unified_port_b.fabric is not None:
+                        config.san_unified_ports.append(san_unified_port_b)
 
         if "fabricMonOriginSVI" in config.sdk_objects:
             if config.sdk_objects["fabricMonOriginSVI"]:
@@ -781,6 +836,8 @@ class UcsSystemConfigManager(GenericUcsConfigManager):
                 is_pushed = config.sel_policy[0].push_object() and is_pushed
             if config.slow_drain_timers:
                 is_pushed = config.slow_drain_timers[0].push_object() and is_pushed
+            if config.watchdog_timers:
+                is_pushed = config.watchdog_timers[0].push_object() and is_pushed
             for qos_system_class in config.qos_system_class:
                 if config.check_if_switching_mode_config_requires_reboot() and \
                         self.parent.fi_a_model == "UCS-FI-6332-16UP":
@@ -1191,6 +1248,9 @@ class UcsSystemConfigManager(GenericUcsConfigManager):
         if "slow_drain_timers" in config_json:
             config.slow_drain_timers.append(UcsSystemSlowDrainTimers(parent=config,
                                                                      json_content=config_json["slow_drain_timers"][0]))
+        if "watchdog_timers" in config_json:
+            config.watchdog_timers.append(UcsSystemWatchDogTimers(parent=config,
+                                                                   json_content=config_json["watchdog_timers"][0]))
         if "switching_mode" in config_json:
             config.switching_mode.append(UcsSystemSwitchingMode(parent=config,
                                                                 json_content=config_json["switching_mode"][0]))

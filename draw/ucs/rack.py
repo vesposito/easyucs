@@ -583,6 +583,22 @@ class UcsRackDrawInfra(UcsSystemDrawInfraEquipment):
             self.rack = UcsRackDrawRear(parent=rack._parent)
         else:
             self.rack = UcsRackDrawFront(parent=rack._parent)
+        # UcsRackDrawRear/Front.__init__() builds a full composite background image that
+        # is only needed when saving a standalone rack picture. The infra draw never saves
+        # self.rack directly; instead it reassigns self.rack.background = self.background
+        # below so the rack draw methods render onto the infra canvas. Explicitly free the
+        # standalone composite now to avoid holding two large RGBA buffers simultaneously.
+        rack_bg = getattr(self.rack, 'background', None)
+        if rack_bg is not None:
+            rack_bg.close()
+            self.rack.background = None
+        rack_clear = getattr(self.rack, 'clear_version', None)
+        if rack_clear is not None:
+            clear_bg = getattr(rack_clear, 'background', None)
+            if clear_bg is not None:
+                clear_bg.close()
+                rack_clear.background = None
+            self.rack.clear_version = None  # type: ignore[attr-defined]
 
         self.fi_a = self._get_fi(fi_list, "A")
         self.fi_b = self._get_fi(fi_list, "B")

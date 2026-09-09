@@ -1,3 +1,4 @@
+
 openapi: 3.0.3
 info:
   version: '1.0.0'
@@ -57,6 +58,10 @@ components:
       type: string
       description: Whether to cancel upload or not
       example: false
+    ca_cert_uuid:
+      type: string
+      description: UUID of the CA certificate file
+      example: a3e325f5-1320-4eaf-88f2-a83b6d283c68
     category:
       type: string
       description: Category of the config
@@ -155,6 +160,10 @@ components:
         proxy_username:
           $ref: '#/components/schemas/proxy_username'
       additionalProperties: false
+    device_endpoint_id:
+      type: string
+      description: Unique identifier for the device endpoint (e.g. Intersight account MOID)
+      example: 5e9d1a7c6f72612d30f9b1a3
     device_name:
       type: string
       description: Name of the device
@@ -202,6 +211,27 @@ components:
       type: string
       description: Version of EasyUCS
       example: 0.9.7.4
+    easyucs_certificates_trusted_get:
+      type: object
+      properties:
+        uuid:
+          $ref: '#/components/schemas/ca_cert_uuid'
+        common_name:
+          type: string
+          description: Identifier for a unit within the organization.
+          example: CSPG
+        issued_by:
+          type: string
+          description: Issued Date of the Trusted Certificate
+          example: HydrantID Server CA 01
+        serial_number:
+          type: integer
+          description: Unique Number issued by the Certificate Authority (CA)
+          example: 85078034981552318268408137974808230776
+        valid_until:
+          type: string
+          description: Valid Date of the Trusted Certificate
+          example: "2022-06-15T09:17:43.418Z"
     erase_flexflash:
       type: boolean
       description: Erase FlexFlash from all servers
@@ -383,6 +413,7 @@ components:
       description: Origin of the object
       enum:
         - file
+        - import
         - live
       example: live
     os:
@@ -607,6 +638,11 @@ components:
       example: catalog
       enum:
         - catalog
+    sub_device_uuids:
+      type: array
+      description: List of UUIDs of sub-devices (e.g. FIs belonging to an IMM domain device)
+      items:
+        $ref: '#/components/schemas/device_uuid'
     tags:
       type: array
       description: List of tags associated with the object
@@ -841,8 +877,6 @@ components:
           $ref: '#/components/schemas/delete_settings'
         force:
           $ref: '#/components/schemas/force'
-        bypass_version_checks:
-          $ref: '#/components/schemas/bypass_version_checks'
       additionalProperties: false
     config_inventory_form_data_post:
       properties:
@@ -958,14 +992,18 @@ components:
         - target
         - timestamp
       properties:
-        cached_orgs:
-          $ref: '#/components/schemas/cached_orgs'
+        bypass_connection_checks:
+          $ref: '#/components/schemas/bypass_connection_checks'
+        bypass_version_checks:
+          $ref: '#/components/schemas/bypass_version_checks'
         device_connector_claim_status:
           $ref: '#/components/schemas/device_connector_claim_status'
         device_connector_ownership_name:
           $ref: '#/components/schemas/device_connector_ownership_name'
         device_connector_ownership_user:
           $ref: '#/components/schemas/device_connector_ownership_user'
+        device_endpoint_id:
+          $ref: '#/components/schemas/device_endpoint_id'
         device_name:
           $ref: '#/components/schemas/device_name'
         device_type:
@@ -978,6 +1016,8 @@ components:
           $ref: '#/components/schemas/device_version'
         easyucs_version:
           $ref: '#/components/schemas/easyucs_version'
+        intersight_device_uuid:
+          $ref: '#/components/schemas/device_uuid'
         is_hidden:
           $ref: '#/components/schemas/is_hidden'
         is_reachable:
@@ -986,6 +1026,10 @@ components:
           $ref: '#/components/schemas/is_system'
         key_id:
           $ref: '#/components/schemas/key_id'
+        parent_device_uuid:
+          $ref: '#/components/schemas/device_uuid'
+        sub_device_uuids:
+          $ref: '#/components/schemas/sub_device_uuids'
         system_usage:
           $ref: '#/components/schemas/system_usage'
         tags:
@@ -996,10 +1040,12 @@ components:
           $ref: '#/components/schemas/timestamp'
         timestamp_last_connected:
           $ref: '#/components/schemas/timestamp_last_connected'
-        username:
-          $ref: '#/components/schemas/username'
         use_proxy:
           $ref: '#/components/schemas/use_proxy'
+        user_label:
+          $ref: '#/components/schemas/user_label'
+        username:
+          $ref: '#/components/schemas/username'
     device_initial_setup_post:
       oneOf:
         - type: object
@@ -1182,6 +1228,24 @@ components:
           $ref: '#/components/schemas/device_uuid'
         proxy_details:
           $ref: '#/components/schemas/device_connector_proxy'
+      additionalProperties: false
+    devices_actions_create_from_files_post:
+      type: object
+      properties:
+        device_type:
+          type: string
+          enum:
+          - ucsm
+          - ucsc
+          - cimc
+          - intersight
+          example: intersight
+        config_file:
+          type: string
+          format: binary
+        inventory_file:
+          type: string
+          format: binary
       additionalProperties: false
     devices_actions_delete_post:
       type: object
@@ -1684,6 +1748,13 @@ components:
       description: UUID of the backup
       schema:
        $ref: '#/components/schemas/backup_uuid'
+    ca_cert_uuid:
+      name: ca_cert_uuid
+      in: path
+      required: true
+      description: UUID of the CA certificate file
+      schema:
+        $ref: '#/components/schemas/ca_cert_uuid'
     cancel:
       name: cancel
       in: query
@@ -2054,6 +2125,42 @@ paths:
           $ref: '#/components/responses/404NotFound'
         '500':
           $ref: '#/components/responses/500ServerError'
+  '/devices/actions/add':
+    post:
+      tags:
+        - devices
+      summary: Add multiple devices from a CSV file
+      description: Adds multiple devices to EasyUCS by uploading a CSV file. The CSV must have the columns 'Device Type', 'Target', 'Username', 'Password'.
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                devices_file:
+                  type: string
+                  format: binary
+                  description: CSV file with columns 'Device Type', 'Target', 'Username', 'Password'
+              required:
+                - devices_file
+      responses:
+        '200':
+          description: A list of task UUIDs, one per successfully added device
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  tasks:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/task_uuid'
+                additionalProperties: false
+        '400':
+          $ref: '#/components/responses/400ClientError'
+        '500':
+          $ref: '#/components/responses/500ServerError'
   '/devices/actions/claim_to_intersight':
     post:
       tags:
@@ -2078,6 +2185,41 @@ paths:
                     type: array
                     items:
                       $ref: '#/components/schemas/task_uuid'
+                additionalProperties: false
+        '400':
+          $ref: '#/components/responses/400ClientError'
+        '500':
+          $ref: '#/components/responses/500ServerError'
+  '/devices/actions/create_from_files':
+    post:
+      tags:
+        - devices
+      summary: Create a device from custom config and inventory files
+      description: >-
+        Creates an UCSM, UCSC Central, CIMC or Intersight device without requiring a live
+        connection by importing a mandatory config JSON file and an optional inventory JSON
+        file directly onto the new device. The device_type and device_name are read from the
+        EasyUCS metadata header of the uploaded config file. When an inventory file is supplied,
+        its device_type must match the config file's device_type. The created device is visible
+        in the device list and can be used as a source or target placeholder in a migration.
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/devices_actions_create_from_files_post'
+      responses:
+        '200':
+          description: Offline device successfully created
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - device
+                properties:
+                  device:
+                    $ref: '#/components/schemas/device_get'
                 additionalProperties: false
         '400':
           $ref: '#/components/responses/400ClientError'
@@ -2126,6 +2268,42 @@ paths:
                     type: array
                     items:
                       $ref: '#/components/schemas/task_uuid'
+                additionalProperties: false
+        '400':
+          $ref: '#/components/responses/400ClientError'
+        '500':
+          $ref: '#/components/responses/500ServerError'
+  '/devices/actions/import_tech_support':
+    post:
+      tags:
+        - devices
+      summary: Import a tech-support bundle
+      description: Imports a tech-support bundle in EasyUCS. The device type is auto-detected from the bundle contents. Accepted formats are a full tech-support bundle (.tar, .tar.gz, .tgz), a raw mit.xml file, or a compressed mit.xml.gz file. Currently only UCSM tech-support bundles are supported.
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                tech_support_file:
+                  type: string
+                  format: binary
+                  description: Tech-support bundle archive (.tar, .tar.gz, .tgz), raw mit.xml, or compressed mit.xml.gz (max 2 GB)
+              required:
+                - tech_support_file
+      responses:
+        '200':
+          description: Tech-support import task successfully scheduled
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  task:
+                    $ref: '#/components/schemas/task_uuid'
+                  device_uuid:
+                    $ref: '#/components/schemas/device_uuid'
                 additionalProperties: false
         '400':
           $ref: '#/components/responses/400ClientError'
@@ -3480,6 +3658,41 @@ paths:
           $ref: '#/components/responses/404NotFound'
         '500':
           $ref: '#/components/responses/500ServerError'
+  '/devices/{device_uuid}/latest_config_and_inventory':
+    get:
+      tags:
+        - configs
+        - inventories
+      summary: Get latest config and inventory for a specific device
+      description: Returns a list of config and inventory for a specific device in EasyUCS
+      parameters:
+        - $ref: '#/components/parameters/device_uuid'
+        - $ref: '#/components/parameters/page_size'
+        - $ref: '#/components/parameters/page_number'
+      responses:
+        '200':
+          description: A list of configs and inventories of the requested device
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  config:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/config_get'
+                  inventory:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/inventory_get'
+                additionalProperties: false
+
+        '400':
+          $ref: '#/components/responses/400ClientError'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+        '500':
+          $ref: '#/components/responses/500ServerError'
   '/devices/{device_uuid}/logs':
     get:
       tags:
@@ -3753,6 +3966,71 @@ paths:
       responses:
         '200':
           description: Restoring from backup file completed
+        '400':
+          $ref: '#/components/responses/400ClientError'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+        '500':
+          $ref: '#/components/responses/500ServerError'
+  "/easyucs/certificates/trusted":
+    get:
+      tags:
+        - easyucs
+      summary: Get Trusted Certificates Details
+      description: Returns Trusted Certificates Details
+      responses:
+        '200':
+          description: Successfully retrieved certificates details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  certificates:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/easyucs_certificates_trusted_get'
+        '400':
+          $ref: '#/components/responses/400ClientError'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+        '500':
+          $ref: '#/components/responses/500ServerError'
+    post:
+      tags:
+        - easyucs
+      summary: Upload Trusted CA Certificate file
+      description: Uploads a Trusted CA Certificate file to EasyUCS
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                certificate:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: Upload successful
+        '400':
+          $ref: '#/components/responses/400ClientError'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+        '500':
+          $ref: '#/components/responses/500ServerError'
+  "/easyucs/certificates/trusted/{ca_cert_uuid}":
+    delete:
+      tags:
+        - easyucs
+      summary: Delete a Trusted Certificate
+      description: Deletes Certificate from Trusted store
+      parameters:
+        - $ref: '#/components/parameters/ca_cert_uuid'
+      responses:
+        '200':
+          description: Certificate deleted Successfully
         '400':
           $ref: '#/components/responses/400ClientError'
         '404':

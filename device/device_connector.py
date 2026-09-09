@@ -589,14 +589,33 @@ class DeviceConnector:
 
             for end_uri, value in dict_requests.items():
                 uri = base_uri + "/connector" + end_uri
-                try:
-                    response = requests.get(uri, verify=False, headers=auth_header)
-                    if "error" not in response.text:
-                        dict_requests[end_uri] = response.json()
-                except Exception as err:
-                    self.logger(level="error", message="Couldn't request the device connector information " +
-                                                       "from the API for config: " + str(err))
-                    return False
+                max_retries = 3
+                for attempt in range(max_retries + 1):
+                    try:
+                        response = requests.get(uri, verify=False, headers=auth_header)
+                        if response.text and "error" not in response.text:
+                            dict_requests[end_uri] = response.json()
+                            break
+                        elif not response.text:
+                            # Empty response body - device connector API may not be ready yet (transient issue)
+                            if attempt < max_retries:
+                                self.logger(
+                                    level="debug",
+                                    message=f"Empty response from device connector API {end_uri}, "
+                                            f"retrying ({attempt + 1}/{max_retries})...")
+                                time.sleep(5)
+                            else:
+                                self.logger(
+                                    level="warning",
+                                    message=f"Empty response from device connector API {end_uri} after "
+                                            f"{max_retries} retries, skipping.")
+                        else:
+                            # Response contains "error" - no need to retry
+                            break
+                    except Exception as err:
+                        self.logger(level="error", message="Couldn't request the device connector information " +
+                                                           "from the API for config: " + str(err))
+                        return False
         else:
             self.logger(level="error",
                         message="No login cookie, no request can be made to find device connector information")
@@ -650,7 +669,7 @@ class DeviceConnector:
                     uri = base_uri + "/connector" + "/SecurityTokens"
                     try:
                         response = requests.get(uri, verify=False, headers=auth_header)
-                        if "error" not in response.text:
+                        if response.text and "error" not in response.text:
                             dict_requests["/SecurityTokens"] = response.json()
                         else:
                             dict_requests["/SecurityTokens"] = None

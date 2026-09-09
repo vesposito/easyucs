@@ -303,6 +303,7 @@ class GenericUcsDevice(GenericDevice, DeviceConnector):
 class UcsSystem(GenericUcsDevice):
     UCS_SYSTEM_MIN_REQUIRED_VERSION = "3.1(3a)"
     UCS_SYSTEM_CHANGE_MODE_MIN_VERSION = "4.3(5c)"
+    UCS_SYSTEM_COMPLEX_PASSWORD_MIN_VERSION = "6.0(2a)"
 
     def __init__(self, parent=None, uuid=None, target="", user="", password="", is_hidden=False, is_system=False,
                  system_usage=None, logger_handle_log_level="info", log_file_path=None, bypass_connection_checks=False,
@@ -389,6 +390,15 @@ class UcsSystem(GenericUcsDevice):
         # Ensure the UCS system is connected
         if not self.is_connected():
             self.logger(level="error", message="Failed to connect to the UCS System.")
+            return None
+
+        # change-mode can only be executed by the admin user
+        if self.username != "admin":
+            self.logger(
+                level="error",
+                message=f"Change mode operation requires connecting as the 'admin' user. "
+                        f"Currently connected as '{self.username}'. Please use the 'admin' account and retry."
+            )
             return None
 
         if reset_device_connector and self.metadata.device_connector_claim_status == "claimed":
@@ -975,6 +985,15 @@ class UcsSystem(GenericUcsDevice):
                 name="ValidateUcsmConfigAndSetupDetails", status="successful",
                 status_message="Successfully validated the UCSM config and provided setup details")
 
+        # In firmware >= 6.0(2), complex passwords are mandatory and the 'yes_or_no_passwd' CGI field
+        # is no longer required. For older firmware, '2' signals enforcement of strong passwords.
+        min_complex_password_version = UcsVersion(
+            self.UCS_SYSTEM_COMPLEX_PASSWORD_MIN_VERSION)
+        include_password_strength_flag = (
+            self.version is None or self.version.__lt__(
+                min_complex_password_version)
+        )
+
         # if cluster mode
         if fi_a_target_ip_address and fi_b_target_ip_address:
 
@@ -995,7 +1014,6 @@ class UcsSystem(GenericUcsDevice):
                             'virtualIP2': target_vip.split(".")[1],
                             'virtualIP3': target_vip.split(".")[2],
                             'virtualIP4': target_vip.split(".")[3],
-                            'yes_or_no_passwd': '2',
                             'systemName': target_sysname,
                             'adminPasswd': target_admin_password,
                             'oobIP1': fi_a_target_ip_address.split(".")[0],
@@ -1032,6 +1050,8 @@ class UcsSystem(GenericUcsDevice):
                             'domainNameipv6': '',
                             'IPv6pasadena': '',
                             'ipv6pasadenaSecret': ''}
+            if include_password_strength_flag:
+                payload_fi_a['yes_or_no_passwd'] = '2'
 
             payload_fi_b_step_1 = {'hidden_forcePeerA': '',
                                    'cluster': '1',
@@ -1224,7 +1244,6 @@ class UcsSystem(GenericUcsDevice):
                             'virtualIP2': '',
                             'virtualIP3': '',
                             'virtualIP4': '',
-                            'yes_or_no_passwd': '2',
                             'systemName': target_sysname,
                             'adminPasswd': target_admin_password,
                             'oobIP1': fi_a_target_ip_address.split(".")[0],
@@ -1261,6 +1280,8 @@ class UcsSystem(GenericUcsDevice):
                             'domainNameipv6': '',
                             'IPv6pasadena': '',
                             'ipv6pasadenaSecret': ''}
+            if include_password_strength_flag:
+                payload_fi_a['yes_or_no_passwd'] = '2'
 
             url_fi_a = "https://" + fi_a_dhcp_ip_address + "/cgi-bin/initial_setup_new.cgi"
 
@@ -1419,6 +1440,15 @@ class UcsSystem(GenericUcsDevice):
         # First, make sure we are connected to the device
         if not self.connect(bypass_version_checks=bypass_version_checks):
             self.logger(level="error", message="Unable to connect to UCS System")
+            return False
+
+        # erase-configuration can only be executed by the admin user
+        if self.username != "admin":
+            self.logger(
+                level="error",
+                message=f"Erase configuration operation requires connecting as the 'admin' user. "
+                        f"Currently connected as '{self.username}'. Please use the 'admin' account and retry."
+            )
             return False
 
         if reset_device_connector and self.metadata.device_connector_claim_status == "claimed":
@@ -1661,8 +1691,40 @@ class UcsSystem(GenericUcsDevice):
 
                 self.logger(level="debug", message="\tSending confirmation")
                 channel.send('yes\n')
-                time.sleep(5)
-                self.set_task_progression(10)
+                # After a successful erase the FI reboots - the SSH connection will drop (EOF or timeout).
+                # If the command is rejected (e.g. non-admin, locked session), the device stays at the
+                # CLI prompt, meaning the final buffered output will end with "#".
+                # We use that as the sole signal: ends with "#" → rejected; otherwise → rebooting (success).
+                channel.settimeout(8)
+                buff = ""
+                try:
+                    while True:
+                        resp = channel.recv(9999)
+                        if not resp:  # EOF - channel closed without exception
+                            break
+                        buff += resp.decode("utf-8")
+                except (paramiko.buffered_pipe.PipeTimeout, socket.timeout, EOFError, socket.error):
+                    pass  # Expected: device is rebooting, no further output
+
+                stripped = buff.strip()
+                if stripped.endswith("#"):
+                    # CLI prompt returned → the device did NOT reboot → command was rejected
+                    lines = stripped.splitlines()
+                    error_lines = [
+                        line.strip() for line in lines
+                        if line.strip().lower() not in ("yes", "y")
+                        and not line.strip().endswith("#")
+                    ]
+                    clean_error = " | ".join(l for l in error_lines if l)
+                    error_msg = ("Erase configuration was rejected by Fabric Interconnect " + ip +
+                                 ": " + (clean_error if clean_error else stripped))
+                    self.logger(level="error", message=error_msg)
+                else:
+                    self.logger(level="debug",
+                                message="\tErase confirmation accepted - Fabric Interconnect " + ip +
+                                        " is rebooting")
+                    time.sleep(5)
+                    self.set_task_progression(10)
 
             except paramiko.ChannelException as err:
                 error_msg = "Communication failed with Fabric Interconnect " + ip
@@ -2044,6 +2106,20 @@ class UcsSystem(GenericUcsDevice):
                     mo_server = ComputeBlade(parent_mo_or_dn=chassis_dn, slot_id=server.slot_id, lc="decommission")
                     object_classes_to_track.add("ComputeBlade")
                 elif device_type == "chassis":
+                    # We need to skip decommission of X-Direct primary chassis as it is the integrated chassis
+                    # hosting the embedded Fabric Interconnect and cannot be decommissioned independently.
+                    is_ucsm_xdirect = (self.fi_a_model == "UCSX-S9108-100G" or
+                                    self.fi_b_model == "UCSX-S9108-100G")
+                    if is_ucsm_xdirect and server.id == "1":
+                        self.logger(
+                            level="info",
+                            message=(
+                                f"Skipping decommission of X-Direct primary chassis {server.id} "
+                                f"(serial: {server.serial}) because it hosts the embedded Fabric "
+                                f"Interconnect and cannot be decommissioned independently."
+                            )
+                        )
+                        continue
                     self.logger(level="info",
                                 message="Decommissioning chassis " + server.id + " with serial " + server.serial)
                     mo_server = EquipmentChassis(parent_mo_or_dn="sys", id=server.id, admin_state="decommission")
@@ -3446,11 +3522,11 @@ class UcsImc(GenericUcsDevice):
             if self.task is not None:
                 self.task.taskstep_manager.start_taskstep(
                     name="WaitForCertificateLoad",
-                    description=f"Waiting up to 60 seconds for the new certificate to be loaded on " +
+                    description=f"Waiting up to 120 seconds for the new certificate to be loaded on " +
                                 f"{self.metadata.device_type_long} device {self.name}")
-            self.logger(level="info", message="Waiting up to 60 seconds for the new certificate to be loaded")
+            self.logger(level="info", message="Waiting up to 120 seconds for the new certificate to be loaded")
             time.sleep(30)
-            if not common.check_web_page(device=self, url="https://" + self.target, str_match="Cisco", timeout=30):
+            if not common.check_web_page(device=self, url="https://" + self.target, str_match="Cisco", timeout=90):
                 error_msg = "Impossible to reconnect after Regenerating Self-Signed Certificate"
                 self.logger(level="error", message=error_msg)
                 if self.task is not None:
@@ -3477,7 +3553,7 @@ class UcsImc(GenericUcsDevice):
             if self.task is not None:
                 self.task.taskstep_manager.stop_taskstep(
                     name="CheckNewCertificateValidity", status="successful",
-                    status_message=f"New certificate valid until " + str(current_cert[0].valid_to) + " on "
+                    status_message=f"New certificate valid until " + str(current_cert[0].valid_to) + " on " +
                                    f"{self.metadata.device_type_long} device {self.name}")
 
             return True
@@ -3923,6 +3999,27 @@ class UcsImc(GenericUcsDevice):
 
         self.version_max_supported_by_sdk = max_supported_version
 
+    def _set_device_endpoint_id(self):
+        """
+        Sets the Server Serial Number as the device endpoint ID.
+        """
+        rack_unit_serial = None
+
+        if self.handle.session_id:  # Ensure we've connected at least once
+            if self.is_connected():  # Ensure session is still valid
+                try:
+                    rack_unit = self.handle.query_dn("sys/rack-unit-1")
+                    if rack_unit:
+                        rack_unit_serial = rack_unit.serial
+                except UcsException as err:
+                    self.logger(
+                        level="error",
+                        message=f"Unable to get the rack unit serial number: {err.error_descr}"
+                    )
+
+        if rack_unit_serial:
+            self.metadata.device_endpoint_id = rack_unit_serial
+
 
 class UcsCentral(GenericUcsDevice):
     UCS_CENTRAL_MIN_REQUIRED_VERSION = "2.0(1a)"
@@ -4125,3 +4222,26 @@ class UcsCentral(GenericUcsDevice):
         self.metadata.device_name = self.name
         if hasattr(self.version, "version"):
             self.metadata.device_version = self.version.version
+
+    def _set_device_endpoint_id(self):
+        """
+        Sets the license server host ID as the device endpoint ID.
+        """
+        license_server_host_id = None
+
+        if self.handle.session_id:  # Ensure we've connected at least once
+            if self.is_connected():  # Ensure session is still valid
+                try:
+                    license_server = self.handle.query_dn("sys/license/server-host-id-server")
+                    if license_server:
+                        license_server_host_id = license_server.host_id
+                        if license_server_host_id.startswith("VDH="):
+                            license_server_host_id = license_server_host_id[4:]
+                except UcscException as err:
+                    self.logger(
+                        level="error",
+                        message=f"Unable to get the license server host ID: {err.error_descr}"
+                    )
+
+        if license_server_host_id:
+            self.metadata.device_endpoint_id = license_server_host_id

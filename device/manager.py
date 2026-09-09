@@ -95,19 +95,29 @@ class DeviceManager:
             self.logger(level="error", message="Missing device_type in device add request!")
             return False
 
-        if device_type not in ["cimc", "imm_domain", "intersight", "ucsc", "ucsm"]:
+        if device_type not in ["cimc", "imm_domain", "imm_domain_fi", "intersight", "ucsc", "ucsm"]:
             self.logger(level="error", message="Device type not recognized. Could not add device")
             return False
 
         if not is_system:
             if device_type in ["intersight"]:
-                if key_id is None or private_key_path is None:
-                    self.logger(level="error", message="Missing key_id or private_key_path in device add request!")
-                    return False
+                # For Intersight devices (bypass_connection_checks=True), key_id and
+                # private_key_path are not required. They can be provided later by the user (e.g. when
+                # editing credentials / clicking Refresh). For regular devices they remain mandatory.
+                if not bypass_connection_checks:
+                    if key_id is None or private_key_path is None:
+                        self.logger(level="error", message="Missing key_id or private_key_path in device add request!")
+                        return False
             else:
-                if target is None or username is None or password is None:
-                    self.logger(level="error", message="Missing target, username or password in device add request!")
-                    return False
+                if bypass_connection_checks:
+                    # For offline/XML-imported devices, only the target IP is required
+                    if target is None:
+                        self.logger(level="error", message="Missing target in device add request!")
+                        return False
+                else:
+                    if target is None or username is None or password is None:
+                        self.logger(level="error", message="Missing target, username or password in device add request!")
+                        return False
 
         if logger_handle_log_level is None:
             logger_handle_log_level = self.parent.logger_handle_log_level
@@ -187,7 +197,7 @@ class DeviceManager:
                                           logger_handle_log_level=logger_handle_log_level,
                                           bypass_connection_checks=bypass_connection_checks,
                                           bypass_version_checks=bypass_version_checks,
-                                          user_label=user_label)
+                                          ssl_ca_cert_file=ca_cert_file, user_label=user_label)
             else:
                 device = IntersightDevice(parent=self, uuid=uuid, key_id=key_id, private_key_path=private_key_path,
                                           is_hidden=is_hidden, is_system=is_system, system_usage=system_usage,
@@ -195,7 +205,7 @@ class DeviceManager:
                                           logger_handle_log_level=logger_handle_log_level,
                                           bypass_connection_checks=bypass_connection_checks,
                                           bypass_version_checks=bypass_version_checks,
-                                          user_label=user_label)
+                                          ssl_ca_cert_file=ca_cert_file, user_label=user_label)
         elif device_type == "ucsc":
             device = UcsCentral(parent=self, uuid=uuid, target=target, user=username, password=password,
                                 is_hidden=is_hidden, is_system=is_system, system_usage=system_usage,

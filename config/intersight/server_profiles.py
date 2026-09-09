@@ -157,22 +157,6 @@ class IntersightGenericUcsServerProfile(IntersightConfigObject):
         self.virtual_kvm_policy = None
         self.virtual_media_policy = None
 
-    def _get_policy(self, policy):
-        if not policy:
-            self.logger(level="warning", message="No Policy/Pool Provided")
-            return None
-        policy_list = self.get_config_objects_from_ref(ref=policy)
-        if (len(policy_list)) != 1:
-            self.logger(level="debug", message="Could not find the appropriate " + str(policy.object_type) +
-                                               " for access.Policy with MOID " + str(policy.moid))
-            return None
-        else:
-            # We return the name attribute of the matching Policy
-            return policy_list[0].name
-
-        self._server_has_multiple_vic = None
-        self._server_has_vic_1300 = None
-
 
 class IntersightUcsServerProfile(IntersightGenericUcsServerProfile):
     _CONFIG_NAME = "UCS Server Profile"
@@ -183,6 +167,7 @@ class IntersightUcsServerProfile(IntersightGenericUcsServerProfile):
         IntersightGenericUcsServerProfile.__init__(self, parent=parent, sdk_object=server_profile)
 
         self.assigned_server = None
+        self.auto_deploy = None
         self.server_pre_assign_by_serial = None
         self.server_pre_assign_by_slot = None
         # self.associated_server = None
@@ -257,16 +242,16 @@ class IntersightUcsServerProfile(IntersightGenericUcsServerProfile):
                     pool_type = reservation_reference.class_id.split(".")[0].rsplit("p", 1)[0]
                     target_reservation = None
                     target_pool = None
-                    reservation = {
-                        "reservation_type": pool_type,
-                        "identity": None,
-                        "pool_name": None
-                    }
 
                     for pool_type_reservation in self._config.sdk_objects[pool_type + "pool_reservation"]:
                         if pool_type_reservation.moid == reservation_reference.reservation_moid:
                             target_reservation = pool_type_reservation
                             break
+                    if not target_reservation:
+                        self.logger(level="warning",
+                                    message=f"Could not resolve {pool_type} pool reservation "
+                                            f"for {self._CONFIG_NAME} '{self.name}'")
+                        continue
 
                     for pool in self._config.sdk_objects[pool_type + "pool_pool"]:
                         if getattr(pool, "reservations", None) is not None:
@@ -274,8 +259,18 @@ class IntersightUcsServerProfile(IntersightGenericUcsServerProfile):
                                 if pool_reservation.moid == reservation_reference.reservation_moid:
                                     target_pool = pool
                                     break
+                    if not target_pool:
+                        self.logger(level="warning",
+                                    message=f"Could not resolve {pool_type} pool containing reservation "
+                                            f"for {self._CONFIG_NAME} '{self.name}'")
+                        continue
 
                     if target_reservation and target_pool is not None:
+                        reservation = {
+                            "reservation_type": pool_type,
+                            "identity": None,
+                            "pool_name": None
+                        }
                         if pool_type in ["mac"]:
                             reservation.update({"vnic_name": reservation_reference.consumer_name})
 
@@ -313,8 +308,7 @@ class IntersightUcsServerProfile(IntersightGenericUcsServerProfile):
 
                         reservation.update({"identity": target_reservation.identity,
                                             "pool_name": pool_name})
-
-                    self.reservations.append(reservation)
+                        self.reservations.append(reservation)
 
             if hasattr(self._object, "assigned_server"):
                 if self._object.assigned_server:
@@ -352,10 +346,12 @@ class IntersightUcsServerProfile(IntersightGenericUcsServerProfile):
                                 "domain_name": self._object.server_pre_assign_by_slot.domain_name,
                                 "slot_id": self._object.server_pre_assign_by_slot.slot_id
                             }
+            if hasattr(self._object, "initial_auto_deploy_mode") and self._object.initial_auto_deploy_mode:
+                self.auto_deploy = True
 
         elif self._config.load_from == "file":
             for attribute in [
-                "adapter_configuration_policy", "assigned_server", "bios_policy", "boot_policy",
+                "adapter_configuration_policy", "assigned_server", "auto_deploy", "bios_policy", "boot_policy",
                 "certificate_management_policy", "device_connector_policy", "drive_security_policy", "firmware_policy",
                 "imc_access_policy", "ipmi_over_lan_policy", "lan_connectivity_policy", "ldap_policy",
                 "local_user_policy", "memory_policy", "network_connectivity_policy", "ntp_policy",
@@ -693,9 +689,11 @@ class IntersightUcsServerProfile(IntersightGenericUcsServerProfile):
 
                 elif self.server_pre_assign_by_serial:
                     target_profile["server_pre_assign_by_serial"] = self.server_pre_assign_by_serial
+                    target_profile["server_assignment_mode"] = "None"
 
                 elif self.server_pre_assign_by_slot:
                     target_profile["server_pre_assign_by_slot"] = copy.copy(self.server_pre_assign_by_slot)
+                    target_profile["server_assignment_mode"] = "None"
 
                 if self.reservations:
                     reservation_references_list = []
@@ -704,6 +702,7 @@ class IntersightUcsServerProfile(IntersightGenericUcsServerProfile):
                     reservation_pools_cache = {"ip": {}, "iqn": {}, "mac": {}, "uuid": {}, "wwnn": {}, "wwpn": {}}
 
                     for reservation in self.reservations:
+                        reservation = {k: ('' if v is None else v) for k, v in reservation.items()}
                         if reservation["reservation_type"] == "ip":
                             # If pool name is not in the local cache, we query for it to get its moid
                             if reservation["pool_name"] not in reservation_pools_cache["ip"]:
@@ -995,6 +994,13 @@ class IntersightUcsServerProfile(IntersightGenericUcsServerProfile):
                     if reservation_references_list:
                         target_profile["reservation_references"] = reservation_references_list
 
+                if self.auto_deploy:
+                    target_profile["initial_auto_deploy_mode"] = True
+                    # We need to set the initial_auto_deploy_config_complete to True in order for the server profile
+                    # to be auto-deployed when it is created. if the server profile is being created for the first time.
+                    # This applies to pre-assigned profiles (by serial/slot) as well as resource pool assignments.
+                    target_profile["initial_auto_deploy_config_complete"] = True
+
                 kwargs_mo_cloner["targets"].append(ServerProfile(**target_profile))
 
                 mo_cloner = BulkMoCloner(**kwargs_mo_cloner)
@@ -1146,9 +1152,15 @@ class IntersightUcsServerProfile(IntersightGenericUcsServerProfile):
 
         elif self.server_pre_assign_by_serial:
             kwargs["server_pre_assign_by_serial"] = self.server_pre_assign_by_serial
+            kwargs["server_assignment_mode"] = "None"
 
         elif self.server_pre_assign_by_slot:
             kwargs["server_pre_assign_by_slot"] = copy.copy(self.server_pre_assign_by_slot)
+            kwargs["server_assignment_mode"] = "None"
+        
+        if self.auto_deploy:
+            kwargs["initial_auto_deploy_mode"] = True
+            kwargs["initial_auto_deploy_config_complete"] = True
 
         if self.reservations:
             reservation_references_list = []
@@ -1157,6 +1169,7 @@ class IntersightUcsServerProfile(IntersightGenericUcsServerProfile):
             reservation_pools_cache = {"ip": {}, "iqn": {}, "mac": {}, "uuid": {}, "wwnn": {}, "wwpn": {}}
 
             for reservation in self.reservations:
+                reservation = {k: ('' if v is None else v) for k, v in reservation.items()}
                 if reservation["reservation_type"] == "ip":
                     # If pool name is not in the local cache, we query for it to get its moid
                     if reservation["pool_name"] not in reservation_pools_cache["ip"]:

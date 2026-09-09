@@ -302,6 +302,10 @@ class UcsSystemServiceProfileConfigPlot(UcsSystemConfigPlot):
             cropped = original.crop((left, top, right, bottom))
             cropped_file = file_name + '.' + export_format
             cropped.save(cropped_file)
+            # Explicitly close both PIL Image objects to release their file descriptors
+            # and C-level pixel buffers immediately, rather than waiting for GC.
+            original.close()
+            cropped.close()
             os.remove(file)
 
             self.logger(level="debug", message="Plot of service profile " +
@@ -421,6 +425,17 @@ class UcsSystemOrgConfigPlot(UcsSystemConfigPlot):
             cropped = original.crop((left, top, right, bottom))
             cropped_file = file_name + '.' + export_format
             cropped.save(cropped_file)
+            # Explicitly close both PIL Image objects to release their file descriptors
+            # and C-level pixel buffers immediately, rather than waiting for GC.
+            original.close()
+            cropped.close()
             os.remove(file)
+
+            # Deregister the figure from matplotlib's global figure manager. Unlike PIL,
+            # matplotlib figures are NOT freed by Python's refcounting alone — they stay
+            # alive in the figure manager until plt.close() is called, causing a persistent
+            # leak of ~50-100 MB per report if omitted.
+            plt.close(fig=self.org_plot)
+            self.org_plot = None
 
             self.logger(level="debug", message="Plot of orgs saved at: " + file)

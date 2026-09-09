@@ -122,6 +122,10 @@ class GenericReportImage(GenericReportContent):
             img1 = Image.open(self.path)
             width = img1.width * 2.54 / 96
             height = img1.height * 2.54 / 96
+            # Opened only to read dimensions; close immediately to release the file
+            # descriptor and C-level buffer. This is called in a loop (once per image
+            # per report section), so unclosed handles accumulate during PDF generation.
+            img1.close()
             # If the width and height of the image can't fit in a page we find the aspect ratio and downsize the image
             if width > max_width or height > max_height:
                 ratio = min(max_width / width, max_height / height)

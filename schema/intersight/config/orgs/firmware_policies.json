@@ -83,6 +83,7 @@
                   "description": "Firmware Policy Server Model",
                   "type": "string",
                   "enum": [
+                     "CAI-845A-M8",
                      "UCSB-B200-M5",
                      "UCSB-B200-M6",
                      "UCSB-B480-M5",
@@ -109,7 +110,8 @@
                      "UCSX-215C-M8",
                      "UCSX-410C-M7",
                      "UCSX-410C-M8",
-                     "UCSXE-130C-M8"
+                     "UCSXE-130C-M8",
+                     "UCSXE-150C-M8"
                   ]
                }
             },

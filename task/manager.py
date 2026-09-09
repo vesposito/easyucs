@@ -32,7 +32,8 @@ class TaskManager:
         self._parent_having_logger = self._find_logger()
 
         self._clear_in_progress_tasks()
-        self.scheduler_thread = threading.Thread(target=self.task_scheduler, name="task_scheduler")
+        self._stop_scheduler = False
+        self.scheduler_thread = threading.Thread(target=self.task_scheduler, name="task_scheduler", daemon=True)
         self.scheduler_thread.start()
 
     def logger(self, level='info', message="No message"):
@@ -139,10 +140,13 @@ class TaskManager:
         if task.metadata.device_uuid:
             obj = self.parent.device_manager.find_device_by_uuid(uuid=task.metadata.device_uuid)
 
-            # Find all devices with the same endpoint ID (may exist with different API keys/credentials)
-            devices = self.parent.device_manager.find_devices_by_endpoint_id(
-                endpoint_id=task.metadata.device_endpoint_id
-            )
+            # Find all devices with the same endpoint ID (may exist with different API keys/credentials).
+            # Skip if device_endpoint_id is None (e.g. devices imported from a tech-support bundle).
+            devices = []
+            if task.metadata.device_endpoint_id is not None:
+                devices = self.parent.device_manager.find_devices_by_endpoint_id(
+                    endpoint_id=task.metadata.device_endpoint_id
+                )
             # If multiple devices point to same endpoint ID, check if any of them is currently running a task
             if devices and len(devices) > 1:
                 # If a task is running on any device with same endpoint ID, set flag
@@ -188,6 +192,10 @@ class TaskManager:
                     return False
             return True
         else:
+            self.logger(level="error",
+                        message=f"add_to_pending_tasks: device/repo obj is None for task "
+                                f"{pending_task_dict.get('task_uuid')} (device_uuid="
+                                f"{pending_task_dict.get('device_uuid', task.metadata.device_uuid if task else '?')})")
             return False
 
     def _clear_in_progress_tasks(self):
@@ -486,66 +494,94 @@ class TaskManager:
         Blocking Infinite loop running in a separate thread waiting for new tasks to schedule
         """
         self.logger(level="info", message="Successfully started task scheduler")
-        while True:
-            # The following 2 statements are blocking, which means that the execution stops here until we get a
-            # value from the "pending_tasks" and "available_tokens" queues.
-            pending_task = self.pending_tasks.get()
-            # We take 1 token from the available tokens
-            self.available_tokens.get()
-            self.logger(level="debug",
-                        message=f"Taken 1 token. {str(self.available_tokens.qsize())} token(s) left")
-
-            task = self.find_task_by_uuid(uuid=pending_task.get("task_uuid", None))
-            if task:
-                if task.metadata.status not in ["pending"]:
-                    self.logger(level="debug",
-                                message="Skipping task with UUID " + str(task.uuid) + " as it is not pending")
-                    # Releasing the token
-                    self.available_tokens.put(1)
-                    continue
-            else:
+        while not getattr(self, '_stop_scheduler', False):
+            try:
+                self._task_scheduler_iteration()
+            except Exception as err:
                 self.logger(level="error",
-                            message="Unable to find task with UUID " + pending_task.get("task_uuid", "None"))
+                            message="Unexpected error in task scheduler (will continue): " + str(err))
+        self.logger(level="info", message="Task scheduler stopped")
+
+    def _task_scheduler_iteration(self):
+        """
+        Performs a single iteration of the task scheduler loop.
+        Separated from task_scheduler() so that unhandled exceptions are caught and logged
+        rather than silently killing the scheduler thread.
+        """
+        # The following 2 statements are blocking, which means that the execution stops here until we get a
+        # value from the "pending_tasks" and "available_tokens" queues.
+        pending_task = self.pending_tasks.get()
+
+        # Sentinel / poison-pill for gunicorn deployments (VM, --preload mode):
+        # When EasyUCS runs under gunicorn with --preload, TaskManager.__init__ starts a
+        # scheduler thread in the master process before workers are forked. The gunicorn
+        # pre_fork hook (gunicorn.conf.py) needs to stop that master thread before forking
+        # so it cannot race with the worker's own scheduler thread. Because pending_tasks.get()
+        # above is a blocking call, setting _stop_scheduler=True alone is not enough (the
+        # thread is stuck waiting). The pre_fork hook therefore injects this special sentinel
+        # dict into the queue to wake the thread, which then returns immediately here and
+        # allows the while loop in task_scheduler() to see the stop flag and exit cleanly.
+        # This sentinel is never produced during normal operation.
+        if pending_task.get("task_uuid") == "__stop_scheduler__":
+            return
+
+        # We take 1 token from the available tokens
+        self.available_tokens.get()
+        self.logger(level="debug",
+                    message=f"Taken 1 token. {str(self.available_tokens.qsize())} token(s) left")
+
+        task = self.find_task_by_uuid(uuid=pending_task.get("task_uuid", None))
+        if task:
+            if task.metadata.status not in ["pending"]:
+                self.logger(level="debug",
+                            message="Skipping task with UUID " + str(task.uuid) + " as it is not pending")
                 # Releasing the token
                 self.available_tokens.put(1)
-                continue
-
-            if not task.cancel:
-                if task.metadata.device_uuid:
-                    obj = self.parent.device_manager.find_device_by_uuid(uuid=task.metadata.device_uuid)
-                else:
-                    obj = self.parent.repository_manager.repo
-                if obj:
-                    if obj.task is not None:
-                        # Device/Repo is already busy. We put the task back at the end of the device's/repo's
-                        # queued tasks.
-                        self.logger(
-                            message=f"{'Device ' + str(obj.uuid) if hasattr(obj, 'uuid') else 'Repo'} already has a "
-                                    f"task running: {obj.task.uuid}. Waiting for device/repo to be available "
-                                    f"for task {str(task.uuid)}."
-                        )
-                        obj.queued_tasks.put(pending_task)
-                    else:
-                        kwargs = {
-                            "action_type": pending_task.get("action_type", None),
-                            "object_type": pending_task.get("object_type", None),
-                            "task_uuid": str(task.uuid),
-                            "timeout": pending_task.get("timeout", None),
-                            "action_kwargs": pending_task.get("action_kwargs", None)
-                        }
-                        if task.metadata.device_uuid:
-                            kwargs["device"] = obj
-                        action_thread = threading.Thread(target=perform_action, kwargs=kwargs,
-                                                         name="perform_action_" + str(task.uuid))
-                        action_thread.start()
-                        continue
-                else:
-                    if task.metadata.device_uuid:
-                        err_message = "Unable to find device with UUID " + task.metadata.device_uuid
-                    else:
-                        err_message = "Unable to get repo attribute from Repository Manager"
-                    self.logger(level="error", message=err_message)
-                    self.stop_task(uuid=task.uuid, status="failed", status_message=err_message)
-
-            # Release the token, if task did not execute for some reason
+                return
+        else:
+            self.logger(level="error",
+                        message="Unable to find task with UUID " + pending_task.get("task_uuid", "None"))
+            # Releasing the token
             self.available_tokens.put(1)
+            return
+
+        if not task.cancel:
+            if task.metadata.device_uuid:
+                obj = self.parent.device_manager.find_device_by_uuid(uuid=task.metadata.device_uuid)
+            else:
+                obj = self.parent.repository_manager.repo
+            if obj:
+                if obj.task is not None:
+                    # Device/Repo is already busy. We put the task back at the end of the device's/repo's
+                    # queued tasks.
+                    self.logger(
+                        message=f"{'Device ' + str(obj.uuid) if hasattr(obj, 'uuid') else 'Repo'} already has a "
+                                f"task running: {obj.task.uuid}. Waiting for device/repo to be available "
+                                f"for task {str(task.uuid)}."
+                    )
+                    obj.queued_tasks.put(pending_task)
+                else:
+                    kwargs = {
+                        "action_type": pending_task.get("action_type", None),
+                        "object_type": pending_task.get("object_type", None),
+                        "task_uuid": str(task.uuid),
+                        "timeout": pending_task.get("timeout", None),
+                        "action_kwargs": pending_task.get("action_kwargs", None)
+                    }
+                    if task.metadata.device_uuid:
+                        kwargs["device"] = obj
+                    # daemon=True so a running task thread does not block interpreter shutdown (e.g. CTRL+C)
+                    action_thread = threading.Thread(target=perform_action, kwargs=kwargs,
+                                                     name="perform_action_" + str(task.uuid), daemon=True)
+                    action_thread.start()
+                    return
+            else:
+                if task.metadata.device_uuid:
+                    err_message = "Unable to find device with UUID " + task.metadata.device_uuid
+                else:
+                    err_message = "Unable to get repo attribute from Repository Manager"
+                self.logger(level="error", message=err_message)
+                self.stop_task(uuid=task.uuid, status="failed", status_message=err_message)
+
+        # Release the token, if task did not execute for some reason
+        self.available_tokens.put(1)

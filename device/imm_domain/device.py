@@ -9,6 +9,7 @@ import socket
 import time
 
 import common
+from ucsmsdk.ucscoremeta import UcsVersion
 from config.imm_domain.manager import ImmDomainConfigManager
 from device.device import GenericDevice
 from device.device_connector import DeviceConnector
@@ -21,6 +22,7 @@ class ImmDomainDevice(GenericDevice, DeviceConnector):
     If you are creating an IMM Domain device then only create the object of ImmDomainDevice, do not create the
     IMM Domain FI devices separately.
     """
+    IMM_DOMAIN_COMPLEX_PASSWORD_MIN_VERSION = "6.0(2a)"
 
     def __init__(self, parent=None, uuid=None, target=None, username=None, password=None, sub_device_uuids=None,
                  fi_a=None, fi_b=None, standalone=False, is_hidden=False, is_system=False, system_usage=None,
@@ -352,6 +354,15 @@ class ImmDomainDevice(GenericDevice, DeviceConnector):
             self.task.taskstep_manager.stop_taskstep(
                 name="ValidateImmDomainConfigAndSetupDetails", status="successful",
                 status_message="Successfully validated the IMM config and provided setup details")
+        
+        # In firmware >= 6.0(2), complex passwords are mandatory and the 'yes_or_no_passwd' CGI field
+        # is no longer required. For older firmware, '2' signals enforcement of strong passwords.
+        min_complex_password_version = UcsVersion(
+            self.IMM_DOMAIN_COMPLEX_PASSWORD_MIN_VERSION)
+        include_password_strength_flag = (
+            self.version is None or UcsVersion(
+                self.version).__lt__(min_complex_password_version)
+        )
 
         if self.task is not None:
             self.task.taskstep_manager.start_taskstep(
@@ -375,7 +386,6 @@ class ImmDomainDevice(GenericDevice, DeviceConnector):
                                 'virtualIP2': '',
                                 'virtualIP3': '',
                                 'virtualIP4': '',
-                                'yes_or_no_passwd': '2',
                                 'systemName': target_sysname,
                                 'adminPasswd': target_admin_password,
                                 'adminPasswd1': target_admin_password,
@@ -413,6 +423,8 @@ class ImmDomainDevice(GenericDevice, DeviceConnector):
                                 'domainNameipv6': '',
                                 'IPv6pasadena': '',
                                 'ipv6pasadenaSecret': ''}
+        if include_password_strength_flag:
+            payload_fi_a_step_2['yes_or_no_passwd'] = '2'
 
         payload_fi_b_step_1 = {'hidden_forcePeerA': '',
                                'mgmt_mode': 'ucsm',

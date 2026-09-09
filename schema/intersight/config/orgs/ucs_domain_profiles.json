@@ -68,6 +68,11 @@
          "type": "string",
          "default": ""
       },
+      "netflow_configuration_policy": {
+         "description": "UCS Domain Profile NetFlow Configuration Policy",
+         "type": "string",
+         "default": ""
+      },
       "network_connectivity_policy": {
          "description": "UCS Domain Profile Network Connectivity Policy",
          "type": "string",

@@ -16,7 +16,10 @@ import sys
 import time
 import tarfile
 from collections import defaultdict
+from cryptography import x509
 from cryptography.fernet import InvalidToken
+from cryptography.hazmat.backends import default_backend
+from cryptography.x509.oid import NameOID
 from itertools import groupby, count
 from urllib.parse import urlparse
 
@@ -59,6 +62,57 @@ def get_encoded_pem_certificate(certificate=None):
         base64_bytes = base64.b64encode(certificate_string)
         base64_string = base64_bytes.decode("ascii")
         return base64_string
+
+
+def get_certificate_details(logger=None):
+    """
+    Retrieves details of certificates from the trusted store.
+
+    :return: A list of dictionaries, each containing the 'uuid', 'common_name', 'issued_by', 'valid_until', and
+    'serial_number' of the certificates.
+
+    """
+    trusted_ca_store = os.path.join(EASYUCS_ROOT, "data", "keys", "ca_certs")
+    certificate_list = []
+    for file_name in os.listdir(trusted_ca_store):
+        if file_name == "ca_cert.pem":
+            continue
+        file_path = os.path.join(trusted_ca_store, file_name)
+
+        with open(file_path, 'rb') as cert_file:
+            cert_data = cert_file.read()
+            # Check whether uploaded file is in pem format or not
+            details = dict()
+            try:
+                if cert_data.startswith(b'-----BEGIN CERTIFICATE-----'):
+                    cert = x509.load_pem_x509_certificate(cert_data, default_backend())
+                    serial_number = cert.serial_number
+                    if serial_number < 0:
+                        logger.logger(
+                            level="warning",
+                            message=(
+                                f"Skipping certificate file '{file_name}' due to a negative serial "
+                                f"number ({serial_number}). This practice violates RFC 5280 and is deprecated."
+                            )
+                        )
+                        continue
+                    # Extract certificate details
+                    details["uuid"] = str(os.path.splitext(file_name)[0])
+                    details["common_name"] = cert.subject.get_attributes_for_oid(NameOID.COMMON_NAME)[0].value
+                    details["issued_by"] = cert.issuer.get_attributes_for_oid(NameOID.COMMON_NAME)[0].value
+                    details["valid_until"] = cert.not_valid_after_utc.replace(tzinfo=None).isoformat()[:-3] + 'Z'
+                    details["serial_number"] = serial_number
+
+                else:
+                    logger.logger(level="error", message=f"File {file_name} is not a valid PEM format")
+
+            except Exception as err:
+                logger.logger(level="error", message=f"Failed to load and extract certificate {file_name} "
+                                                      f"details: {str(err)}")
+            if details:
+                certificate_list.append(details)
+
+    return certificate_list
 
 
 def get_proxy_url(include_authentication=False, logger=None):
@@ -159,6 +213,422 @@ def check_web_page(device, url, str_match, timeout=20):
             level="debug", message="Trying to reconnect to " + url + " ...")
         time.sleep(10)
     return False
+
+
+def is_mac_address_valid(mac_string, expected_notation=None):
+    """
+    Validates a MAC address string, offering flexibility in format checking.
+
+    Args:
+        mac_string (str): The MAC address string to validate.
+        expected_notation (str, optional): The specific notation to enforce.
+            If provided, `mac_string` must strictly match this format.
+            Available notations:
+            - 'colon_separated': IEEE 802 format (e.g., "00:1A:2B:3C:4D:5E")
+            - 'hyphen_separated': Cisco style (e.g., "00-1A-2B-3C-4D-5E")
+            - 'dotted_notation': Cisco style (e.g., "001A.2B3C.4D5E")
+            - 'no_separator': Plain hex string (e.g., "001A2B3C4D5E")
+            Defaults to None.
+
+    Returns:
+        bool: True if the MAC address is valid according to the criteria, False otherwise.
+
+    Behavior:
+    - Returns False if `mac_string` is not a string.
+    - If `expected_notation` is provided:
+        Validates `mac_string` strictly against the specified format (case-insensitive).
+    - If `expected_notation` is None (General Validation):
+        Checks if `mac_string` represents a valid MAC address after normalizing
+        common separators (':', '-', '.'). The content must be 12 hexadecimal
+        characters (0-9, A-F) after normalization.
+    """
+    if not isinstance(mac_string, str):
+        return False
+
+    notation_regex_map = {
+        'colon_separated': r'^([0-9A-Fa-f]{2}:){5}[0-9A-Fa-f]{2}$',
+        'hyphen_separated': r'^([0-9A-Fa-f]{2}-){5}[0-9A-Fa-f]{2}$',
+        'dotted_notation': r'^[0-9A-Fa-f]{4}\.[0-9A-Fa-f]{4}\.[0-9A-Fa-f]{4}$',
+        'no_separator': r'^[0-9A-Fa-f]{12}$'
+    }
+
+    if expected_notation:
+        # Check if the provided notation is supported or not
+        if expected_notation not in notation_regex_map:
+            return False
+
+        # Check if MAC string strictly matches the expected format
+        regex = notation_regex_map[expected_notation]
+        return bool(re.fullmatch(regex, mac_string))
+
+    else:
+        # General validation: normalize and check content
+        # This handles all supported formats and mixed cases.
+        cleaned_mac = mac_string.replace(":", "").replace("-", "").replace(".", "")
+
+        # Check if length is exactly 12 characters after cleanup
+        if len(cleaned_mac) != 12:
+            return False
+
+        # Check if all characters are valid hexadecimal digits
+        if not all(c in "0123456789ABCDEF" for c in cleaned_mac):
+            return False
+
+        # Optional: Further checks (though less common for basic validation without external libs)
+        # - Check if it's not a null MAC (00:00:00:00:00:00) if that's invalid for your use case.
+        # - Check if it's not a multicast address (first octet's LSB is 1) if you only want unicast.
+        #   Example: int(cleaned_mac[0:2], 16) & 1 == 1 means it's multicast/broadcast.
+
+        return True
+
+
+# Source: https://github.com/cracklib/cracklib/blob/main/src/dicts/cracklib-small
+_PASSWORD_DICT_CACHE = None
+_PASSWORD_DICT_LOCAL_PATH = os.path.join(EASYUCS_ROOT, "config", "ucs", "cracklib-small.txt")
+
+def _get_password_dictionary():
+    """Load cracklib-small.txt into a frozenset (cached). Returns None if the file is missing."""
+    global _PASSWORD_DICT_CACHE
+    if _PASSWORD_DICT_CACHE is not None:
+        return _PASSWORD_DICT_CACHE
+    if not os.path.isfile(_PASSWORD_DICT_LOCAL_PATH):
+        return None
+    with open(_PASSWORD_DICT_LOCAL_PATH, "r", encoding="utf-8") as f:
+        _PASSWORD_DICT_CACHE = frozenset(word.strip().lower() for word in f if word.strip())
+    return _PASSWORD_DICT_CACHE
+
+
+def _password_contains_dictionary_word(password):
+    """
+    Mimics cracklib's FascistCheck dictionary check (empirically confirmed on UCSM console
+    against UCSM 6.0(2)).
+
+    Two-pass algorithm:
+
+    Pass 1 — trailing strip-0..3 + reverse:
+      cracklib tries stripping 0, 1, 2, and 3 characters from the END of the lowercased
+      password (any character type), and for each candidate also checks its reversed form
+      (with the same 0–3 trailing strip applied to the reversed string).
+      A match is flagged if the resulting string is ≥5 chars and is in the dictionary.
+
+    Pass 2 — special-character removal + direct lookup (strip-0 only):
+      For each unique special character (non-alphanumeric) found in the password, ALL
+      occurrences of that character are removed and the result is checked against the
+      dictionary with a DIRECT lookup only (no trailing stripping).
+      Confirmed behaviour (UCSM 6.0(2)):
+        - Works for ANY special char, not just "@" (!, #, -, _ all behave the same).
+        - Position of the special char does NOT matter — it can be leading, trailing,
+          mid-word, or mid-digits; removal of all its occurrences is all that matters.
+        - Order matters: the resulting alphanumeric string must itself be a dict entry.
+          "apple!123" → "apple123" IN DICT → FAIL.
+          "123!apple" → "123apple" NOT in dict → PASS.
+          "apple@abc" → "appleabc" NOT in dict → PASS.
+      Why strip-0 only (no further trailing stripping after removal)?
+        Full strip-0..3 after removal would expose bare base words from non-dictionary
+        combinations. E.g. "shadow@123" → remove "@" → "shadow123" (not in dict), but
+        strip-3 of "shadow123" → "shadow" (in dict), which would wrongly flag "shadow@123"
+        as a failure when UCSM actually accepts it.
+
+    Full test matrix confirmed against UCSM 6.0(2):
+      Password1359  PASS   Password123     FAIL (pass-1 strip-3 → password)
+      Password1234  PASS   Apple1234       FAIL (pass-1 strip-1 → apple123)
+      Apples123     FAIL   Apple1359       PASS
+      Orange1234    PASS   Orange123       FAIL (pass-1 strip-3 → orange)
+      Shadow@123    PASS   Apple@123       FAIL (pass-2: apple123 in dict)
+      Orange@123    PASS   Green@123       FAIL (pass-2: green123 in dict)
+      Banana@123    PASS   Happy@123       FAIL (pass-2: happy123 in dict)
+      Shadow1234    PASS   Hello@123       FAIL (pass-2: hello123 in dict)
+      Mango@123     PASS   Zoroastrian123  FAIL (pass-1 strip-3 → zoroastrian)
+      @Shadow123    PASS   Zoroastrian@12  FAIL (pass-1 strip-3 → zoroastrian)
+      Shadow123!    PASS   Apple123sda     FAIL (pass-1 strip-3 → apple123)
+      Apple@456     PASS   wOdahS@12       FAIL (pass-1 strip-3 rev → shadow)
+      Apple123sdag  PASS   @Shadow1!       PASS
+      Apple@1234    PASS   Apple!123       FAIL (pass-2: apple123 in dict)
+      Apple@abc     PASS   Apple#123       FAIL (pass-2: apple123 in dict)
+      123@Apple     PASS   Apple-123       FAIL (pass-2: apple123 in dict)
+      @Apple123     FAIL   Apple_123       FAIL (pass-2: apple123 in dict)
+      App@le123     FAIL   Apple1@23       FAIL (pass-2: apple123 in dict)
+      -- Known false negatives: UCSM full dict has these, cracklib-small does not --
+      Tiger@123   UCSM:FAIL  fallback:PASS  ("tiger@123" in UCSM full dict only)
+      @Apple123!  UCSM:FAIL  fallback:PASS  (exact form in UCSM full dict only)
+
+    :return: matched word string if a dictionary word is detected, None otherwise.
+    """
+    dictionary = _get_password_dictionary()
+    if dictionary is None:
+        return None
+
+    pw_lower = password.lower()
+
+    # Pass 1: strip-0..3 from the end (any char type) + reverse check.
+    # Minimum candidate length: 5 (passwords are ≥8 chars so all candidates qualify).
+    for n in range(4):
+        candidate = pw_lower[:-n] if n > 0 else pw_lower
+        if len(candidate) < 5:
+            continue
+
+        # Forward check
+        if candidate in dictionary:
+            return candidate
+
+        # Reverse check: reverse the stripped form, then try 0–3 more trailing strips
+        rev = candidate[::-1]
+        for m in range(4):
+            rev_candidate = rev[:-m] if m > 0 else rev
+            if len(rev_candidate) < 5:
+                continue
+            if rev_candidate in dictionary:
+                return rev_candidate
+
+    # Pass 2: for each unique special character, remove ALL its occurrences and do a
+    # direct (strip-0 only) dictionary lookup on the result.
+    # This catches "word@digits" patterns where "worddigits" is a known dict entry,
+    # e.g. "apple@123" → remove "@" → "apple123" which IS in the dict → FAIL.
+    # Important: only strip-0 (no further trailing stripping) is applied here.
+    # Full strip-0..3 after removal would expose bare words like "shadow" from
+    # "shadow123" (obtained from "shadow@123") causing false positives — UCSM
+    # accepts "shadow@123" because "shadow123" is NOT in its dictionary.
+    tried_specials = set()
+    for c in pw_lower:
+        if not c.isalnum() and c not in tried_specials:
+            tried_specials.add(c)
+            de_specialed = pw_lower.replace(c, "")
+            if len(de_specialed) >= 5 and de_specialed in dictionary:
+                return de_specialed
+
+    return None
+
+
+# ---------------------------------------------------------------------------
+# Sequential-run helpers
+# ---------------------------------------------------------------------------
+
+def _has_sequential_digit_run(password, min_length=3):
+    """
+    Returns True if the password contains an ascending sequential digit run of at least
+    min_length digits (each digit exactly +1 from the previous).
+
+    Examples (min_length=3):
+      "123"  → True    "456"  → True
+      "191"  → False   "121"  → False
+    """
+    run = 1
+    for i in range(1, len(password)):
+        if (password[i].isdigit() and password[i - 1].isdigit()
+                and ord(password[i]) - ord(password[i - 1]) == 1):
+            run += 1
+            if run >= min_length:
+                return True
+        else:
+            run = 1
+    return False
+
+
+def _has_sequential_alpha_run(password, min_length=3):
+    """
+    Returns True if the password contains an ascending sequential alpha run of at least
+    min_length letters (each letter exactly +1 in ASCII from the previous, case-insensitive).
+
+    Examples (min_length=3):
+      "abc"  → True    "Bcd"  → True
+      "Xbz"  → False   "abt"  → False
+    """
+    s = password.lower()
+    run = 1
+    for i in range(1, len(s)):
+        if s[i].isalpha() and s[i - 1].isalpha() and ord(s[i]) - ord(s[i - 1]) == 1:
+            run += 1
+            if run >= min_length:
+                return True
+        else:
+            run = 1
+    return False
+
+
+def _has_sequential_run(password, min_length=5):
+    """
+    Returns True if the password contains an ascending OR descending sequential run of at
+    least min_length characters drawn from the alphabet or digits (case-insensitive).
+
+    Used by Rule 6 — delegates to _has_sequential_alpha_run / _has_sequential_digit_run
+    by also checking the reversed password to cover the descending direction.
+
+    Examples (min_length=5):
+      "abcde"  → True   (ascending alpha)
+      "edcba"  → True   (descending alpha)
+      "12345"  → True   (ascending digit)
+      "54321"  → True   (descending digit)
+      "abcd"   → False  (only 4 chars)
+    """
+    rev = password[::-1]
+    return (
+        _has_sequential_alpha_run(password, min_length) or
+        _has_sequential_alpha_run(rev, min_length) or
+        _has_sequential_digit_run(password, min_length) or
+        _has_sequential_digit_run(rev, min_length)
+    )
+
+
+def _check_password_cracklib(password):
+    """
+    Validate the password using cracklib's FascistCheck() with the system dictionary at
+    /usr/share/cracklib/pw_dict (standard Linux/UCSM path).
+
+    :param password: The password to check.
+    :return:
+        (False, reason)  – password rejected by cracklib
+        (True, None)     – password accepted by cracklib
+        (None, None)     – cracklib unavailable; caller should apply fallback checks
+    """
+    try:
+        import cracklib
+    except ImportError:
+        return None, None
+
+    try:
+        cracklib.FascistCheck(password, "/usr/share/cracklib/pw_dict")
+        return True, None
+    except ValueError as e:
+        return False, f"Password is too simplistic/systematic: {str(e)}"
+    except Exception:
+        return None, None
+
+
+def is_password_compliant_with_ucs_complex_requirements(password, username="admin", logger=None):
+    """
+    Checks whether a password meets Cisco UCS Manager complex (strong) password requirements.
+
+    Rules:
+    1. Length: 8–127 characters.
+    2. Character class: at least 3 of the following 4 categories must be present:
+       uppercase letters (A-Z), lowercase letters (a-z), digits (0-9), special characters.
+    3. Consecutive repeated characters: no character may appear 3 or more times in a row
+       (case-sensitive). Error: "Password shouldn't contain characters, repeated three or more
+       times consecutively."
+    3.5. Forbidden characters: password must not contain `$`, `?`, or `=`.
+         Rejected by ALL UCSM XML API paths (DMO property-validation layer, confirmed empirically).
+         `=` also corrupts the password during factory-reset initial setup (NX-OS CLI truncates at `=`).
+    4. Dictionary / systematic patterns: cracklib FascistCheck (Linux primary path).
+       Fallback when cracklib is unavailable (e.g. Windows): combination rule —
+       a password containing BOTH a ≥3-char sequential alpha run AND a ≥3-char sequential
+       digit run is rejected as too simplistic/systematic.
+         Bcd!123Xz# → FAIL  (bcd sequential + 123 sequential)
+         Xbz!123Av# → PASS  (123 sequential but no sequential alpha run ≥3)
+         Bcd!191Xz# → PASS  (bcd sequential but 191 is not a sequential digit run)
+    5. Username check: password must not be identical to or the reverse of the username
+       (case-insensitive). Reverse is computed as lowercase-then-reverse.
+    6. Sequential sequences (both directions, ≥5 chars): an alphabetic run of ≥5 consecutive
+       letters (e.g. abcde, edcba) or a digit run of ≥5 consecutive digits (e.g. 12345, 54321)
+       in either ascending or descending order is rejected.
+       Empirically verified against UCSM GUI and console:
+         - Both forward and reverse directions are enforced for alpha and digit runs.
+         - Keyboard-row sequences (qwertyuiop / asdfghjkl / zxcvbnm) are NOT enforced.
+         - Threshold is ≥5 (4-character runs are accepted by both GUI and console).
+       Note: the Initial Setup GUI (initial_setup.sh) does not enforce this rule.
+    7. Cisco name: password must not contain 'cisco' (case-insensitive).
+       Enforced by the Initial Setup GUI; UCSM GUI and console accept
+       passwords containing 'cisco', but we enforce it here to be safe across all paths.
+
+    :param password: The password string to validate.
+    :param username: The username to check against (default: 'admin').
+    :param logger: Optional logger object used to emit warnings (e.g. when cracklib-small.txt is
+                   missing on a non-Linux deployment). When provided, warnings are emitted via
+                   logger.logger(level="warning", ...). When None, warnings are silently suppressed.
+    :return: Tuple (bool, str) — (True, reason) if compliant; (False, reason) if a rule is violated.
+    """
+    if not password:
+        return False, "Password cannot be empty"
+
+    # Rule 1 — Length
+    if len(password) < 8:
+        return False, "Password must be at least 8 characters long"
+    if len(password) > 127:
+        return False, "Password must be at most 127 characters long"
+
+    # Rule 2 — Character classes
+    # has_special: any non-alphanumeric character counts toward the special-character category,
+    # matching UCSM's behaviour where the accepted symbol set is the full printable-ASCII
+    # punctuation range (including $, ?, =, and others).  An explicit allowlist would need
+    # to be kept in sync with every firmware change; the regex below is equivalent and
+    # automatically covers all such characters.
+    has_upper = bool(re.search(r'[A-Z]', password))
+    has_lower = bool(re.search(r'[a-z]', password))
+    has_digit = bool(re.search(r'[0-9]', password))
+    has_special = bool(re.search(r'[^A-Za-z0-9]', password))
+
+    categories_met = sum([has_upper, has_lower, has_digit, has_special])
+    if categories_met < 3:
+        missing = []
+        if not has_upper:
+            missing.append("uppercase")
+        if not has_lower:
+            missing.append("lowercase")
+        if not has_digit:
+            missing.append("digit")
+        if not has_special:
+            missing.append("special char")
+        return False, (
+            f"Password must include at least 3 of: uppercase, lowercase, digit, special char. "
+            f"Missing: {', '.join(missing)}"
+        )
+
+    # Rule 3 — No character repeated 3+ times consecutively (case-sensitive)
+    if re.search(r'(.)\1{2,}', password):
+        return False, "Password must not repeat the same character 3+ times in a row"
+
+    # Rule 3.5 — Forbidden characters ($, ?, =)
+    # Rejected on ALL UCSM XML API paths via DMO property-validation (empirically confirmed).
+    # = also causes NX-OS CLI password truncation in initial_setup.sh (CSCtc96033, confirmed:
+    # abc=13579 → password silently set to abc).
+    _forbidden = {c for c in password if c in '$?='}
+    if _forbidden:
+        return False, f"Password contains forbidden character(s): {', '.join(sorted(_forbidden))}"
+
+    # Rule 4 — Dictionary / systematic pattern check
+    cracklib_result, cracklib_reason = _check_password_cracklib(password)
+    if cracklib_result is False:
+        return False, "Password rejected by cracklib strength check"
+    elif cracklib_result is None:
+        # Fallback (cracklib not installed, e.g. Windows): replicate cracklib's two checks.
+
+        # 4a. Dictionary word check — forward and reversed forms.
+        # cracklib-small.txt must be present at config/ucs/cracklib-small.txt.
+        if _get_password_dictionary() is None:
+            if logger:
+                logger.logger(
+                    level="warning",
+                    message=f"cracklib-small.txt not found at '{_PASSWORD_DICT_LOCAL_PATH}'. "
+                            f"Dictionary word check skipped."
+                )
+        else:
+            matched_word = _password_contains_dictionary_word(password)
+            if matched_word:
+                return False, "Password is based on a dictionary word"
+
+        # 4b. Combination rule: ≥3 sequential alpha AND ≥3 sequential digit → reject.
+        if _has_sequential_alpha_run(password) and _has_sequential_digit_run(password):
+            return False, "Password is too simplistic: contains sequential letters and digits"
+
+    # Rule 5 — Username / reverse-username check
+    if username:
+        if password.lower() == username.lower():
+            return False, f"Password must not be identical to the username '{username}'"
+        if password.lower() == username[::-1].lower():
+            return False, f"Password must not be the reverse of the username '{username}'"
+
+    # Rule 6 — Sequential sequences ≥5 (alpha or digit, both directions; keyboard rows not checked)
+    # Empirically verified: ascending AND descending alphabetic/digit runs of ≥5 characters
+    # are rejected by UCSM GUI and console. Keyboard-row sequences are NOT enforced.
+    if _has_sequential_run(password, min_length=5):
+        return False, "Password contains a sequential run of 5+ characters (e.g. abcde, 12345)"
+
+    # Rule 7 — Cisco name
+    # Enforced by the Initial Setup GUI (initial_setup.sh). UCSM GUI and console accept
+    # passwords containing 'cisco', but rejected here to be safe across all UCSM paths.
+    if "cisco" in password.lower():
+        return False, "Password must not contain 'cisco'"
+
+    return True, "Password meets UCS complex password requirements"
 
 
 def is_ip_address_valid(ip_address):

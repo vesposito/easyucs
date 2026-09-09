@@ -740,6 +740,22 @@ class UcsChassisDrawInfra(UcsSystemDrawInfraEquipment):
             self.chassis = UcsChassisDrawRear(parent=chassis._parent)
         else:
             self.chassis = UcsChassisDrawFront(parent=chassis._parent)
+        # UcsChassisDrawRear/Front.__init__() builds a full composite background image that
+        # is only needed when saving a standalone chassis picture. The infra draw never saves
+        # self.chassis directly; instead it reassigns self.chassis.background = self.background
+        # below so the chassis draw methods render onto the infra canvas. Explicitly free the
+        # standalone composite now to avoid holding two large RGBA buffers simultaneously.
+        chassis_bg = getattr(self.chassis, 'background', None)
+        if chassis_bg is not None:
+            chassis_bg.close()
+            self.chassis.background = None
+        chassis_clear = getattr(self.chassis, 'clear_version', None)
+        if chassis_clear is not None:
+            clear_bg = getattr(chassis_clear, 'background', None)
+            if clear_bg is not None:
+                clear_bg.close()
+                chassis_clear.background = None
+            self.chassis.clear_version = None  # type: ignore[attr-defined]
         self.fi_a = self._get_fi(fi_list, "A")
         self.fi_b = self._get_fi(fi_list, "B")
 

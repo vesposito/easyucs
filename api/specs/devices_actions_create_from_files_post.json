@@ -1,0 +1,4 @@
+{
+   "$ref": "easyucs.json#/components/schemas/devices_actions_create_from_files_post"
+}
+

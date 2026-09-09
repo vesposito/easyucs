@@ -3,6 +3,7 @@ import copy
 import csv
 import ctypes
 import datetime
+import gc
 import json
 import os
 import re
@@ -15,6 +16,7 @@ import time
 import uuid
 from functools import wraps
 from io import StringIO
+from typing import Any
 from urllib.parse import urlparse
 
 from OpenSSL import crypto
@@ -29,16 +31,20 @@ from werkzeug.exceptions import BadRequest
 from werkzeug.utils import secure_filename
 
 from __init__ import EASYUCS_ROOT, __version__
-from common import (decrypt, encrypt, extract, get_disk_space_usage, guess_image_metadata,
+from common import (decrypt, encrypt, extract, get_certificate_details, get_disk_space_usage, guess_image_metadata,
                     read_json_file, validate_json)
 from device.device import GenericDevice
 
 app = Flask(__name__)
 cors = CORS(app)
-easyucs = None
-notifs = 0
+# easyucs is a runtime-injected singleton (set by start()), so its concrete type is not known at
+# import time. Annotating it as Any avoids hundreds of false-positive reportOptionalMemberAccess
+# warnings from static analysis while still being accurate (the engine object is duck-typed and may
+# be any of the entry-point Easyucs classes).
+easyucs: Any = None
 logContent = ""
 displayLogsBool = False
+_shutdown_in_progress = False
 
 timeout_values = {
     "add_device": 360,
@@ -57,6 +63,7 @@ timeout_values = {
     "fetch_inventory": 3600,
     "fetch_os_firmware_data": 1800,
     "generate_report": 600,
+    "import_tech_support": 7200,
     "initial_setup": 3000,
     "push_config": 10800,
     "regenerate_certificate": 300,
@@ -95,8 +102,11 @@ def timeout_wrapper(action_func):
         easyucs.task_manager.start_task(uuid=task_uuid)
 
         # We perform the main action on a separate thread
+        # daemon=True so that a long-running action thread does not block interpreter shutdown
+        # (e.g. on CTRL+C). Its lifecycle is explicitly managed below (waited on / terminated).
         action_thread = threading.Thread(target=action_func, kwargs=kwargs,
-                                         name=action_type + "_" + object_type + "_" + str(task_uuid))
+                                         name=str(action_type) + "_" + str(object_type) + "_" + str(task_uuid),
+                                         daemon=True)
         action_thread.start()
 
         easyucs.logger(
@@ -175,10 +185,14 @@ def timeout_wrapper(action_func):
                                        "might be full")
         else:
             secondary_obj = None
-            # Find all devices sharing the same endpoint ID (may have different API credentials)
-            devices_with_same_endpoint = obj.parent.find_devices_by_endpoint_id(
-                endpoint_id=obj.metadata.device_endpoint_id
-            )
+            # Find all devices sharing the same endpoint ID (may have different API credentials).
+            # Skip if device_endpoint_id is None (e.g. devices imported from a tech-support bundle
+            # without a live connection, which never run _set_device_endpoint_id).
+            devices_with_same_endpoint = []
+            if obj.metadata.device_endpoint_id is not None and obj.parent is not None:
+                devices_with_same_endpoint = obj.parent.find_devices_by_endpoint_id(
+                    endpoint_id=obj.metadata.device_endpoint_id
+                )
             # Look for another device (sharing same endpoint ID) that has queued tasks
             if devices_with_same_endpoint and len(devices_with_same_endpoint) > 1:
                 for device in devices_with_same_endpoint:
@@ -197,7 +211,7 @@ def timeout_wrapper(action_func):
     return decorated
 
 
-def fetch_config_inventory(device=None, force=False):
+def fetch_config_inventory(device: Any = None, force=False):
     """
     Performs config and inventory fetch sequentially
     :param device: The device for which the fetch is to be performed
@@ -210,6 +224,35 @@ def fetch_config_inventory(device=None, force=False):
 
     config_uuid = device.config_manager.fetch_config(force=force)
     inventory_uuid = device.inventory_manager.fetch_inventory(force=force)
+    if config_uuid and inventory_uuid:
+        return True
+    return False
+
+
+def fetch_config_inventory_from_xml(device: Any = None, xml_file_path=None, force=False, tech_support_timestamp=None,
+                                    tech_support_filename=None):
+    """
+    Performs config and inventory fetch from a MIT XML file (extracted from a tech-support bundle)
+    :param device: The UcsSystem device for which the fetch is to be performed
+    :param xml_file_path: Absolute path to the mit.xml file to parse
+    :param force: Force the fetch to continue even if facing errors
+    :param tech_support_timestamp: datetime of when the tech-support bundle was taken (from topSystem.currentTime)
+    :param tech_support_filename: Original filename of the uploaded tech-support bundle
+    :return: True if both config and inventory are fetched successfully else False
+    """
+    if device is None:
+        easyucs.logger(level="error", message="No device provided")
+        sys.exit()
+    if not xml_file_path:
+        easyucs.logger(level="error", message="No xml_file_path provided")
+        sys.exit()
+
+    config_uuid = device.config_manager.fetch_config(force=force, xml_file_path=xml_file_path,
+                                                     tech_support_timestamp=tech_support_timestamp,
+                                                     tech_support_filename=tech_support_filename)
+    inventory_uuid = device.inventory_manager.fetch_inventory(force=force, xml_file_path=xml_file_path,
+                                                              tech_support_timestamp=tech_support_timestamp,
+                                                              tech_support_filename=tech_support_filename)
     if config_uuid and inventory_uuid:
         return True
     return False
@@ -370,14 +413,14 @@ def get_object_from_db(object_type=None, uuid=None, device_uuid=None, task_uuid=
             object_dict = {dict_name: object_metadata_list[0]}
         else:
             easyucs.logger(level="error", message=f"Could not find {object_type} with "
-                                                  f"{'uuid ' + str(uuid) if uuid else 'file path ' + repo_file_path}")
+                                                  f"{'uuid ' + str(uuid) if uuid else 'file path ' + str(repo_file_path)}")
             return None
     else:
         object_dict = {dict_name: object_metadata_list}
     return object_dict
 
 
-def load_object(object_type=None, object_uuid=None, device=None):
+def load_object(object_type=None, object_uuid=None, device: Any = None):
     """
     Loads an object in the corresponding object list in memory
     :param object_type: Type of object to be loaded (config/device/inventory)
@@ -431,7 +474,7 @@ def load_object(object_type=None, object_uuid=None, device=None):
 
 
 @timeout_wrapper
-def perform_action(device=None, action_type="", object_type="", task_uuid=None, action_kwargs=None):
+def perform_action(device: Any = None, action_type="", object_type="", task_uuid=None, action_kwargs=None):
     """
     Performs an action with an object type on a given device
     :param device: The device for which the action is to be performed
@@ -452,7 +495,8 @@ def perform_action(device=None, action_type="", object_type="", task_uuid=None, 
         easyucs.logger(level="error", message="Invalid action type provided")
         sys.exit()
 
-    if object_type not in ["backup", "cache", "config", "device", "inventory", "repo", "report", "config_inventory"]:
+    if object_type not in ["backup", "cache", "config", "config_inventory", "config_inventory_from_xml", "device",
+                            "inventory", "repo", "report"]:
         easyucs.logger(level="error", message="Invalid object type provided")
         sys.exit()
 
@@ -464,9 +508,12 @@ def perform_action(device=None, action_type="", object_type="", task_uuid=None, 
         action_kwargs = {}
 
     # In case this is a clear, fetch or push operation, we first need to connect to the device
-    if action_type in ["add_device", "change_mode", "clear_config", "clear_sel_logs", "create_vmedia_policy",
-                       "deploy_domain_profile", "fetch", "fetch_os_firmware_data", "push", "regenerate_certificate",
-                       "reset", "reset_device_connector", "sync_to_software_repository", "test_connection"]:
+    # (XML-based imports read from a local file and must not attempt a live connection)
+    if object_type != "config_inventory_from_xml" and \
+            action_type in ["add_device", "change_mode", "clear_config", "clear_sel_logs", "create_vmedia_policy",
+                            "deploy_domain_profile", "fetch", "fetch_os_firmware_data", "push",
+                            "regenerate_certificate", "reset", "reset_device_connector",
+                            "sync_to_software_repository", "test_connection"]:
         if not device.connect(bypass_version_checks=device.metadata.bypass_version_checks):
             easyucs.logger(level="error",
                            message="Failed to connect to " + device.metadata.device_type_long + " device",
@@ -487,6 +534,12 @@ def perform_action(device=None, action_type="", object_type="", task_uuid=None, 
 
         if not device.metadata.is_reachable:
             sys.exit()
+    elif object_type == "config_inventory_from_xml":
+        # No live connection is made - skip the Connect task step so the task sequence advances correctly
+        if device.task is not None:
+            device.task.taskstep_manager.skip_taskstep(
+                name="ConnectUcsSystemDevice",
+                status_message="Skipped - reading config and inventory from local XML file")
 
     # In case this is a "generate report" operation, we first need to draw the inventory/config plots & save images
     elif action_type in ["generate"]:
@@ -615,6 +668,14 @@ def perform_action(device=None, action_type="", object_type="", task_uuid=None, 
             action_kwargs = {
                 "device": device
             }
+    elif object_type == "config_inventory_from_xml":
+        action_target = fetch_config_inventory_from_xml
+        if action_kwargs:
+            action_kwargs["device"] = device
+        else:
+            action_kwargs = {
+                "device": device
+            }
     elif object_type in ["repo"] and action_type in ["calculate_checksums"]:
         action_target = easyucs.repository_manager.repo.calculate_checksums
     elif object_type in ["repo"] and action_type in ["download_file"]:
@@ -632,9 +693,16 @@ def perform_action(device=None, action_type="", object_type="", task_uuid=None, 
         response = action_target(**action_kwargs)
 
     # In case this is a claim, a clear, a fetch or a push operation, we now need to disconnect from the device
-    if action_type in ["add_device", "claim_to_intersight", "clear_config", "clear_sel_logs", "deploy_domain_profile",
-                       "fetch", "fetch_os_firmware_data", "push", "regenerate_certificate", "reset_device_connector",
-                       "sync_to_software_repository", "test_connection"]:
+    # (XML-based imports never connected, so skip the Disconnect task step instead)
+    if object_type == "config_inventory_from_xml":
+        if device.task is not None:
+            device.task.taskstep_manager.skip_taskstep(
+                name="DisconnectUcsSystemDevice",
+                status_message="Skipped - no connection was made (reading from local XML file)")
+    elif action_type in ["add_device", "claim_to_intersight", "clear_config", "clear_sel_logs",
+                         "deploy_domain_profile", "fetch", "fetch_os_firmware_data", "push",
+                         "regenerate_certificate", "reset_device_connector", "sync_to_software_repository",
+                         "test_connection"]:
         device.disconnect()
 
     if action_type in ["reset"]:
@@ -718,7 +786,7 @@ def perform_action(device=None, action_type="", object_type="", task_uuid=None, 
     if response and not easyucs.task_manager.is_any_taskstep_failed(uuid=task_uuid):
         if action_type in ["fetch", "generate"]:
             # We save the newly added object to the repository
-            if object_type in ["config_inventory"]:
+            if object_type in ["config_inventory", "config_inventory_from_xml"]:
                 # Saving config in repository
                 obj = getattr(device.config_manager, "get_latest_config")()
                 if obj is not None:
@@ -727,6 +795,11 @@ def perform_action(device=None, action_type="", object_type="", task_uuid=None, 
                 obj = getattr(device.inventory_manager, "get_latest_inventory")()
                 if obj is not None:
                     easyucs.repository_manager.save_to_repository(object=obj)
+                # Clean up the temporary MIT XML file used for tech-support import
+                if object_type == "config_inventory_from_xml" and action_kwargs.get("xml_file_path"):
+                    tmp_dir = os.path.dirname(action_kwargs["xml_file_path"])
+                    if tmp_dir and os.path.isdir(tmp_dir):
+                        shutil.rmtree(tmp_dir, ignore_errors=True)
             elif object_type in ["report"]:
                 # Determining the number of reports that have been generated
                 number_of_reports = 1
@@ -734,7 +807,53 @@ def perform_action(device=None, action_type="", object_type="", task_uuid=None, 
                     number_of_reports = len(list(set(action_kwargs["output_formats"])))
                 if device.report_manager.report_list:
                     for report in [device.report_manager.report_list[-x] for x in range(1, number_of_reports + 1)]:
-                        easyucs.repository_manager.save_to_repository(object=report)
+                        if not easyucs.repository_manager.save_to_repository(object=report):
+                            message_str = "Failed to save report with UUID " + str(report.uuid) + \
+                                          " to repository"
+                            easyucs.logger(level="error", message=message_str)
+                            easyucs.task_manager.stop_task(uuid=task_uuid, status="failed",
+                                                           status_message=message_str)
+                            sys.exit()
+                    # Null the report's references to inventory/config before popping it so that
+                    # removing the report from the list drops all remaining strong references.
+                    for report in [device.report_manager.report_list[-x] for x in range(1, number_of_reports + 1)]:
+                        report.inventory = None
+                        report.config = None
+                        report.device = None
+                        report.element_list = []
+                        report.document = None
+                    # Free report objects from memory now that they are saved to disk.
+                    for _ in range(number_of_reports):
+                        if device.report_manager.report_list:
+                            device.report_manager.report_list.pop()
+                # Unload the inventory and config that were loaded for this report. They are already
+                # persisted to disk and keeping them in memory causes large accumulation when generating
+                # reports for multiple devices sequentially.
+                inventory_to_free = action_kwargs.get("inventory")
+                if inventory_to_free is not None:
+                    action_kwargs["inventory"] = None
+                    try:
+                        device.inventory_manager.inventory_list.remove(inventory_to_free)
+                    except ValueError:
+                        pass
+                config_to_free = action_kwargs.get("config")
+                if config_to_free is not None:
+                    action_kwargs["config"] = None
+                    try:
+                        device.config_manager.config_list.remove(config_to_free)
+                    except ValueError:
+                        pass
+                # Force a GC cycle to collect any remaining reference cycles, then
+                # return freed heap pages to the OS. Without the trim, Python's allocator
+                # keeps the virtual memory pages in its own free list and RSS stays high
+                # even though all objects have been released. ctypes.CDLL(None) resolves
+                # symbols from the current process (glibc on Linux); on other platforms
+                # malloc_trim won't be found and the except clause swallows it silently.
+                gc.collect()
+                try:
+                    ctypes.CDLL(None).malloc_trim(0)
+                except Exception:
+                    pass
             elif object_type in ["cache"]:
                 easyucs.repository_manager._save_file(object=response)
             else:
@@ -785,7 +904,7 @@ def perform_action(device=None, action_type="", object_type="", task_uuid=None, 
     sys.exit()
 
 
-def response_handle(response=None, code=400, mimetype="application/json"):
+def response_handle(response=None, code: int | None = 400, mimetype="application/json"):
     """
     Function to create response objects based on the "response" and "response code".
     :param response: (str, dict, list) Response to be sent
@@ -793,6 +912,10 @@ def response_handle(response=None, code=400, mimetype="application/json"):
     :param mimetype: Mimetype of the response being sent
     :return: Response object.
     """
+    # Some callers pass an HTTPException.code (typed int | None); fall back to 500 when it is None,
+    # since a missing code in an error path indicates an unexpected server-side condition.
+    if code is None:
+        code = 500
     response_code_mapping = {
         200: "OK",
         400: "Invalid Request",
@@ -815,13 +938,46 @@ def response_handle(response=None, code=400, mimetype="application/json"):
 
 
 def terminate_task_scheduler(sig, frame):
-    easyucs.logger(level="error", message="Received interrupt signal - Stopping task scheduler thread '" +
-                                          str(easyucs.task_manager.scheduler_thread.name) + "'")
-    terminate_thread(easyucs.task_manager.scheduler_thread)
-    sys.exit()
+    # Guard against re-entrancy: pressing CTRL+C several times must not run this handler again.
+    # Re-entering previously raised SystemExit from inside _thread._shutdown() while it was joining
+    # threads, producing the confusing "Exception ignored while joining a thread" traceback.
+    global _shutdown_in_progress
+    if _shutdown_in_progress:
+        return
+    _shutdown_in_progress = True
+
+    # Restore the default SIGINT handler so that, should anything below block, a subsequent CTRL+C
+    # performs the OS default (immediate terminate) instead of re-entering this handler.
+    signal.signal(signal.SIGINT, signal.SIG_DFL)
+
+    easyucs.logger(level="info", message="Received interrupt signal - Stopping task scheduler thread '" +
+                                         str(easyucs.task_manager.scheduler_thread.name) + "'")
+
+    # Stop the scheduler thread gracefully. It is blocked on a blocking pending_tasks.get(), so simply
+    # setting the stop flag is not enough: we also inject the "__stop_scheduler__" sentinel to wake it
+    # up so the while-loop in task_scheduler() can observe the flag and exit cleanly.
+    # NOTE: the previous implementation used PyThreadState_SetAsyncExc(SystemExit) here, which does NOT
+    # work for a thread blocked inside queue.get() - an async exception is only delivered when the target
+    # thread next executes Python bytecode, never while it is parked in a C-level blocking call. As a
+    # result the scheduler never stopped and the process hung until CTRL+C was pressed again.
+    try:
+        easyucs.task_manager._stop_scheduler = True
+        easyucs.task_manager.pending_tasks.put({"task_uuid": "__stop_scheduler__"})
+        easyucs.task_manager.scheduler_thread.join(timeout=5)
+    except Exception:
+        pass
+
+    sys.exit(0)
 
 
-signal.signal(signal.SIGINT, terminate_task_scheduler)
+# Register the SIGINT handler so a CTRL+C on the dev server stops the scheduler and exits cleanly.
+# Under embedded WSGI servers (e.g. mod_wsgi/Apache) the module may be imported outside the main
+# thread, where signal.signal() raises ValueError. In that case the host server owns process/signal
+# handling anyway, so we simply skip registration instead of breaking the import.
+try:
+    signal.signal(signal.SIGINT, terminate_task_scheduler)
+except ValueError:
+    pass
 
 
 def terminate_thread(thread):
@@ -1047,7 +1203,7 @@ def devices():
                     return response
 
                 proxy_details = read_json_file(file_path=os.path.join(EASYUCS_ROOT, "proxy_settings.json"),
-                                               logger=easyucs)
+                                               logger=easyucs) or {}
                 if not proxy_details.get("proxy_url", ""):
                     response = response_handle(response=f"Please set 'Proxy URL' in Proxy Settings and try again",
                                                code=400)
@@ -1089,6 +1245,361 @@ def devices():
         return response
 
 
+@app.route("/devices/actions/import_tech_support", methods=['POST'])
+def devices_actions_import_tech_support():
+    """Accepts a tech-support bundle archive, auto-detects the device type from its contents,
+    creates or reuses the matching device, and triggers an async XML-based config & inventory fetch.
+
+    Currently supported device types: UCS System (UCSM).
+    Other device types will be rejected with HTTP 400 until support is added.
+    """
+
+    # Maximum accepted upload size (bytes). Adjust here if a larger limit is ever needed.
+    TECH_SUPPORT_MAX_SIZE_BYTES = 2 * 1024 * 1024 * 1024  # 2 GB
+
+    # ── Device-type detection table ───────────────────────────────────────────────
+    # Each entry maps a set of inner archive basenames (used for detection) to the
+    # parameters needed to extract mit.xml and schedule the fetch task.
+    #
+    # Keys:
+    #   inner_archive_names : set of filenames to look for inside the outer bundle
+    #   device_type         : EasyUCS device type string (e.g. "ucsm")
+    #   task_name           : task_library.json key for the fetch task
+    #   supported           : False until the code path is actually implemented
+    #
+    # To add a new device type in the future, add a new entry here and implement
+    # the corresponding _import_<device_type>_tech_support() helper below.
+    TECH_SUPPORT_DETECTION_TABLE = [
+        {
+            "inner_archive_names": {"UCSM_A_TechSupport.tar.gz", "UCSM_B_TechSupport.tar.gz"},
+            "device_type": "ucsm",
+            "task_name": "FetchConfigInventoryUcsSystem",
+            "supported": True,
+        }
+    ]
+
+    if request.method != 'POST':
+        return response_handle(code=500, response="Invalid HTTP method")
+
+    try:
+        if "tech_support_file" not in request.files:
+            return response_handle(code=400, response="Missing 'tech_support_file' in request")
+
+        uploaded_file = request.files["tech_support_file"]
+        if not uploaded_file.filename:
+            return response_handle(code=400, response="Invalid filename")
+
+        # secure_filename() is used both for safe on-disk storage and for the
+        # sanitized display name persisted in config/inventory metadata.
+        # Retaining the raw user-supplied name is avoided to prevent stored XSS
+        # if any downstream UI/API consumer renders the metadata field without escaping.
+        filename = secure_filename(uploaded_file.filename)
+        if not filename:
+            return response_handle(code=400, response="Invalid filename")
+
+        # Validate extension
+        is_tar = filename.endswith(".tar") or filename.endswith(".tar.gz") or filename.endswith(".tgz")
+        is_xml = filename.endswith(".xml")
+        is_xml_gz = filename.endswith(".xml.gz") or (
+            filename.endswith(".gz") and not filename.endswith(".tar.gz"))
+        if not (is_tar or is_xml or is_xml_gz):
+            return response_handle(code=400,
+                                   response="Invalid file type. Expected .tar, .tar.gz, .tgz, .xml or .xml.gz")
+
+        # Check file size via Content-Length header (early rejection before saving)
+        content_length = request.content_length
+        if content_length is not None and content_length > TECH_SUPPORT_MAX_SIZE_BYTES:
+            return response_handle(code=400, response="File exceeds maximum allowed size of 2 GB")
+
+        # Save the bundle to a unique subdirectory under the repository tmp folder
+        upload_id = str(uuid.uuid4())
+        tmp_dir = os.path.abspath(os.path.join(
+            EASYUCS_ROOT,
+            easyucs.repository_manager.REPOSITORY_FOLDER_NAME,
+            easyucs.repository_manager.REPOSITORY_TMP_FOLDER_NAME,
+            upload_id))
+        os.makedirs(tmp_dir, exist_ok=True)
+
+        @after_this_request
+        def cleanup_on_error(response):
+            """Remove the temp directory if the request does not end with a successful 200."""
+            if response.status_code != 200:
+                shutil.rmtree(tmp_dir, ignore_errors=True)
+            return response
+
+        outer_bundle_path = os.path.join(tmp_dir, filename)
+        uploaded_file.save(outer_bundle_path)
+
+        # Double-check size after save (in case Content-Length was absent)
+        if os.path.getsize(outer_bundle_path) > TECH_SUPPORT_MAX_SIZE_BYTES:
+            return response_handle(code=400, response="File exceeds maximum allowed size of 2 GB")
+
+        if is_xml or is_xml_gz:
+            # ── Direct XML upload: mit.xml or mit.xml.gz is always UCSM ─────────────
+            ucsm_entry = next(
+                (e for e in TECH_SUPPORT_DETECTION_TABLE if e["device_type"] == "ucsm"), None)
+            if ucsm_entry is None or not ucsm_entry["supported"]:
+                return response_handle(code=400, response="UCSM tech-support import is not supported")
+
+            if is_xml_gz:
+                import gzip as _gzip
+                mit_xml_path = os.path.join(tmp_dir, "mit.xml")
+                try:
+                    with _gzip.open(outer_bundle_path) as gz_f:
+                        with open(mit_xml_path, "wb") as xml_f:
+                            xml_f.write(gz_f.read())
+                except Exception as err:
+                    return response_handle(code=400, response="Could not decompress file: " + str(err))
+                os.remove(outer_bundle_path)
+            else:
+                mit_xml_path = outer_bundle_path
+
+            return _import_ucsm_tech_support(
+                outer_bundle_path=None,
+                tmp_dir=tmp_dir,
+                detected_entry=ucsm_entry,
+                mit_xml_path=mit_xml_path,
+                sanitized_filename=filename
+            )
+
+        # ── Step 1: Open the outer tar and auto-detect the device type ───────────────
+        if not tarfile.is_tarfile(outer_bundle_path):
+            return response_handle(code=400, response="Uploaded file is not a valid tar archive")
+
+        with tarfile.open(outer_bundle_path) as outer_tar:
+            outer_member_names = {os.path.basename(m.name) for m in outer_tar.getmembers() if m.isfile()}
+
+        detected_entry = None
+        for entry in TECH_SUPPORT_DETECTION_TABLE:
+            if outer_member_names & entry["inner_archive_names"]:
+                detected_entry = entry
+                break
+
+        if detected_entry is None:
+            known_signatures = ", ".join(
+                name
+                for entry in TECH_SUPPORT_DETECTION_TABLE
+                for name in sorted(entry["inner_archive_names"])
+            )
+            return response_handle(
+                code=400,
+                response="Could not identify the device type from the tech-support bundle. "
+                         "No recognised inner archive found (expected one of: " + known_signatures + ")"
+            )
+
+        if not detected_entry["supported"]:
+            return response_handle(
+                code=400,
+                response="Tech-support bundles for device type '" + detected_entry["device_type"] +
+                         "' are not yet supported"
+            )
+
+        # Dispatch to the device-type-specific import handler
+        return _import_ucsm_tech_support(
+            outer_bundle_path=outer_bundle_path,
+            tmp_dir=tmp_dir,
+            detected_entry=detected_entry,
+            sanitized_filename=filename
+        )
+
+    except BadRequest as err:
+        return response_handle(code=err.code, response=str(err.description))
+    except Exception as err:
+        return response_handle(code=500, response=str(err))
+
+
+def _import_ucsm_tech_support(outer_bundle_path, tmp_dir, detected_entry, mit_xml_path=None,
+                              sanitized_filename=None):
+    """
+    Handles the UCSM-specific part of a tech-support import after the device type
+    has been detected by devices_actions_import_tech_support().
+
+    When called from a tar bundle upload, extracts mit.xml from the largest UCSM_A/B
+    inner archive. When called from a direct .xml or .xml.gz upload, mit_xml_path
+    is already set and the extraction steps are skipped.
+
+    :param outer_bundle_path: Full path to the already-saved outer tarball, or None
+                              for direct XML uploads.
+    :param tmp_dir: Temporary directory owning the upload; cleaned up on failure.
+    :param detected_entry: Entry from TECH_SUPPORT_DETECTION_TABLE for 'ucsm'.
+    :param mit_xml_path: Pre-extracted path to mit.xml. If provided, tar extraction
+                         is skipped entirely.
+    :param sanitized_filename: Sanitized filename (via secure_filename) of the uploaded
+                               tech-support bundle, stored in config/inventory metadata
+                               as tech_support_filename. The raw user-supplied name is
+                               not persisted to avoid stored XSS.
+    :return: Flask response object.
+    """
+    if mit_xml_path is None:
+        # ── Steps 1-2: Extract mit.xml from the outer tar bundle ─────────────────
+        with tarfile.open(outer_bundle_path) as outer_tar:
+            inner_candidates = [
+                m for m in outer_tar.getmembers()
+                if os.path.basename(m.name) in detected_entry["inner_archive_names"]
+                and m.isfile()
+            ]
+
+        # Prefer the larger archive (usually contains the active FI)
+        inner_candidates.sort(key=lambda m: m.size, reverse=True)
+
+        for inner_member in inner_candidates:
+            inner_tar_path = os.path.join(tmp_dir, os.path.basename(inner_member.name))
+            with tarfile.open(outer_bundle_path) as outer_tar:
+                inner_file_obj = outer_tar.extractfile(inner_member)
+                if inner_file_obj is None:
+                    continue
+                with open(inner_tar_path, "wb") as f:
+                    f.write(inner_file_obj.read())
+
+            if not tarfile.is_tarfile(inner_tar_path):
+                os.remove(inner_tar_path)
+                continue
+
+            mit_gz_member = None
+            with tarfile.open(inner_tar_path) as inner_tar:
+                for m in inner_tar.getmembers():
+                    if os.path.basename(m.name) == "mit.xml.gz" and m.isfile():
+                        mit_gz_member = m
+                        break
+
+            if mit_gz_member is None:
+                os.remove(inner_tar_path)
+                continue
+
+            import gzip as _gzip
+            mit_xml_path = os.path.join(tmp_dir, "mit.xml")
+            with tarfile.open(inner_tar_path) as inner_tar:
+                gz_obj = inner_tar.extractfile(mit_gz_member)
+                if gz_obj is not None:
+                    with _gzip.open(gz_obj) as gz_f:
+                        with open(mit_xml_path, "wb") as xml_f:
+                            xml_f.write(gz_f.read())
+
+            os.remove(inner_tar_path)
+            break  # Successfully extracted mit.xml
+
+        os.remove(outer_bundle_path)
+
+        if not mit_xml_path or not os.path.isfile(mit_xml_path):
+            return response_handle(code=400,
+                                   response="Could not find or extract mit.xml from the tech-support bundle")
+
+    # ── Step 3: Read topSystem to get device name, management IP and firmware version ──
+    import xml.etree.ElementTree as _ET
+    top_system_name = None
+    top_system_address = None
+    top_system_version = None
+    top_system_current_time = None
+    try:
+        for _event, _elem in _ET.iterparse(mit_xml_path, events=("end",)):
+            if _elem.tag == "topSystem":
+                top_system_name = _elem.get("name")
+                top_system_address = _elem.get("address")
+                top_system_current_time = _elem.get("currentTime")
+            elif _elem.tag == "firmwareRunning" and "sys/mgmt/fw-system" in _elem.get("dn", ""):
+                top_system_version = _elem.get("version")
+            elif (_elem.tag == "versionApplication" and
+                  _elem.get("dn", "") == "sys/version/application" and
+                  not top_system_version):
+                # Fallback: versionApplication is always present, even on older UCSM
+                # releases where firmwareRunning at sys/mgmt/fw-system may be absent.
+                top_system_version = _elem.get("version")
+            _elem.clear()
+            # Break only after topSystem has been seen (address is set) and version is found,
+            # so non-standard XML element ordering cannot skip topSystem processing.
+            if top_system_address and top_system_version is not None:
+                break
+    except Exception as err:
+        return response_handle(code=400, response="Failed to parse mit.xml: " + str(err))
+
+    # Parse currentTime into a datetime object (format: YYYY-MM-DDTHH:MM:SS[.mmm])
+    tech_support_timestamp = None
+    if top_system_current_time:
+        for _fmt in ("%Y-%m-%dT%H:%M:%S.%f", "%Y-%m-%dT%H:%M:%S"):
+            try:
+                tech_support_timestamp = datetime.datetime.strptime(top_system_current_time, _fmt)
+                break
+            except ValueError:
+                pass
+        if tech_support_timestamp is None:
+            easyucs.logger(level="warning",
+                           message="Could not parse topSystem currentTime '" + top_system_current_time +
+                                   "'; config and inventory timestamps will be set to import time")
+
+    if not top_system_address:
+        return response_handle(code=400, response="Could not find topSystem address in mit.xml")
+
+    # ── Step 4: Find or create the UcsSystem device ───────────────────────────────
+    existing_device = None
+    device_metadata_list = easyucs.repository_manager.get_metadata(
+        object_type="device",
+        filter=("device_type", "==", detected_entry["device_type"])
+    )
+    for dm in device_metadata_list:
+        if dm.target == top_system_address and dm.device_name == top_system_name:
+            existing_device = load_object(object_type="device", object_uuid=str(dm.uuid))
+            break
+
+    if existing_device:
+        device = existing_device
+        easyucs.logger(
+            message="Reusing existing UcsSystem device with UUID " + str(device.uuid) +
+                    " for tech-support import (target=" + top_system_address +
+                    ", name=" + str(top_system_name) + ")")
+    else:
+        new_device_uuid = uuid.uuid4()
+        if not easyucs.device_manager.add_device(
+            device_type=detected_entry["device_type"],
+            uuid=new_device_uuid,
+            target=top_system_address,
+            username="admin",
+            password="",
+            bypass_connection_checks=True,
+            bypass_version_checks=True
+        ):
+            return response_handle(code=500,
+                                   response="Failed to create UcsSystem device for target " + top_system_address)
+        device = easyucs.device_manager.get_latest_device()
+        device.name = top_system_name
+        device.metadata.device_name = top_system_name
+        if top_system_version:
+            device.metadata.device_version = top_system_version
+        easyucs.repository_manager.save_to_repository(object=device)
+        easyucs.logger(
+            message="Created new UcsSystem device with UUID " + str(device.uuid) +
+                    " for tech-support import (target=" + top_system_address +
+                    ", name=" + str(top_system_name) + ")")
+
+    # ── Step 5: Schedule the async fetch task ─────────────────────────────────────
+    task_uuid = easyucs.task_manager.add_task(
+        name=detected_entry["task_name"],
+        device_name=str(device.name),
+        device_uuid=str(device.uuid)
+    )
+    pending_task = {
+        "task_uuid": task_uuid,
+        "action_type": "fetch",
+        "object_type": "config_inventory_from_xml",
+        "timeout": timeout_values["import_tech_support"],
+        "action_kwargs": {
+            "xml_file_path": mit_xml_path,
+            "force": False,
+            "tech_support_timestamp": tech_support_timestamp,
+            "tech_support_filename": sanitized_filename
+        }
+    }
+    if not easyucs.task_manager.add_to_pending_tasks(pending_task):
+        return response_handle(
+            response="Error while scheduling the task. Task Queue might be Full. Try again after some time.",
+            code=400
+        )
+
+    return response_handle(
+        response={"task": str(task_uuid), "device_uuid": str(device.uuid)},
+        code=200
+    )
+
+
 @app.route("/devices/actions/add", methods=['POST'])
 # Method to add multiple devices from CSV file
 def devices_actions_add():
@@ -1101,7 +1612,7 @@ def devices_actions_add():
             file = request.files['devices_file']
 
             # Validating the type of file
-            file_type = file.filename.split(".")
+            file_type = (file.filename or "").split(".")
             if len(file_type) <= 1 or file_type[1] != "csv":
                 response = response_handle(code=400, response="Invalid file type")
                 return response
@@ -1193,6 +1704,7 @@ def devices_actions_add():
 
             task_uuid_list = []
             for device in device_list:
+                task_uuid = None
                 if device.metadata.device_type == "cimc":
                     task_uuid = easyucs.task_manager.add_task(name="TestConnectionUcsImc",
                                                               device_name=str(device.metadata.name),
@@ -1329,6 +1841,257 @@ def devices_actions_claim_to_intersight():
         return response_handle(code=500, response="Invalid HTTP method")
 
 
+@app.route("/devices/actions/create_from_files", methods=['POST'])
+def devices_actions_create_from_files():
+    if request.method == 'POST':
+        try:
+            payload = request.form
+
+            # Validate form fields against JSON schema
+            if payload and not validate_json(json_data=payload,
+                                             schema_path="api/specs/devices_actions_create_from_files_post.json",
+                                             logger=easyucs):
+                response = response_handle(code=400, response="Invalid payload")
+                return response
+
+            supported_device_types = ["ucsm", "ucsc", "cimc", "intersight"]
+            device_type = payload.get("device_type") if payload else None
+
+            # Read the config file (always required)
+            if "config_file" not in request.files:
+                response = response_handle(code=400, response="config_file is required")
+                return response
+
+            # Read the config file and extract its EasyUCS metadata header
+            try:
+                json_config = request.files["config_file"].read().decode("utf-8")
+                config_json = json.loads(json_config)
+            except Exception as err:
+                response = response_handle(code=400,
+                                           response="Error reading config_file: " + str(err))
+                return response
+
+            try:
+                config_header = config_json["easyucs"]["metadata"][0]
+            except (KeyError, IndexError, TypeError):
+                response = response_handle(
+                    code=400,
+                    response="config_file is missing the EasyUCS metadata header (easyucs.metadata)")
+                return response
+
+            # config_file must be an EasyUCS config export
+            if config_header.get("file_type") != "config":
+                response = response_handle(
+                    code=400,
+                    response="Uploaded config_file is not an EasyUCS config export "
+                             "(file_type must be 'config')")
+                return response
+
+            # Read the inventory file (optional)
+            json_inventory = None
+            inventory_header = None
+            inventory_file = request.files.get("inventory_file")
+            if inventory_file and inventory_file.filename:
+                try:
+                    json_inventory = inventory_file.read().decode("utf-8")
+                    inventory_json = json.loads(json_inventory)
+                except Exception as err:
+                    response = response_handle(code=400,
+                                               response="Error reading inventory_file: " + str(err))
+                    return response
+
+                try:
+                    inventory_header = inventory_json["easyucs"]["metadata"][0]
+                except (KeyError, IndexError, TypeError):
+                    response = response_handle(
+                        code=400,
+                        response="inventory_file is missing the EasyUCS metadata header "
+                                 "(easyucs.metadata)")
+                    return response
+
+                if inventory_header.get("file_type") != "inventory":
+                    response = response_handle(
+                        code=400,
+                        response="Uploaded inventory_file is not an EasyUCS inventory export "
+                                 "(file_type must be 'inventory')")
+                    return response
+
+            # If device_type was not supplied, auto-detect it from the uploaded files
+            if not device_type:
+                config_device_type = config_header.get("device_type")
+                inventory_device_type = inventory_header.get("device_type") if inventory_header else None
+
+                if config_device_type and inventory_device_type:
+                    if config_device_type != inventory_device_type:
+                        response = response_handle(
+                            code=400,
+                            response="Conflicting device_type in provided files: config_file has '" +
+                                     config_device_type + "' and inventory_file has '" +
+                                     inventory_device_type +
+                                     "'. Please specify device_type explicitly.")
+                        return response
+                    device_type = config_device_type
+                elif config_device_type:
+                    device_type = config_device_type
+                elif inventory_device_type:
+                    device_type = inventory_device_type
+                else:
+                    response = response_handle(
+                        code=400,
+                        response="device_type could not be determined from the provided files. "
+                                 "Please specify device_type explicitly. Must be one of: " +
+                                 ", ".join(supported_device_types))
+                    return response
+
+            # Validate the resolved device_type
+            if device_type not in supported_device_types:
+                response = response_handle(
+                    code=400,
+                    response="device_type must be one of: " + ", ".join(supported_device_types))
+                return response
+
+            # Cross-validate config_file device_type against the resolved device_type
+            config_device_type = config_header.get("device_type")
+            if config_device_type and config_device_type != device_type:
+                response = response_handle(
+                    code=400,
+                    response="config_file device_type ('" + str(config_device_type) +
+                             "') does not match the requested device_type '" + device_type +
+                             "'. Please upload a " + device_type + " config file.")
+                return response
+
+            # device_name is read from the config metadata header
+            device_name = config_header.get("device_name")
+            if not device_name:
+                response = response_handle(code=400,
+                                           response="Missing device_name in config_file metadata")
+                return response
+
+            # Cross-validate inventory_file device_type and device_name
+            if inventory_header:
+                inventory_device_type = inventory_header.get("device_type")
+                if inventory_device_type and inventory_device_type != device_type:
+                    response = response_handle(
+                        code=400,
+                        response="inventory_file device_type ('" + str(inventory_device_type) +
+                                 "') does not match the requested device_type '" + device_type +
+                                 "'. Please upload a " + device_type + " inventory file.")
+                    return response
+
+                inventory_device_name = inventory_header.get("device_name")
+                if inventory_device_name and inventory_device_name != device_name:
+                    response = response_handle(
+                        code=400,
+                        response="device_name mismatch between config_file ('" + str(device_name) +
+                                 "') and inventory_file ('" + str(inventory_device_name) + "')")
+                    return response
+
+            target = "www.intersight.com" if device_type == "intersight" else "0.0.0.0"
+
+            new_device_uuid = None
+            device = None
+            for existing_metadata in easyucs.repository_manager.get_metadata(object_type="device"):
+                if (existing_metadata.device_type == device_type and
+                        existing_metadata.target == target and
+                        existing_metadata.device_name == device_name):
+                    easyucs.logger(
+                        level="info",
+                        message=f"{device_type} device '{device_name}' already exists "
+                                f"(UUID {existing_metadata.uuid}), reusing it"
+                    )
+                    device = load_object(object_type="device", object_uuid=str(existing_metadata.uuid))
+                    if not device:
+                        response = response_handle(code=500,
+                                                   response="Found existing device but could not load it")
+                        return response
+                    break
+
+            # Create a new device if no existing match was found
+            if not device:
+                new_device_uuid = uuid.uuid4()
+                # UCSM / UCS Central / CIMC: placeholder credentials the user can update later.
+                # Intersight: username/password left as None (no key required for a device).
+                username = "admin" if device_type in ["ucsm", "ucsc", "cimc"] else None
+                password = ""     if device_type in ["ucsm", "ucsc", "cimc"] else None
+
+                # Create the device record without any live connection
+                if not easyucs.device_manager.add_device(
+                    device_type=device_type,
+                    uuid=new_device_uuid,
+                    target=target,
+                    username=username,
+                    password=password,
+                    key_id=None,
+                    private_key_path=None,
+                    bypass_connection_checks=True,
+                    bypass_version_checks=True
+                ):
+                    response = response_handle(code=500,
+                                               response="Failed to create " + device_type + " device")
+                    return response
+
+                device = easyucs.device_manager.get_latest_device()
+                device.name = device_name
+                device.metadata.device_name = device_name
+                easyucs.repository_manager.save_to_repository(object=device)
+                easyucs.logger(
+                    message="Created " + device_type + " device '" + device_name +
+                            "' with UUID " + str(device.uuid) + " (target=" + target + ")"
+                )
+
+            # Build device portion of the response
+            device_metadata = {
+                "device_uuid": str(device.uuid),
+                "timestamp": device.metadata.timestamp.isoformat()[:-3] + 'Z'
+            }
+            for attribute in ["bypass_connection_checks", "bypass_version_checks", "device_name",
+                              "device_type", "device_type_long", "device_version", "easyucs_version",
+                              "imm_migration_version", "is_hidden", "target", "user_label"]:
+                if getattr(device.metadata, attribute) not in [None, ""]:
+                    device_metadata[attribute] = getattr(device.metadata, attribute)
+
+            # Import config file (mandatory — json_config was already read & validated above)
+            config = device.config_manager.import_config(
+                import_format="json", config=json_config, force_custom=False
+            )
+            if not config:
+                if new_device_uuid:
+                    easyucs.device_manager.remove_device(uuid=new_device_uuid)
+                response_message = easyucs.api_error_message
+                if not response_message:
+                    response_message = "Failed to import config_file into the device"
+                response = response_handle(code=500, response=response_message)
+                return response
+
+            easyucs.repository_manager.save_to_repository(object=config)
+
+            # Import inventory file (optional — json_inventory was already read & validated above)
+            if json_inventory is not None:
+                inventory = device.inventory_manager.import_inventory(
+                    import_format="json", inventory=json_inventory, force_custom=False
+                )
+                if not inventory:
+                    if new_device_uuid:
+                        easyucs.device_manager.remove_device(uuid=new_device_uuid)
+                    response = response_handle(code=500,
+                                               response="Failed to import inventory_file into the device")
+                    return response
+
+                easyucs.repository_manager.save_to_repository(object=inventory)
+
+            response = response_handle({"device": device_metadata}, 200)
+
+        except BadRequest as err:
+            response = response_handle(code=err.code, response=str(err.description))
+        except Exception as err:
+            easyucs.logger(level="exception", message="Unexpected error while creating device")
+            response = response_handle(code=500, response=str(err))
+        return response
+
+    else:
+        return response_handle(code=500, response="Invalid HTTP method")
+
+
 @app.route("/devices/actions/delete", methods=['POST'])
 # @cross_origin()
 def devices_actions_delete():
@@ -1455,7 +2218,7 @@ def devices_types():
             actions = {
                 "imm_domain": {
                     "display_name": "IMM Domain",
-                    "available_actions": ["claim_to_intersight", "convert_to_imm_domain", "reset",
+                    "available_actions": ["claim_to_intersight", "reset",
                                           "reset_device_connector", "test_connection"]
                 },
                 "intersight": {
@@ -1471,12 +2234,12 @@ def devices_types():
                 },
                 "ucsc": {
                     "display_name": "UCS Central",
-                    "available_actions": ["clear_user_sessions", "convert_to_intersight", "test_connection"]
+                    "available_actions": ["clear_user_sessions", "test_connection"]
                 },
                 "ucsm": {
                     "display_name": "UCS System",
                     "available_actions": ["claim_to_intersight", "clear_sel_logs", "clear_user_sessions",
-                                          "convert_to_intersight", "erase_all_virtual_drives", "erase_all_flexflash",
+                                          "erase_all_virtual_drives", "erase_all_flexflash",
                                           "regenerate_certificate", "reset", "reset_device_connector",
                                           "test_connection"]
                 }
@@ -1569,7 +2332,7 @@ def device_uuid(device_uuid):
                         return response
 
                     proxy_details = read_json_file(file_path=os.path.join(EASYUCS_ROOT, "proxy_settings.json"),
-                                                   logger=easyucs)
+                                                   logger=easyucs) or {}
                     if not proxy_details.get("proxy_url", ""):
                         response = response_handle(response=f"Please set 'Proxy URL' in Proxy Settings and try again",
                                                    code=400)
@@ -1690,20 +2453,24 @@ def device_uuid_actions_change_mode(device_uuid):
                     return response
 
                 if payload.get("password") == device.password:
-                    if device.metadata.device_type == "ucsm":
-                        task_uuid = easyucs.task_manager.add_task(name="ChangeModeToIntersightUcsSystem",
-                                                                  device_name=str(device.name),
-                                                                  device_uuid=str(device.uuid))
-                        action_kwargs = {
-                            "clear_sel_logs": payload.get("clear_sel_logs", False),
-                            "decommission_blade_servers": payload.get("decommission_blade_servers", False),
-                            "decommission_chassis": payload.get("decommission_chassis", True),
-                            "decommission_rack_servers": payload.get("decommission_rack_servers", True),
-                            "erase_flexflash": payload.get("erase_flexflash", False),
-                            "erase_virtual_drives": payload.get("erase_virtual_drives", False),
-                            "reset_device_connector": payload.get("reset_device_connector", True),
-                            "unregister_from_central": payload.get("unregister_from_central", False)
-                        }
+                    if device.metadata.device_type != "ucsm":
+                        response = response_handle(
+                            response="Change mode operation is only supported for UCS Manager devices", code=400)
+                        return response
+
+                    task_uuid = easyucs.task_manager.add_task(name="ChangeModeToIntersightUcsSystem",
+                                                              device_name=str(device.name),
+                                                              device_uuid=str(device.uuid))
+                    action_kwargs = {
+                        "clear_sel_logs": payload.get("clear_sel_logs", False),
+                        "decommission_blade_servers": payload.get("decommission_blade_servers", False),
+                        "decommission_chassis": payload.get("decommission_chassis", True),
+                        "decommission_rack_servers": payload.get("decommission_rack_servers", True),
+                        "erase_flexflash": payload.get("erase_flexflash", False),
+                        "erase_virtual_drives": payload.get("erase_virtual_drives", False),
+                        "reset_device_connector": payload.get("reset_device_connector", True),
+                        "unregister_from_central": payload.get("unregister_from_central", False)
+                    }
 
                     pending_task = {
                         "task_uuid": task_uuid,
@@ -1833,9 +2600,15 @@ def device_uuid_actions_clear_config(device_uuid):
 
             device = load_object(object_type="device", object_uuid=device_uuid)
             if device:
+                orgs = payload.get("orgs")
+                if orgs:
+                    validation_result = device.validate_orgs_for_clear_config(orgs=orgs)
+                    if not validation_result:
+                        response_message = easyucs.api_error_message
+                        return response_handle(response=response_message, code=400)
 
                 action_kwargs = {
-                    "orgs": payload.get("orgs"),
+                    "orgs": orgs,
                     "delete_equipment_tags_and_labels": payload.get("delete_equipment_tags_and_labels", False),
                     "delete_path_tags": payload.get("delete_path_tags", False),
                     "delete_settings": payload.get("delete_settings", False),
@@ -2015,7 +2788,7 @@ def device_uuid_actions_fetch_config_and_inventory(device_uuid):
                     response = response_handle(code=400, response="Invalid payload")
                     return response
 
-            force = payload.get("force", False)
+            force = payload.get("force", False) if payload else False
 
             device = load_object(object_type="device", object_uuid=device_uuid)
             if device:
@@ -2057,6 +2830,66 @@ def device_uuid_actions_fetch_config_and_inventory(device_uuid):
         except BadRequest as err:
             response = response_handle(code=err.code, response=str(err.description))
         except Exception as err:
+            response = response_handle(code=500, response=str(err))
+        return response
+
+    else:
+        return response_handle(code=500, response="Invalid HTTP method")
+
+
+@app.route("/devices/<device_uuid>/latest_config_and_inventory", methods=['GET'])
+# @cross_origin()
+def device_uuid_latest_config_and_inventory(device_uuid):
+    if request.method == 'GET':
+        try:
+            page_size = request.args.get("page_size", None)
+            page_number = int(request.args.get("page_number", 0))
+            config_metadata_list = []
+            configs_metadata = easyucs.repository_manager.get_metadata(object_type="config", device_uuid=device_uuid,
+                                                                       limit=page_size, page=page_number)
+            if len(configs_metadata) > 0:
+                for config_metadata in configs_metadata:
+                    # We return the first live fetched config, a tech-support imported config, or an uploaded non-edited config
+                    if config_metadata.origin in ("live", "import") or \
+                            (config_metadata.origin == "file" and not config_metadata.is_custom):
+                        config = {"device_uuid": str(config_metadata.device_uuid),
+                                  "timestamp": config_metadata.timestamp.isoformat()[:-3] + 'Z',
+                                  "uuid": str(config_metadata.uuid)}
+                        for attribute in ["category", "device_version", "easyucs_version",
+                                          "is_custom", "name", "origin", "revision", "subcategory", "url"]:
+                            if getattr(config_metadata, attribute) not in [None, ""]:
+                                config[attribute] = getattr(config_metadata, attribute)
+                        for attribute in ["source_config_uuid", "source_device_uuid", "source_inventory_uuid"]:
+                            if getattr(config_metadata, attribute) not in [None, ""]:
+                                config[attribute] = str(getattr(config_metadata, attribute))
+                        config_metadata_list.append(config)
+                        break
+
+            inventory_metadata_list = []
+            inventories_metadata = easyucs.repository_manager.get_metadata(object_type="inventory",
+                                                                           device_uuid=device_uuid, limit=page_size,
+                                                                           page=page_number)
+            if len(inventories_metadata) > 0:
+                for inventory_metadata in inventories_metadata:
+                    # We return the first live fetched inventory, a tech-support imported inventory, or an uploaded non-edited inventory
+                    if inventory_metadata.origin in ("live", "import") or \
+                            (inventory_metadata.origin == "file" and not inventory_metadata.is_custom):
+                        inventory = {"device_uuid": str(inventory_metadata.device_uuid),
+                                     "timestamp": inventory_metadata.timestamp.isoformat()[:-3] + 'Z',
+                                     "uuid": str(inventory_metadata.uuid)}
+                        for attribute in ["device_version", "easyucs_version",
+                                          "is_custom", "name", "origin"]:
+                            if getattr(inventory_metadata, attribute) not in [None, ""]:
+                                inventory[attribute] = getattr(inventory_metadata, attribute)
+                        inventory_metadata_list.append(inventory)
+                        break
+
+            latest_config_and_inventory = {"config": config_metadata_list,
+                                           "inventory": inventory_metadata_list}
+
+            response = response_handle(latest_config_and_inventory, 200)
+        except Exception as err:
+            easyucs.logger(level="exception", message="Unexpected error while fetching latest config and inventory!")
             response = response_handle(code=500, response=str(err))
         return response
 
@@ -2469,6 +3302,7 @@ def device_uuid_backups_actions_delete(device_uuid):
                 response = response_handle(code=400, response="Invalid payload")
                 return response
 
+            backup_uuid_list = []
             if "backup_uuids" in payload:
                 backup_uuid_list = payload["backup_uuids"]
 
@@ -2864,10 +3698,11 @@ def device_uuid_cache_orgs(device_uuid):
     if request.method == "GET":
         try:
             device = load_object(object_type="device", object_uuid=device_uuid)
-            if device:
-                if device.metadata.device_type not in ["intersight", "ucsm", "ucsc"]:
-                    response = response_handle(response="Invalid device type", code=400)
-                    return response
+            if not device:
+                return response_handle(response="Device not found with UUID: " + device_uuid, code=404)
+
+            if device.metadata.device_type not in ["intersight", "ucsm", "ucsc"]:
+                return response_handle(response="Invalid device type", code=400)
 
             cached_orgs = device.cache_manager.cache.get_orgs()
             if device.metadata.device_type == "intersight":
@@ -2877,7 +3712,7 @@ def device_uuid_cache_orgs(device_uuid):
                     easyucs.logger(level="info", message="No cached orgs were found.")
                     response = response_handle(response={"orgs": {}}, code=200)
 
-            elif device.metadata.device_type in ["ucsm", "ucsc"]:
+            else:  # ucsm / ucsc (only remaining valid device types after the check above)
                 if not cached_orgs or not cached_orgs.get("orgs"):
                     easyucs.logger(level="info", message="No cached orgs were found. Showing default root org.")
                     response = response_handle(response=cached_orgs, code=200)
@@ -3031,6 +3866,7 @@ def device_uuid_configs_actions_delete(device_uuid):
                 response = response_handle(code=400, response="Invalid payload")
                 return response
 
+            config_uuid_list = []
             if "config_uuids" in payload:
                 config_uuid_list = payload["config_uuids"]
 
@@ -3073,7 +3909,7 @@ def device_uuid_configs_actions_fetch(device_uuid):
                     response = response_handle(code=400, response="Invalid payload")
                     return response
 
-            force = payload.get("force", False)
+            force = payload.get("force", False) if payload else False
 
             device = load_object(object_type="device", object_uuid=device_uuid)
             if device:
@@ -3270,10 +4106,12 @@ def device_uuid_config_uuid_actions_push(device_uuid, config_uuid):
                 if "reset" in payload:
                     action_kwargs["reset"] = payload["reset"]
                 action_kwargs["force"] = payload.get("force", False)
+                action_kwargs["push_equipment"] = payload.get("push_equipment", False)
 
             device = load_object(object_type="device", object_uuid=device_uuid)
             if device:
                 # We first need to find & potentially load the config
+                config = None
                 if config_uuid:
                     config = load_object(object_type="config", object_uuid=config_uuid, device=device)
                     if not config:
@@ -3282,8 +4120,18 @@ def device_uuid_config_uuid_actions_push(device_uuid, config_uuid):
                             response_message = "Failed to load config with UUID " + str(config_uuid)
                         response = response_handle(response=response_message, code=400)
                         return response
-                    # Resetting the push summary and commit statuses in config objects
-                    config.push_summary_manager.reset_push_summary()
+                    # Resetting the push summary and commit statuses in config objects.
+                    # Skip the reset when doing an equipment-only push so that the previous
+                    # "Push config to Intersight" results (org/policy/profile statuses) are
+                    # preserved. Without this guard, navigating back to the push-config summary
+                    # after a push-equipment run would show "Nothing to commit" for all orgs/
+                    # policies because their commit_status arrays were cleared.
+                    if not action_kwargs.get("push_equipment", False):
+                        config.push_summary_manager.reset_push_summary()
+
+                if not config:
+                    response = response_handle(response="No config UUID provided", code=400)
+                    return response
 
                 try:
                     # We create a new task
@@ -3293,7 +4141,6 @@ def device_uuid_config_uuid_actions_push(device_uuid, config_uuid):
                             config_uuid=str(config.uuid)
                         )
                     elif device.metadata.device_type in ["intersight"]:
-                        action_kwargs["push_equipment"] = payload.get("push_equipment", False)
                         task_uuid = easyucs.task_manager.add_task(
                             name="PushConfigIntersight", device_name=str(device.name), device_uuid=str(device.uuid),
                             config_uuid=str(config.uuid)
@@ -3588,6 +4435,7 @@ def device_uuid_inventories_actions_delete(device_uuid):
                 response = response_handle(code=400, response="Invalid payload")
                 return response
 
+            inventory_uuid_list = []
             if "inventory_uuids" in payload:
                 inventory_uuid_list = payload["inventory_uuids"]
 
@@ -3632,7 +4480,7 @@ def device_uuid_inventories_actions_fetch(device_uuid):
                     response = response_handle(code=400, response="Invalid payload")
                     return response
 
-            force = payload.get("force", False)
+            force = payload.get("force", False) if payload else False
 
             device = load_object(object_type="device", object_uuid=device_uuid)
             if device:
@@ -3957,6 +4805,7 @@ def device_uuid_reports_actions_delete(device_uuid):
                 response = response_handle(code=400, response="Invalid payload")
                 return response
 
+            report_uuid_list = []
             if "report_uuids" in payload:
                 report_uuid_list = payload["report_uuids"]
 
@@ -4240,36 +5089,6 @@ def inventories():
         return response_handle(code=500, response="Invalid HTTP method")
 
 
-@app.route("/notifications", methods=['GET', 'POST'])
-def notifications():
-    global notifs
-    if request.method == 'GET':
-        try:
-            notif_dict = {"notifications": notifs}
-            response = response_handle(notif_dict, 200)
-        except Exception as err:
-            response = response_handle(code=500, response=str(err))
-        return response
-
-    elif request.method == 'POST':
-        payload = request.json
-        try:
-            new_notifs = payload["notifications"]
-            if not isinstance(new_notifs, int):
-                response = response_handle(code=500, response="Impossible to save notification number: not an integer")
-            else:
-                notifs = new_notifs
-                response = response_handle(code=200)
-        except BadRequest as err:
-            response = response_handle(code=err.code, response=str(err.description))
-        except Exception as err:
-            response = response_handle(code=500, response=str(err))
-        return response
-
-    else:
-        return response_handle(code=500, response="Invalid HTTP method")
-
-
 @app.route("/logs/session", methods=['GET', 'POST'])
 def logs():
     global logContent
@@ -4287,28 +5106,25 @@ def logs():
     elif request.method == 'POST':
         try:
             payload = request.json
+            if not payload:
+                return response_handle(code=400, response="Invalid payload")
+
             if not ("logs" in payload or "displayLogsBool" in payload):
-                response = response_handle(code=500, response="Impossible to save logs: wrong payload provided")
-                return response
+                return response_handle(code=500, response="Impossible to save logs: wrong payload provided")
 
             if "logs" in payload:
                 logs = payload["logs"]
                 if not isinstance(logs, str):
-                    response = response_handle(code=500, response="Impossible to save logs string: not a string")
-                    return response
-                else:
-                    logContent = logs
-                    response = response_handle(code=200)
+                    return response_handle(code=500, response="Impossible to save logs string: not a string")
+                logContent = logs
 
             if "displayLogsBool" in payload:
                 logsBool = payload["displayLogsBool"]
                 if not isinstance(logsBool, bool):
-                    response = response_handle(code=500, response="Impossible to save display log bool: not a boolean")
-                    return response
-                else:
-                    displayLogsBool = logsBool
-                    response = response_handle(code=200)
+                    return response_handle(code=500, response="Impossible to save display log bool: not a boolean")
+                displayLogsBool = logsBool
 
+            response = response_handle(code=200)
         except BadRequest as err:
             response = response_handle(code=err.code, response=str(err.description))
         except Exception as err:
@@ -4786,12 +5602,159 @@ def easyucs_backup_actions_restore():
         return response_handle(code=500, response="Invalid HTTP method")
 
 
+@app.route("/easyucs/certificates/trusted", methods=['GET', 'POST'])
+# @cross_origin()
+def easyucs_certificates_trusted():
+    if request.method == 'GET':
+        # This API end point retrieves information about all trusted certificates.
+        try:
+            certificate_list = get_certificate_details(logger=easyucs)
+
+            response = response_handle(code=200, response={"certificates": certificate_list})
+
+        except BadRequest as err:
+            response = response_handle(code=err.code, response=str(err.description))
+        except Exception as err:
+            easyucs.logger(level="exception", message="Unexpected error while Displaying Certificate info")
+            response = response_handle(code=500, response=str(err))
+        return response
+
+    elif request.method == 'POST':
+        # This API end point uploads a new certificate file to the trusted store.
+        try:
+            if 'certificate' not in request.files:
+                response = response_handle(code=400, response=f"No certificate file provided")
+                return response
+
+            certificate_file = request.files['certificate']
+            if not (certificate_file.filename or "").endswith(('.cer', '.crt', '.pem', '.der')):
+                response = response_handle(code=400, response="Invalid file format.")
+                return response
+
+            cert_data = certificate_file.read()
+            if not cert_data:
+                response = response_handle(code=400, response="The uploaded certificate file is empty. Please upload "
+                                                              "a valid file.")
+                return response
+            # Validate certificate
+            try:
+                if cert_data.startswith(b'-----BEGIN CERTIFICATE-----'):
+                    cert = x509.load_pem_x509_certificate(cert_data, default_backend())
+                else:
+                    cert = x509.load_der_x509_certificate(cert_data, default_backend())
+                # Check whether uploaded certificate is a duplicate by comparing its 'issuer_name' and 'serial_number',
+                # which uniquely identify the certificate, with those of existing certificates.
+                issuer_name = cert.issuer.get_attributes_for_oid(NameOID.COMMON_NAME)[0].value
+                serial_number = cert.serial_number
+                for cert_detail in get_certificate_details(logger=easyucs):
+                    if cert_detail["issued_by"] == issuer_name and cert_detail["serial_number"] == serial_number:
+                        easyucs.logger(level="error", message=f"Cannot upload duplicate certificate")
+                        response = response_handle(code=400, response="Cannot import certificate as it is already "
+                                                                      "present in the trust store.")
+                        return response
+
+            except Exception as err:
+                easyucs.logger(level="error", message=f"Failed to load certificate: {str(err)}")
+                response = response_handle(code=400, response="Failed to load certificate:")
+                return response
+
+            certificate_dir_path = os.path.join(EASYUCS_ROOT, "data", "keys", "ca_certs")
+
+            if not os.path.exists(certificate_dir_path):
+                os.makedirs(certificate_dir_path)
+            # Save the uploaded CA certificate with a generated UUID.
+            filename = str(uuid.uuid4()) + ".pem"
+            uploaded_file_path = os.path.join(certificate_dir_path, filename)
+            certificate_file.save(uploaded_file_path)
+
+            with open(uploaded_file_path, 'wb') as file:
+                if cert_data.startswith(b'-----BEGIN CERTIFICATE-----'):
+                    file.write(cert_data)
+                # Convert a DER certificate file to PEM format
+                else:
+                    # Load the DER-encoded certificate
+                    cert = crypto.load_certificate(crypto.FILETYPE_ASN1, cert_data)
+                    # Write the PEM-encoded certificate
+                    file.write(crypto.dump_certificate(crypto.FILETYPE_PEM, cert))
+
+            @after_this_request
+            def cleanup(response):
+                """
+                Function to delete the certificate file at the end of this request if the requests fails
+                """
+                if response.status_code not in [200]:
+                    if uploaded_file_path and os.path.exists(uploaded_file_path):
+                        os.remove(uploaded_file_path)
+                return response
+
+            # Initialize the 'ca_cert.pem' file
+            easyucs.repository_manager._init_ca_cert()
+
+            # Update SSL CA certificate configuration for all devices
+            for device_metadata in easyucs.repository_manager.get_metadata(object_type="device"):
+                device = easyucs.device_manager.find_device_by_uuid(uuid=device_metadata.uuid)
+                if device:
+                    easyucs.device_manager.remove_device(uuid=device.uuid)
+                    easyucs.device_manager.add_device(metadata=device_metadata)
+
+            response = response_handle(code=200, response="Certificate uploaded successfully.")
+            return response
+
+        except BadRequest as err:
+            response = response_handle(code=err.code, response=str(err.description))
+        except Exception as err:
+            easyucs.logger(level="exception", message="Unexpected error while uploading the root ca certificate!")
+            response = response_handle(code=500, response=str(err))
+        return response
+
+    else:
+        return response_handle(code=500, response="Invalid HTTP method")
+
+
+@app.route("/easyucs/certificates/trusted/<ca_cert_uuid>", methods=['DELETE'])
+# @cross_origin()
+def easyucs_certificates_trusted_ca_cert_uuid(ca_cert_uuid):
+    if request.method == 'DELETE':
+        try:
+            trusted_ca_store = os.path.join(EASYUCS_ROOT, "data", "keys", "ca_certs")
+
+            file_path = os.path.join(trusted_ca_store, ca_cert_uuid + ".pem")
+            if os.path.exists(file_path):
+                os.remove(file_path)
+
+                # Remove ca_cert.pem if no CA certificates found in trusted store
+                files_and_directories = os.listdir(trusted_ca_store)
+                if len(files_and_directories) == 1 and "ca_cert.pem" in files_and_directories:
+                    os.remove(os.path.join(trusted_ca_store, "ca_cert.pem"))
+
+                # Update ca_cert.pem file by removing deleted file contents
+                easyucs.repository_manager._init_ca_cert()
+
+                # Remove deleted certificate file from SSL CA certificate configuration for all devices
+                for device_metadata in easyucs.repository_manager.get_metadata(object_type="device"):
+                    device = easyucs.device_manager.find_device_by_uuid(uuid=device_metadata.uuid)
+                    if device:
+                        easyucs.device_manager.remove_device(uuid=device.uuid)
+                        easyucs.device_manager.add_device(metadata=device_metadata)
+
+                response = response_handle(code=200, response="Certificate deleted successfully")
+            else:
+                response = response_handle(code=404, response="Certificate not found")
+        except Exception as err:
+            easyucs.logger(level="exception", message="Unexpected error while deleting certificate")
+            response = response_handle(code=500, response=str(err))
+        return response
+
+    else:
+        return response_handle(code=500, response="Invalid HTTP method")
+
+
 @app.route("/easyucs/proxy", methods=['GET', 'PUT'])
 def easyucs_proxy():
     if request.method == "GET":
         try:
             proxy_details = read_json_file(file_path=os.path.join(EASYUCS_ROOT, "proxy_settings.json"),
-                                           logger=easyucs)
+                                           logger=easyucs) or {}
             for option in ['proxy_password']:
                 proxy_details[option + '_set'] = True if proxy_details.get('encrypted_' + option) else False
             for option in ['encrypted_proxy_password']:
@@ -4947,62 +5910,60 @@ def repo_actions_create_vmedia_policy():
     if request.method == 'POST':
         try:
             payload = request.json
-            if payload:
-                if not validate_json(json_data=payload, schema_path="api/specs/repo_actions_vmedia_post.json",
-                                     logger=easyucs):
-                    response = response_handle(code=400, response="Invalid payload")
-                    return response
+            if not payload:
+                return response_handle(code=400, response="Invalid payload")
 
-                device_uuid = payload.get("device_uuid", None)
+            if not validate_json(json_data=payload, schema_path="api/specs/repo_actions_vmedia_post.json",
+                                 logger=easyucs):
+                return response_handle(code=400, response="Invalid payload")
 
-                device = load_object(object_type="device", object_uuid=device_uuid)
+            device_uuid = payload.get("device_uuid", None)
 
-                if device:
-                    if device.task is not None:
-                        response = response_handle(
-                            response="Device already has a task running: " + str(device.task.uuid), code=500)
-                        return response
+            device = load_object(object_type="device", object_uuid=device_uuid)
 
-                    action_kwargs = {
-                        "name": payload.get("name"),
-                        "device_name": device.name,
-                        "org_name": payload.get("org_name"),
-                        "enable_virtual_media": payload.get("enable_virtual_media"),
-                        "enable_virtual_encryption": payload.get("enable_virtual_encryption"),
-                        "enable_low_power_usb": payload.get("enable_low_power_usb")
-                    }
-                    if "description" in payload:
-                        action_kwargs["description"] = payload["description"]
-                    if "tags" in payload:
-                        action_kwargs["tags"] = payload["tags"]
-                    if "vmedia_mount" in payload:
-                        action_kwargs["vmedia_mount"] = payload["vmedia_mount"]
+            if not device:
+                return response_handle(response="Device not found with UUID: " + device_uuid, code=404)
 
-                    # We create a new task
-                    if device.metadata.device_type in ["intersight"]:
-                        task_uuid = easyucs.task_manager.add_task(name="CreateVmediaPolicyIntersight",
-                                                                  device_name=str(device.name),
-                                                                  device_uuid=str(device.uuid))
-                    else:
-                        response = response_handle(response="Unsupported device type", code=500)
-                        return response
+            if device.task is not None:
+                return response_handle(
+                    response="Device already has a task running: " + str(device.task.uuid), code=500)
 
-                    # We schedule the test connection action through the scheduler
-                    pending_task = {
-                        "task_uuid": task_uuid,
-                        "action_type": "create_vmedia_policy",
-                        "object_type": "device",
-                        "timeout": timeout_values["create_vmedia_policy"],
-                        "action_kwargs": action_kwargs
-                    }
-                    if not easyucs.task_manager.add_to_pending_tasks(pending_task):
-                        response = response_handle(response="Error while scheduling the task. Task Queue might be Full."
-                                                            " Try again after some time.", code=400)
-                        return response
+            action_kwargs = {
+                "name": payload.get("name"),
+                "device_name": device.name,
+                "org_name": payload.get("org_name"),
+                "enable_virtual_media": payload.get("enable_virtual_media"),
+                "enable_virtual_encryption": payload.get("enable_virtual_encryption"),
+                "enable_low_power_usb": payload.get("enable_low_power_usb")
+            }
+            if "description" in payload:
+                action_kwargs["description"] = payload["description"]
+            if "tags" in payload:
+                action_kwargs["tags"] = payload["tags"]
+            if "vmedia_mount" in payload:
+                action_kwargs["vmedia_mount"] = payload["vmedia_mount"]
 
-                    response = response_handle(response={"task": str(task_uuid)}, code=200)
-                else:
-                    response = response_handle(response="Device not found with UUID: " + device_uuid, code=404)
+            # We create a new task
+            if device.metadata.device_type in ["intersight"]:
+                task_uuid = easyucs.task_manager.add_task(name="CreateVmediaPolicyIntersight",
+                                                          device_name=str(device.name),
+                                                          device_uuid=str(device.uuid))
+            else:
+                return response_handle(response="Unsupported device type", code=500)
+
+            # We schedule the test connection action through the scheduler
+            pending_task = {
+                "task_uuid": task_uuid,
+                "action_type": "create_vmedia_policy",
+                "object_type": "device",
+                "timeout": timeout_values["create_vmedia_policy"],
+                "action_kwargs": action_kwargs
+            }
+            if not easyucs.task_manager.add_to_pending_tasks(pending_task):
+                return response_handle(response="Error while scheduling the task. Task Queue might be Full."
+                                                " Try again after some time.", code=400)
+
+            response = response_handle(response={"task": str(task_uuid)}, code=200)
 
         except BadRequest as err:
             response = response_handle(code=err.code, response=str(err.description))
@@ -5171,11 +6132,16 @@ def repo_actions_upload(file_path=None):
             file = request.files["file"]
             file_uuid = request.form["uuid"]
 
+            original_filename = file.filename
+            if not original_filename:
+                response = response_handle("No file provided", 400)
+                return response
+
             # Generate a unique filename to avoid overwriting using 8 chars of uuid before filename.
-            filename = f"{file_uuid[:8]}_{secure_filename(file.filename)}"
+            filename = f"{file_uuid[:8]}_{secure_filename(original_filename)}"
 
             tmp_file_path = os.path.join(tmp_path, filename)
-            dest_file_path = os.path.join(absolute_file_path, file.filename)
+            dest_file_path = os.path.join(absolute_file_path, original_filename)
 
             if os.path.exists(dest_file_path):
                 response = response_handle("File with same name already exists", 400)
@@ -5287,7 +6253,7 @@ def repo_actions_url_download(file_path=None):
             use_proxy = payload.get("use_proxy", False)
             if use_proxy:
                 proxy_details = read_json_file(file_path=os.path.join(EASYUCS_ROOT, "proxy_settings.json"),
-                                               logger=easyucs)
+                                               logger=easyucs) or {}
                 if not proxy_details.get("proxy_url", ""):
                     response = response_handle(response=f"Please set 'Proxy URL' in Proxy Settings and try again",
                                                code=400)

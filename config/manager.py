@@ -302,6 +302,14 @@ class GenericConfigManager:
                 config.metadata = metadata
                 config.metadata.parent = config
                 config.uuid = metadata.uuid
+            elif metadata is not None:
+                # Even if the file was detected as "custom" (e.g. hash mismatch), we still need to preserve
+                # the UUID from the provided metadata. Otherwise, this config (which is being reloaded from
+                # the repository using a known UUID, e.g. by load_object()) would end up with a brand new,
+                # randomly generated UUID, making it impossible to locate afterwards via find_config_by_uuid()
+                # using the UUID that was originally requested/expected.
+                config.uuid = metadata.uuid
+                config.metadata.uuid = metadata.uuid
 
             # We fetch all options set in "easyucs" section of the file
             if "easyucs" in complete_json:

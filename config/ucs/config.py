@@ -7,28 +7,66 @@ import http
 import re
 import urllib
 import xml
+import xml.etree.ElementTree as ET
+from collections import defaultdict
 
 from imcsdk.imcexception import ImcException
 from ucscsdk.ucscexception import UcscException
 from ucsmsdk.ucscoremeta import UcsVersion
 from ucscsdk.ucsccoremeta import UcscVersion
 from ucsmsdk.ucsexception import UcsException
+from ucsmsdk import ucscoreutils
 
 from config.config import GenericConfig
 from config.ucs.object import GenericUcsConfigObject
 
 
+def _load_mo_from_xml_element(mo_class, elem):
+    """
+    Instantiate a typed ucsmsdk MO from an XML element, without going through the
+    normal __init__ constructor.
+
+    The normal constructor enforces validation rules (naming patterns, READ_ONLY
+    restrictions) that reject values that are perfectly valid when read back from
+    a live system or an MIT XML dump (e.g. usernames with backslashes, read-only
+    computed properties like 'priv'). Bypassing __init__ avoids all of that.
+
+    Strategy:
+      1. Allocate the object via __new__ (no __init__ called).
+      2. Set the minimum internal state that ManagedObject.from_xml() requires.
+      3. Pre-initialise every known property to None so that attribute access on
+         properties absent from the XML element does not raise AttributeError.
+      4. Call from_xml(elem), which populates all attributes present in the XML
+         using object.__setattr__ directly, bypassing all validation.
+
+    :param mo_class: A ucsmsdk MO class (e.g. AaaUser, FabricVlan, ...).
+    :param elem:     An xml.etree.ElementTree.Element whose tag matches the class.
+    :return:         A fully populated MO instance.
+    """
+    mo = object.__new__(mo_class)
+    object.__setattr__(mo, '_dirty_mask', 0)
+    object.__setattr__(mo, '_ManagedObject__xtra_props', {})
+    object.__setattr__(mo, '_ManagedObject__xtra_props_dirty_mask', 0x1)
+    object.__setattr__(mo, '_class_id', mo_class.__name__)
+    for prop_name in mo_class.prop_meta:
+        object.__setattr__(mo, prop_name, None)
+    mo.from_xml(elem)
+    return mo
+
+
 class GenericUcsConfig(GenericConfig):
+    # List of SDK objects to fetch that are common to UCS System, Central & IMC
+    _COMMON_SDK_OBJECTS_TO_FETCH = ["aaaUser", "commNtpProvider", "topSystem"]
+
     def __init__(self, parent=None):
         GenericConfig.__init__(self, parent=parent)
         self.export_list = None
         self.handle = self.parent.parent.handle
         self.intersight_status = ""
-        self.sdk_objects = {}
+        self.sdk_objects = defaultdict(list)
 
     def _fetch_sdk_objects(self, force=False):
-        # List of SDK objects to fetch that are common to UCS System, Central & IMC
-        sdk_objects_to_fetch = ["aaaUser", "commNtpProvider", "topSystem"]
+        sdk_objects_to_fetch = self._COMMON_SDK_OBJECTS_TO_FETCH
         self.logger(level="debug", message="Fetching common UCS SDK objects for config")
 
         if self.device.task is not None:
@@ -186,7 +224,7 @@ class GenericUcsConfig(GenericConfig):
                         easyucs_objects_list = []
                         for sdk_object in sorted(filtered_sdk_objects_list,
                                                  key=lambda sdk_obj: [int(t) if t.isdigit() else t.lower()
-                                                                      for t in re.split('(\d+)', sdk_obj.dn)]):
+                                                                      for t in re.split(r'(\d+)', sdk_obj.dn)]):
                             # We instantiate a Config Object for each corresponding SDK object
                             easyucs_objects_list.append(object_class(parent, None, sdk_object))
                         return easyucs_objects_list
@@ -512,6 +550,133 @@ class GenericUcsConfig(GenericConfig):
 
 class UcsSystemConfig(GenericUcsConfig):
     _BIOS_TOKENS_MIN_REQUIRED_VERSION = "3.2(1d)"
+    _BIOS_MODERN_SDK_OBJECTS_TO_FETCH = ['biosTokenParam', 'biosTokenSettings']
+    _BIOS_LEGACY_SDK_OBJECTS_TO_FETCH = [
+        'biosVfASPMSupport', 'biosVfAllUSBDevices', 'biosVfAltitude',
+        'biosVfAssertNMIOnPERR', 'biosVfBootOptionRetry',
+        'biosVfCPUHardwarePowerManagement', 'biosVfCPUPerformance',
+        'biosVfConsistentDeviceNameControl', 'biosVfConsoleRedirection',
+        'biosVfCoreMultiProcessing', 'biosVfDDR3VoltageSelection',
+        'biosVfDRAMClockThrottling', 'biosVfDirectCacheAccess',
+        'biosVfDramRefreshRate', 'biosVfEnergyPerformanceTuning',
+        'biosVfEnhancedIntelSpeedStepTech', 'biosVfExecuteDisableBit',
+        'biosVfFRB2Timer', 'biosVfFrequencyFloorOverride', 'biosVfFrontPanelLockout',
+        'biosVfIOEMezz1OptionROM', 'biosVfIOENVMe1OptionROM',
+        'biosVfIOENVMe2OptionROM', 'biosVfIOESlot1OptionROM',
+        'biosVfIOESlot2OptionROM', 'biosVfIntegratedGraphics',
+        'biosVfIntegratedGraphicsApertureSize', 'biosVfIntelEntrySASRAIDModule',
+        'biosVfIntelHyperThreadingTech', 'biosVfIntelTrustedExecutionTechnology',
+        'biosVfIntelTurboBoostTech', 'biosVfIntelVTForDirectedIO',
+        'biosVfIntelVirtualizationTechnology', 'biosVfInterleaveConfiguration',
+        'biosVfLocalX2Apic', 'biosVfLvDIMMSupport', 'biosVfMaxVariableMTRRSetting',
+        'biosVfMaximumMemoryBelow4GB', 'biosVfMemoryMappedIOAbove4GB',
+        'biosVfMirroringMode', 'biosVfNUMAOptimized',
+        'biosVfOSBootWatchdogTimerPolicy', 'biosVfOSBootWatchdogTimerTimeout',
+        'biosVfOnboardGraphics', 'biosVfOnboardStorage', 'biosVfOutOfBandManagement',
+        'biosVfPCILOMPortsConfiguration', 'biosVfPCIROMCLP', 'biosVfPCISlotLinkSpeed',
+        'biosVfPCISlotOptionROMEnable', 'biosVfPOSTErrorPause',
+        'biosVfPSTATECoordination', 'biosVfPackageCStateLimit', 'biosVfProcessorC1E',
+        'biosVfProcessorC3Report', 'biosVfProcessorC6Report',
+        'biosVfProcessorC7Report', 'biosVfProcessorCMCI', 'biosVfProcessorCState',
+        'biosVfProcessorEnergyConfiguration', 'biosVfProcessorPrefetchConfig',
+        'biosVfQPILinkFrequencySelect', 'biosVfQPISnoopMode', 'biosVfQuietBoot',
+        'biosVfRedirectionAfterBIOSPOST', 'biosVfResumeOnACPowerLoss',
+        'biosVfSBMezz1OptionROM', 'biosVfSBNVMe1OptionROM', 'biosVfSIOC1OptionROM',
+        'biosVfSIOC2OptionROM', 'biosVfScrubPolicies',
+        'biosVfSelectMemoryRASConfiguration', 'biosVfSerialPortAEnable',
+        'biosVfTrustedPlatformModule', 'biosVfUSBBootConfig', 'biosVfUSBConfiguration',
+        'biosVfUSBFrontPanelAccessLock', 'biosVfUSBPortConfiguration',
+        'biosVfUSBSystemIdlePowerOptimizingSetting', 'biosVfVGAPriority',
+        'biosVfWorkloadConfiguration',
+    ]
+    _UCSM_SPECIFIC_SDK_OBJECTS_TO_FETCH = [
+        'aaaAuthRealm', 'aaaConsoleAuth', 'aaaDefaultAuth', 'aaaDomain', 'aaaDomainAuth', 'aaaEpAuthProfile',
+        'aaaEpUser', 'aaaLdapEp', 'aaaLdapGroup', 'aaaLdapGroupRule', 'aaaLdapProvider', 'aaaLocale', 'aaaOrg',
+        'aaaPreLoginBanner', 'aaaProviderGroup', 'aaaProviderRef', 'aaaPwdProfile', 'aaaRadiusEp',
+        'aaaRadiusProvider', 'aaaRole', 'aaaSshAuth', 'aaaTacacsPlusEp', 'aaaTacacsPlusProvider', 'aaaUserEp',
+        'aaaUserLocale', 'aaaUserRole', 'adaptorAzureQosProfile', 'adaptorCapQual', 'adaptorEthAdvFilterProfile',
+        'adaptorEthArfsProfile', 'adaptorEthCompQueueProfile', 'adaptorEthFailoverProfile',
+        'adaptorEthGENEVEProfile', 'adaptorEthInterruptProfile', 'adaptorEthInterruptScalingProfile',
+        'adaptorEthNVGREProfile', 'adaptorEthOffloadProfile', 'adaptorEthRecvQueueProfile', 'adaptorEthRoCEProfile',
+        'adaptorEthVxLANProfile', 'adaptorEthWorkQueueProfile', 'adaptorFcCdbWorkQueueProfile',
+        'adaptorFcErrorRecoveryProfile', 'adaptorFcFnicProfile', 'adaptorFcInterruptProfile',
+        'adaptorFcPortFLogiProfile', 'adaptorFcPortPLogiProfile', 'adaptorFcPortProfile',
+        'adaptorFcRecvQueueProfile', 'adaptorFcVhbaTypeProfile', 'adaptorFcWorkQueueProfile',
+        'adaptorHostEthIfProfile', 'adaptorHostFcIfProfile', 'adaptorHostIscsiIfProfile', 'adaptorProtocolProfile',
+        'adaptorPTP', 'adaptorQual', 'adaptorRssProfile', 'biosVProfile', 'callhomeAnonymousReporting',
+        'callhomeDest', 'callhomeEp', 'callhomePeriodicSystemInventory', 'callhomePolicy', 'callhomeProfile',
+        'callhomeSmtp', 'callhomeSource', 'cimcvmediaConfigMountEntry', 'cimcvmediaMountConfigDef',
+        'cimcvmediaMountConfigPolicy', 'commCimcWebService', 'commCimxml', 'commDateTime', 'commDns',
+        'commDnsProvider', 'commFabricInterconnectAuditLogs', 'commHttp', 'commHttps','commMonitor', 'commShellSvcLimits',
+        'commSnmp', 'commSnmpTrap', 'commSnmpUser', 'commSsh', 'commSyslog', 'commSyslogClient', 'commSyslogConsole',
+        'commSyslogFile', 'commSyslogMonitor', 'commSyslogSource', 'commTelnet', 'commWebSvcLimits', 'computeBoard',
+        'computeChassisDiscPolicy', 'computeChassisQual', 'computeFanPolicy', 'computeGraphicsCardPolicy',
+        'computeHwChangeDiscPolicy', 'computeKvmMgmtPolicy', 'computeMemoryConfigPolicy',
+        'computeModularChassisFanPolicy', 'computePhysicalQual', 'computePool', 'computePooledRackUnit',
+        'computePooledSlot', 'computePoolingPolicy', 'computePortDiscPolicy', 'computePowerExtendedPolicy',
+        'computePowerSavePolicy', 'computePowerSyncPolicy', 'computePsuPolicy', 'computeQual', 'computeRackQual',
+        'computeScrubPolicy', 'computeServerDiscPolicy', 'computeServerMgmtPolicy', 'computeSlotQual',
+        'cpmaintMaintPolicy', 'diagMemoryTest', 'diagRunPolicy', 'dpsecMac', 'epqosDefinition', 'epqosEgress',
+        'equipmentBinding', 'equipmentChassisProfile', 'equipmentComputeConnPolicy', 'etherPIo', 'fabricBreakout',
+        'fabricDceSwSrvEp', 'fabricDceSwSrvPcEp', 'fabricEthEstcEp', 'fabricEthEstcPc', 'fabricEthEstcPcEp',
+        'fabricEthLanEp', 'fabricEthLanFlowMonitoring', 'fabricEthLanPc', 'fabricEthLanPcEp', 'fabricEthLinkProfile',
+        'fabricEthMon', 'fabricEthMonDestEp', 'fabricEthMonSrcRef', 'fabricEthMonSrcEp', 'fabricEthTargetEp',
+        'fabricEthVlanPc', 'fabricEthVlanPortEp', 'fabricFcEndpoint', 'fabricFcEstcEp', 'fabricFcMon',
+        'fabricFcMonSrcEp', 'fabricFcMonSrcRef', 'fabricFcSan', 'fabricFcSanEp', 'fabricFcSanPc', 'fabricFcSanPcEp',
+        'fabricFcUserZone', 'fabricFcVsanPc', 'fabricFcVsanPortEp', 'fabricFcZoneProfile', 'fabricFcoeEstcEp',
+        'fabricFcoeSanEp', 'fabricFcoeSanPc', 'fabricFcoeSanPcEp', 'fabricFcoeVsanPortEp', 'fabricFlowMonDefinition',
+        'fabricFlowMonExporterProfile', 'fabricLacpPolicy', 'fabricLanCloud', 'fabricLanCloudPolicy',
+        'fabricLanPinGroup', 'fabricLanPinTarget', 'fabricLifeTime', 'fabricMacSec', 'fabricMacSecEapol',
+        'fabricMacSecIfConfig', 'fabricMacSecKeyChain', 'fabricMacSecKey', 'fabricMacSecPolicy',
+        'fabricMonOriginIP', 'fabricMonOriginSVI', 'fabricMulticastPolicy', 'fabricNetflowCollector',
+        'fabricNetflowIPv4Addr', 'fabricNetflowMonitor', 'fabricNetflowMonitorRef', 'fabricNetflowMonExporter',
+        'fabricNetflowMonExporterRef', 'fabricNetflowMonSession', 'fabricNetflowMonSrcRef',
+        'fabricNetflowTimeoutPolicy', 'fabricNetGroup', 'fabricNetGroupRef', 'fabricOrgVlanPolicy',
+        'fabricPooledVlan', 'fabricRemoteConfig', 'fabricReservedVlan', 'fabricSanCloud', 'fabricSanPinGroup',
+        'fabricSanPinTarget', 'fabricUdldLinkPolicy', 'fabricUdldPolicy', 'fabricVCon', 'fabricVConProfile',
+        'fabricVlan', 'fabricVlanGroupReq', 'fabricVlanReq', 'fabricVsan', 'faultPolicy', 'fcPIo', 'fcpoolBlock',
+        'fcpoolInitiators', 'fcpoolOui', 'fcpoolOuis', 'firmwareAutoSyncPolicy', 'firmwareChassisPack',
+        'firmwareComputeHostPack', 'firmwareExcludeChassisComponent', 'firmwareExcludeServerComponent',
+        'firmwarePackItem', 'flowctrlItem', 'ipIpV4StaticTargetAddr', 'ippoolBlock', 'ippoolIpV6Block',
+        'ippoolPool', 'iqnpoolBlock', 'iqnpoolPool', 'iscsiAuthProfile', 'lsBinding', 'lsPower', 'lsRequirement',
+        'lsServer', 'lsServerExtension', 'lsVConAssign', 'lsbootBootSecurity', 'lsbootDef',
+        'lsbootDefaultLocalImage', 'lsbootEFIShell', 'lsbootEmbeddedLocalDiskImage',
+        'lsbootEmbeddedLocalDiskImagePath', 'lsbootEmbeddedLocalLunImage', 'lsbootIScsi', 'lsbootIScsiImagePath',
+        'lsbootLan', 'lsbootLanImagePath', 'lsbootLocalDiskImage', 'lsbootLocalDiskImagePath',
+        'lsbootLocalHddImage', 'lsbootLocalLunImagePath', 'lsbootNvme', 'lsbootPolicy', 'lsbootSan',
+        'lsbootSanCatSanImage', 'lsbootSanCatSanImagePath', 'lsbootStorage', 'lsbootUEFIBootParam',
+        'lsbootUsbExternalImage', 'lsbootUsbFlashStorageImage', 'lsbootUsbInternalImage', 'lsbootVirtualMedia',
+        'lsmaintMaintPolicy', 'lstorageControllerDef', 'lstorageControllerModeConfig', 'lstorageControllerRef',
+        'lstorageDasScsiLun', 'lstorageDiskGroupConfigPolicy', 'lstorageDiskGroupQualifier', 'lstorageDiskSlot',
+        'lstorageDiskZoningPolicy', 'lstorageHybridDriveSlotConfig', 'lstorageLocal', 'lstorageLocalDiskConfigRef',
+        'lstorageLogin', 'lstorageLunSetConfig', 'lstorageProfile', 'lstorageProfileBinding', 'lstorageProfileDef',
+        'lstorageRemote', 'lstorageSasExpanderConfigPolicy', 'lstorageVirtualDriveDef', 'macpoolBlock', 'macpoolPool',
+        'memoryPersistentMemoryGoal', 'memoryPersistentMemoryLocalSecurity',
+        'memoryPersistentMemoryLogicalNamespace', 'memoryPersistentMemoryPolicy', 'memoryQual',
+        'mgmtBackupExportExtPolicy', 'mgmtBackupPolicy', 'mgmtCfgExportPolicy', 'mgmtIPv6IfAddr',
+        'mgmtInbandProfile', 'mgmtKmipCertPolicy', 'mgmtSpdmCertificate', 'mgmtSpdmCertificatePolicy', 'mgmtVnet',
+        'networkElement', 'nwctrlDefinition', 'orgOrg', 'pfcWatchDog', 'policyCommunication', 'policyConfigBackup',
+        'policyControlEp', 'policyDateTime', 'policyDns', 'policyEquipment', 'policyFault', 'policyInfraFirmware',
+        'policyMEp', 'policyMonitoring', 'policyPortConfig', 'policyPowerMgmt', 'policyPsu', 'policySecurity',
+        'powerChassisMember', 'powerFexMember', 'powerFIMember', 'powerGroup', 'powerGroupQual', 'powerMgmtPolicy',
+        'powerPolicy', 'processorQual', 'powerRackUnitMember', 'qosclassEthBE', 'qosclassEthClassified',
+        'qosclassFc', 'qosclassSlowDrain', 'solConfig', 'solPolicy', 'statsThr32Definition', 'statsThr32Value',
+        'statsThr64Definition', 'statsThr64Value', 'statsThrFloatDefinition', 'statsThrFloatValue',
+        'statsThresholdClass', 'statsThresholdPolicy', 'storageConnectionPolicy', 'storageFcTargetEp',
+        'storageIniGroup', 'storageInitiator', 'storageLocalDiskConfigDef', 'storageLocalDiskConfigPolicy',
+        'storageQual', 'storageScsiLunRef', 'storageVirtualDrive', 'storageVsanRef', 'sysdebugBackupBehavior',
+        'sysdebugMEpLogPolicy', 'topInfoPolicy',
+        'topInfoSyncPolicy', 'uuidpoolBlock', 'uuidpoolPool', 'uuidpoolPooled', 'vnicConnDef', 'vnicDynamicCon',
+        'vnicDynamicConPolicy', 'vnicDynamicConPolicyRef', 'vnicEther', 'vnicEtherIf', 'vnicFc', 'vnicFcGroupDef',
+        'vnicFcIf', 'vnicFcNode', 'vnicIPv4Dhcp', 'vnicIPv4If', 'vnicIPv4IscsiAddr', 'vnicIpV4PooledAddr',
+        'vnicIPv4PooledIscsiAddr', 'vnicIpV4StaticAddr', 'vnicIPv6IscsiAddr', 'vnicIPv6PooledIscsiAddr',
+        'vnicIpV6StaticAddr', 'vnicIScsi', 'vnicIScsiAutoTargetIf', 'vnicIScsiBootParams', 'vnicIScsiBootVnic',
+        'vnicIScsiLCP', 'vnicIScsiNode', 'vnicIPv6IScsiStaticTargetIf', 'vnicIScsiStaticTargetIf',
+        'vnicIpV4MgmtPooledAddr', 'vnicIpV6MgmtPooledAddr', 'vnicLanConnPolicy', 'vnicLanConnTempl', 'vnicLun',
+        'vnicSanConnPolicy', 'vnicSanConnTempl', 'vnicSriovHpnConPolicy', 'vnicSriovHpnConPolicyRef',
+        'vnicUsnicConPolicy', 'vnicUsnicConPolicyRef', 'vnicVhbaBehPolicy', 'vnicVlan', 'vnicVmqConPolicy',
+        'vnicVmqConPolicyRef', 'vnicVnicBehPolicy',
+    ]
     _CONFIG_SECTION_ATTRIBUTES_MAP = {
         "appliance_network_control_policies": "Appliance Network Control Policies",
         "appliance_port_channels": "Appliance Port-Channels",
@@ -575,7 +740,8 @@ class UcsSystemConfig(GenericUcsConfig):
         "unified_uplink_ports": "Unified Uplink Ports",
         "vlan_groups": "VLAN Groups",
         "vlans": "VLANs",
-        "vsans": "VSANs"
+        "vsans": "VSANs",
+        "watchdog_timers": "Watchdog Timers",
     }
 
     def __init__(self, parent=None):
@@ -645,6 +811,7 @@ class UcsSystemConfig(GenericUcsConfig):
         self.vlan_groups = []
         self.vlans = []
         self.vsans = []
+        self.watchdog_timers = []
         GenericUcsConfig.__init__(self, parent=parent)
 
         # List of attributes to be exported in a config export
@@ -797,131 +964,13 @@ class UcsSystemConfig(GenericUcsConfig):
         # Depending on the UCSM version, we only fetch some SDK objects in order to gain time by making fewer queries
         if self.device.version.__ge__(version_min_required):
             self.logger(level="debug", message="Fetching BIOS Tokens for config")
-            bios_sdk_objects_to_fetch = ['biosTokenParam', 'biosTokenSettings']
+            bios_sdk_objects_to_fetch = self._BIOS_MODERN_SDK_OBJECTS_TO_FETCH
         else:
             self.logger(level="debug", message="Fetching legacy BIOS objects for config")
-            bios_sdk_objects_to_fetch = ['biosVfASPMSupport', 'biosVfAllUSBDevices', 'biosVfAltitude',
-                                         'biosVfAssertNMIOnPERR', 'biosVfBootOptionRetry',
-                                         'biosVfCPUHardwarePowerManagement', 'biosVfCPUPerformance',
-                                         'biosVfConsistentDeviceNameControl', 'biosVfConsoleRedirection',
-                                         'biosVfCoreMultiProcessing', 'biosVfDDR3VoltageSelection',
-                                         'biosVfDRAMClockThrottling', 'biosVfDirectCacheAccess',
-                                         'biosVfDramRefreshRate', 'biosVfEnergyPerformanceTuning',
-                                         'biosVfEnhancedIntelSpeedStepTech', 'biosVfExecuteDisableBit',
-                                         'biosVfFRB2Timer', 'biosVfFrequencyFloorOverride', 'biosVfFrontPanelLockout',
-                                         'biosVfIOEMezz1OptionROM', 'biosVfIOENVMe1OptionROM',
-                                         'biosVfIOENVMe2OptionROM', 'biosVfIOESlot1OptionROM',
-                                         'biosVfIOESlot2OptionROM', 'biosVfIntegratedGraphics',
-                                         'biosVfIntegratedGraphicsApertureSize', 'biosVfIntelEntrySASRAIDModule',
-                                         'biosVfIntelHyperThreadingTech', 'biosVfIntelTrustedExecutionTechnology',
-                                         'biosVfIntelTurboBoostTech', 'biosVfIntelVTForDirectedIO',
-                                         'biosVfIntelVirtualizationTechnology', 'biosVfInterleaveConfiguration',
-                                         'biosVfLocalX2Apic', 'biosVfLvDIMMSupport', 'biosVfMaxVariableMTRRSetting',
-                                         'biosVfMaximumMemoryBelow4GB', 'biosVfMemoryMappedIOAbove4GB',
-                                         'biosVfMirroringMode', 'biosVfNUMAOptimized',
-                                         'biosVfOSBootWatchdogTimerPolicy', 'biosVfOSBootWatchdogTimerTimeout',
-                                         'biosVfOnboardGraphics', 'biosVfOnboardStorage', 'biosVfOutOfBandManagement',
-                                         'biosVfPCILOMPortsConfiguration', 'biosVfPCIROMCLP', 'biosVfPCISlotLinkSpeed',
-                                         'biosVfPCISlotOptionROMEnable', 'biosVfPOSTErrorPause',
-                                         'biosVfPSTATECoordination', 'biosVfPackageCStateLimit', 'biosVfProcessorC1E',
-                                         'biosVfProcessorC3Report', 'biosVfProcessorC6Report',
-                                         'biosVfProcessorC7Report', 'biosVfProcessorCMCI', 'biosVfProcessorCState',
-                                         'biosVfProcessorEnergyConfiguration', 'biosVfProcessorPrefetchConfig',
-                                         'biosVfQPILinkFrequencySelect', 'biosVfQPISnoopMode', 'biosVfQuietBoot',
-                                         'biosVfRedirectionAfterBIOSPOST', 'biosVfResumeOnACPowerLoss',
-                                         'biosVfSBMezz1OptionROM', 'biosVfSBNVMe1OptionROM', 'biosVfSIOC1OptionROM',
-                                         'biosVfSIOC2OptionROM', 'biosVfScrubPolicies',
-                                         'biosVfSelectMemoryRASConfiguration', 'biosVfSerialPortAEnable',
-                                         'biosVfTrustedPlatformModule', 'biosVfUSBBootConfig', 'biosVfUSBConfiguration',
-                                         'biosVfUSBFrontPanelAccessLock', 'biosVfUSBPortConfiguration',
-                                         'biosVfUSBSystemIdlePowerOptimizingSetting', 'biosVfVGAPriority',
-                                         'biosVfWorkloadConfiguration']
+            bios_sdk_objects_to_fetch = self._BIOS_LEGACY_SDK_OBJECTS_TO_FETCH
 
         # List of SDK objects to fetch that are only available in UCS System
-        sdk_objects_to_fetch = [
-            'aaaAuthRealm', 'aaaConsoleAuth', 'aaaDefaultAuth', 'aaaDomain', 'aaaDomainAuth', 'aaaEpAuthProfile',
-            'aaaEpUser', 'aaaLdapEp', 'aaaLdapGroup', 'aaaLdapGroupRule', 'aaaLdapProvider', 'aaaLocale', 'aaaOrg',
-            'aaaPreLoginBanner', 'aaaProviderGroup', 'aaaProviderRef', 'aaaPwdProfile', 'aaaRadiusEp',
-            'aaaRadiusProvider', 'aaaRole', 'aaaSshAuth', 'aaaTacacsPlusEp', 'aaaTacacsPlusProvider', 'aaaUserEp',
-            'aaaUserLocale', 'aaaUserRole', 'adaptorAzureQosProfile', 'adaptorCapQual', 'adaptorEthAdvFilterProfile',
-            'adaptorEthArfsProfile', 'adaptorEthCompQueueProfile', 'adaptorEthFailoverProfile',
-            'adaptorEthGENEVEProfile', 'adaptorEthInterruptProfile', 'adaptorEthInterruptScalingProfile',
-            'adaptorEthNVGREProfile', 'adaptorEthOffloadProfile', 'adaptorEthRecvQueueProfile', 'adaptorEthRoCEProfile',
-            'adaptorEthVxLANProfile', 'adaptorEthWorkQueueProfile', 'adaptorFcCdbWorkQueueProfile',
-            'adaptorFcErrorRecoveryProfile', 'adaptorFcFnicProfile', 'adaptorFcInterruptProfile',
-            'adaptorFcPortFLogiProfile', 'adaptorFcPortPLogiProfile', 'adaptorFcPortProfile',
-            'adaptorFcRecvQueueProfile', 'adaptorFcVhbaTypeProfile', 'adaptorFcWorkQueueProfile',
-            'adaptorHostEthIfProfile', 'adaptorHostFcIfProfile', 'adaptorHostIscsiIfProfile', 'adaptorProtocolProfile',
-            'adaptorPTP', 'adaptorQual', 'adaptorRssProfile', 'biosVProfile', 'callhomeAnonymousReporting',
-            'callhomeDest', 'callhomeEp', 'callhomePeriodicSystemInventory', 'callhomePolicy', 'callhomeProfile',
-            'callhomeSmtp', 'callhomeSource', 'cimcvmediaConfigMountEntry', 'cimcvmediaMountConfigDef',
-            'cimcvmediaMountConfigPolicy', 'commCimcWebService', 'commCimxml', 'commDateTime', 'commDns',
-            'commDnsProvider', 'commFabricInterconnectAuditLogs', 'commHttp', 'commHttps', 'commShellSvcLimits',
-            'commSnmp', 'commSnmpTrap', 'commSnmpUser', 'commSsh', 'commSyslog', 'commSyslogClient', 'commSyslogConsole',
-            'commSyslogFile', 'commSyslogMonitor', 'commSyslogSource', 'commTelnet', 'commWebSvcLimits', 'computeBoard',
-            'computeChassisDiscPolicy', 'computeChassisQual', 'computeFanPolicy', 'computeGraphicsCardPolicy',
-            'computeHwChangeDiscPolicy', 'computeKvmMgmtPolicy', 'computeMemoryConfigPolicy',
-            'computeModularChassisFanPolicy', 'computePhysicalQual', 'computePool', 'computePooledRackUnit',
-            'computePooledSlot', 'computePoolingPolicy', 'computePortDiscPolicy', 'computePowerExtendedPolicy',
-            'computePowerSavePolicy', 'computePowerSyncPolicy', 'computePsuPolicy', 'computeQual', 'computeRackQual',
-            'computeScrubPolicy', 'computeServerDiscPolicy', 'computeServerMgmtPolicy', 'computeSlotQual',
-            'cpmaintMaintPolicy', 'diagMemoryTest', 'diagRunPolicy', 'dpsecMac', 'epqosDefinition', 'epqosEgress',
-            'equipmentBinding', 'equipmentChassisProfile', 'equipmentComputeConnPolicy', 'etherPIo', 'fabricBreakout',
-            'fabricDceSwSrvEp', 'fabricDceSwSrvPcEp', 'fabricEthEstcEp', 'fabricEthEstcPc', 'fabricEthEstcPcEp',
-            'fabricEthLanEp', 'fabricEthLanFlowMonitoring', 'fabricEthLanPc', 'fabricEthLanPcEp', 'fabricEthLinkProfile',
-            'fabricEthMon', 'fabricEthMonDestEp', 'fabricEthMonSrcRef', 'fabricEthMonSrcEp', 'fabricEthTargetEp',
-            'fabricEthVlanPc', 'fabricEthVlanPortEp', 'fabricFcEndpoint', 'fabricFcEstcEp', 'fabricFcMon',
-            'fabricFcMonSrcEp', 'fabricFcMonSrcRef', 'fabricFcSan', 'fabricFcSanEp', 'fabricFcSanPc', 'fabricFcSanPcEp',
-            'fabricFcUserZone', 'fabricFcVsanPc', 'fabricFcVsanPortEp', 'fabricFcZoneProfile', 'fabricFcoeEstcEp',
-            'fabricFcoeSanEp', 'fabricFcoeSanPc', 'fabricFcoeSanPcEp', 'fabricFcoeVsanPortEp', 'fabricFlowMonDefinition',
-            'fabricFlowMonExporterProfile', 'fabricLacpPolicy', 'fabricLanCloud', 'fabricLanCloudPolicy', 'fabricLanPinGroup', 
-            'fabricLanPinTarget', 'fabricLifeTime', 'fabricMacSec', 'fabricMacSecEapol', 'fabricMacSecIfConfig',
-            'fabricMacSecKeyChain', 'fabricMacSecKey', 'fabricMacSecPolicy', 'fabricMonOriginIP', 'fabricMonOriginSVI',
-            'fabricMulticastPolicy', 'fabricNetflowCollector', 'fabricNetflowIPv4Addr', 'fabricNetflowMonitor',
-            'fabricNetflowMonitorRef', 'fabricNetflowMonExporter', 'fabricNetflowMonExporterRef', 'fabricNetflowMonSession',
-            'fabricNetflowMonSrcRef', 'fabricNetflowTimeoutPolicy', 'fabricNetGroup', 'fabricNetGroupRef',
-            'fabricOrgVlanPolicy', 'fabricPooledVlan', 'fabricRemoteConfig', 'fabricReservedVlan', 'fabricSanCloud',
-            'fabricSanPinGroup', 'fabricSanPinTarget', 'fabricUdldLinkPolicy', 'fabricUdldPolicy', 'fabricVCon',
-            'fabricVConProfile', 'fabricVlan', 'fabricVlanGroupReq', 'fabricVlanReq', 'fabricVsan', 'faultPolicy',
-            'fcPIo', 'fcpoolBlock', 'fcpoolInitiators', 'fcpoolOui', 'fcpoolOuis', 'firmwareAutoSyncPolicy',
-            'firmwareChassisPack', 'firmwareComputeHostPack', 'firmwareExcludeChassisComponent',
-            'firmwareExcludeServerComponent', 'firmwarePackItem', 'flowctrlItem', 'ipIpV4StaticTargetAddr', 'ippoolBlock',
-            'ippoolIpV6Block', 'ippoolPool', 'iqnpoolBlock', 'iqnpoolPool', 'iscsiAuthProfile', 'lsBinding', 'lsPower',
-            'lsRequirement', 'lsServer', 'lsServerExtension', 'lsVConAssign', 'lsbootBootSecurity', 'lsbootDef',
-            'lsbootDefaultLocalImage', 'lsbootEFIShell', 'lsbootEmbeddedLocalDiskImage',
-            'lsbootEmbeddedLocalDiskImagePath', 'lsbootEmbeddedLocalLunImage', 'lsbootIScsi', 'lsbootIScsiImagePath',
-            'lsbootLan', 'lsbootLanImagePath', 'lsbootLocalDiskImage', 'lsbootLocalDiskImagePath',
-            'lsbootLocalHddImage', 'lsbootLocalLunImagePath', 'lsbootNvme', 'lsbootPolicy', 'lsbootSan',
-            'lsbootSanCatSanImage', 'lsbootSanCatSanImagePath', 'lsbootStorage', 'lsbootUEFIBootParam',
-            'lsbootUsbExternalImage', 'lsbootUsbFlashStorageImage', 'lsbootUsbInternalImage', 'lsbootVirtualMedia',
-            'lsmaintMaintPolicy', 'lstorageControllerDef', 'lstorageControllerModeConfig', 'lstorageControllerRef',
-            'lstorageDasScsiLun', 'lstorageDiskGroupConfigPolicy', 'lstorageDiskGroupQualifier', 'lstorageDiskSlot',
-            'lstorageDiskZoningPolicy', 'lstorageHybridDriveSlotConfig', 'lstorageLocal', 'lstorageLocalDiskConfigRef',
-            'lstorageLogin', 'lstorageLunSetConfig', 'lstorageProfile', 'lstorageProfileBinding', 'lstorageProfileDef',
-            'lstorageRemote', 'lstorageSasExpanderConfigPolicy', 'lstorageVirtualDriveDef', 'macpoolBlock', 'macpoolPool',
-            'memoryPersistentMemoryGoal', 'memoryPersistentMemoryLocalSecurity',
-            'memoryPersistentMemoryLogicalNamespace', 'memoryPersistentMemoryPolicy', 'memoryQual',
-            'mgmtBackupExportExtPolicy', 'mgmtBackupPolicy', 'mgmtCfgExportPolicy', 'mgmtIPv6IfAddr',
-            'mgmtInbandProfile', 'mgmtKmipCertPolicy', 'mgmtSpdmCertificate', 'mgmtSpdmCertificatePolicy', 'mgmtVnet',
-            'networkElement', 'nwctrlDefinition', 'orgOrg', 'policyCommunication', 'policyConfigBackup',
-            'policyControlEp', 'policyDateTime', 'policyDns', 'policyEquipment', 'policyFault', 'policyInfraFirmware',
-            'policyMEp', 'policyMonitoring', 'policyPortConfig', 'policyPowerMgmt', 'policyPsu', 'policySecurity',
-            'powerChassisMember', 'powerFexMember', 'powerFIMember', 'powerGroup', 'powerGroupQual', 'powerMgmtPolicy',
-            'powerPolicy', 'processorQual', 'powerRackUnitMember', 'qosclassEthBE', 'qosclassEthClassified',
-            'qosclassFc', 'qosclassSlowDrain', 'solConfig', 'solPolicy', 'statsThr32Definition', 'statsThr32Value',
-            'statsThr64Definition', 'statsThr64Value', 'statsThrFloatDefinition', 'statsThrFloatValue',
-            'statsThresholdClass', 'statsThresholdPolicy', 'storageConnectionPolicy', 'storageFcTargetEp',
-            'storageIniGroup', 'storageInitiator', 'storageLocalDiskConfigDef', 'storageLocalDiskConfigPolicy',
-            'storageQual', 'storageVsanRef', 'sysdebugBackupBehavior', 'sysdebugMEpLogPolicy', 'topInfoPolicy',
-            'topInfoSyncPolicy', 'uuidpoolBlock', 'uuidpoolPool', 'uuidpoolPooled', 'vnicConnDef', 'vnicDynamicCon',
-            'vnicDynamicConPolicy', 'vnicDynamicConPolicyRef', 'vnicEther', 'vnicEtherIf', 'vnicFc', 'vnicFcGroupDef',
-            'vnicFcIf', 'vnicFcNode', 'vnicIPv4Dhcp', 'vnicIPv4If', 'vnicIPv4IscsiAddr', 'vnicIpV4PooledAddr',
-            'vnicIPv4PooledIscsiAddr', 'vnicIpV4StaticAddr', 'vnicIPv6IscsiAddr', 'vnicIPv6PooledIscsiAddr', 'vnicIpV6StaticAddr',
-            'vnicIScsi', 'vnicIScsiAutoTargetIf', 'vnicIScsiBootParams', 'vnicIScsiBootVnic', 'vnicIScsiLCP', 'vnicIScsiNode',
-            'vnicIPv6IScsiStaticTargetIf', 'vnicIScsiStaticTargetIf', 'vnicIpV4MgmtPooledAddr', 'vnicIpV6MgmtPooledAddr',
-            'vnicLanConnPolicy', 'vnicLanConnTempl', 'vnicLun', 'vnicSanConnPolicy', 'vnicSanConnTempl', 'vnicSriovHpnConPolicy',
-            'vnicSriovHpnConPolicyRef', 'vnicUsnicConPolicy', 'vnicUsnicConPolicyRef', 'vnicVhbaBehPolicy',
-            'vnicVlan', 'vnicVmqConPolicy', 'vnicVmqConPolicyRef', 'vnicVnicBehPolicy'] + bios_sdk_objects_to_fetch
+        sdk_objects_to_fetch = self._UCSM_SPECIFIC_SDK_OBJECTS_TO_FETCH + bios_sdk_objects_to_fetch
 
         self.logger(level="debug",
                     message="Fetching " + self.device.metadata.device_type_long + " SDK objects for config")
@@ -1026,7 +1075,148 @@ class UcsSystemConfig(GenericUcsConfig):
 
         # We sort all sdk objects by their DN in human-readable format
         for key, value in self.sdk_objects.items():
-            value.sort(key=lambda obj: [int(t) if t.isdigit() else t.lower() for t in re.split('(\d+)', obj.dn)])
+            value.sort(key=lambda obj: [int(t) if t.isdigit() else t.lower() for t in re.split(r'(\d+)', obj.dn)])
+
+        return True
+
+    def _fetch_sdk_objects_from_xml(self, xml_file_path, force=False):
+        """
+        Alternative to _fetch_sdk_objects() that populates self.sdk_objects by
+        parsing a UCSM MIT XML dump file (e.g. mit.xml from a tech-support bundle)
+        instead of making live API calls via ucsmsdk.
+
+        The MIT XML file is a flat document: a single <topRoot> element containing
+        all Managed Objects as direct children, each represented as a self-closing
+        tag whose name is the UCS class ID and whose XML attributes are the MO
+        properties (in camelCase). A single pass with iterparse is sufficient.
+
+        The resulting self.sdk_objects dict is identical in structure to what
+        _fetch_sdk_objects() produces, so the rest of fetch_config() continues to
+        work without any changes.
+
+        :param xml_file_path: Path to the MIT XML file to parse.
+        :param force: If True, tolerate parse errors and continue. If False, any
+                      XML parse error causes the method to return False.
+        :return: True if successful, False otherwise.
+        """
+        # Full set of class names to extract — the union of the common base list,
+        # all UCSM-specific classes, and both modern and legacy BIOS token classes.
+        # Including all BIOS variants is safe: the XML will only contain whichever
+        # set was present on the system, and missing classes simply yield [].
+        sdk_objects_to_fetch = set(
+            self._COMMON_SDK_OBJECTS_TO_FETCH +
+            self._UCSM_SPECIFIC_SDK_OBJECTS_TO_FETCH +
+            self._BIOS_MODERN_SDK_OBJECTS_TO_FETCH +
+            self._BIOS_LEGACY_SDK_OBJECTS_TO_FETCH
+        )
+
+        self.logger(level="debug",
+                    message="Fetching " + self.device.metadata.device_type_long + " SDK objects from XML file: " +
+                            str(xml_file_path))
+
+        if self.device.task is not None:
+            # The XML fetch reads all classes in a single pass, replacing both
+            # the common and the UCSM-specific live-fetch steps.  Skip the common
+            # step so the task-step sequence advances to the UCSM step below.
+            self.device.task.taskstep_manager.skip_taskstep(
+                name="FetchConfigUcsCommonSdkObjects",
+                status_message="Skipped - all config SDK objects are fetched together from XML file")
+            self.device.task.taskstep_manager.start_taskstep(
+                name="FetchConfigUcsSystemSdkObjects",
+                description="Fetching " + self.device.metadata.device_type_long +
+                            " SDK Config Objects from XML file")
+
+        # Pre-build the class cache: only load SDK classes that are in our target
+        # set and are known to ucsmsdk.  Classes absent from the SDK are skipped
+        # (same behaviour as when query_classid returns "no class named …").
+        mo_class_cache = {}
+        for class_id in sdk_objects_to_fetch:
+            try:
+                mo_class_cache[class_id] = ucscoreutils.load_class(class_id)
+            except Exception:
+                self.logger(level="debug", message="No ucsmsdk class for " + class_id + ", skipping")
+
+        # Single-pass iterparse over the flat MIT XML structure.
+        # <topRoot> contains ~180k child elements, each a self-closing MO tag.
+        parse_error = False
+        firmware_package_version = None
+        try:
+            for event, elem in ET.iterparse(xml_file_path, events=('end',)):
+                if elem.tag == 'topRoot':
+                    elem.clear()
+                    continue
+                # Opportunistically capture the system firmware version.
+                # Primary source: firmwareRunning MO at dn="sys/mgmt/fw-system".
+                # Fallback: versionApplication MO at dn="sys/version/application".
+                if elem.tag == 'firmwareRunning' and elem.get('dn') == 'sys/mgmt/fw-system':
+                    firmware_package_version = elem.get('version')
+                elif (elem.tag == 'versionApplication' and elem.get('dn') == 'sys/version/application' and
+                      not firmware_package_version):
+                    firmware_package_version = elem.get('version')
+                if elem.tag in mo_class_cache:
+                    try:
+                        mo = _load_mo_from_xml_element(mo_class_cache[elem.tag], elem)
+                        self.sdk_objects.setdefault(elem.tag, []).append(mo)
+                    except Exception as err:
+                        self.logger(level="warning",
+                                    message="Error instantiating " + elem.tag + " MO from XML: " + str(err))
+                elem.clear()
+        except ET.ParseError as err:
+            parse_error = True
+            self.logger(level="error",
+                        message="XML parse error while reading " + str(xml_file_path) + ": " + str(err))
+
+        # Classes absent from the XML are left out of sdk_objects entirely.
+        # This mirrors live behaviour: classes that don't exist on the system
+        # raise a "no class named X" exception and are never inserted, so
+        # downstream "if 'className' in sdk_objects" guards correctly skip them.
+
+        # Set device version from the firmwareRunning MO at sys/mgmt/fw-system or
+        # versionApplication MO at sys/version/application so that version-gated
+        # logic (e.g. BIOS token selection) works correctly without a live connection.
+        # The version attribute is already a clean string like "4.1(3c)" with no suffix stripping needed.
+        if firmware_package_version:
+            try:
+                self.device.version = UcsVersion(firmware_package_version)
+                if hasattr(self.device.version, 'version'):
+                    self.device.metadata.device_version = self.device.version.version
+                self.logger(level="debug",
+                            message="Set device version from XML: " + firmware_package_version)
+            except Exception as err:
+                self.logger(level="warning",
+                            message="Could not parse firmware version '" + firmware_package_version + "': " + str(err))
+        else:
+            self.logger(level="warning",
+                        message="Could not find firmwareRunning (sys/mgmt/fw-system) or versionApplication "
+                                "(sys/version/application) MO in XML; device version will not be set")
+
+        if parse_error and not force:
+            if self.device.task is not None:
+                self.device.task.taskstep_manager.stop_taskstep(
+                    name="FetchConfigUcsSystemSdkObjects", status="failed",
+                    status_message="XML parse error while fetching " +
+                                   self.device.metadata.device_type_long + " SDK Config Objects")
+                if not self.device.task.taskstep_manager.is_taskstep_optional(
+                        name="FetchConfigUcsSystemSdkObjects"):
+                    return False
+            return False
+
+        self.logger(level="debug",
+                    message="Finished reading XML file. Loaded " +
+                            str(sum(len(v) for v in self.sdk_objects.values())) +
+                            " SDK objects across " +
+                            str(sum(1 for v in self.sdk_objects.values() if v)) + " classes.")
+
+        if self.device.task is not None:
+            self.device.task.taskstep_manager.stop_taskstep(
+                name="FetchConfigUcsSystemSdkObjects", status="successful",
+                status_message="Successfully fetched " + self.device.metadata.device_type_long +
+                               " SDK Config Objects from XML file")
+
+        # Apply the same natural-sort-by-DN as the live fetch
+        for value in self.sdk_objects.values():
+            value.sort(key=lambda obj: [int(t) if t.isdigit() else t.lower()
+                                        for t in re.split(r'(\d+)', obj.dn or '')])
 
         return True
 
@@ -1061,6 +1251,51 @@ class UcsImcConfig(GenericUcsConfig):
         "virtual_kvm_properties": "Virtual KVM Properties",
         "virtual_media": "Virtual Media"
     }
+
+    _IMC_SPECIFIC_SDK_OBJECTS_TO_FETCH = [
+        'aaaLdap', 'aaaLdapRoleGroup', 'aaaUserPasswordExpiration', 'aaaUserPolicy',
+        'adaptorEthCompQueueProfile', 'adaptorEthGenProfile', 'adaptorEthInterruptProfile',
+        'adaptorEthOffloadProfile', 'adaptorEthRecvQueueProfile', 'adaptorEthUSNICProfile',
+        'adaptorEthWorkQueueProfile', 'adaptorExtIpV6RssHashProfile', 'adaptorFcBootTable',
+        'adaptorFcCdbWorkQueueProfile', 'adaptorFcErrorRecoveryProfile', 'adaptorFcGenProfile',
+        'adaptorFcInterruptProfile', 'adaptorFcPortFLogiProfile', 'adaptorFcPortPLogiProfile',
+        'adaptorFcPortProfile', 'adaptorFcRecvQueueProfile', 'adaptorFcWorkQueueProfile',
+        'adaptorGenProfile', 'adaptorHostEthIf', 'adaptorHostFcIf', 'adaptorIpV4RssHashProfile',
+        'adaptorIpV6RssHashProfile', 'adaptorRssProfile', 'adaptorUnit', 'advancedPowerProfile',
+        'biosVfAdjacentCacheLinePrefetch', 'biosVfAltitude', 'biosVfAutonumousCstateEnable',
+        'biosVfBootPerformanceMode', 'biosVfCDNEnable', 'biosVfCPUEnergyPerformance',
+        'biosVfCPUPerformance', 'biosVfCPUPowerManagement', 'biosVfCmciEnable',
+        'biosVfConsoleRedirection', 'biosVfCoreMultiProcessing', 'biosVfDCUPrefetch',
+        'biosVfDemandScrub', 'biosVfDirectCacheAccess', 'biosVfEnhancedIntelSpeedStepTech',
+        'biosVfExecuteDisableBit', 'biosVfExtendedAPIC', 'biosVfFRB2Enable', 'biosVfHWPMEnable',
+        'biosVfHardwarePrefetch', 'biosVfIntelHyperThreadingTech', 'biosVfIntelTurboBoostTech',
+        'biosVfIntelVTForDirectedIO', 'biosVfIntelVirtualizationTechnology',
+        'biosVfLOMPortOptionROM', 'biosVfLegacyUSBSupport', 'biosVfMemoryInterleave',
+        'biosVfMemoryMappedIOAbove4GB', 'biosVfNUMAOptimized', 'biosVfOSBootWatchdogTimer',
+        'biosVfOSBootWatchdogTimerPolicy', 'biosVfOSBootWatchdogTimerTimeout',
+        'biosVfOSBootWatchdogTimerTimeout', 'biosVfOutOfBandMgmtPort', 'biosVfPCIOptionROMs',
+        'biosVfPCISlotOptionROMEnable', 'biosVfPCIeSSDHotPlugSupport', 'biosVfPStateCoordType',
+        'biosVfPackageCStateLimit', 'biosVfPatrolScrub', 'biosVfPchUsb30Mode',
+        'biosVfPciRomClp', 'biosVfPowerOnPasswordSupport', 'biosVfProcessorC1E',
+        'biosVfProcessorC3Report', 'biosVfProcessorC6Report', 'biosVfPwrPerfTuning',
+        'biosVfQPIConfig', 'biosVfQpiSnoopMode', 'biosVfResumeOnACPowerLoss',
+        'biosVfSataModeSelect', 'biosVfSelectMemoryRASConfiguration', 'biosVfSrIov',
+        'biosVfTpmSupport', 'biosVfUSBEmulation', 'biosVfUSBPortsConfig',
+        'biosVfUsbXhciSupport', 'biosVfVgaPriority', 'biosVfWorkLoadConfig', 'commHttp',
+        'commHttps', 'commIpmiLan', 'commKvm', 'commMailAlert', 'commRedfish',
+        'commSavedVMediaMap', 'commSnmp', 'commSnmpTrap', 'commSnmpUser', 'commSsh',
+        'commSyslog', 'commSyslogClient', 'commVMedia', 'commVMediaMap', 'computeRackUnit',
+        'computeServerRef', 'equipmentChassis', 'fanPolicy', 'ipBlocking', 'ipFiltering',
+        'kmipServerLogin', 'ldapCACertificateManagement', 'lsbootDef', 'lsbootDevPrecision',
+        'lsbootEfi', 'lsbootHdd', 'lsbootIscsi', 'lsbootLan', 'lsbootNVMe', 'lsbootPchStorage',
+        'lsbootPxe', 'lsbootSan', 'lsbootSd', 'lsbootStorage', 'lsbootUefiShell', 'lsbootUsb',
+        'lsbootVMedia', 'lsbootVirtualMedia', 'mailRecipient', 'memoryArray', 'mgmtIf',
+        'oneTimePrecisionBootDevice', 'platformEventFilters', 'powerBudget',
+        'selfEncryptStorageController', 'solIf', 'standardPowerProfile', 'storageController',
+        'storageFlexFlashOperationalProfile', 'storageFlexFlashPhysicalDrive',
+        'storageFlexFlashVirtualDrive', 'storageFlexFlashController', 'storageLocalDisk',
+        'storageLocalDiskUsage', 'storageVirtualDrive'
+    ]
 
     def __init__(self, parent=None):
         self.adapter_cards = []
@@ -1106,49 +1341,7 @@ class UcsImcConfig(GenericUcsConfig):
                                                "Stopping the config fetch.")
             return False
 
-        # List of SDK objects to fetch that are only available in IMC
-        sdk_objects_to_fetch = ['aaaLdap', 'aaaLdapRoleGroup', 'aaaUserPasswordExpiration', 'aaaUserPolicy',
-                                'adaptorEthCompQueueProfile', 'adaptorEthGenProfile', 'adaptorEthInterruptProfile',
-                                'adaptorEthOffloadProfile', 'adaptorEthRecvQueueProfile', 'adaptorEthUSNICProfile',
-                                'adaptorEthWorkQueueProfile', 'adaptorExtIpV6RssHashProfile', 'adaptorFcBootTable',
-                                'adaptorFcCdbWorkQueueProfile', 'adaptorFcErrorRecoveryProfile', 'adaptorFcGenProfile',
-                                'adaptorFcInterruptProfile', 'adaptorFcPortFLogiProfile', 'adaptorFcPortPLogiProfile',
-                                'adaptorFcPortProfile', 'adaptorFcRecvQueueProfile', 'adaptorFcWorkQueueProfile',
-                                'adaptorGenProfile', 'adaptorHostEthIf', 'adaptorHostFcIf', 'adaptorIpV4RssHashProfile',
-                                'adaptorIpV6RssHashProfile', 'adaptorRssProfile', 'adaptorUnit', 'advancedPowerProfile',
-                                'biosVfAdjacentCacheLinePrefetch', 'biosVfAltitude', 'biosVfAutonumousCstateEnable',
-                                'biosVfBootPerformanceMode', 'biosVfCDNEnable', 'biosVfCPUEnergyPerformance',
-                                'biosVfCPUPerformance', 'biosVfCPUPowerManagement', 'biosVfCmciEnable',
-                                'biosVfConsoleRedirection', 'biosVfCoreMultiProcessing', 'biosVfDCUPrefetch',
-                                'biosVfDemandScrub', 'biosVfDirectCacheAccess', 'biosVfEnhancedIntelSpeedStepTech',
-                                'biosVfExecuteDisableBit', 'biosVfExtendedAPIC', 'biosVfFRB2Enable', 'biosVfHWPMEnable',
-                                'biosVfHardwarePrefetch', 'biosVfIntelHyperThreadingTech', 'biosVfIntelTurboBoostTech',
-                                'biosVfIntelVTForDirectedIO', 'biosVfIntelVirtualizationTechnology',
-                                'biosVfLOMPortOptionROM', 'biosVfLegacyUSBSupport', 'biosVfMemoryInterleave',
-                                'biosVfMemoryMappedIOAbove4GB', 'biosVfNUMAOptimized', 'biosVfOSBootWatchdogTimer',
-                                'biosVfOSBootWatchdogTimerPolicy', 'biosVfOSBootWatchdogTimerTimeout',
-                                'biosVfOSBootWatchdogTimerTimeout', 'biosVfOutOfBandMgmtPort', 'biosVfPCIOptionROMs',
-                                'biosVfPCISlotOptionROMEnable', 'biosVfPCIeSSDHotPlugSupport', 'biosVfPStateCoordType',
-                                'biosVfPackageCStateLimit', 'biosVfPatrolScrub', 'biosVfPchUsb30Mode',
-                                'biosVfPciRomClp', 'biosVfPowerOnPasswordSupport', 'biosVfProcessorC1E',
-                                'biosVfProcessorC3Report', 'biosVfProcessorC6Report', 'biosVfPwrPerfTuning',
-                                'biosVfQPIConfig', 'biosVfQpiSnoopMode', 'biosVfResumeOnACPowerLoss',
-                                'biosVfSataModeSelect', 'biosVfSelectMemoryRASConfiguration', 'biosVfSrIov',
-                                'biosVfTpmSupport', 'biosVfUSBEmulation', 'biosVfUSBPortsConfig',
-                                'biosVfUsbXhciSupport', 'biosVfVgaPriority', 'biosVfWorkLoadConfig', 'commHttp',
-                                'commHttps', 'commIpmiLan', 'commKvm', 'commMailAlert', 'commRedfish',
-                                'commSavedVMediaMap', 'commSnmp', 'commSnmpTrap', 'commSnmpUser', 'commSsh',
-                                'commSyslog', 'commSyslogClient', 'commVMedia', 'commVMediaMap', 'computeRackUnit',
-                                'computeServerRef', 'equipmentChassis', 'fanPolicy', 'ipBlocking', 'ipFiltering',
-                                'kmipServerLogin', 'ldapCACertificateManagement', 'lsbootDef', 'lsbootDevPrecision',
-                                'lsbootEfi', 'lsbootHdd', 'lsbootIscsi', 'lsbootLan', 'lsbootNVMe', 'lsbootPchStorage',
-                                'lsbootPxe', 'lsbootSan', 'lsbootSd', 'lsbootStorage', 'lsbootUefiShell', 'lsbootUsb',
-                                'lsbootVMedia', 'lsbootVirtualMedia', 'mailRecipient', 'memoryArray', 'mgmtIf',
-                                'oneTimePrecisionBootDevice', 'platformEventFilters', 'powerBudget',
-                                'selfEncryptStorageController', 'solIf', 'standardPowerProfile', 'storageController',
-                                'storageFlexFlashOperationalProfile', 'storageFlexFlashPhysicalDrive',
-                                'storageFlexFlashVirtualDrive', 'storageFlexFlashController', 'storageLocalDisk',
-                                'storageLocalDiskUsage', 'storageVirtualDrive']
+        sdk_objects_to_fetch = self._IMC_SPECIFIC_SDK_OBJECTS_TO_FETCH
 
         self.logger(level="debug",
                     message="Fetching " + self.device.metadata.device_type_long + " SDK objects for config")
@@ -1284,6 +1477,68 @@ class UcsCentralConfig(GenericUcsConfig):
         "syslog": "Syslog",
         "system": "System"
     }
+
+    _CENTRAL_SPECIFIC_SDK_OBJECTS_TO_FETCH = [
+        'aaaAuthRealm', 'aaaConsoleAuth', 'aaaDefaultAuth', 'aaaDomain', 'aaaDomainAuth', 'aaaDomainGroup',
+        'aaaLdapEp', 'aaaLdapGroup', 'aaaLdapGroupRule', 'aaaLdapProvider', 'aaaProviderGroup',
+        'aaaProviderRef', 'aaaEpAuthProfile', 'aaaEpUser', 'aaaLocale', 'aaaOrg', 'aaaPwdProfile', 'aaaRole',
+        'aaaSshAuth', 'aaaUser', 'aaaUserLocale', 'aaaUserRole', 'adaptorCapQual', 'adaptorEthAdvFilterProfile',
+        'adaptorEthArfsProfile', 'adaptorEthCompQueueProfile', 'adaptorEthFailoverProfile',
+        'adaptorEthGENEVEProfile', 'adaptorEthInterruptProfile', 'adaptorEthInterruptScalingProfile',
+        'adaptorEthNVGREProfile', 'adaptorEthOffloadProfile', 'adaptorEthRecvQueueProfile', 'adaptorEthRoCEProfile',
+        'adaptorEthVxLANProfile', 'adaptorEthWorkQueueProfile', 'adaptorFcCdbWorkQueueProfile',
+        'adaptorFcErrorRecoveryProfile', 'adaptorFcFnicProfile', 'adaptorFcInterruptProfile',
+        'adaptorFcPortFLogiProfile', 'adaptorFcPortPLogiProfile', 'adaptorFcPortProfile',
+        'adaptorFcRecvQueueProfile', 'adaptorFcWorkQueueProfile', 'adaptorHostEthIfProfile',
+        'adaptorHostFcIfProfile', 'adaptorHostIscsiIfProfile', 'adaptorQual', 'adaptorProtocolProfile',
+        'adaptorRssProfile', 'biosTokenSettings', 'biosTokenParam', 'biosVProfile', 'cimcvmediaConfigMountEntry',
+        'cimcvmediaMountConfigDef', 'cimcvmediaMountConfigPolicy', 'commCimxml', 'commDateTime', 'commDns',
+        'commDnsProvider', 'commHttp', 'commNtpProvider', 'commShellSvcLimits', 'commSnmp', 'commSnmpTrap',
+        'commSnmpUser', 'commSyslog', 'commSyslogClient', 'commSyslogConsole', 'commSyslogFile',
+        'commSyslogMonitor', 'commSyslogSource', 'commTelnet', 'commWebSvcLimits', 'computeBoard',
+        'computeChassisDiscPolicy', 'computeChassisQual', 'computeDomainGroupQual',
+        'computeDomainHwChangeDiscPolicy', 'computeDomainNameQual', 'computeDomainPortDiscPolicy',
+        'computeDomainQual', 'computeGraphicsCardPolicy', 'computeGroupMembership', 'computeModularChassisFanPolicy',
+        'computePhysicalQual', 'computePool', 'computePoolingPolicy', 'computePooledRackUnit', 'computePooledSlot',
+        'computeOwnerQual', 'computePowerExtendedPolicy', 'computePowerSavePolicy', 'computePowerSyncPolicy',
+        'computeProductFamilyQual', 'computePsuPolicy', 'computeQual', 'computeRackQual', 'computeScrubPolicy',
+        'computeServerDiscPolicy', 'computeServerMgmtPolicy', 'computeSiteQual', 'computeSlotQual', 'computeSystem',
+        'computeSystemAddrQual', 'computeSystemQual', 'dpsecMac', 'epqosDefinition', 'epqosEgress',
+        'equipmentBinding', 'equipmentChassisProfile', 'equipmentComputeConnPolicy', 'fabricEthLinkProfile',
+        'fabricLacpPolicy', 'fabricLanCloudPolicy', 'fabricMulticastPolicy', 'fabricNetGroup', 'fabricNetGroupRef',
+        'fabricNetGroupReq', 'fabricPooledVlan', 'fabricUdldLinkPolicy', 'fabricVCon', 'fabricVConProfile',
+        'fabricVlan', 'fabricVlanReq', 'fabricVsan', 'fcpoolBlock', 'fcpoolInitiators', 'firmwareAutoSyncPolicy',
+        'firmwareChassisPack', 'firmwareComputeHostPack', 'firmwareExcludeChassisComponent',
+        'firmwareExcludeServerComponent', 'flowctrlItem', 'identpoolBlockQual', 'identpoolDomainGroupQual',
+        'inbandPolicy', 'ippoolBlock', 'ippoolIpV6Block', 'ippoolPool', 'iqnpoolBlock', 'iqnpoolPool',
+        'iscsiAuthProfile', 'lsBinding', 'lsbootBootSecurity', 'lsbootDef', 'lsbootDefaultLocalImage',
+        'lsbootEFIShell', 'lsbootEmbeddedLocalDiskImage', 'lsbootEmbeddedLocalDiskImagePath',
+        'lsbootEmbeddedLocalLunImage', 'lsbootIScsi', 'lsbootIScsiImagePath', 'lsbootLan', 'lsbootLanImagePath',
+        'lsbootLocalDiskImage', 'lsbootLocalDiskImagePath', 'lsbootLocalHddImage', 'lsbootLocalLunImagePath',
+        'lsbootNvme', 'lsbootPolicy', 'lsbootSan', 'lsbootSanCatSanImage', 'lsbootSanCatSanImagePath',
+        'lsbootStorage', 'lsbootUEFIBootParam', 'lsbootUsbExternalImage', 'lsbootUsbFlashStorageImage',
+        'lsbootUsbInternalImage', 'lsbootVirtualMedia', 'lsbootLocalStorage', 'lsmaintMaintPolicy', 'lsPower',
+        'lsRequirement', 'lsServer', 'lsServerExtension', 'lstorageControllerDef', 'lstorageControllerModeConfig',
+        'lstorageControllerRef', 'lstorageDasScsiLun', 'lstorageDiskGroupConfigPolicy', 'lstorageDiskGroupQualifier',
+        'lstorageDiskSlot', 'lstorageDiskZoningPolicy', 'lstorageLocal', 'lstorageLocalDiskConfigRef', 'lstorageLogin',
+        'lstorageProfile', 'lstorageProfileBinding', 'lstorageProfileDef', 'lstorageRemote',
+        'lstorageVirtualDriveDef', 'lsVConAssign', 'macpoolBlock', 'macpoolPool', 'memoryQual', 'mgmtInterface',
+        'mgmtIPv6IfAddr', 'mgmtNamedKmipCertPolicy', 'mgmtVnet', 'networkElement', 'nwctrlDefinition',
+        'orgDomainGroup', 'orgDomainGroupPolicy', 'orgOrg', 'powerMgmtPolicy', 'powerPolicy', 'processorQual',
+        'statsThr32Definition', 'statsThr32Value', 'statsThr64Definition', 'statsThr64Value',
+        'statsThrFloatDefinition', 'statsThrFloatValue', 'statsThresholdClass', 'statsThresholdPolicy', 'solPolicy',
+        'storageConnectionPolicy', 'storageFcTargetEp', 'storageIniGroup', 'storageInitiator',
+        'storageLocalDiskConfigDef', 'storageLocalDiskConfigPolicy', 'storageQual', 'storageScsiLunRef',
+        'storageVirtualDrive', 'storageVsanRef', "tagInstance",
+        'topInfoSyncPolicy', 'uuidpoolBlock', 'uuidpoolPool', 'vnicConnDef', 'vnicDynamicCon',
+        'vnicDynamicConPolicy', 'vnicDynamicConPolicyRef', 'vnicEther', 'vnicEtherIf', 'vnicFc', 'vnicFcGroupDef',
+        'vnicFcIf', 'vnicFcNode', 'vnicIPv4Dhcp', 'VnicIPv4If', 'vnicIPv4IscsiAddr', 'vnicIpV4MgmtPooledAddr',
+        'vnicIpV4PooledAddr', 'vnicIPv4PooledIscsiAddr', 'vnicIpV6MgmtPooledAddr', 'vnicIScsi',
+        'vnicIScsiAutoTargetIf', 'vnicIScsiBootParams', 'vnicIScsiBootVnic', 'vnicIScsiLCP', 'vnicIScsiNode',
+        'vnicIScsiStaticTargetIf', 'vnicIScsiTargetParams', 'vnicLanConnPolicy', 'vnicLanConnTempl', 'vnicLun',
+        'vnicMgmtIf', 'vnicSanConnPolicy', 'vnicSanConnTempl', 'vnicSriovHpnConPolicy', 'vnicSriovHpnConPolicyRef',
+        'vnicUsnicConPolicy', 'vnicUsnicConPolicyRef', 'vnicVlan', 'vnicVmqConPolicy', 'vnicVmqConPolicyRef'
+    ]
 
     def __init__(self, parent=None):
         self.authentication = []
@@ -1437,66 +1692,7 @@ class UcsCentralConfig(GenericUcsConfig):
 
         self.logger(level="debug", message="Fetching BIOS Tokens for config")
 
-        # List of SDK objects to fetch that are only available in Central
-        sdk_objects_to_fetch = [
-            'aaaAuthRealm', 'aaaConsoleAuth', 'aaaDefaultAuth', 'aaaDomain', 'aaaDomainAuth', 'aaaDomainGroup',
-            'aaaLdapEp', 'aaaLdapGroup', 'aaaLdapGroupRule', 'aaaLdapProvider', 'aaaProviderGroup',
-            'aaaProviderRef', 'aaaEpAuthProfile', 'aaaEpUser', 'aaaLocale', 'aaaOrg', 'aaaPwdProfile', 'aaaRole',
-            'aaaSshAuth', 'aaaUser', 'aaaUserLocale', 'aaaUserRole', 'adaptorCapQual', 'adaptorEthAdvFilterProfile',
-            'adaptorEthArfsProfile', 'adaptorEthCompQueueProfile', 'adaptorEthFailoverProfile',
-            'adaptorEthGENEVEProfile', 'adaptorEthInterruptProfile', 'adaptorEthInterruptScalingProfile',
-            'adaptorEthNVGREProfile', 'adaptorEthOffloadProfile', 'adaptorEthRecvQueueProfile', 'adaptorEthRoCEProfile',
-            'adaptorEthVxLANProfile', 'adaptorEthWorkQueueProfile', 'adaptorFcCdbWorkQueueProfile',
-            'adaptorFcErrorRecoveryProfile', 'adaptorFcFnicProfile', 'adaptorFcInterruptProfile',
-            'adaptorFcPortFLogiProfile', 'adaptorFcPortPLogiProfile', 'adaptorFcPortProfile',
-            'adaptorFcRecvQueueProfile', 'adaptorFcWorkQueueProfile', 'adaptorHostEthIfProfile',
-            'adaptorHostFcIfProfile', 'adaptorHostIscsiIfProfile', 'adaptorQual', 'adaptorProtocolProfile',
-            'adaptorRssProfile', 'biosTokenSettings', 'biosTokenParam', 'biosVProfile', 'cimcvmediaConfigMountEntry',
-            'cimcvmediaMountConfigDef', 'cimcvmediaMountConfigPolicy', 'commCimxml', 'commDateTime', 'commDns',
-            'commDnsProvider', 'commHttp', 'commNtpProvider', 'commShellSvcLimits', 'commSnmp', 'commSnmpTrap',
-            'commSnmpUser', 'commSyslog', 'commSyslogClient', 'commSyslogConsole', 'commSyslogFile',
-            'commSyslogMonitor', 'commSyslogSource', 'commTelnet', 'commWebSvcLimits', 'computeBoard',
-            'computeChassisDiscPolicy', 'computeChassisQual', 'computeDomainGroupQual',
-            'computeDomainHwChangeDiscPolicy', 'computeDomainNameQual', 'computeDomainPortDiscPolicy',
-            'computeDomainQual', 'computeGraphicsCardPolicy', 'computeGroupMembership', 'computeModularChassisFanPolicy',
-            'computePhysicalQual', 'computePool', 'computePoolingPolicy', 'computePooledRackUnit', 'computePooledSlot',
-            'computeOwnerQual', 'computePowerExtendedPolicy', 'computePowerSavePolicy', 'computePowerSyncPolicy',
-            'computeProductFamilyQual', 'computePsuPolicy', 'computeQual', 'computeRackQual', 'computeScrubPolicy',
-            'computeServerDiscPolicy', 'computeServerMgmtPolicy', 'computeSiteQual', 'computeSlotQual', 'computeSystem',
-            'computeSystemAddrQual', 'computeSystemQual', 'dpsecMac', 'epqosDefinition', 'epqosEgress',
-            'equipmentBinding', 'equipmentChassisProfile', 'equipmentComputeConnPolicy', 'fabricEthLinkProfile',
-            'fabricLacpPolicy', 'fabricLanCloudPolicy', 'fabricMulticastPolicy', 'fabricNetGroup', 'fabricNetGroupRef',
-            'fabricNetGroupReq', 'fabricPooledVlan', 'fabricUdldLinkPolicy', 'fabricVCon', 'fabricVConProfile',
-            'fabricVlan', 'fabricVlanReq', 'fabricVsan', 'fcpoolBlock', 'fcpoolInitiators', 'firmwareAutoSyncPolicy',
-            'firmwareChassisPack', 'firmwareComputeHostPack', 'firmwareExcludeChassisComponent',
-            'firmwareExcludeServerComponent', 'flowctrlItem', 'identpoolBlockQual', 'identpoolDomainGroupQual',
-            'inbandPolicy', 'ippoolBlock', 'ippoolIpV6Block', 'ippoolPool', 'iqnpoolBlock', 'iqnpoolPool',
-            'iscsiAuthProfile', 'lsBinding', 'lsbootBootSecurity', 'lsbootDef', 'lsbootDefaultLocalImage',
-            'lsbootEFIShell', 'lsbootEmbeddedLocalDiskImage', 'lsbootEmbeddedLocalDiskImagePath',
-            'lsbootEmbeddedLocalLunImage', 'lsbootIScsi', 'lsbootIScsiImagePath', 'lsbootLan', 'lsbootLanImagePath',
-            'lsbootLocalDiskImage', 'lsbootLocalDiskImagePath', 'lsbootLocalHddImage', 'lsbootLocalLunImagePath',
-            'lsbootNvme', 'lsbootPolicy', 'lsbootSan', 'lsbootSanCatSanImage', 'lsbootSanCatSanImagePath',
-            'lsbootStorage', 'lsbootUEFIBootParam', 'lsbootUsbExternalImage', 'lsbootUsbFlashStorageImage',
-            'lsbootUsbInternalImage', 'lsbootVirtualMedia', 'lsbootLocalStorage', 'lsmaintMaintPolicy', 'lsPower',
-            'lsRequirement', 'lsServer', 'lsServerExtension', 'lstorageControllerDef', 'lstorageControllerModeConfig',
-            'lstorageControllerRef', 'lstorageDasScsiLun', 'lstorageDiskGroupConfigPolicy', 'lstorageDiskGroupQualifier',
-            'lstorageDiskSlot', 'lstorageDiskZoningPolicy', 'lstorageLocal', 'lstorageLocalDiskConfigRef', 'lstorageLogin',
-            'lstorageProfile', 'lstorageProfileBinding', 'lstorageProfileDef', 'lstorageRemote',
-            'lstorageVirtualDriveDef', 'lsVConAssign', 'macpoolBlock', 'macpoolPool', 'memoryQual', 'mgmtInterface',
-            'mgmtIPv6IfAddr', 'mgmtNamedKmipCertPolicy', 'mgmtVnet', 'networkElement', 'nwctrlDefinition',
-            'orgDomainGroup', 'orgDomainGroupPolicy', 'orgOrg', 'powerMgmtPolicy', 'powerPolicy', 'processorQual',
-            'statsThr32Definition', 'statsThr32Value', 'statsThr64Definition', 'statsThr64Value',
-            'statsThrFloatDefinition', 'statsThrFloatValue', 'statsThresholdClass', 'statsThresholdPolicy', 'solPolicy',
-            'storageConnectionPolicy', 'storageFcTargetEp', 'storageIniGroup', 'storageInitiator',
-            'storageLocalDiskConfigDef', 'storageLocalDiskConfigPolicy', 'storageQual', 'storageVsanRef', "tagInstance",
-            'topInfoSyncPolicy', 'uuidpoolBlock', 'uuidpoolPool', 'vnicConnDef', 'vnicDynamicCon',
-            'vnicDynamicConPolicy', 'vnicDynamicConPolicyRef', 'vnicEther', 'vnicEtherIf', 'vnicFc', 'vnicFcGroupDef',
-            'vnicFcIf', 'vnicFcNode', 'vnicIPv4Dhcp', 'VnicIPv4If', 'vnicIPv4IscsiAddr', 'vnicIpV4MgmtPooledAddr',
-            'vnicIpV4PooledAddr', 'vnicIPv4PooledIscsiAddr', 'vnicIpV6MgmtPooledAddr', 'vnicIScsi',
-            'vnicIScsiAutoTargetIf', 'vnicIScsiBootParams', 'vnicIScsiBootVnic', 'vnicIScsiLCP', 'vnicIScsiNode',
-            'vnicIScsiStaticTargetIf', 'vnicIScsiTargetParams', 'vnicLanConnPolicy', 'vnicLanConnTempl', 'vnicLun',
-            'vnicMgmtIf', 'vnicSanConnPolicy', 'vnicSanConnTempl', 'vnicSriovHpnConPolicy', 'vnicSriovHpnConPolicyRef',
-            'vnicUsnicConPolicy', 'vnicUsnicConPolicyRef', 'vnicVlan', 'vnicVmqConPolicy', 'vnicVmqConPolicyRef']
+        sdk_objects_to_fetch = self._CENTRAL_SPECIFIC_SDK_OBJECTS_TO_FETCH
 
         self.logger(level="debug",
                     message="Fetching " + self.device.metadata.device_type_long + " SDK objects for config")

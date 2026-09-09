@@ -439,7 +439,7 @@
                   "description": "Service Profile - vNIC - MTU",
                   "type": "string",
                   "default": "1500",
-                  "pattern": "^1[5-9][0-9][0-9]$|^[2-8][0-9][0-9][0-9]$|^9000$"
+                  "pattern": "^1[5-9][0-9]{2}$|^[2-8][0-9]{3}$|^90[0-9]{2}$|^91([0-4][0-9]|5[0-8])$"
                },
                "qos_policy": {
                   "description": "Service Profile - vNIC - QoS Policy",
@@ -2156,6 +2156,11 @@
                   }
                ],
                "additionalProperties": false
+            },
+            "storage_vd_actual_sizes": {
+               "description": "Service Profile - Operational State - Actual VD sizes in MiB per LUN name as reported by the RAID controller on the assigned server (keys: LUN names, values: sizes in MiB)",
+               "type": "object",
+               "additionalProperties": {"type": "string"}
             },
             "profile_state": {
                "description": "Service Profile - Operational State - Operational State of the Service Profile",

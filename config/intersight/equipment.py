@@ -201,6 +201,22 @@ class IntersightFabricInterconnect(IntersightConfigObject):
                 if attribute in self._object:
                     setattr(self, attribute, self.get_attribute(attribute_name=attribute))
 
+        self.clean_object()
+
+    def clean_object(self):
+        # We use this to make sure all options of port are set to None if they are not present
+        if self.ports:
+            for port_list_key in ["ethernet_ports", "fc_ports"]:
+                for port in self.ports.get(port_list_key, []):
+                    for attr in ["aggr_id", "slot_id", "port_id", "user_label"]:
+                        if attr not in port:
+                            port[attr] = None
+            for port_channel_key in ["ethernet_port_channels", "fc_port_channels"]:
+                for port_channel in self.ports.get(port_channel_key, []):
+                    for attr in ["id", "user_label"]:
+                        if attr not in port_channel:
+                            port_channel[attr] = None
+
     def _get_device_host_name(self):
         # get the host name of the device
         if hasattr(self._object, "registered_device"):
@@ -1087,7 +1103,7 @@ class IntersightComputeBlade(IntersightConfigObject):
             err_message = "Could not find Blade '" + \
                 self.name + "'"
             self.logger(level="error", message=err_message)
-        elif len(compute_blade_list) == 1 and (self.tags or self.user_label):
+        elif len(compute_blade_list) == 1 and (self.tags or self.user_label or self.asset_tag):
             compute_blade_kwargs = {
                 "object_type": "compute.Blade",
                 "class_id": "compute.Blade"
@@ -1182,7 +1198,7 @@ class IntersightComputeRackUnit(IntersightConfigObject):
             err_message = "Could not find Rack '" + self.name + "'"
             self.logger(level="error", message=err_message)
             return False
-        elif len(compute_rack_unit_list) == 1 and (self.tags or self.user_label):
+        elif len(compute_rack_unit_list) == 1 and (self.tags or self.user_label or self.asset_tag):
             from intersight.model.compute_rack_unit import ComputeRackUnit
             compute_rack_unit_kwargs = {
                 "object_type": "compute.RackUnit",

@@ -20,19 +20,20 @@ class IntersightInventoryReportSection(UcsReportSection):
         self.content_list.append(
             GenericReportText(order_id=self.report.get_current_order_id(), parent=self, string=descr))
 
-        for imm_domain in self.report.inventory.imm_domains:
-            domain_name = imm_domain.name
-            self.content_list.append(
-                IntersightImmDomainReportSection(order_id=self.report.get_current_order_id(), parent=self,
-                                                 title="IMM Domain " + domain_name, domain=imm_domain))
+        if self.report.inventory:
+            for imm_domain in self.report.inventory.imm_domains:
+                domain_name = imm_domain.name
+                self.content_list.append(
+                    IntersightImmDomainReportSection(order_id=self.report.get_current_order_id(), parent=self,
+                                                     title="IMM Domain " + domain_name, domain=imm_domain))
 
-        for ucsm_domain in self.report.inventory.ucsm_domains:
-            domain_name = ucsm_domain.name
-            self.content_list.append(
-                IntersightUcsmDomainReportSection(order_id=self.report.get_current_order_id(), parent=self,
-                                                  title="UCSM Domain " + domain_name, domain=ucsm_domain))
+            for ucsm_domain in self.report.inventory.ucsm_domains:
+                domain_name = ucsm_domain.name
+                self.content_list.append(
+                    IntersightUcsmDomainReportSection(order_id=self.report.get_current_order_id(), parent=self,
+                                                      title="UCSM Domain " + domain_name, domain=ucsm_domain))
 
-        if self.report.inventory.rack_units:
-            self.content_list.append(
-                UcsRacksInventoryReportSection(order_id=self.report.get_current_order_id(), parent=self,
-                                               domain=self.report.inventory))
+            if self.report.inventory.rack_units:
+                self.content_list.append(
+                    UcsRacksInventoryReportSection(order_id=self.report.get_current_order_id(), parent=self,
+                                                   domain=self.report.inventory))

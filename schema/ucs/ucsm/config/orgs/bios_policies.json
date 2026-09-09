@@ -987,6 +987,21 @@
             "two--2---0-"
          ]
       },
+      "cpu_frequency_control": {
+         "description": "BIOS Policy - Processor - CPU Frequency Control",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "Auto",
+            "Disabled",
+            "Enabled",
+            "Platform Default",
+            "auto",
+            "disabled",
+            "enabled",
+            "platform-default"
+         ]
+      },
       "cpu_hardware_power_management": {
          "description": "BIOS Policy - CPU Hardware Power Management - CPU Hardware Power Management",
          "type": "string",
@@ -1402,6 +1417,21 @@
       },
       "edc_control_throttle": {
          "description": "BIOS Policy - Processor - EDC Control Throttle",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "Auto",
+            "Disabled",
+            "Enabled",
+            "Platform Default",
+            "auto",
+            "disabled",
+            "enabled",
+            "platform-default"
+         ]
+      },
+      "edpc_control": {
+         "description": "BIOS Policy - Processor - EDPC Control",
          "type": "string",
          "default": "platform-default",
          "enum": [
@@ -7054,6 +7084,19 @@
             "rank-sparing"
          ]
       },
+      "speculative_lock": {
+         "description": "BIOS Policy - Speculative Lock - Speculative Lock",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "Disabled",
+            "Enabled",
+            "Platform Default",
+            "disabled",
+            "enabled",
+            "platform-default"
+         ]
+      },
       "sprocessor_epoch_0": {
          "description": "BIOS Policy - Processor - SProcessor Epoch 0",
          "type": "string",
@@ -7302,6 +7345,19 @@
             "Platform Default",
             "disabled",
             "enabled",
+            "mode-0",
+            "mode-1",
+            "platform-default"
+         ]
+      },
+      "uncore_frequency_scaling_io": {
+         "description": "BIOS Policy - Uncore Frequency Scaling IO - Uncore Frequency Scaling IO",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "Mode-0",
+            "Mode-1",
+            "Platform Default",
             "mode-0",
             "mode-1",
             "platform-default"

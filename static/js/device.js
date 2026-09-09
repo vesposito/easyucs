@@ -696,7 +696,7 @@ function displayObjects(data){
     <tr style="cursor: pointer;">
       <td>${object_data}</td>
       <td onclick="${on_click}">${object_name}</td>
-      <td onclick="${on_click}">${object.origin}</td>
+      <td onclick="${on_click}">${object_type === 'report' ? ({'docx': 'Word', 'pdf': 'PDF', 'json': 'JSON'}[object.output_format] || object.output_format || '') : (object.origin || '')}</td>
       <td data-order="${date_timestamp}" onclick="${on_click}">${object.timestamp}</td>
       <td onclick="${on_click}">${object.easyucs_version}</td>
     </tr>`)).draw();
@@ -771,8 +771,9 @@ async function downloadObjects(object_type){
 /**
  * Fetches an object from the device
  * @param  {String} object_type - The type of object to fetch {backup/config/inventory}
+ * @param  {Boolean} force - Optional: Whether to bypass failed SDK objects or Intersight license validation
  */
-function fetchLiveObjectFromDevice(object_type){
+function fetchLiveObjectFromDevice(object_type, force = false){
   if (!object_type in ["backup", "config", "inventory"]){
     console.error("Impossible to fetch live " + object_type + " - Wrong object type");
     return
@@ -783,8 +784,15 @@ function fetchLiveObjectFromDevice(object_type){
     return
   }
 
+  // Auto-reset force checkboxes after use
+  if(object_type == "config"){
+    document.getElementById("force-fetch-config").checked = false;
+  } else if(object_type == "inventory"){
+    document.getElementById("force-fetch-inventory").checked = false;
+  }
+
   // Fetches the object and creates an alert
-  fetchLiveObject(alertObjectFetched.bind(null, object_type), object_type, current_device_uuid);
+  fetchLiveObject(alertObjectFetched.bind(null, object_type), object_type, current_device_uuid, force);
 }
 
 /**

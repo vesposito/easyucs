@@ -23,6 +23,7 @@ class UcsServerNode(GenericUcsInventoryObject):
         self.id = self.get_attribute(ucs_sdk_object=compute_server_node, attribute_name="server_id",
                                      attribute_secondary_name="id")
         self.model = self.get_attribute(ucs_sdk_object=compute_server_node, attribute_name="model")
+        self.oper_state = self.get_attribute(ucs_sdk_object=compute_server_node, attribute_name="oper_state")
         self.serial = self.get_attribute(ucs_sdk_object=compute_server_node, attribute_name="serial")
         self.vendor = self.get_attribute(ucs_sdk_object=compute_server_node, attribute_name="vendor")
 

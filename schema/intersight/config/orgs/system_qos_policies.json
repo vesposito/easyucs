@@ -127,6 +127,30 @@
             ]
          },
          "minItems": 1
+      },
+      "watchdog_enabled": {
+         "description": "Enables or disables the Priority-based Flow Control (PFC) watchdog feature",
+         "type": "boolean",
+         "default": true
+      },
+      "pfc_watchdog_configuration": {
+         "description": "System QoS Policy - Priority Flow Control Watchdog Configuration",
+         "type": "object",
+         "properties": {
+            "watchdog_interval": {
+               "description": "Time in milliseconds for the PFC Watchdog (100-1000ms)",
+               "type": "integer",
+               "minimum": 100,
+               "maximum": 1000
+            },
+            "shutdown_multiplier": {
+               "description": "Shutdown Multiplier for PFC Watchdog (1-10)",
+               "type": "integer",
+               "minimum": 1,
+               "maximum": 10
+            }
+         },
+         "additionalProperties": false
       }
    },
    "additionalProperties": false,

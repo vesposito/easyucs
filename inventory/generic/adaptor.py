@@ -158,8 +158,10 @@ class GenericAdaptor(GenericInventoryObject):
             self.sku = "UCSC-PCIE-IRJ45"
         elif self.model == "Intel Ethernet Server Adapter I350-T4" and self.pci_slot != "L":
             self.sku = "UCSC-PCIE-IRJ45"
-        elif self.model == "Intel X520-DA2 10 Gbps 2 port NIC":
+        elif self.model in ["Intel X520-DA2 10 Gbps 2 port NIC", "Intel X520 dual port adapter"]:
             self.sku = "N2XX-AIPCI01"
+        elif self.model == "Cisco(R) I710T4LG 4x1 GbE RJ45 PCIe NIC":
+            self.sku = "UCSC-P-IQ1GC"
         elif self.model == "Intel X710-DA4 Quad Port 10Gb SFP+ converged NIC":
             self.sku = "UCSC-PCIE-IQ10GF"
         elif self.model == "Intel XL710-QDA2 Dual Port 40Gb QSFP converged NIC":
@@ -168,6 +170,12 @@ class GenericAdaptor(GenericInventoryObject):
             self.sku = "UCSC-P-I8D25GF"
         elif self.model == "Cisco - Intel E810XXVDA4 4x25/10 GbE SFP28 PCIe NIC":
             self.sku = "UCSC-P-I8Q25GF"
+        elif self.model == "Cisco(R) FastLinQ QL45412H 40GbE Adapter":
+            self.sku = "UCSC-PCIE-QD40GF"
+        elif self.model == "Cisco-MLNX MCX623106AS-CDAT 2x100GbE QSFP56 PCIe NIC":
+            self.sku = "UCSC-P-MDD100GF"
+        elif self.model == "X710T2LOCPV3G1P":
+            self.sku = "C885A-O-ID10GC"
 
         # Getting adaptor type info from catalog files
         if self.sku:

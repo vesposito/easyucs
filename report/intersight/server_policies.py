@@ -13,13 +13,14 @@ class IntersightOrganizationsReportSection(UcsReportSection):
     def __init__(self, order_id, parent, title="Organizations"):
         UcsReportSection.__init__(self, order_id=order_id, parent=parent, title=title)
 
-        descr = "There is a total of " + str(len(self.report.config.orgs)) + " organizations."
+        config = self.report.config
+        descr = "There is a total of " + str(len(config.orgs)) + " organizations."
         self.content_list.append(
             GenericReportText(order_id=self.report.get_current_order_id(), parent=self, string=descr))
 
         self.content_list.append(
             IntersightOrganizationsReportTable(
-                self.report.get_current_order_id(), parent=self, orgs=self.report.config.orgs))
+                self.report.get_current_order_id(), parent=self, orgs=config.orgs))
 
 
 class IntersightOrganizationsReportTable(UcsReportTable):
@@ -52,19 +53,43 @@ class IntersightResourceGroupsReportSection(UcsReportSection):
         UcsReportSection.__init__(self, order_id=order_id, parent=parent, title=title)
 
         config = self.report.config
-
         resource_groups = config.resource_groups
 
         if resource_groups:
             for resource_group in resource_groups:
                 self.content_list.append(
-                    IntersightResourceGroupReportSection(
+                    GenericReportText(
                         order_id=self.report.get_current_order_id(),
                         parent=self,
-                        resource_group=resource_group,
-                        title=f"Resource Group {resource_group.name}"
+                        string=f"\nResource Group {resource_group.name}",
+                        bolded=True,
                     )
                 )
+                self.content_list.append(
+                    IntersightResourceGroupReportTable(
+                        order_id=self.report.get_current_order_id(),
+                        parent=self,
+                        centered=True,
+                        resource_group=resource_group
+                    )
+                )
+                if resource_group.memberships == "custom" and resource_group.devices:
+                    self.content_list.append(
+                        GenericReportText(
+                            order_id=self.report.get_current_order_id(),
+                            parent=self,
+                            string="\nMember Devices: ",
+                            bolded=True,
+                        )
+                    )
+                    self.content_list.append(
+                        IntersightResourceGroupDevicesReportTable(
+                            order_id=self.report.get_current_order_id(),
+                            parent=self,
+                            centered=True,
+                            devices=resource_group.devices
+                        )
+                    )
         else:
             self.content_list.append(
                 GenericReportText(
@@ -132,7 +157,6 @@ class IntersightResourceGroupReportTable(UcsReportTable):
 
 class IntersightResourceGroupDevicesReportTable(UcsReportTable):
     def __init__(self, order_id, parent, devices, centered=False):
-
         rows = [["ID", "Name", "Type", "Identifier"]]
 
         for device_num, device in enumerate(devices, start=1):
@@ -154,11 +178,123 @@ class IntersightResourceGroupDevicesReportTable(UcsReportTable):
         )
 
 
+class IntersightAdapterConfigurationPoliciesReportSection(UcsReportSection):
+    def __init__(self, order_id, parent, title="Adapter Configuration Policies"):
+        UcsReportSection.__init__(self, order_id=order_id, parent=parent, title=title)
+        config = self.report.config
+        adapter_configuration_policies_list = []
+        for org in config.orgs:
+            self.parse_org(org, adapter_configuration_policies_list,
+                           element_to_parse="adapter_configuration_policies")
+
+        if adapter_configuration_policies_list:
+            for adapter_configuration_policy in adapter_configuration_policies_list:
+                self.content_list.append(
+                    IntersightAdapterConfigurationPolicyReportSection(
+                        order_id=self.report.get_current_order_id(),
+                        parent=self,
+                        adapter_configuration_policy=adapter_configuration_policy,
+                        title="Adapter Configuration Policy " + adapter_configuration_policy.name,
+                    )
+                )
+        else:
+            self.content_list.append(
+                GenericReportText(
+                    order_id=self.report.get_current_order_id(),
+                    parent=self,
+                    string="No Adapter Configuration Policies found.",
+                    italicized=True,
+                )
+            )
+
+
+class IntersightAdapterConfigurationPolicyReportSection(UcsReportSection):
+    def __init__(self, order_id, parent, adapter_configuration_policy, title=""):
+        UcsReportSection.__init__(self, order_id=order_id, parent=parent, title=title)
+
+        self.content_list.append(
+            IntersightAdapterConfigurationPolicyReportTable(
+                order_id=self.report.get_current_order_id(),
+                parent=self,
+                centered=True,
+                adapter_configuration_policy=adapter_configuration_policy,
+            )
+        )
+
+        if adapter_configuration_policy.vic_adapter_configurations:
+            for vic_config in adapter_configuration_policy.vic_adapter_configurations:
+                pci_slot = vic_config.get("pci_slot", "N/A")
+                self.content_list.append(
+                    GenericReportText(
+                        order_id=self.report.get_current_order_id(),
+                        parent=self,
+                        string=f"\nVIC Adapter Configuration (PCI Slot: {pci_slot}): ",
+                        bolded=True,
+                    )
+                )
+                self.content_list.append(
+                    IntersightAdapterConfigurationPolicyVicReportTable(
+                        order_id=self.report.get_current_order_id(),
+                        parent=self,
+                        centered=True,
+                        vic_config=vic_config,
+                    )
+                )
+
+
+class IntersightAdapterConfigurationPolicyReportTable(UcsReportTable):
+    def __init__(self, order_id, parent, adapter_configuration_policy, centered=False):
+        rows = [
+            ["Description", "Value"],
+            ["Name", adapter_configuration_policy.name],
+            ["Description", adapter_configuration_policy.descr],
+            ["Organization", adapter_configuration_policy._parent.name],
+        ]
+
+        UcsReportTable.__init__(
+            self,
+            order_id=order_id,
+            parent=parent,
+            row_number=len(rows),
+            column_number=len(rows[0]),
+            centered=centered,
+            cells_list=rows,
+        )
+
+
+class IntersightAdapterConfigurationPolicyVicReportTable(UcsReportTable):
+    def __init__(self, order_id, parent, vic_config, centered=False):
+        rows = [
+            ["Setting", "Value"],
+            ["PCI Slot", vic_config.get("pci_slot")],
+            ["Enable LLDP", vic_config.get("enable_lldp")],
+            ["Enable FIP", vic_config.get("enable_fip")],
+            ["Enable Port Channel", vic_config.get("enable_port_channel")],
+            ["Enable Physical NIC Mode", vic_config.get("enable_physical_nic_mode")],
+        ]
+
+        if vic_config.get("dce_interface_settings"):
+            dce_list = ", ".join(
+                f"Interface {d.get('interface_id')}: {d.get('fec_mode')}"
+                for d in vic_config["dce_interface_settings"]
+            )
+            rows.append(["DCE Interface Settings", dce_list])
+
+        UcsReportTable.__init__(
+            self,
+            order_id=order_id,
+            parent=parent,
+            row_number=len(rows),
+            column_number=len(rows[0]),
+            centered=centered,
+            cells_list=rows,
+        )
+
+
 class IntersightBiosPoliciesReportSection(UcsReportSection):
     def __init__(self, order_id, parent, title="BIOS Policies"):
         UcsReportSection.__init__(self, order_id=order_id, parent=parent, title=title)
         config = self.report.config
-
         text = "Tokens with 'Platform-Default' values are not displayed below for easier readability."
         self.content_list.append(
             GenericReportText(order_id=self.report.get_current_order_id(), parent=self, string=text, italicized=True))
@@ -236,7 +372,6 @@ class IntersightBootPoliciesReportSection(UcsReportSection):
     def __init__(self, order_id, parent, title="Boot Policies"):
         UcsReportSection.__init__(self, order_id=order_id, parent=parent, title=title)
         config = self.report.config
-
         boot_policies_list = []
         # Searching for all Boot Policies
         for org in config.orgs:
@@ -322,7 +457,6 @@ class IntersightBootPolicyReportTable(UcsReportTable):
 
 class IntersightBootDevicesReportTable(UcsReportTable):
     def __init__(self, order_id, parent, boot_policy, centered=False):
-
         rows = [["Order", "Device Type", "Device Name", "Enabled", "Interface Name", "Interface Source", "IP Type",
                  "LUN", "MAC Address", "Port", "Slot", "Subtype", "Target WWPN", "Boot Loader Name",
                  "Boot Loader Path", "Boot Loader Description"]]
@@ -363,11 +497,218 @@ class IntersightBootDevicesReportTable(UcsReportTable):
         )
 
 
+class IntersightCertificateManagementPoliciesReportSection(UcsReportSection):
+    def __init__(self, order_id, parent, title="Certificate Management Policies"):
+        UcsReportSection.__init__(self, order_id=order_id, parent=parent, title=title)
+        config = self.report.config
+        certificate_management_policies_list = []
+        for org in config.orgs:
+            self.parse_org(org, certificate_management_policies_list,
+                           element_to_parse="certificate_management_policies")
+
+        if certificate_management_policies_list:
+            for certificate_management_policy in certificate_management_policies_list:
+                self.content_list.append(
+                    IntersightCertificateManagementPolicyReportSection(
+                        order_id=self.report.get_current_order_id(),
+                        parent=self,
+                        certificate_management_policy=certificate_management_policy,
+                        title="Certificate Management Policy " + certificate_management_policy.name,
+                    )
+                )
+        else:
+            self.content_list.append(
+                GenericReportText(
+                    order_id=self.report.get_current_order_id(),
+                    parent=self,
+                    string="No Certificate Management Policies found.",
+                    italicized=True,
+                )
+            )
+
+
+class IntersightCertificateManagementPolicyReportSection(UcsReportSection):
+    def __init__(self, order_id, parent, certificate_management_policy, title=""):
+        UcsReportSection.__init__(self, order_id=order_id, parent=parent, title=title)
+
+        self.content_list.append(
+            IntersightCertificateManagementPolicyReportTable(
+                order_id=self.report.get_current_order_id(),
+                parent=self,
+                centered=True,
+                certificate_management_policy=certificate_management_policy,
+            )
+        )
+
+        if certificate_management_policy.certificates:
+            certs = certificate_management_policy.certificates
+            if certs.get("imc_certificate"):
+                self.content_list.append(
+                    GenericReportText(
+                        order_id=self.report.get_current_order_id(),
+                        parent=self,
+                        string="\nIMC Certificate: ",
+                        bolded=True,
+                    )
+                )
+                self.content_list.append(
+                    IntersightCertificateManagementPolicyImcCertReportTable(
+                        order_id=self.report.get_current_order_id(),
+                        parent=self,
+                        centered=True,
+                        imc_cert=certs["imc_certificate"],
+                    )
+                )
+
+            if certs.get("root_ca_certificates"):
+                self.content_list.append(
+                    GenericReportText(
+                        order_id=self.report.get_current_order_id(),
+                        parent=self,
+                        string="\nRoot CA Certificates: ",
+                        bolded=True,
+                    )
+                )
+                self.content_list.append(
+                    IntersightCertificateManagementPolicyRootCaReportTable(
+                        order_id=self.report.get_current_order_id(),
+                        parent=self,
+                        centered=True,
+                        root_ca_certs=certs["root_ca_certificates"],
+                    )
+                )
+
+
+class IntersightCertificateManagementPolicyReportTable(UcsReportTable):
+    def __init__(self, order_id, parent, certificate_management_policy, centered=False):
+        rows = [
+            ["Description", "Value"],
+            ["Name", certificate_management_policy.name],
+            ["Description", certificate_management_policy.descr],
+            ["Organization", certificate_management_policy._parent.name],
+        ]
+
+        UcsReportTable.__init__(
+            self,
+            order_id=order_id,
+            parent=parent,
+            row_number=len(rows),
+            column_number=len(rows[0]),
+            centered=centered,
+            cells_list=rows,
+        )
+
+
+class IntersightCertificateManagementPolicyImcCertReportTable(UcsReportTable):
+    def __init__(self, order_id, parent, imc_cert, centered=False):
+        rows = [
+            ["Setting", "Value"],
+            ["Enabled", imc_cert.get("enable")],
+            ["Certificate Present", "Yes" if imc_cert.get("certificate") else "No"],
+        ]
+
+        UcsReportTable.__init__(
+            self,
+            order_id=order_id,
+            parent=parent,
+            row_number=len(rows),
+            column_number=len(rows[0]),
+            centered=centered,
+            cells_list=rows,
+        )
+
+
+class IntersightCertificateManagementPolicyRootCaReportTable(UcsReportTable):
+    def __init__(self, order_id, parent, root_ca_certs, centered=False):
+        rows = [["Certificate Name", "Enabled", "Certificate Present"]]
+        for cert in root_ca_certs:
+            rows.append([
+                cert.get("certificate_name"),
+                cert.get("enable"),
+                "Yes" if cert.get("certificate") else "No",
+            ])
+
+        UcsReportTable.__init__(
+            self,
+            order_id=order_id,
+            parent=parent,
+            row_number=len(rows),
+            column_number=len(rows[0]),
+            centered=centered,
+            cells_list=rows,
+        )
+
+
+class IntersightDeviceConnectorPoliciesReportSection(UcsReportSection):
+    def __init__(self, order_id, parent, title="Device Connector Policies"):
+        UcsReportSection.__init__(self, order_id=order_id, parent=parent, title=title)
+        config = self.report.config
+        device_connector_policies_list = []
+        for org in config.orgs:
+            self.parse_org(org, device_connector_policies_list,
+                           element_to_parse="device_connector_policies")
+
+        if device_connector_policies_list:
+            for device_connector_policy in device_connector_policies_list:
+                self.content_list.append(
+                    IntersightDeviceConnectorPolicyReportSection(
+                        order_id=self.report.get_current_order_id(),
+                        parent=self,
+                        device_connector_policy=device_connector_policy,
+                        title="Device Connector Policy " + device_connector_policy.name,
+                    )
+                )
+        else:
+            self.content_list.append(
+                GenericReportText(
+                    order_id=self.report.get_current_order_id(),
+                    parent=self,
+                    string="No Device Connector Policies found.",
+                    italicized=True,
+                )
+            )
+
+
+class IntersightDeviceConnectorPolicyReportSection(UcsReportSection):
+    def __init__(self, order_id, parent, device_connector_policy, title=""):
+        UcsReportSection.__init__(self, order_id=order_id, parent=parent, title=title)
+
+        self.content_list.append(
+            IntersightDeviceConnectorPolicyReportTable(
+                order_id=self.report.get_current_order_id(),
+                parent=self,
+                centered=True,
+                device_connector_policy=device_connector_policy,
+            )
+        )
+
+
+class IntersightDeviceConnectorPolicyReportTable(UcsReportTable):
+    def __init__(self, order_id, parent, device_connector_policy, centered=False):
+        rows = [
+            ["Description", "Value"],
+            ["Name", device_connector_policy.name],
+            ["Description", device_connector_policy.descr],
+            ["Organization", device_connector_policy._parent.name],
+            ["Configuration From Intersight Only",
+             device_connector_policy.configuration_from_intersight_only],
+        ]
+
+        UcsReportTable.__init__(
+            self,
+            order_id=order_id,
+            parent=parent,
+            row_number=len(rows),
+            column_number=len(rows[0]),
+            centered=centered,
+            cells_list=rows,
+        )
+
+
 class IntersightDriveSecurityPoliciesReportSection(UcsReportSection):
     def __init__(self, order_id, parent, title="Drive Security Policies"):
         UcsReportSection.__init__(self, order_id=order_id, parent=parent, title=title)
         config = self.report.config
-
         drive_security_policies_list = []
         # Searching for all Drive Security Policies
         for org in config.orgs:
@@ -408,41 +749,69 @@ class IntersightDriveSecurityPolicyReportSection(UcsReportSection):
             )
         )
 
-        if hasattr(drive_security_policy, "primary_kmip_server") and drive_security_policy.primary_kmip_server:
+        # Remote Key (KMIP) configuration details
+        remote_key_config = getattr(drive_security_policy, "drive_security_remote_key_configuration", None)
+        if remote_key_config:
+            primary_kmip_server = remote_key_config.get("primary_kmip_server") if isinstance(
+                remote_key_config, dict) else None
+            secondary_kmip_server = remote_key_config.get("secondary_kmip_server") if isinstance(
+                remote_key_config, dict) else None
+
+            if primary_kmip_server and primary_kmip_server.get("enable_drive_security"):
+                self.content_list.append(
+                    GenericReportText(
+                        order_id=self.report.get_current_order_id(),
+                        parent=self,
+                        string="\nPrimary KMIP Server Details: ",
+                        bolded=True,
+                    )
+                )
+
+                self.content_list.append(
+                    IntersightDriveSecurityPolicyKmipServerReportTable(
+                        order_id=self.report.get_current_order_id(),
+                        parent=self,
+                        centered=True,
+                        kmip_server=primary_kmip_server,
+                    )
+                )
+
+            if secondary_kmip_server and secondary_kmip_server.get("enable_drive_security"):
+                self.content_list.append(
+                    GenericReportText(
+                        order_id=self.report.get_current_order_id(),
+                        parent=self,
+                        string="\nSecondary KMIP Server Details: ",
+                        bolded=True,
+                    )
+                )
+
+                self.content_list.append(
+                    IntersightDriveSecurityPolicyKmipServerReportTable(
+                        order_id=self.report.get_current_order_id(),
+                        parent=self,
+                        centered=True,
+                        kmip_server=secondary_kmip_server,
+                    )
+                )
+
+        # Manual Key configuration details
+        manual_key_config = getattr(drive_security_policy, "drive_security_manual_key_configuration", None)
+        if manual_key_config:
             self.content_list.append(
                 GenericReportText(
                     order_id=self.report.get_current_order_id(),
                     parent=self,
-                    string="\nPrimary KMIP Server Details: ",
+                    string="\nManual Key Configuration Details: ",
                     bolded=True,
                 )
             )
-
             self.content_list.append(
-                IntersightDriveSecurityPolicyKmipServerReportTable(
+                IntersightDriveSecurityPolicyManualKeyReportTable(
                     order_id=self.report.get_current_order_id(),
                     parent=self,
                     centered=True,
-                    kmip_server=drive_security_policy.primary_kmip_server,
-                )
-            )
-
-        if hasattr(drive_security_policy, "secondary_kmip_server") and drive_security_policy.secondary_kmip_server:
-            self.content_list.append(
-                GenericReportText(
-                    order_id=self.report.get_current_order_id(),
-                    parent=self,
-                    string="\nSecondary KMIP Server Details: ",
-                    bolded=True,
-                )
-            )
-
-            self.content_list.append(
-                IntersightDriveSecurityPolicyKmipServerReportTable(
-                    order_id=self.report.get_current_order_id(),
-                    parent=self,
-                    centered=True,
-                    kmip_server=drive_security_policy.secondary_kmip_server,
+                    manual_key_config=manual_key_config,
                 )
             )
 
@@ -455,11 +824,29 @@ class IntersightDriveSecurityPolicyReportTable(UcsReportTable):
             ["Name", drive_security_policy.name],
             ["Description", drive_security_policy.descr],
             ["Organization", drive_security_policy._parent.name],
-            ["Server Certificate", drive_security_policy.server_public_root_ca_certificate]
+            ["Drive Security Configuration Type", getattr(drive_security_policy,
+                                                          "drive_security_configuration_type", None)],
         ]
 
-        if hasattr(drive_security_policy, "authentication_credentials") and drive_security_policy.authentication_credentials:
-            rows.append(["Username", drive_security_policy.authentication_credentials.get("username", None)])
+        # Remote Key (KMIP) configuration attributes
+        remote_key_config = getattr(drive_security_policy, "drive_security_remote_key_configuration", None)
+        if remote_key_config and isinstance(remote_key_config, dict):
+            rows.append(["Server Certificate",
+                         remote_key_config.get("server_public_root_ca_certificate")])
+            rows.append(["Drive Security Enabled with Manual Key",
+                         remote_key_config.get("drive_security_enabled_with_manual_key")])
+            auth_credentials = remote_key_config.get("authentication_credentials")
+            if auth_credentials and isinstance(auth_credentials, dict):
+                rows.append(["Enable Authentication",
+                             auth_credentials.get("enable_authentication")])
+                if auth_credentials.get("enable_authentication"):
+                    rows.append(["Username", auth_credentials.get("username")])
+
+        # Manual Key configuration attributes
+        manual_key_config = getattr(drive_security_policy, "drive_security_manual_key_configuration", None)
+        if manual_key_config and isinstance(manual_key_config, dict):
+            rows.append(["Drive Security Enabled with Manual Key",
+                         manual_key_config.get("drive_security_enabled_with_manual_key")])
 
         UcsReportTable.__init__(
             self,
@@ -474,14 +861,32 @@ class IntersightDriveSecurityPolicyReportTable(UcsReportTable):
 
 class IntersightDriveSecurityPolicyKmipServerReportTable(UcsReportTable):
     def __init__(self, order_id, parent, kmip_server, centered=False):
-
         rows = [
             ["Description", "Value"],
-            ["IP Address", kmip_server["ip_address"]],
-            ["Port", kmip_server["port"]],
+            ["Enable Drive Security", kmip_server.get("enable_drive_security")],
+            ["IP Address", kmip_server.get("ip_address")],
+            ["Port", kmip_server.get("port")],
+            ["Timeout", kmip_server.get("timeout")],
         ]
-        if parent.report.device.metadata.device_type in ["ucsc"]:
-            rows.append(["Timeout", kmip_server["timeout"]],)
+
+        UcsReportTable.__init__(
+            self,
+            order_id=order_id,
+            parent=parent,
+            row_number=len(rows),
+            column_number=len(rows[1]),
+            centered=centered,
+            cells_list=rows,
+        )
+
+
+class IntersightDriveSecurityPolicyManualKeyReportTable(UcsReportTable):
+    def __init__(self, order_id, parent, manual_key_config, centered=False):
+        rows = [
+            ["Description", "Value"],
+            ["Drive Security Enabled with Manual Key",
+             manual_key_config.get("drive_security_enabled_with_manual_key")],
+        ]
 
         UcsReportTable.__init__(
             self,
@@ -498,7 +903,6 @@ class IntersightEthAdapterPoliciesReportSection(UcsReportSection):
     def __init__(self, order_id, parent, title="Ethernet Adapter Policies"):
         UcsReportSection.__init__(self, order_id=order_id, parent=parent, title=title)
         config = self.report.config
-
         eth_adapter_policies_list = []
         # Searching for all Ethernet Adapter Policies
         for org in config.orgs:
@@ -656,7 +1060,6 @@ class IntersightEthAdapterPolicyReportTable(UcsReportTable):
 
 class IntersightEthAdapterPolicyRoceReportTable(UcsReportTable):
     def __init__(self, order_id, parent, eth_adapter_policy, centered=False):
-
         rows = [
             ["Description", "Value"],
             [
@@ -683,7 +1086,6 @@ class IntersightEthAdapterPolicyRoceReportTable(UcsReportTable):
 
 class IntersightEthAdapterPolicyInterruptReportTable(UcsReportTable):
     def __init__(self, order_id, parent, eth_adapter_policy, centered=False):
-
         rows = [
             ["Description", "Value"],
             ["Number of Interrupts", eth_adapter_policy.interrupt_settings["interrupts"]],
@@ -705,7 +1107,6 @@ class IntersightEthAdapterPolicyInterruptReportTable(UcsReportTable):
 
 class IntersightEthAdapterPolicyTcpOffloadReportTable(UcsReportTable):
     def __init__(self, order_id, parent, eth_adapter_policy, centered=False):
-
         rows = [
             ["Description", "Value"],
             ["Enable Tx Checksum Offload", eth_adapter_policy.tcp_offload_settings["enable_tx_checksum_offload"]],
@@ -727,7 +1128,6 @@ class IntersightEthAdapterPolicyTcpOffloadReportTable(UcsReportTable):
 
 class IntersightEthAdapterPolicyRssReportTable(UcsReportTable):
     def __init__(self, order_id, parent, eth_adapter_policy, centered=False):
-
         rows = [
             ["Description", "Value"],
             ["Enable Receive Side Scaling", eth_adapter_policy.rss_settings["enable_receive_side_scaling"]],
@@ -755,11 +1155,79 @@ class IntersightEthAdapterPolicyRssReportTable(UcsReportTable):
         )
 
 
+class IntersightEthernetNetworkPoliciesReportSection(UcsReportSection):
+    def __init__(self, order_id, parent, title="Ethernet Network Policies"):
+        UcsReportSection.__init__(self, order_id=order_id, parent=parent, title=title)
+        config = self.report.config
+        ethernet_network_policies_list = []
+        for org in config.orgs:
+            self.parse_org(org, ethernet_network_policies_list,
+                           element_to_parse="ethernet_network_policies")
+
+        if ethernet_network_policies_list:
+            for ethernet_network_policy in ethernet_network_policies_list:
+                self.content_list.append(
+                    IntersightEthernetNetworkPolicyReportSection(
+                        order_id=self.report.get_current_order_id(),
+                        parent=self,
+                        ethernet_network_policy=ethernet_network_policy,
+                        title="Ethernet Network Policy " + ethernet_network_policy.name,
+                    )
+                )
+        else:
+            self.content_list.append(
+                GenericReportText(
+                    order_id=self.report.get_current_order_id(),
+                    parent=self,
+                    string="No Ethernet Network Policies found.",
+                    italicized=True,
+                )
+            )
+
+
+class IntersightEthernetNetworkPolicyReportSection(UcsReportSection):
+    def __init__(self, order_id, parent, ethernet_network_policy, title=""):
+        UcsReportSection.__init__(self, order_id=order_id, parent=parent, title=title)
+
+        self.content_list.append(
+            IntersightEthernetNetworkPolicyReportTable(
+                order_id=self.report.get_current_order_id(),
+                parent=self,
+                centered=True,
+                ethernet_network_policy=ethernet_network_policy,
+            )
+        )
+
+
+class IntersightEthernetNetworkPolicyReportTable(UcsReportTable):
+    def __init__(self, order_id, parent, ethernet_network_policy, centered=False):
+        rows = [
+            ["Description", "Value"],
+            ["Name", ethernet_network_policy.name],
+            ["Description", ethernet_network_policy.descr],
+            ["Organization", ethernet_network_policy._parent.name],
+            ["Target Platform", ethernet_network_policy.target_platform],
+            ["VLAN Mode", ethernet_network_policy.vlan_mode],
+            ["Default VLAN", ethernet_network_policy.default_vlan],
+            ["Enable QinQ Tunneling", ethernet_network_policy.enable_qinq_tunneling],
+            ["QinQ VLAN", ethernet_network_policy.qinq_vlan],
+        ]
+
+        UcsReportTable.__init__(
+            self,
+            order_id=order_id,
+            parent=parent,
+            row_number=len(rows),
+            column_number=len(rows[0]),
+            centered=centered,
+            cells_list=rows,
+        )
+
+
 class IntersightEthNetworkControlPoliciesReportSection(UcsReportSection):
     def __init__(self, order_id, parent, title="Ethernet Network Control Policies"):
         UcsReportSection.__init__(self, order_id=order_id, parent=parent, title=title)
         config = self.report.config
-
         default_ethernet_network_control_policy_name = ""
 
         ethernet_network_control_policies_list = []
@@ -863,7 +1331,6 @@ class IntersightEthNetworkGroupPoliciesReportSection(UcsReportSection):
     def __init__(self, order_id, parent, title="Ethernet Network Group Policies"):
         UcsReportSection.__init__(self, order_id=order_id, parent=parent, title=title)
         config = self.report.config
-
         eth_network_group_policies_list = []
         # Searching for all Ethernet Network Group Policies
         for org in config.orgs:
@@ -926,7 +1393,6 @@ class IntersightEthQosPoliciesReportSection(UcsReportSection):
     def __init__(self, order_id, parent, title="Ethernet QoS Policies"):
         UcsReportSection.__init__(self, order_id=order_id, parent=parent, title=title)
         config = self.report.config
-
         eth_qos_policies_list = []
         # Searching for all Ethernet QoS Policies
         for org in config.orgs:
@@ -998,7 +1464,6 @@ class IntersightFcAdapterPoliciesReportSection(UcsReportSection):
     def __init__(self, order_id, parent, title="Fibre Channel Adapter Policies"):
         UcsReportSection.__init__(self, order_id=order_id, parent=parent, title=title)
         config = self.report.config
-
         fc_adapter_policies_list = []
         # Searching for all Fibre Channel Adapter Policies
         for org in config.orgs:
@@ -1114,7 +1579,6 @@ class IntersightFcAdapterPolicyReportTable(UcsReportTable):
 
 class IntersightFcAdapterPolicyErrRecoveryReportTable(UcsReportTable):
     def __init__(self, order_id, parent, fc_adapter_policy, centered=False):
-
         rows = [
             ["Description", "Value"],
             ["Enable FCP Error Recovery", fc_adapter_policy.error_recovery_settings["enable_fcp_error_recovery"]],
@@ -1137,7 +1601,6 @@ class IntersightFcAdapterPolicyErrRecoveryReportTable(UcsReportTable):
 
 class IntersightFcAdapterPolicyInterruptReportTable(UcsReportTable):
     def __init__(self, order_id, parent, fc_adapter_policy, centered=False):
-
         rows = [
             ["Description", "Value"],
             ["Interrupt Mode", fc_adapter_policy.interrupt_settings["interrupt_mode"]],
@@ -1158,7 +1621,6 @@ class IntersightFcNetworkPoliciesReportSection(UcsReportSection):
     def __init__(self, order_id, parent, title="Fibre Channel Network Policies"):
         UcsReportSection.__init__(self, order_id=order_id, parent=parent, title=title)
         config = self.report.config
-
         fc_network_policies_list = []
         # Searching for all Fibre Channel Network Policies
         for org in config.orgs:
@@ -1202,7 +1664,6 @@ class IntersightFcNetworkPolicyReportSection(UcsReportSection):
 
 class IntersightFcNetworkPolicyReportTable(UcsReportTable):
     def __init__(self, order_id, parent, fc_network_policy, centered=False):
-
         rows = [
             ["Description", "Value"],
             ["Name", fc_network_policy.name],
@@ -1227,7 +1688,6 @@ class IntersightFcQosPoliciesReportSection(UcsReportSection):
     def __init__(self, order_id, parent, title="Fibre Channel QoS Policies"):
         UcsReportSection.__init__(self, order_id=order_id, parent=parent, title=title)
         config = self.report.config
-
         fc_qos_policies_list = []
         # Searching for all Fibre Channel QoS Policies
         for org in config.orgs:
@@ -1298,7 +1758,6 @@ class IntersightFcZonePoliciesReportSection(UcsReportSection):
     def __init__(self, order_id, parent, title="FC Zone Policies"):
         UcsReportSection.__init__(self, order_id=order_id, parent=parent, title=title)
         config = self.report.config
-
         fc_zone_policies_list = []
         # Searching for all FC Zone Policies
         for org in config.orgs:
@@ -1362,7 +1821,6 @@ class IntersightFcZonePolicyReportSection(UcsReportSection):
 
 class IntersightFcZonePolicyReportTable(UcsReportTable):
     def __init__(self, order_id, parent, fc_zone_policy, centered=False):
-
         rows = [
             ["Description", "Value"],
             ["Name", fc_zone_policy.name],
@@ -1411,7 +1869,6 @@ class IntersightFirmwarePoliciesReportSection(UcsReportSection):
     def __init__(self, order_id, parent, title="Firmware Policies"):
         UcsReportSection.__init__(self, order_id=order_id, parent=parent, title=title)
         config = self.report.config
-
         firmware_policies_list = []
         # Searching for all Firmware Policies
         for org in config.orgs:
@@ -1464,7 +1921,6 @@ class IntersightFirmwarePolicyReportSection(UcsReportSection):
 
 class IntersightFirmwarePolicyReportTable(UcsReportTable):
     def __init__(self, order_id, parent, firmware_policy, centered=False):
-
         rows = [
             ["Description", "Value"],
             ["Name", firmware_policy.name],
@@ -1474,7 +1930,8 @@ class IntersightFirmwarePolicyReportTable(UcsReportTable):
         ]
 
         if getattr(firmware_policy, "excluded_components", None):
-            rows.append(["Excluded Component(s)", ", ".join([excluded_component for excluded_component in firmware_policy.excluded_components])])
+            rows.append(["Excluded Component(s)",
+                         ", ".join([excluded_component for excluded_component in firmware_policy.excluded_components])])
 
         UcsReportTable.__init__(
             self,
@@ -1489,7 +1946,6 @@ class IntersightFirmwarePolicyReportTable(UcsReportTable):
 
 class IntersightFirmwarePolicyServerFirmwareReportTable(UcsReportTable):
     def __init__(self, order_id, parent, models, centered=False):
-
         rows = [
             ["Server Model", "Firmware Version"]
         ]
@@ -1511,7 +1967,6 @@ class IntersightIdMappingPoliciesReportSection(UcsReportSection):
     def __init__(self, order_id, parent, title="ID Mapping Policies"):
         UcsReportSection.__init__(self, order_id=order_id, parent=parent, title=title)
         config = self.report.config
-
         id_mapping_policies_list = []
         for org in config.orgs:
             self.parse_org(org, id_mapping_policies_list, element_to_parse="id_mapping_policies")
@@ -1615,7 +2070,6 @@ class IntersightImcAccessPoliciesReportSection(UcsReportSection):
     def __init__(self, order_id, parent, title="IMC Access Policies"):
         UcsReportSection.__init__(self, order_id=order_id, parent=parent, title=title)
         config = self.report.config
-
         imc_access_policies_list = []
         # Searching for all IMC Access Policies
         for org in config.orgs:
@@ -1659,7 +2113,6 @@ class IntersightImcAccessPolicyReportSection(UcsReportSection):
 
 class IntersightImcAccessPolicyReportTable(UcsReportTable):
     def __init__(self, order_id, parent, imc_access_policy, centered=False):
-
         rows = [
             ["Description", "Value"],
             ["Name", imc_access_policy.name],
@@ -1689,7 +2142,6 @@ class IntersightIpmiOverLanPoliciesReportSection(UcsReportSection):
     def __init__(self, order_id, parent, title="IPMI over LAN Policies"):
         UcsReportSection.__init__(self, order_id=order_id, parent=parent, title=title)
         config = self.report.config
-
         ipmi_over_lan_policies_list = []
         # Searching for all IPMI Over LAN Policies
         for org in config.orgs:
@@ -1759,7 +2211,6 @@ class IntersightIscsiAdapterPoliciesReportSection(UcsReportSection):
     def __init__(self, order_id, parent, title="iSCSI Adapter Policies"):
         UcsReportSection.__init__(self, order_id=order_id, parent=parent, title=title)
         config = self.report.config
-
         iscsi_adapter_policies_list = []
         # Searching for all iSCSI Adapter Policies
         for org in config.orgs:
@@ -1829,7 +2280,6 @@ class IntersightIscsiBootPoliciesReportSection(UcsReportSection):
     def __init__(self, order_id, parent, title="iSCSI Boot Policies"):
         UcsReportSection.__init__(self, order_id=order_id, parent=parent, title=title)
         config = self.report.config
-
         iscsi_boot_policies_list = []
         # Searching for all iSCSI Boot Policies
         for org in config.orgs:
@@ -1935,45 +2385,45 @@ class IntersightIscsiBootPolicyReportTable(UcsReportTable):
         if hasattr(iscsi_boot_policy, "ipv4_address") and getattr(iscsi_boot_policy, "ipv4_address", None):
             rows.append(["IPv4 Address", iscsi_boot_policy.ipv4_address])
             if (
-                getattr(iscsi_boot_policy, "initiator_static_ip_v4_config", None)
-                and iscsi_boot_policy.initiator_static_ip_v4_config.get("default_gateway")
+                    getattr(iscsi_boot_policy, "initiator_static_ip_v4_config", None)
+                    and iscsi_boot_policy.initiator_static_ip_v4_config.get("default_gateway")
             ):
                 rows.append(["Default Gateway", iscsi_boot_policy.initiator_static_ip_v4_config["default_gateway"]])
             if (
-                getattr(iscsi_boot_policy, "initiator_static_ip_v4_config", None)
-                and iscsi_boot_policy.initiator_static_ip_v4_config.get("subnet_mask")
+                    getattr(iscsi_boot_policy, "initiator_static_ip_v4_config", None)
+                    and iscsi_boot_policy.initiator_static_ip_v4_config.get("subnet_mask")
             ):
                 rows.append(["Subnet Mask", iscsi_boot_policy.initiator_static_ip_v4_config["subnet_mask"]])
             if (
-                getattr(iscsi_boot_policy, "initiator_static_ip_v4_config", None)
-                and iscsi_boot_policy.initiator_static_ip_v4_config.get("primary_dns")
+                    getattr(iscsi_boot_policy, "initiator_static_ip_v4_config", None)
+                    and iscsi_boot_policy.initiator_static_ip_v4_config.get("primary_dns")
             ):
                 rows.append(["Primary DNS", iscsi_boot_policy.initiator_static_ip_v4_config["primary_dns"]])
             if (
-                getattr(iscsi_boot_policy, "initiator_static_ip_v4_config", None)
-                and iscsi_boot_policy.initiator_static_ip_v4_config.get("secondary_dns")
+                    getattr(iscsi_boot_policy, "initiator_static_ip_v4_config", None)
+                    and iscsi_boot_policy.initiator_static_ip_v4_config.get("secondary_dns")
             ):
                 rows.append(["Secondary DNS", iscsi_boot_policy.initiator_static_ip_v4_config["secondary_dns"]])
         elif hasattr(iscsi_boot_policy, "ipv6_address") and getattr(iscsi_boot_policy, "ipv6_address", None):
             rows.append(["IPv6 Address", iscsi_boot_policy.ipv6_address])
             if (
-                getattr(iscsi_boot_policy, "initiator_static_ip_v6_config", None)
-                and iscsi_boot_policy.initiator_static_ip_v6_config.get("default_gateway")
+                    getattr(iscsi_boot_policy, "initiator_static_ip_v6_config", None)
+                    and iscsi_boot_policy.initiator_static_ip_v6_config.get("default_gateway")
             ):
                 rows.append(["Default Gateway", iscsi_boot_policy.initiator_static_ip_v6_config["default_gateway"]])
             if (
-                getattr(iscsi_boot_policy, "initiator_static_ip_v6_config", None)
-                and iscsi_boot_policy.initiator_static_ip_v6_config.get("prefix")
+                    getattr(iscsi_boot_policy, "initiator_static_ip_v6_config", None)
+                    and iscsi_boot_policy.initiator_static_ip_v6_config.get("prefix")
             ):
                 rows.append(["Prefix", iscsi_boot_policy.initiator_static_ip_v6_config["prefix"]])
             if (
-                getattr(iscsi_boot_policy, "initiator_static_ip_v6_config", None)
-                and iscsi_boot_policy.initiator_static_ip_v6_config.get("primary_dns")
+                    getattr(iscsi_boot_policy, "initiator_static_ip_v6_config", None)
+                    and iscsi_boot_policy.initiator_static_ip_v6_config.get("primary_dns")
             ):
                 rows.append(["Primary DNS", iscsi_boot_policy.initiator_static_ip_v6_config["primary_dns"]])
             if (
-                getattr(iscsi_boot_policy, "initiator_static_ip_v6_config", None)
-                and iscsi_boot_policy.initiator_static_ip_v6_config.get("secondary_dns")
+                    getattr(iscsi_boot_policy, "initiator_static_ip_v6_config", None)
+                    and iscsi_boot_policy.initiator_static_ip_v6_config.get("secondary_dns")
             ):
                 rows.append(["Secondary DNS", iscsi_boot_policy.initiator_static_ip_v6_config["secondary_dns"]])
 
@@ -1990,7 +2440,6 @@ class IntersightIscsiBootPolicyReportTable(UcsReportTable):
 
 class IntersightIscsiBootPolicyChapReportTable(UcsReportTable):
     def __init__(self, order_id, parent, iscsi_boot_policy, centered=False):
-
         rows = [
             ["Description", "Value"],
             ["User Name", iscsi_boot_policy.chap["user_id"]]
@@ -2011,7 +2460,6 @@ class IntersightIscsiBootPolicyChapReportTable(UcsReportTable):
 
 class IntersightIscsiBootPolicyMutualChapReportTable(UcsReportTable):
     def __init__(self, order_id, parent, iscsi_boot_policy, centered=False):
-
         rows = [
             ["Description", "Value"],
             ["User Name", iscsi_boot_policy.mutual_chap["user_id"]]
@@ -2034,7 +2482,6 @@ class IntersightIscsiStaticTargetPoliciesReportSection(UcsReportSection):
     def __init__(self, order_id, parent, title="iSCSI Static Target Policies"):
         UcsReportSection.__init__(self, order_id=order_id, parent=parent, title=title)
         config = self.report.config
-
         iscsi_static_target_policies_list = []
         # Searching for all iSCSI Static Target Policies
         for org in config.orgs:
@@ -2088,9 +2535,11 @@ class IntersightIscsiStaticTargetPolicyReportTable(UcsReportTable):
             ["Port", iscsi_static_target_policy.port],
             ["Lun ID", iscsi_static_target_policy.lun["lun_id"]],
         ]
-        if hasattr(iscsi_static_target_policy, "ipv4_address") and getattr(iscsi_static_target_policy, "ipv4_address", None):
+        if hasattr(iscsi_static_target_policy, "ipv4_address") and getattr(iscsi_static_target_policy, "ipv4_address",
+                                                                           None):
             rows.append(["IPv4 Address", iscsi_static_target_policy.ipv4_address])
-        elif hasattr(iscsi_static_target_policy, "ipv6_address") and getattr(iscsi_static_target_policy, "ipv6_address", None):
+        elif hasattr(iscsi_static_target_policy, "ipv6_address") and getattr(iscsi_static_target_policy, "ipv6_address",
+                                                                             None):
             rows.append(["IPv6 Address", iscsi_static_target_policy.ipv6_address])
 
         UcsReportTable.__init__(
@@ -2108,7 +2557,6 @@ class IntersightLanConnectivityPoliciesReportSection(UcsReportSection):
     def __init__(self, order_id, parent, title="LAN Connectivity Policies"):
         UcsReportSection.__init__(self, order_id=order_id, parent=parent, title=title)
         config = self.report.config
-
         lan_connectivity_policies_list = []
         # Searching for all LAN Connectivity Policies
         for org in config.orgs:
@@ -2343,14 +2791,14 @@ class IntersightLanConnectivityPolicyVnicVmqReportTable(UcsReportTable):
 
         if vnic["vmq_settings"].get("enable_virtual_machine_multi_queue"):
             rows.append(["Enable Virtual Machine Multi Queue",
-                        vnic["vmq_settings"]["enable_virtual_machine_multi_queue"]])
+                         vnic["vmq_settings"]["enable_virtual_machine_multi_queue"]])
         if vnic["vmq_settings"].get("number_of_interrupts"):
             rows.append(["Number of Interrupts", vnic["vmq_settings"]["number_of_interrupts"]])
         if vnic["vmq_settings"].get("number_of_sub_vnics"):
             rows.append(["Number of Sub vNICs", vnic["vmq_settings"]["number_of_sub_vnics"]])
         if vnic["vmq_settings"].get("number_of_virtual_machine_queues"):
             rows.append(["Number of Virtual Machine Multi Queues",
-                        vnic["vmq_settings"]["number_of_virtual_machine_queues"]])
+                         vnic["vmq_settings"]["number_of_virtual_machine_queues"]])
         if vnic["vmq_settings"].get("vmmq_adapter_policy"):
             rows.append(["VMMQ Adapter Policy", vnic["vmq_settings"]["vmmq_adapter_policy"]])
 
@@ -2396,7 +2844,6 @@ class IntersightLocalUserPoliciesReportSection(UcsReportSection):
     def __init__(self, order_id, parent, title="Local User Policies"):
         UcsReportSection.__init__(self, order_id=order_id, parent=parent, title=title)
         config = self.report.config
-
         local_user_policies_list = []
         # Searching for all Local User Policies
         for org in config.orgs:
@@ -2451,7 +2898,6 @@ class IntersightLocalUserPolicyReportSection(UcsReportSection):
 
 class IntersightLocalUserPolicyReportTable(UcsReportTable):
     def __init__(self, order_id, parent, local_user_policy, centered=False):
-
         rows = [
             ["Description", "Value"],
             ["Name", local_user_policy.name],
@@ -2521,7 +2967,6 @@ class IntersightMemoryPoliciesReportSection(UcsReportSection):
     def __init__(self, order_id, parent, title="Memory Policies"):
         UcsReportSection.__init__(self, order_id=order_id, parent=parent, title=title)
         config = self.report.config
-
         memory_policies_list = []
         # Searching for all Memory Policies
         for org in config.orgs:
@@ -2588,7 +3033,6 @@ class IntersightNetworkConnectivityPoliciesReportSection(UcsReportSection):
     def __init__(self, order_id, parent, title="Network Connectivity Policies"):
         UcsReportSection.__init__(self, order_id=order_id, parent=parent, title=title)
         config = self.report.config
-
         network_connectivity_policies_list = []
         # Searching for all Network Connectivity Policies
         for org in config.orgs:
@@ -2662,7 +3106,6 @@ class IntersightNtpPoliciesReportSection(UcsReportSection):
     def __init__(self, order_id, parent, title="NTP Policies"):
         UcsReportSection.__init__(self, order_id=order_id, parent=parent, title=title)
         config = self.report.config
-
         ntp_policies_list = []
         # Searching for all NTP Policies
         for org in config.orgs:
@@ -2736,7 +3179,6 @@ class IntersightPowerPoliciesReportSection(UcsReportSection):
     def __init__(self, order_id, parent, title="Power Policies"):
         UcsReportSection.__init__(self, order_id=order_id, parent=parent, title=title)
         config = self.report.config
-
         power_policies_list = []
         # Searching for all Power Policies
         for org in config.orgs:
@@ -2802,11 +3244,272 @@ class IntersightPowerPolicyReportTable(UcsReportTable):
         )
 
 
+class IntersightPcieConnectivityPoliciesReportSection(UcsReportSection):
+    def __init__(self, order_id, parent, title="PCIe Connectivity Policies"):
+        UcsReportSection.__init__(self, order_id=order_id, parent=parent, title=title)
+        config = self.report.config
+        pcie_connectivity_policies_list = []
+        for org in config.orgs:
+            self.parse_org(org, pcie_connectivity_policies_list,
+                           element_to_parse="pcie_connectivity_policies")
+
+        if pcie_connectivity_policies_list:
+            for pcie_connectivity_policy in pcie_connectivity_policies_list:
+                self.content_list.append(
+                    IntersightPcieConnectivityPolicyReportSection(
+                        order_id=self.report.get_current_order_id(),
+                        parent=self,
+                        pcie_connectivity_policy=pcie_connectivity_policy,
+                        title="PCIe Connectivity Policy " + pcie_connectivity_policy.name,
+                    )
+                )
+        else:
+            self.content_list.append(
+                GenericReportText(
+                    order_id=self.report.get_current_order_id(),
+                    parent=self,
+                    string="No PCIe Connectivity Policies found.",
+                    italicized=True,
+                )
+            )
+
+
+class IntersightPcieConnectivityPolicyReportSection(UcsReportSection):
+    def __init__(self, order_id, parent, pcie_connectivity_policy, title=""):
+        UcsReportSection.__init__(self, order_id=order_id, parent=parent, title=title)
+
+        self.content_list.append(
+            IntersightPcieConnectivityPolicyReportTable(
+                order_id=self.report.get_current_order_id(),
+                parent=self,
+                centered=True,
+                pcie_connectivity_policy=pcie_connectivity_policy,
+            )
+        )
+
+        if pcie_connectivity_policy.endpoint_mappings:
+            for idx, mapping in enumerate(pcie_connectivity_policy.endpoint_mappings, start=1):
+                self.content_list.append(
+                    GenericReportText(
+                        order_id=self.report.get_current_order_id(),
+                        parent=self,
+                        string=f"\nEndpoint Mapping {idx}: ",
+                        bolded=True,
+                    )
+                )
+                self.content_list.append(
+                    IntersightPcieConnectivityPolicyEndpointMappingReportTable(
+                        order_id=self.report.get_current_order_id(),
+                        parent=self,
+                        centered=True,
+                        mapping=mapping,
+                    )
+                )
+
+
+class IntersightPcieConnectivityPolicyReportTable(UcsReportTable):
+    def __init__(self, order_id, parent, pcie_connectivity_policy, centered=False):
+        rows = [
+            ["Description", "Value"],
+            ["Name", pcie_connectivity_policy.name],
+            ["Description", pcie_connectivity_policy.descr],
+            ["Organization", pcie_connectivity_policy._parent.name],
+        ]
+
+        UcsReportTable.__init__(
+            self,
+            order_id=order_id,
+            parent=parent,
+            row_number=len(rows),
+            column_number=len(rows[0]),
+            centered=centered,
+            cells_list=rows,
+        )
+
+
+class IntersightPcieConnectivityPolicyEndpointMappingReportTable(UcsReportTable):
+    def __init__(self, order_id, parent, mapping, centered=False):
+        rows = [["Component", "Setting", "Value"]]
+
+        if mapping.get("cpus"):
+            rows.append(["CPU", "ID", mapping["cpus"].get("id")])
+
+        if mapping.get("gpus"):
+            rows.append(["GPU", "Quantity", mapping["gpus"].get("quantity")])
+            rows.append(["GPU", "Model", mapping["gpus"].get("model")])
+
+        if mapping.get("smartnic"):
+            rows.append(["SmartNIC", "Quantity", mapping["smartnic"].get("quantity")])
+            rows.append(["SmartNIC", "Model", mapping["smartnic"].get("model")])
+
+        if len(rows) == 1:
+            rows.append(["N/A", "N/A", "N/A"])
+
+        UcsReportTable.__init__(
+            self,
+            order_id=order_id,
+            parent=parent,
+            row_number=len(rows),
+            column_number=len(rows[0]),
+            centered=centered,
+            cells_list=rows,
+        )
+
+
+class IntersightPersistentMemoryPoliciesReportSection(UcsReportSection):
+    def __init__(self, order_id, parent, title="Persistent Memory Policies"):
+        UcsReportSection.__init__(self, order_id=order_id, parent=parent, title=title)
+        config = self.report.config
+        persistent_memory_policies_list = []
+        for org in config.orgs:
+            self.parse_org(org, persistent_memory_policies_list,
+                           element_to_parse="persistent_memory_policies")
+
+        if persistent_memory_policies_list:
+            for persistent_memory_policy in persistent_memory_policies_list:
+                self.content_list.append(
+                    IntersightPersistentMemoryPolicyReportSection(
+                        order_id=self.report.get_current_order_id(),
+                        parent=self,
+                        persistent_memory_policy=persistent_memory_policy,
+                        title="Persistent Memory Policy " + persistent_memory_policy.name,
+                    )
+                )
+        else:
+            self.content_list.append(
+                GenericReportText(
+                    order_id=self.report.get_current_order_id(),
+                    parent=self,
+                    string="No Persistent Memory Policies found.",
+                    italicized=True,
+                )
+            )
+
+
+class IntersightPersistentMemoryPolicyReportSection(UcsReportSection):
+    def __init__(self, order_id, parent, persistent_memory_policy, title=""):
+        UcsReportSection.__init__(self, order_id=order_id, parent=parent, title=title)
+
+        self.content_list.append(
+            IntersightPersistentMemoryPolicyReportTable(
+                order_id=self.report.get_current_order_id(),
+                parent=self,
+                centered=True,
+                persistent_memory_policy=persistent_memory_policy,
+            )
+        )
+
+        if persistent_memory_policy.goals:
+            self.content_list.append(
+                GenericReportText(
+                    order_id=self.report.get_current_order_id(),
+                    parent=self,
+                    string="\nPersistent Memory Goals: ",
+                    bolded=True,
+                )
+            )
+            self.content_list.append(
+                IntersightPersistentMemoryPolicyGoalsReportTable(
+                    order_id=self.report.get_current_order_id(),
+                    parent=self,
+                    centered=True,
+                    goals=persistent_memory_policy.goals,
+                )
+            )
+
+        if persistent_memory_policy.logical_namespaces:
+            self.content_list.append(
+                GenericReportText(
+                    order_id=self.report.get_current_order_id(),
+                    parent=self,
+                    string="\nLogical Namespaces: ",
+                    bolded=True,
+                )
+            )
+            self.content_list.append(
+                IntersightPersistentMemoryPolicyNamespacesReportTable(
+                    order_id=self.report.get_current_order_id(),
+                    parent=self,
+                    centered=True,
+                    namespaces=persistent_memory_policy.logical_namespaces,
+                )
+            )
+
+
+class IntersightPersistentMemoryPolicyReportTable(UcsReportTable):
+    def __init__(self, order_id, parent, persistent_memory_policy, centered=False):
+        rows = [
+            ["Description", "Value"],
+            ["Name", persistent_memory_policy.name],
+            ["Description", persistent_memory_policy.descr],
+            ["Organization", persistent_memory_policy._parent.name],
+            ["Management Mode", persistent_memory_policy.management_mode],
+            ["Retain Namespaces", persistent_memory_policy.retain_namespaces],
+        ]
+
+        if persistent_memory_policy.local_security:
+            rows.append([
+                "Enable Security Passphrase",
+                persistent_memory_policy.local_security.get("enable_security_passphrase"),
+            ])
+
+        UcsReportTable.__init__(
+            self,
+            order_id=order_id,
+            parent=parent,
+            row_number=len(rows),
+            column_number=len(rows[0]),
+            centered=centered,
+            cells_list=rows,
+        )
+
+
+class IntersightPersistentMemoryPolicyGoalsReportTable(UcsReportTable):
+    def __init__(self, order_id, parent, goals, centered=False):
+        rows = [
+            ["Setting", "Value"],
+            ["Memory Mode Percentage", goals.get("memory_mode_percentage")],
+            ["Persistent Memory Type", goals.get("persistent_memory_type")],
+        ]
+
+        UcsReportTable.__init__(
+            self,
+            order_id=order_id,
+            parent=parent,
+            row_number=len(rows),
+            column_number=len(rows[0]),
+            centered=centered,
+            cells_list=rows,
+        )
+
+
+class IntersightPersistentMemoryPolicyNamespacesReportTable(UcsReportTable):
+    def __init__(self, order_id, parent, namespaces, centered=False):
+        rows = [["Name", "Capacity", "Mode", "Socket ID", "Socket Memory ID"]]
+        for ns in namespaces:
+            rows.append([
+                ns.get("name"),
+                ns.get("capacity"),
+                ns.get("mode"),
+                ns.get("socket_id"),
+                ns.get("socket_memory_id"),
+            ])
+
+        UcsReportTable.__init__(
+            self,
+            order_id=order_id,
+            parent=parent,
+            row_number=len(rows),
+            column_number=len(rows[0]),
+            centered=centered,
+            cells_list=rows,
+        )
+
+
 class IntersightSanConnectivityPoliciesReportSection(UcsReportSection):
     def __init__(self, order_id, parent, title="SAN Connectivity Policies"):
         UcsReportSection.__init__(self, order_id=order_id, parent=parent, title=title)
         config = self.report.config
-
         san_connectivity_policies_list = []
         # Searching for all SAN Connectivity Policies
         for org in config.orgs:
@@ -2955,7 +3658,6 @@ class IntersightScrubPoliciesReportSection(UcsReportSection):
     def __init__(self, order_id, parent, title="Scrub Policies"):
         UcsReportSection.__init__(self, order_id=order_id, parent=parent, title=title)
         config = self.report.config
-
         scrub_policies_list = []
 
         for org in config.orgs:
@@ -2999,12 +3701,11 @@ class IntersightScrubPolicyReportSection(UcsReportSection):
 
 class IntersightScrubPolicyReportTable(UcsReportTable):
     def __init__(self, order_id, parent, scrub_policy, centered=False):
-
         rows = [
             ["Description", "Value"],
             ["Name", scrub_policy.name],
             ["Description", scrub_policy.descr],
-            ["Disk Scrub", scrub_policy.disk ],
+            ["Disk Scrub", scrub_policy.disk],
             ["BIOS Settings Scrub", scrub_policy.bios]
         ]
 
@@ -3023,7 +3724,6 @@ class IntersightSdCardPoliciesReportSection(UcsReportSection):
     def __init__(self, order_id, parent, title="SD Card Policies"):
         UcsReportSection.__init__(self, order_id=order_id, parent=parent, title=title)
         config = self.report.config
-
         sd_card_policies_list = []
         # Searching for all SD Card Policies
         for org in config.orgs:
@@ -3099,7 +3799,6 @@ class IntersightServerPoolQualificationPoliciesReportSection(UcsReportSection):
     def __init__(self, order_id, parent, title="Server Pool Qualification Policies"):
         UcsReportSection.__init__(self, order_id=order_id, parent=parent, title=title)
         config = self.report.config
-
         server_pool_qualification_policies_list = []
         # Searching for all Server Pool Qualification Policies
         for org in config.orgs:
@@ -3367,7 +4066,6 @@ class IntersightServerPoolQualificationPolicyReportTable(UcsReportTable):
 
 class IntersightServerPoolQualificationPolicyDomainQualifiersReportTable(UcsReportTable):
     def __init__(self, order_id, parent, domain_qualifiers, centered=False):
-
         rows = [
             ["Description", "Value"],
             ["Domain Names", domain_qualifiers.get("domain_names")],
@@ -3388,7 +4086,6 @@ class IntersightServerPoolQualificationPolicyDomainQualifiersReportTable(UcsRepo
 
 class IntersightServerPoolQualificationPolicyRackServerQualifierReportTable(UcsReportTable):
     def __init__(self, order_id, parent, rack_server_qualifier, centered=False):
-
         rows = [
             ["Description", "Value"],
             ["Asset Tags", rack_server_qualifier.get("asset_tags")],
@@ -3409,7 +4106,6 @@ class IntersightServerPoolQualificationPolicyRackServerQualifierReportTable(UcsR
 
 class IntersightServerPoolQualificationPolicyRackServerQualifierRackIDsReportTable(UcsReportTable):
     def __init__(self, order_id, parent, rack_ids, centered=False):
-
         rows = [
             ["Description", "Value"],
             ["Rack ID From", rack_ids.get("rack_id_from")],
@@ -3429,7 +4125,6 @@ class IntersightServerPoolQualificationPolicyRackServerQualifierRackIDsReportTab
 
 class IntersightServerPoolQualificationPolicyBladeServerQualifierReportTable(UcsReportTable):
     def __init__(self, order_id, parent, blade_server_qualifier, centered=False):
-
         rows = [
             ["Description", "Value"],
             ["Asset Tags", blade_server_qualifier.get("asset_tags")],
@@ -3451,7 +4146,6 @@ class IntersightServerPoolQualificationPolicyBladeServerQualifierReportTable(Ucs
 
 class IntersightServerPoolQualificationPolicyBladeServerQualifierChassisIDsReportTable(UcsReportTable):
     def __init__(self, order_id, parent, chassis_ids, centered=False):
-
         rows = [
             ["Description", "Value"],
             ["Chassis ID From", chassis_ids.get("chassis_id_from")],
@@ -3471,7 +4165,6 @@ class IntersightServerPoolQualificationPolicyBladeServerQualifierChassisIDsRepor
 
 class IntersightServerPoolQualificationPolicyBladeServerQualifierSlotIDsReportTable(UcsReportTable):
     def __init__(self, order_id, parent, slot_id, centered=False):
-
         rows = [
             ["Description", "Value"],
             ["Slot ID From", slot_id.get("slot_id_from")],
@@ -3491,7 +4184,6 @@ class IntersightServerPoolQualificationPolicyBladeServerQualifierSlotIDsReportTa
 
 class IntersightServerPoolQualificationPolicyTagQualifiersReportTable(UcsReportTable):
     def __init__(self, order_id, parent, tag_qualifiers, centered=False):
-
         rows = [
             ["Description", "Value"],
             ["Chassis Tags", tag_qualifiers.get("chassis_tags")],
@@ -3512,7 +4204,6 @@ class IntersightServerPoolQualificationPolicyTagQualifiersReportTable(UcsReportT
 
 class IntersightServerPoolQualificationPolicyMemoryQualifierReportTable(UcsReportTable):
     def __init__(self, order_id, parent, memory_qualifier, centered=False):
-
         rows = [
             ["Description", "Value"],
             ["Capacity Minimum", memory_qualifier.get("capacity_minimum")],
@@ -3534,7 +4225,6 @@ class IntersightServerPoolQualificationPolicyMemoryQualifierReportTable(UcsRepor
 
 class IntersightServerPoolQualificationPolicyGpuQualifierReportTable(UcsReportTable):
     def __init__(self, order_id, parent, gpu_qualifier, centered=False):
-
         rows = [
             ["Description", "Value"],
             ["GPU PIDs", gpu_qualifier.get("gpu_pids")],
@@ -3557,7 +4247,6 @@ class IntersightServerPoolQualificationPolicyGpuQualifierReportTable(UcsReportTa
 
 class IntersightServerPoolQualificationPolicyCpuQualifierReportTable(UcsReportTable):
     def __init__(self, order_id, parent, cpu_qualifier, centered=False):
-
         rows = [
             ["Description", "Value"],
             ["CPU PIDs", cpu_qualifier.get("cpu_pids")],
@@ -3581,7 +4270,6 @@ class IntersightServerPoolQualificationPolicyCpuQualifierReportTable(UcsReportTa
 
 class IntersightServerPoolQualificationPolicyNetworkAdapterQualifierReportTable(UcsReportTable):
     def __init__(self, order_id, parent, network_adapter_qualifier, centered=False):
-
         rows = [
             ["Description", "Value"],
             ["Number of Network Adapters Minimum", network_adapter_qualifier.get("number_of_network_adapters_minimum")],
@@ -3603,7 +4291,6 @@ class IntersightSerialOverLanPoliciesReportSection(UcsReportSection):
     def __init__(self, order_id, parent, title="Serial over LAN Policies"):
         UcsReportSection.__init__(self, order_id=order_id, parent=parent, title=title)
         config = self.report.config
-
         serial_over_lan_policies_list = []
         # Searching for all Serial Over LAN Policies
         for org in config.orgs:
@@ -3670,11 +4357,146 @@ class IntersightSerialOverLanPolicyReportTable(UcsReportTable):
         )
 
 
+class IntersightSmtpPoliciesReportSection(UcsReportSection):
+    def __init__(self, order_id, parent, title="SMTP Policies"):
+        UcsReportSection.__init__(self, order_id=order_id, parent=parent, title=title)
+        config = self.report.config
+        smtp_policies_list = []
+        for org in config.orgs:
+            self.parse_org(org, smtp_policies_list, element_to_parse="smtp_policies")
+
+        if smtp_policies_list:
+            for smtp_policy in smtp_policies_list:
+                self.content_list.append(
+                    IntersightSmtpPolicyReportSection(
+                        order_id=self.report.get_current_order_id(),
+                        parent=self,
+                        smtp_policy=smtp_policy,
+                        title="SMTP Policy " + smtp_policy.name,
+                    )
+                )
+        else:
+            self.content_list.append(
+                GenericReportText(
+                    order_id=self.report.get_current_order_id(),
+                    parent=self,
+                    string="No SMTP Policies found.",
+                    italicized=True,
+                )
+            )
+
+
+class IntersightSmtpPolicyReportSection(UcsReportSection):
+    def __init__(self, order_id, parent, smtp_policy, title=""):
+        UcsReportSection.__init__(self, order_id=order_id, parent=parent, title=title)
+
+        self.content_list.append(
+            IntersightSmtpPolicyReportTable(
+                order_id=self.report.get_current_order_id(),
+                parent=self,
+                centered=True,
+                smtp_policy=smtp_policy,
+            )
+        )
+
+
+class IntersightSmtpPolicyReportTable(UcsReportTable):
+    def __init__(self, order_id, parent, smtp_policy, centered=False):
+        recipients = ", ".join(smtp_policy.smtp_recipients) if smtp_policy.smtp_recipients else None
+        rows = [
+            ["Description", "Value"],
+            ["Name", smtp_policy.name],
+            ["Description", smtp_policy.descr],
+            ["Organization", smtp_policy._parent.name],
+            ["Enabled", smtp_policy.enabled],
+            ["SMTP Server Address", smtp_policy.smtp_server_address],
+            ["SMTP Port", smtp_policy.smtp_port],
+            ["Minimum Severity", smtp_policy.min_severity],
+            ["Sender Email", smtp_policy.sender_email],
+            ["SMTP Recipients", recipients],
+        ]
+
+        UcsReportTable.__init__(
+            self,
+            order_id=order_id,
+            parent=parent,
+            row_number=len(rows),
+            column_number=len(rows[0]),
+            centered=centered,
+            cells_list=rows,
+        )
+
+
+class IntersightSshPoliciesReportSection(UcsReportSection):
+    def __init__(self, order_id, parent, title="SSH Policies"):
+        UcsReportSection.__init__(self, order_id=order_id, parent=parent, title=title)
+        config = self.report.config
+        ssh_policies_list = []
+        for org in config.orgs:
+            self.parse_org(org, ssh_policies_list, element_to_parse="ssh_policies")
+
+        if ssh_policies_list:
+            for ssh_policy in ssh_policies_list:
+                self.content_list.append(
+                    IntersightSshPolicyReportSection(
+                        order_id=self.report.get_current_order_id(),
+                        parent=self,
+                        ssh_policy=ssh_policy,
+                        title="SSH Policy " + ssh_policy.name,
+                    )
+                )
+        else:
+            self.content_list.append(
+                GenericReportText(
+                    order_id=self.report.get_current_order_id(),
+                    parent=self,
+                    string="No SSH Policies found.",
+                    italicized=True,
+                )
+            )
+
+
+class IntersightSshPolicyReportSection(UcsReportSection):
+    def __init__(self, order_id, parent, ssh_policy, title=""):
+        UcsReportSection.__init__(self, order_id=order_id, parent=parent, title=title)
+
+        self.content_list.append(
+            IntersightSshPolicyReportTable(
+                order_id=self.report.get_current_order_id(),
+                parent=self,
+                centered=True,
+                ssh_policy=ssh_policy,
+            )
+        )
+
+
+class IntersightSshPolicyReportTable(UcsReportTable):
+    def __init__(self, order_id, parent, ssh_policy, centered=False):
+        rows = [
+            ["Description", "Value"],
+            ["Name", ssh_policy.name],
+            ["Description", ssh_policy.descr],
+            ["Organization", ssh_policy._parent.name],
+            ["Enabled", ssh_policy.enabled],
+            ["Port", ssh_policy.port],
+            ["Timeout", ssh_policy.timeout],
+        ]
+
+        UcsReportTable.__init__(
+            self,
+            order_id=order_id,
+            parent=parent,
+            row_number=len(rows),
+            column_number=len(rows[0]),
+            centered=centered,
+            cells_list=rows,
+        )
+
+
 class IntersightStoragePoliciesReportSection(UcsReportSection):
     def __init__(self, order_id, parent, title="Storage Policies"):
         UcsReportSection.__init__(self, order_id=order_id, parent=parent, title=title)
         config = self.report.config
-
         storage_policies_list = []
         # Searching for all Storage Policies
         for org in config.orgs:
@@ -3775,8 +4597,8 @@ class IntersightStoragePolicyReportSection(UcsReportSection):
                         )
 
         if (
-            hasattr(storage_policy, "single_drive_raid_configuration")
-            and storage_policy.single_drive_raid_configuration
+                hasattr(storage_policy, "single_drive_raid_configuration")
+                and storage_policy.single_drive_raid_configuration
         ):
             self.content_list.append(
                 GenericReportText(
@@ -3844,7 +4666,6 @@ class IntersightStoragePolicyReportTable(UcsReportTable):
 
 class IntersightStoragePolicyM2ConfigReportTable(UcsReportTable):
     def __init__(self, order_id, parent, m2_config, centered=False):
-
         rows = [
             ["Description", "Value"],
             ["Enable", m2_config.get("enable")],
@@ -3876,8 +4697,9 @@ class IntersightStoragePolicyDriveGroupReportTable(UcsReportTable):
         if drive_group.get("manual_drive_selection"):
             rows.append(["Drive Group Type", "Manual"])
             rows.append(["Dedicated Hot Spares", drive_group["manual_drive_selection"]["dedicated_hot_spares"]])
-            for drive_array_span in drive_group["manual_drive_selection"]["drive_array_spans"]:
-                rows.append(["Disks Slot Range", str(drive_array_span["slots"])])
+            if drive_group["manual_drive_selection"].get("drive_array_spans"):
+                for drive_array_span in drive_group["manual_drive_selection"]["drive_array_spans"]:
+                    rows.append(["Disks Slot Range", str(drive_array_span["slots"])])
 
         UcsReportTable.__init__(
             self,
@@ -3892,7 +4714,6 @@ class IntersightStoragePolicyDriveGroupReportTable(UcsReportTable):
 
 class IntersightStoragePolicyVirtualDriveReportTable(UcsReportTable):
     def __init__(self, order_id, parent, virtual_drive, centered=False):
-
         rows = [
             ["Description", "Value"],
             ["Virtual Drive Name", virtual_drive.get("vd_name")],
@@ -3919,7 +4740,6 @@ class IntersightStoragePolicyVirtualDriveReportTable(UcsReportTable):
 
 class IntersightStoragePolicySingleDriveReportTable(UcsReportTable):
     def __init__(self, order_id, parent, single_drive, centered=False):
-
         rows = [
             ["Description", "Value"],
             ["Enable", single_drive.get("enable")],
@@ -3944,7 +4764,6 @@ class IntersightStoragePolicySingleDriveReportTable(UcsReportTable):
 
 class IntersightStoragePolicyHybridSlotConfigReportTable(UcsReportTable):
     def __init__(self, order_id, parent, hybrid_slot_config, centered=False):
-
         rows = [
             ["Description", "Value"],
             ["Controller Attached NVMe Slots", hybrid_slot_config.get("controller_attached_nvme_slots")],
@@ -3966,7 +4785,6 @@ class IntersightSyslogPoliciesReportSection(UcsReportSection):
     def __init__(self, order_id, parent, title="Syslog Policies"):
         UcsReportSection.__init__(self, order_id=order_id, parent=parent, title=title)
         config = self.report.config
-
         syslog_policies_list = []
         # Searching for all Syslog Policies
         for org in config.orgs:
@@ -4065,7 +4883,6 @@ class IntersightThermalPoliciesReportSection(UcsReportSection):
     def __init__(self, order_id, parent, title="Thermal Policies"):
         UcsReportSection.__init__(self, order_id=order_id, parent=parent, title=title)
         config = self.report.config
-
         thermal_policies_list = []
         # Searching for all Thermal Policies
         for org in config.orgs:
@@ -4132,7 +4949,6 @@ class IntersightVirtualKvmPoliciesReportSection(UcsReportSection):
     def __init__(self, order_id, parent, title="Virtual KVM Policies"):
         UcsReportSection.__init__(self, order_id=order_id, parent=parent, title=title)
         config = self.report.config
-
         virtual_kvm_policies_list = []
         # Searching for all Virtual KVM Policies
         for org in config.orgs:
@@ -4176,7 +4992,6 @@ class IntersightVirtualKvmPolicyReportSection(UcsReportSection):
 
 class IntersightVirtualKvmPolicyReportTable(UcsReportTable):
     def __init__(self, order_id, parent, kvm_policy, centered=False):
-
         rows = [
             ["Description", "Value"],
             ["Name", kvm_policy.name],
@@ -4204,7 +5019,6 @@ class IntersightVirtualMediaPoliciesReportSection(UcsReportSection):
     def __init__(self, order_id, parent, title="Virtual Media Policies"):
         UcsReportSection.__init__(self, order_id=order_id, parent=parent, title=title)
         config = self.report.config
-
         virtual_media_policies_list = []
         # Searching for all Virtual Media Policies
         for org in config.orgs:
@@ -4333,7 +5147,6 @@ class IntersightVhbaTemplatesReportSection(UcsReportSection):
     def __init__(self, order_id, parent, title="vHBA Templates"):
         UcsReportSection.__init__(self, order_id=order_id, parent=parent, title=title)
         config = self.report.config
-
         vhba_templates = []
         # Searching for all vHBA Templates
         for org in config.orgs:
@@ -4403,13 +5216,12 @@ class IntersightVhbaTemplateReportTable(UcsReportTable):
             centered=centered,
             cells_list=rows,
         )
-        
+
 
 class IntersightVnicTemplatesReportSection(UcsReportSection):
     def __init__(self, order_id, parent, title="vNIC Templates"):
         UcsReportSection.__init__(self, order_id=order_id, parent=parent, title=title)
         config = self.report.config
-
         vnic_templates = []
         # Searching for all vNIC Templates
         for org in config.orgs:
@@ -4507,7 +5319,6 @@ class IntersightVnicTemplateReportSection(UcsReportSection):
 
 class IntersightVnicTemplateReportTable(UcsReportTable):
     def __init__(self, order_id, parent, vnic_template, centered=False):
-
         rows = [
             ["Description", "Value"],
             ["Name", vnic_template.name],

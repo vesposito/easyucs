@@ -125,7 +125,7 @@ class UcsSystemMgmtInterface(UcsMgmtInterface, UcsSystemInventoryObject):
 
     def _get_outband_mgmt_ip_mode(self):
         # We check if we already have fetched the list of vnicIpV4StaticAddr objects
-        if self._inventory.sdk_objects["vnicIpV4StaticAddr"] is not None:
+        if self._inventory.sdk_objects.get("vnicIpV4StaticAddr") is not None:
             vnic_ipv4_static_addr_list = [vnic_ipv4_static_addr for vnic_ipv4_static_addr in
                                           self._inventory.sdk_objects["vnicIpV4StaticAddr"]
                                           if self._parent.dn + "/mgmt/ipv4-static-addr" in vnic_ipv4_static_addr.dn]
@@ -136,7 +136,7 @@ class UcsSystemMgmtInterface(UcsMgmtInterface, UcsSystemInventoryObject):
                 return True
 
         # We check if we already have fetched the list of vnicIpV4PooledAddr objects
-        if self._inventory.sdk_objects["vnicIpV4PooledAddr"] is not None:
+        if self._inventory.sdk_objects.get("vnicIpV4PooledAddr") is not None:
             vnic_ipv4_pooled_addr_list = [vnic_ipv4_pooled_addr for vnic_ipv4_pooled_addr in
                                           self._inventory.sdk_objects["vnicIpV4PooledAddr"]
                                           if self._parent.dn + "/mgmt/ipv4-pooled-addr" in vnic_ipv4_pooled_addr.dn]
@@ -187,7 +187,7 @@ class UcsSystemMgmtInterfaceInband(UcsSystemInventoryObject):
     def _get_inband_mgmt_ip_addr(self):
         found = False
         # We check if we already have fetched the list of vnicIpV4StaticAddr objects
-        if self._inventory.sdk_objects["vnicIpV4StaticAddr"] is not None:
+        if self._inventory.sdk_objects.get("vnicIpV4StaticAddr") is not None:
             vnic_ipv4_static_addr_list = [vnic_ipv4_static_addr for vnic_ipv4_static_addr in
                                           self._inventory.sdk_objects["vnicIpV4StaticAddr"]
                                           if self._parent.dn + "/mgmt/iface-in-band/network/ipv4-static-addr" in
@@ -202,7 +202,7 @@ class UcsSystemMgmtInterfaceInband(UcsSystemInventoryObject):
                 found = True
 
         # We check if we already have fetched the list of vnicIpV6StaticAddr objects
-        if self._inventory.sdk_objects["vnicIpV6StaticAddr"] is not None:
+        if self._inventory.sdk_objects.get("vnicIpV6StaticAddr") is not None:
             vnic_ipv6_static_addr_list = [vnic_ipv6_static_addr for vnic_ipv6_static_addr in
                                           self._inventory.sdk_objects["vnicIpV6StaticAddr"]
                                           if self._parent.dn + "/mgmt/iface-in-band/network/ipv6-static-addr" in
@@ -217,7 +217,7 @@ class UcsSystemMgmtInterfaceInband(UcsSystemInventoryObject):
                 found = True
 
         # We check if we already have fetched the list of vnicIpV4MgmtPooledAddr objects
-        if self._inventory.sdk_objects["vnicIpV4MgmtPooledAddr"] is not None:
+        if self._inventory.sdk_objects.get("vnicIpV4MgmtPooledAddr") is not None:
             vnic_ipv4_mgmt_pooled_addr_list = [vnic_ipv4_mgmt_pooled_addr for vnic_ipv4_mgmt_pooled_addr in
                                                self._inventory.sdk_objects["vnicIpV4MgmtPooledAddr"]
                                                if self._parent.dn + "/mgmt/iface-in-band/network/ipv4-pooled-addr" in
@@ -233,7 +233,7 @@ class UcsSystemMgmtInterfaceInband(UcsSystemInventoryObject):
                 found = True
 
         # We check if we already have fetched the list of vnicIpV6MgmtPooledAddr objects
-        if self._inventory.sdk_objects["vnicIpV6MgmtPooledAddr"] is not None:
+        if self._inventory.sdk_objects.get("vnicIpV6MgmtPooledAddr") is not None:
             vnic_ipv6_mgmt_pooled_addr_list = [vnic_ipv6_mgmt_pooled_addr for vnic_ipv6_mgmt_pooled_addr in
                                                self._inventory.sdk_objects["vnicIpV6MgmtPooledAddr"]
                                                if
@@ -255,7 +255,7 @@ class UcsSystemMgmtInterfaceInband(UcsSystemInventoryObject):
 
     def _get_inband_mgmt_vlan(self):
         # We check if we already have fetched the list of mgmtVnet objects
-        if self._inventory.sdk_objects["mgmtVnet"] is not None:
+        if self._inventory.sdk_objects.get("mgmtVnet") is not None:
             mgmt_vnet_list = [mgmt_vnet for mgmt_vnet in self._inventory.sdk_objects["mgmtVnet"]
                               if self._parent.dn + "/mgmt/iface-in-band/network" in mgmt_vnet.dn]
 

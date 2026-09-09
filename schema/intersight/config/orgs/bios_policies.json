@@ -1620,6 +1620,46 @@
             "platform-default"
          ]
       },
+      "gpu_direct_cpu1": {
+         "description": "BIOS Policy - gpu_direct_cpu1",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "disabled",
+            "enabled",
+            "platform-default"
+         ]
+      },
+      "gpu_direct_cpu2": {
+         "description": "BIOS Policy - gpu_direct_cpu2",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "disabled",
+            "enabled",
+            "platform-default"
+         ]
+      },
+      "gpu_direct_cpu3": {
+         "description": "BIOS Policy - gpu_direct_cpu3",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "disabled",
+            "enabled",
+            "platform-default"
+         ]
+      },
+      "gpu_direct_cpu4": {
+         "description": "BIOS Policy - gpu_direct_cpu4",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "disabled",
+            "enabled",
+            "platform-default"
+         ]
+      },
       "hardware_prefetch": {
          "description": "BIOS Policy - hardware_prefetch",
          "type": "string",
@@ -2081,11 +2121,13 @@
             "1T",
             "24T",
             "2T",
+            "30T",
             "32T",
             "40T",
             "4T",
             "512G",
             "56T",
+            "60T",
             "Auto",
             "platform-default"
          ]
@@ -5175,6 +5217,16 @@
             "Mode 1",
             "disabled",
             "enabled",
+            "platform-default"
+         ]
+      },
+      "ufs_disable_io": {
+         "description": "BIOS Policy - ufs_disable_io",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "Mode 0",
+            "Mode 1",
             "platform-default"
          ]
       },

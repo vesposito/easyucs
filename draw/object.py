@@ -181,6 +181,8 @@ class GenericDrawObject:
             self.logger(level="warning",
                         message="Couldn't create picture of " + self.__class__.__name__ + " with ID " + str(self._parent.id))
             return False
+        if self.background is None:
+            return False
         if not file_name:
             file_name = self._file_name
         if not output_directory:
@@ -190,6 +192,7 @@ class GenericDrawObject:
             os.makedirs(output_directory)
         self.background.save(output_directory + '/' + file_name + "." + format)
         self.logger(message="Image " + output_directory + '/' + file_name + "." + format + " saved")
+        self.background = None
 
     @staticmethod
     def draw_rectangle(draw, coordinates, color, width=1, fill=None):

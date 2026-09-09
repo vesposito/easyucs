@@ -207,6 +207,32 @@
                         "maxLength": 31,
                         "pattern": "^[a-zA-Z0-9-._:]+$"
                      },
+                     "flow_monitors": {
+                        "description": "LAN Connectivity Policy - vNIC NetFlow Monitor Sessions",
+                        "type": "array",
+                        "items": {
+                           "description": "LAN Connectivity Policy - vNIC NetFlow Monitor Session",
+                           "type": "object",
+                           "properties": {
+                              "monitor_name": {
+                                 "description": "LAN Connectivity Policy - vNIC NetFlow Monitor Name",
+                                 "type": "string",
+                                 "pattern": "^$|^[a-zA-Z0-9_.:-]{1,64}$"
+                              },
+                              "flow_direction": {
+                                 "description": "LAN Connectivity Policy - vNIC NetFlow Monitor Flow Direction",
+                                 "type": "string",
+                                 "enum": [
+                                    "both",
+                                    "rx",
+                                    "tx"
+                                 ]
+                              }
+                           },
+                           "additionalProperties": false
+                        },
+                        "minItems": 1
+                     },
                      "pci_link": {
                         "description": "LAN Connectivity Policy - vNIC PCI Link",
                         "type": "integer",

@@ -1498,6 +1498,29 @@
          "Platform Default"
       ]
    },
+   "cpu_frequency_control": {
+      "available_in_legacy_mode": false,
+      "feature_group": "Processor",
+      "legacy_values": [
+         "auto",
+         "disabled",
+         "enabled",
+         "platform-default"
+      ],
+      "maximum": null,
+      "minimum": null,
+      "param_name": "CPU Frequency Control",
+      "step": null,
+      "target_name": "CbsCmnCpuFrequencyControl",
+      "type": "enum",
+      "unit": null,
+      "values": [
+         "Auto",
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ]
+   },
    "cpu_hardware_power_management": {
       "available_in_legacy_mode": true,
       "feature_group": "CPU Hardware Power Management",
@@ -2137,6 +2160,29 @@
       "param_name": "EDC Control Throttle",
       "step": null,
       "target_name": "CbsCmnEdcControlThrottle",
+      "type": "enum",
+      "unit": null,
+      "values": [
+         "Auto",
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ]
+   },
+   "edpc_control": {
+      "available_in_legacy_mode": false,
+      "feature_group": "Processor",
+      "legacy_values": [
+         "auto",
+         "disabled",
+         "enabled",
+         "platform-default"
+      ],
+      "maximum": null,
+      "minimum": null,
+      "param_name": "EDPC Control",
+      "step": null,
+      "target_name": "EdpcControl",
       "type": "enum",
       "unit": null,
       "values": [
@@ -10664,6 +10710,27 @@
          "Platform Default"
       ]
    },
+   "speculative_lock": {
+      "available_in_legacy_mode": false,
+      "feature_group": "Speculative Lock",
+      "legacy_values": [
+         "disabled",
+         "enabled",
+         "platform-default"
+      ],
+      "maximum": null,
+      "minimum": null,
+      "param_name": "Speculative Lock",
+      "step": null,
+      "target_name": "SpeculativeLockEnable",
+      "type": "enum",
+      "unit": null,
+      "values": [
+         "Disabled",
+         "Enabled",
+         "Platform Default"
+      ]
+   },
    "sprocessor_epoch_0": {
       "available_in_legacy_mode": false,
       "feature_group": "Processor",
@@ -11074,6 +11141,27 @@
       "values": [
          "Disabled",
          "Enabled",
+         "Mode-0",
+         "Mode-1",
+         "Platform Default"
+      ]
+   },
+   "uncore_frequency_scaling_io": {
+      "available_in_legacy_mode": false,
+      "feature_group": "Uncore Frequency Scaling IO",
+      "legacy_values": [
+         "mode-0",
+         "mode-1",
+         "platform-default"
+      ],
+      "maximum": null,
+      "minimum": null,
+      "param_name": "Uncore Frequency Scaling IO",
+      "step": null,
+      "target_name": "UFSDisableIO",
+      "type": "enum",
+      "unit": null,
+      "values": [
          "Mode-0",
          "Mode-1",
          "Platform Default"

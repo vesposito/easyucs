@@ -23,6 +23,7 @@ class UcsBlade(GenericBlade, GenericUcsInventoryObject):
         GenericUcsInventoryObject.__init__(self, parent=parent, ucs_sdk_object=compute_blade)
 
         self.model = self.get_attribute(ucs_sdk_object=compute_blade, attribute_name="model")
+        self.oper_state = self.get_attribute(ucs_sdk_object=compute_blade, attribute_name="oper_state")
         self.revision = self.get_attribute(ucs_sdk_object=compute_blade, attribute_name="revision")
         self.serial = self.get_attribute(ucs_sdk_object=compute_blade, attribute_name="serial")
         self.slot_id = self.get_attribute(ucs_sdk_object=compute_blade, attribute_name="slot_id")
@@ -30,7 +31,7 @@ class UcsBlade(GenericBlade, GenericUcsInventoryObject):
                                              attribute_secondary_name="user_label")
         self.asset_tag = self.get_attribute(ucs_sdk_object=compute_blade, attribute_name="asset_tag")
         self.vendor = self.get_attribute(ucs_sdk_object=compute_blade, attribute_name="vendor")
-
+        self.server_personality = None
         self.adaptors = self._get_adaptors()
         self.cpus = self._get_cpus()
         self.gpus = self._get_gpus()
@@ -126,6 +127,7 @@ class UcsSystemBlade(UcsBlade, UcsSystemInventoryObject):
             self.short_name = self._get_model_short_name()
             self.imm_compatible = self._get_imm_compatibility()
             self.locator_led_status = self._determine_locator_led_status()
+            self.server_personality = self._get_server_personality()
             self._get_os_details()
             if self.assigned_to_dn is not None and self.assigned_to_dn != "":
                 self.service_profile_org = self.assigned_to_dn.split("/ls-")[0]
@@ -146,7 +148,7 @@ class UcsSystemBlade(UcsBlade, UcsSystemInventoryObject):
         elif self._inventory.load_from == "file":
             for attribute in ["imm_compatible", "locator_led_status", "os_arch", "os_kernel_version",
                               "os_patch_version", "os_release_version", "os_type", "os_ucs_tool_version",
-                              "os_update_version", "os_vendor", "service_profile_org", "service_profile_name",
+                              "os_update_version", "os_vendor", "server_personality", "service_profile_org", "service_profile_name",
                               "service_profile_template", "service_profile_template_org",
                               "service_profile_template_name", "short_name", "sku_scaled"]:
                 setattr(self, attribute, None)
@@ -366,6 +368,19 @@ class UcsSystemBlade(UcsBlade, UcsSystemInventoryObject):
         else:
             return False
 
+    def _get_server_personality(self):
+        # We check if we already have fetched the list of computePersonality objects
+        if self._inventory.sdk_objects.get("computePersonality") is not None:
+            compute_personality_list = [compute_personality for compute_personality in 
+                                        self._inventory.sdk_objects["computePersonality"] if "sys/chassis-" + self.chassis_id +
+                                        "/blade-" + self.slot_id + "/" in compute_personality.dn]
+
+            # We return the computePersonality name if there is one and only one computePersonality object in the list
+            if len(compute_personality_list) == 1:
+                return compute_personality_list[0].name
+
+        return None
+    
     def _get_service_profile_template(self):
         # We check if we already have fetched the list of lsServer objects
         if self._inventory.sdk_objects["lsServer"] is not None:

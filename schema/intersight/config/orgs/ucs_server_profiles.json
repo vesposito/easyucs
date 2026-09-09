@@ -449,6 +449,11 @@
          "type": "string",
          "default": ""
       },
+      "auto_deploy": {
+         "description": "Automatically deploy the UCS Server Profile to the server once it is fully discovered",
+         "type": "boolean",
+         "default": false
+      },
       "server_pre_assign_by_serial": {
          "description": "Serial number of the server that would be automatically assigned to the UCS Server Profile",
          "type": "string",

@@ -73,6 +73,7 @@ from ucsmsdk.mometa.comm.CommDnsProvider import CommDnsProvider
 from ucsmsdk.mometa.comm.CommFabricInterconnectAuditLogs import CommFabricInterconnectAuditLogs
 from ucsmsdk.mometa.comm.CommHttp import CommHttp
 from ucsmsdk.mometa.comm.CommHttps import CommHttps
+from ucsmsdk.mometa.comm.CommMonitor import CommMonitor
 from ucsmsdk.mometa.comm.CommNtpProvider import CommNtpProvider
 from ucsmsdk.mometa.comm.CommShellSvcLimits import CommShellSvcLimits
 from ucsmsdk.mometa.comm.CommSnmp import CommSnmp
@@ -1234,6 +1235,8 @@ class UcsSystemGlobalPolicies(UcsSystemConfigObject):
                     self.x9508_chassis_fan_control_policy = "high-power"
                 elif self.x9508_chassis_fan_control_policy == "Low Power":
                     self.x9508_chassis_fan_control_policy = "low-power"
+                elif self.x9508_chassis_fan_control_policy == "Max Cooling":
+                    self.x9508_chassis_fan_control_policy = "max-cooling"
                 elif self.x9508_chassis_fan_control_policy == "Max Power":
                     self.x9508_chassis_fan_control_policy = "max-power"
                 elif self.x9508_chassis_fan_control_policy == "Performance":
@@ -1411,6 +1414,8 @@ class UcsSystemGlobalPolicies(UcsSystemConfigObject):
                 speed = "High Power"
             elif self.x9508_chassis_fan_control_policy == "low-power":
                 speed = "Low Power"
+            elif self.x9508_chassis_fan_control_policy == "max-cooling":
+                speed = "Max Cooling"
             elif self.x9508_chassis_fan_control_policy == "max-power":
                 speed = "Max Power"
             elif self.x9508_chassis_fan_control_policy == "performance":
@@ -1806,6 +1811,7 @@ class UcsSystemFabricInterconnectAuditLogs(UcsSystemConfigObject):
         self.admin_state = None
         self.severity = None
         self.policy_owner = None
+        self.monitor = []
 
         if self._config.load_from == "live":
             if "commFabricInterconnectAuditLogs" in self._config.sdk_objects:
@@ -1814,12 +1820,53 @@ class UcsSystemFabricInterconnectAuditLogs(UcsSystemConfigObject):
                 self.severity = audit_log.severity
                 if audit_log.policy_owner in ["policy"]:
                     self.policy_owner =  "ucs-central"
+            # Fetch child monitor object            
+            if "commMonitor" in self._config.sdk_objects:
+                monitor = self._config.sdk_objects["commMonitor"][0]
+                self.monitor.append({
+                                "all_the_rules": monitor.all,
+                                "authlog_files": monitor.authlog_files,
+                                "cron_files": monitor.cron_files,
+                                "dns_client_files": monitor.dns_client_files,
+                                "kernel_module_management": monitor.kernel_module_mgmt,
+                                "lxc_containers": monitor.lxc_containers,
+                                "process_audit": monitor.process_audit,
+                                "system_log_files": monitor.system_log_files,
+                                "system_login_and_reboot": monitor.system_login_reboot,
+                                "system_software": monitor.system_software,
+                                "system_time_change": monitor.system_time_change,
+                                "user_group_config_files": monitor.user_group_config_files,
+                                "user_privilege_management": monitor.user_privilege_mgmt
+                            })
 
         elif self._config.load_from == "file":
             if json_content is not None:
                 if not self.get_attributes_from_json(json_content=json_content):
                     self.logger(level="error",
                                 message="Unable to get attributes from JSON content for " + self._CONFIG_NAME)
+        self.clean_object()
+
+    def clean_object(self):
+        UcsSystemConfigObject.clean_object(self)
+
+        for element in self.monitor:
+            for value in [
+                "all_the_rules",
+                "authlog_files",
+                "cron_files",
+                "dns_client_files",
+                "kernel_module_management",
+                "lxc_containers",
+                "process_audit",
+                "system_log_files",
+                "system_login_and_reboot",
+                "system_software",
+                "system_time_change",
+                "user_group_config_files",
+                "user_privilege_management"
+            ]:
+                if value not in element:
+                    element[value] = None
 
     def push_object(self, commit=True):
         if commit:
@@ -1836,6 +1883,27 @@ class UcsSystemFabricInterconnectAuditLogs(UcsSystemConfigObject):
                                 severity=self.severity,
                                 policy_owner=self.policy_owner)
         self._handle.add_mo(mo_comm_fi_audit_logs, modify_present=True)
+
+        # Push monitor configuration
+        if self.monitor:
+            for monitor in self.monitor:                
+                mo_comm_fi_monitor=CommMonitor(
+                parent_mo_or_dn=mo_comm_fi_audit_logs,
+                all=monitor.get("all_the_rules"),
+                authlog_files=monitor.get("authlog_files"),
+                cron_files=monitor.get("cron_files"),
+                dns_client_files=monitor.get("dns_client_files"),
+                kernel_module_mgmt=monitor.get("kernel_module_management"),
+                lxc_containers=monitor.get("lxc_containers"),
+                process_audit=monitor.get("process_audit"),
+                system_log_files=monitor.get("system_log_files"),
+                system_login_reboot=monitor.get("system_login_and_reboot"),
+                system_software=monitor.get("system_software"),
+                system_time_change=monitor.get("system_time_change"),
+                user_group_config_files=monitor.get("user_group_config_files"),
+                user_privilege_mgmt=monitor.get("user_privilege_management")
+                )
+                self._handle.add_mo(mo_comm_fi_monitor, modify_present=True)
         if commit:
             if self.commit("Fabric Interconnect Audit Logs") != True:
                 return False

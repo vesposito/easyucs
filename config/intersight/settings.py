@@ -35,7 +35,8 @@ from config.intersight.fabric_policies import (
     IntersightFabricSwitchControlPolicy,
     IntersightFabricSystemQosPolicy,
     IntersightFabricVlanPolicy,
-    IntersightFabricVsanPolicy
+    IntersightFabricVsanPolicy,
+    IntersightNetFlowConfigurationPolicy
 )
 from config.intersight.server_policies import (
     IntersightAdapterConfigurationPolicy,
@@ -351,6 +352,7 @@ class IntersightOrganization(IntersightConfigObject):
         "macsec_policies": "MACsec Policies",
         "memory_policies": "Memory Policy",
         "multicast_policies": "Multicast Policies",
+        "netflow_configuration_policies": "NetFlow Configuration Policies",
         "network_connectivity_policies": "Network Connectivity Policies",
         "ntp_policies": "NTP Policies",
         "pcie_connectivity_policies": "PCIe Connectivity Policies",
@@ -397,8 +399,9 @@ class IntersightOrganization(IntersightConfigObject):
         self.descr = self.get_attribute(attribute_name="description", attribute_secondary_name="descr")
         self.name = self.get_attribute(attribute_name="name")
         self.resource_groups = None
-        self.shared_with_orgs = None
-        self._shared_with_me_orgs = None
+        self.shared_with_orgs = None  # List of orgs this org is shared to
+        self._shared_with_me_orgs = None  # List of orgs shared with this org
+        self._is_shared_org = False  # Flag whether this org is a shared org
 
         if self._config.load_from == "live":
             self.resource_groups = self._get_resource_groups_names()
@@ -656,6 +659,11 @@ class IntersightOrganization(IntersightConfigObject):
             json_content=organization_organization,
             object_class=IntersightLocalUserPolicy,
             name_to_fetch="local_user_policies",
+        )
+        self.netflow_configuration_policies = self._get_generic_element(
+            json_content=organization_organization,
+            object_class=IntersightNetFlowConfigurationPolicy,
+            name_to_fetch="netflow_configuration_policies",
         )
         self.network_connectivity_policies = self._get_generic_element(
             json_content=organization_organization,
@@ -1020,10 +1028,21 @@ class IntersightOrganization(IntersightConfigObject):
 
                 requests.append(sub_request)
 
+            # If every requested sharing rule was skipped (already existing, or target org not found),
+            # there is nothing left to push. Committing a BulkRequest with an empty "requests" list causes
+            # Intersight to reject it with "Cannot execute the request. The JSON document is malformed.".
+            if not requests:
+                self.logger(
+                    level="debug",
+                    message=f"No new SharingRule to push for organization '{self.name}' - "
+                            f"all requested sharing rules already exist or could not be created."
+                )
+                return True
+
             bulk_request_kwargs["requests"] = requests
             bulk_request = BulkRequest(**bulk_request_kwargs)
 
-            detail = f"{self.name} - Sharing Rules - Sharing Org with {self.shared_with_orgs})"
+            detail = f"{self.name} - Sharing Rules - Sharing Org with {self.shared_with_orgs}"
             if not self.commit(object_type="bulk.Request", payload=bulk_request, detail=detail, key_attributes=[]):
                 return False
         return True
@@ -1038,6 +1057,7 @@ class IntersightOrganization(IntersightConfigObject):
             'switch_control_policies', 'system_qos_policies', 'multicast_policies', 'vlan_policies', 'vsan_policies',
             'local_user_policies', 'adapter_configuration_policies', 'bios_policies', 'boot_policies',
             'certificate_management_policies', 'device_connector_policies', 'drive_security_policies',
+            'netflow_configuration_policies',
             'ethernet_adapter_policies', 'ethernet_network_control_policies', 'ethernet_network_group_policies',
             'ethernet_network_policies', 'ethernet_qos_policies', 'fc_zone_policies', 'fibre_channel_adapter_policies',
             'fibre_channel_network_policies', 'fibre_channel_qos_policies', 'firmware_policies', 'imc_access_policies',
@@ -1153,52 +1173,6 @@ class IntersightResourceGroup(IntersightConfigObject):
                 return device_list
 
         return None
-
-    def convert_from_ucs(self, source_objects=None):
-        """
-        Fills content of current object by converting attributes from provided UCS source_object(s)
-        :param source_objects: list of source UCS object(s) to convert
-        :return: True if successful, False otherwise
-        """
-        if not isinstance(source_objects, list):
-            self.logger(level="error", message=f"No {self._CONFIG_NAME} object provided for conversion.")
-            return False
-        if len(source_objects) != 1:
-            self.logger(level="error", message=f"{self._CONFIG_NAME} object not found for conversion.")
-            return False
-        if source_objects[0].__class__.__name__ not in ["UcsCentralDomainGroup"]:
-            self.logger(level="error", message=f"Invalid object type for conversion to {self._CONFIG_NAME}")
-            return False
-
-        target_config = self._parent
-        source_domain_group = source_objects[0]
-        source_device = source_domain_group._device
-
-        source_device.logger(
-            level="debug",
-            message="Converting {0} {1} '{2}' to Intersight {3}".format(
-                source_device.metadata.device_type_long, source_objects[0]._CONFIG_NAME, self.name, self._CONFIG_NAME)
-        )
-
-        if getattr(source_domain_group, "descr", None) is not None:
-            self.descr = format_descr(source_domain_group.descr)
-
-        # Resource groups created from UCS Central domain groups of ID Range Access Control Policy always have "all" membership
-        self.memberships = "all"
-        self.logger(
-            level="info",
-            message=f"Setting membership to 'all' for converted Resource Group '{self.name}' because all UCS "
-                    f"domains might not be available in Intersight to assign explicitly."
-        )
-
-        # Set the conversion score
-        score = float(10)
-        target_config.convert_details_manager.add_score(value=score)
-        
-        if not target_config.resource_groups:
-            target_config.resource_groups = []    
-        target_config.resource_groups.append(self)
-        return True
 
     @IntersightConfigObject.update_taskstep_description()
     def push_object(self):

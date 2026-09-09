@@ -36,6 +36,7 @@ class UcsRack(GenericRack, GenericUcsInventoryObject):
         self.memory_total = self.get_attribute(ucs_sdk_object=compute_rack_unit, attribute_name="total_memory",
                                                attribute_secondary_name="memory_total", attribute_type="int")
         self.model = self.get_attribute(ucs_sdk_object=compute_rack_unit, attribute_name="model")
+        self.oper_state = self.get_attribute(ucs_sdk_object=compute_rack_unit, attribute_name="oper_state")
         self.serial = self.get_attribute(ucs_sdk_object=compute_rack_unit, attribute_name="serial")
         self.server_personality = None
         self.slot_id = None
@@ -176,7 +177,7 @@ class UcsSystemRack(UcsRack, UcsSystemInventoryObject):
             for attribute in ["imm_compatible", "locator_led_status", "mgmt_connection_type", "os_arch",
                               "os_kernel_version", "os_patch_version", "os_release_version", "os_type",
                               "os_ucs_tool_version", "os_update_version", "os_vendor", "pcie_risers",
-                              "service_profile_org", "service_profile_name", "service_profile_template",
+                              "server_personality", "service_profile_org", "service_profile_name", "service_profile_template",
                               "service_profile_template_org", "service_profile_template_name", "short_name"
                               ]:
                 setattr(self, attribute, None)

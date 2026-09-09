@@ -10,13 +10,14 @@ from config.intersight.server_policies import IntersightLdapPolicy, \
     IntersightNetworkConnectivityPolicy, IntersightNtpPolicy, IntersightSnmpPolicy, IntersightSyslogPolicy
 from config.intersight.fabric_policies import IntersightAuditDPolicy, IntersightFabricPortPolicy, \
     IntersightFabricSwitchControlPolicy, IntersightFabricSystemQosPolicy, IntersightFabricVlanPolicy, \
-    IntersightFabricVsanPolicy
+    IntersightFabricVsanPolicy, IntersightNetFlowConfigurationPolicy
 
 
 class IntersightGenericUcsDomainProfile(IntersightConfigObject):
     _POLICY_MAPPING_TABLE = {
         "auditd_policy": IntersightAuditDPolicy,
         "ldap_policy": IntersightLdapPolicy,
+        "netflow_configuration_policy": IntersightNetFlowConfigurationPolicy,
         "network_connectivity_policy": IntersightNetworkConnectivityPolicy,
         "ntp_policy": IntersightNtpPolicy,
         "port_policies": {
@@ -45,6 +46,7 @@ class IntersightGenericUcsDomainProfile(IntersightConfigObject):
         self.user_label = self.get_attribute(attribute_name="user_label")
 
         self.auditd_policy = None
+        self.netflow_configuration_policy = None
         self.network_connectivity_policy = None
         self.ldap_policy = None
         self.ntp_policy = None
@@ -151,7 +153,8 @@ class IntersightUcsDomainProfile(IntersightGenericUcsDomainProfile):
                     })
 
         elif self._config.load_from == "file":
-            for attribute in ["auditd_policy", "ldap_policy", "network_connectivity_policy", "ntp_policy", "operational_state",
+            for attribute in ["auditd_policy", "ldap_policy", "netflow_configuration_policy",
+                              "network_connectivity_policy", "ntp_policy", "operational_state",
                               "port_policies", "snmp_policy", "switch_control_policy", "syslog_policy", "system_qos_policy",
                               "vlan_policies", "vsan_policies", "ucs_domain_profile_template"]:
                 setattr(self, attribute, None)
@@ -173,50 +176,6 @@ class IntersightUcsDomainProfile(IntersightGenericUcsDomainProfile):
             for attribute in ["config_state", "profile_state"]:
                 if attribute not in self.operational_state:
                     self.operational_state[attribute] = None
-
-    def deepcopy(self, new_parent=None):
-        """
-        Function creates a deep copy of a UCS Domain Profile. This is done to handle UCS Domain Profile Template
-        references inside a Domain Profile.
-        :param new_parent: Parent of the new Intersight object
-        :returns: New Intersight UCS domain profile object
-        """
-        new_profile = IntersightGenericUcsDomainProfile.deepcopy(self, new_parent=new_parent)
-
-        # If Domain Profile is attached to a template then deepcopy the template too.
-        if self.ucs_domain_profile_template:
-            source_template = self._config.get_object(name=self.ucs_domain_profile_template,
-                                                      org_name=self._parent.name,
-                                                      object_type=IntersightUcsDomainProfileTemplate)
-
-            # If Template is already copied then return
-            target_template = new_parent._config.get_object(name=self.ucs_domain_profile_template,
-                                                            org_name=new_parent.name,
-                                                            object_type=IntersightUcsDomainProfileTemplate,
-                                                            debug=False)
-            if target_template:
-                return new_profile
-
-            # If the Domain Profile Template is an object of a shared organization, then we make sure that the
-            # copy of this Domain Profile Template exists in the copy of the shared organization of the target config.
-            if "/" in self.ucs_domain_profile_template:
-                new_parent = self.handle_shared_object_parent_creation(object_name=self.ucs_domain_profile_template,
-                                                                       parent_object_type=self._parent.__class__,
-                                                                       target_config=new_parent._config)
-                if not new_parent:
-                    self.logger(level="error",
-                                message=f"Failed to clone '{self._CONFIG_NAME}' '{self.name}' as we "
-                                        f"failed to deepcopy its domain profile template "
-                                        f"{self.ucs_domain_profile_template} in shared org "
-                                        f"'{self.ucs_domain_profile_template.split('/')[0]}'.")
-                    return None
-
-            new_template = source_template.deepcopy(new_parent=new_parent)
-            if not getattr(new_parent, new_template._CONFIG_SECTION_NAME, None):
-                setattr(new_parent, new_template._CONFIG_SECTION_NAME, [])
-            getattr(new_parent, new_template._CONFIG_SECTION_NAME).append(new_template)
-
-        return new_profile
 
     @IntersightConfigObject.update_taskstep_description()
     def push_object(self):
@@ -446,9 +405,10 @@ class IntersightUcsDomainProfile(IntersightGenericUcsDomainProfile):
         if self.name is not None:
             switch_profile_b_kwargs["name"] = self.name + "-B"
 
-        for policy_section in ["auditd_policy", "ldap_policy", "network_connectivity_policy", "ntp_policy", "port_policies",
-                               "snmp_policy", "switch_control_policy", "syslog_policy", "system_qos_policy", "vlan_policies",
-                               "vsan_policies"]:
+        for policy_section in ["auditd_policy", "ldap_policy", "netflow_configuration_policy",
+                               "network_connectivity_policy", "ntp_policy", "port_policies",
+                               "snmp_policy", "switch_control_policy", "syslog_policy", "system_qos_policy",
+                               "vlan_policies", "vsan_policies"]:
             if getattr(self, policy_section, None):
                 if isinstance(getattr(self, policy_section, {}), dict):
                     policy_type = self._POLICY_MAPPING_TABLE.get(policy_section, {}).get("fabric_a")
@@ -619,9 +579,10 @@ class IntersightUcsDomainProfileTemplate(IntersightGenericUcsDomainProfile):
         if self.name is not None:
             switch_profile_template_b_kwargs["name"] = self.name + "-B"
 
-        for policy_section in ["auditd_policy", "ldap_policy", "network_connectivity_policy", "ntp_policy", "port_policies",
-                               "snmp_policy", "switch_control_policy", "syslog_policy", "system_qos_policy", "vlan_policies",
-                               "vsan_policies"]:
+        for policy_section in ["auditd_policy", "ldap_policy", "netflow_configuration_policy",
+                               "network_connectivity_policy", "ntp_policy", "port_policies",
+                               "snmp_policy", "switch_control_policy", "syslog_policy", "system_qos_policy",
+                               "vlan_policies", "vsan_policies"]:
             if getattr(self, policy_section, None):
                 if isinstance(getattr(self, policy_section, {}), dict):
                     policy_type = self._POLICY_MAPPING_TABLE.get(policy_section, {}).get("fabric_a")

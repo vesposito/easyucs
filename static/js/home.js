@@ -849,6 +849,65 @@ function toggleNewDeviceModal(){
 }
 
 /**
+ * Toggles the modal to import a tech-support bundle
+ */
+function toggleImportTechSupportModal(){
+  document.getElementById('importTechSupportForm').reset();
+  $('#importTechSupportModal').modal('toggle');
+}
+
+/**
+ * Submits the tech-support bundle to the API for import.
+ * On success, shows a success alert and refreshes the task list.
+ */
+function importTechSupport(){
+  var file_input = document.getElementById('tech_support_file');
+  if(!file_input.files || file_input.files.length === 0){
+    displayAlert("Missing file", "Please select a tech-support file to import.", "error");
+    return;
+  }
+
+  var form_data = new FormData();
+  form_data.append('tech_support_file', file_input.files[0]);
+
+  var target_api_endpoint = api_base_url + api_device_endpoint + '/actions/import_tech_support';
+  httpRequestAsync('POST', target_api_endpoint, alertActionStarted.bind(null, 'Tech-support import started'), form_data);
+
+  // Closes the modal and resets the form
+  $('#importTechSupportModal').modal('toggle');
+  document.getElementById('importTechSupportForm').reset();
+}
+
+/**
+ * Toggles the modal to add devices from a CSV file
+ */
+function toggleAddDevicesFromCSVModal(){
+  document.getElementById('addDevicesFromCSVForm').reset();
+  $('#addDevicesFromCSVModal').modal('toggle');
+}
+
+/**
+ * Submits the CSV file to the API to add multiple devices at once.
+ */
+function addDevicesFromCSV(){
+  var file_input = document.getElementById('devices_csv_file');
+  if(!file_input.files || file_input.files.length === 0){
+    displayAlert("Missing file", "Please select a CSV file.", "error");
+    return;
+  }
+
+  var form_data = new FormData();
+  form_data.append('devices_file', file_input.files[0]);
+
+  var target_api_endpoint = api_base_url + api_device_endpoint + '/actions/add';
+  httpRequestAsync('POST', target_api_endpoint, alertActionStarted.bind(null, 'Adding devices from CSV'), form_data);
+
+  // Closes the modal and resets the form
+  $('#addDevicesFromCSVModal').modal('toggle');
+  document.getElementById('addDevicesFromCSVForm').reset();
+}
+
+/**
  * Updates a device
  * @param  {String} device_uuid - The ID of the device to update
  */

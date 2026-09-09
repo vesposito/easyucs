@@ -379,7 +379,8 @@
                            "default": "md5",
                            "enum": [
                               "md5",
-                              "sha"
+                              "sha",
+                              "sha2"
                            ]
                         },
                         "use_aes": {

@@ -409,6 +409,16 @@
          },
          "minItems": 1
       },
+      "netflow_configuration_policies": {
+         "description": "EasyUCS config/orgs/netflow_configuration_policies section",
+         "type": "array",
+         "items": {
+            "description:": "EasyUCS config/orgs/netflow_configuration_policies element",
+            "type": "object",
+            "$ref": "orgs/netflow_configuration_policies.json"
+         },
+         "minItems": 1
+      },
       "network_connectivity_policies": {
          "description": "EasyUCS config/orgs/network_connectivity_policies section",
          "type": "array",

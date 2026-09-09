@@ -1355,7 +1355,7 @@ class UcsSystemSanUnifiedPort(UcsSystemConfigObject):
         if self._config.load_from == "live":
             if fabric:
                 self.fabric = fabric
-                if "fabricFcSanPcEp" in self._config.sdk_objects:
+                if "fcPIo" in self._config.sdk_objects:
                     san_unified_port_list = [port for port in self._config.sdk_objects["fcPIo"]
                                              if port.switch_id == self.fabric and port.unified_port == "yes"]
                     if san_unified_port_list:
@@ -1388,6 +1388,8 @@ class UcsSystemSanUnifiedPort(UcsSystemConfigObject):
                     else:
                         self.fabric = None
                         # In order to not push the fabric parameter alone
+                else:
+                    self.fabric = None
 
         elif self._config.load_from == "file":
             if json_content is not None:

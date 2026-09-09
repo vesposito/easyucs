@@ -14,6 +14,7 @@ import threading
 import uuid as python_uuid
 from sqlite3 import IntegrityError
 
+import certifi
 import sqlalchemy.exc
 from cryptography.fernet import Fernet
 from packaging.version import Version
@@ -91,6 +92,7 @@ class RepositoryManager:
         self._init_proxy_settings()
         self._init_config_catalog()
         self._init_repo()
+        self._init_ca_cert()
 
     def _delete_device(self, metadata=None, delete_keys=True):
         """
@@ -365,8 +367,10 @@ class RepositoryManager:
             self.logger(message="Creating Software Repository directory " + repo_path)
             os.makedirs(repo_path)
 
+        # daemon=True so this infinite file-monitoring thread does not block interpreter shutdown
+        # (e.g. on CTRL+C). Without it, threading._shutdown() would hang joining this thread.
         self.watchdog_thread = threading.Thread(target=self._repo_watchdog, name="repo_watchdog",
-                                                args=(repo_path,))
+                                                args=(repo_path,), daemon=True)
 
         self.watchdog_thread.start()
 
@@ -624,6 +628,57 @@ class RepositoryManager:
         else:
             self.logger(message="Creating Temp directory " + tmp_folder_full_path)
             os.makedirs(tmp_folder_full_path)
+
+        return True
+
+    def _init_ca_cert(self):
+        """
+        Initializes the CA certificate file 'ca_cert.pem' used for SSL/TLS certificate verification.
+        This function creates or updates the 'ca_cert.pem' file by combining the root certificate
+        provided by 'certifi' library with additional trusted certificates contents stored in the 'ca_certs' directory.
+        If the 'ca_certs' directory is empty or missing, the SSL_CERT_FILE environment variable is removed.
+        Returns:
+            bool: True if the certificate initialization is successful.
+        """
+
+        ca_certs_folder_full_path = os.path.abspath(os.path.join(EASYUCS_ROOT, self.REPOSITORY_FOLDER_NAME,
+                                                                 self.REPOSITORY_KEYS_FOLDER_NAME,
+                                                                 self.REPOSITORY_CA_CERTS_FOLDER_NAME))
+
+        if not os.path.exists(ca_certs_folder_full_path):
+            self.logger(message="Creating ca_certs directory " + ca_certs_folder_full_path)
+            os.makedirs(ca_certs_folder_full_path)
+
+        files_and_directories = os.listdir(ca_certs_folder_full_path)
+        # Creating a list of all the user provided CA certificates (without the combined 'ca_cert.pem' file)
+        if self.REPOSITORY_CA_CERTS_FILE_NAME in files_and_directories:
+            files_and_directories.remove(self.REPOSITORY_CA_CERTS_FILE_NAME)
+
+        # Verify presence of CA certificates in trusted path for setting SSL_CERT_FILE environment variable
+        if len(files_and_directories) >= 1:
+            ca_certs_file = os.path.join(ca_certs_folder_full_path, self.REPOSITORY_CA_CERTS_FILE_NAME)
+
+            #  Read the contents of the certifi's trust store
+            with open(certifi.where(), "rb") as root_cert_file:
+                root_cert_contents = root_cert_file.read()
+            # Read the contents of all the user added CA certificates
+            trusted_file_contents = b""
+            for file_name in os.listdir(ca_certs_folder_full_path):
+                if file_name != self.REPOSITORY_CA_CERTS_FILE_NAME:
+                    cert_path = os.path.join(ca_certs_folder_full_path, file_name)
+                    with open(cert_path, "rb") as trusted_cert_file:
+                        certificate_file_contents = trusted_cert_file.read()
+                        trusted_file_contents = trusted_file_contents + certificate_file_contents
+            # Concatenate all user-added CA certificates with certifi's CA certificates into a single file.
+            with open(ca_certs_file, "wb") as ca_cert_file:
+                ca_cert_file.write(root_cert_contents)
+                ca_cert_file.write(trusted_file_contents)
+            # Set the ssl_cert_file environment variable
+            os.environ["SSL_CERT_FILE"] = ca_certs_file
+        else:
+            # Remove ssl_cert_file environment variable
+            if "SSL_CERT_FILE" in os.environ:
+                del os.environ['SSL_CERT_FILE']
 
         return True
 
@@ -1051,6 +1106,10 @@ class RepositoryManager:
         if not self._init_key():
             return False
 
+        # Reloading the ca_cert
+        if not self._init_ca_cert():
+            return False
+
         # Restoring the settings from the replaced settings file.
         # If the backed-up setting have some missing attributes then add them here before calling _init_settings().
         file_contents = read_json_file(file_path=self.SETTINGS_FILE_NAME)
@@ -1331,6 +1390,12 @@ class RepositoryManager:
                             db_records = session.query(db_table_name).filter(
                                 getattr(db_table_name, "file_path") == str(repo_file_path)).order_by(
                                 getattr(getattr(db_table_name, order_by[0]), order_by[1])()).offset(offset).limit(limit)
+
+                    # Materialize the query results while the session is still active. Otherwise the lazy
+                    # Query gets iterated outside the "with self.ManagedSession()" block (i.e. after the
+                    # session is closed and removed), which forces a new connection to be checked out from
+                    # the pool and never returned, eventually exhausting the QueuePool.
+                    db_records = db_records.all()
 
                 metadata_list = []
                 for db_record in db_records:

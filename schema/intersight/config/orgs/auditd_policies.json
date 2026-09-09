@@ -75,6 +75,130 @@
             "Information",
             "Debugging"
          ]
+      },
+      "log_monitor": {
+         "description": " The log monitor is used to configure monitoring of specific log events in the AuditD feature. ",
+         "type": "object",
+         "properties": {
+            "all": {
+               "description": "It can be configured to monitor all the log events.",
+               "type": "string",
+               "default": "no",
+               "enum": [
+                  "yes",
+                  "no"
+               ]
+            },
+            "auth_log_files": {
+               "description": "It can be configured to monitor log events only w.r.t auth log files changes.",
+               "type": "string",
+               "default": "no",
+               "enum": [
+                  "yes",
+                  "no"
+               ]
+            },
+            "cron_files": {
+               "description": "It can be configured to monitor log events only w.r.t cron files changes.",
+               "type": "string",
+               "default": "no",
+               "enum": [
+                  "yes",
+                  "no"
+               ]
+            },
+            "dns_client_files": {
+               "description": "It can be configured to monitor log events only w.r.t dns client files changes.",
+               "type": "string",
+               "default": "no",
+               "enum": [
+                  "yes",
+                  "no"
+               ]
+            },
+            "docker": {
+               "description": "It can be configured to monitor log events only w.r.t Docker executions and file changes.",
+               "type": "string",
+               "default": "no",
+               "enum": [
+                  "yes",
+                  "no"
+               ]
+            },
+            "kernel_module_mgmt": {
+               "description": "It can be configured to monitor log events only w.r.t kernel module files changes.",
+               "type": "string",
+               "default": "no",
+               "enum": [
+                  "yes",
+                  "no"
+               ]
+            },
+            "process_audit": {
+               "description": "It can be configured to monitor log events only w.r.t process execution audit.",
+               "type": "string",
+               "default": "no",
+               "enum": [
+                  "yes",
+                  "no"
+               ]
+            },
+            "system_log_files": {
+               "description": "It can be configured to monitor log events only w.r.t system log files changes.",
+               "type": "string",
+               "default": "no",
+               "enum": [
+                  "yes",
+                  "no"
+               ]
+            },
+            "system_login_reboot": {
+               "description": "It can be configured to monitor log events only w.r.t system login reboot file changes.",
+               "type": "string",
+               "default": "no",
+               "enum": [
+                  "yes",
+                  "no"
+               ]
+            },
+            "system_software": {
+               "description": "The AuditD policy can be configured to monitor only changes to system software binaries and related software files.",
+               "type": "string",
+               "default": "no",
+               "enum": [
+                  "yes",
+                  "no"
+               ]
+            },
+            "system_time_change": {
+               "description": "It can be configured to monitor log events only w.r.t system time file changes.",
+               "type": "string",
+               "default": "no",
+               "enum": [
+                  "yes",
+                  "no"
+               ]
+            },
+            "user_group_config_files": {
+               "description": "It can be configured to monitor log events only w.r.t User Group Config Files changes.",
+               "type": "string",
+               "default": "no",
+               "enum": [
+                  "yes",
+                  "no"
+               ]
+            },
+            "user_privilege_mgmt": {
+               "description": "It can be configured to monitor log events only w.r.t User Privilege management file changes.",
+               "type": "string",
+               "default": "no",
+               "enum": [
+                  "yes",
+                  "no"
+               ]
+            }
+         },
+         "additionalProperties": false
       }
    },
    "additionalProperties": false,

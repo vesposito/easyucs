@@ -2,6 +2,8 @@
 # !/usr/bin/env python
 
 """ server_policies.py: Easy UCS Deployment Tool """
+import re
+
 from common import format_descr, generate_self_signed_cert, get_decoded_pem_certificate, \
     get_encoded_pem_certificate, is_ipv4_address_valid, is_ipv6_address_valid, read_json_file
 from config.intersight.object import IntersightConfigObject
@@ -994,90 +996,208 @@ class IntersightDriveSecurityPolicy(IntersightConfigObject):
         self.secondary_kmip_server = None
         self.server_public_root_ca_certificate = None
         self.authentication_credentials = None
+        self.drive_security_configuration_type = None
+        self.drive_security_remote_key_configuration = None
+        self.drive_security_manual_key_configuration = None
 
         if self._config.load_from == "live":
             if hasattr(self._object, "key_setting"):
                 storage_key_setting = getattr(self._object, "key_setting")
-                if hasattr(storage_key_setting, "remote_key"):
-                    if storage_key_setting.remote_key.auth_credentials:
-                        self.authentication_credentials = {}
-                        self.authentication_credentials["enable_authentication"] = \
-                            storage_key_setting.remote_key.auth_credentials.use_authentication
-                        if self.authentication_credentials["enable_authentication"]:
-                            self.authentication_credentials["username"] = \
-                                storage_key_setting.remote_key.auth_credentials.username
-                            if storage_key_setting.remote_key.auth_credentials.is_password_set:
+                if hasattr(storage_key_setting, "key_type") and storage_key_setting.key_type == "Kmip":
+                    self.drive_security_remote_key_configuration = {}
+                    self.drive_security_configuration_type = "Kmip"
+                    if hasattr(storage_key_setting, "remote_key") and storage_key_setting.remote_key:
+                        if hasattr(storage_key_setting.remote_key, "auth_credentials"):
+                            if getattr(storage_key_setting.remote_key, "auth_credentials"):
+                                authentication_credentials = {}
+                                authentication_credentials["enable_authentication"] = \
+                                    storage_key_setting.remote_key.auth_credentials.use_authentication
+                                if authentication_credentials["enable_authentication"]:
+                                    authentication_credentials["username"] = \
+                                        storage_key_setting.remote_key.auth_credentials.username
+                                    if storage_key_setting.remote_key.auth_credentials.is_password_set:
+                                        self.logger(
+                                            level="warning",
+                                            message=f"The Password of {self._CONFIG_NAME} '{self.name}' of user - " +
+                                                    f"{storage_key_setting.remote_key.auth_credentials.username} " +
+                                                    f"can't be exported"
+                                        )
+                                self.drive_security_remote_key_configuration["authentication_credentials"] = (
+                                    authentication_credentials)
+
+                        if hasattr(storage_key_setting.remote_key, "primary_server"):
+                            if getattr(storage_key_setting.remote_key, "primary_server"):
+                                primary_kmip_server = {}
+                                primary_kmip_server["enable_drive_security"] = True if \
+                                    storage_key_setting.remote_key.primary_server.enable_drive_security is True else False
+                                if primary_kmip_server["enable_drive_security"]:
+
+                                    storage_kmip_server = storage_key_setting.remote_key.primary_server
+                                    primary_kmip_server.update({"ip_address": storage_kmip_server.ip_address,
+                                                                "port": storage_kmip_server.port,
+                                                                "timeout": storage_kmip_server.timeout})
+                                self.drive_security_remote_key_configuration["primary_kmip_server"] = (
+                                    primary_kmip_server)
+
+                        if hasattr(storage_key_setting.remote_key, "secondary_server"):
+                            if getattr(storage_key_setting.remote_key, "secondary_server"):
+                                secondary_kmip_server = {}
+                                secondary_kmip_server["enable_drive_security"] = True if \
+                                    storage_key_setting.remote_key.secondary_server.enable_drive_security is True else False
+                                if secondary_kmip_server["enable_drive_security"]:
+                                    storage_kmip_server = storage_key_setting.remote_key.secondary_server
+                                    secondary_kmip_server.update({"ip_address": storage_kmip_server.ip_address,
+                                                                  "port": storage_kmip_server.port,
+                                                                  "timeout": storage_kmip_server.timeout})
+                                self.drive_security_remote_key_configuration["secondary_kmip_server"] = (
+                                    secondary_kmip_server)
+
+                        if hasattr(storage_key_setting.remote_key, "server_certificate") and \
+                                getattr(storage_key_setting.remote_key, "server_certificate"):
+                            self.drive_security_remote_key_configuration["server_public_root_ca_certificate"] = (
+                                get_decoded_pem_certificate(storage_key_setting.remote_key.server_certificate))
+                        if hasattr(storage_key_setting.remote_key, "is_existing_key_set"):
+                            self.drive_security_remote_key_configuration["drive_security_enabled_with_manual_key"] = (
+                                storage_key_setting.remote_key.is_existing_key_set)
+                            if storage_key_setting.remote_key.is_existing_key_set:
                                 self.logger(
                                     level="warning",
-                                    message=f"The Password of {self._CONFIG_NAME} '{self.name}' of user - " +
-                                            f"{storage_key_setting.remote_key.auth_credentials.username} " +
-                                            f"can't be exported"
-                                )
-
-                    if hasattr(storage_key_setting.remote_key, "primary_server"):
-                        if getattr(storage_key_setting.remote_key, "primary_server"):
-                            self.primary_kmip_server = {}
-                            self.primary_kmip_server["enable_drive_security"] = True if \
-                                storage_key_setting.remote_key.primary_server.enable_drive_security is True else False
-                            if self.primary_kmip_server["enable_drive_security"]:
-
-                                storage_kmip_server = storage_key_setting.remote_key.primary_server
-                                self.primary_kmip_server.update({"ip_address": storage_kmip_server.ip_address,
-                                                                 "port": storage_kmip_server.port,
-                                                                 "timeout": storage_kmip_server.timeout})
-
-                    if hasattr(storage_key_setting.remote_key, "secondary_server"):
-                        if getattr(storage_key_setting.remote_key, "secondary_server"):
-                            self.secondary_kmip_server = {}
-                            self.secondary_kmip_server["enable_drive_security"] = True if \
-                                storage_key_setting.remote_key.secondary_server.enable_drive_security is True else False
-                            if self.secondary_kmip_server["enable_drive_security"]:
-                                storage_kmip_server = storage_key_setting.remote_key.secondary_server
-                                self.secondary_kmip_server.update({"ip_address": storage_kmip_server.ip_address,
-                                                                   "port": storage_kmip_server.port,
-                                                                   "timeout": storage_kmip_server.timeout})
-
-                    if hasattr(storage_key_setting.remote_key, "server_certificate") and \
-                            getattr(storage_key_setting.remote_key, "server_certificate"):
-                        self.server_public_root_ca_certificate = get_decoded_pem_certificate(
-                            storage_key_setting.remote_key.server_certificate)
+                                    message=f"The Current Security Key Passphrase of {self._CONFIG_NAME} '{self.name}' "
+                                            f"can't be exported."
+                            )
+                elif hasattr(storage_key_setting, "key_type") and storage_key_setting.key_type == "Manual":
+                    self.drive_security_manual_key_configuration = {}
+                    self.drive_security_configuration_type = "Manual"
+                    if hasattr(storage_key_setting, "manual_key"):
+                        if storage_key_setting.manual_key.is_new_key_set:
+                            self.logger(
+                                level="warning",
+                                message=f"The New Security Key Passphrase of {self._CONFIG_NAME} '{self.name}' "
+                                        f"can't be exported."
+                            )
+                        self.drive_security_manual_key_configuration["drive_security_enabled_with_manual_key"] = (
+                            storage_key_setting.manual_key.is_existing_key_set)
+                        if storage_key_setting.manual_key.is_existing_key_set:
+                            self.logger(
+                                level="warning",
+                                message=f"The Current Security Key Passphrase of {self._CONFIG_NAME} '{self.name}' "
+                                        f"can't be exported."
+                            )
 
         elif self._config.load_from == "file":
+
+            # This section maintains backward compatibility with the deprecated flat attribute format
+            # used prior to EasyUCS 1.0.5. The old format used flat attributes directly on the policy object,
+            # while the new format uses nested configuration objects (drive_security_remote_key_configuration
+            # and drive_security_manual_key_configuration). This compatibility code migrates old configurations
+            # to the new structure automatically.
             for attribute in ["primary_kmip_server", "secondary_kmip_server", "server_public_root_ca_certificate",
                               "authentication_credentials"]:
                 setattr(self, attribute, None)
                 if attribute in self._object:
                     setattr(self, attribute, self.get_attribute(attribute_name=attribute))
+                    if self.primary_kmip_server:
+                        for sub_attribute in ["enable_drive_security", "ip_address", "port", "timeout"]:
+                            if sub_attribute not in self.primary_kmip_server:
+                                self.primary_kmip_server[sub_attribute] = None
+
+                    if self.secondary_kmip_server:
+                        for sub_attribute in ["enable_drive_security", "ip_address", "port", "timeout"]:
+                            if sub_attribute not in self.secondary_kmip_server:
+                                self.secondary_kmip_server[sub_attribute] = None
+
+                    if self.authentication_credentials:
+                        for sub_attribute in ["enable_authentication", "username", "password"]:
+                            if sub_attribute not in self.authentication_credentials:
+                                self.authentication_credentials[sub_attribute] = None
+
+            if (self.primary_kmip_server or self.secondary_kmip_server or self.authentication_credentials or
+                    self.server_public_root_ca_certificate):
+                self._handle_deprecated_drive_security_format()
+            else:
+                for attribute in ["drive_security_configuration_type", "drive_security_remote_key_configuration",
+                                  "drive_security_manual_key_configuration"]:
+                    setattr(self, attribute, None)
+                    if attribute in self._object:
+                        setattr(self, attribute, self.get_attribute(attribute_name=attribute))
 
         self.clean_object()
 
     def clean_object(self):
-        if self.primary_kmip_server:
-            for attribute in ["enable_drive_security", "ip_address", "port", "timeout"]:
-                if attribute not in self.primary_kmip_server:
-                    self.primary_kmip_server[attribute] = None
+        if self.drive_security_remote_key_configuration:
+            for attribute in ["primary_kmip_server", "secondary_kmip_server", "authentication_credentials",
+                              "server_public_root_ca_certificate",
+                              "drive_security_enabled_with_manual_key", "current_security_key_passphrase"]:
+                if attribute not in self.drive_security_remote_key_configuration:
+                    self.drive_security_remote_key_configuration[attribute] = None
 
-        if self.secondary_kmip_server:
-            for attribute in ["enable_drive_security", "ip_address", "port", "timeout"]:
-                if attribute not in self.secondary_kmip_server:
-                    self.secondary_kmip_server[attribute] = None
+                elif self.drive_security_remote_key_configuration[attribute]:
+                    if attribute in ["primary_kmip_server", "secondary_kmip_server"]:
+                        for server_attribute in ["enable_drive_security", "ip_address", "port", "timeout"]:
+                            if server_attribute not in self.drive_security_remote_key_configuration[attribute]:
+                                self.drive_security_remote_key_configuration[attribute][server_attribute] = None
 
-        if self.authentication_credentials:
-            for attribute in ["enable_authentication", "username", "password"]:
-                if attribute not in self.authentication_credentials:
-                    self.authentication_credentials[attribute] = None
+                    if attribute == "authentication_credentials":
+                        for auth_attribute in ["enable_authentication", "username", "password"]:
+                            if auth_attribute not in self.drive_security_remote_key_configuration[attribute]:
+                                self.drive_security_remote_key_configuration[attribute][auth_attribute] = None
+
+        if self.drive_security_manual_key_configuration:
+            for attribute in ["drive_security_enabled_with_manual_key", "new_security_key_passphrase",
+                              "current_security_key_passphrase"]:
+                if attribute not in self.drive_security_manual_key_configuration:
+                    self.drive_security_manual_key_configuration[attribute] = None
 
     @staticmethod
-    def _get_valid_certificate(certificate=None):
-        """Provides a valid PEM certificate"""
-        # Split the certificate by lines
-        lines = certificate.split()
+    @staticmethod
+    def _is_valid_passphrase(passphrase=None):
+        """Validates a drive-security key passphrase against Intersight's strict rules.
 
-        # Join lines with '\n' except the first and last
-        valid_certificate = ' '.join(
-            [lines[0], lines[1]]) + ''.join([f"\n{line}" for line in lines[2:-2]] + [f"\n{lines[-2]} {lines[-1]}"])
+        The passphrase must:
+          - be a non-empty string
+          - be at least 8 characters long
+          - contain at least one uppercase letter (A-Z)
+          - contain at least one lowercase letter (a-z)
+          - contain at least one digit (0-9)
+          - contain at least one special character (non-alphanumeric)
 
-        return valid_certificate
+        Returns True if all rules are satisfied, False otherwise.
+        """
+        if not passphrase or not isinstance(passphrase, str):
+            return False
+        if len(passphrase) < 8:
+            return False
+        if not any(c.isupper() for c in passphrase):
+            return False
+        if not any(c.islower() for c in passphrase):
+            return False
+        if not any(c.isdigit() for c in passphrase):
+            return False
+        if not any(not c.isalnum() for c in passphrase):
+            return False
+        return True
+
+    def _handle_deprecated_drive_security_format(self):
+        """
+        Migrates old drive security policy format to new nested structure.
+        Old format had flat attributes, new format uses nested configuration objects.
+        This is to maintain compatibility with configurations created prior to EasyUCS 1.0.6.
+        """
+
+        self.drive_security_configuration_type = "Kmip"
+
+        self.drive_security_remote_key_configuration = {
+            "drive_security_enabled_with_manual_key": False,
+            "authentication_credentials": getattr(self, 'authentication_credentials', {}),
+            "primary_kmip_server": getattr(self, 'primary_kmip_server', {}),
+            "secondary_kmip_server": getattr(self, 'secondary_kmip_server', {}),
+            "server_public_root_ca_certificate": getattr(self, 'server_public_root_ca_certificate', None)
+        }
+        # Clean up old flat attributes
+        self.authentication_credentials = None
+        self.primary_kmip_server = None
+        self.secondary_kmip_server = None
+        self.server_public_root_ca_certificate = None
 
     @IntersightConfigObject.update_taskstep_description()
     def push_object(self):
@@ -1104,73 +1224,139 @@ class IntersightDriveSecurityPolicy(IntersightConfigObject):
             "object_type": "storage.KeySetting",
             "class_id": "storage.KeySetting"
         }
+        if self.drive_security_configuration_type == "Kmip" and self.drive_security_remote_key_configuration:
 
-        from intersight.model.storage_remote_key_setting import StorageRemoteKeySetting
+            from intersight.model.storage_remote_key_setting import StorageRemoteKeySetting
 
-        remote_key_setting_kwargs = {
-            "object_type": "storage.RemoteKeySetting",
-            "class_id": "storage.RemoteKeySetting"
-        }
-
-        if self.server_public_root_ca_certificate:
-            remote_key_setting_kwargs["server_certificate"] = get_encoded_pem_certificate(
-                self.server_public_root_ca_certificate)
-
-        if self.authentication_credentials:
-            from intersight.model.storage_kmip_auth_credentials import StorageKmipAuthCredentials
-            kmip_auth_credentials_kwargs = {
-                "object_type": "storage.KmipAuthCredentials",
-                "class_id": "storage.KmipAuthCredentials"
+            remote_key_setting_kwargs = {
+                "object_type": "storage.RemoteKeySetting",
+                "class_id": "storage.RemoteKeySetting"
             }
-            if self.authentication_credentials["enable_authentication"]:
-                kmip_auth_credentials_kwargs["use_authentication"] = \
-                    self.authentication_credentials["enable_authentication"]
-            if self.authentication_credentials["username"]:
-                kmip_auth_credentials_kwargs["username"] = self.authentication_credentials["username"]
+            server_public_root_ca_certificate = (
+                self.drive_security_remote_key_configuration.get("server_public_root_ca_certificate"))
+            if server_public_root_ca_certificate:
+                remote_key_setting_kwargs["server_certificate"] = get_encoded_pem_certificate(
+                    server_public_root_ca_certificate)
 
-                if self.authentication_credentials["password"]:
-                    kmip_auth_credentials_kwargs["password"] = self.authentication_credentials["password"]
+            authentication_credentials = self.drive_security_remote_key_configuration.get("authentication_credentials")
+            if authentication_credentials:
+                from intersight.model.storage_kmip_auth_credentials import StorageKmipAuthCredentials
+                kmip_auth_credentials_kwargs = {
+                    "object_type": "storage.KmipAuthCredentials",
+                    "class_id": "storage.KmipAuthCredentials"
+                }
+                if authentication_credentials["enable_authentication"]:
+                    kmip_auth_credentials_kwargs["use_authentication"] = \
+                        authentication_credentials["enable_authentication"]
+                if authentication_credentials["username"]:
+                    kmip_auth_credentials_kwargs["username"] = authentication_credentials["username"]
 
+                    if authentication_credentials["password"]:
+                        kmip_auth_credentials_kwargs["password"] = authentication_credentials["password"]
+
+                    else:
+                        self.logger(
+                            level="warning",
+                            message="No password provided for field 'password' of object storage.KmipAuthCredentials"
+                        )
+                remote_key_setting_kwargs["auth_credentials"] = StorageKmipAuthCredentials(**kmip_auth_credentials_kwargs)
+
+            primary_kmip_server = self.drive_security_remote_key_configuration.get("primary_kmip_server")
+            secondary_kmip_server = self.drive_security_remote_key_configuration.get("secondary_kmip_server")
+            if primary_kmip_server or secondary_kmip_server:
+                from intersight.model.storage_kmip_server import StorageKmipServer
+
+                kmip_properties_present = False
+                kmip_server_kwargs = {
+                    "object_type": "storage.KmipServer",
+                    "class_id": "storage.KmipServer"
+                }
+                kmip_server_attributes = ["enable_drive_security", "ip_address", "port", "timeout"]
+                if primary_kmip_server:
+                    for attribute in kmip_server_attributes:
+                        if primary_kmip_server[attribute]:
+                            kmip_properties_present = True
+                            kmip_server_kwargs[attribute] = primary_kmip_server[attribute]
+                    if kmip_properties_present:
+                        remote_key_setting_kwargs["primary_server"] = StorageKmipServer(**kmip_server_kwargs)
+                        kmip_properties_present = False
+                if secondary_kmip_server:
+                    # Reset kwargs so primary server values do not bleed into secondary server
+                    kmip_server_kwargs = {
+                        "object_type": "storage.KmipServer",
+                        "class_id": "storage.KmipServer"
+                    }
+                    for attribute in kmip_server_attributes:
+                        if secondary_kmip_server[attribute]:
+                            kmip_properties_present = True
+                            kmip_server_kwargs[attribute] = secondary_kmip_server[attribute]
+                    if kmip_properties_present:
+                        remote_key_setting_kwargs["secondary_server"] = StorageKmipServer(**kmip_server_kwargs)
+
+            if self.drive_security_remote_key_configuration.get("drive_security_enabled_with_manual_key"):
+                current_security_key_passphrase = (
+                    self.drive_security_remote_key_configuration.get("current_security_key_passphrase"))
+                if current_security_key_passphrase:
+                    remote_key_setting_kwargs["existing_key"] = current_security_key_passphrase
                 else:
                     self.logger(
                         level="warning",
-                        message="No password provided for field 'password' of object storage.KmipAuthCredentials"
+                        message="No password provided for field 'password' of object storage.LocalKeySetting"
                     )
-            remote_key_setting_kwargs["auth_credentials"] = StorageKmipAuthCredentials(**kmip_auth_credentials_kwargs)
 
-        if self.primary_kmip_server or self.secondary_kmip_server:
-            from intersight.model.storage_kmip_server import StorageKmipServer
+            key_setting_kwargs["key_type"] = "Kmip"
+            key_setting_kwargs["remote_key"] = StorageRemoteKeySetting(**remote_key_setting_kwargs)
+            kwargs["key_setting"] = StorageKeySetting(**key_setting_kwargs)
 
-            kmip_properties_present = False
-            kmip_server_kwargs = {
-                "object_type": "storage.KmipServer",
-                "class_id": "storage.KmipServer"
+            drive_security_policy = StorageDriveSecurityPolicy(**kwargs)
+        elif self.drive_security_configuration_type == "Manual" and self.drive_security_manual_key_configuration:
+            from intersight.model.storage_local_key_setting import StorageLocalKeySetting
+
+            local_key_setting_kwargs = {
+                "object_type": "storage.LocalKeySetting",
+                "class_id": "storage.LocalKeySetting"
             }
-            kmip_server_attributes = ["enable_drive_security", "ip_address", "port", "timeout"]
-            if self.primary_kmip_server:
-                for attribute in kmip_server_attributes:
-                    if self.primary_kmip_server[attribute]:
-                        kmip_properties_present = True
-                        kmip_server_kwargs[attribute] = self.primary_kmip_server[attribute]
-                if kmip_properties_present:
-                    remote_key_setting_kwargs["primary_server"] = StorageKmipServer(**kmip_server_kwargs)
-                    kmip_properties_present = False
-            if self.secondary_kmip_server:
-                for attribute in kmip_server_attributes:
-                    if self.secondary_kmip_server[attribute]:
-                        kmip_properties_present = True
-                        kmip_server_kwargs[attribute] = self.secondary_kmip_server[attribute]
-                if kmip_properties_present:
-                    remote_key_setting_kwargs["secondary_server"] = StorageKmipServer(**kmip_server_kwargs)
+            new_security_key_passphrase = self.drive_security_manual_key_configuration.get(
+                "new_security_key_passphrase")
+            if new_security_key_passphrase:
+                local_key_setting_kwargs["new_key"] = new_security_key_passphrase
+            else:
+                self.logger(
+                    level="warning",
+                    message=f"No new security key passphrase provided for field 'new_key' of object "
+                            f"storage.LocalKeySetting in {self._CONFIG_NAME} '{self.name}'. "
+                )
+            if self.drive_security_manual_key_configuration.get("drive_security_enabled_with_manual_key"):
+                current_security_key_passphrase = self.drive_security_manual_key_configuration.get(
+                    "current_security_key_passphrase")
+                if current_security_key_passphrase:
+                    local_key_setting_kwargs["existing_key"] = current_security_key_passphrase
+                else:
+                    self.logger(
+                        level="warning",
+                        message=f"No current security key passphrase provided for field 'existing_key' of object "
+                                f"storage.LocalKeySetting in {self._CONFIG_NAME} '{self.name}'."
+                    )
+            key_setting_kwargs["key_type"] = "Manual"
+            key_setting_kwargs["manual_key"] = StorageLocalKeySetting(**local_key_setting_kwargs)
+            kwargs["key_setting"] = StorageKeySetting(**key_setting_kwargs)
 
-        key_setting_kwargs["remote_key"] = StorageRemoteKeySetting(**remote_key_setting_kwargs)
-        kwargs["key_setting"] = StorageKeySetting(**key_setting_kwargs)
+            drive_security_policy = StorageDriveSecurityPolicy(**kwargs)
 
-        drive_security_policy = StorageDriveSecurityPolicy(**kwargs)
+        else:
+            self.logger(
+                level="error",
+                message=f"Cannot push {self._CONFIG_NAME} '{self.name}': "
+                        f"drive_security_configuration_type is missing or unrecognised "
+                        f"('{self.drive_security_configuration_type}')."
+            )
+            return False
 
         if not self.commit(
                 object_type=self._INTERSIGHT_SDK_OBJECT_NAME, payload=drive_security_policy, detail=self.name):
             return False
+
+        return True
 
 
 class IntersightEthernetAdapterPolicy(IntersightConfigObject):
@@ -1669,12 +1855,34 @@ class IntersightEthernetNetworkGroupPolicy(IntersightConfigObject):
             "object_type": "fabric.VlanSettings",
             "class_id": "fabric.VlanSettings",
         }
-        if self.allowed_vlans is not None:
-            vlan_settings_kwargs["allowed_vlans"] = self.allowed_vlans
         if self.enable_q_in_q_tunneling is not None:
             vlan_settings_kwargs["qinq_enabled"] = self.enable_q_in_q_tunneling
         if self.native_vlan is not None:
             vlan_settings_kwargs["native_vlan"] = self.native_vlan
+        # EASYUCS-1843: Intersight requires that the native VLAN is included in the allowed VLANs list.
+        # If it is not, we add it automatically to avoid a server-side error:
+        # "Native VLAN must be included in Allowed VLANs."
+        if self.native_vlan is not None:
+            native_vlan_covered = False
+            if self.allowed_vlans is not None:
+                for part in self.allowed_vlans.split(","):
+                    part = part.strip()
+                    if "-" in part:
+                        start, end = part.split("-", 1)
+                        if int(start) <= self.native_vlan <= int(end):
+                            native_vlan_covered = True
+                            break
+                    elif part == str(self.native_vlan):
+                        native_vlan_covered = True
+                        break
+            if not native_vlan_covered:
+                if self.allowed_vlans is None:
+                    self.allowed_vlans = str(self.native_vlan)
+                else:
+                    self.allowed_vlans = self.allowed_vlans + "," + str(self.native_vlan)
+
+        if self.allowed_vlans is not None:
+            vlan_settings_kwargs["allowed_vlans"] = self.allowed_vlans
         if self.q_in_q_vlan is not None:
             vlan_settings_kwargs["qinq_vlan"] = self.q_in_q_vlan
         if len(vlan_settings_kwargs) != 0:
@@ -3147,7 +3355,7 @@ class IntersightLanConnectivityPolicy(IntersightConfigObject):
                                       "cdn_value", "enable_failover", "enable_virtual_machine_multi_queue",
                                       "ethernet_adapter_policy", "ethernet_network_control_policy",
                                       "ethernet_network_group_policies", "ethernet_network_group_policy",
-                                      "ethernet_network_policy", "ethernet_qos_policy", "iscsi_boot_policy",
+                                      "ethernet_network_policy", "ethernet_qos_policy", "flow_monitors", "iscsi_boot_policy",
                                       "mac_address_allocation_type", "mac_address_pool", "mac_address_static", "name",
                                       "pci_link", "pci_link_assignment_mode", "pci_order", "pin_group_name", "slot_id",
                                       "sriov_settings", "switch_id", "uplink_port", "usnic_settings", "vmq_settings"]:
@@ -3351,6 +3559,16 @@ class IntersightLanConnectivityPolicy(IntersightConfigObject):
                                 eth_adapter_policy = self._get_policy_name(policy=vnic_eth_if.eth_adapter_policy)
                                 if eth_adapter_policy:
                                     vnic["ethernet_adapter_policy"] = eth_adapter_policy
+
+                        # Fetch NetFlow Monitor Sessions
+                        if getattr(vnic_eth_if, "net_flow_monitor_sessions", None):
+                            vnic["flow_monitors"] = [
+                                {
+                                    "monitor_name": nfms.monitor_name,
+                                    "flow_direction": nfms.flow_direction
+                                }
+                                for nfms in vnic_eth_if.net_flow_monitor_sessions
+                            ]
 
                         vnics.append(vnic)
 
@@ -3986,6 +4204,23 @@ class IntersightLanConnectivityPolicy(IntersightConfigObject):
                         kwargs_sriov["int_count_per_vf"] = vnic["sriov_settings"]["interrupt_count_per_vf"]
                     kwargs["sriov_settings"] = VnicSriovSettings(**kwargs_sriov)
 
+                # Handling the NetFlow Monitor Sessions of the vNIC
+                if vnic.get("flow_monitors") is not None:
+                    from intersight.model.vnic_net_flow_monitor_session import VnicNetFlowMonitorSession
+                    net_flow_sessions = []
+                    for fm in vnic["flow_monitors"]:
+                        kwargs_nfms = {
+                            "object_type": "vnic.NetFlowMonitorSession",
+                            "class_id": "vnic.NetFlowMonitorSession"
+                        }
+                        if fm.get("monitor_name") is not None:
+                            kwargs_nfms["monitor_name"] = fm["monitor_name"]
+                        if fm.get("flow_direction") is not None:
+                            kwargs_nfms["flow_direction"] = fm["flow_direction"]
+                        net_flow_sessions.append(VnicNetFlowMonitorSession(**kwargs_nfms))
+                    if net_flow_sessions:
+                        kwargs["net_flow_monitor_sessions"] = net_flow_sessions
+
                 vnic_payload = VnicEthIf(**kwargs)
 
                 self.commit(object_type="vnic.EthIf", payload=vnic_payload,
@@ -4600,14 +4835,6 @@ class IntersightLocalUserPolicy(IntersightConfigObject):
                                         local_user["use_different_ipmi_password"]
                                     if local_user.get("ipmi_password") is not None:
                                         iam_account_type_ipmi_kwargs["password"] = local_user.get("ipmi_password")
-                                    elif self._config.convert_settings.get("default_password", None):
-                                        end_point_user_role_kwargs["password"] = self._config.convert_settings[
-                                            "default_password"]
-                                        self.logger(
-                                            level="debug",
-                                            message="Using default_password from the convert_settings for field "
-                                                    "'password' of object iam.AccountTypeIpmi"
-                                        )
                                     else:
                                         self.logger(
                                             level="warning",
@@ -6231,7 +6458,7 @@ class IntersightSnmpPolicy(IntersightConfigObject):
                 if attribute in self._object:
                     setattr(self, attribute, self.get_attribute(attribute_name=attribute))
 
-            self.clean_object()
+        self.clean_object()
 
     def clean_object(self):
         # We use this to make sure all options of a Trap Destination are set to None if they are not present
@@ -6393,7 +6620,6 @@ class IntersightSnmpPolicy(IntersightConfigObject):
             return False
 
         return True
-
 
 class IntersightSshPolicy(IntersightConfigObject):
     _CONFIG_NAME = "SSH Policy"

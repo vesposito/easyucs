@@ -168,6 +168,12 @@
          "description": "Switch Control Policy VLAN Port Count Optimization Admin State",
          "type": "boolean",
          "default": false
+      },
+      "disable_mac_address_learning_vlans": {
+         "description": "Switch Control Policy Disable MAC Address Learning VLANs",
+         "type": "string",
+         "default": "",
+         "pattern": "^$|^((\\d+\\-\\d+)|(\\d+))(,((\\d+\\-\\d+)|(\\d+)))*$"
       }
    },
    "additionalProperties": false,

@@ -91,7 +91,7 @@
          "type": "integer",
          "default": 1024,
          "minimum": 1,
-         "maximum": 4096
+         "maximum": 16384
       },
       "plogi_retries": {
          "description": "Fibre Channel Adapter Policy Plogi Retries",

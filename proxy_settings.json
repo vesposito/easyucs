@@ -3,5 +3,5 @@
    "proxy_port": 0,
    "proxy_authentication": false,
    "proxy_username": "",
-   "proxy_password": ""
+   "encrypted_proxy_password": ""
 }

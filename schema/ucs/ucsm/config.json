@@ -632,6 +632,17 @@
          },
          "minItems": 1
       },
+      "watchdog_timers": {
+         "description": "EasyUCS config/watchdog_timers section",
+         "type": "array",
+         "items": {
+            "description": "EasyUCS config/watchdog_timers element",
+            "type": "object",
+            "$ref": "config/watchdog_timers.json"
+         },
+         "minItems": 1,
+         "maxItems": 1
+      },
       "orgs": {
          "description": "EasyUCS config/orgs section",
          "type": "array",
