@@ -84,6 +84,31 @@ class IntersightComputeRackUnit(GenericRack, IntersightInventoryObject):
                 self.logger(level="debug",
                             message="Unable to find unique compute.Board object for rack unit with ID " + str(self.id))
 
+            # Special handling for C885A and C845A
+            if self._object.platform_type in ["UCSC885", "CAI845A"]:
+                # GPUs can be exposed directly on the "compute.RackUnit" object (C845A pattern) or
+                # via "equipment.EnclosureElement" objects (C885A pattern) - we check both
+                if getattr(self._object, "graphics_cards", None):
+                    self.gpus = self.get_inventory_objects_from_ref(
+                        ref=self._object.graphics_cards, object_class=IntersightGpu, parent=self)
+                equipment_enclosure_elements = self.get_inventory_objects_from_ref(
+                    ref=self._object.equipment_enclosure_elements)
+                for equipment_enclosure_element in equipment_enclosure_elements:
+                    if equipment_enclosure_element.graphics_cards:
+                        self.gpus = self.get_inventory_objects_from_ref(
+                            ref=equipment_enclosure_element.graphics_cards, object_class=IntersightGpu, parent=self)
+                # Storage controllers are directly at the root of the "compute.RackUnit" object
+                self.storage_controllers.extend(self.get_inventory_objects_from_ref(
+                    ref=self._object.storage_controllers, object_class=IntersightStorageController, parent=self))
+                storage_controllers = self.get_inventory_objects_from_ref(
+                    ref=self._object.storage_controllers)
+                for storage_controller in storage_controllers:
+                    if getattr(storage_controller, "type", None) in ["Nvme", "NVME"] and \
+                            getattr(storage_controller, "physical_disks", []):
+                        self.nvme_drives.extend(self.get_inventory_objects_from_ref(
+                            ref=storage_controller.physical_disks, object_class=IntersightStorageControllerNvmeDrive,
+                            parent=self))
+
             # We need to find the "management.Controller" object that belongs to this rack to inventory subcomponents
             management_controller = self.get_inventory_objects_from_ref(ref=self._object.bmc)
             if len(management_controller) == 1:

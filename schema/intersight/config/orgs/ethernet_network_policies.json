@@ -65,7 +65,8 @@
          "default": "Standalone",
          "enum": [
             "FI-Attached",
-            "Standalone"
+            "Standalone",
+            "Unified Edge"
          ]
       },
       "enable_qinq_tunneling": {

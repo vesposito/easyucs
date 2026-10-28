@@ -9,7 +9,6 @@ from docx.shared import Pt
 from report.content import GenericReportContent
 from reportlab.lib import colors
 
-import textwrap
 from reportlab.platypus import Paragraph, KeepTogether, Table, TableStyle, Spacer
 
 
@@ -21,7 +20,14 @@ def wrap_custom(source_text, separator_chars, width=70, keep_separators=True):
     char_index = 0
     while char_index < len(source_text):
         if source_text[char_index] == "\n":
-            keep_separators = False
+            # Hard line break in the source: flush it as-is and reset the
+            # line-length counter so the next line is measured independently.
+            output += "\n"
+            current_length = 0
+            current_chunk_start = char_index + 1
+            latest_separator = char_index
+            char_index += 1
+            continue
         if source_text[char_index] in separator_chars:
             latest_separator = char_index
         output += source_text[char_index]
@@ -289,16 +295,39 @@ class GenericReportTable(GenericReportContent):
                     if len(str(self.cells_list[i][j])) >= word_len:
                         p = self.cells_list[i][j]
                         self.cells_list[i][j] = wrap_custom(str(p), wrap_delimiter, word_len, True)
-                # Truncating larger cells
-                if self.cells_list[0][j] == "Description" and len(str(self.cells_list[i][j])) >= 156:
-                    p = self.cells_list[i][j]
-                    self.cells_list[i][j] = textwrap.shorten(p, width=10, placeholder='...')
-                elif len(str(self.cells_list[i][j])) >= 1000:
-                    # FIXME: This is a temporary fix, ideally if length of characters is too long in a cell, then
-                    #  split the cells into multiple cells.
+                # Truncating cells whose total character count is too large for a single line.
+                # Only applies to cells with no newlines — cells with newlines have already been
+                # wrapped by wrap_custom and will be handled safely by the row-splitting below.
+                if "\n" not in str(self.cells_list[i][j]) and len(str(self.cells_list[i][j])) >= 1000:
                     self.cells_list[i][j] = self.cells_list[i][j][:1000] + " ..."
                 column.append(str(self.cells_list[i][j]))
             table.append(column)
+
+        # Split rows that are too tall for a single page into continuation rows. This operates
+        # only on the local `table` variable — self.cells_list is never mutated, so the Word
+        # and JSON output paths are completely unaffected.
+        # At 8pt font (~12pt leading) an A4 frame (685pt) fits at most ~57 lines. Cap at 40.
+        max_lines = 40
+        split_occurred = False
+        split_table = []
+        for row in table:
+            if max((cell.count("\n") for cell in row), default=0) < max_lines:
+                split_table.append(row)
+                continue
+            split_occurred = True
+            chunked_cells = []
+            for cell in row:
+                lines = cell.split("\n")
+                chunked_cells.append(["\n".join(lines[k:k + max_lines])
+                                       for k in range(0, len(lines), max_lines)])
+            num_chunks = max(len(c) for c in chunked_cells)
+            for chunk_idx in range(num_chunks):
+                new_row = [col_chunks[chunk_idx] if chunk_idx < len(col_chunks) else ""
+                           for col_chunks in chunked_cells]
+                if chunk_idx > 0:
+                    new_row[0] = chunked_cells[0][0] + "\n(continued)"
+                split_table.append(new_row)
+        table = split_table
 
         try:
             tables = Table(table, spaceAfter=0, repeatRows=1)
@@ -323,7 +352,12 @@ class GenericReportTable(GenericReportContent):
                         elif self.cells_list[0][j] == "Compatible FW?" and self.cells_list[i][j] == "No":
                             tables.setStyle(TableStyle([('BACKGROUND', (j, i), (j, i), colors.yellow)]))
 
-            self.report.pdf_element_list.append(KeepTogether(tables))
+            # When rows were split, the combined table may span multiple pages, so
+            # KeepTogether is omitted to allow natural row-boundary page breaks.
+            if split_occurred:
+                self.report.pdf_element_list.append(tables)
+            else:
+                self.report.pdf_element_list.append(KeepTogether(tables))
         except ValueError as err:
             self.logger(
                 level="debug",

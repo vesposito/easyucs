@@ -1046,7 +1046,7 @@
             "weight": 2
          },
          {
-            "name": "PushEquipmentSectionIntersight",
+            "name": "PushEquipmentRelatedConfigIntersight",
             "optional": true,
             "order": 5,
             "weight": 1

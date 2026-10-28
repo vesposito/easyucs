@@ -66,6 +66,11 @@
          "type": "boolean",
          "default": false
       },
+      "persist_os_recovery_key": {
+         "description": "Boot Policy - Persist OS Recovery Key",
+         "type": "boolean",
+         "default": false
+      },
       "boot_devices": {
          "description": "Boot Policy - Boot Devices",
          "type": "array",

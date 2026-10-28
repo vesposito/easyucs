@@ -117,6 +117,29 @@ class IntersightGenericUcsServerProfile(IntersightConfigObject):
         "UCSC-MLOM-C10T-02",
         "UCSC-MLOM-CSC-02",
     }
+    _STANDALONE_SERVER_FAMILIES = {"UCSC845A", "UCSC2XX/4XX"}
+    _C845A_UNSUPPORTED_POLICIES = {
+        # Network Configuration
+        "adapter_configuration_policy",
+        "lan_connectivity_policy",
+        "san_connectivity_policy",
+        # Storage Configuration
+        "drive_security_policy",
+        "storage_policy",
+        "sd_card_policy",
+        # Compute (C845A only supports BIOS/Firmware/Power/Virtual Media)
+        "boot_policy",
+        "memory_policy",
+        "pcie_connectivity_policy",
+        "persistent_memory_policy",
+        "scrub_policy",
+        "thermal_policy",
+        # Management (confirmed unsupported from Intersight C845A UI)
+        "device_connector_policy",
+        "imc_access_policy",
+        "snmp_policy",
+        "syslog_policy"
+    }
 
     def __init__(self, parent, sdk_object):
         IntersightConfigObject.__init__(self, parent=parent, sdk_object=sdk_object)
@@ -124,6 +147,7 @@ class IntersightGenericUcsServerProfile(IntersightConfigObject):
         self.descr = self.get_attribute(attribute_name="description", attribute_secondary_name="descr")
         self.name = self.get_attribute(attribute_name="name")
         self.target_platform = self.get_attribute(attribute_name="target_platform")
+        self.server_family = self.get_attribute(attribute_name="server_family")
         self.user_label = self.get_attribute(attribute_name="user_label")
 
         self.adapter_configuration_policy = None
@@ -156,6 +180,28 @@ class IntersightGenericUcsServerProfile(IntersightConfigObject):
         self.uuid_pool = None
         self.virtual_kvm_policy = None
         self.virtual_media_policy = None
+
+    def _set_target_platform_and_server_family_kwargs(self, kwargs):
+        """Populate target_platform/server_family kwargs with UI-compatible values."""
+        if self.target_platform is None:
+            return
+
+        if self.target_platform in ["FI-Attached"]:
+            kwargs["target_platform"] = "FIAttached"
+            kwargs["server_family"] = "All"
+        elif self.target_platform == "Unified Edge":
+            kwargs["target_platform"] = "UnifiedEdgeServer"
+            kwargs["server_family"] = "All"
+        else:
+            kwargs["target_platform"] = self.target_platform
+            if self.target_platform == "Standalone":
+                if self.server_family in self._STANDALONE_SERVER_FAMILIES:
+                    kwargs["server_family"] = self.server_family
+            
+
+    @staticmethod
+    def _is_standalone_c845a(target_platform=None, server_family=None):
+        return target_platform == "Standalone" and server_family == "UCSC845A"
 
 
 class IntersightUcsServerProfile(IntersightGenericUcsServerProfile):
@@ -632,6 +678,46 @@ class IntersightUcsServerProfile(IntersightGenericUcsServerProfile):
 
         # In case this UCS Server Profile needs to be bound to a Template, we use the 'derive' mechanism to create it
         if self.ucs_server_profile_template:
+            template_org = org
+            template_name = self.ucs_server_profile_template
+            if "/" in template_name:
+                shared_org_name = template_name.split("/", 1)[0]
+                template_org = self.get_org_relationship(org_name=shared_org_name)
+                template_name = template_name.split("/", 1)[1]
+                if not template_org:
+                    err_message = (f"Unable to locate organization '{shared_org_name}' of UCS Server Profile Template "
+                                   f"'{self.ucs_server_profile_template}' to derive UCS Server Profile {self.name}")
+                    self.logger(level="error", message=err_message)
+                    self._config.push_summary_manager.add_object_status(
+                        obj=self, obj_detail=self.name, obj_type=self._INTERSIGHT_SDK_OBJECT_NAME,
+                        status="failed", message=err_message)
+                    return False
+
+            template_full_path = self.ucs_server_profile_template
+            if "/" not in template_full_path:
+                template_full_path = f"{self._parent.name}/{template_name}"
+            ucs_server_profile_template = self.get_live_object(
+                object_name=template_name,
+                object_type="server.ProfileTemplate", return_reference=False, log=False,
+                query_filter=f"Name eq '{template_name}' and Organization.Moid eq '{template_org.moid}'")
+            if not ucs_server_profile_template:
+                err_message = "Unable to locate source UCS Server Profile Template " + \
+                              template_full_path + " to derive UCS Server Profile " + self.name
+                self.logger(level="error", message=err_message)
+                self._config.push_summary_manager.add_object_status(
+                    obj=self, obj_detail=self.name, obj_type=self._INTERSIGHT_SDK_OBJECT_NAME,
+                    status="failed", message=err_message)
+                return False
+            template_reference = self.create_relationship_equivalent(sdk_object=ucs_server_profile_template)
+            if not template_reference:
+                err_message = "Unable to locate source UCS Server Profile Template " + \
+                              template_full_path + " to derive UCS Server Profile " + self.name
+                self.logger(level="error", message=err_message)
+                self._config.push_summary_manager.add_object_status(
+                    obj=self, obj_detail=self.name, obj_type=self._INTERSIGHT_SDK_OBJECT_NAME,
+                    status="failed", message=err_message)
+                return False
+
             if not server_profile:
                 # No UCS Server Profile with the same name exists, so we can derive the UCS Server Profile Template
                 from intersight.model.bulk_mo_cloner import BulkMoCloner
@@ -642,24 +728,12 @@ class IntersightUcsServerProfile(IntersightGenericUcsServerProfile):
                 }
 
                 # We need to identify the Moid of the source UCS Server Profile Template
-                ucs_server_profile_template = self.get_live_object(object_name=self.ucs_server_profile_template,
-                                                                   object_type="server.ProfileTemplate",
-                                                                   return_reference=False, log=False)
-                if ucs_server_profile_template:
-                    template_moid = ucs_server_profile_template.moid
-                    source_template = {
-                        "moid": template_moid,
-                        "object_type": "server.ProfileTemplate"
-                    }
-                    kwargs_mo_cloner["sources"].append(ServerProfileTemplate(**source_template))
-                else:
-                    err_message = "Unable to locate source UCS Server Profile Template " + \
-                                  self.ucs_server_profile_template + " to derive UCS Server Profile " + self.name
-                    self.logger(level="error", message=err_message)
-                    self._config.push_summary_manager.add_object_status(obj=self, obj_detail=self.name,
-                                                                        obj_type=self._INTERSIGHT_SDK_OBJECT_NAME,
-                                                                        status="failed", message=err_message)
-                    return False
+                template_moid = ucs_server_profile_template.moid
+                source_template = {
+                    "moid": template_moid,
+                    "object_type": "server.ProfileTemplate"
+                }
+                kwargs_mo_cloner["sources"].append(ServerProfileTemplate(**source_template))
 
                 # We now need to specify the attribute of the target UCS Server Profile
                 target_profile = {
@@ -1016,10 +1090,10 @@ class IntersightUcsServerProfile(IntersightGenericUcsServerProfile):
                         filter="Moid eq '" + server_profile.src_template.moid + "'"
                     )
                     if len(src_template) == 1:
-                        if src_template[0].name == self.ucs_server_profile_template:
+                        if server_profile.src_template.moid == ucs_server_profile_template.moid:
                             # UCS Server Profile is already derived from the same UCS Server Profile Template
                             info_message = "UCS Server Profile " + self.name + " exists and is already derived " + \
-                                           "from UCS Server Profile Template " + self.ucs_server_profile_template
+                                           "from UCS Server Profile Template " + template_full_path
                             self.logger(level="info", message=info_message)
                             self._config.push_summary_manager.add_object_status(
                                 obj=self, obj_detail=self.name, obj_type=self._INTERSIGHT_SDK_OBJECT_NAME,
@@ -1028,16 +1102,23 @@ class IntersightUcsServerProfile(IntersightGenericUcsServerProfile):
                         else:
                             # UCS Server Profile is derived from another UCS Server Profile Template
                             # We will detach it from its Template and reattach it to the desired Template
+                            source_orgs = self._device.query(
+                                object_type="organization.Organization",
+                                filter=f"Moid eq '{src_template[0].organization.moid}'"
+                            )
+                            source_org_name = (source_orgs[0].name if len(source_orgs) == 1
+                                               else src_template[0].organization.moid)
+                            source_template_full_path = f"{source_org_name}/{src_template[0].name}"
                             self.logger(
                                 level="info",
                                 message="UCS Server Profile " + self.name +
                                         " exists and is derived from different UCS Server Profile Template " +
-                                        src_template[0].name
+                                        source_template_full_path
                             )
                             self.logger(
                                 level="info",
                                 message="Detaching UCS Server Profile " + self.name +
-                                        " from UCS Server Profile Template " + src_template[0].name
+                                        " from UCS Server Profile Template " + source_template_full_path
                             )
                             kwargs = {
                                 "object_type": self._INTERSIGHT_SDK_OBJECT_NAME,
@@ -1055,14 +1136,10 @@ class IntersightUcsServerProfile(IntersightGenericUcsServerProfile):
                             self.logger(
                                 level="info",
                                 message="Attaching UCS Server Profile " + self.name +
-                                        " to UCS Server Profile Template " + self.ucs_server_profile_template
+                                        " to UCS Server Profile Template " + template_full_path
                             )
                             # We need to identify the Moid of the UCS Server Profile Template
-                            ucs_server_profile_template = self.get_live_object(
-                                object_name=self.ucs_server_profile_template,
-                                object_type="server.ProfileTemplate"
-                            )
-                            kwargs["src_template"] = ucs_server_profile_template
+                            kwargs["src_template"] = template_reference
                             server_profile = ServerProfile(**kwargs)
 
                             if not self.commit(object_type=self._INTERSIGHT_SDK_OBJECT_NAME, payload=server_profile,
@@ -1071,7 +1148,7 @@ class IntersightUcsServerProfile(IntersightGenericUcsServerProfile):
 
                             return True
                     else:
-                        err_message = "Could not find UCS Server Profile Template " + self.ucs_server_profile_template
+                        err_message = "Could not find UCS Server Profile Template " + template_full_path
                         self.logger(level="error", message=err_message)
                         self._config.push_summary_manager.add_object_status(
                             obj=self, obj_detail=self.name, obj_type=self._INTERSIGHT_SDK_OBJECT_NAME, status="failed",
@@ -1080,16 +1157,12 @@ class IntersightUcsServerProfile(IntersightGenericUcsServerProfile):
                 else:
                     # UCS Server Profile is not currently bound to a template. So we just need to bind it
                     # We need to identify the Moid of the UCS Server Profile Template
-                    ucs_server_profile_template = self.get_live_object(
-                        object_name=self.ucs_server_profile_template,
-                        object_type="server.ProfileTemplate"
-                    )
                     kwargs = {
                         "object_type": self._INTERSIGHT_SDK_OBJECT_NAME,
                         "class_id": self._INTERSIGHT_SDK_OBJECT_NAME,
                         "organization": org,
                         "name": self.name,
-                        "src_template": ucs_server_profile_template
+                        "src_template": template_reference
                     }
                     server_profile = ServerProfile(**kwargs)
 
@@ -1114,13 +1187,11 @@ class IntersightUcsServerProfile(IntersightGenericUcsServerProfile):
             kwargs["uuid_address_type"] = self.uuid_allocation_type.upper()
         if self.user_label is not None:
             kwargs["user_label"] = self.user_label
-        if self.target_platform is not None:
-            if self.target_platform in ["FI-Attached"]:
-                kwargs["target_platform"] = "FIAttached"
-            elif self.target_platform == "Unified Edge":
-                kwargs["target_platform"] = "UnifiedEdgeServer"
-            else:
-                kwargs["target_platform"] = self.target_platform
+        self._set_target_platform_and_server_family_kwargs(kwargs=kwargs)
+        is_c845a = self._is_standalone_c845a(
+            target_platform=kwargs.get("target_platform"),
+            server_family=kwargs.get("server_family")
+        )
 
         if self.uuid_allocation_type in ["pool"]:
             if self.uuid_pool is not None:
@@ -1453,6 +1524,12 @@ class IntersightUcsServerProfile(IntersightGenericUcsServerProfile):
             "virtual_kvm_policy", "virtual_media_policy"
         ]:
             if getattr(self, policy_name, None) is not None:
+                if is_c845a and policy_name in self._C845A_UNSUPPORTED_POLICIES:
+                    self.logger(
+                        level="info",
+                        message=f"Skipping unsupported policy '{policy_name}' for UCSC845A"
+                    )
+                    continue
                 policy_type = self._POLICY_MAPPING_TABLE.get(policy_name)
                 if policy_type:
                     object_type = getattr(policy_type, "_INTERSIGHT_SDK_OBJECT_NAME", None)
@@ -1553,13 +1630,11 @@ class IntersightUcsServerProfileTemplate(IntersightGenericUcsServerProfile):
             kwargs["description"] = self.descr
         if self.tags is not None:
             kwargs["tags"] = self.create_tags()
-        if self.target_platform is not None:
-            if self.target_platform in ["FI-Attached"]:
-                kwargs["target_platform"] = "FIAttached"
-            elif self.target_platform == "Unified Edge":
-                kwargs["target_platform"] = "UnifiedEdgeServer"
-            else:
-                kwargs["target_platform"] = self.target_platform
+        self._set_target_platform_and_server_family_kwargs(kwargs=kwargs)
+        is_c845a = self._is_standalone_c845a(
+            target_platform=kwargs.get("target_platform"),
+            server_family=kwargs.get("server_family")
+        )
 
         if self.uuid_pool is not None:
             # We need to identify the UUID Pool object reference
@@ -1584,6 +1659,12 @@ class IntersightUcsServerProfileTemplate(IntersightGenericUcsServerProfile):
             "virtual_kvm_policy", "virtual_media_policy"
         ]:
             if getattr(self, policy_name, None) is not None:
+                if is_c845a and policy_name in self._C845A_UNSUPPORTED_POLICIES:
+                    self.logger(
+                        level="debug",
+                        message=f"Skipping unsupported policy '{policy_name}' for UCSC845A"
+                    )
+                    continue
                 policy_type = self._POLICY_MAPPING_TABLE.get(policy_name)
                 if policy_type:
                     object_type = getattr(policy_type, "_INTERSIGHT_SDK_OBJECT_NAME", None)

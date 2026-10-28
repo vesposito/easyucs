@@ -1,0 +1,24 @@
+{
+   "cbs_cmn_cpu_smee": {
+      "disabled": "Disable",
+      "enabled": "Enable"
+   },
+   "cbs_cpu_smt_ctrl": {
+      "disabled": "Disable",
+      "enabled": "Enable"
+   },
+   "cbs_sev_snp_support": {
+      "disabled": "Disable",
+      "enabled": "Enable"
+   },
+   "flow_control": {
+      "rts-cts": "Hardware RTS/CTS"
+   },
+   "os_boot_watchdog_timer_policy": {
+      "power-cycle": "Power Cycle",
+      "power-down": "Power Down"
+   },
+   "terminal_type": {
+      "pc-ansi": "ANSI"
+   }
+}

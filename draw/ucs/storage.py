@@ -171,7 +171,11 @@ class UcsStorageLocalDiskDraw(GenericUcsDrawEquipment):
         self.parent_draw = parent_draw
         self._parent = parent
 
-        self.id = int(self._parent.id)
+        # Slot ids are usually numeric, but some platforms (e.g. C845A) use string ids
+        try:
+            self.id = int(self._parent.id)
+        except ValueError:
+            self.id = self._parent.id
 
         if hasattr(self._parent, 'sku'):
             self.sku = self._parent.sku
@@ -199,7 +203,9 @@ class UcsStorageLocalDiskDraw(GenericUcsDrawEquipment):
 
             GenericUcsDrawEquipment.__init__(self, parent=parent)
 
-            self.background = self._create_background(self.canvas_width, self.canvas_height, self.canvas_color)
+            # Use a fully transparent canvas so alpha=0 regions of the source drive image
+            # (e.g. e1s_c845a_m8) stay transparent instead of being baked in as opaque white
+            self.background = self._create_background(self.canvas_width, self.canvas_height, (255, 255, 255, 0))
             self.draw = self._create_draw()
 
             self.paste_layer(self.picture, (0, 0))

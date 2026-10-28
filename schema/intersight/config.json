@@ -47,6 +47,16 @@
          },
          "minItems": 1
       },
+      "power_groups": {
+         "description": "EasyUCS config/power_groups section",
+         "type": "array",
+         "items": {
+            "description": "EasyUCS config/power_groups element",
+            "type": "object",
+            "$ref": "config/power_groups.json"
+         },
+         "minItems": 1
+      },
       "resource_groups": {
          "description": "EasyUCS config/resource_groups section",
          "type": "array",

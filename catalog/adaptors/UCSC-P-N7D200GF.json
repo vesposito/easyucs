@@ -1,0 +1,63 @@
+{
+   "model_short_name": "NVIDIA ConnectX-7 MCX755106AS 2x200G",
+   "rear_file_name": "UCSC-P-N7D200GF.png",
+   "rear_file_name_half": "UCSC-P-N7D200GF_half.png",
+   "rear_file_size": [
+      636,
+      80
+   ],
+   "rear_file_size_half": [
+      389,
+      75
+   ],
+   "rear_ports": {
+      "x/2": {
+         "port_coord": [
+            271,
+            12
+         ],
+         "port_type": "qsfp112",
+         "port_size": [
+            125,
+            54
+         ]
+      },
+      "x/1": {
+         "port_coord": [
+            414,
+            12
+         ],
+         "port_type": "qsfp112",
+         "port_size": [
+            125,
+            54
+         ]
+      }
+   },
+   "rear_ports_half": {
+      "x/2": {
+         "port_coord": [
+            96,
+            12
+         ],
+         "port_type": "qsfp112",
+         "port_size": [
+            108,
+            50
+         ]
+      },
+      "x/1": {
+         "port_coord": [
+            220,
+            12
+         ],
+         "port_type": "qsfp112",
+         "port_size": [
+            108,
+            50
+         ]
+      }
+   },
+   "imm_compatible": false,
+   "adaptor_type": "nic"
+}

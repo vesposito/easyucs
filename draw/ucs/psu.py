@@ -57,5 +57,10 @@ class UcsPsuDraw(GenericUcsDrawEquipment):
 
         for slot in slots:
             if slot["id"] == int(self._parent.id):
+                # Some platforms (e.g. C885A) reuse the same id across distinct PSU groups
+                # (main bays vs motherboard PSUs) - disambiguate using skus when present
+                if "skus" in slot and self._parent.sku not in slot["skus"]:
+                    continue
                 coord = slot["coord"]
-        return self.parent_draw.picture_offset[0] + coord[0], self.parent_draw.picture_offset[1] + coord[1]
+                return self.parent_draw.picture_offset[0] + coord[0], self.parent_draw.picture_offset[1] + coord[1]
+        return False

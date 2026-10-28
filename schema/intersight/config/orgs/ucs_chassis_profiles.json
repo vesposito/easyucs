@@ -29,6 +29,12 @@
          "default": "",
          "pattern": "^[a-zA-Z0-9 !#$%&*+,()\\[\\]{}|/.?@_:;~-]{1,64}$"
       },
+      "chassis_pre_assign_by_serial": {
+         "description": "Pre-assign chassis profile using chassis serial number",
+         "type": "string",
+         "default": "",
+         "pattern": "^[a-zA-Z0-9]{0,20}$"
+      },
       "tags": {
          "description": "UCS Chassis Profile Tags",
          "type": "array",
@@ -82,6 +88,8 @@
                   "Activating",
                   "Inconsistent",
                   "Associated",
+                  "Pending-changes",
+                  "Out-of-sync",
                   "Failed",
                   "Not-complete",
                   "Waiting-for-resource"

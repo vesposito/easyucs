@@ -1,0 +1,20 @@
+{
+   "model_short_name": "Intel X710-T2L 2x10G",
+   "rear_file_name": "C885A-O-ID10GC.png",
+   "rear_file_size": [443,109],
+   "rear_ports": {
+      "x/1": {
+         "port_coord": [231, 41],
+         "port_type": "rj45",
+         "port_size": [68, 45]
+      },
+      "x/2": {
+         "port_coord": [350, 41],
+         "port_type": "rj45",
+         "port_size": [68, 45]
+      }
+   },
+   "imm_compatible": false,
+   "data_sheet_url": "https://www.cisco.com/c/dam/en/us/products/collateral/servers-unified-computing/ucs-c-series-rack-servers/intel-x710-t2l-ethernet-network-adapter-product-brief.pdf",
+   "adaptor_type": "nic"
+}

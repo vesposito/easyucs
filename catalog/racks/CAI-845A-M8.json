@@ -1,0 +1,400 @@
+{
+  "model_short_name": "C845A M8",
+  "rear_file_name": "CAI-845A-M8_rear.png",
+  "front_file_name": "CAI-845A-M8_front.png",
+  "rear_file_size": [
+    2925,
+    1083
+  ],
+  "front_file_size": [
+    2925,
+    1081
+  ],
+  "pcie_slots": [
+    {
+      "id": "FHHL_9",
+      "width": "fhhl",
+      "coord": [
+        2163,
+        71
+      ]
+    },
+    {
+      "id": "FHHL_10",
+      "width": "fhhl",
+      "coord": [
+        2287,
+        71
+      ]
+    },
+    {
+      "id": "FHHL_11",
+      "width": "fhhl",
+      "coord": [
+        2411,
+        71
+      ]
+    },
+    {
+      "id": "FHHL_12",
+      "width": "fhhl",
+      "coord": [
+        2535,
+        71
+      ]
+    },
+    {
+      "id": "FHHL_13",
+      "width": "fhhl",
+      "coord": [
+        2659,
+        71
+      ]
+    },
+    {
+      "id": "OCP_NIC",
+      "width": "ocp",
+      "coord": [
+        1189,
+        842
+      ]
+    }
+  ],
+  "pcie_models": [
+    {
+      "name": "CAI-845A-FHHL-BLANK",
+      "type": "blank",
+      "width": "fhhl",
+      "description": "Blanking panel for a FHHL adaptor slot on UCS C845A M8"
+    },
+    {
+      "name": "CAI-845A-OCP-BLANK",
+      "type": "blank",
+      "width": "ocp",
+      "description": "Blanking panel for the OCP NIC slot on UCS C845A M8"
+    }
+  ],
+  "psus_slots_rear": [
+    {
+      "id": 1,
+      "coord": [
+        153,
+        819
+      ]
+    },
+    {
+      "id": 2,
+      "coord": [
+        628,
+        819
+      ]
+    },
+    {
+      "id": 3,
+      "coord": [
+        1848,
+        819
+      ]
+    },
+    {
+      "id": 4,
+      "coord": [
+        2323,
+        819
+      ]
+    }
+  ],
+  "psus_models": [
+    {
+      "name": "CAI-845A-PSU-BLANK",
+      "type": "blank",
+      "description": "Blanking panel for a PSU bay on UCS C845A M8"
+    }
+  ],
+  "imm_compatible": false,
+  "specs": {
+    "form_factor": "4RU",
+    "cpu": {
+      "sockets": 2,
+      "family_name": {
+        "turin": "AMD EPYC 5th Gen Processors"
+      }
+    },
+    "memory": {
+      "dimm_type": "DDR5",
+      "dimm_slots": 32,
+      "max_speed": 5200,
+      "dcpmm_support": false
+    }
+  },
+  "disks_slots": [
+    {
+      "id": "FRONT_NVME_1",
+      "format": "e1s_c845a_m8",
+      "orientation": "horizontal",
+      "coord": [
+        772,
+        304
+      ],
+      "size": [
+        85,
+        220
+      ]
+    },
+    {
+      "id": "FRONT_NVME_2",
+      "format": "e1s_c845a_m8",
+      "orientation": "horizontal",
+      "coord": [
+        867,
+        304
+      ],
+      "size": [
+        85,
+        220
+      ]
+    },
+    {
+      "id": "FRONT_NVME_3",
+      "format": "e1s_c845a_m8",
+      "orientation": "horizontal",
+      "coord": [
+        962,
+        304
+      ],
+      "size": [
+        85,
+        220
+      ]
+    },
+    {
+      "id": "FRONT_NVME_4",
+      "format": "e1s_c845a_m8",
+      "orientation": "horizontal",
+      "coord": [
+        1057,
+        304
+      ],
+      "size": [
+        85,
+        220
+      ]
+    },
+    {
+      "id": "FRONT_NVME_5",
+      "format": "e1s_c845a_m8",
+      "orientation": "horizontal",
+      "coord": [
+        1196,
+        304
+      ],
+      "size": [
+        85,
+        220
+      ]
+    },
+    {
+      "id": "FRONT_NVME_6",
+      "format": "e1s_c845a_m8",
+      "orientation": "horizontal",
+      "coord": [
+        1291,
+        304
+      ],
+      "size": [
+        85,
+        220
+      ]
+    },
+    {
+      "id": "FRONT_NVME_7",
+      "format": "e1s_c845a_m8",
+      "orientation": "horizontal",
+      "coord": [
+        1386,
+        304
+      ],
+      "size": [
+        85,
+        220
+      ]
+    },
+    {
+      "id": "FRONT_NVME_8",
+      "format": "e1s_c845a_m8",
+      "orientation": "horizontal",
+      "coord": [
+        1481,
+        304
+      ],
+      "size": [
+        85,
+        220
+      ]
+    },
+    {
+      "id": "FRONT_NVME_9",
+      "format": "e1s_c845a_m8",
+      "orientation": "horizontal",
+      "coord": [
+        1576,
+        304
+      ],
+      "size": [
+        85,
+        220
+      ]
+    },
+    {
+      "id": "FRONT_NVME_10",
+      "format": "e1s_c845a_m8",
+      "orientation": "horizontal",
+      "coord": [
+        1671,
+        304
+      ],
+      "size": [
+        85,
+        220
+      ]
+    },
+    {
+      "id": "FRONT_NVME_11",
+      "format": "e1s_c845a_m8",
+      "orientation": "horizontal",
+      "coord": [
+        1766,
+        304
+      ],
+      "size": [
+        85,
+        220
+      ]
+    },
+    {
+      "id": "FRONT_NVME_12",
+      "format": "e1s_c845a_m8",
+      "orientation": "horizontal",
+      "coord": [
+        1861,
+        304
+      ],
+      "size": [
+        85,
+        220
+      ]
+    },
+    {
+      "id": "FRONT_NVME_13",
+      "format": "e1s_c845a_m8",
+      "orientation": "horizontal",
+      "coord": [
+        2000,
+        304
+      ],
+      "size": [
+        85,
+        220
+      ]
+    },
+    {
+      "id": "FRONT_NVME_14",
+      "format": "e1s_c845a_m8",
+      "orientation": "horizontal",
+      "coord": [
+        2095,
+        304
+      ],
+      "size": [
+        85,
+        220
+      ]
+    },
+    {
+      "id": "FRONT_NVME_15",
+      "format": "e1s_c845a_m8",
+      "orientation": "horizontal",
+      "coord": [
+        2190,
+        304
+      ],
+      "size": [
+        85,
+        220
+      ]
+    },
+    {
+      "id": "FRONT_NVME_16",
+      "format": "e1s_c845a_m8",
+      "orientation": "horizontal",
+      "coord": [
+        2285,
+        304
+      ],
+      "size": [
+        85,
+        220
+      ]
+    },
+    {
+      "id": "FRONT_NVME_17",
+      "format": "e1s_c845a_m8",
+      "orientation": "horizontal",
+      "coord": [
+        2379,
+        304
+      ],
+      "size": [
+        85,
+        220
+      ]
+    },
+    {
+      "id": "FRONT_NVME_18",
+      "format": "e1s_c845a_m8",
+      "orientation": "horizontal",
+      "coord": [
+        2474,
+        304
+      ],
+      "size": [
+        85,
+        220
+      ]
+    },
+    {
+      "id": "FRONT_NVME_19",
+      "format": "e1s_c845a_m8",
+      "orientation": "horizontal",
+      "coord": [
+        2569,
+        304
+      ],
+      "size": [
+        85,
+        220
+      ]
+    },
+    {
+      "id": "FRONT_NVME_20",
+      "format": "e1s_c845a_m8",
+      "orientation": "horizontal",
+      "coord": [
+        2664,
+        304
+      ],
+      "size": [
+        85,
+        220
+      ]
+    }
+  ],
+  "disks_models": [
+    {
+      "name": "CAI-E1S-BLANK",
+      "type": "blank",
+      "format": "e1s_c845a_m8",
+      "description": "Blanking panel for an E1.S NVMe bay on UCS C845A M8"
+    }
+  ]
+}

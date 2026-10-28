@@ -1,0 +1,141 @@
+{
+   "id": "intersight_config_power_groups#",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "EasyUCS intersight config power_groups section",
+   "description": "EasyUCS intersight config power_groups section JSON schema",
+   "type": "object",
+   "properties": {
+      "comment": {
+         "description": "Power Group Comments",
+         "type": "string",
+         "default": ""
+      },
+      "name": {
+         "description": "Power Group Name",
+         "type": "string",
+         "default": ""
+      },
+      "descr": {
+         "description": "Power Group Description",
+         "type": "string",
+         "default": ""
+      },
+      "tags": {
+         "description": "Power Group Tags",
+         "type": "array",
+         "items": {
+            "description": "Power Group Tag",
+            "type": "object",
+            "properties": {
+               "key": {
+                  "description": "Tag Key",
+                  "type": "string",
+                  "default": "",
+                  "minLength": 1,
+                  "maxLength": 128
+               },
+               "value": {
+                  "description": "Tag Value",
+                  "type": "string",
+                  "default": "",
+                  "minLength": 0,
+                  "maxLength": 256
+               }
+            },
+            "additionalProperties": false,
+            "required": [
+               "key"
+            ]
+         },
+         "minItems": 1
+      },
+      "admin_state": {
+         "description": "Power Group Admin State",
+         "type": "string",
+         "enum": ["Disabled", "Enabled"]
+      },
+      "power_group_budget": {
+         "description": "Power Group Budget (Watts)",
+         "type": "integer",
+         "minimum": 1,
+         "maximum": 1000000
+      },
+      "power_group_devices": {
+         "description": "Power Group Devices grouped by device type",
+         "type": "object",
+         "properties": {
+             "chassis": {
+                "description": "Chassis devices",
+                "type": "array",
+                "items": {
+                   "description": "Chassis device",
+                   "type": "object",
+                   "properties": {
+                      "serial": {
+                         "description": "Chassis Serial Number",
+                         "type": "string",
+                         "default": ""
+                      },
+                      "name": {
+                         "description": "Chassis Name (read-only)",
+                         "type": "string",
+                         "default": ""
+                      }
+                   },
+                   "additionalProperties": false
+                },
+                "minItems": 1
+             },
+             "fabric_interconnects": {
+                "description": "Fabric Interconnect devices",
+                "type": "array",
+                "items": {
+                   "description": "Fabric Interconnect device",
+                   "type": "object",
+                   "properties": {
+                      "serial": {
+                         "description": "Fabric Interconnect Serial Number",
+                         "type": "string",
+                         "default": ""
+                      },
+                      "switch_id": {
+                         "description": "Fabric Interconnect Switch ID",
+                         "type": "string",
+                         "enum": ["A", "B"]
+                      }
+                   },
+                   "additionalProperties": false
+                },
+                "minItems": 1
+             },
+             "fabric_extenders": {
+                "description": "Fabric Extender devices",
+                "type": "array",
+                "items": {
+                   "description": "Fabric Extender device",
+                   "type": "object",
+                   "properties": {
+                      "serial": {
+                         "description": "Fabric Extender Serial Number",
+                         "type": "string",
+                         "default": ""
+                      },
+                      "connection_path": {
+                         "description": "Switch ID to which the Fabric Extender is connected (A, B or AB for active-active)",
+                         "type": "string",
+                         "enum": ["A", "B", "AB"]
+                      }
+                   },
+                   "additionalProperties": false
+                },
+                "minItems": 1
+             }
+         },
+         "additionalProperties": false
+      }
+   },
+   "additionalProperties": false,
+   "required": [
+      "name"
+   ]
+}

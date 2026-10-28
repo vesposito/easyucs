@@ -62,6 +62,7 @@ class IntersightConfig(GenericConfig):
         "equipment": "Equipment",
         "ldap": "LDAP",
         "orgs": "Organizations",
+        "power_groups": "Power Groups",
         "resource_groups": "Resource Groups",
         "roles": "Roles",
         "user_groups": "User Groups",
@@ -82,6 +83,7 @@ class IntersightConfig(GenericConfig):
         self.equipment = []
         self.ldap = []
         self.orgs = []
+        self.power_groups = []
         self.resource_groups = []
         self.roles = []
         self.user_groups = []
@@ -152,7 +154,7 @@ class IntersightConfig(GenericConfig):
                                 {NtpApi: ["ntp_policy"]},
                                 {OrganizationApi: ["organization_organization"]},
                                 {PoolApi : ["pool_id_mapping_policy"]},
-                                {PowerApi: ["power_policy"]},
+                                {PowerApi: ["power_policy", "power_power_group", "power_power_group_member"]},
                                 {ResourceApi: ["resource_group"]},
                                 {ResourcepoolApi: ["resourcepool_pool", "resourcepool_qualification_policy"]},
                                 {SdcardApi: ["sdcard_policy"]},

@@ -68,6 +68,17 @@
             "Unified Edge"
          ]
       },
+      "server_family": {
+         "description": "Server Family",
+         "type": "string",
+         "default": "Unspecified",
+         "enum": [
+            "Unspecified",
+            "All",
+            "UCSC845A",
+            "UCSC2XX/4XX"
+         ]
+      },
       "adapter_configuration_policy": {
          "description": "Adapter Configuration Policy associated to UCS Server Profile",
          "type": "string",

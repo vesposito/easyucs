@@ -1,0 +1,334 @@
+{
+  "model_short_name": "C885A M8",
+  "rear_file_name": "UCSC-C885A-M8_rear.png",
+  "front_file_name": "UCSC-C885A-M8_front.png",
+  "rear_file_size": [
+    2925,
+    2157
+  ],
+  "front_file_size": [
+    2925,
+    2157
+  ],
+  "pcie_slots": [
+    {
+      "id": "FHHL_11",
+      "width": "full",
+      "orientation": "horizontal",
+      "coord": [
+        2038,
+        1170
+      ]
+    },
+    {
+      "id": "FHHL_12",
+      "width": "full",
+      "orientation": "horizontal",
+      "coord": [
+        254,
+        1170
+      ]
+    },
+    {
+      "id": "FHHL_13",
+      "width": "full",
+      "orientation": "horizontal",
+      "coord": [
+        2038,
+        1294
+      ]
+    },
+    {
+      "id": "FHHL_14",
+      "width": "full",
+      "orientation": "horizontal",
+      "coord": [
+        254,
+        1294
+      ]
+    },
+    {
+      "id": "FHHL_15",
+      "width": "full",
+      "orientation": "horizontal",
+      "coord": [
+        2038,
+        1419
+      ]
+    },
+    {
+      "id": "FHHL_16",
+      "width": "full",
+      "orientation": "horizontal",
+      "coord": [
+        254,
+        1419
+      ]
+    },
+    {
+      "id": "LP_1",
+      "width": "half",
+      "orientation": "vertical",
+      "coord": [
+        1853,
+        1113
+      ]
+    },
+    {
+      "id": "LP_2",
+      "width": "half",
+      "orientation": "vertical",
+      "coord": [
+        1731,
+        1113
+      ]
+    },
+    {
+      "id": "LP_3",
+      "width": "half",
+      "orientation": "vertical",
+      "coord": [
+        1608,
+        1113
+      ]
+    },
+    {
+      "id": "LP_4",
+      "width": "half",
+      "orientation": "vertical",
+      "coord": [
+        1485,
+        1113
+      ]
+    },
+    {
+      "id": "LP_5",
+      "width": "half",
+      "orientation": "vertical",
+      "coord": [
+        1363,
+        1113
+      ]
+    },
+    {
+      "id": "LP_6",
+      "width": "half",
+      "orientation": "vertical",
+      "coord": [
+        1240,
+        1113
+      ]
+    },
+    {
+      "id": "LP_7",
+      "width": "half",
+      "orientation": "vertical",
+      "coord": [
+        1118,
+        1113
+      ]
+    },
+    {
+      "id": "LP_8",
+      "width": "half",
+      "orientation": "vertical",
+      "coord": [
+        995,
+        1113
+      ]
+    },
+    {
+      "id": "OCP_1_NIC",
+      "coord": [
+        1760,
+        1702
+      ]
+    }
+  ],
+  "pcie_models": [
+    {
+      "name": "C885A-PCIF-01F",
+      "type": "blank",
+      "width": "full",
+      "description": "PCIe Full Height blanking panel for UCS C-Series Server"
+    },
+    {
+      "name": "C885A-PCIF-01H",
+      "type": "blank",
+      "width": "half",
+      "description": "PCIe Low Profile blanking panel for UCS C885A"
+    }
+  ],
+  "psus_slots_rear": [
+    {
+      "id": 1,
+      "skus": [
+        "C885A-PSU-3000W"
+      ],
+      "coord": [
+        170,
+        1879
+      ]
+    },
+    {
+      "id": 2,
+      "skus": [
+        "C885A-PSU-3000W"
+      ],
+      "coord": [
+        603,
+        1879
+      ]
+    },
+    {
+      "id": 3,
+      "skus": [
+        "C885A-PSU-3000W"
+      ],
+      "coord": [
+        1035,
+        1879
+      ]
+    },
+    {
+      "id": 4,
+      "skus": [
+        "C885A-PSU-3000W"
+      ],
+      "coord": [
+        1468,
+        1879
+      ]
+    },
+    {
+      "id": 5,
+      "skus": [
+        "C885A-PSU-3000W"
+      ],
+      "coord": [
+        1901,
+        1879
+      ]
+    },
+    {
+      "id": 6,
+      "skus": [
+        "C885A-PSU-3000W"
+      ],
+      "coord": [
+        2334,
+        1879
+      ]
+    },
+    {
+      "id": 1,
+      "skus": [
+        "C885A-PSU-2700W"
+      ],
+      "coord": [
+        192,
+        1566
+      ]
+    },
+    {
+      "id": 2,
+      "skus": [
+        "C885A-PSU-2700W"
+      ],
+      "coord": [
+        2277,
+        1566
+      ]
+    }
+  ],
+  "psus_models": [
+    {
+      "name": "UCSC-PSU-BLKP1U",
+      "type": "blank",
+      "description": ""
+    }
+  ],
+  "lom_ports": {
+    "1": {
+      "port_coord": [
+        446,
+        843
+      ],
+      "port_type": "rj45",
+      "port_size": [
+        77,
+        49
+      ]
+    },
+    "2": {
+      "port_coord": [
+        446,
+        923
+      ],
+      "port_type": "rj45",
+      "port_size": [
+        77,
+        49
+      ]
+    },
+    "3": {
+      "port_coord": [
+        575,
+        843
+      ],
+      "port_type": "rj45",
+      "port_size": [
+        77,
+        49
+      ]
+    },
+    "4": {
+      "port_coord": [
+        575,
+        923
+      ],
+      "port_type": "rj45",
+      "port_size": [
+        77,
+        49
+      ]
+    }
+  },
+  "imm_compatible": false,
+  "spec_sheet_url": "https://www.cisco.com/c/dam/en/us/products/collateral/servers-unified-computing/ucs-c-series-rack-servers/ucs-c885a-m8-rack-server-spec-sheet.pdf",
+  "data_sheet_url": "https://www.cisco.com/c/en/us/products/collateral/servers-unified-computing/ucs-c-series-rack-servers/ucs-c885a-m8-ds.html",
+  "specs": {
+    "form_factor": "8RU",
+    "cpu": {
+      "sockets": 2,
+      "family_name": {
+        "genoa": "AMD EPYC 4th Gen Processors",
+        "turin": "AMD EPYC 5th Gen Processors"
+      }
+    },
+    "memory": {
+      "dimm_type": "DDR5",
+      "dimm_slots": 24,
+      "max_speed": 5600,
+      "max_capacity": 3145728,
+      "dcpmm_support": false
+    },
+    "dimensions": {
+      "centimeters": {
+        "height": 35.3,
+        "width": 44.7,
+        "depth": 80
+      },
+      "inches": {
+        "height": 13.9,
+        "width": 17.6,
+        "depth": 31.5
+      },
+      "rack_units": 8
+    },
+    "weight": {
+      "lb": 265,
+      "kg": 120
+    }
+  }
+}

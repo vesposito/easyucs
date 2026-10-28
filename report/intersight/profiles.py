@@ -631,6 +631,7 @@ class IntersightUcsChassisProfileReportTable(UcsReportTable):
             [_("Power Policy"), ucs_chassis_profile.power_policy],
             [_("SNMP Policy"), ucs_chassis_profile.snmp_policy],
             [_("Thermal Policy"), ucs_chassis_profile.thermal_policy],
+            [_("Pre-assigned Chassis Serial Number"), ucs_chassis_profile.chassis_pre_assign_by_serial],
         ]
 
         UcsReportTable.__init__(

@@ -291,14 +291,17 @@
          ]
       },
       "baud_rate": {
-         "description": "BIOS Policy - baud_rate",
+         "description": "BIOS Policy C845A+Generic - baud_rate",
          "type": "string",
          "default": "platform-default",
          "enum": [
             "115200",
             "19200",
+            "230400",
             "38400",
+            "460800",
             "57600",
+            "921600",
             "9600",
             "platform-default"
          ]
@@ -389,7 +392,7 @@
          ]
       },
       "cbs_cmn_apbdis": {
-         "description": "BIOS Policy - cbs_cmn_apbdis",
+         "description": "BIOS Policy C845A+Generic - cbs_cmn_apbdis",
          "type": "string",
          "default": "platform-default",
          "enum": [
@@ -406,7 +409,7 @@
          "pattern": "^([0-2])$|^(platform-default)$"
       },
       "cbs_cmn_cpu_avx512": {
-         "description": "BIOS Policy - cbs_cmn_cpu_avx512",
+         "description": "BIOS Policy C845A+Generic - cbs_cmn_cpu_avx512",
          "type": "string",
          "default": "platform-default",
          "enum": [
@@ -417,12 +420,23 @@
          ]
       },
       "cbs_cmn_cpu_cpb": {
-         "description": "BIOS Policy - cbs_cmn_cpu_cpb",
+         "description": "BIOS Policy C845A+Generic - cbs_cmn_cpu_cpb",
          "type": "string",
          "default": "platform-default",
          "enum": [
             "Auto",
             "disabled",
+            "platform-default"
+         ]
+      },
+      "cbs_cmn_cpu_frequency_control": {
+         "description": "BIOS Policy - cbs_cmn_cpu_frequency_control",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "Auto",
+            "disabled",
+            "enabled",
             "platform-default"
          ]
       },
@@ -442,7 +456,7 @@
          ]
       },
       "cbs_cmn_cpu_global_cstate_ctrl": {
-         "description": "BIOS Policy - cbs_cmn_cpu_global_cstate_ctrl",
+         "description": "BIOS Policy C845A+Generic - cbs_cmn_cpu_global_cstate_ctrl",
          "type": "string",
          "default": "platform-default",
          "enum": [
@@ -481,7 +495,7 @@
          "pattern": "^([1-9]|[1-9]\\d|[1-9]\\d{2}|100[0-7])$|^(platform-default)$"
       },
       "cbs_cmn_cpu_smee": {
-         "description": "BIOS Policy - cbs_cmn_cpu_smee",
+         "description": "BIOS Policy C845A+Generic - cbs_cmn_cpu_smee",
          "type": "string",
          "default": "platform-default",
          "enum": [
@@ -492,7 +506,7 @@
          ]
       },
       "cbs_cmn_cpu_streaming_stores_ctrl": {
-         "description": "BIOS Policy - cbs_cmn_cpu_streaming_stores_ctrl",
+         "description": "BIOS Policy C845A+Generic - cbs_cmn_cpu_streaming_stores_ctrl",
          "type": "string",
          "default": "platform-default",
          "enum": [
@@ -563,7 +577,7 @@
          ]
       },
       "cbs_cmn_gnb_nb_iommu": {
-         "description": "BIOS Policy - cbs_cmn_gnb_nb_iommu",
+         "description": "BIOS Policy C845A+Generic - cbs_cmn_gnb_nb_iommu",
          "type": "string",
          "default": "platform-default",
          "enum": [
@@ -629,7 +643,7 @@
          ]
       },
       "cbs_cmn_mem_ctrller_pwr_dn_en_ddr": {
-         "description": "BIOS Policy - cbs_cmn_mem_ctrller_pwr_dn_en_ddr",
+         "description": "BIOS Policy C845A+Generic - cbs_cmn_mem_ctrller_pwr_dn_en_ddr",
          "type": "string",
          "default": "platform-default",
          "enum": [
@@ -806,7 +820,7 @@
          ]
       },
       "cbs_cpu_smt_ctrl": {
-         "description": "BIOS Policy - cbs_cpu_smt_ctrl",
+         "description": "BIOS Policy C845A+Generic - cbs_cpu_smt_ctrl",
          "type": "string",
          "default": "platform-default",
          "enum": [
@@ -828,7 +842,7 @@
          ]
       },
       "cbs_dbg_cpu_lapic_mode": {
-         "description": "BIOS Policy - cbs_dbg_cpu_lapic_mode",
+         "description": "BIOS Policy C845A+Generic - cbs_dbg_cpu_lapic_mode",
          "type": "string",
          "default": "platform-default",
          "enum": [
@@ -840,7 +854,7 @@
          ]
       },
       "cbs_dbg_cpu_snp_mem_cover": {
-         "description": "BIOS Policy - cbs_dbg_cpu_snp_mem_cover",
+         "description": "BIOS Policy C845A+Generic - cbs_dbg_cpu_snp_mem_cover",
          "type": "string",
          "default": "platform-default",
          "enum": [
@@ -881,7 +895,7 @@
          ]
       },
       "cbs_df_cmn_dram_nps": {
-         "description": "BIOS Policy - cbs_df_cmn_dram_nps",
+         "description": "BIOS Policy C845A+Generic - cbs_df_cmn_dram_nps",
          "type": "string",
          "default": "platform-default",
          "enum": [
@@ -973,7 +987,7 @@
          ]
       },
       "cbs_sev_snp_support": {
-         "description": "BIOS Policy - cbs_sev_snp_support",
+         "description": "BIOS Policy C845A+Generic - cbs_sev_snp_support",
          "type": "string",
          "default": "platform-default",
          "enum": [
@@ -1112,7 +1126,7 @@
          ]
       },
       "console_redirection": {
-         "description": "BIOS Policy - console_redirection",
+         "description": "BIOS Policy C845A+Generic - console_redirection",
          "type": "string",
          "default": "platform-default",
          "enum": [
@@ -1601,7 +1615,7 @@
          ]
       },
       "flow_control": {
-         "description": "BIOS Policy - flow_control",
+         "description": "BIOS Policy C845A+Generic - flow_control",
          "type": "string",
          "default": "platform-default",
          "enum": [
@@ -1611,7 +1625,7 @@
          ]
       },
       "frb2enable": {
-         "description": "BIOS Policy - frb2enable",
+         "description": "BIOS Policy C845A+Generic - frb2enable",
          "type": "string",
          "default": "platform-default",
          "enum": [
@@ -1745,7 +1759,7 @@
          ]
       },
       "intel_virtualization_technology": {
-         "description": "BIOS Policy - intel_virtualization_technology",
+         "description": "BIOS Policy C845A+Generic - intel_virtualization_technology",
          "type": "string",
          "default": "platform-default",
          "enum": [
@@ -2148,6 +2162,15 @@
             "platform-default"
          ]
       },
+      "model": {
+         "description": "BIOS Policy - model",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "Not-Applicable",
+            "UCSC845A"
+         ]
+      },
       "network_stack": {
          "description": "BIOS Policy - network_stack",
          "type": "string",
@@ -2240,7 +2263,7 @@
          ]
       },
       "os_boot_watchdog_timer": {
-         "description": "BIOS Policy - os_boot_watchdog_timer",
+         "description": "BIOS Policy C845A+Generic - os_boot_watchdog_timer",
          "type": "string",
          "default": "platform-default",
          "enum": [
@@ -2250,27 +2273,22 @@
          ]
       },
       "os_boot_watchdog_timer_policy": {
-         "description": "BIOS Policy - os_boot_watchdog_timer_policy",
+         "description": "BIOS Policy C845A+Generic - os_boot_watchdog_timer_policy",
          "type": "string",
          "default": "platform-default",
          "enum": [
             "do-nothing",
             "platform-default",
+            "power-cycle",
+            "power-down",
             "power-off",
             "reset"
          ]
       },
       "os_boot_watchdog_timer_timeout": {
-         "description": "BIOS Policy - os_boot_watchdog_timer_timeout",
+         "description": "BIOS Policy C845A+Generic - os_boot_watchdog_timer_timeout",
          "type": "string",
-         "default": "platform-default",
-         "enum": [
-            "10-minutes",
-            "15-minutes",
-            "20-minutes",
-            "5-minutes",
-            "platform-default"
-         ]
+         "default": "platform-default"
       },
       "out_of_band_mgmt_port": {
          "description": "BIOS Policy - out_of_band_mgmt_port",
@@ -2678,6 +2696,15 @@
             "platform-default"
          ]
       },
+      "policy_type": {
+         "description": "BIOS Policy - policy_type",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "Generic",
+            "ModelSpecific"
+         ]
+      },
       "pop_support": {
          "description": "BIOS Policy - pop_support",
          "type": "string",
@@ -3082,7 +3109,7 @@
          ]
       },
       "sha256pcr_bank": {
-         "description": "BIOS Policy - sha256pcr_bank",
+         "description": "BIOS Policy C845A+Generic - sha256pcr_bank",
          "type": "string",
          "default": "platform-default",
          "enum": [
@@ -3092,7 +3119,7 @@
          ]
       },
       "sha384pcr_bank": {
-         "description": "BIOS Policy - sha384pcr_bank",
+         "description": "BIOS Policy C845A+Generic - sha384pcr_bank",
          "type": "string",
          "default": "platform-default",
          "enum": [
@@ -5084,8 +5111,18 @@
             "rank-sparing"
          ]
       },
+      "speculative_lock_enable": {
+         "description": "BIOS Policy - speculative_lock_enable",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "disabled",
+            "enabled",
+            "platform-default"
+         ]
+      },
       "sr_iov": {
-         "description": "BIOS Policy - sr_iov",
+         "description": "BIOS Policy C845A+Generic - sr_iov",
          "type": "string",
          "default": "platform-default",
          "enum": [
@@ -5116,7 +5153,7 @@
          ]
       },
       "terminal_type": {
-         "description": "BIOS Policy - terminal_type",
+         "description": "BIOS Policy C845A+Generic - terminal_type",
          "type": "string",
          "default": "platform-default",
          "enum": [
@@ -5128,7 +5165,7 @@
          ]
       },
       "tpm_control": {
-         "description": "BIOS Policy - tpm_control",
+         "description": "BIOS Policy C845A+Generic - tpm_control",
          "type": "string",
          "default": "platform-default",
          "enum": [
@@ -5138,7 +5175,7 @@
          ]
       },
       "tpm_pending_operation": {
-         "description": "BIOS Policy - tpm_pending_operation",
+         "description": "BIOS Policy C845A+Generic - tpm_pending_operation",
          "type": "string",
          "default": "platform-default",
          "enum": [
@@ -5158,7 +5195,7 @@
          ]
       },
       "tpm_support": {
-         "description": "BIOS Policy - tpm_support",
+         "description": "BIOS Policy C845A+Generic - tpm_support",
          "type": "string",
          "default": "platform-default",
          "enum": [
@@ -5425,6 +5462,313 @@
             "Auto",
             "disabled",
             "enabled",
+            "platform-default"
+         ]
+      },
+      "cbs_cmn_cpu_downcore_mode": {
+         "description": "BIOS Policy C845A - cbs_cmn_cpu_downcore_mode",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "Bitmap",
+            "Enablement Option",
+            "platform-default"
+         ]
+      },
+      "cbs_cmn_cpu_l1_burst_prefetch_mode": {
+         "description": "BIOS Policy C845A - cbs_cmn_cpu_l1_burst_prefetch_mode",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "Auto",
+            "Disable",
+            "Enable",
+            "platform-default"
+         ]
+      },
+      "cbs_cmn_cpu_l1_stream_hw_prefetcher": {
+         "description": "BIOS Policy C845A - cbs_cmn_cpu_l1_stream_hw_prefetcher",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "Auto",
+            "Disable",
+            "Enable",
+            "platform-default"
+         ]
+      },
+      "cbs_cmn_cpu_l2_stream_hw_prefetcher": {
+         "description": "BIOS Policy C845A - cbs_cmn_cpu_l2_stream_hw_prefetcher",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "Auto",
+            "Disable",
+            "Enable",
+            "platform-default"
+         ]
+      },
+      "cbs_cmn_cxl_mem_online_offline": {
+         "description": "BIOS Policy C845A - cbs_cmn_cxl_mem_online_offline",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "Disabled",
+            "Enabled",
+            "platform-default"
+         ]
+      },
+      "cbs_cmn_determinism_ctl": {
+         "description": "BIOS Policy C845A - cbs_cmn_determinism_ctl",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "Auto",
+            "Manual",
+            "platform-default"
+         ]
+      },
+      "cbs_cmn_determinism_enable": {
+         "description": "BIOS Policy C845A - cbs_cmn_determinism_enable",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "Performance",
+            "Power",
+            "platform-default"
+         ]
+      },
+      "cbs_cmn_mem_boot_time_post_package_repair": {
+         "description": "BIOS Policy C845A - cbs_cmn_mem_boot_time_post_package_repair",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "Disable",
+            "Enable",
+            "platform-default"
+         ]
+      },
+      "cbs_cmn_mem_cs_interleave_ddr": {
+         "description": "BIOS Policy C845A - cbs_cmn_mem_cs_interleave_ddr",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "Auto",
+            "Disabled",
+            "platform-default"
+         ]
+      },
+      "cbs_cmn_mem_ctrller_bank_swap_mode_ddr": {
+         "description": "BIOS Policy C845A - cbs_cmn_mem_ctrller_bank_swap_mode_ddr",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "Auto",
+            "Disabled",
+            "Swap CPU",
+            "platform-default"
+         ]
+      },
+      "cbs_cmn_mem_dram_refresh_rate": {
+         "description": "BIOS Policy C845A - cbs_cmn_mem_dram_refresh_rate",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "1.95 usec",
+            "3.9 usec",
+            "platform-default"
+         ]
+      },
+      "cbs_cmn_mem_dram_scrub_time": {
+         "description": "BIOS Policy C845A - cbs_cmn_mem_dram_scrub_time",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "1 hour",
+            "12 hours",
+            "16 hours",
+            "24 hours",
+            "4 hours",
+            "48 hours",
+            "6 hours",
+            "8 hours",
+            "Disabled",
+            "platform-default"
+         ]
+      },
+      "cbs_cmn_mem_healing_bist_enable_bit_mask_ddr": {
+         "description": "BIOS Policy C845A - cbs_cmn_mem_healing_bist_enable_bit_mask_ddr",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "Disabled",
+            "PMU Mem BIST",
+            "PMU and Self-Healing Mem BIST",
+            "Self-Healing Mem BIST",
+            "platform-default"
+         ]
+      },
+      "cbs_cmn_mem_healing_bist_execution_mode": {
+         "description": "BIOS Policy C845A - cbs_cmn_mem_healing_bist_execution_mode",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "Every Boot",
+            "One Time",
+            "platform-default"
+         ]
+      },
+      "cbs_cmn_mem_runtime_post_package_repair": {
+         "description": "BIOS Policy C845A - cbs_cmn_mem_runtime_post_package_repair",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "Disable",
+            "Enable",
+            "platform-default"
+         ]
+      },
+      "cbs_cmn_mem_tsme_enable_ddr": {
+         "description": "BIOS Policy C845A - cbs_cmn_mem_tsme_enable_ddr",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "Auto",
+            "Disabled",
+            "Enabled",
+            "platform-default"
+         ]
+      },
+      "cbs_cmn_pcie_caplink_speed": {
+         "description": "BIOS Policy C845A - cbs_cmn_pcie_caplink_speed",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "Auto",
+            "GEN3",
+            "GEN4",
+            "GEN5",
+            "Gen1",
+            "Gen2",
+            "Maximum speed",
+            "platform-default"
+         ]
+      },
+      "cbs_cpu_ccd_ctrl": {
+         "description": "BIOS Policy C845A - cbs_cpu_ccd_ctrl",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "10 CCDs",
+            "12 CCDs",
+            "14 CCDs",
+            "2 CCDs",
+            "4 CCDs",
+            "6 CCDs",
+            "8 CCDs",
+            "Auto",
+            "platform-default"
+         ]
+      },
+      "cbs_df_cmn3_link_max_xgmi_speed": {
+         "description": "BIOS Policy C845A - cbs_df_cmn3_link_max_xgmi_speed",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "20Gbps",
+            "25Gbps",
+            "32Gbps",
+            "Auto",
+            "platform-default"
+         ]
+      },
+      "cbs_df_cmn_acpi_srat_l3_numa": {
+         "description": "BIOS Policy C845A - cbs_df_cmn_acpi_srat_l3_numa",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "Auto",
+            "Disabled",
+            "Enabled",
+            "platform-default"
+         ]
+      },
+      "nvram_lock": {
+         "description": "BIOS Policy C845A - nvram_lock",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "Disabled",
+            "Enabled",
+            "platform-default"
+         ]
+      },
+      "ipv4_pxe_support": {
+         "description": "BIOS Policy C845A - ipv4_pxe_support",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "Disabled",
+            "Enabled",
+            "platform-default"
+         ]
+      },
+      "ipv6_pxe_support": {
+         "description": "BIOS Policy C845A - ipv6_pxe_support",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "Disabled",
+            "Enabled",
+            "platform-default"
+         ]
+      },
+      "ipv4_http_support": {
+         "description": "BIOS Policy C845A - ipv4_http_support",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "Disabled",
+            "Enabled",
+            "platform-default"
+         ]
+      },
+      "ipv6_http_support": {
+         "description": "BIOS Policy C845A - ipv6_http_support",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "Disabled",
+            "Enabled",
+            "platform-default"
+         ]
+      },
+      "above_4g_decoding": {
+         "description": "BIOS Policy C845A - above_4g_decoding",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "Enabled",
+            "platform-default"
+         ]
+      },
+      "pci_bus_initiator": {
+         "description": "BIOS Policy C845A - pci_bus_initiator",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "Disabled",
+            "Enabled",
+            "platform-default"
+         ]
+      },
+      "platform_trust_technology": {
+         "description": "BIOS Policy C845A - platform_trust_technology",
+         "type": "string",
+         "default": "platform-default",
+         "enum": [
+            "Disabled",
+            "Enabled",
             "platform-default"
          ]
       }

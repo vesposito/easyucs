@@ -210,7 +210,7 @@ class GenericUcsDrawPcieRiser:
             for slot in slots:
                 if slot["id"] == int(self._parent['id']):
                     coord = slot["coord"]
-            return self.parent_draw.picture_offset[0] + coord[0], self.parent_draw.picture_offset[1] + coord[1]
+                    return self.parent_draw.picture_offset[0] + coord[0], self.parent_draw.picture_offset[1] + coord[1]
 
         return False
 

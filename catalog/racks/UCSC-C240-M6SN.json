@@ -13,6 +13,10 @@
     {
       "id": 2,
       "coord": [1090, 28]
+    },
+    {
+      "id": 3,
+      "coord": [1994, 28]
     }
   ],
   "pcie_riser_models": [

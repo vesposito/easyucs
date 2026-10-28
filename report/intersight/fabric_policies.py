@@ -1663,6 +1663,71 @@ class IntersightPowerPolicyReportTable(UcsReportTable):
                                 centered=centered, cells_list=rows)
 
 
+class IntersightPowerGroupsReportSection(UcsReportSection):
+    def __init__(self, order_id, parent, title=""):
+        if not title:
+            title = _("Power Groups")
+
+        UcsReportSection.__init__(self, order_id=order_id, parent=parent, title=title)
+        config = self.report.config
+        descr = _("The following Power Groups define power budget configurations for devices in the domain.")
+        self.content_list.append(
+            GenericReportText(order_id=self.report.get_current_order_id(), parent=self, string=descr))
+
+        power_groups_list = config.power_groups
+
+        if power_groups_list:
+            for power_group in power_groups_list:
+                self.content_list.append(
+                    IntersightPowerGroupReportSection(
+                        self.report.get_current_order_id(),
+                        parent=self,
+                        power_group=power_group,
+                        name=power_group.name,
+                    )
+                )
+        else:
+            self.content_list.append(
+                GenericReportText(order_id=self.report.get_current_order_id(), parent=self,
+                                  string=_("No Power Groups found."), italicized=True))
+
+
+class IntersightPowerGroupReportSection(UcsReportSection):
+    def __init__(self, order_id, parent, power_group, name="", title=""):
+        if not title:
+            title = _("Power Group " + str(name))
+        UcsReportSection.__init__(self, order_id=order_id, parent=parent, title=title)
+
+        self.content_list.append(
+            IntersightPowerGroupReportTable(
+                order_id=self.report.get_current_order_id(), parent=self,
+                power_group=power_group, name=name, centered=True))
+
+
+class IntersightPowerGroupReportTable(UcsReportTable):
+    def __init__(self, order_id, parent, power_group, name="", centered=False):
+        rows = [
+            [_("Description"), _("Value")],
+            [_("Name"), name],
+            [_("Description"), power_group.descr],
+            [_("Power Budget (W)"), power_group.power_group_budget],
+            [_("Admin State"), power_group.admin_state],
+        ]
+
+        # Add member devices if present
+        if power_group.power_group_devices:
+            for chassis in power_group.power_group_devices.get("chassis", []):
+                rows.append([_("Chassis"), chassis.get("serial") or _("N/A")])
+            for fi in power_group.power_group_devices.get("fabric_interconnects", []):
+                rows.append([_(f"FI-{fi.get('switch_id')}"), fi.get("serial") or _("N/A")])
+            for fex in power_group.power_group_devices.get("fabric_extenders", []):
+                rows.append([_("Fabric Extender"), fex.get("serial") or _("N/A")])
+
+        UcsReportTable.__init__(self, order_id=order_id, parent=parent,
+                                row_number=len(rows), column_number=len(rows[0]),
+                                centered=centered, cells_list=rows)
+
+
 class IntersightEthernetNetworkControlPoliciesReportSection(UcsReportSection):
     def __init__(self, order_id, parent, title=""):
         if not title:
@@ -2566,6 +2631,8 @@ class IntersightFabricPoliciesReportSection(UcsReportSection):
             IntersightNtpPoliciesReportSection(order_id=self.report.get_current_order_id(), parent=self))
         self.content_list.append(
             IntersightPortPoliciesReportSection(order_id=self.report.get_current_order_id(), parent=self))
+        self.content_list.append(
+            IntersightPowerGroupsReportSection(order_id=self.report.get_current_order_id(), parent=self))
         self.content_list.append(
             IntersightPowerPoliciesReportSection(order_id=self.report.get_current_order_id(), parent=self))
         self.content_list.append(

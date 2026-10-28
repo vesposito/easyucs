@@ -63,6 +63,15 @@ class GenericStorageLocalDisk(GenericInventoryObject):
                                                              "IntersightComputeRackUnit", "UcsSystemRack"] \
                             and "-E3S" in self._parent.model:
                         self.slot_type = "e3s-nvme"
+                    elif self._parent.__class__.__name__ in ["IntersightComputeRackUnit"] \
+                            and self._parent.model == "CAI-845A-M8":
+                        self.slot_type = "e1s-nvme-c845a"
+                    else:
+                        self.slot_type = "sff-nvme"
+                elif self._parent.__class__.__name__ in ["IntersightComputeRackUnit"] \
+                        and self._parent.model == "UCSC-885A-M8":
+                    if "M_2" in self.id:
+                        self.slot_type = "m2-nvme"
                     else:
                         self.slot_type = "sff-nvme"
                 else:

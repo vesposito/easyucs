@@ -1,0 +1,22 @@
+{
+   "model_short_name": "NVIDIA BlueField-3 B3140H SuperNIC 1x400G",
+   "rear_file_name": "UCSC-P-NC3140H.png",
+   "rear_file_name_half": "UCSC-P-NC3140H_half.png",
+   "rear_file_size": [589, 83],
+   "rear_ports": {
+      "x/1": {
+         "port_coord": [272, 18],
+         "port_type": "qsfp112",
+         "port_size": [120, 52]
+      }
+   },
+   "rear_ports_half": {
+      "x/1": {
+         "port_coord": [182, 18],
+         "port_type": "qsfp112",
+         "port_size": [120, 52]
+      }
+   },
+   "imm_compatible": false,
+   "adaptor_type": "nic"
+}

@@ -3534,11 +3534,18 @@ class UcsSystemPowerGroup(UcsSystemConfigObject):
         self.descr = None
         self.input_power = None
         self.members = []
+        self.operational_state = None
 
         if self._config.load_from == "live":
             self.name = power_group.name
             self.descr = power_group.descr
             self.input_power = power_group.admin_peak
+
+            # Fetch operational state (min/max required power)
+            self.operational_state = {
+                "minimum_required_power": power_group.min_req_power,
+                "maximum_required_power": power_group.max_req_power,
+            }
 
             if "powerChassisMember" in self._config.sdk_objects:
                 for power_chassis_member in self._config.sdk_objects["powerChassisMember"]:
@@ -3573,6 +3580,15 @@ class UcsSystemPowerGroup(UcsSystemConfigObject):
                             element[value] = None
 
         self.clean_object()
+
+    def clean_object(self):
+        UcsSystemConfigObject.clean_object(self)
+        # We use this to make sure all options of operational_state are set to None if not present
+        if self.operational_state is not None:
+            for value in ["minimum_required_power", "maximum_required_power"]:
+                if value not in self.operational_state:
+                    self.operational_state[value] = None
+
 
     def push_object(self, commit=True):
         if commit:

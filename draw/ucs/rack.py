@@ -25,11 +25,12 @@ class GenericDrawRackFront(GenericUcsDrawObject):
         if not self.storage_controller_list:
             if "disks_slots" in self.json_file:
                 # Fill blank for disks slots
-                potential_slot = [*range(1, len(self.json_file["disks_slots"])+1)]
+                potential_slot = [slot["id"] for slot in self.json_file["disks_slots"]]
                 used_slot = self.disk_slots_used
                 unused_slot = []
-                for blank_id in set(potential_slot) - set(used_slot):
-                    unused_slot.append(blank_id)
+                for blank_id in potential_slot:
+                    if blank_id not in used_slot:
+                        unused_slot.append(blank_id)
                 for slot_id in unused_slot:
                     blank_name = None
                     orientation = "horizontal"
@@ -96,10 +97,14 @@ class GenericDrawRackFront(GenericUcsDrawObject):
         disk_list = []
         for disk in self._parent.nvme_drives:
             # Prevent potential disk with ID 0 to be used in Draw (happens sometimes with B200 M2)
-            if disk.id != "0" and disk.slot_type in ["sff-nvme", "e3s-nvme"]:
+            if disk.id != "0" and disk.slot_type in ["sff-nvme", "e3s-nvme", "e1s-nvme-c845a"]:
                 if disk.id in [str(i["id"]) for i in self.json_file["disks_slots"]]:
                     disk_list.append(UcsStorageLocalDiskDraw(parent=disk, parent_draw=self))
-                    self.disk_slots_used.append(int(disk.id))
+                    # Slot ids are usually numeric, but some platforms (e.g. C845A) use string ids
+                    try:
+                        self.disk_slots_used.append(int(disk.id))
+                    except ValueError:
+                        self.disk_slots_used.append(disk.id)
         # TODO: NVMe Disks need rework to prevent having to paste layer each time and integrate it into get_nvme_disks()
         return disk_list
 
@@ -329,6 +334,8 @@ class GenericDrawRackRear(GenericUcsDrawObject):
                         mlom_used_slot.append(1)
                 elif slot.pci_slot and slot.pci_slot.isdigit():
                     pcie_used_slot.append(int(slot.pci_slot))
+                elif slot.pci_slot:
+                    pcie_used_slot.append(slot.pci_slot)
 
             for slot in self.json_file["pcie_slots"]:
                 # slot = id, width
@@ -370,7 +377,7 @@ class GenericDrawRackRear(GenericUcsDrawObject):
                                 img = self.rotate_object(picture=img)
                                 img = self.rotate_object(picture=img)
                             for slot in self.json_file["pcie_slots"]:
-                                if slot["id"] == int(slot_id):
+                                if slot["id"] == slot_id:
                                     coord = slot["coord"]
                             coord_offset = self.picture_offset[0] + coord[0], self.picture_offset[1] + coord[1]
                             self.paste_layer(img, coord_offset)
@@ -391,26 +398,23 @@ class GenericDrawRackRear(GenericUcsDrawObject):
         if "psus_slots_rear" in self.json_file:
             # Fill blank for rear PSU Slot
             if len(self._parent.power_supplies)-1 < len(self.json_file["psus_slots_rear"]):
-                used_slot = []
-                potential_slot = []
-                unused_slot = []
-                for slot in self._parent.power_supplies:
-                    used_slot.append(int(slot.id))
                 for slot in self.json_file["psus_slots_rear"]:
-                    potential_slot.append(slot["id"])
-                for blank_id in set(potential_slot) - set(used_slot):
-                    unused_slot.append(blank_id)
-                for slot_id in unused_slot:
+                    # Some platforms (e.g. C885A) reuse the same id across distinct PSU groups
+                    # (main bays vs motherboard PSUs) - disambiguate using skus when present
+                    is_used = False
+                    for psu in self._parent.power_supplies:
+                        if int(psu.id) == slot["id"] and ("skus" not in slot or psu.sku in slot["skus"]):
+                            is_used = True
+                            break
+                    if is_used:
+                        continue
                     for expansion in self.json_file["psus_models"]:
-                        if "type" in expansion:
-                            if expansion["type"] == "blank":
-                                blank_name = expansion["name"]
-                                img = Image.open("catalog/power_supplies/img/" + blank_name + ".png", 'r')
-                                for slot in self.json_file["psus_slots_rear"]:
-                                    if slot["id"] == int(slot_id):
-                                        coord = slot["coord"]
-                                coord_offset = self.picture_offset[0] + coord[0], self.picture_offset[1] + coord[1]
-                                self.paste_layer(img, coord_offset)
+                        if expansion.get("type") == "blank":
+                            blank_name = expansion["name"]
+                            img = Image.open("catalog/power_supplies/img/" + blank_name + ".png", 'r')
+                            coord = slot["coord"]
+                            coord_offset = self.picture_offset[0] + coord[0], self.picture_offset[1] + coord[1]
+                            self.paste_layer(img, coord_offset)
 
         if "pcie_riser_slots" in self.json_file:
             # Fill blank for PCIe Riser slot (we put the default ones when None could be detected)
@@ -1392,26 +1396,23 @@ class GenericDrawRackEnclosureRear(GenericUcsDrawEquipment):
         if "psus_slots_rear" in self.json_file:
             # Fill blank for rear PSU Slot
             if len(self._parent.power_supplies)-1 < len(self.json_file["psus_slots_rear"]):
-                used_slot = []
-                potential_slot = []
-                unused_slot = []
-                for slot in self._parent.power_supplies:
-                    used_slot.append(int(slot.id))
                 for slot in self.json_file["psus_slots_rear"]:
-                    potential_slot.append(slot["id"])
-                for blank_id in set(potential_slot) - set(used_slot):
-                    unused_slot.append(blank_id)
-                for slot_id in unused_slot:
+                    # Some platforms (e.g. C885A) reuse the same id across distinct PSU groups
+                    # (main bays vs motherboard PSUs) - disambiguate using skus when present
+                    is_used = False
+                    for psu in self._parent.power_supplies:
+                        if int(psu.id) == slot["id"] and ("skus" not in slot or psu.sku in slot["skus"]):
+                            is_used = True
+                            break
+                    if is_used:
+                        continue
                     for expansion in self.json_file["psus_models"]:
-                        if "type" in expansion:
-                            if expansion["type"] == "blank":
-                                blank_name = expansion["name"]
-                                img = Image.open("catalog/power_supplies/img/" + blank_name + ".png", 'r')
-                                for slot in self.json_file["psus_slots_rear"]:
-                                    if slot["id"] == int(slot_id):
-                                        coord = slot["coord"]
-                                coord_offset = self.picture_offset[0] + coord[0], self.picture_offset[1] + coord[1]
-                                self.paste_layer(img, coord_offset)
+                        if expansion.get("type") == "blank":
+                            blank_name = expansion["name"]
+                            img = Image.open("catalog/power_supplies/img/" + blank_name + ".png", 'r')
+                            coord = slot["coord"]
+                            coord_offset = self.picture_offset[0] + coord[0], self.picture_offset[1] + coord[1]
+                            self.paste_layer(img, coord_offset)
 
         if "server_node_slots" in self.json_file:
             # Fill blank for rear PSU Slot

@@ -175,11 +175,27 @@ class IntersightUnifiedEdgeProfile(IntersightGenericUnifiedEdgeProfile):
         if not org:
             return False
 
+        template_org = org
+        template_name = self.unified_edge_profile_template
+        if template_name and "/" in template_name:
+            shared_org_name = template_name.split("/", 1)[0]
+            template_org = self.get_org_relationship(org_name=shared_org_name)
+            template_name = template_name.split("/", 1)[1]
+            if not template_org:
+                err_message = (f"Unable to locate organization '{shared_org_name}' of Unified Edge Profile Template "
+                            f"'{self.unified_edge_profile_template}' to derive Unified Edge Profile {self.name}")
+                self.logger(level="error", message=err_message)
+                self._config.push_summary_manager.add_object_status(
+                    obj=self, obj_detail=self.name, obj_type=self._INTERSIGHT_SDK_OBJECT_NAME,
+                    status="failed", message=err_message)
+                return False
+
         # We first need to check if a Unified Edge Profile with the same name already exists
         unified_edge_profile = self.get_live_object(object_name=self.name, object_type="fabric.SwitchClusterProfile",
                                                     return_reference=False, log=False,
                                                     query_filter=f"Name eq '{self.name}' and "
-                                                                 f"TargetPlatform eq 'Unified Edge'")
+                                                                 f"TargetPlatform eq 'Unified Edge' and "
+                                                                 f"Organization.Moid eq '{org.moid}'")
 
         if not getattr(self._config, "update_existing_intersight_objects", False) and unified_edge_profile:
             message = f"Skipping push of object type {self._INTERSIGHT_SDK_OBJECT_NAME} with name={self.name} as " \
@@ -192,6 +208,32 @@ class IntersightUnifiedEdgeProfile(IntersightGenericUnifiedEdgeProfile):
 
         # In case this Unified Edge Profile needs to be bound to a Template, we use the 'derive' mechanism to create it
         if self.unified_edge_profile_template:
+            template_full_path = self.unified_edge_profile_template
+            if "/" not in template_full_path:
+                template_full_path = f"{self._parent.name}/{template_name}"
+            unified_edge_profile_template = self.get_live_object(
+                object_name=template_name, object_type="fabric.SwitchClusterProfileTemplate",
+                return_reference=False, log=False,
+                query_filter=f"Name eq '{template_name}' and TargetPlatform eq 'Unified Edge' and "
+                             f"Organization.Moid eq '{template_org.moid}'")
+            if not unified_edge_profile_template:
+                err_message = "Unable to locate source Unified Edge Profile Template " + \
+                              template_full_path + " to derive Unified Edge Profile " + self.name
+                self.logger(level="error", message=err_message)
+                self._config.push_summary_manager.add_object_status(
+                    obj=self, obj_detail=self.name, obj_type=self._INTERSIGHT_SDK_OBJECT_NAME,
+                    status="failed", message=err_message)
+                return False
+            template_reference = self.create_relationship_equivalent(sdk_object=unified_edge_profile_template)
+            if not template_reference:
+                err_message = "Unable to locate source Unified Edge Profile Template " + \
+                              template_full_path + " to derive Unified Edge Profile " + self.name
+                self.logger(level="error", message=err_message)
+                self._config.push_summary_manager.add_object_status(
+                    obj=self, obj_detail=self.name, obj_type=self._INTERSIGHT_SDK_OBJECT_NAME,
+                    status="failed", message=err_message)
+                return False
+
             if not unified_edge_profile:
                 # No Unified Edge Profile with the same name exists, so we can derive the Unified Edge Profile
                 from intersight.model.bulk_mo_cloner import BulkMoCloner
@@ -202,27 +244,12 @@ class IntersightUnifiedEdgeProfile(IntersightGenericUnifiedEdgeProfile):
                 }
 
                 # We need to identify the Moid of the source Unified Edge Profile Template
-                unified_edge_profile_template = self.get_live_object(
-                    object_name=self.unified_edge_profile_template, object_type="fabric.SwitchClusterProfileTemplate",
-                    return_reference=False, log=False,
-                    query_filter=f"Name eq '{self.unified_edge_profile_template}' and TargetPlatform eq 'Unified Edge'")
-
-                if unified_edge_profile_template:
-                    template_moid = unified_edge_profile_template.moid
-                    source_template = {
-                        "moid": template_moid,
-                        "object_type": "fabric.SwitchClusterProfileTemplate",
-                        "target_platform": "Unified Edge"
-                    }
-                    kwargs_mo_cloner["sources"].append(FabricSwitchClusterProfileTemplate(**source_template))
-                else:
-                    err_message = "Unable to locate source Unified Edge Profile Template " + \
-                                  self.unified_edge_profile_template + " to derive Unified Edge Profile " + self.name
-                    self.logger(level="error", message=err_message)
-                    self._config.push_summary_manager.add_object_status(obj=self, obj_detail=self.name,
-                                                                        obj_type=self._INTERSIGHT_SDK_OBJECT_NAME,
-                                                                        status="failed", message=err_message)
-                    return False
+                template_moid = unified_edge_profile_template.moid
+                source_template = {
+                    "moid": template_moid,
+                    "object_type": "fabric.SwitchClusterProfileTemplate"
+                }
+                kwargs_mo_cloner["sources"].append(FabricSwitchClusterProfileTemplate(**source_template))
 
                 # We now need to specify the attribute of the target Unified Edge Profile
                 target_profile = {
@@ -252,10 +279,10 @@ class IntersightUnifiedEdgeProfile(IntersightGenericUnifiedEdgeProfile):
                         filter="Moid eq '" + unified_edge_profile.src_template.moid + "'"
                     )
                     if len(src_template) == 1:
-                        if src_template[0].name == self.unified_edge_profile_template:
+                        if unified_edge_profile.src_template.moid == unified_edge_profile_template.moid:
                             # Unified Edge Profile is already derived from the same Unified Edge Profile Template
                             info_message = "Unified Edge Profile " + self.name + " exists and is already derived " + \
-                                           "from Unified Edge Profile Template " + self.unified_edge_profile_template
+                                           "from Unified Edge Profile Template " + template_full_path
                             self.logger(level="info", message=info_message)
                             self._config.push_summary_manager.add_object_status(
                                 obj=self, obj_detail=self.name, obj_type=self._INTERSIGHT_SDK_OBJECT_NAME,
@@ -264,16 +291,23 @@ class IntersightUnifiedEdgeProfile(IntersightGenericUnifiedEdgeProfile):
                         else:
                             # Unified Edge Profile is derived from another Unified Edge Profile Template
                             # We will detach it from its Template and reattach it to the desired Template
+                            source_orgs = self._device.query(
+                                object_type="organization.Organization",
+                                filter=f"Moid eq '{src_template[0].organization.moid}'"
+                            )
+                            source_org_name = (source_orgs[0].name if len(source_orgs) == 1
+                                               else src_template[0].organization.moid)
+                            source_template_full_path = f"{source_org_name}/{src_template[0].name}"
                             self.logger(
                                 level="info",
                                 message="Unified Edge Profile " + self.name +
                                         " exists and is derived from different Unified Edge Profile Template " +
-                                        src_template[0].name
+                                        source_template_full_path
                             )
                             self.logger(
                                 level="info",
                                 message="Detaching Unified Edge Profile " + self.name +
-                                        " from Unified Edge Profile Template " + src_template[0].name
+                                    " from Unified Edge Profile Template " + source_template_full_path
                             )
                             kwargs = {
                                 "object_type": self._INTERSIGHT_SDK_OBJECT_NAME,
@@ -293,16 +327,10 @@ class IntersightUnifiedEdgeProfile(IntersightGenericUnifiedEdgeProfile):
                             self.logger(
                                 level="info",
                                 message="Attaching Unified Edge Profile " + self.name +
-                                        " to Unified Edge Profile Template " + self.unified_edge_profile_template
+                                    " to Unified Edge Profile Template " + template_full_path
                             )
                             # We need to identify the Moid of the Unified Edge Profile Template
-                            unified_edge_profile_template = self.get_live_object(
-                                object_name=self.unified_edge_profile_template,
-                                object_type="fabric.SwitchClusterProfileTemplate",
-                                query_filter=f"Name eq '{self.unified_edge_profile_template}' and "
-                                             f"TargetPlatform eq 'Unified Edge'"
-                            )
-                            kwargs["src_template"] = unified_edge_profile_template
+                            kwargs["src_template"] = template_reference
                             unified_edge_profile = FabricSwitchClusterProfile(**kwargs)
 
                             if not self.commit(object_type=self._INTERSIGHT_SDK_OBJECT_NAME, payload=unified_edge_profile,
@@ -312,7 +340,7 @@ class IntersightUnifiedEdgeProfile(IntersightGenericUnifiedEdgeProfile):
 
                             return True
                     else:
-                        err_message = "Could not find Unified Edge Profile Template " + self.unified_edge_profile_template
+                        err_message = "Could not find Unified Edge Profile Template " + template_full_path
                         self.logger(level="error", message=err_message)
                         self._config.push_summary_manager.add_object_status(
                             obj=self, obj_detail=self.name, obj_type=self._INTERSIGHT_SDK_OBJECT_NAME, status="failed",
@@ -321,18 +349,12 @@ class IntersightUnifiedEdgeProfile(IntersightGenericUnifiedEdgeProfile):
                 else:
                     # Unified Edge Profile is not currently bound to a template. So we just need to bind it
                     # We need to identify the Moid of the Unified Edge Profile Template
-                    unified_edge_profile_template = self.get_live_object(
-                        object_name=self.unified_edge_profile_template,
-                        object_type="fabric.SwitchClusterProfileTemplate",
-                        query_filter=f"Name eq '{self.unified_edge_profile_template}' and "
-                                     f"TargetPlatform eq 'Unified Edge'"
-                    )
                     kwargs = {
                         "object_type": self._INTERSIGHT_SDK_OBJECT_NAME,
                         "class_id": self._INTERSIGHT_SDK_OBJECT_NAME,
                         "organization": org,
                         "name": self.name,
-                        "src_template": unified_edge_profile_template,
+                        "src_template": template_reference,
                         "target_platform": "Unified Edge"
                     }
                     unified_edge_profile = FabricSwitchClusterProfile(**kwargs)
@@ -628,7 +650,7 @@ class IntersightUnifiedEdgeProfileTemplate(IntersightGenericUnifiedEdgeProfile):
             object_type="fabric.SwitchProfileTemplate",
             payload=fabric_switch_profile_template_a,
             detail=self.name + " - Switch Profile Template eCMC A",
-            key_attributes=["name", "target_platform"]
+            key_attributes=["name", "switch_cluster_profile_template", "target_platform"]
         )
         if not fspta:
             return False
@@ -639,7 +661,7 @@ class IntersightUnifiedEdgeProfileTemplate(IntersightGenericUnifiedEdgeProfile):
             object_type="fabric.SwitchProfileTemplate",
             payload=fabric_switch_profile_template_b,
             detail=self.name + " - Switch Profile Template eCMC B",
-            key_attributes=["name", "target_platform"]
+            key_attributes=["name", "switch_cluster_profile_template", "target_platform"]
         )
         if not fsptb:
             return False

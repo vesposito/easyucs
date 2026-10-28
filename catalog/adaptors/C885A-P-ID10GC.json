@@ -1,0 +1,19 @@
+{
+   "model_short_name": "Intel X710-T2L 2x10G",
+   "rear_file_name": "C885A-P-ID10GC.png",
+   "rear_file_size": [636, 80],
+   "rear_ports": {
+      "x/2": {
+         "port_coord": [267, 9],
+         "port_type": "rj45",
+         "port_size": [84, 52]
+      },
+      "x/1": {
+         "port_coord": [413, 9],
+         "port_type": "rj45",
+         "port_size": [84, 52]
+      }
+   },
+   "imm_compatible": false,
+   "adaptor_type": "nic"
+}

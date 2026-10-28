@@ -270,6 +270,14 @@ class IntersightConfigObject(GenericConfigObject):
                     self.logger(level="error", message="JSON Decode error while fetching objects of class " +
                                                        sdk_object_type + ": " + str(err_json_decode))
 
+            # Rewrite backend error message with clearer error message when firmware bundles are missing on PVA
+            if self._CONFIG_NAME == "Firmware Policy" and getattr(self._device, "is_pva", False) and \
+                    "required distributable object is missing" in error_message.lower():
+                error_message = (
+                    "The PVA firmware repository does not contain a required firmware image for this policy. "
+                    "Upload the required firmware bundle to the PVA repository, then retry the push."
+                )
+
             if show:
                 if detail:
                     err_message = "Server Error in configuring " + self._CONFIG_NAME + " - " + detail + ": " + \

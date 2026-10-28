@@ -249,6 +249,11 @@ class GenericConfigManager:
                         )
                         del complete_json["config"]["device_connector"]
 
+            # BIOS token values from older exports may carry raw model-specific values (e.g. "ANSI" for
+            # C845A instead of the canonical "pc-ansi"); normalize them before schema validation
+            if self.parent.metadata.device_type in ["intersight"]:
+                self._normalize_bios_policy_token_casing(config_json=complete_json)
+
             # We verify that the JSON content is valid
             if not self._validate_config_from_json(config_json=complete_json):
                 self.logger(level="error", message="Can't import invalid config JSON file", set_api_error_message=False)
@@ -349,6 +354,39 @@ class GenericConfigManager:
             else:
                 self.logger(level="error", message="Config import failed!")
                 return False
+
+    def _normalize_bios_policy_token_casing(self, config_json=None):
+        """
+        Normalizes BIOS policy token values to their canonical schema value (e.g. UCSC845A's raw "ANSI" ->
+        "pc-ansi"), so config files exported before this normalization was added can still be imported/pushed
+        :param config_json: JSON content containing config to be normalized (modified in place)
+        :return: None
+        """
+        bios_table = read_json_file(file_path="config/intersight/bios_table.json", logger=self)
+        if not bios_table:
+            return
+
+        for org in config_json.get("config", {}).get("orgs", []):
+            for bios_policy in org.get("bios_policies", []):
+                # Model-specific value_map is keyed per model (e.g. "UCSC845A") in bios_table.json;
+                # resolve it dynamically from this policy's own "model" field, so no model name needs
+                # to be hardcoded here.
+                model = bios_policy.get("model")
+                for token, value in bios_policy.items():
+                    # "model"/"policy_type" are metadata fields, not BIOS tokens; skip to avoid confusion
+                    if token in ("model", "policy_type") or not isinstance(value, str) or token not in bios_table:
+                        continue
+                    # value_map is keyed canonical -> raw model-specific value; invert it to resolve a raw value
+                    # (e.g. "ANSI") back to its canonical form (e.g. "pc-ansi")
+                    value_map = bios_table[token].get(model, {}).get("value_map", {}) if model else {}
+                    reverse_map = {v: k for k, v in value_map.items()}
+                    if value in reverse_map:
+                        bios_policy[token] = reverse_map[value]
+                        continue
+                    allowed = bios_table[token].get("Generic", {}).get("values", [])
+                    lower_map = {v.lower(): v for v in allowed}
+                    if value.lower() in lower_map:
+                        bios_policy[token] = lower_map[value.lower()]
 
     def _validate_config_from_json(self, config_json=None):
         """

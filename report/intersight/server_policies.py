@@ -354,8 +354,10 @@ class IntersightBiosPolicyReportTable(UcsReportTable):
             self.logger(level="error", message="Intersight BIOS Table not imported.")
         if bios_table:
             for attr in sorted(bios_table, key=lambda x: bios_table.keys(), reverse=False):
-                if getattr(bios_policy, attr) not in ["platform-default", "Platform Default"]:
-                    rows.append([attr, getattr(bios_policy, attr)])
+                # Use default=None: C845A-only tokens are absent on generic policies
+                val = getattr(bios_policy, attr, None)
+                if val not in [None, "platform-default", "Platform Default"]:
+                    rows.append([attr, val])
 
         UcsReportTable.__init__(
             self,
@@ -442,6 +444,7 @@ class IntersightBootPolicyReportTable(UcsReportTable):
             ["Organization", boot_policy._parent.name],
             ["Boot Mode", boot_policy.boot_mode],
             ["Enable Secure Boot", boot_policy.enable_secure_boot],
+            ["Persist OS Recovery Key", boot_policy.persist_os_recovery_key],
         ]
 
         UcsReportTable.__init__(
@@ -1863,6 +1866,20 @@ class IntersightFcZonePolicyTargetsReportTable(UcsReportTable):
             centered=centered,
             cells_list=rows,
         )
+
+
+class IntersightFirmwarePolicyReportAdmonition(GenericReportAdmonition):
+    def add_in_json_report(self, content):
+        super().add_in_json_report(content)
+        content["String2"] = self.string2.replace(",\n", "; ").replace("\n", " ")
+
+    def add_in_pdf_report(self):
+        original_string2 = self.string2
+        self.string2 = original_string2.replace("\n", "<br/>")
+        try:
+            super().add_in_pdf_report()
+        finally:
+            self.string2 = original_string2
 
 
 class IntersightFirmwarePoliciesReportSection(UcsReportSection):

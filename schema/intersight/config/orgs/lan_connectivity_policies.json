@@ -1506,12 +1506,37 @@
    ],
    "allOf": [
       {
-         "$comment": "Below is for setting constraints for target_platform with value Standalone and Unified Edge",
+         "$comment": "Below is for setting constraints for target_platform with value Standalone - vNIC placement cannot be Auto",
          "if": {
             "properties": {
                "target_platform": {
                   "enum": [
-                     "Standalone",
+                     "Standalone"
+                  ]
+               }
+            },
+            "required": [
+               "target_platform"
+            ]
+         },
+         "then": {
+            "properties": {
+               "vnic_placement_mode": {
+                  "not": {
+                     "enum": [
+                        "auto"
+                     ]
+                  }
+               }
+            }
+         }
+      },
+      {
+         "$comment": "Below is for setting constraints for target_platform with value Unified Edge - IQN is not supported on Unified Edge, and vNIC placement cannot be Custom",
+         "if": {
+            "properties": {
+               "target_platform": {
+                  "enum": [
                      "Unified Edge"
                   ]
                }
@@ -1541,10 +1566,10 @@
                ]
             },
             "properties": {
-               "vhba_placement_mode": {
+               "vnic_placement_mode": {
                   "not": {
                      "enum": [
-                        "auto"
+                        "custom"
                      ]
                   }
                }

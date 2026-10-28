@@ -8,6 +8,7 @@ from __init__ import __version__
 
 from config.intersight.config import IntersightConfig
 from config.intersight.equipment import IntersightEquipment
+from config.intersight.power_groups import IntersightPowerGroup
 from config.intersight.settings import IntersightAccountDetails, IntersightOrganization, \
     IntersightResourceGroup, IntersightRole, IntersightUser, IntersightUserGroup
 from config.intersight.pools import IntersightMacPool, IntersightIqnPool, IntersightIpPool, IntersightUuidPool, \
@@ -92,6 +93,9 @@ class IntersightConfigManager(GenericConfigManager):
             if getattr(resource_group, "name", None) not in ["License-Standard", "License-Essential",
                                                              "License-Advantage", "License-Premier"]:
                 config.resource_groups.append(IntersightResourceGroup(parent=config, resource_group=resource_group))
+
+        for power_power_group in config.sdk_objects.get("power_power_group", []):
+            config.power_groups.append(IntersightPowerGroup(parent=config, power_power_group=power_power_group))
 
         if config.sdk_objects["asset_device_registration"]:
             for asset_device_registration in config.sdk_objects["asset_device_registration"]:
@@ -245,7 +249,7 @@ class IntersightConfigManager(GenericConfigManager):
         :param force: Force the push to proceed even in-case of critical errors. Eg: If we fail to push a source
         shared org then we will continue pushing target orgs (orgs with which the source org is shared)
         if and only if force is true, otherwise we will skip the push of the target orgs.
-        :param push_equipment: Only the equipment section of the configuration should be pushed.
+        :param push_equipment: Only the Equipment-related configuration should be pushed.
         that the domain or server profile deployment has been successfully completed.
         :return: True if config push was successful, False otherwise
         """
@@ -263,9 +267,11 @@ class IntersightConfigManager(GenericConfigManager):
 
         if config:
             # Pushing configuration to the device
-            # We first make sure we are connected to the device
-            if not self.parent.connect(bypass_version_checks=bypass_version_checks):
-                return False
+            # Only connect here if not already connected by perform_action() (e.g. CLI callers), otherwise
+            # we'd redo the already-completed ConnectIntersightDevice task step.
+            if self.parent.task is None:
+                if not self.parent.connect(bypass_version_checks=bypass_version_checks):
+                    return False
 
             if force:
                 self.parent.task.taskstep_manager.skip_taskstep(name="ValidateIntersightLicense",
@@ -352,8 +358,8 @@ class IntersightConfigManager(GenericConfigManager):
 
                 if self.parent.task is not None:
                     self.parent.task.taskstep_manager.skip_taskstep(
-                        name="PushEquipmentSectionIntersight",
-                        status_message="Skipped pushing equipment section of config"
+                        name="PushEquipmentRelatedConfigIntersight",
+                        status_message="Skipped pushing Equipment-related configuration"
                     )
 
                 self.parent.set_task_progression(85)
@@ -368,27 +374,36 @@ class IntersightConfigManager(GenericConfigManager):
                         name="PushAdminSectionIntersight",
                         status_message="Skipped pushing admin section of config"
                     )
-                if config.equipment:
+                if config.equipment or config.power_groups:
                     if self.parent.task is not None:
                         self.parent.task.taskstep_manager.start_taskstep(
-                            name="PushEquipmentSectionIntersight", description="Pushing Equipment section of config")
+                            name="PushEquipmentRelatedConfigIntersight",
+                            description="Pushing Equipment-related configuration")
 
                     # We push the entire equipment section after the orgs because profiles can be assigned to FIs
-                    self.logger(message="Now configuring Equipment section")
-                    is_pushed = config.equipment[0].push_subobjects() and is_pushed
-                    
+                    if config.equipment:
+                        self.logger(message="Now configuring Equipment section")
+                        is_pushed = config.equipment[0].push_subobjects() and is_pushed
+
+                    # We push the Power Groups after the equipment section because they reference equipment
+                    # (chassis/FIs/FEXes) as members which must have been claimed/discovered in Intersight first
+                    if config.power_groups:
+                        self.logger(message="Now configuring Power Group section")
+                        for power_group in config.power_groups:
+                            is_pushed = power_group.push_object() and is_pushed
+
                     if self.parent.task is not None:
                         self.parent.task.taskstep_manager.stop_taskstep(
-                            name="PushEquipmentSectionIntersight", status="successful",
-                            status_message="Successfully pushed Equipment section of config")
+                            name="PushEquipmentRelatedConfigIntersight", status="successful",
+                            status_message="Successfully pushed Equipment-related configuration")
 
                     self.parent.set_task_progression(90)
                 else:
                     self.logger(level="error", message="No equipment section to push!")
                     if self.parent.task is not None:
                         self.parent.task.taskstep_manager.skip_taskstep(
-                            name="PushEquipmentSectionIntersight",
-                            status_message="Skipped pushing equipment section of config"
+                            name="PushEquipmentRelatedConfigIntersight",
+                            status_message="Skipped pushing Equipment-related configuration"
                         )
 
             if is_pushed:
@@ -444,6 +459,10 @@ class IntersightConfigManager(GenericConfigManager):
         if "resource_groups" in config_json:
             for resource_group in config_json["resource_groups"]:
                 config.resource_groups.append(IntersightResourceGroup(parent=config, resource_group=resource_group))
+
+        if "power_groups" in config_json:
+            for power_group in config_json["power_groups"]:
+                config.power_groups.append(IntersightPowerGroup(parent=config, power_power_group=power_group))
 
         if "orgs" in config_json:
             for org in config_json["orgs"]:

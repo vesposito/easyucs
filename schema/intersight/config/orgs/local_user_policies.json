@@ -52,6 +52,29 @@
          },
          "minItems": 1
       },
+      "account_lockout_duration": {
+         "description": "Local User Policy Account Lockout Duration (seconds, 0 = disabled, 1-604800 for Automatic unlock)",
+         "type": "integer",
+         "default": 300,
+         "minimum": 0,
+         "maximum": 604800
+      },
+      "account_lockout_threshold": {
+         "description": "Local User Policy Account Lockout Threshold",
+         "type": "integer",
+         "default": 5,
+         "minimum": 0,
+         "maximum": 65535
+      },
+      "account_unlock_mode": {
+         "description": "Local User Policy Account Unlock Mode",
+         "type": "string",
+         "default": "Automatic",
+         "enum": [
+            "Automatic",
+            "Manual"
+         ]
+      },
       "always_send_user_password": {
          "description": "Local User Policy Always Send User Password",
          "type": "boolean",

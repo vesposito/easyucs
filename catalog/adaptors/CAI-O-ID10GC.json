@@ -1,0 +1,19 @@
+{
+  "model_short_name": "Intel X710-T2L 2x10G OCP",
+  "rear_file_name": "CAI-O-ID10GC.png",
+  "rear_file_size": [553, 92],
+  "rear_ports": {
+    "x/1": {
+      "port_coord": [126, 19],
+      "port_type": "rj45",
+      "port_size": [91, 63]
+    },
+    "x/2": {
+      "port_coord": [336, 19],
+      "port_type": "rj45",
+      "port_size": [91, 63]
+    }
+  },
+  "imm_compatible": false,
+  "adaptor_type": "nic"
+}

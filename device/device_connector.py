@@ -214,6 +214,10 @@ class DeviceConnector:
                 expected_cloud_dns = ["qaconnect.starshipcloud.com"]
             elif "staging.starshipcloud.com" in intersight_device.target:
                 expected_cloud_dns = ["stagingconnect.starshipcloud.com"]
+            elif "stage.starshipcloud.com" in intersight_device.target:
+                expected_cloud_dns = ["svc.stage.starshipcloud.com"]
+            elif "release.starshipcloud.com" in intersight_device.target:
+                expected_cloud_dns = ["svc.release.starshipcloud.com"]
             else:
                 # List of acceptable DNS values for Intersight prod
                 expected_cloud_dns = [
@@ -419,6 +423,10 @@ class DeviceConnector:
                     cloud_dns = "qaconnect.starshipcloud.com"
                 elif intersight_target.endswith("staging.starshipcloud.com"):
                     cloud_dns = "stagingconnect.starshipcloud.com"
+                elif intersight_target.endswith("stage.starshipcloud.com"):
+                    cloud_dns = "svc.stage.starshipcloud.com"
+                elif intersight_target.endswith("release.starshipcloud.com"):
+                    cloud_dns = "svc.release.starshipcloud.com"
                 else:
                     cloud_dns = "svc.intersight.com"
                 data = json.dumps({"CloudDns": cloud_dns, "ForceResetIdentity": True, "ResetIdentity": True})

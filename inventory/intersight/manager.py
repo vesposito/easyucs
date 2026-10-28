@@ -376,7 +376,8 @@ class IntersightInventoryManager(GenericInventoryManager):
                 inventory.imm_domains.append(IntersightImmDomain(parent=inventory,
                                                                  asset_device_registration=asset_device_registration))
 
-            elif asset_device_registration.platform_type in ["IMC", "IMCM4", "IMCM5", "IMCRack"] and \
+            elif asset_device_registration.platform_type in ["IMC", "IMCM4", "IMCM5", "IMCRack", "UCSC885",
+                                                              "CAI845A"] and \
                     not asset_device_registration.parent_connection:
                 # We are working with a standalone rack server (CIMC) (no parent connection to a UCS domain)
                 for compute_rack_unit in inventory.sdk_objects.get("compute_rack_unit", []):

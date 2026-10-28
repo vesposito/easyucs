@@ -1,0 +1,22 @@
+{
+   "model_short_name": "AMD Pollara 1Q400P 1x400G",
+   "rear_file_name": "UCSC-P-APS400GF.png",
+   "rear_file_name_half": "UCSC-P-APS400GF_half.png",
+   "rear_file_size": [593,75],
+   "rear_ports": {
+      "x/1": {
+         "port_coord": [256, 17],
+         "port_type": "qsfp112",
+         "port_size": [108, 50]
+      }
+   },
+   "rear_ports_half": {
+      "x/1": {
+         "port_coord": [182, 18],
+         "port_type": "qsfp112",
+         "port_size": [120, 52]
+      }
+   },
+   "imm_compatible": false,
+   "adaptor_type": "nic"
+}

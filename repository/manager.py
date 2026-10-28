@@ -74,6 +74,18 @@ class RepositoryManager:
     for table in inspect.getmembers(metadata, hasattr_table_record):
         TABLE_TO_METADATA_MAPPING[table[1].TABLE_RECORD.__tablename__] = (table[1], table[1].TABLE_RECORD)
 
+    # Single source of truth for default values of all settings.json fields (including every field listed in the
+    # "required" array of schema/settings/settings.json). This is used to self-heal settings.json using simple
+    # field-presence checks, both on every app/worker startup (see _init_settings()) and when restoring a
+    # settings.json backup (see restore_key_and_settings_backup()).
+    # Presence checks are immune to version/field introduction mismatches
+    # (e.g. a backup tagged exactly "x.y.z" taken before a field was added to that same
+    # version would not be backfilled by a "Version(backup_version) < Version(x.y.z)" check).
+    SETTINGS_FIELDS_TO_VALUE_MAPPING = {
+        "delete_existing_resource_group_memberships_for_intersight_shared_orgs": False,
+        "update_existing_intersight_objects": False,
+    }
+
     def __init__(self, parent=None):
         self.cipher_suite = None
         self.settings = None
@@ -382,6 +394,32 @@ class RepositoryManager:
 
         return True
 
+    def _backfill_settings_fields(self, file_contents):
+        """
+        Ensures that every field described in SETTINGS_FIELDS_TO_VALUE_MAPPING is present in the given settings
+        file contents, adding any missing field with its default value (in place). This uses simple field-presence
+        checks (as opposed to version-gated checks), so it self-heals settings.json regardless of how/when it
+        became invalid (e.g. restoring an old backup, a field added mid-release without a version bump, a
+        settings.json manually edited/truncated, etc.)
+        :param file_contents: dict of settings.json content to backfill (modified in place)
+        :return: True if at least one field was added (i.e. file_contents was changed), False otherwise
+        """
+        changed = False
+        for field, default_value in self.SETTINGS_FIELDS_TO_VALUE_MAPPING.items():
+            if isinstance(default_value, dict):
+                if field not in file_contents or not isinstance(file_contents.get(field), dict):
+                    file_contents[field] = {}
+                    changed = True
+                for sub_field, sub_default_value in default_value.items():
+                    if sub_field not in file_contents[field]:
+                        file_contents[field][sub_field] = copy.deepcopy(sub_default_value)
+                        changed = True
+            else:
+                if field not in file_contents:
+                    file_contents[field] = default_value
+                    changed = True
+        return changed
+
     def _init_settings(self, file_update=False):
         """
         Initializes Settings
@@ -389,6 +427,14 @@ class RepositoryManager:
         :return: True if settings init is successful, False otherwise
         """
         file_contents = read_json_file(file_path=self.SETTINGS_FILE_NAME)
+
+        # Self-heal settings.json by adding any missing required field with its default value, before validating
+        # it against the schema. This is needed independently of any restore operation, since this method is called
+        # on every app/worker process startup (e.g. a settings.json coming from a backup predating a field, or a
+        # field added mid-release without a version bump, would otherwise cause a permanent crash loop here).
+        if self._backfill_settings_fields(file_contents=file_contents):
+            file_update = True
+
         # Validating settings.json
         if not validate_json(json_data=file_contents, schema_path="schema/settings/settings.json", logger=self):
             self.logger(level="error", message="settings.json file is not valid")
@@ -1114,14 +1160,13 @@ class RepositoryManager:
         # If the backed-up setting have some missing attributes then add them here before calling _init_settings().
         file_contents = read_json_file(file_path=self.SETTINGS_FILE_NAME)
         file_changed = False
-        # A mapping of field to their default values
-        fields_to_value_mapping = {
-            "delete_existing_resource_group_memberships_for_intersight_shared_orgs": False
-        }
-        for field in fields_to_value_mapping:
-            if field not in file_contents:
-                file_contents[field] = fields_to_value_mapping[field]
-                file_changed = True
+
+        # Backfill any field missing from SETTINGS_FIELDS_TO_VALUE_MAPPING using simple field-presence checks.
+        # This replaces the previous "Version(backup_version) < Version(x.y.z)" gated checks, which broke for
+        # backups tagged exactly "x.y.z" taken before a field was actually added to that same schema version
+        # (e.g. "5.1.6" < "5.1.6" is False).
+        if self._backfill_settings_fields(file_contents=file_contents):
+            file_changed = True
 
         if file_changed:
             full_path = os.path.abspath(os.path.join(EASYUCS_ROOT, self.SETTINGS_FILE_NAME))

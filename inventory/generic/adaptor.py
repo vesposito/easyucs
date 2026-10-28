@@ -154,6 +154,8 @@ class GenericAdaptor(GenericInventoryObject):
         # Manual entries
         if self.model in ["Intel MLOM Quad Port 1Gb RJ45 NIC", "Intel(R) I350-mLOM 1 Gbps Network Controller"]:
             self.sku = "UCSC-MLOM-IRJ45"
+        elif self.model == "Cisco(R) X710T2LG 2x10 GbE RJ45 OCP 3.0 NIC":
+            self.sku = "UCSC-O-ID10GC"
         elif self.model == "Intel i350 Quad Port 1Gb Adapter":
             self.sku = "UCSC-PCIE-IRJ45"
         elif self.model == "Intel Ethernet Server Adapter I350-T4" and self.pci_slot != "L":
@@ -174,8 +176,20 @@ class GenericAdaptor(GenericInventoryObject):
             self.sku = "UCSC-PCIE-QD40GF"
         elif self.model == "Cisco-MLNX MCX623106AS-CDAT 2x100GbE QSFP56 PCIe NIC":
             self.sku = "UCSC-P-MDD100GF"
-        elif self.model == "X710T2LOCPV3G1P":
+        elif self.model == "Cisco-NVDA MCX755106AS-HEAT 2x200GbE QSFP112 Gen5 x16 PCIe NIC":
+            self.sku = "UCSC-P-N7D200GF"
+        elif self.model == "X710T2LOCPV3G1P" and getattr(self._parent, "model", None) == "UCSC-885A-M8":
             self.sku = "C885A-O-ID10GC"
+        elif self.model == "X710T2LG" and getattr(self._parent, "model", None) == "UCSC-885A-M8":
+            self.sku = "C885A-P-ID10GC"
+        elif self.model == "B3220 DPUs":
+            self.sku = "UCSC-P-N3220"
+        elif self.model == "POLLARA 400":
+            self.sku = "UCSC-P-APS400GF"
+        elif self.model == "CX755106A":
+            self.sku = "UCSC-P-N7D200GF"
+        elif self.model == "B3140H SuperNICs":
+            self.sku = "UCSC-P-NC3140H"
 
         # Getting adaptor type info from catalog files
         if self.sku:

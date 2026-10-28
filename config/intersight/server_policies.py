@@ -2,7 +2,10 @@
 # !/usr/bin/env python
 
 """ server_policies.py: Easy UCS Deployment Tool """
+import importlib
 import re
+
+from intersight.model.bios_c845_server_bios_configuration import BiosC845ServerBiosConfiguration
 
 from common import format_descr, generate_self_signed_cert, get_decoded_pem_certificate, \
     get_encoded_pem_certificate, is_ipv4_address_valid, is_ipv6_address_valid, read_json_file
@@ -196,16 +199,112 @@ class IntersightBiosPolicy(IntersightConfigObject):
     _CONFIG_SECTION_NAME = "bios_policies"
     _INTERSIGHT_SDK_OBJECT_NAME = "bios.Policy"
 
+    @staticmethod
+    def _c845a_raw_to_canonical(raw_value=None, c845a_info=None, generic_values=None):
+        # value_map is keyed canonical -> raw; invert it to resolve a raw C845A API value back to its
+        # canonical (config-file) value. Falls back to case-insensitive matching for any token whose
+        # canonical value only differs from the raw one by case (already covered by value_map today,
+        # kept here as a safety net in case bios_table.json predates this token's mapping)
+        reverse_map = {v: k for k, v in (c845a_info or {}).get("value_map", {}).items()}
+        if raw_value in reverse_map:
+            return reverse_map[raw_value]
+        lower_map = {v.lower(): v for v in (generic_values or [])}
+        return lower_map.get(raw_value.lower(), raw_value)
+
     def __init__(self, parent=None, bios_policy=None):
         IntersightConfigObject.__init__(self, parent=parent, sdk_object=bios_policy)
 
         self.descr = self.get_attribute(attribute_name="description", attribute_secondary_name="descr")
         self.name = self.get_attribute(attribute_name="name")
 
-        # Set all the BIOS options
-        if self._config.bios_table:
-            for token in self._config.bios_table:
-                setattr(self, token, self.get_attribute(attribute_name=token))
+        # Read model and policy_type first to determine which token set to load
+        self.model = self.get_attribute(attribute_name="model")
+        self.policy_type = self.get_attribute(attribute_name="policy_type")
+
+        is_c845a_model_specific = (
+            self.policy_type == "ModelSpecific" and self.model == "UCSC845A"
+        )
+
+        if is_c845a_model_specific:
+            # ModelSpecific C845A: initialize all tokens to "platform-default", then override with actual values
+            # Derive C845A sub-table from the already-loaded unified bios_table (no extra file I/O)
+            bios_c845_table = {
+                name: info["UCSC845A"]
+                for name, info in (self._config.bios_table or {}).items()
+                if "UCSC845A" in info
+            } or None
+            if bios_c845_table:
+                # Set all C845A tokens to their actual platform default value, translated from the raw
+                # C845A API value (e.g. "Hardware RTS/CTS") to its canonical config-file value ("rts-cts")
+                for token_name, token_info in bios_c845_table.items():
+                    generic_values = (self._config.bios_table or {}).get(
+                        token_name, {}).get("Generic", {}).get("values", [])
+                    default_val = self._c845a_raw_to_canonical(
+                        raw_value=token_info.get("platform_default", "platform-default"),
+                        c845a_info=token_info, generic_values=generic_values)
+                    setattr(self, token_name, default_val)
+                if self._config.load_from == "live":
+                    if hasattr(self._object, "bios_configurations") and self._object.bios_configurations:
+                        # Precompute class_id → token_name to avoid O(n²) nested scan
+                        class_id_to_token = {
+                            info["class_id"]: name
+                            for name, info in bios_c845_table.items()
+                            if info.get("class_id")
+                        }
+                        for config in self._object.bios_configurations:
+                            if getattr(config, "object_type", "") == "bios.C845ServerBiosConfiguration":
+                                if hasattr(config, "bios_tokens") and config.bios_tokens:
+                                    for token in config.bios_tokens:
+                                        token_name = class_id_to_token.get(
+                                            getattr(token, "object_type", ""))
+                                        if token_name:
+                                            val = getattr(token, "value", None)
+                                            # SDK returns integers for numeric C845A tokens; stringify to match schema
+                                            if isinstance(val, (int, float)) and not isinstance(val, bool):
+                                                val = str(val)
+                                            elif isinstance(val, str):
+                                                generic_values = (self._config.bios_table or {}).get(
+                                                    token_name, {}).get("Generic", {}).get("values", [])
+                                                val = self._c845a_raw_to_canonical(
+                                                    raw_value=val, c845a_info=bios_c845_table[token_name],
+                                                    generic_values=generic_values)
+                                            setattr(self, token_name, val)
+                                        else:
+                                            self.logger(
+                                                level="warning",
+                                                message=f"Skipping C845A BIOS token "
+                                                        f"'{getattr(token, 'object_type', '')}' in BIOS Policy "
+                                                        f"'{self.name}' because it is not defined in the C845A "
+                                                        f"BIOS token table."
+                                            )
+                            else:
+                                self.logger(
+                                    level="warning",
+                                    message=f"Skipping BIOS configuration "
+                                            f"'{getattr(config, 'object_type', '')}' in BIOS Policy "
+                                            f"'{self.name}' because it is not a C845A BIOS configuration."
+                                )
+                elif self._config.load_from == "file":
+                    for token_name in bios_c845_table:
+                        if token_name in self._object:
+                            setattr(self, token_name, self.get_attribute(attribute_name=token_name))
+        else:
+            # Generic: load all generic BIOS tokens (model and policy_type already set above)
+            if self._config.bios_table:
+                for token, token_info in self._config.bios_table.items():
+                    if token not in ("model", "policy_type") and "Generic" in token_info:
+                        value = self.get_attribute(attribute_name=token)
+                        if value is not None:
+                            # Stringify numerics — all generic BIOS SDK fields are string-typed
+                            if isinstance(value, (int, float)) and not isinstance(value, bool):
+                                value = str(value)
+                            elif isinstance(value, str):
+                                # Some servers (e.g. C845A) return generic tokens in their model-specific
+                                # casing (e.g. "Enabled" instead of "enabled"); normalize to schema casing
+                                allowed = token_info["Generic"].get("values", [])
+                                lower_map = {v.lower(): v for v in allowed}
+                                value = lower_map.get(value.lower(), value)
+                            setattr(self, token, value)
 
     @IntersightConfigObject.update_taskstep_description()
     def push_object(self):
@@ -230,12 +329,98 @@ class IntersightBiosPolicy(IntersightConfigObject):
         if not bios_table:
             self.logger(level="error", message="BIOS Table not imported.")
 
+        # Read C845A table once; reuse for both the token-skip set and bios_configurations building
+        is_c845_model_specific = (getattr(self, "model", None) == "UCSC845A" and
+                                  getattr(self, "policy_type", None) == "ModelSpecific")
+        bios_c845_table = None
+        bios_c845_table_keys = set()
+        if is_c845_model_specific and bios_table:
+            # Derive C845A sub-table from the unified bios_table (already loaded above)
+            bios_c845_table = {
+                name: info["UCSC845A"]
+                for name, info in bios_table.items()
+                if "UCSC845A" in info
+            } or None
+            if bios_c845_table:
+                bios_c845_table_keys = set(bios_c845_table.keys())
+
         # Set all the BIOS options
         if bios_table:
             for token in bios_table:
+                # Skip tokens handled by C845A path to avoid allowed-value conflicts
+                if token in bios_c845_table_keys:
+                    continue
                 if hasattr(self, token):
-                    if getattr(self, token) is not None:
-                        kwargs[token] = getattr(self, token)
+                    val = getattr(self, token)
+                    if val is None or val == "":
+                        continue
+                    # Normalize to the canonical casing defined in the table
+                    if isinstance(val, str):
+                        allowed = bios_table[token].get("Generic", {}).get("values", [])
+                        lower_map = {v.lower(): v for v in allowed}
+                        val = lower_map.get(val.lower(), val)
+                    kwargs[token] = val
+
+        # Build bios_configurations for C845A ModelSpecific tokens
+        if is_c845_model_specific and bios_c845_table:
+            c845_tokens_list = []
+            for token_name, token_info in bios_c845_table.items():
+                token_value = getattr(self, token_name, None)
+                if token_value is None or token_value == "":
+                    continue
+                # Tokens with empty 'values' list expect an int (e.g. timeout seconds)
+                if not token_info.get("values"):
+                    # 'platform-default' is the sentinel for "don't override" — skip silently
+                    if token_value == "platform-default":
+                        continue
+                    try:
+                        token_value = int(token_value)
+                    except (ValueError, TypeError):
+                        self.logger(level="warning",
+                                    message=f"Could not convert C845A BIOS token '{token_name}' "
+                                            f"value '{token_value}' to integer; skipping")
+                        continue
+                elif isinstance(token_value, str):
+                    # Translate the canonical config-file value to the exact C845A API value (e.g.
+                    # "rts-cts" -> "Hardware RTS/CTS"); falls back to case-insensitive matching for any
+                    # value not (yet) present in value_map
+                    value_map = token_info.get("value_map", {})
+                    if token_value in value_map:
+                        token_value = value_map[token_value]
+                    else:
+                        allowed = token_info.get("values", [])
+                        lower_map = {v.lower(): v for v in allowed}
+                        token_value = lower_map.get(token_value.lower(), token_value)
+                class_id = token_info.get("class_id", "")
+                if class_id:
+                    module_name = "intersight.model." + re.sub(
+                        r"([A-Z])", lambda m: "_" + m.group(1).lower(),
+                        class_id.replace(".", "")
+                    ).lstrip("_")
+                    # Derive class name directly from class_id to preserve exact casing
+                    class_name = "".join(p[0].upper() + p[1:] for p in class_id.split("."))
+                    try:
+                        mod = importlib.import_module(module_name)
+                        token_cls = getattr(mod, class_name)
+                        c845_tokens_list.append(token_cls(
+                            class_id=class_id,
+                            object_type=class_id,
+                            value=token_value
+                        ))
+                    except (ImportError, AttributeError) as e:
+                        self.logger(level="warning",
+                                    message=f"Could not load C845A BIOS token '{class_id}': {e}")
+                else:
+                    self.logger(level="warning",
+                                message=f"Skipping C845A BIOS token '{token_name}' in BIOS Policy '{self.name}' "
+                                        f"because it has no class ID in the C845A BIOS token table.")
+            if c845_tokens_list:
+                # bios_configurations is a list per the SDK type definition
+                kwargs["bios_configurations"] = [BiosC845ServerBiosConfiguration(
+                    class_id="bios.C845ServerBiosConfiguration",
+                    object_type="bios.C845ServerBiosConfiguration",
+                    bios_tokens=c845_tokens_list
+                )]
 
         bios_policy = BiosPolicy(**kwargs)
 
@@ -258,6 +443,8 @@ class IntersightBootPolicy(IntersightConfigObject):
         self.descr = self.get_attribute(attribute_name="description", attribute_secondary_name="descr")
         self.enable_secure_boot = self.get_attribute(attribute_name="enforce_uefi_secure_boot",
                                                      attribute_secondary_name="enable_secure_boot")
+        self.persist_os_recovery_key = self.get_attribute(attribute_name="enable_boot_migration_support",
+                                                          attribute_secondary_name="persist_os_recovery_key")
         self.name = self.get_attribute(attribute_name="name")
 
         if self._config.load_from == "live":
@@ -397,6 +584,8 @@ class IntersightBootPolicy(IntersightConfigObject):
             kwargs["configured_boot_mode"] = self.boot_mode
         if self.enable_secure_boot is not None:
             kwargs["enforce_uefi_secure_boot"] = self.enable_secure_boot
+        if self.persist_os_recovery_key is not None:
+            kwargs["enable_boot_migration_support"] = self.persist_os_recovery_key
 
         if self.boot_devices is not None:
             kwargs["boot_devices"] = []
@@ -1820,7 +2009,9 @@ class IntersightEthernetNetworkGroupPolicy(IntersightConfigObject):
             if hasattr(self._object, "vlan_settings"):
                 if self._object.vlan_settings:
                     self.enable_q_in_q_tunneling = self._object.vlan_settings.qinq_enabled
-                    self.native_vlan = self._object.vlan_settings.native_vlan
+                    # Intersight uses 0 as a "not set" sentinel for native_vlan (VLAN IDs are always 1-4093)
+                    if self._object.vlan_settings.native_vlan != 0:
+                        self.native_vlan = self._object.vlan_settings.native_vlan
                     if self.enable_q_in_q_tunneling:
                         self.q_in_q_vlan = self._object.vlan_settings.qinq_vlan
                     else:
@@ -1857,14 +2048,18 @@ class IntersightEthernetNetworkGroupPolicy(IntersightConfigObject):
         }
         if self.enable_q_in_q_tunneling is not None:
             vlan_settings_kwargs["qinq_enabled"] = self.enable_q_in_q_tunneling
-        if self.native_vlan is not None:
+
+        # A native_vlan of 0 means "not set" (VLAN IDs are always 1-4093) - Intersight now rejects 0 as an
+        # explicit value with "Invalid VLAN ID 0. Valid VLAN range is 1-4093.", so it must be omitted entirely.
+        if self.native_vlan:
             vlan_settings_kwargs["native_vlan"] = self.native_vlan
+
         # EASYUCS-1843: Intersight requires that the native VLAN is included in the allowed VLANs list.
         # If it is not, we add it automatically to avoid a server-side error:
         # "Native VLAN must be included in Allowed VLANs."
-        if self.native_vlan is not None:
+        if self.native_vlan:
             native_vlan_covered = False
-            if self.allowed_vlans is not None:
+            if self.allowed_vlans:
                 for part in self.allowed_vlans.split(","):
                     part = part.strip()
                     if "-" in part:
@@ -1876,12 +2071,12 @@ class IntersightEthernetNetworkGroupPolicy(IntersightConfigObject):
                         native_vlan_covered = True
                         break
             if not native_vlan_covered:
-                if self.allowed_vlans is None:
+                if not self.allowed_vlans:
                     self.allowed_vlans = str(self.native_vlan)
                 else:
                     self.allowed_vlans = self.allowed_vlans + "," + str(self.native_vlan)
 
-        if self.allowed_vlans is not None:
+        if self.allowed_vlans:
             vlan_settings_kwargs["allowed_vlans"] = self.allowed_vlans
         if self.q_in_q_vlan is not None:
             vlan_settings_kwargs["qinq_vlan"] = self.q_in_q_vlan
@@ -1917,6 +2112,9 @@ class IntersightEthernetNetworkPolicy(IntersightConfigObject):
             # Renaming Target Platform to be more user-friendly
             if self.target_platform == "FIAttached":
                 self.target_platform = "FI-Attached"
+
+            if self.target_platform == "UnifiedEdgeServer":
+                self.target_platform = "Unified Edge"
 
             if hasattr(self._object, "vlan_settings"):
                 if self._object.vlan_settings:
@@ -1954,13 +2152,13 @@ class IntersightEthernetNetworkPolicy(IntersightConfigObject):
             # We keep this section for compatibility purposes, but "target_platform" attribute
             # is deprecated starting with EasyUCS 1.0.6.
             # This policy is now applicable only for UCS Servers (Standalone).
-            if self.target_platform in ["FI-Attached"]:
+            if self.target_platform in ["FI-Attached", "Unified Edge"]:
                 self.logger(
                     level="warning",
                     message=f"Ethernet Network Policy '{self.name}': 'target_platform' attribute is deprecated "
                             f"and has been removed starting with EasyUCS 1.0.6. "
-                            f"FI-Attached was specified, but this policy is now applicable only for UCS Servers "
-                            f"(Standalone). The value will be ignored and policy will use default value."
+                            f"{self.target_platform} was specified, but this policy is now applicable only for "
+                            f"UCS Servers (Standalone). The value will be ignored and policy will use default value."
                 )
             else:
                 kwargs["target_platform"] = self.target_platform
@@ -3330,16 +3528,39 @@ class IntersightLanConnectivityPolicy(IntersightConfigObject):
             if self.target_platform == "UnifiedEdgeServer":
                 self.target_platform = "Unified Edge"
 
-            # Renaming IQN Allocation Type to lowercase to be more user-friendly
-            # (and aligned with vNIC mac_address_allocation_type)
-            if self.iqn_allocation_type:
-                self.iqn_allocation_type = self.iqn_allocation_type.lower()
+            # IQN Allocation Type, IQN Identifier & IQN Pool are not supported for the "Unified Edge" target
+            # platform (this option is not exposed in the Intersight UI for Unified Edge). However, Intersight
+            # may still return stale/leftover IQN values on the backend object (e.g. if the policy was originally
+            # created/edited as "FI-Attached" with IQN configured, then had its target_platform changed to
+            # "Unified Edge" without clearing IQN). We sanitize these out to avoid failing JSON schema validation.
+            # Note: "Standalone" target platform does legitimately support static IQN assignment.
+            if self.target_platform == "Unified Edge":
+                self.iqn_allocation_type = None
+                self.iqn_identifier = None
+            else:
+                # Renaming IQN Allocation Type to lowercase to be more user-friendly
+                # (and aligned with vNIC mac_address_allocation_type)
+                if self.iqn_allocation_type:
+                    self.iqn_allocation_type = self.iqn_allocation_type.lower()
 
-            if self.iqn_allocation_type == "pool":
-                # We avoid fetching the IQN Pool in case IQN Allocation Type is not "pool". This prevents an issue in
-                # case Intersight has both a pool and a static entry defined (EASYUCS-666).
-                if lan_connectivity_policy.iqn_pool:
-                    self.iqn_pool = self._get_policy_name(policy=lan_connectivity_policy.iqn_pool)
+                if self.iqn_allocation_type == "pool":
+                    # We avoid fetching the IQN Pool in case IQN Allocation Type is not "pool". This prevents an
+                    # issue in case Intersight has both a pool and a static entry defined (EASYUCS-666).
+                    if lan_connectivity_policy.iqn_pool:
+                        self.iqn_pool = self._get_policy_name(policy=lan_connectivity_policy.iqn_pool)
+
+            # vNIC Placement Mode "auto" is not supported for "Standalone" and placement mode "custom" is not
+            # supported for "Unified Edge" (this is enforced by the JSON schema for the config file). However,
+            # Intersight may still return a stale placement_mode value left over from a previous configuration
+            # (e.g. if the policy's target_platform was changed after creation, or if "custom" is simply the
+            # backend default even though it is not exposed/applicable for "Unified Edge" in the Intersight UI).
+            # We sanitize this value here to avoid failing JSON schema validation, similar to the IQN sanitization
+            # above (same class of issue as EASYUCS-1930).
+            if self.target_platform == "Standalone" and self.vnic_placement_mode == "auto":
+                self.vnic_placement_mode = "custom"
+            elif self.target_platform == "Unified Edge" and self.vnic_placement_mode == "custom":
+                self.vnic_placement_mode = "auto"
+
             self.vnics = self._get_vnics()
 
         elif self._config.load_from == "file":
@@ -3379,6 +3600,23 @@ class IntersightLanConnectivityPolicy(IntersightConfigObject):
                                           "vmmq_adapter_policy"]:
                             if attribute not in vnic["vmq_settings"].keys():
                                 vnic["vmq_settings"][attribute] = None
+                                
+    @staticmethod
+    def _is_valid_static_iqn_name(iqn_name):
+        """
+        Validates that the given value matches the regular expression required by Intersight for the
+        `static_iqn_name` attribute of a VnicLanConnectivityPolicy object. This uses the exact same regex
+        and `re.search` matching semantics (unanchored at the end) as the Intersight SDK
+        (intersight.model_utils.check_validations) and the project's JSON schema, so that this guard only
+        rejects values that would actually cause the SDK to raise an ApiValueError.
+        :param iqn_name: string value to validate
+        :return: True if the value is a valid Static IQN Name for Intersight, False otherwise
+        """
+        if iqn_name is None:
+            return False
+        iqn_regex = r"^$|^(?:iqn\.[0-9]{4}-[0-9]{2}(?:\.[A-Za-z](?:[A-Za-z0-9\-]*[A-Za-z0-9])?)+(?::.*)?" \
+                   r"|eui\.[0-9A-Fa-f]{16})"
+        return bool(re.search(iqn_regex, iqn_name))
 
     def _get_vnics(self):
         # Fetches the vNICs configuration of a LAN Connectivity Policy
@@ -3596,10 +3834,21 @@ class IntersightLanConnectivityPolicy(IntersightConfigObject):
             kwargs["tags"] = self.create_tags()
         if self.enable_azure_stack_host_qos is not None:
             kwargs["azure_qos_enabled"] = self.enable_azure_stack_host_qos
+        # Safety net: validate the IQN before pushing (e.g. pre-existing converted file or manual edit),
+        # to avoid an unhandled ApiValueError and to avoid pushing iqn_allocation_type="Static" without
+        # a valid static_iqn_name. Value is stripped to avoid false rejections from incidental whitespace.
+        stripped_iqn_identifier = str(self.iqn_identifier).strip() if self.iqn_identifier is not None else None
+        is_valid_static_iqn = self._is_valid_static_iqn_name(stripped_iqn_identifier)
         if self.iqn_allocation_type is not None:
-            kwargs["iqn_allocation_type"] = self.iqn_allocation_type.title()
+            if self.iqn_allocation_type != "static" or is_valid_static_iqn:
+                kwargs["iqn_allocation_type"] = self.iqn_allocation_type.title()
         if self.iqn_identifier is not None:
-            kwargs["static_iqn_name"] = self.iqn_identifier
+            if is_valid_static_iqn:
+                kwargs["static_iqn_name"] = stripped_iqn_identifier
+            else:
+                err_message = f"Invalid Static IQN Identifier '{self.iqn_identifier}' for {self._CONFIG_NAME} " + \
+                              f"'{self.name}'. Skipping the assignment of the Static IQN Identifier."
+                self.logger(level="warning", message=err_message)
         if self.target_platform is not None:
             if self.target_platform == "FI-Attached":
                 kwargs["target_platform"] = "FIAttached"
@@ -4593,6 +4842,9 @@ class IntersightLocalUserPolicy(IntersightConfigObject):
     def __init__(self, parent=None, local_user_policy=None):
         IntersightConfigObject.__init__(self, parent=parent, sdk_object=local_user_policy)
 
+        self.account_lockout_duration = self.get_attribute(attribute_name="account_lockout_duration")
+        self.account_lockout_threshold = self.get_attribute(attribute_name="account_lockout_threshold")
+        self.account_unlock_mode = self.get_attribute(attribute_name="account_unlock_mode")
         self.always_send_user_password = None
         self.descr = self.get_attribute(attribute_name="description", attribute_secondary_name="descr")
         self.enforce_strong_password = None
@@ -4620,7 +4872,8 @@ class IntersightLocalUserPolicy(IntersightConfigObject):
                     self.local_users = self._get_local_users()
 
         elif self._config.load_from == "file":
-            for attribute in ["always_send_user_password", "enforce_strong_password", "enable_password_expiry",
+            for attribute in ["account_lockout_duration", "account_lockout_threshold", "account_unlock_mode",
+                              "always_send_user_password", "enforce_strong_password", "enable_password_expiry",
                               "grace_period", "local_users", "notification_period", "password_expiry_duration",
                               "password_history"]:
                 setattr(self, attribute, None)
@@ -4706,6 +4959,12 @@ class IntersightLocalUserPolicy(IntersightConfigObject):
             kwargs["description"] = self.descr
         if self.tags is not None:
             kwargs["tags"] = self.create_tags()
+        if self.account_lockout_duration is not None:
+            kwargs["account_lockout_duration"] = self.account_lockout_duration
+        if self.account_lockout_threshold is not None:
+            kwargs["account_lockout_threshold"] = self.account_lockout_threshold
+        if self.account_unlock_mode is not None:
+            kwargs["account_unlock_mode"] = self.account_unlock_mode
 
         from intersight.model.iam_end_point_password_properties import IamEndPointPasswordProperties
         password_properties_kwargs = {
@@ -5436,17 +5695,22 @@ class IntersightSanConnectivityPolicy(IntersightConfigObject):
             if self.target_platform == "FIAttached":
                 self.target_platform = "FI-Attached"
 
+            # WWNN Allocation Type, WWNN Static & WWNN Pool are only applicable for FI-Attached SAN Connectivity
+            # Policies. For "Standalone" target platform, Intersight may still return stale/leftover WWNN values
+            # (e.g. from a previous target platform change), which are not supported by Standalone and would fail
+            # JSON schema validation if kept. We make sure to clear them out.
             elif self.target_platform == "Standalone":
-                # We force WWNN Allocation Type to be set to None, since it is not supported in Standalone mode
                 self.wwnn_allocation_type = None
+                self.wwnn_static = None
 
             # Renaming WWNN Allocation Type to lowercase to be more user-friendly
             # (and aligned with vHBA wwpn_allocation_type)
             if self.wwnn_allocation_type:
                 self.wwnn_allocation_type = self.wwnn_allocation_type.lower()
 
-            if san_connectivity_policy.wwnn_pool:
-                self.wwnn_pool = self._get_policy_name(policy=san_connectivity_policy.wwnn_pool)
+            if self.target_platform == "FI-Attached":
+                if san_connectivity_policy.wwnn_pool:
+                    self.wwnn_pool = self._get_policy_name(policy=san_connectivity_policy.wwnn_pool)
             self.vhbas = self._get_vhbas()
 
         elif self._config.load_from == "file":

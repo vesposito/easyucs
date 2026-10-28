@@ -118,12 +118,52 @@ function claimToIntersight(){
     displayAlert("Error claiming to Intersight:", "Missing target Intersight device");
     return
   }
+
+  if(document.getElementById('claim_proxy_enabled').checked){
+    form_json.proxy_details = {
+      proxy_enabled: true,
+      proxy_host: document.getElementById('claim_proxy_host').value,
+      proxy_port: parseInt(document.getElementById('claim_proxy_port').value, 10),
+      proxy_authentication: document.getElementById('claim_proxy_authentication').checked
+    };
+    if(form_json.proxy_details.proxy_authentication){
+      form_json.proxy_details.proxy_username = document.getElementById('claim_proxy_username').value;
+      form_json.proxy_details.proxy_password = document.getElementById('claim_proxy_password').value;
+    }
+  }
+
   const target_api_endpoint = api_base_url + api_device_endpoint + "/" + current_device_uuid + "/actions/claim_to_intersight";
   const action_type_message = "Claiming to Intersight";
   httpRequestAsync("POST", target_api_endpoint, alertActionStarted.bind(null,action_type_message), form_json);
 
   // Closes the modal
   $('#claimToIntersightModal').modal('toggle');
+  // Resets the form, including the proxy fields
+  document.getElementById('claimToIntersightForm').reset();
+  document.getElementById('claim_proxy_fields').classList.add("d-none");
+  document.getElementById('claim_proxy_auth_fields').classList.add("d-none");
+}
+
+/**
+ * Shows/Hides the device connector proxy fields in the "Claim to Intersight" modal
+ */
+function toggleClaimProxyFields(){
+  if(document.getElementById('claim_proxy_enabled').checked){
+    document.getElementById('claim_proxy_fields').classList.remove("d-none");
+  } else {
+    document.getElementById('claim_proxy_fields').classList.add("d-none");
+  }
+}
+
+/**
+ * Shows/Hides the device connector proxy authentication fields in the "Claim to Intersight" modal
+ */
+function toggleClaimProxyAuthFields(){
+  if(document.getElementById('claim_proxy_authentication').checked){
+    document.getElementById('claim_proxy_auth_fields').classList.remove("d-none");
+  } else {
+    document.getElementById('claim_proxy_auth_fields').classList.add("d-none");
+  }
 }
 
 /**
@@ -1170,6 +1210,9 @@ function showFabricFields(){
 function toggleClaimToIntersightModal(event){
   removeEventPropagation(event);
   getIntersightDevices();
+  document.getElementById('claimToIntersightForm').reset();
+  document.getElementById('claim_proxy_fields').classList.add("d-none");
+  document.getElementById('claim_proxy_auth_fields').classList.add("d-none");
   $('#claimToIntersightModal').modal('toggle');
 }
 

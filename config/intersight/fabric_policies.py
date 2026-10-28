@@ -289,7 +289,15 @@ class IntersightFabricLinkControlPolicy(IntersightConfigObject):
             if self.admin_state is not None:
                 kwargs_udld_settings["admin_state"] = self.admin_state
             if self.mode is not None:
-                kwargs_udld_settings["mode"] = self.mode
+                if self.admin_state == "Disabled" and self.mode == "aggressive":
+                    self.logger(
+                        level="warning",
+                        message=f"{self._CONFIG_NAME} '{self.name}': 'mode' cannot be 'aggressive' when "
+                                f"'admin_state' is 'Disabled'. Using 'normal' instead."
+                    )
+                    kwargs_udld_settings["mode"] = "normal"
+                else:
+                    kwargs_udld_settings["mode"] = self.mode
 
             kwargs["udld_settings"] = FabricUdldSettings(**kwargs_udld_settings)
 
@@ -2998,13 +3006,7 @@ class IntersightFabricVlanPolicy(IntersightConfigObject):
                 if attribute in self._object:
                     setattr(self, attribute, self.get_attribute(attribute_name=attribute))
 
-            # We use this to make sure all options of a VLAN are set to None if they are not present
-            if self.vlans:
-                for vlan in self.vlans:
-                    for attribute in ["auto_allow_on_uplinks", "id", "multicast_policy", "name", "native_vlan",
-                                      "primary_vlan_id", "sharing_type"]:
-                        if attribute not in vlan:
-                            vlan[attribute] = None
+        self.clean_object()
 
     def _get_vlans(self):
         # Fetches the VLANs configuration of a VLAN Policy
@@ -3050,6 +3052,15 @@ class IntersightFabricVlanPolicy(IntersightConfigObject):
             return vlans
 
         return None
+
+    def clean_object(self):
+        # We use this to make sure all options of a VLAN are set to None if they are not present
+        if self.vlans:
+            for vlan in self.vlans:
+                for attribute in ["auto_allow_on_uplinks", "id", "multicast_policy", "name", "native_vlan",
+                                  "primary_vlan_id", "sharing_type"]:
+                    if attribute not in vlan:
+                        vlan[attribute] = None
 
     @staticmethod
     def _find_overlapping_vlans(existing_vlans=None, to_be_pushed_vlans=None):

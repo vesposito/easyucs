@@ -28,6 +28,20 @@
          "default": "unbounded",
          "pattern": "^unbounded$|^[0-9]$|^[0-9][0-9]$|^[0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9]$|^[0-9][0-9][0-9][0-9][0-9][0-9][0-9]$|^10000000$|^4294967295$"
       },
+      "operational_state": {
+         "description": "Operational state",
+         "type": "object",
+         "properties": {
+            "minimum_required_power": {
+               "description": "Minimum Required Power (Watts)",
+               "type": "string"
+            },
+            "maximum_required_power": {
+               "description": "Maximum Required Power (Watts)",
+               "type": "string"
+            }
+         }
+      },
       "members": {
          "description": "Power Group Members",
          "type": "array",

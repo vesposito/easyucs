@@ -80,8 +80,7 @@ urllib3.disable_warnings()
 
 
 class IntersightDevice(GenericDevice):
-    INTERSIGHT_APPLIANCE_MIN_REQUIRED_VERSION = "1.1.7-0"
-
+    INTERSIGHT_APPLIANCE_MIN_REQUIRED_VERSION = "1.1.8-0"
     def __init__(self, parent=None, uuid=None, target="us-east-1.intersight.com", key_id="", private_key_path="",
                  is_hidden=False, is_system=False, system_usage=None, proxy=None, proxy_user=None, proxy_password=None,
                  logger_handle_log_level="info", log_file_path=None, bypass_connection_checks=False,
@@ -98,6 +97,7 @@ class IntersightDevice(GenericDevice):
 
         self.handle = None
         self.is_appliance = False
+        self.is_pva = None
         self.name = target
         # Setting the max timeout of 5min for Intersight Connection Failure.
         self.timeout = 5
@@ -409,6 +409,9 @@ class IntersightDevice(GenericDevice):
             # We delete the resource groups only when we are deleting all the Intersight configuration.
             objects_to_remove_in_order.append({ResourceApi: ["resource_group"]})
             objects_to_remove_in_order.append({CommApi: ["comm_tag_definition"]})
+            # Power Groups are account-wide (not tied to any organization), so we only delete them when we are
+            # deleting all the Intersight configuration.
+            objects_to_remove_in_order.append({PowerApi: ["power_power_group"]})
 
             # Added to handle cases of orphaned objects that need to be deleted.
             # By adding these sdk_objects to specific positions in the objects_to_remove_in_order list,
@@ -534,6 +537,21 @@ class IntersightDevice(GenericDevice):
                                     obj=result,
                                     status="skipped",
                                     message="Appliance system defined Object"
+                                )
+                                continue
+
+                        elif sdk_object == "fabric_vlan":
+                            # VLAN-1 (name "default") is automatically created by Intersight for every VLAN
+                            # Policy and cannot be deleted - attempting to do so fails with a 400 Bad Request
+                            # ("Cannot delete default VLAN-1.")
+                            if getattr(result, "vlan_id", None) == 1:
+                                self.logger(level="debug",
+                                            message=f"Skipping {result.object_type} with name "
+                                                    f"{getattr(result, 'name', '')} as it is System defined")
+                                self.delete_summary_manager.add_obj_status(
+                                    obj=result,
+                                    status="skipped",
+                                    message="System defined default VLAN-1"
                                 )
                                 continue
 
@@ -1431,9 +1449,22 @@ class IntersightDevice(GenericDevice):
                 self.version = system_info.results[0].version
                 self.metadata.device_version = self.version
                 self.is_appliance = True
+                setup_info = appliance_api.get_appliance_setup_info_list(
+                    _request_timeout=self.timeout, select="DeploymentMode")
+                deployment_mode = getattr(setup_info.results[0], "deployment_mode", None) if setup_info.results else None
+                self.is_pva = deployment_mode == "Private"
+                if self.is_pva:
+                    self.metadata.device_type_long = "Intersight Private Appliance"
+                self.logger(
+                    level="debug",
+                    message=f"Intersight Appliance DeploymentMode is "
+                            f"'{deployment_mode if deployment_mode is not None else 'unavailable'}'; "
+                            f"PVA detection is {self.is_pva}."
+                )
 
         except OpenApiException:
             self.logger(level="debug", message="Target is not an Intersight Appliance.")
+            self.is_pva = False
             self.version = self._get_apidocs_version()
             self.metadata.device_version = self.version
 

@@ -1,0 +1,19 @@
+{
+  "model_short_name": "NVIDIA BlueField-3 B3220 DPU 2x200G",
+  "rear_file_name": "CAI-P-N3220.png",
+  "rear_file_size": [83, 638],
+  "rear_ports": {
+    "x/1": {
+      "port_coord": [5, 266],
+      "port_type": "qsfp112",
+      "port_size": [50, 119]
+    },
+    "x/2": {
+      "port_coord": [5, 399],
+      "port_type": "qsfp112",
+      "port_size": [50, 118]
+    }
+  },
+  "imm_compatible": false,
+  "adaptor_type": "nic"
+}

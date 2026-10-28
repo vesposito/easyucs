@@ -12,6 +12,7 @@ from draw.ucs.port import UcsPortDraw
 class UcsAdaptorDraw(GenericUcsDrawEquipment):
     def __init__(self, parent=None, parent_draw=None):
         self.picture = None
+        self.picture_size = None
         self.parent_draw = parent_draw
         self.width = None
         self.orientation = None
@@ -44,6 +45,11 @@ class UcsAdaptorDraw(GenericUcsDrawEquipment):
                 self.width = self.parent_draw.json_file["pcie_slots"][0]["width"]
                 if "orientation" in self.parent_draw.json_file["pcie_slots"][0]:
                     self.orientation = self.parent_draw.json_file["pcie_slots"][0]["orientation"]
+            elif any(x in self._parent.pci_slot for x in ["FHHL_", "LP_", "OCP_"]):  # for C885A
+                for slot in self.parent_draw.json_file.get("pcie_slots", []):
+                    if slot["id"] == self._parent.pci_slot:
+                        self.width = slot.get("width", None)
+                        self.orientation = slot.get("orientation", None)
             elif self._parent.pci_slot not in ["MLOM", "OCP"]:  # not MLOM or OCP
                 if self.parent_draw.json_file.get("pcie_slots"):
                     for slot in self.parent_draw.json_file["pcie_slots"]:
@@ -88,6 +94,10 @@ class UcsAdaptorDraw(GenericUcsDrawEquipment):
                 coord = self.parent_draw.json_file["ocp_slots"][0]["coord"]
             elif "SIOC" in self._parent.pci_slot:  # for PCIe slot in UCS-S3260-PCISIOC
                 coord = self.parent_draw.json_file["pcie_slots"][0]["coord"]
+            elif any(x in self._parent.pci_slot for x in ["FHHL_", "LP_", "OCP_"]):  # for C885A
+                for slot in self.parent_draw.json_file.get("pcie_slots", []):
+                    if slot["id"] == self._parent.pci_slot:
+                        coord = slot["coord"]
             else:  # for PCIe Slot
                 if self.parent_draw.json_file.get("pcie_slots"):
                     for slot in self.parent_draw.json_file["pcie_slots"]:
